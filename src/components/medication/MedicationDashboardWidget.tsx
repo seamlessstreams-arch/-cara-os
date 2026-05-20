@@ -1,243 +1,395 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// MedicationDashboardWidget — Medication Management dashboard card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
-import { useEffect, useState } from "react";
+// ══════════════════════════════════════════════════════════════════════════════
+// MEDICATION DASHBOARD WIDGET
+//
+// Displays the 4-layer medication intelligence:
+// - Overall score with rating
+// - Layer scores: quality, compliance, policy, staff readiness
+// - Child medication profiles
+// - Strengths, areas for improvement, and actions
+// - Regulatory references
+// ══════════════════════════════════════════════════════════════════════════════
 
-interface ChildSummary {
+import { useState, useEffect } from "react";
+
+// ── Local interfaces (mirrors API shape) ──────────────────────────────────
+
+interface MedicationQualityData {
+  totalAdministrations: number;
+  correctAdminRate: number;
+  consentRate: number;
+  witnessedRate: number;
+  sideEffectsRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface MedicationComplianceData {
+  totalAdministrations: number;
+  documentedRate: number;
+  storageRate: number;
+  marChartRate: number;
+  typeDiversityRatio: number;
+  uniqueTypes: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface MedicationPolicyData {
+  medicationManagementPolicy: boolean;
+  controlledDrugsProcedure: boolean;
+  administrationProtocol: boolean;
+  storageAndDisposalPolicy: boolean;
+  errorReportingProcess: boolean;
+  consentFramework: boolean;
+  regularReview: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface StaffReadinessData {
+  totalStaff: number;
+  medicationAdministrationRate: number;
+  controlledDrugsHandlingRate: number;
+  errorRecognitionRate: number;
+  sideEffectsAwarenessRate: number;
+  storageRequirementsRate: number;
+  consentAndCapacityRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface ChildMedicationProfileData {
   childId: string;
   childName: string;
-  activeMedications: number;
-  isCompliant: boolean;
-  marCompletionRate: number;
-  issueCount: number;
-  warningCount: number;
-  refusalRate: number;
+  totalAdministrations: number;
+  correctAdminRate: number;
+  consentRate: number;
+  uniqueMedTypes: number;
+  medicationScore: number;
 }
 
-interface RecentError {
-  childName: string;
-  errorType: string;
-  severity: string;
-  date: string;
+interface MedicationData {
+  homeId: string;
+  assessedAt: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: string;
+  medicationQuality: MedicationQualityData;
+  medicationCompliance: MedicationComplianceData;
+  medicationPolicy: MedicationPolicyData;
+  staffReadiness: StaffReadinessData;
+  childProfiles: ChildMedicationProfileData[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-interface Metrics {
-  totalActiveMedications: number;
-  controlledDrugCount: number;
-  overallMarCompletionRate: number;
-  overallComplianceRate: number;
-  errorCount30Days: number;
-  nearMissCount30Days: number;
-  refusalRate: number;
-  overdueReviews: number;
-  stockDiscrepancies: number;
-  controlledDrugCompliant: boolean;
-  staffTrainingCompliant: boolean;
-  selfAdminChildCount: number;
-  childCount: number;
+// ── Inline Components ─────────────────────────────────────────────────────
+
+function ScoreBar({ label, score, max }: { label: string; score: number; max: number }) {
+  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+  const colour =
+    pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-amber-500" : pct >= 40 ? "bg-orange-500" : "bg-red-500";
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-600 font-medium">{label}</span>
+        <span className="text-slate-500">{score}/{max}</span>
+      </div>
+      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${colour}`} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
 }
 
-interface DashboardData {
-  metrics: Metrics;
-  children: ChildSummary[];
-  recentErrors: RecentError[];
-  complianceIssues: string[];
+function Section({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+      >
+        <span className="text-sm font-medium text-slate-700">{title}</span>
+        <span className="text-slate-400 text-xs">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && <div className="p-4 space-y-3">{children}</div>}
+    </div>
+  );
 }
 
-interface Props {
-  homeId?: string;
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-center justify-between py-1">
+      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-xs font-semibold text-slate-700">{String(value)}</span>
+    </div>
+  );
 }
 
-const SEVERITY_STYLES: Record<string, string> = {
-  near_miss: "text-slate-600 dark:text-slate-400",
-  minor: "text-amber-600 dark:text-amber-400",
-  moderate: "text-orange-600 dark:text-orange-400",
-  serious: "text-red-600 dark:text-red-400",
-  critical: "text-red-700 dark:text-red-300 font-bold",
-};
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-export function MedicationDashboardWidget({ homeId = "home-oak" }: Props) {
-  const [data, setData] = useState<DashboardData | null>(null);
+function getRatingColour(rating: string): string {
+  switch (rating) {
+    case "outstanding": return "text-green-600";
+    case "good": return "text-amber-600";
+    case "requires_improvement": return "text-orange-600";
+    case "inadequate": return "text-red-600";
+    default: return "text-slate-600";
+  }
+}
+
+function getRatingBg(rating: string): string {
+  switch (rating) {
+    case "outstanding": return "bg-green-50 border-green-200";
+    case "good": return "bg-amber-50 border-amber-200";
+    case "requires_improvement": return "bg-orange-50 border-orange-200";
+    case "inadequate": return "bg-red-50 border-red-200";
+    default: return "bg-slate-50 border-slate-200";
+  }
+}
+
+function formatRating(rating: string): string {
+  return rating.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+function getScoreColour(score: number, max: number): string {
+  const pct = max > 0 ? (score / max) * 100 : 0;
+  if (pct >= 80) return "text-green-600";
+  if (pct >= 60) return "text-amber-600";
+  return "text-red-600";
+}
+
+// ── Main Component ────────────────────────────────────────────────────────
+
+export default function MedicationDashboardWidget() {
+  const [data, setData] = useState<MedicationData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
+    fetch("/api/medication")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch medication data");
+        return res.json();
+      })
+      .then((json) => setData(json.data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/medication?homeId=${homeId}&mode=dashboard`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // Loading skeleton
   if (loading) {
     return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-36 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-pulse">
+        <div className="h-6 w-64 bg-slate-200 rounded mb-4" />
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 bg-slate-100 rounded-lg" />
+          ))}
+        </div>
+        <div className="space-y-3">
+          <div className="h-4 w-full bg-slate-100 rounded" />
+          <div className="h-4 w-3/4 bg-slate-100 rounded" />
+          <div className="h-4 w-1/2 bg-slate-100 rounded" />
         </div>
       </div>
     );
   }
 
-  if (!data) return null;
+  // Error state
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+        <p className="text-red-700 text-sm font-medium">Error loading medication data</p>
+        <p className="text-red-600 text-xs mt-1">{error}</p>
+      </div>
+    );
+  }
 
-  const { metrics, children, recentErrors, complianceIssues } = data;
-  const nonCompliantChildren = children.filter(c => !c.isCompliant);
+  // Null guard
+  if (!data) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <p className="text-slate-500 text-sm">No medication data available.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Medication Management</h3>
-              <p className="text-xs text-muted-foreground">MAR charts & controlled drugs</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className="text-lg font-bold">{metrics.totalActiveMedications}</p>
-            <p className="text-[10px] text-muted-foreground">active meds</p>
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">Medication Management</h3>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Administration quality, compliance, policy, and staff readiness
+          </p>
+        </div>
+        <div className={`text-right px-4 py-2 rounded-lg border ${getRatingBg(data.rating)}`}>
+          <p className={`text-2xl font-bold ${getRatingColour(data.rating)}`}>
+            {data.overallScore}
+          </p>
+          <p className={`text-xs font-medium ${getRatingColour(data.rating)}`}>
+            {formatRating(data.rating)}
+          </p>
         </div>
       </div>
 
-      {/* Compliance issues alert */}
-      {complianceIssues.length > 0 && (
-        <div className="px-4 py-2.5 border-b border-border bg-red-50/50 dark:bg-red-900/10">
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <span className="w-2 h-2 rounded-full bg-red-500" />
-            <span className="text-xs font-medium text-red-700 dark:text-red-400">
-              {complianceIssues.length} issue{complianceIssues.length > 1 ? "s" : ""} requiring action
-            </span>
-          </div>
-          <p className="text-[10px] text-red-600 dark:text-red-400 line-clamp-1">
-            {complianceIssues[0]}
-          </p>
-        </div>
-      )}
-
-      {/* Key stats */}
-      <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.overallMarCompletionRate >= 98 ? "text-emerald-600 dark:text-emerald-400" : metrics.overallMarCompletionRate >= 90 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
-            {metrics.overallMarCompletionRate}%
-          </p>
-          <p className="text-[10px] text-muted-foreground">MAR complete</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.errorCount30Days === 0 ? "text-emerald-600 dark:text-emerald-400" : metrics.errorCount30Days <= 2 ? "text-amber-600 dark:text-amber-400" : "text-red-600 dark:text-red-400"}`}>
-            {metrics.errorCount30Days}
-          </p>
-          <p className="text-[10px] text-muted-foreground">Errors (30d)</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.controlledDrugCompliant ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
-            {metrics.controlledDrugCompliant ? "Yes" : "No"}
-          </p>
-          <p className="text-[10px] text-muted-foreground">CD compliant</p>
-        </div>
+      {/* 4 Evaluator Score Bars */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ScoreBar label="Medication Quality" score={data.medicationQuality.score} max={25} />
+        <ScoreBar label="Medication Compliance" score={data.medicationCompliance.score} max={25} />
+        <ScoreBar label="Medication Policy" score={data.medicationPolicy.score} max={25} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.score} max={25} />
       </div>
 
-      {/* Per-child summary */}
-      <div className="border-b border-border">
-        <div className="px-4 py-2 bg-muted/30">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Children ({metrics.childCount})</p>
-        </div>
-        <div className="divide-y divide-border">
-          {children.map(child => (
-            <div key={child.childId} className="px-4 py-2">
-              <div className="flex items-center justify-between mb-0.5">
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-medium">{child.childName}</p>
-                  <span className="text-[9px] text-muted-foreground">{child.activeMedications} med{child.activeMedications !== 1 ? "s" : ""}</span>
+      {/* Medication Quality Section */}
+      <Section title="Medication Quality" defaultOpen>
+        <Stat label="Total Administrations" value={data.medicationQuality.totalAdministrations} />
+        <Stat label="Correct Administration Rate" value={data.medicationQuality.correctAdminRate + "%"} />
+        <Stat label="Consent Rate" value={data.medicationQuality.consentRate + "%"} />
+        <Stat label="Dual-Witness Rate" value={data.medicationQuality.witnessedRate + "%"} />
+        <Stat label="Side-Effects Monitoring Rate" value={data.medicationQuality.sideEffectsRate + "%"} />
+      </Section>
+
+      {/* Medication Compliance Section */}
+      <Section title="Medication Compliance">
+        <Stat label="Documentation Rate" value={data.medicationCompliance.documentedRate + "%"} />
+        <Stat label="Storage Compliance Rate" value={data.medicationCompliance.storageRate + "%"} />
+        <Stat label="MAR Chart Completion" value={data.medicationCompliance.marChartRate + "%"} />
+        <Stat label="Medication Type Diversity" value={data.medicationCompliance.uniqueTypes + "/8"} />
+      </Section>
+
+      {/* Medication Policy Section */}
+      <Section title="Medication Policy">
+        <Stat label="Medication Management Policy" value={data.medicationPolicy.medicationManagementPolicy ? "Yes" : "No"} />
+        <Stat label="Controlled Drugs Procedure" value={data.medicationPolicy.controlledDrugsProcedure ? "Yes" : "No"} />
+        <Stat label="Administration Protocol" value={data.medicationPolicy.administrationProtocol ? "Yes" : "No"} />
+        <Stat label="Storage & Disposal Policy" value={data.medicationPolicy.storageAndDisposalPolicy ? "Yes" : "No"} />
+        <Stat label="Error Reporting Process" value={data.medicationPolicy.errorReportingProcess ? "Yes" : "No"} />
+        <Stat label="Consent Framework" value={data.medicationPolicy.consentFramework ? "Yes" : "No"} />
+        <Stat label="Regular Review" value={data.medicationPolicy.regularReview ? "Yes" : "No"} />
+      </Section>
+
+      {/* Staff Readiness Section */}
+      <Section title="Staff Readiness">
+        <Stat label="Total Staff Trained" value={data.staffReadiness.totalStaff} />
+        <Stat label="Medication Administration" value={data.staffReadiness.medicationAdministrationRate + "%"} />
+        <Stat label="Controlled Drugs Handling" value={data.staffReadiness.controlledDrugsHandlingRate + "%"} />
+        <Stat label="Error Recognition" value={data.staffReadiness.errorRecognitionRate + "%"} />
+        <Stat label="Side-Effects Awareness" value={data.staffReadiness.sideEffectsAwarenessRate + "%"} />
+        <Stat label="Storage Requirements" value={data.staffReadiness.storageRequirementsRate + "%"} />
+        <Stat label="Consent & Capacity" value={data.staffReadiness.consentAndCapacityRate + "%"} />
+      </Section>
+
+      {/* Child Medication Profiles */}
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Medication Profiles">
+          <div className="space-y-3">
+            {data.childProfiles.map((child) => (
+              <div
+                key={child.childId}
+                className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50"
+              >
+                <div>
+                  <p className="text-sm font-medium text-slate-800">{child.childName}</p>
+                  <p className="text-xs text-slate-500">
+                    {child.totalAdministrations} administrations, {child.uniqueMedTypes} types, {child.correctAdminRate}% correct, {child.consentRate}% consent
+                  </p>
                 </div>
-                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                  child.isCompliant
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300"
-                    : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
-                }`}>
-                  {child.isCompliant ? "Compliant" : `${child.issueCount} issue${child.issueCount > 1 ? "s" : ""}`}
-                </span>
-              </div>
-              {child.refusalRate > 0 && (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400">
-                  {child.refusalRate}% refusal rate
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Recent errors */}
-      {recentErrors.length > 0 && (
-        <div className="border-b border-border">
-          <div className="px-4 py-2 bg-muted/30">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Recent Errors</p>
-          </div>
-          <div className="divide-y divide-border">
-            {recentErrors.slice(0, 2).map((err, i) => (
-              <div key={i} className="px-4 py-2">
-                <div className="flex items-center justify-between">
-                  <p className="text-xs font-medium">{err.childName}</p>
-                  <span className={`text-[9px] font-medium ${SEVERITY_STYLES[err.severity] ?? ""}`}>
-                    {err.severity.replace("_", " ")}
-                  </span>
+                <div className={`text-lg font-bold ${getScoreColour(child.medicationScore, 10)}`}>
+                  {child.medicationScore}/10
                 </div>
-                <p className="text-[10px] text-muted-foreground">{err.errorType}</p>
               </div>
             ))}
           </div>
-        </div>
+        </Section>
       )}
 
-      {/* Summary stats */}
-      <div className="px-4 py-2.5 border-b border-border">
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Controlled drugs</span>
-          <span className="font-medium">{metrics.controlledDrugCount}</span>
-        </div>
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Overdue reviews</span>
-          <span className={`font-medium ${metrics.overdueReviews > 0 ? "text-amber-600" : "text-emerald-600"}`}>
-            {metrics.overdueReviews}
-          </span>
-        </div>
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Self-admin children</span>
-          <span className="font-medium">{metrics.selfAdminChildCount}</span>
-        </div>
-        <div className="flex justify-between text-[10px]">
-          <span className="text-muted-foreground">Staff training</span>
-          <span className={`font-medium ${metrics.staffTrainingCompliant ? "text-emerald-600" : "text-red-600"}`}>
-            {metrics.staffTrainingCompliant ? "Compliant" : "Below 80%"}
-          </span>
-        </div>
-      </div>
+      {/* Strengths */}
+      {data.strengths.length > 0 && (
+        <Section title="Strengths">
+          <ul className="space-y-1.5">
+            {data.strengths.map((s, i) => (
+              <li key={i} className="text-xs text-green-700 flex items-start gap-1.5">
+                <span className="mt-0.5 shrink-0 text-green-500">+</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Areas for Improvement */}
+      {data.areasForImprovement.length > 0 && (
+        <Section title="Areas for Improvement">
+          <ul className="space-y-1.5">
+            {data.areasForImprovement.map((a, i) => (
+              <li key={i} className="text-xs text-amber-700 flex items-start gap-1.5">
+                <span className="mt-0.5 shrink-0 text-amber-500">-</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Actions */}
+      {data.actions.length > 0 && (
+        <Section title="Actions">
+          <ul className="space-y-1.5">
+            {data.actions.map((a, i) => (
+              <li key={i} className={`text-xs flex items-start gap-1.5 ${
+                a.startsWith("URGENT") ? "text-red-700" :
+                a.startsWith("HIGH") ? "text-orange-700" :
+                a.startsWith("MEDIUM") ? "text-amber-700" :
+                "text-slate-600"
+              }`}>
+                <span className="mt-0.5 shrink-0">*</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Regulatory Links */}
+      {data.regulatoryLinks.length > 0 && (
+        <Section title="Regulatory References">
+          <ul className="space-y-1">
+            {data.regulatoryLinks.map((link, i) => (
+              <li key={i} className="text-xs text-slate-500">{link}</li>
+            ))}
+          </ul>
+        </Section>
+      )}
 
       {/* Footer */}
-      <div className="p-3 text-center">
-        <a href="/medication" className="text-xs text-primary font-medium hover:underline">
-          View medication dashboard →
-        </a>
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+        <span className="text-xs text-slate-400">
+          Period: {data.periodStart} to {data.periodEnd}
+        </span>
+        <span className="text-xs text-slate-400">
+          Reg 23 &middot; Misuse of Drugs Act &middot; CQC Guidance
+        </span>
       </div>
     </div>
   );

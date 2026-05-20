@@ -1,1 +1,1 @@
-export { RestraintDashboardWidget } from "./RestraintDashboardWidget";
+export { default as RestraintDashboardWidget } from "./RestraintDashboardWidget";

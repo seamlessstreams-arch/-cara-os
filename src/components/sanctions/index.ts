@@ -1,1 +1,1 @@
-export { SanctionsDashboardWidget } from "./SanctionsDashboardWidget";
+export { default as SanctionsDashboardWidget } from "./SanctionsDashboardWidget";

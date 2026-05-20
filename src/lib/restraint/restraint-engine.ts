@@ -1,479 +1,861 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Restraint & Physical Intervention Engine
-//
-// Deterministic engine for recording, analysing, and ensuring compliance of
-// physical interventions (restraints), de-escalation evidence, post-incident
-// management, and reduction strategies.
-//
-// Aligned to:
-//   - CHR 2015 Reg 19 — Behaviour management (positive relationships)
-//   - CHR 2015 Reg 20 — Restraint & deprivation of liberty
-//   - CHR 2015 Reg 35 — Behaviour management record
-//   - CHR 2015 Reg 40(4)(a) — Notification to Ofsted
-//   - SCCIF — Safety: use of restraint
-//   - Reducing the Need for Restraint and Restrictive Intervention (2019)
-//   - Team Teach / PRICE / CPI accreditation standards
-//   - Children Act 1989 s.22 — Duty to safeguard
-//   - BILD Code of Practice for Minimising Restrictive Practices
-//
-// Key requirements:
-//   - Every restraint fully recorded within required timeframe
-//   - De-escalation attempted and evidenced before any intervention
-//   - Post-incident debrief with child (within 24 hours)
-//   - Post-incident debrief with staff (within 48 hours)
-//   - Medical check following any restraint
-//   - Notifications to parent/carer, social worker, Ofsted (where applicable)
-//   - All staff involved are certified in approved technique
-//   - Reduction targets tracked and reviewed
-//   - Patterns analysed (time, triggers, children, staff involved)
-//   - Child's account sought and recorded
-//
-// No AI. No external calls. Pure input → output.
-// ══════════════════════════════════════════════════════════════════════════════
+/* ──────────────────────────────────────────────────────────────
+   Restraint Intelligence Engine
+
+   Pure deterministic engine for evaluating how well a children's
+   residential home manages physical restraint — tracking incidents,
+   compliance with recording and notification requirements, policy
+   frameworks, and staff training in approved techniques.
+
+   Regulatory basis:
+     - CHR 2015 Reg 20 — Restraint and deprivation of liberty
+     - CHR 2015 Reg 19 — Behaviour management (positive relationships)
+     - CHR 2015 Reg 35 — Behaviour management record
+     - CHR 2015 Reg 40(4)(a) — Notification to Ofsted
+     - Children Act 1989 s.22 — Duty to safeguard
+     - SCCIF — Safety: use of restraint, children are safe
+     - Reducing the Need for Restraint and Restrictive Intervention (DfE 2019)
+
+   No AI. No external calls. Pure input → output.
+   ────────────────────────────────────────────────────────────── */
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-export type InterventionType =
-  | "physical_restraint"
+export type RestraintType =
+  | "physical_hold"
   | "guided_away"
-  | "held_briefly"
-  | "room_separation"
-  | "vehicle_restraint";
+  | "seated_hold"
+  | "standing_hold"
+  | "supine_hold"
+  | "prone_hold"
+  | "mechanical"
+  | "environmental_restriction";
 
-export type ApprovedTechnique =
-  | "team_teach"
-  | "price"
-  | "cpi"
-  | "mapa"
-  | "other_approved";
+export type RestraintOutcome =
+  | "de_escalation_successful"
+  | "restraint_applied"
+  | "self_resolved"
+  | "external_support"
+  | "not_recorded";
 
-export type DeEscalationMethod =
-  | "verbal_reassurance"
-  | "distraction"
-  | "change_of_staff"
-  | "offered_space"
-  | "reduced_demands"
-  | "sensory_support"
-  | "pace_approach"
-  | "humour"
-  | "choices_offered";
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-export type PostIncidentAction =
-  | "child_debrief"
-  | "staff_debrief"
-  | "medical_check"
-  | "parent_notified"
-  | "social_worker_notified"
-  | "ofsted_notified"
-  | "ri_notified"
-  | "body_map_completed"
-  | "written_record_completed"
-  | "child_account_recorded";
+// ── Label Maps ─────────────────────────────────────────────────────────────
+
+const restraintTypeLabels: Record<RestraintType, string> = {
+  physical_hold: "Physical Hold",
+  guided_away: "Guided Away",
+  seated_hold: "Seated Hold",
+  standing_hold: "Standing Hold",
+  supine_hold: "Supine Hold",
+  prone_hold: "Prone Hold",
+  mechanical: "Mechanical",
+  environmental_restriction: "Environmental Restriction",
+};
+
+const restraintOutcomeLabels: Record<RestraintOutcome, string> = {
+  de_escalation_successful: "De-escalation Successful",
+  restraint_applied: "Restraint Applied",
+  self_resolved: "Self Resolved",
+  external_support: "External Support",
+  not_recorded: "Not Recorded",
+};
+
+const ratingLabels: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+export function getRestraintTypeLabel(type: RestraintType): string {
+  return restraintTypeLabels[type];
+}
+
+export function getRestraintOutcomeLabel(outcome: RestraintOutcome): string {
+  return restraintOutcomeLabels[outcome];
+}
+
+export function getRatingLabel(rating: Rating): string {
+  return ratingLabels[rating];
+}
 
 // ── Core Interfaces ────────────────────────────────────────────────────────
 
-export interface RestraintRecord {
+export interface RestraintIncident {
   id: string;
-  homeId: string;
   childId: string;
   childName: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  durationMinutes: number;
-  interventionType: InterventionType;
-  technique: ApprovedTechnique;
-  staffInvolved: StaffInvolvement[];
-  // Context
-  trigger: string;
-  antecedent: string;
-  deEscalationAttempted: DeEscalationMethod[];
-  deEscalationDuration: number;           // minutes spent de-escalating
-  reasonForIntervention: string;
-  proportionalityJustification: string;
-  // During
-  childPresentation: string;
-  positionUsed: string;
-  injuries: InjuryRecord[];
-  // Post-incident
-  postIncidentActions: PostIncidentRecord[];
-  childDebriefDate?: string;
-  childAccount?: string;
-  staffDebriefDate?: string;
-  medicalCheckDate?: string;
-  medicalCheckOutcome?: string;
-  // Notifications
+  incidentDate: string;
+  restraintType: RestraintType;
+  outcome: RestraintOutcome;
+  deEscalationAttempted: boolean;
+  proportionateResponse: boolean;
+  injuryOccurred: boolean;
+  bodyMapCompleted: boolean;
   parentNotified: boolean;
-  parentNotifiedDate?: string;
-  socialWorkerNotified: boolean;
-  socialWorkerNotifiedDate?: string;
   ofstedNotified: boolean;
-  ofstedNotifiedDate?: string;
-  // Record quality
-  recordCompletedWithin24Hours: boolean;
-  recordedBy: string;
-  authorisedBy: string;
+  debriefCompleted: boolean;
+  childViewsRecorded: boolean;
 }
 
-export interface StaffInvolvement {
+export interface RestraintPolicy {
+  id: string;
+  restraintReductionStrategy: boolean;
+  approvedTechniquesOnly: boolean;
+  deEscalationFirstPolicy: boolean;
+  incidentReportingProtocol: boolean;
+  bodyMapProtocol: boolean;
+  notificationProcedure: boolean;
+  regularReview: boolean;
+}
+
+export interface StaffRestraintTraining {
+  id: string;
   staffId: string;
   staffName: string;
-  role: "lead" | "support" | "observer";
-  certificationValid: boolean;
-  certificationExpiry?: string;
-}
-
-export interface InjuryRecord {
-  person: "child" | "staff";
-  personName: string;
-  description: string;
-  bodyMapCompleted: boolean;
-  medicalAttentionRequired: boolean;
-}
-
-export interface PostIncidentRecord {
-  action: PostIncidentAction;
-  completedDate?: string;
-  completed: boolean;
-  notes?: string;
-}
-
-export interface HomeRestraintProfile {
-  homeId: string;
-  restraintRecords: RestraintRecord[];
-  reductionTarget: number;                 // target % reduction vs previous quarter
-  approvedTechnique: ApprovedTechnique;
-  lastPolicyReviewDate: string;
-  debriefProtocolInPlace: boolean;
+  approvedTechniquesCertified: boolean;
+  deEscalationSkills: boolean;
+  proportionalityUnderstanding: boolean;
+  incidentReporting: boolean;
+  childRightsAwareness: boolean;
+  postIncidentSupport: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
+export interface RestraintQualityResult {
+  totalIncidents: number;
+  deEscalationRate: number;
+  proportionateRate: number;
+  noInjuryRate: number;
+  childViewsRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
 export interface RestraintComplianceResult {
-  recordId: string;
+  totalIncidents: number;
+  bodyMapRate: number;
+  parentNotifiedRate: number;
+  ofstedNotifiedRate: number;
+  debriefRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface RestraintPolicyResult {
+  restraintReductionStrategy: boolean;
+  approvedTechniquesOnly: boolean;
+  deEscalationFirstPolicy: boolean;
+  incidentReportingProtocol: boolean;
+  bodyMapProtocol: boolean;
+  notificationProcedure: boolean;
+  regularReview: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface StaffRestraintReadinessResult {
+  totalStaff: number;
+  approvedTechniquesCertifiedRate: number;
+  deEscalationSkillsRate: number;
+  proportionalityUnderstandingRate: number;
+  incidentReportingRate: number;
+  childRightsAwarenessRate: number;
+  postIncidentSupportRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface ChildRestraintProfile {
+  childId: string;
   childName: string;
-  isCompliant: boolean;
-  issues: string[];
-  warnings: string[];
-  // Key compliance checks
-  deEscalationEvidenced: boolean;
-  proportionalityJustified: boolean;
-  allStaffCertified: boolean;
-  childDebriefCompleted: boolean;
-  staffDebriefCompleted: boolean;
-  medicalCheckCompleted: boolean;
-  notificationsComplete: boolean;
-  recordedTimely: boolean;
-  childAccountRecorded: boolean;
+  totalIncidents: number;
+  deEscalationRate: number;
+  proportionateRate: number;
+  injuryCount: number;
+  restraintScore: number;
 }
 
-export interface HomeRestraintMetrics {
+export interface RestraintIntelligence {
   homeId: string;
-  // Volume
-  totalRestraints30Days: number;
-  totalRestraints90Days: number;
-  averagePerMonth: number;
-  // Trend
-  reductionAchieved: number;               // % change vs previous period
-  onTarget: boolean;
-  // Compliance
-  overallComplianceRate: number;
-  deEscalationRate: number;                // % with de-escalation evidenced
-  childDebriefRate: number;
-  staffDebriefRate: number;
-  medicalCheckRate: number;
-  notificationRate: number;
-  timelyRecordRate: number;
-  childAccountRate: number;
-  staffCertificationRate: number;
-  // Patterns
-  averageDuration: number;
-  averageDeEscalationTime: number;
-  incidentsByTimeOfDay: { period: string; count: number }[];
-  incidentsByChild: { childName: string; count: number }[];
-  commonTriggers: { trigger: string; count: number }[];
-  injuryRate: number;                      // % with any injury
-  // Issues
-  complianceIssues: string[];
+  assessedAt: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  restraintQuality: RestraintQualityResult;
+  restraintCompliance: RestraintComplianceResult;
+  restraintPolicy: RestraintPolicyResult;
+  staffReadiness: StaffRestraintReadinessResult;
+  childProfiles: ChildRestraintProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const CHILD_DEBRIEF_MAX_HOURS = 24;
-const STAFF_DEBRIEF_MAX_HOURS = 48;
-const MEDICAL_CHECK_MAX_HOURS = 2;
-const RECORD_COMPLETION_MAX_HOURS = 24;
-const NOTIFICATION_MAX_HOURS = 24;
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-// ── Core: Evaluate Single Restraint Record ──────────────────────────────
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
+
+// ── Evaluator 1: Restraint Quality (0-25) ────────────────────────────────
+
+export function evaluateRestraintQuality(
+  incidents: RestraintIncident[],
+): RestraintQualityResult {
+  const totalIncidents = incidents.length;
+
+  if (totalIncidents === 0) {
+    return {
+      totalIncidents: 0,
+      deEscalationRate: 0,
+      proportionateRate: 0,
+      noInjuryRate: 0,
+      childViewsRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No restraint incidents recorded — quality cannot be assessed"],
+    };
+  }
+
+  const deEscalationCount = incidents.filter((i) => i.deEscalationAttempted).length;
+  const deEscalationRate = pct(deEscalationCount, totalIncidents);
+
+  const proportionateCount = incidents.filter((i) => i.proportionateResponse).length;
+  const proportionateRate = pct(proportionateCount, totalIncidents);
+
+  const noInjuryCount = incidents.filter((i) => !i.injuryOccurred).length;
+  const noInjuryRate = pct(noInjuryCount, totalIncidents);
+
+  const childViewsCount = incidents.filter((i) => i.childViewsRecorded).length;
+  const childViewsRate = pct(childViewsCount, totalIncidents);
+
+  // Weights: deEscalationRate 7 + proportionateRate 6 + noInjuryRate 6 + childViewsRate 6 = 25
+  let score = 0;
+  score += (deEscalationRate / 100) * 7;
+  score += (proportionateRate / 100) * 6;
+  score += (noInjuryRate / 100) * 6;
+  score += (childViewsRate / 100) * 6;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (deEscalationRate >= 80) {
+    strengths.push("Strong de-escalation practice: " + deEscalationRate + "% of incidents had de-escalation attempted first");
+  } else if (deEscalationRate < 50) {
+    concerns.push("De-escalation rate at " + deEscalationRate + "% — de-escalation must be attempted before any restraint");
+  }
+
+  if (proportionateRate >= 80) {
+    strengths.push("Proportionate response rate: " + proportionateRate + "% of restraints judged proportionate");
+  } else if (proportionateRate < 50) {
+    concerns.push("Proportionate response rate at " + proportionateRate + "% — restraints may be disproportionate");
+  }
+
+  if (noInjuryRate >= 90) {
+    strengths.push("Low injury rate: " + noInjuryRate + "% of incidents without injury");
+  } else if (noInjuryRate < 70) {
+    concerns.push("Injury rate concerning: only " + noInjuryRate + "% of incidents without injury");
+  }
+
+  if (childViewsRate >= 80) {
+    strengths.push("Child views well recorded: " + childViewsRate + "% of incidents include child's perspective");
+  } else if (childViewsRate < 50) {
+    concerns.push("Child views rate at " + childViewsRate + "% — children's perspectives not consistently recorded");
+  }
+
+  return {
+    totalIncidents,
+    deEscalationRate,
+    proportionateRate,
+    noInjuryRate,
+    childViewsRate,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Evaluator 2: Restraint Compliance (0-25) ─────────────────────────────
 
 export function evaluateRestraintCompliance(
-  record: RestraintRecord,
-  now?: string,
+  incidents: RestraintIncident[],
 ): RestraintComplianceResult {
-  const issues: string[] = [];
-  const warnings: string[] = [];
+  const totalIncidents = incidents.length;
 
-  // De-escalation
-  const deEscalationEvidenced = record.deEscalationAttempted.length > 0;
-  if (!deEscalationEvidenced) {
-    issues.push("No de-escalation methods recorded before intervention");
-  } else if (record.deEscalationDuration < 2 && record.interventionType === "physical_restraint") {
-    warnings.push("Very brief de-escalation period before physical restraint");
+  if (totalIncidents === 0) {
+    return {
+      totalIncidents: 0,
+      bodyMapRate: 0,
+      parentNotifiedRate: 0,
+      ofstedNotifiedRate: 0,
+      debriefRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No restraint incidents recorded — compliance cannot be assessed"],
+    };
   }
 
-  // Proportionality
-  const proportionalityJustified = record.proportionalityJustification.length > 10;
-  if (!proportionalityJustified) {
-    issues.push("Proportionality not adequately justified");
+  const bodyMapCount = incidents.filter((i) => i.bodyMapCompleted).length;
+  const bodyMapRate = pct(bodyMapCount, totalIncidents);
+
+  const parentNotifiedCount = incidents.filter((i) => i.parentNotified).length;
+  const parentNotifiedRate = pct(parentNotifiedCount, totalIncidents);
+
+  const ofstedNotifiedCount = incidents.filter((i) => i.ofstedNotified).length;
+  const ofstedNotifiedRate = pct(ofstedNotifiedCount, totalIncidents);
+
+  const debriefCount = incidents.filter((i) => i.debriefCompleted).length;
+  const debriefRate = pct(debriefCount, totalIncidents);
+
+  // Weights: bodyMapRate 8 + parentNotifiedRate 7 + ofstedNotifiedRate 5 + debriefRate 5 = 25
+  let score = 0;
+  score += (bodyMapRate / 100) * 8;
+  score += (parentNotifiedRate / 100) * 7;
+  score += (ofstedNotifiedRate / 100) * 5;
+  score += (debriefRate / 100) * 5;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (bodyMapRate >= 90) {
+    strengths.push("Excellent body map completion: " + bodyMapRate + "% of incidents have body maps");
+  } else if (bodyMapRate < 50) {
+    concerns.push("Body map completion at " + bodyMapRate + "% — body maps must be completed for all restraints");
   }
 
-  // Staff certification
-  const allStaffCertified = record.staffInvolved.every(s => s.certificationValid);
-  if (!allStaffCertified) {
-    issues.push("Staff involved without valid restraint certification");
+  if (parentNotifiedRate >= 90) {
+    strengths.push("Strong parent notification: " + parentNotifiedRate + "% of incidents notified to parents/carers");
+  } else if (parentNotifiedRate < 50) {
+    concerns.push("Parent notification rate at " + parentNotifiedRate + "% — parents/carers not consistently informed");
   }
 
-  // Child debrief
-  const childDebriefCompleted = record.postIncidentActions.some(
-    a => a.action === "child_debrief" && a.completed
-  );
-  if (!childDebriefCompleted) {
-    issues.push("Child debrief not completed post-restraint");
+  if (ofstedNotifiedRate >= 80) {
+    strengths.push("Ofsted notification compliance: " + ofstedNotifiedRate + "% of incidents notified to Ofsted");
+  } else if (ofstedNotifiedRate < 50) {
+    concerns.push("Ofsted notification rate at " + ofstedNotifiedRate + "% — regulatory notifications may be missed");
   }
 
-  // Staff debrief
-  const staffDebriefCompleted = record.postIncidentActions.some(
-    a => a.action === "staff_debrief" && a.completed
-  );
-  if (!staffDebriefCompleted) {
-    warnings.push("Staff debrief not completed post-restraint");
-  }
-
-  // Medical check
-  const medicalCheckCompleted = record.postIncidentActions.some(
-    a => a.action === "medical_check" && a.completed
-  );
-  if (!medicalCheckCompleted) {
-    issues.push("Medical check not completed post-restraint");
-  }
-
-  // Notifications
-  const notificationsComplete = record.parentNotified && record.socialWorkerNotified;
-  if (!record.parentNotified) {
-    issues.push("Parent/carer not notified of restraint");
-  }
-  if (!record.socialWorkerNotified) {
-    issues.push("Social worker not notified of restraint");
-  }
-
-  // Record timeliness
-  const recordedTimely = record.recordCompletedWithin24Hours;
-  if (!recordedTimely) {
-    warnings.push("Record not completed within 24 hours");
-  }
-
-  // Child account
-  const childAccountRecorded = record.postIncidentActions.some(
-    a => a.action === "child_account_recorded" && a.completed
-  );
-  if (!childAccountRecorded) {
-    warnings.push("Child's own account of incident not recorded");
-  }
-
-  // Injuries without body map
-  const injuriesWithoutBodyMap = record.injuries.filter(i => !i.bodyMapCompleted);
-  if (injuriesWithoutBodyMap.length > 0) {
-    issues.push("Injury recorded without body map");
+  if (debriefRate >= 80) {
+    strengths.push("Good debrief practice: " + debriefRate + "% of incidents followed by debrief");
+  } else if (debriefRate < 50) {
+    concerns.push("Debrief rate at " + debriefRate + "% — post-incident debriefs not consistently completed");
   }
 
   return {
-    recordId: record.id,
-    childName: record.childName,
-    isCompliant: issues.length === 0,
-    issues,
-    warnings,
-    deEscalationEvidenced,
-    proportionalityJustified,
-    allStaffCertified,
-    childDebriefCompleted,
-    staffDebriefCompleted,
-    medicalCheckCompleted,
-    notificationsComplete,
-    recordedTimely,
-    childAccountRecorded,
+    totalIncidents,
+    bodyMapRate,
+    parentNotifiedRate,
+    ofstedNotifiedRate,
+    debriefRate,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-// ── Core: Calculate Home Restraint Metrics ──────────────────────────────
+// ── Evaluator 3: Restraint Policy (0-25) ─────────────────────────────────
 
-export function calculateHomeRestraintMetrics(
-  profile: HomeRestraintProfile,
-  now?: string,
-): HomeRestraintMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const ninetyDaysAgo = currentTime - 90 * 24 * 60 * 60 * 1000;
-  const previousNinety = currentTime - 180 * 24 * 60 * 60 * 1000;
+export function evaluateRestraintPolicy(
+  policy: RestraintPolicy | null,
+): RestraintPolicyResult {
+  if (policy === null) {
+    return {
+      restraintReductionStrategy: false,
+      approvedTechniquesOnly: false,
+      deEscalationFirstPolicy: false,
+      incidentReportingProtocol: false,
+      bodyMapProtocol: false,
+      notificationProcedure: false,
+      regularReview: false,
+      score: 0,
+      strengths: [],
+      concerns: ["No restraint policy in place — URGENT: develop comprehensive restraint reduction policy immediately"],
+    };
+  }
 
-  const records = profile.restraintRecords;
-  const recent30 = records.filter(r => new Date(r.date).getTime() > thirtyDaysAgo);
-  const recent90 = records.filter(r => new Date(r.date).getTime() > ninetyDaysAgo);
-  const previous90 = records.filter(r => {
-    const t = new Date(r.date).getTime();
-    return t > previousNinety && t <= ninetyDaysAgo;
+  // 7 booleans weighted: 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.restraintReductionStrategy) score += 4;
+  if (policy.approvedTechniquesOnly) score += 4;
+  if (policy.deEscalationFirstPolicy) score += 4;
+  if (policy.incidentReportingProtocol) score += 4;
+  if (policy.bodyMapProtocol) score += 3;
+  if (policy.notificationProcedure) score += 3;
+  if (policy.regularReview) score += 3;
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  const trueCount = [
+    policy.restraintReductionStrategy,
+    policy.approvedTechniquesOnly,
+    policy.deEscalationFirstPolicy,
+    policy.incidentReportingProtocol,
+    policy.bodyMapProtocol,
+    policy.notificationProcedure,
+    policy.regularReview,
+  ].filter(Boolean).length;
+
+  if (trueCount === 7) {
+    strengths.push("Complete restraint policy framework in place (7/7 components)");
+  } else if (trueCount >= 5) {
+    strengths.push("Good policy coverage: " + trueCount + "/7 restraint policy components in place");
+  }
+
+  if (!policy.restraintReductionStrategy) {
+    concerns.push("No restraint reduction strategy — home must demonstrate commitment to reducing restraint");
+  }
+  if (!policy.approvedTechniquesOnly) {
+    concerns.push("Approved techniques not mandated — only BILD/Team Teach approved techniques should be used");
+  }
+  if (!policy.deEscalationFirstPolicy) {
+    concerns.push("No de-escalation first policy — de-escalation must always be attempted before restraint");
+  }
+  if (!policy.incidentReportingProtocol) {
+    concerns.push("No incident reporting protocol — all restraints must be fully recorded");
+  }
+  if (!policy.bodyMapProtocol) {
+    concerns.push("No body map protocol — body maps must be completed following every restraint");
+  }
+  if (!policy.notificationProcedure) {
+    concerns.push("No notification procedure — parents, social workers, and Ofsted must be notified");
+  }
+  if (!policy.regularReview) {
+    concerns.push("No regular review process — restraint practices must be regularly reviewed and audited");
+  }
+
+  return {
+    restraintReductionStrategy: policy.restraintReductionStrategy,
+    approvedTechniquesOnly: policy.approvedTechniquesOnly,
+    deEscalationFirstPolicy: policy.deEscalationFirstPolicy,
+    incidentReportingProtocol: policy.incidentReportingProtocol,
+    bodyMapProtocol: policy.bodyMapProtocol,
+    notificationProcedure: policy.notificationProcedure,
+    regularReview: policy.regularReview,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Evaluator 4: Staff Restraint Readiness (0-25) ────────────────────────
+
+export function evaluateStaffRestraintReadiness(
+  training: StaffRestraintTraining[],
+): StaffRestraintReadinessResult {
+  const totalStaff = training.length;
+
+  if (totalStaff === 0) {
+    return {
+      totalStaff: 0,
+      approvedTechniquesCertifiedRate: 0,
+      deEscalationSkillsRate: 0,
+      proportionalityUnderstandingRate: 0,
+      incidentReportingRate: 0,
+      childRightsAwarenessRate: 0,
+      postIncidentSupportRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No staff training records — URGENT: schedule restraint training for all staff immediately"],
+    };
+  }
+
+  const certifiedCount = training.filter((t) => t.approvedTechniquesCertified).length;
+  const approvedTechniquesCertifiedRate = pct(certifiedCount, totalStaff);
+
+  const deEscCount = training.filter((t) => t.deEscalationSkills).length;
+  const deEscalationSkillsRate = pct(deEscCount, totalStaff);
+
+  const propCount = training.filter((t) => t.proportionalityUnderstanding).length;
+  const proportionalityUnderstandingRate = pct(propCount, totalStaff);
+
+  const reportCount = training.filter((t) => t.incidentReporting).length;
+  const incidentReportingRate = pct(reportCount, totalStaff);
+
+  const rightsCount = training.filter((t) => t.childRightsAwareness).length;
+  const childRightsAwarenessRate = pct(rightsCount, totalStaff);
+
+  const supportCount = training.filter((t) => t.postIncidentSupport).length;
+  const postIncidentSupportRate = pct(supportCount, totalStaff);
+
+  // Weights: 6+5+5+4+3+2 = 25
+  let score = 0;
+  score += (approvedTechniquesCertifiedRate / 100) * 6;
+  score += (deEscalationSkillsRate / 100) * 5;
+  score += (proportionalityUnderstandingRate / 100) * 5;
+  score += (incidentReportingRate / 100) * 4;
+  score += (childRightsAwarenessRate / 100) * 3;
+  score += (postIncidentSupportRate / 100) * 2;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (approvedTechniquesCertifiedRate >= 80) {
+    strengths.push("Strong approved techniques certification: " + approvedTechniquesCertifiedRate + "% of staff certified");
+  } else if (approvedTechniquesCertifiedRate < 50) {
+    concerns.push("Approved techniques certification at " + approvedTechniquesCertifiedRate + "% — all staff must be certified");
+  }
+
+  if (deEscalationSkillsRate >= 80) {
+    strengths.push("Good de-escalation skills: " + deEscalationSkillsRate + "% of staff trained");
+  } else if (deEscalationSkillsRate < 50) {
+    concerns.push("De-escalation skills at " + deEscalationSkillsRate + "% — staff need de-escalation training");
+  }
+
+  if (proportionalityUnderstandingRate >= 80) {
+    strengths.push("Proportionality well understood: " + proportionalityUnderstandingRate + "% of staff demonstrate understanding");
+  } else if (proportionalityUnderstandingRate < 50) {
+    concerns.push("Proportionality understanding at " + proportionalityUnderstandingRate + "% — training on proportionate response needed");
+  }
+
+  if (incidentReportingRate >= 80) {
+    strengths.push("Incident reporting competency strong: " + incidentReportingRate + "% of staff trained");
+  } else if (incidentReportingRate < 50) {
+    concerns.push("Incident reporting competency at " + incidentReportingRate + "% — staff may not record incidents correctly");
+  }
+
+  if (childRightsAwarenessRate >= 80) {
+    strengths.push("Child rights awareness strong: " + childRightsAwarenessRate + "% of staff aware");
+  } else if (childRightsAwarenessRate < 50) {
+    concerns.push("Child rights awareness at " + childRightsAwarenessRate + "% — children's rights training needed");
+  }
+
+  if (postIncidentSupportRate >= 80) {
+    strengths.push("Post-incident support skills strong: " + postIncidentSupportRate + "% of staff trained");
+  } else if (postIncidentSupportRate < 50) {
+    concerns.push("Post-incident support skills at " + postIncidentSupportRate + "% — staff need training in post-incident care");
+  }
+
+  return {
+    totalStaff,
+    approvedTechniquesCertifiedRate,
+    deEscalationSkillsRate,
+    proportionalityUnderstandingRate,
+    incidentReportingRate,
+    childRightsAwarenessRate,
+    postIncidentSupportRate,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Build Child Restraint Profiles ──────────────────────────────────────
+
+export function buildChildRestraintProfiles(
+  incidents: RestraintIncident[],
+): ChildRestraintProfile[] {
+  if (incidents.length === 0) return [];
+
+  const childMap = new Map<string, { childId: string; childName: string; incidents: RestraintIncident[] }>();
+
+  for (const inc of incidents) {
+    if (!childMap.has(inc.childId)) {
+      childMap.set(inc.childId, { childId: inc.childId, childName: inc.childName, incidents: [] });
+    }
+    childMap.get(inc.childId)!.incidents.push(inc);
+  }
+
+  return Array.from(childMap.values()).map((child) => {
+    const total = child.incidents.length;
+
+    const deEscCount = child.incidents.filter((i) => i.deEscalationAttempted).length;
+    const deEscalationRate = pct(deEscCount, total);
+
+    const propCount = child.incidents.filter((i) => i.proportionateResponse).length;
+    const proportionateRate = pct(propCount, total);
+
+    const injuryCount = child.incidents.filter((i) => i.injuryOccurred).length;
+
+    // freq: fewer incidents is BETTER for restraint
+    // <=1 incidents -> 3, <=3 -> 2, <=5 -> 1, else 0
+    let freqScore = 0;
+    if (total <= 1) freqScore = 3;
+    else if (total <= 3) freqScore = 2;
+    else if (total <= 5) freqScore = 1;
+
+    // rate1 (deEscalationRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
+    let rate1Score = 0;
+    if (deEscalationRate >= 80) rate1Score = 3;
+    else if (deEscalationRate >= 60) rate1Score = 2;
+    else if (deEscalationRate >= 40) rate1Score = 1;
+
+    // rate2 (proportionateRate): same thresholds
+    let rate2Score = 0;
+    if (proportionateRate >= 80) rate2Score = 3;
+    else if (proportionateRate >= 60) rate2Score = 2;
+    else if (proportionateRate >= 40) rate2Score = 1;
+
+    // noInjury: 0 injuries -> 1, else 0
+    const noInjuryBonus = injuryCount === 0 ? 1 : 0;
+
+    const restraintScore = Math.min(10, freqScore + rate1Score + rate2Score + noInjuryBonus);
+
+    return {
+      childId: child.childId,
+      childName: child.childName,
+      totalIncidents: total,
+      deEscalationRate,
+      proportionateRate,
+      injuryCount,
+      restraintScore,
+    };
   });
+}
 
-  // Volume
-  const totalRestraints30Days = recent30.length;
-  const totalRestraints90Days = recent90.length;
-  const averagePerMonth = Math.round((totalRestraints90Days / 3) * 10) / 10;
+// ── Orchestrator ──────────────────────────────────────────────────────────
 
-  // Trend
-  const reductionAchieved = previous90.length > 0
-    ? Math.round(((previous90.length - recent90.length) / previous90.length) * 100)
-    : 0;
-  const onTarget = reductionAchieved >= profile.reductionTarget;
+export function generateRestraintIntelligence(
+  incidents: RestraintIncident[],
+  policy: RestraintPolicy | null,
+  training: StaffRestraintTraining[],
+  homeId: string,
+  periodStart: string,
+  periodEnd: string,
+): RestraintIntelligence {
+  const assessedAt = new Date().toISOString();
 
-  // Compliance analysis on last 90 days
-  const results = recent90.map(r => evaluateRestraintCompliance(r, now));
+  // Filter incidents to period
+  const periodIncidents = incidents.filter(
+    (i) => i.incidentDate >= periodStart && i.incidentDate <= periodEnd,
+  );
 
-  const overallComplianceRate = results.length > 0
-    ? Math.round((results.filter(r => r.isCompliant).length / results.length) * 100)
-    : 100;
+  // Evaluate each layer
+  const restraintQuality = evaluateRestraintQuality(periodIncidents);
+  const restraintCompliance = evaluateRestraintCompliance(periodIncidents);
+  const restraintPolicy = evaluateRestraintPolicy(policy);
+  const staffReadiness = evaluateStaffRestraintReadiness(training);
 
-  const deEscalationRate = results.length > 0
-    ? Math.round((results.filter(r => r.deEscalationEvidenced).length / results.length) * 100)
-    : 100;
+  // Build child profiles
+  const childProfiles = buildChildRestraintProfiles(periodIncidents);
 
-  const childDebriefRate = results.length > 0
-    ? Math.round((results.filter(r => r.childDebriefCompleted).length / results.length) * 100)
-    : 100;
+  // Overall score capped at 100
+  const overallScore = Math.min(
+    100,
+    Math.round(
+      restraintQuality.score +
+      restraintCompliance.score +
+      restraintPolicy.score +
+      staffReadiness.score,
+    ),
+  );
 
-  const staffDebriefRate = results.length > 0
-    ? Math.round((results.filter(r => r.staffDebriefCompleted).length / results.length) * 100)
-    : 100;
+  const rating = getRating(overallScore);
 
-  const medicalCheckRate = results.length > 0
-    ? Math.round((results.filter(r => r.medicalCheckCompleted).length / results.length) * 100)
-    : 100;
+  // Aggregate strengths
+  const strengths = aggregateStrengths(
+    restraintQuality, restraintCompliance, restraintPolicy, staffReadiness, overallScore,
+  );
 
-  const notificationRate = results.length > 0
-    ? Math.round((results.filter(r => r.notificationsComplete).length / results.length) * 100)
-    : 100;
+  // Aggregate areas for improvement
+  const areasForImprovement = aggregateAreasForImprovement(
+    restraintQuality, restraintCompliance, restraintPolicy, staffReadiness, overallScore,
+  );
 
-  const timelyRecordRate = results.length > 0
-    ? Math.round((results.filter(r => r.recordedTimely).length / results.length) * 100)
-    : 100;
+  // Generate actions
+  const actions = generateActions(
+    restraintQuality, restraintCompliance, restraintPolicy, staffReadiness, periodIncidents,
+  );
 
-  const childAccountRate = results.length > 0
-    ? Math.round((results.filter(r => r.childAccountRecorded).length / results.length) * 100)
-    : 100;
-
-  const staffCertificationRate = results.length > 0
-    ? Math.round((results.filter(r => r.allStaffCertified).length / results.length) * 100)
-    : 100;
-
-  // Patterns
-  const averageDuration = recent90.length > 0
-    ? Math.round(recent90.reduce((s, r) => s + r.durationMinutes, 0) / recent90.length)
-    : 0;
-
-  const averageDeEscalationTime = recent90.length > 0
-    ? Math.round(recent90.reduce((s, r) => s + r.deEscalationDuration, 0) / recent90.length)
-    : 0;
-
-  // Time of day patterns
-  const timeGroups: Record<string, number> = { morning: 0, afternoon: 0, evening: 0, night: 0 };
-  for (const record of recent90) {
-    const hour = new Date(record.startTime).getHours();
-    if (hour >= 6 && hour < 12) timeGroups.morning++;
-    else if (hour >= 12 && hour < 17) timeGroups.afternoon++;
-    else if (hour >= 17 && hour < 22) timeGroups.evening++;
-    else timeGroups.night++;
-  }
-  const incidentsByTimeOfDay = Object.entries(timeGroups)
-    .map(([period, count]) => ({ period, count }))
-    .sort((a, b) => b.count - a.count);
-
-  // By child
-  const childCounts = new Map<string, number>();
-  for (const record of recent90) {
-    childCounts.set(record.childName, (childCounts.get(record.childName) || 0) + 1);
-  }
-  const incidentsByChild = [...childCounts.entries()]
-    .map(([childName, count]) => ({ childName, count }))
-    .sort((a, b) => b.count - a.count);
-
-  // Common triggers
-  const triggerCounts = new Map<string, number>();
-  for (const record of recent90) {
-    triggerCounts.set(record.trigger, (triggerCounts.get(record.trigger) || 0) + 1);
-  }
-  const commonTriggers = [...triggerCounts.entries()]
-    .map(([trigger, count]) => ({ trigger, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
-
-  // Injury rate
-  const withInjuries = recent90.filter(r => r.injuries.length > 0).length;
-  const injuryRate = recent90.length > 0
-    ? Math.round((withInjuries / recent90.length) * 100)
-    : 0;
-
-  // Issues
-  const complianceIssues = [...new Set(results.flatMap(r => r.issues))];
+  // Regulatory links
+  const regulatoryLinks = generateRegulatoryLinks();
 
   return {
-    homeId: profile.homeId,
-    totalRestraints30Days,
-    totalRestraints90Days,
-    averagePerMonth,
-    reductionAchieved,
-    onTarget,
-    overallComplianceRate,
-    deEscalationRate,
-    childDebriefRate,
-    staffDebriefRate,
-    medicalCheckRate,
-    notificationRate,
-    timelyRecordRate,
-    childAccountRate,
-    staffCertificationRate,
-    averageDuration,
-    averageDeEscalationTime,
-    incidentsByTimeOfDay,
-    incidentsByChild,
-    commonTriggers,
-    injuryRate,
-    complianceIssues,
+    homeId,
+    assessedAt,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    restraintQuality,
+    restraintCompliance,
+    restraintPolicy,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
   };
 }
 
-// ── Label Helpers ────────────────────────────────────────────────────────
+// ── Aggregate Strengths ──────────────────────────────────────────────────
 
-export function getInterventionTypeLabel(type: InterventionType): string {
-  const labels: Record<InterventionType, string> = {
-    physical_restraint: "Physical Restraint",
-    guided_away: "Guided Away",
-    held_briefly: "Held Briefly",
-    room_separation: "Room Separation",
-    vehicle_restraint: "Vehicle Restraint",
-  };
-  return labels[type] ?? type;
+function aggregateStrengths(
+  quality: RestraintQualityResult,
+  compliance: RestraintComplianceResult,
+  policy: RestraintPolicyResult,
+  staff: StaffRestraintReadinessResult,
+  overallScore: number,
+): string[] {
+  const strengths: string[] = [];
+
+  if (overallScore >= 80) {
+    strengths.push("Overall restraint management rated Outstanding (" + overallScore + "/100)");
+  } else if (overallScore >= 60) {
+    strengths.push("Overall restraint management rated Good (" + overallScore + "/100)");
+  }
+
+  // Include evaluators with score >= 20
+  if (quality.score >= 20) {
+    strengths.push("Restraint quality is strong (score " + quality.score + "/25)");
+  }
+  if (compliance.score >= 20) {
+    strengths.push("Restraint compliance is strong (score " + compliance.score + "/25)");
+  }
+  if (policy.score >= 20) {
+    strengths.push("Restraint policy framework is robust (score " + policy.score + "/25)");
+  }
+  if (staff.score >= 20) {
+    strengths.push("Staff restraint readiness is strong (score " + staff.score + "/25)");
+  }
+
+  strengths.push(...quality.strengths.slice(0, 2));
+  strengths.push(...compliance.strengths.slice(0, 2));
+  strengths.push(...policy.strengths.slice(0, 2));
+  strengths.push(...staff.strengths.slice(0, 2));
+
+  return strengths;
 }
 
-export function getDeEscalationLabel(method: DeEscalationMethod): string {
-  const labels: Record<DeEscalationMethod, string> = {
-    verbal_reassurance: "Verbal Reassurance",
-    distraction: "Distraction",
-    change_of_staff: "Change of Staff",
-    offered_space: "Offered Space",
-    reduced_demands: "Reduced Demands",
-    sensory_support: "Sensory Support",
-    pace_approach: "PACE Approach",
-    humour: "Humour",
-    choices_offered: "Choices Offered",
-  };
-  return labels[method] ?? method;
+// ── Aggregate Areas for Improvement ──────────────────────────────────────
+
+function aggregateAreasForImprovement(
+  quality: RestraintQualityResult,
+  compliance: RestraintComplianceResult,
+  policy: RestraintPolicyResult,
+  staff: StaffRestraintReadinessResult,
+  overallScore: number,
+): string[] {
+  const areas: string[] = [];
+
+  if (overallScore < 40) {
+    areas.push("Overall restraint management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
+  } else if (overallScore < 60) {
+    areas.push("Overall restraint management Requires Improvement (" + overallScore + "/100)");
+  }
+
+  // Include evaluators with score < 15
+  if (quality.score < 15) {
+    areas.push("Restraint quality needs improvement (score " + quality.score + "/25)");
+  }
+  if (compliance.score < 15) {
+    areas.push("Restraint compliance needs improvement (score " + compliance.score + "/25)");
+  }
+  if (policy.score < 15) {
+    areas.push("Restraint policy framework needs improvement (score " + policy.score + "/25)");
+  }
+  if (staff.score < 15) {
+    areas.push("Staff restraint readiness needs improvement (score " + staff.score + "/25)");
+  }
+
+  areas.push(...quality.concerns);
+  areas.push(...compliance.concerns);
+  areas.push(...policy.concerns);
+  areas.push(...staff.concerns);
+
+  return areas;
+}
+
+// ── Generate Actions ─────────────────────────────────────────────────────
+
+function generateActions(
+  quality: RestraintQualityResult,
+  compliance: RestraintComplianceResult,
+  policy: RestraintPolicyResult,
+  staff: StaffRestraintReadinessResult,
+  incidents: RestraintIncident[],
+): string[] {
+  const actions: string[] = [];
+
+  // URGENT when policy score = 0
+  if (policy.score === 0) {
+    actions.push("URGENT: No restraint policy in place — develop and implement comprehensive restraint reduction policy immediately");
+  }
+
+  // URGENT when staff score = 0
+  if (staff.totalStaff === 0) {
+    actions.push("URGENT: No staff restraint training records — schedule approved techniques training for all staff immediately");
+  }
+
+  // URGENT when injuries occurred
+  const injuryIncidents = incidents.filter((i) => i.injuryOccurred);
+  if (injuryIncidents.length > 0) {
+    actions.push("URGENT: " + injuryIncidents.length + " restraint incident(s) resulted in injury — conduct immediate review of techniques and proportionality");
+  }
+
+  // Conditional on rates < 50
+  if (quality.totalIncidents > 0 && quality.deEscalationRate < 50) {
+    actions.push("HIGH: De-escalation rate at " + quality.deEscalationRate + "% — ensure de-escalation is always attempted before restraint");
+  }
+
+  if (quality.totalIncidents > 0 && quality.proportionateRate < 50) {
+    actions.push("HIGH: Proportionate response rate at " + quality.proportionateRate + "% — review staff understanding of proportionality");
+  }
+
+  if (compliance.totalIncidents > 0 && compliance.bodyMapRate < 50) {
+    actions.push("HIGH: Body map completion rate at " + compliance.bodyMapRate + "% — ensure body maps are completed after every restraint");
+  }
+
+  if (compliance.totalIncidents > 0 && compliance.parentNotifiedRate < 50) {
+    actions.push("HIGH: Parent notification rate at " + compliance.parentNotifiedRate + "% — strengthen parent/carer notification processes");
+  }
+
+  if (quality.totalIncidents > 0 && quality.childViewsRate < 50) {
+    actions.push("MEDIUM: Child views recording rate at " + quality.childViewsRate + "% — ensure children's perspectives are always sought and recorded");
+  }
+
+  if (compliance.totalIncidents > 0 && compliance.debriefRate < 50) {
+    actions.push("MEDIUM: Debrief completion rate at " + compliance.debriefRate + "% — implement mandatory post-incident debrief protocol");
+  }
+
+  if (staff.totalStaff > 0 && staff.approvedTechniquesCertifiedRate < 50) {
+    actions.push("MEDIUM: Staff certification rate at " + staff.approvedTechniquesCertifiedRate + "% — schedule refresher training on approved techniques");
+  }
+
+  if (actions.length === 0) {
+    actions.push("No immediate actions required. Restraint management systems operating within expected standards.");
+  }
+
+  return actions;
+}
+
+// ── Regulatory Links ─────────────────────────────────────────────────────
+
+function generateRegulatoryLinks(): string[] {
+  return [
+    "CHR 2015 Regulation 20 — Restraint and deprivation of liberty",
+    "CHR 2015 Regulation 19 — Behaviour management (positive relationships)",
+    "CHR 2015 Regulation 35 — Behaviour management record keeping",
+    "CHR 2015 Regulation 40(4)(a) — Notification of serious events to Ofsted",
+    "Children Act 1989 s.22 — Duty to safeguard and promote welfare",
+    "Reducing the Need for Restraint and Restrictive Intervention (DfE 2019)",
+    "BILD Code of Practice for Minimising Restrictive Practices",
+  ];
 }

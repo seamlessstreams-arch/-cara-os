@@ -1,543 +1,878 @@
-// ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Medication Management Engine
-//
-// Deterministic engine for managing medication administration, storage,
-// errors, PRN protocols, and controlled drug compliance in children's homes.
-//
-// Aligned to:
-//   - CHR 2015 Reg 23 — Health and wellbeing (medication management)
-//   - NICE CG76 — Medicines adherence
-//   - SCCIF — Health & wellbeing judgement (medication administration)
-//   - Regulation 12 (Health and Social Care Act) — Safe medication handling
-//   - Misuse of Drugs Act 1971 — Controlled drug governance
-//
-// Key requirements:
-//   - All medication administered by trained staff only
-//   - MAR charts completed for every administration (no gaps)
-//   - PRN protocols in place before any as-needed administration
-//   - Controlled drugs: dual-witnessed, counted each shift, separate register
-//   - Medication errors reported, investigated, and actioned
-//   - Stock checks at regular intervals
-//   - Self-administration risk-assessed and promoted where safe
-//   - GP/pharmacy reviews at least annually
-//   - Storage: locked, correct temperature, in-date
-//
-// No AI. No external calls. Pure input → output.
-// ══════════════════════════════════════════════════════════════════════════════
+/* ──────────────────────────────────────────────────────────────
+   Medication Intelligence Engine
+
+   Pure deterministic engine for evaluating medication management
+   in a children's residential home — administration accuracy,
+   storage compliance, consent, error tracking, and staff
+   competency.
+
+   Regulatory basis:
+     - CHR 2015 Reg 23 — Health and wellbeing (medication)
+     - Misuse of Drugs Act 1971 — Controlled drug governance
+     - CQC Guidance — Managing medicines in care homes
+     - NICE CG76 — Medicines adherence
+     - SCCIF — Health & wellbeing judgement
+     - Regulation 12 (HSCA 2008) — Safe medication handling
+     - NMS 3 — Health and wellbeing standard
+
+   No AI. No external calls. Pure input → output.
+   ────────────────────────────────────────────────────────────── */
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type MedicationType =
-  | "regular"
-  | "prn"           // as needed
-  | "controlled"
-  | "otc"           // over-the-counter
+  | "regular_oral"
+  | "prn_as_needed"
+  | "controlled_drug"
   | "topical"
   | "inhaler"
-  | "supplement";
+  | "injectable"
+  | "liquid"
+  | "patch";
 
-export type AdministrationStatus =
-  | "given"
-  | "refused"
-  | "omitted_clinical"
-  | "omitted_error"
-  | "self_administered"
-  | "not_required"    // PRN not needed
-  | "delayed";
+export type AdministrationOutcome =
+  | "administered_correctly"
+  | "refused_by_child"
+  | "missed_dose"
+  | "error_occurred"
+  | "not_recorded";
 
-export type MedicationErrorSeverity =
-  | "near_miss"
-  | "minor"         // no harm
-  | "moderate"      // temporary harm
-  | "serious"       // significant harm
-  | "critical";     // life-threatening
+export type Rating =
+  | "outstanding"
+  | "good"
+  | "requires_improvement"
+  | "inadequate";
 
-export type StorageType =
-  | "locked_cabinet"
-  | "controlled_drugs_cabinet"
-  | "fridge"
-  | "child_possession";  // self-admin
+// ── Label Maps ─────────────────────────────────────────────────────────────
 
-export type SelfAdminLevel =
-  | "level_1"   // fully supervised
-  | "level_2"   // observed but self-managed
-  | "level_3"   // independent with checks
-  | "level_4";  // fully independent
+const medicationTypeLabels: Record<MedicationType, string> = {
+  regular_oral: "Regular Oral",
+  prn_as_needed: "PRN (As Needed)",
+  controlled_drug: "Controlled Drug",
+  topical: "Topical",
+  inhaler: "Inhaler",
+  injectable: "Injectable",
+  liquid: "Liquid",
+  patch: "Patch",
+};
+
+const administrationOutcomeLabels: Record<AdministrationOutcome, string> = {
+  administered_correctly: "Administered Correctly",
+  refused_by_child: "Refused by Child",
+  missed_dose: "Missed Dose",
+  error_occurred: "Error Occurred",
+  not_recorded: "Not Recorded",
+};
+
+const ratingLabels: Record<Rating, string> = {
+  outstanding: "Outstanding",
+  good: "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate: "Inadequate",
+};
+
+export function getMedicationTypeLabel(type: MedicationType): string {
+  return medicationTypeLabels[type];
+}
+
+export function getAdministrationOutcomeLabel(outcome: AdministrationOutcome): string {
+  return administrationOutcomeLabels[outcome];
+}
+
+export function getRatingLabel(rating: Rating): string {
+  return ratingLabels[rating];
+}
 
 // ── Core Interfaces ────────────────────────────────────────────────────────
 
-export interface Medication {
+export interface MedicationAdministration {
   id: string;
   childId: string;
   childName: string;
-  name: string;
-  dose: string;
-  route: string;                   // oral, topical, inhaled, etc.
-  frequency: string;               // "twice daily", "PRN", etc.
-  type: MedicationType;
-  prescribedBy: string;
-  prescribedDate: string;
-  reviewDueDate: string;
-  startDate: string;
-  endDate?: string;
-  storage: StorageType;
-  specialInstructions?: string;
-  sideEffects?: string[];
-  allergiesChecked: boolean;
+  administrationDate: string;
+  medicationType: MedicationType;
+  outcome: AdministrationOutcome;
   consentObtained: boolean;
-  selfAdminLevel?: SelfAdminLevel;
-  selfAdminAssessmentDate?: string;
-  prnProtocol?: PrnProtocol;
-  active: boolean;
+  twoStaffWitnessed: boolean;
+  documentedCorrectly: boolean;
+  sideEffectsMonitored: boolean;
+  storageCompliant: boolean;
+  marChartUpdated: boolean;
 }
 
-export interface PrnProtocol {
-  indication: string;              // when to give
-  maxDoseIn24h: string;            // e.g. "4 doses"
-  minTimeBetweenDoses: string;     // e.g. "4 hours"
-  whenToSeekHelp: string;          // escalation guidance
-  approvedBy: string;
-  approvedDate: string;
-}
-
-export interface Administration {
+export interface MedicationPolicy {
   id: string;
-  medicationId: string;
-  childId: string;
-  scheduledTime: string;
-  actualTime?: string;
-  status: AdministrationStatus;
-  administeredBy?: string;
-  witnessedBy?: string;            // required for controlled drugs
-  batchNumber?: string;
-  expiryDate?: string;
-  stockBefore?: number;
-  stockAfter?: number;
-  notes?: string;
-  prnReason?: string;              // reason for giving PRN
-  prnOutcome?: string;             // effectiveness after admin
-  refusalReason?: string;
-  omissionReason?: string;
+  medicationManagementPolicy: boolean;
+  controlledDrugsProcedure: boolean;
+  administrationProtocol: boolean;
+  storageAndDisposalPolicy: boolean;
+  errorReportingProcess: boolean;
+  consentFramework: boolean;
+  regularReview: boolean;
 }
 
-export interface MedicationError {
+export interface StaffMedicationTraining {
   id: string;
-  childId: string;
-  childName: string;
-  medicationName: string;
-  date: string;
-  errorType: string;               // wrong dose, wrong time, missed, wrong child, etc.
-  severity: MedicationErrorSeverity;
-  description: string;
-  discoveredBy: string;
-  actionsTaken: string[];
-  rootCause?: string;
-  preventativeMeasures?: string[];
-  reportedToGP: boolean;
-  reportedToOfsted: boolean;       // if significant
-  investigatedBy?: string;
-  investigationCompleted: boolean;
-  outcome?: string;
-}
-
-export interface StockCheck {
-  id: string;
-  medicationId: string;
-  date: string;
-  expectedCount: number;
-  actualCount: number;
-  discrepancy: boolean;
-  checkedBy: string;
-  witnessedBy?: string;
-  actionTaken?: string;
-}
-
-export interface ControlledDrugEntry {
-  id: string;
-  medicationId: string;
-  date: string;
-  type: "received" | "administered" | "destroyed" | "returned";
-  quantity: number;
-  runningBalance: number;
-  administeredTo?: string;
-  witnessedBy: string;
-  signedBy: string;
-  notes?: string;
+  staffId: string;
+  staffName: string;
+  medicationAdministration: boolean;
+  controlledDrugsHandling: boolean;
+  errorRecognition: boolean;
+  sideEffectsAwareness: boolean;
+  storageRequirements: boolean;
+  consentAndCapacity: boolean;
 }
 
 // ── Result Interfaces ──────────────────────────────────────────────────────
 
+export interface MedicationQualityResult {
+  totalAdministrations: number;
+  correctAdminRate: number;
+  consentRate: number;
+  witnessedRate: number;
+  sideEffectsRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
 export interface MedicationComplianceResult {
+  totalAdministrations: number;
+  documentedRate: number;
+  storageRate: number;
+  marChartRate: number;
+  typeDiversityRatio: number;
+  uniqueTypes: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface MedicationPolicyResult {
+  medicationManagementPolicy: boolean;
+  controlledDrugsProcedure: boolean;
+  administrationProtocol: boolean;
+  storageAndDisposalPolicy: boolean;
+  errorReportingProcess: boolean;
+  consentFramework: boolean;
+  regularReview: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface StaffMedicationReadinessResult {
+  totalStaff: number;
+  medicationAdministrationRate: number;
+  controlledDrugsHandlingRate: number;
+  errorRecognitionRate: number;
+  sideEffectsAwarenessRate: number;
+  storageRequirementsRate: number;
+  consentAndCapacityRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface ChildMedicationProfile {
   childId: string;
   childName: string;
-  totalMedications: number;
-  activeMedications: number;
-  issues: string[];
-  warnings: string[];
-  isCompliant: boolean;
-  marCompletionRate: number;       // % of scheduled doses with recorded outcome
-  prnProtocolsInPlace: boolean;    // all PRN meds have protocols
-  controlledDrugsCompliant: boolean;
-  reviewsUpToDate: boolean;        // all review dates current
-  consentComplete: boolean;        // all meds have consent
-  storageCompliant: boolean;
-  selfAdminAssessed: boolean;      // where applicable
-  refusalRate: number;             // % refused
-  errorCount30Days: number;
-  overdueReviews: { medication: string; dueDate: string }[];
-  missedDoses7Days: number;
+  totalAdministrations: number;
+  correctAdminRate: number;
+  consentRate: number;
+  uniqueMedTypes: number;
+  medicationScore: number;
 }
 
-export interface HomeMedicationMetrics {
+export interface MedicationIntelligence {
   homeId: string;
-  childCount: number;
-  totalActiveMedications: number;
-  controlledDrugCount: number;
-  overallMarCompletionRate: number;
-  overallComplianceRate: number;
-  errorRate30Days: number;         // errors per 100 administrations
-  errorCount30Days: number;
-  nearMissCount30Days: number;
-  refusalRate: number;
-  prnUsageRate: number;            // PRN admins as % of all admins
-  stockDiscrepancies: number;
-  overdueReviews: number;
-  selfAdminChildCount: number;
-  controlledDrugCompliant: boolean;
-  staffTrainingCompliant: boolean;
-  childrenWithIssues: { childName: string; issueCount: number }[];
-  recentErrors: { childName: string; errorType: string; severity: MedicationErrorSeverity; date: string }[];
-  complianceIssues: string[];
+  assessedAt: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: Rating;
+  medicationQuality: MedicationQualityResult;
+  medicationCompliance: MedicationComplianceResult;
+  medicationPolicy: MedicationPolicyResult;
+  staffReadiness: StaffMedicationReadinessResult;
+  childProfiles: ChildMedicationProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
 }
 
-// ── Configuration ──────────────────────────────────────────────────────────
+// ── Helpers ────────────────────────────────────────────────────────────────
 
-const REVIEW_OVERDUE_DAYS = 0;          // overdue if past review date
-const MAR_COMPLETION_TARGET = 100;       // 100% target — every dose recorded
-const ACCEPTABLE_REFUSAL_RATE = 15;      // above 15% flags concern
-const ERROR_THRESHOLD_PER_100 = 2;       // more than 2 errors per 100 admins is concerning
+export function pct(num: number, den: number): number {
+  if (den === 0) return 0;
+  return Math.round((num / den) * 100);
+}
 
-// ── Core: Evaluate Child Medication Compliance ─────────────────────────────
+export function getRating(score: number): Rating {
+  if (score >= 80) return "outstanding";
+  if (score >= 60) return "good";
+  if (score >= 40) return "requires_improvement";
+  return "inadequate";
+}
 
-export function evaluateChildMedicationCompliance(
-  medications: Medication[],
-  administrations: Administration[],
-  errors: MedicationError[],
-  childId: string,
-  now?: string,
-): MedicationComplianceResult {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const issues: string[] = [];
-  const warnings: string[] = [];
+// ── Evaluator 1: Medication Quality (0-25) ───────────────────────────────
 
-  const childMeds = medications.filter(m => m.childId === childId);
-  const activeMeds = childMeds.filter(m => m.active);
-  const childAdmins = administrations.filter(a => a.childId === childId);
-  const childErrors = errors.filter(e => e.childId === childId);
+export function evaluateMedicationQuality(
+  administrations: MedicationAdministration[],
+): MedicationQualityResult {
+  const totalAdministrations = administrations.length;
 
-  const childName = childMeds[0]?.childName ?? "Unknown";
-
-  // MAR completion rate
-  const scheduledAdmins = childAdmins.filter(a =>
-    a.status !== "not_required"
-  );
-  const completedAdmins = scheduledAdmins.filter(a =>
-    a.status === "given" || a.status === "refused" || a.status === "self_administered" || a.status === "omitted_clinical" || a.status === "delayed"
-  );
-  const marCompletionRate = scheduledAdmins.length > 0
-    ? Math.round((completedAdmins.length / scheduledAdmins.length) * 100)
-    : 100;
-
-  if (marCompletionRate < MAR_COMPLETION_TARGET) {
-    issues.push(`MAR chart incomplete (${marCompletionRate}% — gaps in recording)`);
+  if (totalAdministrations === 0) {
+    return {
+      totalAdministrations: 0,
+      correctAdminRate: 0,
+      consentRate: 0,
+      witnessedRate: 0,
+      sideEffectsRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No medication administrations recorded — quality cannot be assessed"],
+    };
   }
 
-  // PRN protocols
-  const prnMeds = activeMeds.filter(m => m.type === "prn");
-  const prnWithProtocol = prnMeds.filter(m => m.prnProtocol);
-  const prnProtocolsInPlace = prnMeds.length === 0 || prnMeds.length === prnWithProtocol.length;
-  if (!prnProtocolsInPlace) {
-    issues.push(`${prnMeds.length - prnWithProtocol.length} PRN medication(s) without protocol`);
+  const correctCount = administrations.filter(
+    (a) => a.outcome === "administered_correctly",
+  ).length;
+  const correctAdminRate = pct(correctCount, totalAdministrations);
+
+  const consentCount = administrations.filter((a) => a.consentObtained).length;
+  const consentRate = pct(consentCount, totalAdministrations);
+
+  const witnessedCount = administrations.filter((a) => a.twoStaffWitnessed).length;
+  const witnessedRate = pct(witnessedCount, totalAdministrations);
+
+  const sideEffectsCount = administrations.filter((a) => a.sideEffectsMonitored).length;
+  const sideEffectsRate = pct(sideEffectsCount, totalAdministrations);
+
+  // Weights: correctAdminRate 7 + consentRate 6 + witnessedRate 6 + sideEffectsRate 6 = 25
+  let score = 0;
+  score += (correctAdminRate / 100) * 7;
+  score += (consentRate / 100) * 6;
+  score += (witnessedRate / 100) * 6;
+  score += (sideEffectsRate / 100) * 6;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (correctAdminRate >= 80) {
+    strengths.push("Strong administration accuracy: " + correctAdminRate + "% of doses administered correctly");
+  } else if (correctAdminRate < 50) {
+    concerns.push("Administration accuracy at " + correctAdminRate + "% — significant medication errors or missed doses");
   }
 
-  // Controlled drug compliance
-  const controlledMeds = activeMeds.filter(m => m.type === "controlled");
-  const controlledAdmins = childAdmins.filter(a => {
-    const med = medications.find(m => m.id === a.medicationId);
-    return med?.type === "controlled";
-  });
-  const unwitnessedControlled = controlledAdmins.filter(a => a.status === "given" && !a.witnessedBy);
-  const controlledDrugsCompliant = unwitnessedControlled.length === 0;
-  if (!controlledDrugsCompliant) {
-    issues.push(`${unwitnessedControlled.length} controlled drug administration(s) without witness`);
+  if (consentRate >= 80) {
+    strengths.push("Excellent consent compliance: " + consentRate + "% of administrations with consent recorded");
+  } else if (consentRate < 50) {
+    concerns.push("Consent rate at " + consentRate + "% — consent not consistently obtained before administration");
   }
 
-  // Review dates
-  const overdueReviews: { medication: string; dueDate: string }[] = [];
-  for (const med of activeMeds) {
-    if (new Date(med.reviewDueDate).getTime() < currentTime) {
-      overdueReviews.push({ medication: med.name, dueDate: med.reviewDueDate });
-    }
-  }
-  const reviewsUpToDate = overdueReviews.length === 0;
-  if (!reviewsUpToDate) {
-    warnings.push(`${overdueReviews.length} medication review(s) overdue`);
+  if (witnessedRate >= 80) {
+    strengths.push("Strong dual-witness practice: " + witnessedRate + "% of administrations witnessed by two staff");
+  } else if (witnessedRate < 50) {
+    concerns.push("Witnessed rate at " + witnessedRate + "% — dual-witness requirement not met for many administrations");
   }
 
-  // Consent
-  const withoutConsent = activeMeds.filter(m => !m.consentObtained);
-  const consentComplete = withoutConsent.length === 0;
-  if (!consentComplete) {
-    issues.push(`${withoutConsent.length} medication(s) without recorded consent`);
-  }
-
-  // Storage
-  const controlledBadStorage = controlledMeds.filter(m => m.storage !== "controlled_drugs_cabinet");
-  const storageCompliant = controlledBadStorage.length === 0;
-  if (!storageCompliant) {
-    issues.push("Controlled drug(s) not stored in controlled drugs cabinet");
-  }
-
-  // Self-admin assessment
-  const selfAdminMeds = activeMeds.filter(m => m.selfAdminLevel && m.selfAdminLevel !== "level_1");
-  const selfAdminAssessed = selfAdminMeds.every(m => m.selfAdminAssessmentDate);
-  if (selfAdminMeds.length > 0 && !selfAdminAssessed) {
-    warnings.push("Self-administration in place without documented assessment");
-  }
-
-  // Refusal rate
-  const refusals = childAdmins.filter(a => a.status === "refused");
-  const refusalRate = childAdmins.length > 0
-    ? Math.round((refusals.length / childAdmins.length) * 100)
-    : 0;
-  if (refusalRate > ACCEPTABLE_REFUSAL_RATE) {
-    warnings.push(`High medication refusal rate (${refusalRate}%) — consider GP/child review`);
-  }
-
-  // Errors in last 30 days
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
-  const recentErrors = childErrors.filter(e => new Date(e.date).getTime() > thirtyDaysAgo);
-  if (recentErrors.length > 0) {
-    warnings.push(`${recentErrors.length} medication error(s) in last 30 days`);
-  }
-  const uninvestigatedErrors = recentErrors.filter(e => !e.investigationCompleted);
-  if (uninvestigatedErrors.length > 0) {
-    issues.push(`${uninvestigatedErrors.length} medication error(s) not yet investigated`);
-  }
-
-  // Missed doses in 7 days
-  const sevenDaysAgo = currentTime - 7 * 24 * 60 * 60 * 1000;
-  const recentAdmins = childAdmins.filter(a => new Date(a.scheduledTime).getTime() > sevenDaysAgo);
-  const missedDoses7Days = recentAdmins.filter(a => a.status === "omitted_error").length;
-  if (missedDoses7Days > 0) {
-    issues.push(`${missedDoses7Days} missed dose(s) in last 7 days due to error`);
-  }
-
-  // Allergies check
-  const uncheckedAllergies = activeMeds.filter(m => !m.allergiesChecked);
-  if (uncheckedAllergies.length > 0) {
-    issues.push(`${uncheckedAllergies.length} medication(s) without allergy check recorded`);
+  if (sideEffectsRate >= 80) {
+    strengths.push("Good side-effects monitoring: " + sideEffectsRate + "% of administrations with monitoring recorded");
+  } else if (sideEffectsRate < 50) {
+    concerns.push("Side-effects monitoring at " + sideEffectsRate + "% — children may not be monitored after medication");
   }
 
   return {
-    childId,
-    childName,
-    totalMedications: childMeds.length,
-    activeMedications: activeMeds.length,
-    issues,
-    warnings,
-    isCompliant: issues.length === 0,
-    marCompletionRate,
-    prnProtocolsInPlace,
-    controlledDrugsCompliant,
-    reviewsUpToDate,
-    consentComplete,
-    storageCompliant,
-    selfAdminAssessed,
-    refusalRate,
-    errorCount30Days: recentErrors.length,
-    overdueReviews,
-    missedDoses7Days,
+    totalAdministrations,
+    correctAdminRate,
+    consentRate,
+    witnessedRate,
+    sideEffectsRate,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-// ── Core: Calculate Home Medication Metrics ────────────────────────────────
+// ── Evaluator 2: Medication Compliance (0-25) ────────────────────────────
 
-export function calculateHomeMedicationMetrics(
-  medications: Medication[],
-  administrations: Administration[],
-  errors: MedicationError[],
-  stockChecks: StockCheck[],
+export function evaluateMedicationCompliance(
+  administrations: MedicationAdministration[],
+): MedicationComplianceResult {
+  const totalAdministrations = administrations.length;
+
+  if (totalAdministrations === 0) {
+    return {
+      totalAdministrations: 0,
+      documentedRate: 0,
+      storageRate: 0,
+      marChartRate: 0,
+      typeDiversityRatio: 0,
+      uniqueTypes: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No medication administrations recorded — compliance cannot be assessed"],
+    };
+  }
+
+  const documentedCount = administrations.filter((a) => a.documentedCorrectly).length;
+  const documentedRate = pct(documentedCount, totalAdministrations);
+
+  const storageCount = administrations.filter((a) => a.storageCompliant).length;
+  const storageRate = pct(storageCount, totalAdministrations);
+
+  const marChartCount = administrations.filter((a) => a.marChartUpdated).length;
+  const marChartRate = pct(marChartCount, totalAdministrations);
+
+  const uniqueTypesSet = new Set(administrations.map((a) => a.medicationType));
+  const uniqueTypes = uniqueTypesSet.size;
+  const typeDiversityRatio = Math.round((uniqueTypes / 8) * 100) / 100;
+
+  // Weights: documentedRate 8 + storageRate 7 + marChartRate 5 + typeDiversityRatio 5 = 25
+  let score = 0;
+  score += (documentedRate / 100) * 8;
+  score += (storageRate / 100) * 7;
+  score += (marChartRate / 100) * 5;
+  score += typeDiversityRatio * 5;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (documentedRate >= 90) {
+    strengths.push("Thorough documentation: " + documentedRate + "% of administrations correctly documented");
+  } else if (documentedRate < 50) {
+    concerns.push("Documentation rate at " + documentedRate + "% — administration records incomplete");
+  }
+
+  if (storageRate >= 90) {
+    strengths.push("Excellent storage compliance: " + storageRate + "% of medications stored correctly");
+  } else if (storageRate < 50) {
+    concerns.push("Storage compliance at " + storageRate + "% — medications may not be stored safely");
+  }
+
+  if (marChartRate >= 90) {
+    strengths.push("MAR chart completion strong: " + marChartRate + "% of charts updated correctly");
+  } else if (marChartRate < 50) {
+    concerns.push("MAR chart rate at " + marChartRate + "% — significant gaps in MAR chart recording");
+  }
+
+  if (uniqueTypes >= 6) {
+    strengths.push("Comprehensive medication type coverage: " + uniqueTypes + " of 8 types managed");
+  } else if (uniqueTypes <= 2) {
+    concerns.push("Only " + uniqueTypes + " medication type(s) recorded — limited medication diversity");
+  }
+
+  return {
+    totalAdministrations,
+    documentedRate,
+    storageRate,
+    marChartRate,
+    typeDiversityRatio,
+    uniqueTypes,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Evaluator 3: Medication Policy (0-25) ────────────────────────────────
+
+export function evaluateMedicationPolicy(
+  policy: MedicationPolicy | null,
+): MedicationPolicyResult {
+  if (policy === null) {
+    return {
+      medicationManagementPolicy: false,
+      controlledDrugsProcedure: false,
+      administrationProtocol: false,
+      storageAndDisposalPolicy: false,
+      errorReportingProcess: false,
+      consentFramework: false,
+      regularReview: false,
+      score: 0,
+      strengths: [],
+      concerns: ["No medication policy in place — URGENT: develop comprehensive medication management policy immediately"],
+    };
+  }
+
+  // 7 booleans weighted: 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.medicationManagementPolicy) score += 4;
+  if (policy.controlledDrugsProcedure) score += 4;
+  if (policy.administrationProtocol) score += 4;
+  if (policy.storageAndDisposalPolicy) score += 4;
+  if (policy.errorReportingProcess) score += 3;
+  if (policy.consentFramework) score += 3;
+  if (policy.regularReview) score += 3;
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  const trueCount = [
+    policy.medicationManagementPolicy,
+    policy.controlledDrugsProcedure,
+    policy.administrationProtocol,
+    policy.storageAndDisposalPolicy,
+    policy.errorReportingProcess,
+    policy.consentFramework,
+    policy.regularReview,
+  ].filter(Boolean).length;
+
+  if (trueCount === 7) {
+    strengths.push("Complete medication policy framework in place (7/7 components)");
+  } else if (trueCount >= 5) {
+    strengths.push("Good policy coverage: " + trueCount + "/7 medication policy components in place");
+  }
+
+  if (!policy.medicationManagementPolicy) {
+    concerns.push("No medication management policy — staff may lack clear guidance on medication procedures");
+  }
+  if (!policy.controlledDrugsProcedure) {
+    concerns.push("No controlled drugs procedure — controlled drug governance at risk");
+  }
+  if (!policy.administrationProtocol) {
+    concerns.push("No administration protocol — inconsistent medication administration may result");
+  }
+  if (!policy.storageAndDisposalPolicy) {
+    concerns.push("No storage and disposal policy — medications may not be stored or disposed of safely");
+  }
+  if (!policy.errorReportingProcess) {
+    concerns.push("No error reporting process — medication errors may go unrecorded and unaddressed");
+  }
+  if (!policy.consentFramework) {
+    concerns.push("No consent framework — consent for medication may not be properly managed");
+  }
+  if (!policy.regularReview) {
+    concerns.push("No regular review process — medication policies may become outdated");
+  }
+
+  return {
+    medicationManagementPolicy: policy.medicationManagementPolicy,
+    controlledDrugsProcedure: policy.controlledDrugsProcedure,
+    administrationProtocol: policy.administrationProtocol,
+    storageAndDisposalPolicy: policy.storageAndDisposalPolicy,
+    errorReportingProcess: policy.errorReportingProcess,
+    consentFramework: policy.consentFramework,
+    regularReview: policy.regularReview,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Evaluator 4: Staff Medication Readiness (0-25) ───────────────────────
+
+export function evaluateStaffMedicationReadiness(
+  training: StaffMedicationTraining[],
+): StaffMedicationReadinessResult {
+  const totalStaff = training.length;
+
+  if (totalStaff === 0) {
+    return {
+      totalStaff: 0,
+      medicationAdministrationRate: 0,
+      controlledDrugsHandlingRate: 0,
+      errorRecognitionRate: 0,
+      sideEffectsAwarenessRate: 0,
+      storageRequirementsRate: 0,
+      consentAndCapacityRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No staff training records — URGENT: schedule medication training for all staff"],
+    };
+  }
+
+  const adminCount = training.filter((t) => t.medicationAdministration).length;
+  const medicationAdministrationRate = pct(adminCount, totalStaff);
+
+  const cdCount = training.filter((t) => t.controlledDrugsHandling).length;
+  const controlledDrugsHandlingRate = pct(cdCount, totalStaff);
+
+  const errorCount = training.filter((t) => t.errorRecognition).length;
+  const errorRecognitionRate = pct(errorCount, totalStaff);
+
+  const sideEffectsCount = training.filter((t) => t.sideEffectsAwareness).length;
+  const sideEffectsAwarenessRate = pct(sideEffectsCount, totalStaff);
+
+  const storageCount = training.filter((t) => t.storageRequirements).length;
+  const storageRequirementsRate = pct(storageCount, totalStaff);
+
+  const consentCount = training.filter((t) => t.consentAndCapacity).length;
+  const consentAndCapacityRate = pct(consentCount, totalStaff);
+
+  // Weights: 6+5+5+4+3+2 = 25
+  let score = 0;
+  score += (medicationAdministrationRate / 100) * 6;
+  score += (controlledDrugsHandlingRate / 100) * 5;
+  score += (errorRecognitionRate / 100) * 5;
+  score += (sideEffectsAwarenessRate / 100) * 4;
+  score += (storageRequirementsRate / 100) * 3;
+  score += (consentAndCapacityRate / 100) * 2;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
+
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  if (medicationAdministrationRate >= 80) {
+    strengths.push("Strong medication administration training: " + medicationAdministrationRate + "% of staff");
+  } else if (medicationAdministrationRate < 50) {
+    concerns.push("Medication administration training at " + medicationAdministrationRate + "% — foundational training needed");
+  }
+
+  if (controlledDrugsHandlingRate >= 80) {
+    strengths.push("Good controlled drugs handling competency: " + controlledDrugsHandlingRate + "%");
+  } else if (controlledDrugsHandlingRate < 50) {
+    concerns.push("Controlled drugs handling at " + controlledDrugsHandlingRate + "% — staff may not handle controlled drugs safely");
+  }
+
+  if (errorRecognitionRate >= 80) {
+    strengths.push("Strong error recognition skills: " + errorRecognitionRate + "% of staff trained");
+  } else if (errorRecognitionRate < 50) {
+    concerns.push("Error recognition at " + errorRecognitionRate + "% — medication errors may go undetected");
+  }
+
+  if (sideEffectsAwarenessRate >= 80) {
+    strengths.push("Good side-effects awareness: " + sideEffectsAwarenessRate + "% of staff knowledgeable");
+  } else if (sideEffectsAwarenessRate < 50) {
+    concerns.push("Side-effects awareness at " + sideEffectsAwarenessRate + "% — staff may not recognise adverse reactions");
+  }
+
+  if (storageRequirementsRate >= 80) {
+    strengths.push("Storage requirements well understood: " + storageRequirementsRate + "% of staff trained");
+  } else if (storageRequirementsRate < 50) {
+    concerns.push("Storage requirements knowledge at " + storageRequirementsRate + "% — medications may not be stored correctly");
+  }
+
+  if (consentAndCapacityRate >= 80) {
+    strengths.push("Consent and capacity skills strong: " + consentAndCapacityRate + "% of staff competent");
+  } else if (consentAndCapacityRate < 50) {
+    concerns.push("Consent and capacity skills at " + consentAndCapacityRate + "% — consent processes may be inadequate");
+  }
+
+  return {
+    totalStaff,
+    medicationAdministrationRate,
+    controlledDrugsHandlingRate,
+    errorRecognitionRate,
+    sideEffectsAwarenessRate,
+    storageRequirementsRate,
+    consentAndCapacityRate,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Build Child Medication Profiles ──────────────────────────────────────
+
+export function buildChildMedicationProfiles(
+  administrations: MedicationAdministration[],
+): ChildMedicationProfile[] {
+  if (administrations.length === 0) return [];
+
+  const childMap = new Map<
+    string,
+    { childId: string; childName: string; administrations: MedicationAdministration[] }
+  >();
+
+  for (const a of administrations) {
+    if (!childMap.has(a.childId)) {
+      childMap.set(a.childId, { childId: a.childId, childName: a.childName, administrations: [] });
+    }
+    childMap.get(a.childId)!.administrations.push(a);
+  }
+
+  return Array.from(childMap.values()).map((child) => {
+    const total = child.administrations.length;
+
+    const correctCount = child.administrations.filter(
+      (a) => a.outcome === "administered_correctly",
+    ).length;
+    const correctAdminRate = pct(correctCount, total);
+
+    const consentCount = child.administrations.filter((a) => a.consentObtained).length;
+    const consentRate = pct(consentCount, total);
+
+    const uniqueTypesSet = new Set(child.administrations.map((a) => a.medicationType));
+    const uniqueMedTypes = uniqueTypesSet.size;
+
+    // freq: >=10 administrations -> 2, >=5 -> 1, else 0
+    let frequencyScore = 0;
+    if (total >= 10) frequencyScore = 2;
+    else if (total >= 5) frequencyScore = 1;
+
+    // rate1 (correctAdminRate): >=80 -> 3, >=60 -> 2, >=40 -> 1, else 0
+    let rate1Score = 0;
+    if (correctAdminRate >= 80) rate1Score = 3;
+    else if (correctAdminRate >= 60) rate1Score = 2;
+    else if (correctAdminRate >= 40) rate1Score = 1;
+
+    // rate2 (consentRate): same thresholds
+    let rate2Score = 0;
+    if (consentRate >= 80) rate2Score = 3;
+    else if (consentRate >= 60) rate2Score = 2;
+    else if (consentRate >= 40) rate2Score = 1;
+
+    // diversity (unique med types): >=4 -> 2, >=2 -> 1, else 0
+    let diversityBonus = 0;
+    if (uniqueMedTypes >= 4) diversityBonus = 2;
+    else if (uniqueMedTypes >= 2) diversityBonus = 1;
+
+    const medicationScore = Math.min(10, frequencyScore + rate1Score + rate2Score + diversityBonus);
+
+    return {
+      childId: child.childId,
+      childName: child.childName,
+      totalAdministrations: total,
+      correctAdminRate,
+      consentRate,
+      uniqueMedTypes,
+      medicationScore,
+    };
+  });
+}
+
+// ── Orchestrator ──────────────────────────────────────────────────────────
+
+export function generateMedicationIntelligence(
+  administrations: MedicationAdministration[],
+  policy: MedicationPolicy | null,
+  training: StaffMedicationTraining[],
   homeId: string,
-  staffMedicationTrained: number,
-  totalStaff: number,
-  now?: string,
-): HomeMedicationMetrics {
-  const currentTime = now ? new Date(now).getTime() : Date.now();
-  const thirtyDaysAgo = currentTime - 30 * 24 * 60 * 60 * 1000;
+  periodStart: string,
+  periodEnd: string,
+): MedicationIntelligence {
+  const assessedAt = new Date().toISOString();
 
-  const activeMeds = medications.filter(m => m.active);
-  const childIds = [...new Set(activeMeds.map(m => m.childId))];
-
-  // Total counts
-  const controlledDrugCount = activeMeds.filter(m => m.type === "controlled").length;
-
-  // MAR completion
-  const recentAdmins = administrations.filter(a => new Date(a.scheduledTime).getTime() > thirtyDaysAgo);
-  const scheduledRecent = recentAdmins.filter(a => a.status !== "not_required");
-  const completedRecent = scheduledRecent.filter(a =>
-    a.status === "given" || a.status === "refused" || a.status === "self_administered" || a.status === "omitted_clinical" || a.status === "delayed"
+  // Filter administrations to period
+  const periodAdministrations = administrations.filter(
+    (a) => a.administrationDate >= periodStart && a.administrationDate <= periodEnd,
   );
-  const overallMarCompletionRate = scheduledRecent.length > 0
-    ? Math.round((completedRecent.length / scheduledRecent.length) * 100)
-    : 100;
 
-  // Per-child compliance
-  const childResults = childIds.map(childId =>
-    evaluateChildMedicationCompliance(medications, administrations, errors, childId, now)
+  // Evaluate each layer
+  const medicationQuality = evaluateMedicationQuality(periodAdministrations);
+  const medicationCompliance = evaluateMedicationCompliance(periodAdministrations);
+  const medicationPolicy = evaluateMedicationPolicy(policy);
+  const staffReadiness = evaluateStaffMedicationReadiness(training);
+
+  // Build child profiles
+  const childProfiles = buildChildMedicationProfiles(periodAdministrations);
+
+  // Overall score capped at 100
+  const overallScore = Math.min(
+    100,
+    Math.round(
+      medicationQuality.score +
+      medicationCompliance.score +
+      medicationPolicy.score +
+      staffReadiness.score,
+    ),
   );
-  const compliantChildren = childResults.filter(r => r.isCompliant);
-  const overallComplianceRate = childResults.length > 0
-    ? Math.round((compliantChildren.length / childResults.length) * 100)
-    : 100;
 
-  // Error rate
-  const recentErrors = errors.filter(e => new Date(e.date).getTime() > thirtyDaysAgo);
-  const nearMisses = recentErrors.filter(e => e.severity === "near_miss");
-  const totalAdmins30Days = scheduledRecent.length;
-  const errorRate30Days = totalAdmins30Days > 0
-    ? Math.round((recentErrors.length / totalAdmins30Days) * 100 * 10) / 10
-    : 0;
+  const rating = getRating(overallScore);
 
-  // Refusal rate
-  const refusals = recentAdmins.filter(a => a.status === "refused");
-  const refusalRate = scheduledRecent.length > 0
-    ? Math.round((refusals.length / scheduledRecent.length) * 100)
-    : 0;
+  // Aggregate strengths
+  const strengths = aggregateStrengths(
+    medicationQuality, medicationCompliance, medicationPolicy, staffReadiness, overallScore,
+  );
 
-  // PRN usage rate
-  const prnAdmins = recentAdmins.filter(a => {
-    const med = medications.find(m => m.id === a.medicationId);
-    return med?.type === "prn" && a.status === "given";
-  });
-  const totalGiven = recentAdmins.filter(a => a.status === "given" || a.status === "self_administered").length;
-  const prnUsageRate = totalGiven > 0
-    ? Math.round((prnAdmins.length / totalGiven) * 100)
-    : 0;
+  // Aggregate areas for improvement
+  const areasForImprovement = aggregateAreasForImprovement(
+    medicationQuality, medicationCompliance, medicationPolicy, staffReadiness, overallScore,
+  );
 
-  // Stock discrepancies
-  const recentStockChecks = stockChecks.filter(sc => new Date(sc.date).getTime() > thirtyDaysAgo);
-  const stockDiscrepancies = recentStockChecks.filter(sc => sc.discrepancy).length;
+  // Generate actions
+  const actions = generateActions(
+    medicationQuality, medicationCompliance, medicationPolicy, staffReadiness, periodAdministrations, childProfiles,
+  );
 
-  // Overdue reviews
-  const overdueReviews = activeMeds.filter(m => new Date(m.reviewDueDate).getTime() < currentTime).length;
-
-  // Self-admin
-  const selfAdminChildCount = childIds.filter(childId => {
-    const childMeds = activeMeds.filter(m => m.childId === childId);
-    return childMeds.some(m => m.selfAdminLevel && m.selfAdminLevel !== "level_1");
-  }).length;
-
-  // Controlled drug compliance
-  const controlledAdmins = administrations.filter(a => {
-    const med = medications.find(m => m.id === a.medicationId);
-    return med?.type === "controlled" && a.status === "given";
-  });
-  const allWitnessed = controlledAdmins.every(a => a.witnessedBy);
-  const controlledDrugCompliant = allWitnessed && stockDiscrepancies === 0;
-
-  // Staff training
-  const staffTrainingCompliant = totalStaff > 0 && (staffMedicationTrained / totalStaff) >= 0.8;
-
-  // Children with issues
-  const childrenWithIssues = childResults
-    .filter(r => r.issues.length > 0)
-    .map(r => ({ childName: r.childName, issueCount: r.issues.length }))
-    .sort((a, b) => b.issueCount - a.issueCount);
-
-  // Recent errors for display
-  const recentErrorsDisplay = recentErrors
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5)
-    .map(e => ({
-      childName: e.childName,
-      errorType: e.errorType,
-      severity: e.severity,
-      date: e.date,
-    }));
-
-  // Compliance issues
-  const allIssues = childResults.flatMap(r => r.issues);
-  const complianceIssues = [...new Set(allIssues)];
+  // Regulatory links
+  const regulatoryLinks = generateRegulatoryLinks();
 
   return {
     homeId,
-    childCount: childIds.length,
-    totalActiveMedications: activeMeds.length,
-    controlledDrugCount,
-    overallMarCompletionRate,
-    overallComplianceRate,
-    errorRate30Days,
-    errorCount30Days: recentErrors.length,
-    nearMissCount30Days: nearMisses.length,
-    refusalRate,
-    prnUsageRate,
-    stockDiscrepancies,
-    overdueReviews,
-    selfAdminChildCount,
-    controlledDrugCompliant,
-    staffTrainingCompliant,
-    childrenWithIssues,
-    recentErrors: recentErrorsDisplay,
-    complianceIssues,
+    assessedAt,
+    periodStart,
+    periodEnd,
+    overallScore,
+    rating,
+    medicationQuality,
+    medicationCompliance,
+    medicationPolicy,
+    staffReadiness,
+    childProfiles,
+    strengths,
+    areasForImprovement,
+    actions,
+    regulatoryLinks,
   };
 }
 
-// ── Helpers ──────────────────────────────────────────────────────────────
+// ── Aggregate Strengths ──────────────────────────────────────────────────
 
-export function getMedicationTypeLabel(type: MedicationType): string {
-  const labels: Record<MedicationType, string> = {
-    regular: "Regular",
-    prn: "PRN (As Needed)",
-    controlled: "Controlled Drug",
-    otc: "Over-the-Counter",
-    topical: "Topical",
-    inhaler: "Inhaler",
-    supplement: "Supplement",
-  };
-  return labels[type] ?? type;
+function aggregateStrengths(
+  quality: MedicationQualityResult,
+  compliance: MedicationComplianceResult,
+  policy: MedicationPolicyResult,
+  staff: StaffMedicationReadinessResult,
+  overallScore: number,
+): string[] {
+  const strengths: string[] = [];
+
+  if (overallScore >= 80) {
+    strengths.push("Overall medication management rated Outstanding (" + overallScore + "/100)");
+  } else if (overallScore >= 60) {
+    strengths.push("Overall medication management rated Good (" + overallScore + "/100)");
+  }
+
+  // Include evaluators with score >= 20
+  if (quality.score >= 20) {
+    strengths.push("Medication administration quality is strong (score " + quality.score + "/25)");
+  }
+  if (compliance.score >= 20) {
+    strengths.push("Medication compliance is strong (score " + compliance.score + "/25)");
+  }
+  if (policy.score >= 20) {
+    strengths.push("Medication policy framework is robust (score " + policy.score + "/25)");
+  }
+  if (staff.score >= 20) {
+    strengths.push("Staff medication readiness is strong (score " + staff.score + "/25)");
+  }
+
+  strengths.push(...quality.strengths.slice(0, 2));
+  strengths.push(...compliance.strengths.slice(0, 2));
+  strengths.push(...policy.strengths.slice(0, 2));
+  strengths.push(...staff.strengths.slice(0, 2));
+
+  return strengths;
 }
 
-export function getAdministrationStatusLabel(status: AdministrationStatus): string {
-  const labels: Record<AdministrationStatus, string> = {
-    given: "Given",
-    refused: "Refused",
-    omitted_clinical: "Omitted (Clinical)",
-    omitted_error: "Missed (Error)",
-    self_administered: "Self-Administered",
-    not_required: "Not Required",
-    delayed: "Delayed",
-  };
-  return labels[status] ?? status;
+// ── Aggregate Areas for Improvement ──────────────────────────────────────
+
+function aggregateAreasForImprovement(
+  quality: MedicationQualityResult,
+  compliance: MedicationComplianceResult,
+  policy: MedicationPolicyResult,
+  staff: StaffMedicationReadinessResult,
+  overallScore: number,
+): string[] {
+  const areas: string[] = [];
+
+  if (overallScore < 40) {
+    areas.push("Overall medication management rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
+  } else if (overallScore < 60) {
+    areas.push("Overall medication management Requires Improvement (" + overallScore + "/100)");
+  }
+
+  // Include evaluators with score < 15
+  if (quality.score < 15) {
+    areas.push("Medication administration quality needs improvement (score " + quality.score + "/25)");
+  }
+  if (compliance.score < 15) {
+    areas.push("Medication compliance needs improvement (score " + compliance.score + "/25)");
+  }
+  if (policy.score < 15) {
+    areas.push("Medication policy framework needs improvement (score " + policy.score + "/25)");
+  }
+  if (staff.score < 15) {
+    areas.push("Staff medication readiness needs improvement (score " + staff.score + "/25)");
+  }
+
+  areas.push(...quality.concerns);
+  areas.push(...compliance.concerns);
+  areas.push(...policy.concerns);
+  areas.push(...staff.concerns);
+
+  return areas;
 }
 
-export function getErrorSeverityLabel(severity: MedicationErrorSeverity): string {
-  const labels: Record<MedicationErrorSeverity, string> = {
-    near_miss: "Near Miss",
-    minor: "Minor (No Harm)",
-    moderate: "Moderate",
-    serious: "Serious",
-    critical: "Critical",
-  };
-  return labels[severity] ?? severity;
+// ── Generate Actions ─────────────────────────────────────────────────────
+
+function generateActions(
+  quality: MedicationQualityResult,
+  compliance: MedicationComplianceResult,
+  policy: MedicationPolicyResult,
+  staff: StaffMedicationReadinessResult,
+  administrations: MedicationAdministration[],
+  childProfiles: ChildMedicationProfile[],
+): string[] {
+  const actions: string[] = [];
+
+  // URGENT when policy score = 0
+  if (policy.score === 0) {
+    actions.push("URGENT: No medication policy in place — develop and implement comprehensive medication management policy immediately");
+  }
+
+  // URGENT when staff score = 0
+  if (staff.totalStaff === 0) {
+    actions.push("URGENT: No staff medication training records — schedule medication competency training for all staff immediately");
+  }
+
+  // URGENT when errors occurred
+  const errorAdmins = administrations.filter((a) => a.outcome === "error_occurred");
+  if (errorAdmins.length > 0) {
+    actions.push("URGENT: " + errorAdmins.length + " medication error(s) recorded — investigate each error, implement corrective actions, and review administration procedures");
+  }
+
+  // Conditional on rates < 50
+  if (quality.totalAdministrations > 0 && quality.correctAdminRate < 50) {
+    actions.push("HIGH: Administration accuracy at " + quality.correctAdminRate + "% — review medication administration procedures and retrain staff");
+  }
+
+  if (quality.totalAdministrations > 0 && quality.consentRate < 50) {
+    actions.push("HIGH: Consent rate at " + quality.consentRate + "% — ensure consent is obtained and documented before every administration");
+  }
+
+  if (compliance.totalAdministrations > 0 && compliance.documentedRate < 50) {
+    actions.push("HIGH: Documentation rate at " + compliance.documentedRate + "% — improve medication recording practices");
+  }
+
+  if (compliance.totalAdministrations > 0 && compliance.storageRate < 50) {
+    actions.push("HIGH: Storage compliance at " + compliance.storageRate + "% — audit all medication storage immediately");
+  }
+
+  if (quality.totalAdministrations > 0 && quality.witnessedRate < 50) {
+    actions.push("MEDIUM: Witnessed rate at " + quality.witnessedRate + "% — reinforce dual-witness requirement for medication administration");
+  }
+
+  if (compliance.totalAdministrations > 0 && compliance.marChartRate < 50) {
+    actions.push("MEDIUM: MAR chart completion at " + compliance.marChartRate + "% — ensure MAR charts are updated after every administration");
+  }
+
+  if (staff.totalStaff > 0 && staff.medicationAdministrationRate < 50) {
+    actions.push("MEDIUM: Staff medication training at " + staff.medicationAdministrationRate + "% — schedule refresher training for all staff");
+  }
+
+  // Children with low scores
+  const lowScoreChildren = childProfiles.filter((p) => p.medicationScore <= 3);
+  if (lowScoreChildren.length > 0) {
+    actions.push("MEDIUM: " + lowScoreChildren.length + " child(ren) with low medication scores — review individual medication management plans");
+  }
+
+  if (actions.length === 0) {
+    actions.push("No immediate actions required. Medication management systems operating within expected standards.");
+  }
+
+  return actions;
 }
 
-export function getSelfAdminLevelLabel(level: SelfAdminLevel): string {
-  const labels: Record<SelfAdminLevel, string> = {
-    level_1: "Level 1 — Fully Supervised",
-    level_2: "Level 2 — Observed",
-    level_3: "Level 3 — Independent with Checks",
-    level_4: "Level 4 — Fully Independent",
-  };
-  return labels[level] ?? level;
+// ── Regulatory Links ─────────────────────────────────────────────────────
+
+function generateRegulatoryLinks(): string[] {
+  return [
+    "CHR 2015 Regulation 23 — Health and wellbeing (medication management)",
+    "Misuse of Drugs Act 1971 — Controlled drug governance and safe handling",
+    "CQC Guidance — Managing medicines in care homes",
+    "NICE CG76 — Medicines adherence and safe administration",
+    "SCCIF — Health and wellbeing judgement (medication)",
+    "Regulation 12 (HSCA 2008) — Safe care and treatment (medication)",
+    "NMS 3 — Health and wellbeing standard (medication management)",
+  ];
 }

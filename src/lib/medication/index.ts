@@ -1,28 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Medication Management — Public API
+// Cornerstone Medication Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  evaluateChildMedicationCompliance,
-  calculateHomeMedicationMetrics,
+  pct,
+  getRating,
   getMedicationTypeLabel,
-  getAdministrationStatusLabel,
-  getErrorSeverityLabel,
-  getSelfAdminLevelLabel,
+  getAdministrationOutcomeLabel,
+  getRatingLabel,
+  evaluateMedicationQuality,
+  evaluateMedicationCompliance,
+  evaluateMedicationPolicy,
+  evaluateStaffMedicationReadiness,
+  buildChildMedicationProfiles,
+  generateMedicationIntelligence,
 } from "./medication-engine";
 
 export type {
   MedicationType,
-  AdministrationStatus,
-  MedicationErrorSeverity,
-  StorageType,
-  SelfAdminLevel,
-  Medication,
-  PrnProtocol,
-  Administration,
-  MedicationError,
-  StockCheck,
-  ControlledDrugEntry,
+  AdministrationOutcome,
+  Rating,
+  MedicationAdministration,
+  MedicationPolicy,
+  StaffMedicationTraining,
+  MedicationQualityResult,
   MedicationComplianceResult,
-  HomeMedicationMetrics,
+  MedicationPolicyResult,
+  StaffMedicationReadinessResult,
+  ChildMedicationProfile,
+  MedicationIntelligence,
 } from "./medication-engine";

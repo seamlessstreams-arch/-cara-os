@@ -1,254 +1,394 @@
-// ════════════════════════════════════════════════════════════════════════════���═
-// RestraintDashboardWidget — Restraint & Physical Intervention dashboard card
-// ══════════════════════════════════════════════════════════════════════════════
-
 "use client";
 
-import { useEffect, useState } from "react";
+// ══════════════════════════════════════════════════════════════════════════════
+// RESTRAINT DASHBOARD WIDGET
+//
+// Displays the 4-layer restraint intelligence:
+// - Overall score with rating
+// - Layer scores: restraint quality, compliance, policy, staff readiness
+// - Child restraint profiles
+// - Strengths, areas for improvement, and actions
+// - Regulatory references
+// ══════════════════════════════════════════════════════════════════════════════
 
-interface RecentRecord {
-  id: string;
-  childName: string;
-  date: string;
-  interventionType: string;
-  durationMinutes: number;
-  trigger: string;
-  deEscalationMethods: number;
-  deEscalationDuration: number;
-  isCompliant: boolean;
-  issues: number;
-}
+import { useState, useEffect } from "react";
 
-interface ChildCount {
-  childName: string;
-  count: number;
-}
+// ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
-interface TimePeriod {
-  period: string;
-  count: number;
-}
-
-interface TriggerCount {
-  trigger: string;
-  count: number;
-}
-
-interface Metrics {
-  totalRestraints30Days: number;
-  totalRestraints90Days: number;
-  averagePerMonth: number;
-  reductionAchieved: number;
-  onTarget: boolean;
-  overallComplianceRate: number;
+interface RestraintQualityData {
+  totalIncidents: number;
   deEscalationRate: number;
-  childDebriefRate: number;
-  staffDebriefRate: number;
-  medicalCheckRate: number;
-  averageDuration: number;
-  averageDeEscalationTime: number;
-  injuryRate: number;
-  childAccountRate: number;
+  proportionateRate: number;
+  noInjuryRate: number;
+  childViewsRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-interface DashboardData {
-  metrics: Metrics;
-  recentRecords: RecentRecord[];
-  incidentsByChild: ChildCount[];
-  incidentsByTimeOfDay: TimePeriod[];
-  commonTriggers: TriggerCount[];
-  complianceIssues: string[];
+interface RestraintComplianceData {
+  totalIncidents: number;
+  bodyMapRate: number;
+  parentNotifiedRate: number;
+  ofstedNotifiedRate: number;
+  debriefRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-interface Props {
-  homeId?: string;
+interface RestraintPolicyData {
+  restraintReductionStrategy: boolean;
+  approvedTechniquesOnly: boolean;
+  deEscalationFirstPolicy: boolean;
+  incidentReportingProtocol: boolean;
+  bodyMapProtocol: boolean;
+  notificationProcedure: boolean;
+  regularReview: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
 }
 
-const INTERVENTION_LABELS: Record<string, string> = {
-  physical_restraint: "Restraint",
-  guided_away: "Guided",
-  held_briefly: "Held",
-  room_separation: "Separated",
-  vehicle_restraint: "Vehicle",
-};
+interface StaffReadinessData {
+  totalStaff: number;
+  approvedTechniquesCertifiedRate: number;
+  deEscalationSkillsRate: number;
+  proportionalityUnderstandingRate: number;
+  incidentReportingRate: number;
+  childRightsAwarenessRate: number;
+  postIncidentSupportRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
 
-export function RestraintDashboardWidget({ homeId = "home-oak" }: Props) {
-  const [data, setData] = useState<DashboardData | null>(null);
+interface ChildRestraintProfileData {
+  childId: string;
+  childName: string;
+  totalIncidents: number;
+  deEscalationRate: number;
+  proportionateRate: number;
+  injuryCount: number;
+  restraintScore: number;
+}
+
+interface RestraintData {
+  homeId: string;
+  assessedAt: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: string;
+  restraintQuality: RestraintQualityData;
+  restraintCompliance: RestraintComplianceData;
+  restraintPolicy: RestraintPolicyData;
+  staffReadiness: StaffReadinessData;
+  childProfiles: ChildRestraintProfileData[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
+}
+
+// ── Inline Components ─────────────────────────────────────────────────────
+
+function ScoreBar({ label, score, max }: { label: string; score: number; max: number }) {
+  const pctVal = max > 0 ? Math.round((score / max) * 100) : 0;
+  const colour =
+    pctVal >= 80 ? "bg-green-500" : pctVal >= 60 ? "bg-amber-500" : pctVal >= 40 ? "bg-orange-500" : "bg-red-500";
+  return (
+    <div className="space-y-1">
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-600 font-medium">{label}</span>
+        <span className="text-slate-500">{score}/{max}</span>
+      </div>
+      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${colour}`} style={{ width: `${pctVal}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  children,
+  defaultOpen = false,
+}: {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="border border-slate-200 rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+      >
+        <span className="text-sm font-medium text-slate-700">{title}</span>
+        <span className="text-slate-400 text-xs">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && <div className="p-4 space-y-3">{children}</div>}
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="flex items-center justify-between py-1">
+      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-xs font-semibold text-slate-700">{String(value)}</span>
+    </div>
+  );
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+function getRatingColour(rating: string): string {
+  switch (rating) {
+    case "outstanding": return "text-green-600";
+    case "good": return "text-amber-600";
+    case "requires_improvement": return "text-orange-600";
+    case "inadequate": return "text-red-600";
+    default: return "text-slate-600";
+  }
+}
+
+function getRatingBg(rating: string): string {
+  switch (rating) {
+    case "outstanding": return "bg-green-50 border-green-200";
+    case "good": return "bg-amber-50 border-amber-200";
+    case "requires_improvement": return "bg-orange-50 border-orange-200";
+    case "inadequate": return "bg-red-50 border-red-200";
+    default: return "bg-slate-50 border-slate-200";
+  }
+}
+
+function formatRating(rating: string): string {
+  return rating.split("_").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+function getScoreColour(score: number, max: number): string {
+  const pctVal = max > 0 ? (score / max) * 100 : 0;
+  if (pctVal >= 80) return "text-green-600";
+  if (pctVal >= 60) return "text-amber-600";
+  return "text-red-600";
+}
+
+// ── Main Component ────────────────────────────────────────────────────────
+
+export default function RestraintDashboardWidget() {
+  const [data, setData] = useState<RestraintData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchData();
-  }, [homeId]);
+    fetch("/api/restraint")
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch restraint data");
+        return res.json();
+      })
+      .then((json) => setData(json.data))
+      .catch((err) => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
 
-  async function fetchData() {
-    try {
-      const res = await fetch(`/api/restraint?homeId=${homeId}&mode=dashboard`);
-      const json = await res.json();
-      setData(json);
-    } catch {
-      // noop
-    } finally {
-      setLoading(false);
-    }
-  }
-
+  // Loading skeleton
   if (loading) {
     return (
-      <div className="rounded-lg border border-border bg-card p-6 animate-pulse">
-        <div className="h-4 w-36 bg-muted rounded mb-4" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-muted rounded" />
-          <div className="h-3 w-3/4 bg-muted rounded" />
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm animate-pulse">
+        <div className="h-6 w-64 bg-slate-200 rounded mb-4" />
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 bg-slate-100 rounded-lg" />
+          ))}
+        </div>
+        <div className="space-y-3">
+          <div className="h-4 w-full bg-slate-100 rounded" />
+          <div className="h-4 w-3/4 bg-slate-100 rounded" />
+          <div className="h-4 w-1/2 bg-slate-100 rounded" />
         </div>
       </div>
     );
   }
 
-  if (!data) return null;
+  // Error state
+  if (error) {
+    return (
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-6">
+        <p className="text-red-700 text-sm font-medium">Error loading restraint data</p>
+        <p className="text-red-600 text-xs mt-1">{error}</p>
+      </div>
+    );
+  }
 
-  const { metrics, recentRecords, incidentsByChild, incidentsByTimeOfDay, commonTriggers, complianceIssues } = data;
+  // Null guard
+  if (!data) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6">
+        <p className="text-slate-500 text-sm">No restraint data available.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="rounded-lg border border-border bg-card">
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-6">
       {/* Header */}
-      <div className="p-4 border-b border-border">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold">Restraint Log</h3>
-              <p className="text-xs text-muted-foreground">Physical interventions</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <p className={`text-lg font-bold ${metrics.overallComplianceRate >= 90 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-              {metrics.overallComplianceRate}%
-            </p>
-            <p className="text-[10px] text-muted-foreground">compliant</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Volume & trend */}
-      <div className="grid grid-cols-3 divide-x divide-border border-b border-border">
-        <div className="p-3 text-center">
-          <p className="text-lg font-bold">{metrics.totalRestraints30Days}</p>
-          <p className="text-[10px] text-muted-foreground">Last 30d</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className="text-lg font-bold">{metrics.averagePerMonth}/mo</p>
-          <p className="text-[10px] text-muted-foreground">Average</p>
-        </div>
-        <div className="p-3 text-center">
-          <p className={`text-lg font-bold ${metrics.onTarget ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {metrics.reductionAchieved > 0 ? "-" : ""}{metrics.reductionAchieved}%
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">Restraint</h3>
+          <p className="text-sm text-slate-500 mt-0.5">
+            Quality, compliance, policy, and staff readiness
           </p>
-          <p className="text-[10px] text-muted-foreground">Reduction</p>
+        </div>
+        <div className={`text-right px-4 py-2 rounded-lg border ${getRatingBg(data.rating)}`}>
+          <p className={`text-2xl font-bold ${getRatingColour(data.rating)}`}>
+            {data.overallScore}
+          </p>
+          <p className={`text-xs font-medium ${getRatingColour(data.rating)}`}>
+            {formatRating(data.rating)}
+          </p>
         </div>
       </div>
 
-      {/* De-escalation & debrief rates */}
-      <div className="px-4 py-2.5 border-b border-border">
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">De-escalation evidenced</span>
-          <span className={`font-medium ${metrics.deEscalationRate === 100 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.deEscalationRate}%
-          </span>
-        </div>
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Child debrief completed</span>
-          <span className={`font-medium ${metrics.childDebriefRate === 100 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.childDebriefRate}%
-          </span>
-        </div>
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Medical check completed</span>
-          <span className={`font-medium ${metrics.medicalCheckRate === 100 ? "text-emerald-600" : "text-amber-600"}`}>
-            {metrics.medicalCheckRate}%
-          </span>
-        </div>
-        <div className="flex justify-between text-[10px] mb-1">
-          <span className="text-muted-foreground">Avg de-escalation time</span>
-          <span className="font-medium">{metrics.averageDeEscalationTime} mins</span>
-        </div>
-        <div className="flex justify-between text-[10px]">
-          <span className="text-muted-foreground">Avg restraint duration</span>
-          <span className="font-medium">{metrics.averageDuration} mins</span>
-        </div>
+      {/* 4 Evaluator Score Bars */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <ScoreBar label="Restraint Quality" score={data.restraintQuality.score} max={25} />
+        <ScoreBar label="Restraint Compliance" score={data.restraintCompliance.score} max={25} />
+        <ScoreBar label="Restraint Policy" score={data.restraintPolicy.score} max={25} />
+        <ScoreBar label="Staff Readiness" score={data.staffReadiness.score} max={25} />
       </div>
 
-      {/* Recent records */}
-      <div className="border-b border-border">
-        <div className="px-4 py-2 bg-muted/30">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">Recent Interventions</p>
-        </div>
-        <div className="px-4 py-2 space-y-1.5">
-          {recentRecords.slice(0, 4).map(record => (
-            <div key={record.id} className="flex items-center justify-between text-[10px]">
-              <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground">
-                  {new Date(record.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
-                </span>
-                <span className="font-medium">{record.childName}</span>
-                <span className="text-muted-foreground">{INTERVENTION_LABELS[record.interventionType] || record.interventionType}</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground">{record.durationMinutes}m</span>
-                {record.isCompliant ? (
-                  <span className="text-[8px] px-1 py-0.5 rounded bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300">OK</span>
-                ) : (
-                  <span className="text-[8px] px-1 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">{record.issues} issue{record.issues > 1 ? "s" : ""}</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Restraint Quality Section */}
+      <Section title="Restraint Quality" defaultOpen>
+        <Stat label="Total Incidents" value={data.restraintQuality.totalIncidents} />
+        <Stat label="De-escalation Rate" value={data.restraintQuality.deEscalationRate + "%"} />
+        <Stat label="Proportionate Rate" value={data.restraintQuality.proportionateRate + "%"} />
+        <Stat label="No Injury Rate" value={data.restraintQuality.noInjuryRate + "%"} />
+        <Stat label="Child Views Rate" value={data.restraintQuality.childViewsRate + "%"} />
+      </Section>
 
-      {/* Patterns */}
-      {incidentsByChild.length > 0 && (
-        <div className="px-4 py-2.5 border-b border-border">
-          <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide mb-1">Patterns (90 days)</p>
-          <div className="space-y-1">
-            {incidentsByChild.slice(0, 3).map((child, i) => (
-              <div key={i} className="flex justify-between text-[10px]">
-                <span className="text-muted-foreground">{child.childName}</span>
-                <span className="font-medium">{child.count} incident{child.count > 1 ? "s" : ""}</span>
+      {/* Restraint Compliance Section */}
+      <Section title="Restraint Compliance">
+        <Stat label="Body Map Rate" value={data.restraintCompliance.bodyMapRate + "%"} />
+        <Stat label="Parent Notified Rate" value={data.restraintCompliance.parentNotifiedRate + "%"} />
+        <Stat label="Ofsted Notified Rate" value={data.restraintCompliance.ofstedNotifiedRate + "%"} />
+        <Stat label="Debrief Rate" value={data.restraintCompliance.debriefRate + "%"} />
+      </Section>
+
+      {/* Restraint Policy Section */}
+      <Section title="Restraint Policy">
+        <Stat label="Restraint Reduction Strategy" value={data.restraintPolicy.restraintReductionStrategy ? "Yes" : "No"} />
+        <Stat label="Approved Techniques Only" value={data.restraintPolicy.approvedTechniquesOnly ? "Yes" : "No"} />
+        <Stat label="De-escalation First Policy" value={data.restraintPolicy.deEscalationFirstPolicy ? "Yes" : "No"} />
+        <Stat label="Incident Reporting Protocol" value={data.restraintPolicy.incidentReportingProtocol ? "Yes" : "No"} />
+        <Stat label="Body Map Protocol" value={data.restraintPolicy.bodyMapProtocol ? "Yes" : "No"} />
+        <Stat label="Notification Procedure" value={data.restraintPolicy.notificationProcedure ? "Yes" : "No"} />
+        <Stat label="Regular Review" value={data.restraintPolicy.regularReview ? "Yes" : "No"} />
+      </Section>
+
+      {/* Staff Readiness Section */}
+      <Section title="Staff Readiness">
+        <Stat label="Total Staff Trained" value={data.staffReadiness.totalStaff} />
+        <Stat label="Approved Techniques Certified" value={data.staffReadiness.approvedTechniquesCertifiedRate + "%"} />
+        <Stat label="De-escalation Skills" value={data.staffReadiness.deEscalationSkillsRate + "%"} />
+        <Stat label="Proportionality Understanding" value={data.staffReadiness.proportionalityUnderstandingRate + "%"} />
+        <Stat label="Incident Reporting" value={data.staffReadiness.incidentReportingRate + "%"} />
+        <Stat label="Child Rights Awareness" value={data.staffReadiness.childRightsAwarenessRate + "%"} />
+        <Stat label="Post-Incident Support" value={data.staffReadiness.postIncidentSupportRate + "%"} />
+      </Section>
+
+      {/* Child Restraint Profiles */}
+      {data.childProfiles.length > 0 && (
+        <Section title="Child Restraint Profiles">
+          <div className="space-y-3">
+            {data.childProfiles.map((child) => (
+              <div
+                key={child.childId}
+                className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50"
+              >
+                <div>
+                  <p className="text-sm font-medium text-slate-800">{child.childName}</p>
+                  <p className="text-xs text-slate-500">
+                    {child.totalIncidents} incident{child.totalIncidents !== 1 ? "s" : ""}, {child.deEscalationRate}% de-escalation, {child.proportionateRate}% proportionate, {child.injuryCount} injur{child.injuryCount !== 1 ? "ies" : "y"}
+                  </p>
+                </div>
+                <div className={`text-lg font-bold ${getScoreColour(child.restraintScore, 10)}`}>
+                  {child.restraintScore}/10
+                </div>
               </div>
             ))}
           </div>
-          {commonTriggers.length > 0 && (
-            <div className="mt-2 pt-1.5 border-t border-border">
-              <p className="text-[9px] text-muted-foreground mb-0.5">Top triggers:</p>
-              <p className="text-[10px] font-medium">
-                {commonTriggers.slice(0, 2).map(t => t.trigger).join(" · ")}
-              </p>
-            </div>
-          )}
-        </div>
+        </Section>
       )}
 
-      {/* Compliance issues */}
-      {complianceIssues.length > 0 && (
-        <div className="px-4 py-2.5 border-b border-border bg-red-50 dark:bg-red-950/20">
-          <p className="text-[10px] font-medium text-red-700 dark:text-red-400 mb-1">Compliance Issues</p>
-          {complianceIssues.slice(0, 3).map((issue, i) => (
-            <p key={i} className="text-[10px] text-red-600 dark:text-red-400">
-              {issue}
-            </p>
-          ))}
-        </div>
+      {/* Strengths */}
+      {data.strengths.length > 0 && (
+        <Section title="Strengths">
+          <ul className="space-y-1.5">
+            {data.strengths.map((s, i) => (
+              <li key={i} className="text-xs text-green-700 flex items-start gap-1.5">
+                <span className="mt-0.5 shrink-0 text-green-500">+</span>
+                <span>{s}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Areas for Improvement */}
+      {data.areasForImprovement.length > 0 && (
+        <Section title="Areas for Improvement">
+          <ul className="space-y-1.5">
+            {data.areasForImprovement.map((a, i) => (
+              <li key={i} className="text-xs text-amber-700 flex items-start gap-1.5">
+                <span className="mt-0.5 shrink-0 text-amber-500">-</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Actions */}
+      {data.actions.length > 0 && (
+        <Section title="Actions">
+          <ul className="space-y-1.5">
+            {data.actions.map((a, i) => (
+              <li key={i} className={`text-xs flex items-start gap-1.5 ${
+                a.startsWith("URGENT") ? "text-red-700" :
+                a.startsWith("HIGH") ? "text-orange-700" :
+                a.startsWith("MEDIUM") ? "text-amber-700" :
+                "text-slate-600"
+              }`}>
+                <span className="mt-0.5 shrink-0">*</span>
+                <span>{a}</span>
+              </li>
+            ))}
+          </ul>
+        </Section>
+      )}
+
+      {/* Regulatory Links */}
+      {data.regulatoryLinks.length > 0 && (
+        <Section title="Regulatory References">
+          <ul className="space-y-1">
+            {data.regulatoryLinks.map((link, i) => (
+              <li key={i} className="text-xs text-slate-500">{link}</li>
+            ))}
+          </ul>
+        </Section>
       )}
 
       {/* Footer */}
-      <div className="p-3 text-center">
-        <a href="/restraint" className="text-xs text-primary font-medium hover:underline">
-          View restraint log →
-        </a>
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+        <span className="text-xs text-slate-400">
+          Period: {data.periodStart} to {data.periodEnd}
+        </span>
+        <span className="text-xs text-slate-400">
+          Reg 20 &middot; Reg 35 &middot; s.22 CA 1989
+        </span>
       </div>
     </div>
   );

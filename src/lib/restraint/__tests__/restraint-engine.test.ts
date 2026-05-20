@@ -1,290 +1,844 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Restraint & Physical Intervention Engine — Tests
+// Restraint Intelligence Engine — Tests
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
 import {
+  pct,
+  getRating,
+  getRestraintTypeLabel,
+  getRestraintOutcomeLabel,
+  getRatingLabel,
+  evaluateRestraintQuality,
   evaluateRestraintCompliance,
-  calculateHomeRestraintMetrics,
-  getInterventionTypeLabel,
-  getDeEscalationLabel,
+  evaluateRestraintPolicy,
+  evaluateStaffRestraintReadiness,
+  buildChildRestraintProfiles,
+  generateRestraintIntelligence,
 } from "../restraint-engine";
 import type {
-  RestraintRecord,
-  HomeRestraintProfile,
-  PostIncidentRecord,
+  RestraintIncident,
+  RestraintPolicy,
+  StaffRestraintTraining,
 } from "../restraint-engine";
 
-// ── Fixtures ──────────────────────────────────────────────────────────────
+// ── Factory Functions ─────────────────────────────────────────────────────
 
-const NOW = "2026-05-17T12:00:00Z";
-
-function makePostIncidentActions(overrides: Partial<Record<string, boolean>> = {}): PostIncidentRecord[] {
-  return [
-    { action: "child_debrief", completed: overrides.childDebrief ?? true, completedDate: "2026-05-14T10:00:00Z" },
-    { action: "staff_debrief", completed: overrides.staffDebrief ?? true, completedDate: "2026-05-14T14:00:00Z" },
-    { action: "medical_check", completed: overrides.medicalCheck ?? true, completedDate: "2026-05-13T21:00:00Z" },
-    { action: "body_map_completed", completed: true, completedDate: "2026-05-13T21:00:00Z" },
-    { action: "written_record_completed", completed: true, completedDate: "2026-05-14T08:00:00Z" },
-    { action: "child_account_recorded", completed: overrides.childAccount ?? true, completedDate: "2026-05-14T11:00:00Z" },
-  ];
-}
-
-function makeRecord(overrides: Partial<RestraintRecord> = {}): RestraintRecord {
+function makeIncident(overrides: Partial<RestraintIncident> = {}): RestraintIncident {
   return {
-    id: "rr-001",
-    homeId: "home-oak",
-    childId: "child-casey",
-    childName: "Casey Brown",
-    date: "2026-05-13T00:00:00Z",
-    startTime: "2026-05-13T19:45:00Z",
-    endTime: "2026-05-13T19:52:00Z",
-    durationMinutes: 7,
-    interventionType: "physical_restraint",
-    technique: "team_teach",
-    staffInvolved: [
-      { staffId: "staff-rm-01", staffName: "Darren Laville", role: "lead", certificationValid: true, certificationExpiry: "2027-03-15T00:00:00Z" },
-      { staffId: "staff-sw-01", staffName: "Sarah Wilson", role: "support", certificationValid: true, certificationExpiry: "2027-03-15T00:00:00Z" },
-    ],
-    trigger: "Frustration over denied screen time",
-    antecedent: "Casey asked for extra gaming time, told no due to school night. Escalated verbally, then began throwing objects.",
-    deEscalationAttempted: ["verbal_reassurance", "offered_space", "choices_offered", "reduced_demands"],
-    deEscalationDuration: 12,
-    reasonForIntervention: "Casey began throwing hard objects towards other child — immediate risk of injury to peer",
-    proportionalityJustification: "Physical intervention was necessary to prevent injury to another child. Less restrictive approaches had been attempted for 12 minutes. Intervention ceased as soon as Casey was calm and risk had passed.",
-    childPresentation: "Initially very agitated, shouting. Calmed within 5 minutes of hold. Tearful after.",
-    positionUsed: "Single elbow — standing, guided to floor when legs gave way",
-    injuries: [],
-    postIncidentActions: makePostIncidentActions(),
-    childDebriefDate: "2026-05-14T10:00:00Z",
-    childAccount: "I was angry because I wanted to play my game. I know I shouldnt have thrown things.",
-    staffDebriefDate: "2026-05-14T14:00:00Z",
-    medicalCheckDate: "2026-05-13T20:00:00Z",
-    medicalCheckOutcome: "No injuries identified",
+    id: "inc-001",
+    childId: "child-alex",
+    childName: "Alex",
+    incidentDate: "2026-03-15",
+    restraintType: "physical_hold",
+    outcome: "restraint_applied",
+    deEscalationAttempted: true,
+    proportionateResponse: true,
+    injuryOccurred: false,
+    bodyMapCompleted: true,
     parentNotified: true,
-    parentNotifiedDate: "2026-05-14T09:00:00Z",
-    socialWorkerNotified: true,
-    socialWorkerNotifiedDate: "2026-05-14T09:30:00Z",
-    ofstedNotified: false,
-    recordCompletedWithin24Hours: true,
-    recordedBy: "staff-rm-01",
-    authorisedBy: "staff-rm-01",
+    ofstedNotified: true,
+    debriefCompleted: true,
+    childViewsRecorded: true,
     ...overrides,
   };
 }
 
-function makeProfile(overrides: Partial<HomeRestraintProfile> = {}): HomeRestraintProfile {
+function makePolicy(overrides: Partial<RestraintPolicy> = {}): RestraintPolicy {
   return {
-    homeId: "home-oak",
-    restraintRecords: [
-      makeRecord({ id: "rr-001", date: "2026-05-13T00:00:00Z", startTime: "2026-05-13T19:45:00Z" }),
-      makeRecord({ id: "rr-002", date: "2026-04-28T00:00:00Z", startTime: "2026-04-28T17:30:00Z", childName: "Alex Turner", childId: "child-alex", durationMinutes: 4, trigger: "Conflict with peer", deEscalationDuration: 8 }),
-      makeRecord({ id: "rr-003", date: "2026-04-15T00:00:00Z", startTime: "2026-04-15T18:00:00Z", childName: "Casey Brown", durationMinutes: 5, trigger: "Frustration over denied screen time" }),
-      makeRecord({ id: "rr-004", date: "2026-03-20T00:00:00Z", startTime: "2026-03-20T20:00:00Z", childName: "Casey Brown", durationMinutes: 10, trigger: "Refusal to go to bed" }),
-    ],
-    reductionTarget: 10,
-    approvedTechnique: "team_teach",
-    lastPolicyReviewDate: "2026-04-01T10:00:00Z",
-    debriefProtocolInPlace: true,
+    id: "pol-001",
+    restraintReductionStrategy: true,
+    approvedTechniquesOnly: true,
+    deEscalationFirstPolicy: true,
+    incidentReportingProtocol: true,
+    bodyMapProtocol: true,
+    notificationProcedure: true,
+    regularReview: true,
+    ...overrides,
+  };
+}
+
+function makeTraining(overrides: Partial<StaffRestraintTraining> = {}): StaffRestraintTraining {
+  return {
+    id: "tr-001",
+    staffId: "staff-sarah",
+    staffName: "Sarah Johnson",
+    approvedTechniquesCertified: true,
+    deEscalationSkills: true,
+    proportionalityUnderstanding: true,
+    incidentReporting: true,
+    childRightsAwareness: true,
+    postIncidentSupport: true,
     ...overrides,
   };
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Single Restraint Compliance Tests
+// pct helper
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("pct", () => {
+  it("returns 0 when denominator is 0", () => {
+    expect(pct(5, 0)).toBe(0);
+  });
+
+  it("returns 0 when both are 0", () => {
+    expect(pct(0, 0)).toBe(0);
+  });
+
+  it("returns 100 when num equals den", () => {
+    expect(pct(10, 10)).toBe(100);
+  });
+
+  it("returns 50 for half", () => {
+    expect(pct(5, 10)).toBe(50);
+  });
+
+  it("rounds to nearest integer", () => {
+    expect(pct(1, 3)).toBe(33);
+    expect(pct(2, 3)).toBe(67);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// getRating
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("getRating", () => {
+  it("returns outstanding for score >= 80", () => {
+    expect(getRating(80)).toBe("outstanding");
+    expect(getRating(100)).toBe("outstanding");
+    expect(getRating(95)).toBe("outstanding");
+  });
+
+  it("returns good for score >= 60 and < 80", () => {
+    expect(getRating(60)).toBe("good");
+    expect(getRating(79)).toBe("good");
+  });
+
+  it("returns requires_improvement for score >= 40 and < 60", () => {
+    expect(getRating(40)).toBe("requires_improvement");
+    expect(getRating(59)).toBe("requires_improvement");
+  });
+
+  it("returns inadequate for score < 40", () => {
+    expect(getRating(0)).toBe("inadequate");
+    expect(getRating(39)).toBe("inadequate");
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Label getters
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("getRestraintTypeLabel", () => {
+  it("returns correct label for physical_hold", () => {
+    expect(getRestraintTypeLabel("physical_hold")).toBe("Physical Hold");
+  });
+
+  it("returns correct label for guided_away", () => {
+    expect(getRestraintTypeLabel("guided_away")).toBe("Guided Away");
+  });
+
+  it("returns correct label for seated_hold", () => {
+    expect(getRestraintTypeLabel("seated_hold")).toBe("Seated Hold");
+  });
+
+  it("returns correct label for standing_hold", () => {
+    expect(getRestraintTypeLabel("standing_hold")).toBe("Standing Hold");
+  });
+
+  it("returns correct label for supine_hold", () => {
+    expect(getRestraintTypeLabel("supine_hold")).toBe("Supine Hold");
+  });
+
+  it("returns correct label for prone_hold", () => {
+    expect(getRestraintTypeLabel("prone_hold")).toBe("Prone Hold");
+  });
+
+  it("returns correct label for mechanical", () => {
+    expect(getRestraintTypeLabel("mechanical")).toBe("Mechanical");
+  });
+
+  it("returns correct label for environmental_restriction", () => {
+    expect(getRestraintTypeLabel("environmental_restriction")).toBe("Environmental Restriction");
+  });
+});
+
+describe("getRestraintOutcomeLabel", () => {
+  it("returns correct label for de_escalation_successful", () => {
+    expect(getRestraintOutcomeLabel("de_escalation_successful")).toBe("De-escalation Successful");
+  });
+
+  it("returns correct label for restraint_applied", () => {
+    expect(getRestraintOutcomeLabel("restraint_applied")).toBe("Restraint Applied");
+  });
+
+  it("returns correct label for self_resolved", () => {
+    expect(getRestraintOutcomeLabel("self_resolved")).toBe("Self Resolved");
+  });
+
+  it("returns correct label for external_support", () => {
+    expect(getRestraintOutcomeLabel("external_support")).toBe("External Support");
+  });
+
+  it("returns correct label for not_recorded", () => {
+    expect(getRestraintOutcomeLabel("not_recorded")).toBe("Not Recorded");
+  });
+});
+
+describe("getRatingLabel", () => {
+  it("returns correct label for outstanding", () => {
+    expect(getRatingLabel("outstanding")).toBe("Outstanding");
+  });
+
+  it("returns correct label for good", () => {
+    expect(getRatingLabel("good")).toBe("Good");
+  });
+
+  it("returns correct label for requires_improvement", () => {
+    expect(getRatingLabel("requires_improvement")).toBe("Requires Improvement");
+  });
+
+  it("returns correct label for inadequate", () => {
+    expect(getRatingLabel("inadequate")).toBe("Inadequate");
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Evaluator 1: evaluateRestraintQuality
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("evaluateRestraintQuality", () => {
+  it("returns all zeros for empty incidents", () => {
+    const result = evaluateRestraintQuality([]);
+    expect(result.totalIncidents).toBe(0);
+    expect(result.deEscalationRate).toBe(0);
+    expect(result.proportionateRate).toBe(0);
+    expect(result.noInjuryRate).toBe(0);
+    expect(result.childViewsRate).toBe(0);
+    expect(result.score).toBe(0);
+  });
+
+  it("returns perfect score for all-true incidents", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({ id: `inc-${i}` }),
+    );
+    const result = evaluateRestraintQuality(incidents);
+    expect(result.deEscalationRate).toBe(100);
+    expect(result.proportionateRate).toBe(100);
+    expect(result.noInjuryRate).toBe(100);
+    expect(result.childViewsRate).toBe(100);
+    expect(result.score).toBe(25);
+  });
+
+  it("calculates partial scores correctly", () => {
+    const incidents = [
+      makeIncident({ id: "i1", deEscalationAttempted: true, proportionateResponse: true, injuryOccurred: false, childViewsRecorded: true }),
+      makeIncident({ id: "i2", deEscalationAttempted: false, proportionateResponse: false, injuryOccurred: true, childViewsRecorded: false }),
+    ];
+    const result = evaluateRestraintQuality(incidents);
+    expect(result.deEscalationRate).toBe(50);
+    expect(result.proportionateRate).toBe(50);
+    expect(result.noInjuryRate).toBe(50);
+    expect(result.childViewsRate).toBe(50);
+    // (50/100)*7 + (50/100)*6 + (50/100)*6 + (50/100)*6 = 3.5+3+3+3 = 12.5
+    expect(result.score).toBe(12.5);
+  });
+
+  it("caps score at 25", () => {
+    const incidents = [makeIncident()];
+    const result = evaluateRestraintQuality(incidents);
+    expect(result.score).toBeLessThanOrEqual(25);
+    expect(result.score).toBe(25);
+  });
+
+  it("includes strengths when rates are high", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({ id: `inc-${i}` }),
+    );
+    const result = evaluateRestraintQuality(incidents);
+    expect(result.strengths.length).toBeGreaterThan(0);
+    expect(result.concerns.length).toBe(0);
+  });
+
+  it("includes concerns when rates are low", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({
+        id: `inc-${i}`,
+        deEscalationAttempted: false,
+        proportionateResponse: false,
+        injuryOccurred: true,
+        childViewsRecorded: false,
+      }),
+    );
+    const result = evaluateRestraintQuality(incidents);
+    expect(result.concerns.length).toBeGreaterThan(0);
+    expect(result.deEscalationRate).toBe(0);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Evaluator 2: evaluateRestraintCompliance
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateRestraintCompliance", () => {
-  it("marks compliant restraint record", () => {
-    const result = evaluateRestraintCompliance(makeRecord(), NOW);
-    expect(result.isCompliant).toBe(true);
-    expect(result.issues).toHaveLength(0);
-    expect(result.deEscalationEvidenced).toBe(true);
-    expect(result.proportionalityJustified).toBe(true);
-    expect(result.allStaffCertified).toBe(true);
-    expect(result.childDebriefCompleted).toBe(true);
-    expect(result.medicalCheckCompleted).toBe(true);
+  it("returns all zeros for empty incidents", () => {
+    const result = evaluateRestraintCompliance([]);
+    expect(result.totalIncidents).toBe(0);
+    expect(result.bodyMapRate).toBe(0);
+    expect(result.parentNotifiedRate).toBe(0);
+    expect(result.ofstedNotifiedRate).toBe(0);
+    expect(result.debriefRate).toBe(0);
+    expect(result.score).toBe(0);
   });
 
-  it("flags no de-escalation attempted", () => {
-    const record = makeRecord({ deEscalationAttempted: [], deEscalationDuration: 0 });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.deEscalationEvidenced).toBe(false);
-    expect(result.issues.some(i => i.includes("No de-escalation"))).toBe(true);
+  it("returns perfect score for all-true incidents", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({ id: `inc-${i}` }),
+    );
+    const result = evaluateRestraintCompliance(incidents);
+    expect(result.bodyMapRate).toBe(100);
+    expect(result.parentNotifiedRate).toBe(100);
+    expect(result.ofstedNotifiedRate).toBe(100);
+    expect(result.debriefRate).toBe(100);
+    expect(result.score).toBe(25);
   });
 
-  it("warns about very brief de-escalation", () => {
-    const record = makeRecord({ deEscalationDuration: 1 });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.warnings.some(w => w.includes("brief de-escalation"))).toBe(true);
+  it("calculates partial compliance scores", () => {
+    const incidents = [
+      makeIncident({ id: "i1", bodyMapCompleted: true, parentNotified: true, ofstedNotified: true, debriefCompleted: true }),
+      makeIncident({ id: "i2", bodyMapCompleted: false, parentNotified: false, ofstedNotified: false, debriefCompleted: false }),
+    ];
+    const result = evaluateRestraintCompliance(incidents);
+    expect(result.bodyMapRate).toBe(50);
+    expect(result.parentNotifiedRate).toBe(50);
+    expect(result.ofstedNotifiedRate).toBe(50);
+    expect(result.debriefRate).toBe(50);
   });
 
-  it("flags proportionality not justified", () => {
-    const record = makeRecord({ proportionalityJustification: "needed" });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.proportionalityJustified).toBe(false);
-    expect(result.issues.some(i => i.includes("Proportionality"))).toBe(true);
+  it("caps score at 25", () => {
+    const incidents = [makeIncident()];
+    const result = evaluateRestraintCompliance(incidents);
+    expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("flags uncertified staff", () => {
-    const record = makeRecord({
-      staffInvolved: [
-        { staffId: "s1", staffName: "A", role: "lead", certificationValid: false },
-        { staffId: "s2", staffName: "B", role: "support", certificationValid: true, certificationExpiry: "2027-01-01" },
-      ],
-    });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.allStaffCertified).toBe(false);
-    expect(result.issues.some(i => i.includes("without valid restraint certification"))).toBe(true);
+  it("includes concerns when rates are low", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({
+        id: `inc-${i}`,
+        bodyMapCompleted: false,
+        parentNotified: false,
+        ofstedNotified: false,
+        debriefCompleted: false,
+      }),
+    );
+    const result = evaluateRestraintCompliance(incidents);
+    expect(result.concerns.length).toBeGreaterThan(0);
   });
 
-  it("flags child debrief not completed", () => {
-    const record = makeRecord({
-      postIncidentActions: makePostIncidentActions({ childDebrief: false }),
-    });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.childDebriefCompleted).toBe(false);
-    expect(result.issues.some(i => i.includes("Child debrief"))).toBe(true);
-  });
-
-  it("warns about staff debrief not completed", () => {
-    const record = makeRecord({
-      postIncidentActions: makePostIncidentActions({ staffDebrief: false }),
-    });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.staffDebriefCompleted).toBe(false);
-    expect(result.warnings.some(w => w.includes("Staff debrief"))).toBe(true);
-  });
-
-  it("flags medical check not completed", () => {
-    const record = makeRecord({
-      postIncidentActions: makePostIncidentActions({ medicalCheck: false }),
-    });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.medicalCheckCompleted).toBe(false);
-    expect(result.issues.some(i => i.includes("Medical check"))).toBe(true);
-  });
-
-  it("flags parent not notified", () => {
-    const record = makeRecord({ parentNotified: false });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.notificationsComplete).toBe(false);
-    expect(result.issues.some(i => i.includes("Parent"))).toBe(true);
-  });
-
-  it("flags social worker not notified", () => {
-    const record = makeRecord({ socialWorkerNotified: false });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.issues.some(i => i.includes("Social worker"))).toBe(true);
-  });
-
-  it("warns about late record completion", () => {
-    const record = makeRecord({ recordCompletedWithin24Hours: false });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.recordedTimely).toBe(false);
-    expect(result.warnings.some(w => w.includes("24 hours"))).toBe(true);
-  });
-
-  it("warns about child account not recorded", () => {
-    const record = makeRecord({
-      postIncidentActions: makePostIncidentActions({ childAccount: false }),
-    });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.childAccountRecorded).toBe(false);
-    expect(result.warnings.some(w => w.includes("Child's own account"))).toBe(true);
-  });
-
-  it("flags injury without body map", () => {
-    const record = makeRecord({
-      injuries: [{ person: "child", personName: "Casey", description: "Red mark on wrist", bodyMapCompleted: false, medicalAttentionRequired: false }],
-    });
-    const result = evaluateRestraintCompliance(record, NOW);
-    expect(result.issues.some(i => i.includes("body map"))).toBe(true);
+  it("includes strengths when rates are high", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({ id: `inc-${i}` }),
+    );
+    const result = evaluateRestraintCompliance(incidents);
+    expect(result.strengths.length).toBeGreaterThan(0);
   });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Home Restraint Metrics Tests
+// Evaluator 3: evaluateRestraintPolicy
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("calculateHomeRestraintMetrics", () => {
-  it("calculates metrics for home", () => {
-    const result = calculateHomeRestraintMetrics(makeProfile(), NOW);
-    expect(result.totalRestraints30Days).toBe(2); // May 13 and Apr 28 both within 30 days
-    expect(result.totalRestraints90Days).toBe(4);
-    expect(result.averagePerMonth).toBe(1.3);
-    expect(result.overallComplianceRate).toBe(100);
+describe("evaluateRestraintPolicy", () => {
+  it("returns 0 score and all false for null policy", () => {
+    const result = evaluateRestraintPolicy(null);
+    expect(result.score).toBe(0);
+    expect(result.restraintReductionStrategy).toBe(false);
+    expect(result.approvedTechniquesOnly).toBe(false);
+    expect(result.deEscalationFirstPolicy).toBe(false);
+    expect(result.incidentReportingProtocol).toBe(false);
+    expect(result.bodyMapProtocol).toBe(false);
+    expect(result.notificationProcedure).toBe(false);
+    expect(result.regularReview).toBe(false);
+    expect(result.concerns.length).toBeGreaterThan(0);
+    expect(result.concerns[0]).toContain("URGENT");
   });
 
-  it("calculates de-escalation rate", () => {
-    const result = calculateHomeRestraintMetrics(makeProfile(), NOW);
-    expect(result.deEscalationRate).toBe(100);
+  it("returns perfect 25 for fully compliant policy", () => {
+    const result = evaluateRestraintPolicy(makePolicy());
+    expect(result.score).toBe(25);
+    expect(result.strengths.length).toBeGreaterThan(0);
+    expect(result.concerns.length).toBe(0);
   });
 
-  it("calculates average duration", () => {
-    const result = calculateHomeRestraintMetrics(makeProfile(), NOW);
-    expect(result.averageDuration).toBe(7); // (7+4+5+10)/4 = 6.5 → rounds to 7
+  it("weights 4-point booleans correctly", () => {
+    // Only the four 4-point booleans
+    const result = evaluateRestraintPolicy(makePolicy({
+      bodyMapProtocol: false,
+      notificationProcedure: false,
+      regularReview: false,
+    }));
+    expect(result.score).toBe(16); // 4+4+4+4 = 16
   });
 
-  it("identifies incidents by child", () => {
-    const result = calculateHomeRestraintMetrics(makeProfile(), NOW);
-    expect(result.incidentsByChild.length).toBeGreaterThan(0);
-    expect(result.incidentsByChild[0].childName).toBe("Casey Brown");
+  it("weights 3-point booleans correctly", () => {
+    // Only the three 3-point booleans
+    const result = evaluateRestraintPolicy(makePolicy({
+      restraintReductionStrategy: false,
+      approvedTechniquesOnly: false,
+      deEscalationFirstPolicy: false,
+      incidentReportingProtocol: false,
+    }));
+    expect(result.score).toBe(9); // 3+3+3 = 9
   });
 
-  it("identifies common triggers", () => {
-    const result = calculateHomeRestraintMetrics(makeProfile(), NOW);
-    expect(result.commonTriggers.length).toBeGreaterThan(0);
+  it("reports concerns for missing components", () => {
+    const result = evaluateRestraintPolicy(makePolicy({
+      restraintReductionStrategy: false,
+      deEscalationFirstPolicy: false,
+    }));
+    expect(result.concerns.some((c) => c.includes("restraint reduction strategy"))).toBe(true);
+    expect(result.concerns.some((c) => c.includes("de-escalation first policy"))).toBe(true);
   });
 
-  it("calculates time of day patterns", () => {
-    const result = calculateHomeRestraintMetrics(makeProfile(), NOW);
-    expect(result.incidentsByTimeOfDay.length).toBe(4);
-    // Most should be evening (17:30, 18:00, 19:45, 20:00)
-    const evening = result.incidentsByTimeOfDay.find(t => t.period === "evening");
-    expect(evening).toBeDefined();
-    expect(evening!.count).toBeGreaterThan(0);
-  });
-
-  it("calculates reduction achievement", () => {
-    const profileWithHistory = makeProfile({
-      restraintRecords: [
-        // Current period (last 90 days) — 2 records
-        makeRecord({ id: "rr-1", date: "2026-05-10T00:00:00Z", startTime: "2026-05-10T18:00:00Z" }),
-        makeRecord({ id: "rr-2", date: "2026-04-20T00:00:00Z", startTime: "2026-04-20T18:00:00Z" }),
-        // Previous period (90-180 days ago) — 4 records
-        makeRecord({ id: "rr-3", date: "2026-02-10T00:00:00Z", startTime: "2026-02-10T18:00:00Z" }),
-        makeRecord({ id: "rr-4", date: "2026-01-25T00:00:00Z", startTime: "2026-01-25T18:00:00Z" }),
-        makeRecord({ id: "rr-5", date: "2026-01-15T00:00:00Z", startTime: "2026-01-15T18:00:00Z" }),
-        makeRecord({ id: "rr-6", date: "2025-12-20T00:00:00Z", startTime: "2025-12-20T18:00:00Z" }),
-      ],
-    });
-    const result = calculateHomeRestraintMetrics(profileWithHistory, NOW);
-    expect(result.reductionAchieved).toBe(50); // 4 → 2 = 50% reduction
-    expect(result.onTarget).toBe(true); // target is 10%
-  });
-
-  it("handles empty records", () => {
-    const profile = makeProfile({ restraintRecords: [] });
-    const result = calculateHomeRestraintMetrics(profile, NOW);
-    expect(result.totalRestraints30Days).toBe(0);
-    expect(result.overallComplianceRate).toBe(100);
-    expect(result.averageDuration).toBe(0);
+  it("reports strength for 5+ components", () => {
+    const result = evaluateRestraintPolicy(makePolicy({
+      regularReview: false,
+      notificationProcedure: false,
+    }));
+    expect(result.strengths.some((s) => s.includes("5/7"))).toBe(true);
   });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Helper Tests
+// Evaluator 4: evaluateStaffRestraintReadiness
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Helper functions", () => {
-  it("getInterventionTypeLabel returns readable labels", () => {
-    expect(getInterventionTypeLabel("physical_restraint")).toBe("Physical Restraint");
-    expect(getInterventionTypeLabel("guided_away")).toBe("Guided Away");
+describe("evaluateStaffRestraintReadiness", () => {
+  it("returns all zeros for empty training", () => {
+    const result = evaluateStaffRestraintReadiness([]);
+    expect(result.totalStaff).toBe(0);
+    expect(result.approvedTechniquesCertifiedRate).toBe(0);
+    expect(result.deEscalationSkillsRate).toBe(0);
+    expect(result.proportionalityUnderstandingRate).toBe(0);
+    expect(result.incidentReportingRate).toBe(0);
+    expect(result.childRightsAwarenessRate).toBe(0);
+    expect(result.postIncidentSupportRate).toBe(0);
+    expect(result.score).toBe(0);
+    expect(result.concerns.length).toBeGreaterThan(0);
+    expect(result.concerns[0]).toContain("URGENT");
   });
 
-  it("getDeEscalationLabel returns readable labels", () => {
-    expect(getDeEscalationLabel("pace_approach")).toBe("PACE Approach");
-    expect(getDeEscalationLabel("offered_space")).toBe("Offered Space");
+  it("returns perfect 25 for fully trained staff", () => {
+    const training = [
+      makeTraining({ id: "t1", staffId: "s1" }),
+      makeTraining({ id: "t2", staffId: "s2" }),
+    ];
+    const result = evaluateStaffRestraintReadiness(training);
+    expect(result.score).toBe(25);
+    expect(result.strengths.length).toBeGreaterThan(0);
+  });
+
+  it("calculates partial rates correctly", () => {
+    const training = [
+      makeTraining({ id: "t1", staffId: "s1", approvedTechniquesCertified: true, deEscalationSkills: false }),
+      makeTraining({ id: "t2", staffId: "s2", approvedTechniquesCertified: false, deEscalationSkills: true }),
+    ];
+    const result = evaluateStaffRestraintReadiness(training);
+    expect(result.approvedTechniquesCertifiedRate).toBe(50);
+    expect(result.deEscalationSkillsRate).toBe(50);
+  });
+
+  it("caps score at 25", () => {
+    const training = [makeTraining()];
+    const result = evaluateStaffRestraintReadiness(training);
+    expect(result.score).toBeLessThanOrEqual(25);
+  });
+
+  it("includes concerns when rates are low", () => {
+    const training = [
+      makeTraining({
+        id: "t1",
+        staffId: "s1",
+        approvedTechniquesCertified: false,
+        deEscalationSkills: false,
+        proportionalityUnderstanding: false,
+        incidentReporting: false,
+        childRightsAwareness: false,
+        postIncidentSupport: false,
+      }),
+      makeTraining({
+        id: "t2",
+        staffId: "s2",
+        approvedTechniquesCertified: false,
+        deEscalationSkills: false,
+        proportionalityUnderstanding: false,
+        incidentReporting: false,
+        childRightsAwareness: false,
+        postIncidentSupport: false,
+      }),
+    ];
+    const result = evaluateStaffRestraintReadiness(training);
+    expect(result.score).toBe(0);
+    expect(result.concerns.length).toBeGreaterThan(0);
+  });
+
+  it("weights skills correctly: certified=6, deEsc=5, proportionality=5, reporting=4, rights=3, support=2", () => {
+    // Single staff with only certified true
+    const t1 = [makeTraining({
+      approvedTechniquesCertified: true,
+      deEscalationSkills: false,
+      proportionalityUnderstanding: false,
+      incidentReporting: false,
+      childRightsAwareness: false,
+      postIncidentSupport: false,
+    })];
+    const r1 = evaluateStaffRestraintReadiness(t1);
+    expect(r1.score).toBe(6);
+
+    // Single staff with only deEscalation true
+    const t2 = [makeTraining({
+      approvedTechniquesCertified: false,
+      deEscalationSkills: true,
+      proportionalityUnderstanding: false,
+      incidentReporting: false,
+      childRightsAwareness: false,
+      postIncidentSupport: false,
+    })];
+    const r2 = evaluateStaffRestraintReadiness(t2);
+    expect(r2.score).toBe(5);
+
+    // Single staff with only postIncidentSupport true
+    const t3 = [makeTraining({
+      approvedTechniquesCertified: false,
+      deEscalationSkills: false,
+      proportionalityUnderstanding: false,
+      incidentReporting: false,
+      childRightsAwareness: false,
+      postIncidentSupport: true,
+    })];
+    const r3 = evaluateStaffRestraintReadiness(t3);
+    expect(r3.score).toBe(2);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Child Restraint Profiles
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("buildChildRestraintProfiles", () => {
+  it("returns empty array for no incidents", () => {
+    const profiles = buildChildRestraintProfiles([]);
+    expect(profiles).toEqual([]);
+  });
+
+  it("groups incidents by childId", () => {
+    const incidents = [
+      makeIncident({ id: "i1", childId: "child-alex", childName: "Alex" }),
+      makeIncident({ id: "i2", childId: "child-jordan", childName: "Jordan" }),
+      makeIncident({ id: "i3", childId: "child-alex", childName: "Alex" }),
+    ];
+    const profiles = buildChildRestraintProfiles(incidents);
+    expect(profiles.length).toBe(2);
+    const alex = profiles.find((p) => p.childId === "child-alex");
+    expect(alex!.totalIncidents).toBe(2);
+  });
+
+  it("calculates freq score: 3 for <=1 incident (fewer = better)", () => {
+    const incidents = [
+      makeIncident({ id: "i1", childId: "child-alex", childName: "Alex" }),
+    ];
+    const profiles = buildChildRestraintProfiles(incidents);
+    // freq=3, rate1=3 (100%>=80), rate2=3 (100%>=80), noInjury=1 = 10 (capped)
+    expect(profiles[0].restraintScore).toBe(10);
+  });
+
+  it("calculates freq score: 2 for 2-3 incidents", () => {
+    const incidents = Array.from({ length: 2 }, (_, i) =>
+      makeIncident({ id: `i-${i}`, childId: "child-alex", childName: "Alex" }),
+    );
+    const profiles = buildChildRestraintProfiles(incidents);
+    // freq=2, rate1=3, rate2=3, noInjury=1 = 9
+    expect(profiles[0].restraintScore).toBe(9);
+  });
+
+  it("calculates freq score: 1 for 4-5 incidents", () => {
+    const incidents = Array.from({ length: 4 }, (_, i) =>
+      makeIncident({ id: `i-${i}`, childId: "child-alex", childName: "Alex" }),
+    );
+    const profiles = buildChildRestraintProfiles(incidents);
+    // freq=1, rate1=3, rate2=3, noInjury=1 = 8
+    expect(profiles[0].restraintScore).toBe(8);
+  });
+
+  it("calculates freq score: 0 for >5 incidents", () => {
+    const incidents = Array.from({ length: 6 }, (_, i) =>
+      makeIncident({ id: `i-${i}`, childId: "child-alex", childName: "Alex" }),
+    );
+    const profiles = buildChildRestraintProfiles(incidents);
+    // freq=0, rate1=3, rate2=3, noInjury=1 = 7
+    expect(profiles[0].restraintScore).toBe(7);
+  });
+
+  it("caps restraintScore at 10", () => {
+    const incidents = [
+      makeIncident({ id: "i1", childId: "child-alex", childName: "Alex" }),
+    ];
+    const profiles = buildChildRestraintProfiles(incidents);
+    // freq=3, rate1=3, rate2=3, noInjury=1 = 10 (max)
+    expect(profiles[0].restraintScore).toBe(10);
+    expect(profiles[0].restraintScore).toBeLessThanOrEqual(10);
+  });
+
+  it("gives noInjury bonus 1 when no injuries", () => {
+    const incidents = Array.from({ length: 6 }, (_, i) =>
+      makeIncident({ id: `i-${i}`, childId: "child-alex", childName: "Alex", injuryOccurred: false }),
+    );
+    const profiles = buildChildRestraintProfiles(incidents);
+    // freq=0, rate1=3, rate2=3, noInjury=1 = 7
+    expect(profiles[0].restraintScore).toBe(7);
+  });
+
+  it("gives noInjury bonus 0 when injuries occurred", () => {
+    const incidents = Array.from({ length: 6 }, (_, i) =>
+      makeIncident({ id: `i-${i}`, childId: "child-alex", childName: "Alex", injuryOccurred: i === 0 }),
+    );
+    const profiles = buildChildRestraintProfiles(incidents);
+    // freq=0, rate1=3, rate2=3, noInjury=0 = 6
+    expect(profiles[0].restraintScore).toBe(6);
+    expect(profiles[0].injuryCount).toBe(1);
+  });
+
+  it("calculates rate1 threshold: 0 when deEscalationRate < 40%", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({
+        id: `i-${i}`,
+        childId: "c1",
+        childName: "A",
+        deEscalationAttempted: i === 0,
+      }),
+    );
+    const profiles = buildChildRestraintProfiles(incidents);
+    // 1/5 = 20% -> rate1=0
+    expect(profiles[0].deEscalationRate).toBe(20);
+  });
+
+  it("calculates rate2 threshold: 0 when proportionateRate < 40%", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({
+        id: `i-${i}`,
+        childId: "c1",
+        childName: "A",
+        proportionateResponse: i === 0,
+      }),
+    );
+    const profiles = buildChildRestraintProfiles(incidents);
+    expect(profiles[0].proportionateRate).toBe(20);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// Generator: generateRestraintIntelligence
+// ══════════════════════════════════════════════════════════════════════════════
+
+describe("generateRestraintIntelligence", () => {
+  function makePerfectIncidents(count: number): RestraintIncident[] {
+    return Array.from({ length: count }, (_, i) =>
+      makeIncident({
+        id: `inc-${i}`,
+        childId: i < count / 2 ? "child-alex" : "child-jordan",
+        childName: i < count / 2 ? "Alex" : "Jordan",
+        incidentDate: "2026-03-15",
+      }),
+    );
+  }
+
+  it("produces a complete intelligence result", () => {
+    const incidents = makePerfectIncidents(6);
+    const policy = makePolicy();
+    const training = [makeTraining(), makeTraining({ id: "t2", staffId: "s2", staffName: "Tom" })];
+
+    const result = generateRestraintIntelligence(
+      incidents, policy, training, "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.homeId).toBe("oak-house");
+    expect(result.periodStart).toBe("2026-01-01");
+    expect(result.periodEnd).toBe("2026-05-20");
+    expect(result.overallScore).toBeGreaterThan(0);
+    expect(result.rating).toBeDefined();
+    expect(result.restraintQuality).toBeDefined();
+    expect(result.restraintCompliance).toBeDefined();
+    expect(result.restraintPolicy).toBeDefined();
+    expect(result.staffReadiness).toBeDefined();
+    expect(result.childProfiles).toBeDefined();
+    expect(result.strengths).toBeDefined();
+    expect(result.areasForImprovement).toBeDefined();
+    expect(result.actions).toBeDefined();
+    expect(result.regulatoryLinks).toBeDefined();
+  });
+
+  it("achieves 100 overall score with perfect data", () => {
+    const incidents = makePerfectIncidents(6);
+    const policy = makePolicy();
+    const training = [makeTraining(), makeTraining({ id: "t2", staffId: "s2", staffName: "Tom" })];
+
+    const result = generateRestraintIntelligence(
+      incidents, policy, training, "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.overallScore).toBe(100);
+    expect(result.rating).toBe("outstanding");
+  });
+
+  it("returns 0 overall score with empty data and no policy", () => {
+    const result = generateRestraintIntelligence(
+      [], null, [], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.overallScore).toBe(0);
+    expect(result.rating).toBe("inadequate");
+  });
+
+  it("caps overall score at 100", () => {
+    const incidents = makePerfectIncidents(6);
+    const policy = makePolicy();
+    const training = [makeTraining(), makeTraining({ id: "t2", staffId: "s2", staffName: "Tom" })];
+
+    const result = generateRestraintIntelligence(
+      incidents, policy, training, "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.overallScore).toBeLessThanOrEqual(100);
+  });
+
+  it("generates URGENT actions when policy is null", () => {
+    const result = generateRestraintIntelligence(
+      [makeIncident()], null, [makeTraining()], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.actions.some((a) => a.includes("URGENT") && a.includes("policy"))).toBe(true);
+  });
+
+  it("generates URGENT actions when no staff training", () => {
+    const result = generateRestraintIntelligence(
+      [makeIncident()], makePolicy(), [], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.actions.some((a) => a.includes("URGENT") && a.includes("staff"))).toBe(true);
+  });
+
+  it("generates URGENT actions when injuries occurred", () => {
+    const incidents = [
+      makeIncident({ id: "i1", incidentDate: "2026-03-15", injuryOccurred: true }),
+    ];
+    const result = generateRestraintIntelligence(
+      incidents, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.actions.some((a) => a.includes("URGENT") && a.includes("injury"))).toBe(true);
+  });
+
+  it("includes strengths for high-scoring evaluators (score >= 20)", () => {
+    const incidents = makePerfectIncidents(6);
+    const policy = makePolicy();
+    const training = [makeTraining()];
+
+    const result = generateRestraintIntelligence(
+      incidents, policy, training, "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.strengths.some((s) => s.includes("strong"))).toBe(true);
+  });
+
+  it("includes areas for improvement for low-scoring evaluators (score < 15)", () => {
+    const result = generateRestraintIntelligence(
+      [], null, [], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.areasForImprovement.some((a) => a.includes("needs improvement"))).toBe(true);
+  });
+
+  it("returns exactly 7 regulatory links", () => {
+    const result = generateRestraintIntelligence(
+      [], null, [], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.regulatoryLinks.length).toBe(7);
+  });
+
+  it("filters incidents to period", () => {
+    const incidents = [
+      makeIncident({ id: "i1", incidentDate: "2025-12-01" }), // before period
+      makeIncident({ id: "i2", incidentDate: "2026-03-15" }), // in period
+      makeIncident({ id: "i3", incidentDate: "2026-06-01" }), // after period
+    ];
+
+    const result = generateRestraintIntelligence(
+      incidents, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.restraintQuality.totalIncidents).toBe(1);
+  });
+
+  it("builds child profiles from period-filtered incidents", () => {
+    const incidents = [
+      makeIncident({ id: "i1", childId: "c1", childName: "Alex", incidentDate: "2026-03-15" }),
+      makeIncident({ id: "i2", childId: "c2", childName: "Jordan", incidentDate: "2026-03-15" }),
+      makeIncident({ id: "i3", childId: "c1", childName: "Alex", incidentDate: "2025-06-01" }), // outside period
+    ];
+
+    const result = generateRestraintIntelligence(
+      incidents, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.childProfiles.length).toBe(2);
+    const alex = result.childProfiles.find((p) => p.childId === "c1");
+    expect(alex!.totalIncidents).toBe(1);
+  });
+
+  it("generates conditional actions when rates are below 50%", () => {
+    const incidents = Array.from({ length: 5 }, (_, i) =>
+      makeIncident({
+        id: `i-${i}`,
+        incidentDate: "2026-03-15",
+        deEscalationAttempted: false,
+        proportionateResponse: false,
+        bodyMapCompleted: false,
+        parentNotified: false,
+        childViewsRecorded: false,
+        debriefCompleted: false,
+      }),
+    );
+
+    const result = generateRestraintIntelligence(
+      incidents, makePolicy(), [makeTraining()], "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.actions.some((a) => a.includes("De-escalation rate"))).toBe(true);
+    expect(result.actions.some((a) => a.includes("Proportionate response rate"))).toBe(true);
+    expect(result.actions.some((a) => a.includes("Body map completion rate"))).toBe(true);
+    expect(result.actions.some((a) => a.includes("Parent notification rate"))).toBe(true);
+  });
+
+  it("includes assessedAt timestamp", () => {
+    const result = generateRestraintIntelligence(
+      [], null, [], "oak-house", "2026-01-01", "2026-05-20",
+    );
+    expect(result.assessedAt).toBeDefined();
+    expect(typeof result.assessedAt).toBe("string");
+  });
+
+  it("generates no-action message when everything is perfect", () => {
+    const incidents = makePerfectIncidents(6);
+    const policy = makePolicy();
+    const training = [makeTraining(), makeTraining({ id: "t2", staffId: "s2", staffName: "Tom" })];
+
+    const result = generateRestraintIntelligence(
+      incidents, policy, training, "oak-house", "2026-01-01", "2026-05-20",
+    );
+
+    expect(result.actions.some((a) => a.includes("No immediate actions required"))).toBe(true);
   });
 });

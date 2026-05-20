@@ -1,24 +1,32 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// Cornerstone Sanctions & Rewards — Public API
+// Cornerstone Sanctions Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
-  evaluateChildSanctionCompliance,
-  calculateHomeSanctionsMetrics,
   getSanctionTypeLabel,
-  getRewardTypeLabel,
-  getProhibitedPunishmentLabel,
+  getSanctionOutcomeLabel,
+  getRatingLabel,
+  pct,
+  getRating,
+  evaluateSanctionQuality,
+  evaluateSanctionCompliance,
+  evaluateSanctionPolicy,
+  evaluateStaffSanctionReadiness,
+  buildChildSanctionProfiles,
+  generateSanctionsIntelligence,
 } from "./sanctions-engine";
 
 export type {
   SanctionType,
-  RewardType,
-  ProhibitedPunishmentType,
-  Proportionality,
-  SanctionStatus,
+  SanctionOutcome,
+  Rating,
   SanctionRecord,
-  RewardRecord,
-  ChildBehaviourProfile,
-  SanctionComplianceResult,
-  HomeSanctionsMetrics,
+  SanctionPolicy,
+  StaffSanctionTraining,
+  SanctionQualityEvaluation,
+  SanctionComplianceEvaluation,
+  SanctionPolicyEvaluation,
+  StaffSanctionReadinessEvaluation,
+  ChildSanctionProfile,
+  SanctionsIntelligence,
 } from "./sanctions-engine";
