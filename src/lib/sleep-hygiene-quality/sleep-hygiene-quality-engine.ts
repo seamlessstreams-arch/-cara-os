@@ -1,106 +1,64 @@
-// ==============================================================================
 // Sleep Hygiene Quality Intelligence Engine
-//
-// Pure deterministic engine — no AI, no external calls, no randomness.
-// Evaluates quality of sleep support for children in residential care:
-//   1. Sleep Environment Quality (bedroom conditions, comfort, sensory)
-//   2. Sleep Routine Compliance (bedtime routines, consistency, wind-down)
-//   3. Sleep Outcome Monitoring (child reports, disruption tracking, wellbeing)
-//   4. Staff Sleep Support Readiness (training, night care awareness)
-//
-// Regulatory: CHR 2015 Reg 10, CHR 2015 Reg 12, SCCIF, NMS 3,
-//             UNCRC Article 24, UNCRC Article 31, NMS 10 (premises)
-// ==============================================================================
+// Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
-// -- Type unions ---------------------------------------------------------------
+// ══════════════════════════════════════════════════════════════════════════════
+// SLEEP HYGIENE QUALITY INTELLIGENCE ENGINE
+//
+// Pure deterministic engine for evaluating sleep patterns, bedtime routines,
+// sleep environment quality, and rest wellbeing for children in care.
+//
+// Regulatory basis:
+//   - CHR 2015 Regulation 6 — The health and wellbeing standard
+//   - CHR 2015 Regulation 9 — Quality of care standard
+//   - SCCIF — Health and wellbeing of children
+//   - NMS 6 — Health and wellbeing
+//   - NMS 7 — Leisure activities (rest and relaxation)
+//   - Children Act 1989 — Duty of care
+//   - NICE Guideline NG92 — Sleep disorders in children
+//
+// No AI. No external calls. Pure input → output.
+// ══════════════════════════════════════════════════════════════════════════════
 
-export type SleepEnvironmentRating =
+// ── Types ──────────────────────────────────────────────────────────────────
+
+export type SleepType =
+  | "bedtime_routine"
+  | "night_check"
+  | "morning_wakeup"
+  | "sleep_environment_review"
+  | "sleep_concern_assessment"
+  | "relaxation_activity"
+  | "screen_time_management"
+  | "sleep_hygiene_education";
+
+export type SleepQuality =
   | "excellent"
-  | "good"
-  | "adequate"
-  | "poor";
-
-export type SleepDisruptionType =
-  | "nightmares"
-  | "insomnia"
-  | "night_waking"
-  | "sleepwalking"
-  | "anxiety_at_bedtime"
-  | "noise_disturbance"
-  | "peer_disturbance"
-  | "pain_discomfort"
-  | "medication_side_effect"
-  | "none";
-
-export type SleepQualityRating =
-  | "very_good"
   | "good"
   | "fair"
   | "poor"
   | "very_poor";
 
-export type RoutineAdherence =
-  | "fully_followed"
-  | "mostly_followed"
-  | "partially_followed"
-  | "not_followed";
+export type Rating = "outstanding" | "good" | "requires_improvement" | "inadequate";
 
-export type NightCheckOutcome =
-  | "sleeping_peacefully"
-  | "awake_settled"
-  | "awake_unsettled"
-  | "not_in_room"
-  | "required_intervention";
+// ── Label Maps ─────────────────────────────────────────────────────────────
 
-export type Rating =
-  | "outstanding"
-  | "good"
-  | "requires_improvement"
-  | "inadequate";
+const sleepTypeLabels: Record<SleepType, string> = {
+  bedtime_routine: "Bedtime Routine",
+  night_check: "Night Check",
+  morning_wakeup: "Morning Wakeup",
+  sleep_environment_review: "Sleep Environment Review",
+  sleep_concern_assessment: "Sleep Concern Assessment",
+  relaxation_activity: "Relaxation Activity",
+  screen_time_management: "Screen Time Management",
+  sleep_hygiene_education: "Sleep Hygiene Education",
+};
 
-// -- Label maps ----------------------------------------------------------------
-
-const sleepEnvironmentRatingLabels: Record<SleepEnvironmentRating, string> = {
+const sleepQualityLabels: Record<SleepQuality, string> = {
   excellent: "Excellent",
-  good: "Good",
-  adequate: "Adequate",
-  poor: "Poor",
-};
-
-const sleepDisruptionTypeLabels: Record<SleepDisruptionType, string> = {
-  nightmares: "Nightmares",
-  insomnia: "Insomnia",
-  night_waking: "Night Waking",
-  sleepwalking: "Sleepwalking",
-  anxiety_at_bedtime: "Anxiety at Bedtime",
-  noise_disturbance: "Noise Disturbance",
-  peer_disturbance: "Peer Disturbance",
-  pain_discomfort: "Pain/Discomfort",
-  medication_side_effect: "Medication Side Effect",
-  none: "None",
-};
-
-const sleepQualityRatingLabels: Record<SleepQualityRating, string> = {
-  very_good: "Very Good",
   good: "Good",
   fair: "Fair",
   poor: "Poor",
   very_poor: "Very Poor",
-};
-
-const routineAdherenceLabels: Record<RoutineAdherence, string> = {
-  fully_followed: "Fully Followed",
-  mostly_followed: "Mostly Followed",
-  partially_followed: "Partially Followed",
-  not_followed: "Not Followed",
-};
-
-const nightCheckOutcomeLabels: Record<NightCheckOutcome, string> = {
-  sleeping_peacefully: "Sleeping Peacefully",
-  awake_settled: "Awake & Settled",
-  awake_unsettled: "Awake & Unsettled",
-  not_in_room: "Not in Room",
-  required_intervention: "Required Intervention",
 };
 
 const ratingLabels: Record<Rating, string> = {
@@ -110,154 +68,143 @@ const ratingLabels: Record<Rating, string> = {
   inadequate: "Inadequate",
 };
 
-// -- Label getters -------------------------------------------------------------
-
-export function getSleepEnvironmentRatingLabel(r: SleepEnvironmentRating): string {
-  return sleepEnvironmentRatingLabels[r] ?? r;
-}
-export function getSleepDisruptionTypeLabel(t: SleepDisruptionType): string {
-  return sleepDisruptionTypeLabels[t] ?? t;
-}
-export function getSleepQualityRatingLabel(r: SleepQualityRating): string {
-  return sleepQualityRatingLabels[r] ?? r;
-}
-export function getRoutineAdherenceLabel(a: RoutineAdherence): string {
-  return routineAdherenceLabels[a] ?? a;
-}
-export function getNightCheckOutcomeLabel(o: NightCheckOutcome): string {
-  return nightCheckOutcomeLabels[o] ?? o;
-}
-export function getRatingLabel(r: Rating): string {
-  return ratingLabels[r] ?? r;
+export function getSleepTypeLabel(type: SleepType): string {
+  return sleepTypeLabels[type];
 }
 
-// -- Input interfaces ----------------------------------------------------------
+export function getSleepQualityLabel(quality: SleepQuality): string {
+  return sleepQualityLabels[quality];
+}
 
-export interface SleepEnvironmentAudit {
+export function getRatingLabel(rating: Rating): string {
+  return ratingLabels[rating];
+}
+
+// ── Core Interfaces ────────────────────────────────────────────────────────
+
+export interface SleepRecord {
   id: string;
   childId: string;
   childName: string;
-  auditDate: string;
-  auditedBy: string;
-  bedroomTemperatureOk: boolean;
-  lightingAdequate: boolean;
-  noiseLevel: SleepEnvironmentRating;
-  beddingCleanComfortable: boolean;
-  personalItemsAllowed: boolean;
-  blackoutAvailable: boolean;
-  overallRating: SleepEnvironmentRating;
+  recordDate: string; // ISO date
+  sleepType: SleepType;
+  sleepQuality: SleepQuality;
+  routineFollowed: boolean;
+  environmentSuitable: boolean;
+  restfulSleep: boolean;
+  documentedInPlan: boolean;
+  staffMonitored: boolean;
+  feedbackGiven: boolean;
 }
 
-export interface SleepRoutineRecord {
+export interface SleepPolicy {
   id: string;
-  childId: string;
-  childName: string;
-  date: string;
-  bedtimeTarget: string;
-  actualBedtime: string;
-  windDownActivityOffered: boolean;
-  screenFreeBeforeBed: boolean;
-  routineAdherence: RoutineAdherence;
-  staffSupporting: string;
-}
-
-export interface SleepOutcomeRecord {
-  id: string;
-  childId: string;
-  childName: string;
-  date: string;
-  sleepQuality: SleepQualityRating;
-  hoursSlept: number;
-  disruptions: SleepDisruptionType[];
-  childSelfReport: boolean;
-  wakeFeeling: "rested" | "tired" | "very_tired" | "not_recorded";
-  nightChecks: NightCheckOutcome[];
+  bedtimeRoutineGuideline: boolean;
+  sleepEnvironmentStandard: boolean;
+  nightMonitoringProcedure: boolean;
+  screenTimePolicy: boolean;
+  sleepConcernProtocol: boolean;
+  relaxationProgramme: boolean;
+  regularReview: boolean;
 }
 
 export interface StaffSleepTraining {
   id: string;
   staffId: string;
   staffName: string;
-  sleepHygieneAwareness: boolean;
-  nightCareProtocol: boolean;
-  traumaInformedSleep: boolean;
+  sleepHygieneKnowledge: boolean;
+  nightSupervision: boolean;
+  relaxationTechniques: boolean;
   sleepDisorderAwareness: boolean;
-  bedtimeRoutinesTrained: boolean;
-  nightCheckProcedures: boolean;
+  traumaInformedSleep: boolean;
+  environmentManagement: boolean;
 }
 
-// -- Result interfaces ---------------------------------------------------------
+// ── Result Interfaces ──────────────────────────────────────────────────────
 
-export interface SleepEnvironmentResult {
-  overallScore: number;
-  totalAudits: number;
-  excellentGoodRate: number;
-  temperatureOkRate: number;
-  lightingAdequateRate: number;
-  beddingRate: number;
-  personalItemsRate: number;
-  blackoutRate: number;
-}
-
-export interface SleepRoutineResult {
-  overallScore: number;
+export interface SleepQualityResult {
   totalRecords: number;
-  fullyFollowedRate: number;
-  windDownOfferedRate: number;
-  screenFreeRate: number;
-  onTimeBedtimeRate: number;
+  sleepQualityRate: number;
+  routineRate: number;
+  environmentRate: number;
+  restfulRate: number;
+  qualityBreakdown: Record<SleepQuality, number>;
+  score: number; // 0-25
+  strengths: string[];
+  concerns: string[];
 }
 
-export interface SleepOutcomeResult {
-  overallScore: number;
+export interface SleepComplianceResult {
   totalRecords: number;
-  goodSleepRate: number;
-  averageHours: number;
-  disruptionFreeRate: number;
-  childSelfReportRate: number;
-  restedRate: number;
+  documentedRate: number;
+  staffMonitoredRate: number;
+  feedbackRate: number;
+  sleepTypeDiversityRatio: number;
+  uniqueTypes: number;
+  score: number; // 0-25
+  strengths: string[];
+  concerns: string[];
+}
+
+export interface SleepPolicyResult {
+  bedtimeRoutineGuideline: boolean;
+  sleepEnvironmentStandard: boolean;
+  nightMonitoringProcedure: boolean;
+  screenTimePolicy: boolean;
+  sleepConcernProtocol: boolean;
+  relaxationProgramme: boolean;
+  regularReview: boolean;
+  score: number; // 0-25
+  strengths: string[];
+  concerns: string[];
 }
 
 export interface StaffSleepReadinessResult {
-  overallScore: number;
   totalStaff: number;
-  sleepHygieneRate: number;
-  nightCareRate: number;
-  traumaInformedRate: number;
-  sleepDisorderRate: number;
-  bedtimeRoutinesRate: number;
-  nightCheckRate: number;
+  sleepHygieneKnowledgeRate: number;
+  nightSupervisionRate: number;
+  relaxationTechniquesRate: number;
+  sleepDisorderAwarenessRate: number;
+  traumaInformedSleepRate: number;
+  environmentManagementRate: number;
+  score: number; // 0-25
+  strengths: string[];
+  concerns: string[];
 }
 
 export interface ChildSleepProfile {
   childId: string;
   childName: string;
-  environmentRating: string;
-  routineAdherence: string;
-  averageSleepHours: number;
-  disruptionCount: number;
-  goodSleepRate: number;
-  overallScore: number;
+  totalRecords: number;
+  sleepQualityRate: number;
+  routineRate: number;
+  uniqueTypes: number;
+  sleepScore: number; // 0-10
 }
 
 export interface SleepHygieneQualityIntelligence {
   homeId: string;
+  assessedAt: string;
   periodStart: string;
   periodEnd: string;
-  overallScore: number;
+
+  overallScore: number; // 0-100
   rating: Rating;
-  sleepEnvironment: SleepEnvironmentResult;
-  sleepRoutine: SleepRoutineResult;
-  sleepOutcome: SleepOutcomeResult;
-  staffSleepReadiness: StaffSleepReadinessResult;
+
+  sleepQuality: SleepQualityResult;
+  sleepCompliance: SleepComplianceResult;
+  sleepPolicy: SleepPolicyResult;
+  staffReadiness: StaffSleepReadinessResult;
+
   childProfiles: ChildSleepProfile[];
+
   strengths: string[];
   areasForImprovement: string[];
   actions: string[];
   regulatoryLinks: string[];
 }
 
-// -- Helpers -------------------------------------------------------------------
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 export function pct(num: number, den: number): number {
   if (den === 0) return 0;
@@ -271,602 +218,668 @@ export function getRating(score: number): Rating {
   return "inadequate";
 }
 
-// -- Evaluators ----------------------------------------------------------------
+// ── Evaluator 1: Sleep Quality (0-25) ──────────────────────────────────────
 
-/**
- * Evaluates sleep environment quality through audits.
- * Empty = 0 (no audits = no evidence of quality).
- *
- *   Excellent/Good rate          → 0-7
- *   Temperature ok rate          → 0-5
- *   Bedding clean & comfortable  → 0-5
- *   Blackout available           → 0-4
- *   Personal items allowed       → 0-4
- */
-export function evaluateSleepEnvironment(
-  audits: SleepEnvironmentAudit[],
-): SleepEnvironmentResult {
-  if (audits.length === 0) {
+export function evaluateSleepQuality(
+  records: SleepRecord[],
+): SleepQualityResult {
+  const totalRecords = records.length;
+
+  // PRESENCE pattern: empty data → 0 score
+  if (totalRecords === 0) {
     return {
-      overallScore: 0,
-      totalAudits: 0,
-      excellentGoodRate: 0,
-      temperatureOkRate: 0,
-      lightingAdequateRate: 0,
-      beddingRate: 0,
-      personalItemsRate: 0,
-      blackoutRate: 0,
-    };
-  }
-
-  let score = 0;
-
-  const excellentGood = audits.filter(
-    (a) => a.overallRating === "excellent" || a.overallRating === "good",
-  ).length;
-  const excellentGoodRate = pct(excellentGood, audits.length);
-  if (excellentGoodRate >= 90) score += 7;
-  else if (excellentGoodRate >= 70) score += 5;
-  else if (excellentGoodRate >= 50) score += 3;
-  else if (excellentGoodRate > 0) score += 1;
-
-  const tempOk = audits.filter((a) => a.bedroomTemperatureOk).length;
-  const temperatureOkRate = pct(tempOk, audits.length);
-  if (temperatureOkRate >= 90) score += 5;
-  else if (temperatureOkRate >= 70) score += 3;
-  else if (temperatureOkRate >= 50) score += 2;
-  else if (temperatureOkRate > 0) score += 1;
-
-  const bedding = audits.filter((a) => a.beddingCleanComfortable).length;
-  const beddingRate = pct(bedding, audits.length);
-  if (beddingRate >= 90) score += 5;
-  else if (beddingRate >= 70) score += 3;
-  else if (beddingRate >= 50) score += 2;
-  else if (beddingRate > 0) score += 1;
-
-  const blackout = audits.filter((a) => a.blackoutAvailable).length;
-  const blackoutRate = pct(blackout, audits.length);
-  if (blackoutRate >= 90) score += 4;
-  else if (blackoutRate >= 70) score += 3;
-  else if (blackoutRate >= 50) score += 2;
-  else if (blackoutRate > 0) score += 1;
-
-  const personalItems = audits.filter((a) => a.personalItemsAllowed).length;
-  const personalItemsRate = pct(personalItems, audits.length);
-  if (personalItemsRate >= 90) score += 4;
-  else if (personalItemsRate >= 70) score += 3;
-  else if (personalItemsRate >= 50) score += 2;
-  else if (personalItemsRate > 0) score += 1;
-
-  const lighting = audits.filter((a) => a.lightingAdequate).length;
-  const lightingAdequateRate = pct(lighting, audits.length);
-
-  return {
-    overallScore: Math.min(score, 25),
-    totalAudits: audits.length,
-    excellentGoodRate,
-    temperatureOkRate,
-    lightingAdequateRate,
-    beddingRate,
-    personalItemsRate,
-    blackoutRate,
-  };
-}
-
-/**
- * Evaluates sleep routine compliance.
- * Empty = 0 (no routine records = no evidence of practice).
- *
- *   Fully followed rate           → 0-7
- *   Wind-down offered rate        → 0-6
- *   Screen-free rate              → 0-6
- *   On-time bedtime rate          → 0-6
- */
-export function evaluateSleepRoutine(
-  records: SleepRoutineRecord[],
-): SleepRoutineResult {
-  if (records.length === 0) {
-    return {
-      overallScore: 0,
       totalRecords: 0,
-      fullyFollowedRate: 0,
-      windDownOfferedRate: 0,
-      screenFreeRate: 0,
-      onTimeBedtimeRate: 0,
+      sleepQualityRate: 0,
+      routineRate: 0,
+      environmentRate: 0,
+      restfulRate: 0,
+      qualityBreakdown: { excellent: 0, good: 0, fair: 0, poor: 0, very_poor: 0 },
+      score: 0,
+      strengths: [],
+      concerns: ["No sleep records available — sleep quality cannot be assessed"],
     };
   }
 
+  // Sleep quality rate: excellent + good / total
+  const goodOrBetter = records.filter(
+    (r) => r.sleepQuality === "excellent" || r.sleepQuality === "good",
+  ).length;
+  const sleepQualityRate = pct(goodOrBetter, totalRecords);
+
+  // Routine followed rate
+  const routineCount = records.filter((r) => r.routineFollowed).length;
+  const routineRate = pct(routineCount, totalRecords);
+
+  // Environment suitable rate
+  const envCount = records.filter((r) => r.environmentSuitable).length;
+  const environmentRate = pct(envCount, totalRecords);
+
+  // Restful sleep rate
+  const restfulCount = records.filter((r) => r.restfulSleep).length;
+  const restfulRate = pct(restfulCount, totalRecords);
+
+  // Quality breakdown
+  const qualityBreakdown: Record<SleepQuality, number> = {
+    excellent: 0, good: 0, fair: 0, poor: 0, very_poor: 0,
+  };
+  for (const r of records) {
+    qualityBreakdown[r.sleepQuality]++;
+  }
+
+  // Score: sleepQuality 0-7, routine 0-6, environment 0-6, restful 0-6 = 0-25
   let score = 0;
+  score += (sleepQualityRate / 100) * 7;
+  score += (routineRate / 100) * 6;
+  score += (environmentRate / 100) * 6;
+  score += (restfulRate / 100) * 6;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
 
-  const fullyFollowed = records.filter(
-    (r) => r.routineAdherence === "fully_followed",
-  ).length;
-  const fullyFollowedRate = pct(fullyFollowed, records.length);
-  if (fullyFollowedRate >= 90) score += 7;
-  else if (fullyFollowedRate >= 70) score += 5;
-  else if (fullyFollowedRate >= 50) score += 3;
-  else if (fullyFollowedRate > 0) score += 1;
+  // Insights
+  const strengths: string[] = [];
+  const concerns: string[] = [];
 
-  const windDown = records.filter((r) => r.windDownActivityOffered).length;
-  const windDownOfferedRate = pct(windDown, records.length);
-  if (windDownOfferedRate >= 90) score += 6;
-  else if (windDownOfferedRate >= 70) score += 4;
-  else if (windDownOfferedRate >= 50) score += 3;
-  else if (windDownOfferedRate > 0) score += 1;
+  if (sleepQualityRate >= 80) {
+    strengths.push("Excellent sleep quality: " + sleepQualityRate + "% of records rated good or excellent");
+  } else if (sleepQualityRate < 50) {
+    concerns.push("Sleep quality at " + sleepQualityRate + "% — majority of sleep records below good standard");
+  }
 
-  const screenFree = records.filter((r) => r.screenFreeBeforeBed).length;
-  const screenFreeRate = pct(screenFree, records.length);
-  if (screenFreeRate >= 90) score += 6;
-  else if (screenFreeRate >= 70) score += 4;
-  else if (screenFreeRate >= 50) score += 3;
-  else if (screenFreeRate > 0) score += 1;
+  if (routineRate >= 90) {
+    strengths.push("Strong bedtime routine adherence: " + routineRate + "% compliance");
+  } else if (routineRate < 70) {
+    concerns.push("Routine adherence at " + routineRate + "% — inconsistent bedtime routines may impact sleep quality");
+  }
 
-  // On-time = actual bedtime <= target bedtime (string comparison works for HH:MM)
-  const onTime = records.filter(
-    (r) => r.actualBedtime <= r.bedtimeTarget,
-  ).length;
-  const onTimeBedtimeRate = pct(onTime, records.length);
-  if (onTimeBedtimeRate >= 90) score += 6;
-  else if (onTimeBedtimeRate >= 70) score += 4;
-  else if (onTimeBedtimeRate >= 50) score += 3;
-  else if (onTimeBedtimeRate > 0) score += 1;
+  if (environmentRate >= 90) {
+    strengths.push("Sleep environment consistently suitable: " + environmentRate + "% of records");
+  } else if (environmentRate < 70) {
+    concerns.push("Sleep environment suitability at " + environmentRate + "% — review bedroom conditions and sensory factors");
+  }
+
+  if (restfulRate >= 80) {
+    strengths.push("Good restful sleep rate: " + restfulRate + "% of records indicate restful sleep");
+  } else if (restfulRate < 50) {
+    concerns.push("Restful sleep rate at " + restfulRate + "% — children may not be getting adequate rest");
+  }
 
   return {
-    overallScore: Math.min(score, 25),
-    totalRecords: records.length,
-    fullyFollowedRate,
-    windDownOfferedRate,
-    screenFreeRate,
-    onTimeBedtimeRate,
+    totalRecords,
+    sleepQualityRate,
+    routineRate,
+    environmentRate,
+    restfulRate,
+    qualityBreakdown,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-/**
- * Evaluates sleep outcomes from monitoring records.
- * Empty = 0 (no monitoring = no evidence of wellbeing).
- *
- *   Good sleep rate (very_good/good)   → 0-7
- *   Disruption-free rate               → 0-6
- *   Child self-report rate             → 0-5
- *   Rested rate                        → 0-4
- *   Average hours adequate (7+)        → 0-3
- */
-export function evaluateSleepOutcome(
-  records: SleepOutcomeRecord[],
-): SleepOutcomeResult {
-  if (records.length === 0) {
+// ── Evaluator 2: Sleep Compliance (0-25) ───────────────────────────────────
+
+export function evaluateSleepCompliance(
+  records: SleepRecord[],
+): SleepComplianceResult {
+  const totalRecords = records.length;
+
+  // PRESENCE pattern: empty data → 0 score
+  if (totalRecords === 0) {
     return {
-      overallScore: 0,
       totalRecords: 0,
-      goodSleepRate: 0,
-      averageHours: 0,
-      disruptionFreeRate: 0,
-      childSelfReportRate: 0,
-      restedRate: 0,
+      documentedRate: 0,
+      staffMonitoredRate: 0,
+      feedbackRate: 0,
+      sleepTypeDiversityRatio: 0,
+      uniqueTypes: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No sleep records available — compliance cannot be assessed"],
     };
   }
 
+  // Documented in plan rate
+  const documentedCount = records.filter((r) => r.documentedInPlan).length;
+  const documentedRate = pct(documentedCount, totalRecords);
+
+  // Staff monitored rate
+  const monitoredCount = records.filter((r) => r.staffMonitored).length;
+  const staffMonitoredRate = pct(monitoredCount, totalRecords);
+
+  // Feedback given rate
+  const feedbackCount = records.filter((r) => r.feedbackGiven).length;
+  const feedbackRate = pct(feedbackCount, totalRecords);
+
+  // Sleep type diversity ratio (unique types / 8)
+  const uniqueTypesSet = new Set(records.map((r) => r.sleepType));
+  const uniqueTypes = uniqueTypesSet.size;
+  const sleepTypeDiversityRatio = Math.round((uniqueTypes / 8) * 100) / 100;
+
+  // Score: documented 0-8, staffMonitored 0-7, feedback 0-5, diversity 0-5 = 0-25
   let score = 0;
+  score += (documentedRate / 100) * 8;
+  score += (staffMonitoredRate / 100) * 7;
+  score += (feedbackRate / 100) * 5;
+  score += sleepTypeDiversityRatio * 5;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
 
-  const goodSleep = records.filter(
-    (r) => r.sleepQuality === "very_good" || r.sleepQuality === "good",
-  ).length;
-  const goodSleepRate = pct(goodSleep, records.length);
-  if (goodSleepRate >= 90) score += 7;
-  else if (goodSleepRate >= 70) score += 5;
-  else if (goodSleepRate >= 50) score += 3;
-  else if (goodSleepRate > 0) score += 1;
+  // Insights
+  const strengths: string[] = [];
+  const concerns: string[] = [];
 
-  const disruptionFree = records.filter(
-    (r) =>
-      r.disruptions.length === 0 ||
-      (r.disruptions.length === 1 && r.disruptions[0] === "none"),
-  ).length;
-  const disruptionFreeRate = pct(disruptionFree, records.length);
-  if (disruptionFreeRate >= 90) score += 6;
-  else if (disruptionFreeRate >= 70) score += 4;
-  else if (disruptionFreeRate >= 50) score += 3;
-  else if (disruptionFreeRate > 0) score += 1;
+  if (documentedRate >= 90) {
+    strengths.push("Excellent care plan documentation: " + documentedRate + "% of sleep records documented in plans");
+  } else if (documentedRate < 60) {
+    concerns.push("Care plan documentation at " + documentedRate + "% — sleep needs not consistently recorded in plans");
+  }
 
-  const selfReport = records.filter((r) => r.childSelfReport).length;
-  const childSelfReportRate = pct(selfReport, records.length);
-  if (childSelfReportRate >= 90) score += 5;
-  else if (childSelfReportRate >= 70) score += 3;
-  else if (childSelfReportRate >= 50) score += 2;
-  else if (childSelfReportRate > 0) score += 1;
+  if (staffMonitoredRate >= 90) {
+    strengths.push("Consistent staff monitoring: " + staffMonitoredRate + "% of sleep records staff-monitored");
+  } else if (staffMonitoredRate < 70) {
+    concerns.push("Staff monitoring at " + staffMonitoredRate + "% — gaps in overnight supervision may exist");
+  }
 
-  const rested = records.filter((r) => r.wakeFeeling === "rested").length;
-  const restedRate = pct(rested, records.length);
-  if (restedRate >= 90) score += 4;
-  else if (restedRate >= 70) score += 3;
-  else if (restedRate >= 50) score += 2;
-  else if (restedRate > 0) score += 1;
+  if (feedbackRate >= 80) {
+    strengths.push("Good feedback practice: " + feedbackRate + "% of records include feedback to children");
+  } else if (feedbackRate < 50) {
+    concerns.push("Feedback rate at " + feedbackRate + "% — children not consistently informed about their sleep patterns");
+  }
 
-  const totalHours = records.reduce((sum, r) => sum + r.hoursSlept, 0);
-  const averageHours = Math.round((totalHours / records.length) * 10) / 10;
-  if (averageHours >= 8) score += 3;
-  else if (averageHours >= 7) score += 2;
-  else if (averageHours >= 6) score += 1;
+  if (uniqueTypes >= 6) {
+    strengths.push("Comprehensive sleep monitoring: " + uniqueTypes + " of 8 sleep record types in use");
+  } else if (uniqueTypes <= 2) {
+    concerns.push("Only " + uniqueTypes + " sleep record type(s) used — limited monitoring scope");
+  }
 
   return {
-    overallScore: Math.min(score, 25),
-    totalRecords: records.length,
-    goodSleepRate,
-    averageHours,
-    disruptionFreeRate,
-    childSelfReportRate,
-    restedRate,
+    totalRecords,
+    documentedRate,
+    staffMonitoredRate,
+    feedbackRate,
+    sleepTypeDiversityRatio,
+    uniqueTypes,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-/**
- * Evaluates staff readiness for sleep support.
- * Empty = 0 (no training = no evidence of competence).
- *
- *   Sleep hygiene awareness      → 0-6
- *   Night care protocol          → 0-5
- *   Trauma-informed sleep        → 0-5
- *   Sleep disorder awareness     → 0-4
- *   Bedtime routines trained     → 0-3
- *   Night check procedures       → 0-2
- */
+// ── Evaluator 3: Sleep Policy (0-25) ───────────────────────────────────────
+
+export function evaluateSleepPolicy(
+  policy: SleepPolicy | null,
+): SleepPolicyResult {
+  // Null policy → all false, score 0
+  if (policy === null) {
+    return {
+      bedtimeRoutineGuideline: false,
+      sleepEnvironmentStandard: false,
+      nightMonitoringProcedure: false,
+      screenTimePolicy: false,
+      sleepConcernProtocol: false,
+      relaxationProgramme: false,
+      regularReview: false,
+      score: 0,
+      strengths: [],
+      concerns: ["No sleep policy in place — URGENT: develop comprehensive sleep hygiene policy"],
+    };
+  }
+
+  // 7 booleans weighted: 4+4+4+4+3+3+3 = 25
+  let score = 0;
+  if (policy.bedtimeRoutineGuideline) score += 4;
+  if (policy.sleepEnvironmentStandard) score += 4;
+  if (policy.nightMonitoringProcedure) score += 4;
+  if (policy.screenTimePolicy) score += 4;
+  if (policy.sleepConcernProtocol) score += 3;
+  if (policy.relaxationProgramme) score += 3;
+  if (policy.regularReview) score += 3;
+
+  // Insights
+  const strengths: string[] = [];
+  const concerns: string[] = [];
+
+  const trueCount = [
+    policy.bedtimeRoutineGuideline,
+    policy.sleepEnvironmentStandard,
+    policy.nightMonitoringProcedure,
+    policy.screenTimePolicy,
+    policy.sleepConcernProtocol,
+    policy.relaxationProgramme,
+    policy.regularReview,
+  ].filter(Boolean).length;
+
+  if (trueCount === 7) {
+    strengths.push("Comprehensive sleep policy: all 7 policy areas covered");
+  } else if (trueCount >= 5) {
+    strengths.push("Good sleep policy coverage: " + trueCount + " of 7 areas addressed");
+  }
+
+  if (!policy.bedtimeRoutineGuideline) {
+    concerns.push("No bedtime routine guideline — essential for consistent sleep hygiene");
+  }
+  if (!policy.sleepEnvironmentStandard) {
+    concerns.push("No sleep environment standard — bedroom conditions not formally defined");
+  }
+  if (!policy.nightMonitoringProcedure) {
+    concerns.push("No night monitoring procedure — overnight supervision may be inconsistent");
+  }
+  if (!policy.screenTimePolicy) {
+    concerns.push("No screen time policy — screen exposure before bed impacts sleep quality");
+  }
+  if (!policy.sleepConcernProtocol) {
+    concerns.push("No sleep concern protocol — escalation pathway for sleep issues unclear");
+  }
+  if (!policy.relaxationProgramme) {
+    concerns.push("No relaxation programme — children may lack wind-down support");
+  }
+  if (!policy.regularReview) {
+    concerns.push("No regular review process — sleep policy may become outdated");
+  }
+
+  return {
+    bedtimeRoutineGuideline: policy.bedtimeRoutineGuideline,
+    sleepEnvironmentStandard: policy.sleepEnvironmentStandard,
+    nightMonitoringProcedure: policy.nightMonitoringProcedure,
+    screenTimePolicy: policy.screenTimePolicy,
+    sleepConcernProtocol: policy.sleepConcernProtocol,
+    relaxationProgramme: policy.relaxationProgramme,
+    regularReview: policy.regularReview,
+    score,
+    strengths,
+    concerns,
+  };
+}
+
+// ── Evaluator 4: Staff Sleep Readiness (0-25) ─────────────────────────────
+
 export function evaluateStaffSleepReadiness(
   training: StaffSleepTraining[],
 ): StaffSleepReadinessResult {
-  if (training.length === 0) {
+  const totalStaff = training.length;
+
+  // PRESENCE pattern: empty data → 0 score
+  if (totalStaff === 0) {
     return {
-      overallScore: 0,
       totalStaff: 0,
-      sleepHygieneRate: 0,
-      nightCareRate: 0,
-      traumaInformedRate: 0,
-      sleepDisorderRate: 0,
-      bedtimeRoutinesRate: 0,
-      nightCheckRate: 0,
+      sleepHygieneKnowledgeRate: 0,
+      nightSupervisionRate: 0,
+      relaxationTechniquesRate: 0,
+      sleepDisorderAwarenessRate: 0,
+      traumaInformedSleepRate: 0,
+      environmentManagementRate: 0,
+      score: 0,
+      strengths: [],
+      concerns: ["No staff sleep training records — staff readiness cannot be assessed"],
     };
   }
 
+  // 6 skills
+  const hygieneCount = training.filter((t) => t.sleepHygieneKnowledge).length;
+  const sleepHygieneKnowledgeRate = pct(hygieneCount, totalStaff);
+
+  const nightCount = training.filter((t) => t.nightSupervision).length;
+  const nightSupervisionRate = pct(nightCount, totalStaff);
+
+  const relaxCount = training.filter((t) => t.relaxationTechniques).length;
+  const relaxationTechniquesRate = pct(relaxCount, totalStaff);
+
+  const disorderCount = training.filter((t) => t.sleepDisorderAwareness).length;
+  const sleepDisorderAwarenessRate = pct(disorderCount, totalStaff);
+
+  const traumaCount = training.filter((t) => t.traumaInformedSleep).length;
+  const traumaInformedSleepRate = pct(traumaCount, totalStaff);
+
+  const envCount = training.filter((t) => t.environmentManagement).length;
+  const environmentManagementRate = pct(envCount, totalStaff);
+
+  // 6 skills weighted: 6+5+5+4+3+2 = 25
   let score = 0;
+  score += (sleepHygieneKnowledgeRate / 100) * 6;
+  score += (nightSupervisionRate / 100) * 5;
+  score += (relaxationTechniquesRate / 100) * 5;
+  score += (sleepDisorderAwarenessRate / 100) * 4;
+  score += (traumaInformedSleepRate / 100) * 3;
+  score += (environmentManagementRate / 100) * 2;
+  score = Math.round(score * 10) / 10;
+  score = Math.max(0, Math.min(25, score));
 
-  const sleepHygiene = training.filter(
-    (t) => t.sleepHygieneAwareness,
-  ).length;
-  const sleepHygieneRate = pct(sleepHygiene, training.length);
-  if (sleepHygieneRate >= 90) score += 6;
-  else if (sleepHygieneRate >= 70) score += 4;
-  else if (sleepHygieneRate >= 50) score += 3;
-  else if (sleepHygieneRate > 0) score += 1;
+  // Insights
+  const strengths: string[] = [];
+  const concerns: string[] = [];
 
-  const nightCare = training.filter((t) => t.nightCareProtocol).length;
-  const nightCareRate = pct(nightCare, training.length);
-  if (nightCareRate >= 90) score += 5;
-  else if (nightCareRate >= 70) score += 3;
-  else if (nightCareRate >= 50) score += 2;
-  else if (nightCareRate > 0) score += 1;
+  if (sleepHygieneKnowledgeRate >= 90) {
+    strengths.push("Excellent sleep hygiene knowledge: " + sleepHygieneKnowledgeRate + "% of staff trained");
+  } else if (sleepHygieneKnowledgeRate < 70) {
+    concerns.push("Sleep hygiene knowledge at " + sleepHygieneKnowledgeRate + "% — staff may lack foundational understanding");
+  }
 
-  const traumaInformed = training.filter(
-    (t) => t.traumaInformedSleep,
-  ).length;
-  const traumaInformedRate = pct(traumaInformed, training.length);
-  if (traumaInformedRate >= 90) score += 5;
-  else if (traumaInformedRate >= 70) score += 3;
-  else if (traumaInformedRate >= 50) score += 2;
-  else if (traumaInformedRate > 0) score += 1;
+  if (nightSupervisionRate >= 90) {
+    strengths.push("Strong night supervision skills: " + nightSupervisionRate + "% of staff trained");
+  } else if (nightSupervisionRate < 70) {
+    concerns.push("Night supervision skills at " + nightSupervisionRate + "% — gaps in overnight care capability");
+  }
 
-  const sleepDisorder = training.filter(
-    (t) => t.sleepDisorderAwareness,
-  ).length;
-  const sleepDisorderRate = pct(sleepDisorder, training.length);
-  if (sleepDisorderRate >= 90) score += 4;
-  else if (sleepDisorderRate >= 70) score += 3;
-  else if (sleepDisorderRate >= 50) score += 2;
-  else if (sleepDisorderRate > 0) score += 1;
+  if (relaxationTechniquesRate >= 80) {
+    strengths.push("Good relaxation technique skills: " + relaxationTechniquesRate + "% of staff trained");
+  } else if (relaxationTechniquesRate < 50) {
+    concerns.push("Relaxation technique skills at " + relaxationTechniquesRate + "% — staff may not support wind-down effectively");
+  }
 
-  const bedtimeRoutines = training.filter(
-    (t) => t.bedtimeRoutinesTrained,
-  ).length;
-  const bedtimeRoutinesRate = pct(bedtimeRoutines, training.length);
-  if (bedtimeRoutinesRate >= 90) score += 3;
-  else if (bedtimeRoutinesRate >= 70) score += 2;
-  else if (bedtimeRoutinesRate >= 50) score += 1;
+  if (sleepDisorderAwarenessRate >= 80) {
+    strengths.push("Good sleep disorder awareness: " + sleepDisorderAwarenessRate + "% of staff trained");
+  } else if (sleepDisorderAwarenessRate < 50) {
+    concerns.push("Sleep disorder awareness at " + sleepDisorderAwarenessRate + "% — sleep difficulties may go unrecognised");
+  }
 
-  const nightCheck = training.filter(
-    (t) => t.nightCheckProcedures,
-  ).length;
-  const nightCheckRate = pct(nightCheck, training.length);
-  if (nightCheckRate >= 90) score += 2;
-  else if (nightCheckRate >= 70) score += 1;
+  if (traumaInformedSleepRate >= 80) {
+    strengths.push("Strong trauma-informed sleep practice: " + traumaInformedSleepRate + "% of staff trained");
+  } else if (traumaInformedSleepRate < 50) {
+    concerns.push("Trauma-informed sleep practice at " + traumaInformedSleepRate + "% — children with trauma may not receive appropriate support");
+  }
+
+  if (environmentManagementRate >= 80) {
+    strengths.push("Good environment management skills: " + environmentManagementRate + "% of staff trained");
+  } else if (environmentManagementRate < 50) {
+    concerns.push("Environment management skills at " + environmentManagementRate + "% — staff may not optimise sleep conditions");
+  }
 
   return {
-    overallScore: Math.min(score, 25),
-    totalStaff: training.length,
-    sleepHygieneRate,
-    nightCareRate,
-    traumaInformedRate,
-    sleepDisorderRate,
-    bedtimeRoutinesRate,
-    nightCheckRate,
+    totalStaff,
+    sleepHygieneKnowledgeRate,
+    nightSupervisionRate,
+    relaxationTechniquesRate,
+    sleepDisorderAwarenessRate,
+    traumaInformedSleepRate,
+    environmentManagementRate,
+    score,
+    strengths,
+    concerns,
   };
 }
 
-// -- Child Profiles ------------------------------------------------------------
+// ── Build Child Sleep Profiles ─────────────────────────────────────────────
 
 export function buildChildSleepProfiles(
-  audits: SleepEnvironmentAudit[],
-  routines: SleepRoutineRecord[],
-  outcomes: SleepOutcomeRecord[],
+  records: SleepRecord[],
 ): ChildSleepProfile[] {
-  const childIds = new Set<string>();
-  const childNames = new Map<string, string>();
+  if (records.length === 0) return [];
 
-  for (const a of audits) {
-    childIds.add(a.childId);
-    childNames.set(a.childId, a.childName);
-  }
-  for (const r of routines) {
-    childIds.add(r.childId);
-    childNames.set(r.childId, r.childName);
-  }
-  for (const o of outcomes) {
-    childIds.add(o.childId);
-    childNames.set(o.childId, o.childName);
-  }
+  // Group by childId
+  const childMap = new Map<string, { childId: string; childName: string; records: SleepRecord[] }>();
 
-  return Array.from(childIds).map((childId) => {
-    const childAudits = audits.filter((a) => a.childId === childId);
-    const childRoutines = routines.filter((r) => r.childId === childId);
-    const childOutcomes = outcomes.filter((o) => o.childId === childId);
-    const childName = childNames.get(childId) ?? childId;
-
-    // Environment rating — most recent audit
-    const latestAudit = childAudits.sort(
-      (a, b) => b.auditDate.localeCompare(a.auditDate),
-    )[0];
-    const environmentRating = latestAudit?.overallRating ?? "unknown";
-
-    // Routine adherence — most common
-    const adherenceCounts = new Map<string, number>();
-    for (const r of childRoutines) {
-      adherenceCounts.set(
-        r.routineAdherence,
-        (adherenceCounts.get(r.routineAdherence) ?? 0) + 1,
-      );
+  for (const r of records) {
+    if (!childMap.has(r.childId)) {
+      childMap.set(r.childId, { childId: r.childId, childName: r.childName, records: [] });
     }
-    let routineAdherence = "unknown";
-    let maxCount = 0;
-    for (const [adh, count] of adherenceCounts) {
-      if (count > maxCount) {
-        maxCount = count;
-        routineAdherence = adh;
-      }
-    }
+    childMap.get(r.childId)!.records.push(r);
+  }
 
-    // Average sleep hours
-    const totalHours = childOutcomes.reduce(
-      (sum, o) => sum + o.hoursSlept,
-      0,
-    );
-    const averageSleepHours =
-      childOutcomes.length > 0
-        ? Math.round((totalHours / childOutcomes.length) * 10) / 10
-        : 0;
+  return Array.from(childMap.values()).map((child) => {
+    const totalRecords = child.records.length;
 
-    // Disruption count
-    const disruptionCount = childOutcomes.filter(
-      (o) =>
-        o.disruptions.length > 0 &&
-        !(o.disruptions.length === 1 && o.disruptions[0] === "none"),
+    // Per-child sleepQualityRate (excellent + good)
+    const goodOrBetter = child.records.filter(
+      (r) => r.sleepQuality === "excellent" || r.sleepQuality === "good",
     ).length;
+    const sleepQualityRate = pct(goodOrBetter, totalRecords);
 
-    // Good sleep rate
-    const goodSleep = childOutcomes.filter(
-      (o) => o.sleepQuality === "very_good" || o.sleepQuality === "good",
-    ).length;
-    const goodSleepRate = pct(goodSleep, childOutcomes.length);
+    // Per-child routineRate
+    const routineCount = child.records.filter((r) => r.routineFollowed).length;
+    const routineRate = pct(routineCount, totalRecords);
 
-    // Score 0-10
-    let score = 0;
+    // Unique types
+    const uniqueTypesSet = new Set(child.records.map((r) => r.sleepType));
+    const uniqueTypes = uniqueTypesSet.size;
 
-    // Environment (0-3)
-    if (environmentRating === "excellent") score += 3;
-    else if (environmentRating === "good") score += 2;
-    else if (environmentRating === "adequate") score += 1;
+    // Sleep score 0-10
+    // frequencyScore: >=10 records → 2, >=5 → 1, else 0
+    let frequencyScore = 0;
+    if (totalRecords >= 10) frequencyScore = 2;
+    else if (totalRecords >= 5) frequencyScore = 1;
 
-    // Routine (0-3)
-    if (routineAdherence === "fully_followed") score += 3;
-    else if (routineAdherence === "mostly_followed") score += 2;
-    else if (routineAdherence === "partially_followed") score += 1;
+    // qualityScore: >=80% → 3, >=60% → 2, >=40% → 1, else 0
+    let qualityScore = 0;
+    if (sleepQualityRate >= 80) qualityScore = 3;
+    else if (sleepQualityRate >= 60) qualityScore = 2;
+    else if (sleepQualityRate >= 40) qualityScore = 1;
 
-    // Sleep quality (0-4)
-    if (childOutcomes.length === 0) {
-      score += 0;
-    } else if (goodSleepRate >= 80) {
-      score += 4;
-    } else if (goodSleepRate >= 60) {
-      score += 3;
-    } else if (goodSleepRate >= 40) {
-      score += 2;
-    } else {
-      score += 1;
-    }
+    // routineScore: >=80% → 3, >=60% → 2, >=40% → 1, else 0
+    let routineScore = 0;
+    if (routineRate >= 80) routineScore = 3;
+    else if (routineRate >= 60) routineScore = 2;
+    else if (routineRate >= 40) routineScore = 1;
+
+    // diversityBonus: >=4 types → 2, >=2 → 1, else 0
+    let diversityBonus = 0;
+    if (uniqueTypes >= 4) diversityBonus = 2;
+    else if (uniqueTypes >= 2) diversityBonus = 1;
+
+    const sleepScore = Math.min(10, frequencyScore + qualityScore + routineScore + diversityBonus);
 
     return {
-      childId,
-      childName,
-      environmentRating,
-      routineAdherence,
-      averageSleepHours,
-      disruptionCount,
-      goodSleepRate,
-      overallScore: Math.min(Math.max(score, 0), 10),
+      childId: child.childId,
+      childName: child.childName,
+      totalRecords,
+      sleepQualityRate,
+      routineRate,
+      uniqueTypes,
+      sleepScore,
     };
   });
 }
 
-// -- Main generator ------------------------------------------------------------
+// ── Orchestrator ───────────────────────────────────────────────────────────
 
 export function generateSleepHygieneQualityIntelligence(
-  audits: SleepEnvironmentAudit[],
-  routines: SleepRoutineRecord[],
-  outcomes: SleepOutcomeRecord[],
+  records: SleepRecord[],
+  policy: SleepPolicy | null,
   training: StaffSleepTraining[],
   homeId: string,
   periodStart: string,
   periodEnd: string,
 ): SleepHygieneQualityIntelligence {
-  const sleepEnvironment = evaluateSleepEnvironment(audits);
-  const sleepRoutine = evaluateSleepRoutine(routines);
-  const sleepOutcome = evaluateSleepOutcome(outcomes);
-  const staffSleepReadiness = evaluateStaffSleepReadiness(training);
+  const assessedAt = new Date().toISOString();
 
-  const rawScore =
-    sleepEnvironment.overallScore +
-    sleepRoutine.overallScore +
-    sleepOutcome.overallScore +
-    staffSleepReadiness.overallScore;
-  const overallScore = Math.min(rawScore, 100);
+  // Filter records to period
+  const periodRecords = records.filter(
+    (r) => r.recordDate >= periodStart && r.recordDate <= periodEnd,
+  );
+
+  // Evaluate each layer
+  const sleepQuality = evaluateSleepQuality(periodRecords);
+  const sleepCompliance = evaluateSleepCompliance(periodRecords);
+  const sleepPolicy = evaluateSleepPolicy(policy);
+  const staffReadiness = evaluateStaffSleepReadiness(training);
+
+  // Build child profiles
+  const childProfiles = buildChildSleepProfiles(periodRecords);
+
+  // Overall score capped at 100
+  const overallScore = Math.min(
+    100,
+    Math.round(
+      sleepQuality.score +
+      sleepCompliance.score +
+      sleepPolicy.score +
+      staffReadiness.score,
+    ),
+  );
+
   const rating = getRating(overallScore);
 
-  const childProfiles = buildChildSleepProfiles(audits, routines, outcomes);
+  // Aggregate strengths
+  const strengths = aggregateStrengths(
+    sleepQuality, sleepCompliance, sleepPolicy, staffReadiness, overallScore,
+  );
 
-  // -- Strengths ---------------------------------------------------------------
-  const strengths: string[] = [];
+  // Aggregate areas for improvement
+  const areasForImprovement = aggregateAreasForImprovement(
+    sleepQuality, sleepCompliance, sleepPolicy, staffReadiness, overallScore,
+  );
 
-  if (sleepEnvironment.excellentGoodRate >= 80) {
-    strengths.push(
-      "Consistently high-quality sleep environments maintained across bedrooms",
-    );
-  }
-  if (sleepRoutine.fullyFollowedRate >= 80) {
-    strengths.push(
-      "Excellent bedtime routine adherence — over 80% of routines fully followed",
-    );
-  }
-  if (sleepOutcome.goodSleepRate >= 80) {
-    strengths.push(
-      "Children consistently reporting good or very good sleep quality",
-    );
-  }
-  if (sleepOutcome.childSelfReportRate >= 80) {
-    strengths.push(
-      "Strong child voice in sleep monitoring — high self-report participation",
-    );
-  }
-  if (sleepRoutine.windDownOfferedRate >= 90) {
-    strengths.push(
-      "Wind-down activities consistently offered before bedtime",
-    );
-  }
-  if (
-    staffSleepReadiness.sleepHygieneRate >= 90 &&
-    staffSleepReadiness.nightCareRate >= 90
-  ) {
-    strengths.push(
-      "Staff team well-trained in sleep hygiene and night care protocols",
-    );
-  }
-  if (sleepEnvironment.blackoutRate >= 90) {
-    strengths.push("Blackout provisions available in all bedrooms");
-  }
+  // Generate actions
+  const actions = generateActions(
+    sleepQuality, sleepCompliance, sleepPolicy, staffReadiness, childProfiles,
+  );
 
-  // -- Areas for improvement ---------------------------------------------------
-  const areasForImprovement: string[] = [];
-
-  if (sleepEnvironment.temperatureOkRate < 70 && audits.length > 0) {
-    areasForImprovement.push(
-      "Bedroom temperature issues identified — review heating/cooling in children's rooms",
-    );
-  }
-  if (sleepRoutine.screenFreeRate < 70 && routines.length > 0) {
-    areasForImprovement.push(
-      "Screen-free bedtime periods not consistently maintained — review digital device policy",
-    );
-  }
-  if (sleepOutcome.disruptionFreeRate < 60 && outcomes.length > 0) {
-    areasForImprovement.push(
-      "High rate of sleep disruptions — investigate causes and develop targeted interventions",
-    );
-  }
-  if (sleepOutcome.restedRate < 60 && outcomes.length > 0) {
-    areasForImprovement.push(
-      "Many children not waking rested — review sleep durations and bedtime routines",
-    );
-  }
-  if (staffSleepReadiness.traumaInformedRate < 70 && training.length > 0) {
-    areasForImprovement.push(
-      "Trauma-informed sleep training coverage needs improvement across staff team",
-    );
-  }
-  if (sleepRoutine.onTimeBedtimeRate < 60 && routines.length > 0) {
-    areasForImprovement.push(
-      "Bedtime targets frequently missed — review whether targets are realistic and appropriate",
-    );
-  }
-
-  // -- Actions -----------------------------------------------------------------
-  const actions: string[] = [];
-
-  if (audits.length === 0) {
-    actions.push(
-      "URGENT: No sleep environment audits conducted — implement regular bedroom assessments",
-    );
-  }
-  if (routines.length === 0) {
-    actions.push(
-      "URGENT: No bedtime routine records — establish consistent recording of sleep routines",
-    );
-  }
-  if (outcomes.length === 0) {
-    actions.push(
-      "URGENT: No sleep outcome monitoring — begin tracking children's sleep quality and duration",
-    );
-  }
-  if (training.length === 0) {
-    actions.push(
-      "URGENT: No staff sleep training records — deliver sleep hygiene and night care training",
-    );
-  }
-  if (sleepOutcome.disruptionFreeRate < 40 && outcomes.length > 0) {
-    actions.push(
-      "URGENT: Over 60% of nights have sleep disruptions — arrange specialist sleep assessment",
-    );
-  }
-  if (sleepRoutine.windDownOfferedRate < 50 && routines.length > 0) {
-    actions.push(
-      "Develop and implement wind-down activity plans for all children",
-    );
-  }
-  if (sleepEnvironment.beddingRate < 70 && audits.length > 0) {
-    actions.push(
-      "Review bedding provision — ensure all children have clean, comfortable bedding",
-    );
-  }
-
-  // -- Regulatory links --------------------------------------------------------
-  const regulatoryLinks: string[] = [
-    "CHR 2015 Reg 10 — The health and well-being standard (sleep as health need)",
-    "CHR 2015 Reg 12 — The protection of children standard (night-time safety)",
-    "SCCIF — Social Care Common Inspection Framework (health and wellbeing outcomes)",
-    "NMS 3 — National Minimum Standards (health and wellbeing)",
-    "UNCRC Article 24 — Right to the highest attainable standard of health",
-    "UNCRC Article 31 — Right to rest, leisure, play and recreation",
-    "NMS 10 — National Minimum Standards (premises, bedroom standards)",
-  ];
+  // Regulatory links
+  const regulatoryLinks = generateRegulatoryLinks();
 
   return {
     homeId,
+    assessedAt,
     periodStart,
     periodEnd,
     overallScore,
     rating,
-    sleepEnvironment,
-    sleepRoutine,
-    sleepOutcome,
-    staffSleepReadiness,
+    sleepQuality,
+    sleepCompliance,
+    sleepPolicy,
+    staffReadiness,
     childProfiles,
     strengths,
     areasForImprovement,
     actions,
     regulatoryLinks,
   };
+}
+
+// ── Aggregate Strengths ────────────────────────────────────────────────────
+
+function aggregateStrengths(
+  quality: SleepQualityResult,
+  compliance: SleepComplianceResult,
+  policy: SleepPolicyResult,
+  staff: StaffSleepReadinessResult,
+  overallScore: number,
+): string[] {
+  const strengths: string[] = [];
+
+  if (overallScore >= 80) {
+    strengths.push("Overall sleep hygiene quality rated Outstanding (" + overallScore + "/100)");
+  } else if (overallScore >= 60) {
+    strengths.push("Overall sleep hygiene quality rated Good (" + overallScore + "/100)");
+  }
+
+  strengths.push(...quality.strengths.slice(0, 2));
+  strengths.push(...compliance.strengths.slice(0, 2));
+  strengths.push(...policy.strengths.slice(0, 2));
+  strengths.push(...staff.strengths.slice(0, 2));
+
+  return strengths;
+}
+
+// ── Aggregate Areas for Improvement ────────────────────────────────────────
+
+function aggregateAreasForImprovement(
+  quality: SleepQualityResult,
+  compliance: SleepComplianceResult,
+  policy: SleepPolicyResult,
+  staff: StaffSleepReadinessResult,
+  overallScore: number,
+): string[] {
+  const areas: string[] = [];
+
+  if (overallScore < 40) {
+    areas.push("Overall sleep hygiene quality rated Inadequate (" + overallScore + "/100) — urgent systemic review required");
+  } else if (overallScore < 60) {
+    areas.push("Overall sleep hygiene quality Requires Improvement (" + overallScore + "/100)");
+  }
+
+  areas.push(...quality.concerns);
+  areas.push(...compliance.concerns);
+  areas.push(...policy.concerns);
+  areas.push(...staff.concerns);
+
+  return areas;
+}
+
+// ── Generate Actions ──────────────────────────────────────────────────────
+
+function generateActions(
+  quality: SleepQualityResult,
+  compliance: SleepComplianceResult,
+  policy: SleepPolicyResult,
+  staff: StaffSleepReadinessResult,
+  childProfiles: ChildSleepProfile[],
+): string[] {
+  const actions: string[] = [];
+
+  // Missing policy = URGENT
+  if (policy.score === 0) {
+    actions.push("URGENT: No sleep hygiene policy in place — develop and implement comprehensive sleep policy immediately");
+  }
+
+  // Missing training = URGENT
+  if (staff.totalStaff === 0) {
+    actions.push("URGENT: No staff sleep training records — schedule sleep hygiene training for all staff immediately");
+  }
+
+  // Very poor sleep quality
+  if (quality.totalRecords > 0 && quality.sleepQualityRate < 30) {
+    actions.push("URGENT: Sleep quality critically low at " + quality.sleepQualityRate + "% — initiate comprehensive sleep review for all children");
+  }
+
+  // Children with low sleep scores
+  const lowScoreChildren = childProfiles.filter((p) => p.sleepScore <= 3);
+  if (lowScoreChildren.length > 0) {
+    actions.push("URGENT: " + lowScoreChildren.length + " child(ren) with low sleep scores — arrange individual sleep assessments and support plans");
+  }
+
+  // Missing bedtime routine guideline
+  if (!policy.bedtimeRoutineGuideline && policy.score > 0) {
+    actions.push("HIGH: No bedtime routine guideline — develop age-appropriate bedtime routine guidance");
+  }
+
+  // Missing night monitoring
+  if (!policy.nightMonitoringProcedure && policy.score > 0) {
+    actions.push("HIGH: No night monitoring procedure — establish overnight monitoring protocols");
+  }
+
+  // Low staff sleep hygiene knowledge
+  if (staff.totalStaff > 0 && staff.sleepHygieneKnowledgeRate < 70) {
+    actions.push("HIGH: Sleep hygiene knowledge at " + staff.sleepHygieneKnowledgeRate + "% — schedule foundational sleep training");
+  }
+
+  // Low documentation rate
+  if (compliance.totalRecords > 0 && compliance.documentedRate < 60) {
+    actions.push("MEDIUM: Care plan documentation at " + compliance.documentedRate + "% — ensure sleep needs recorded in all care plans");
+  }
+
+  // Low monitoring rate
+  if (compliance.totalRecords > 0 && compliance.staffMonitoredRate < 70) {
+    actions.push("MEDIUM: Staff monitoring at " + compliance.staffMonitoredRate + "% — review overnight staffing and monitoring rota");
+  }
+
+  // Low routine adherence
+  if (quality.totalRecords > 0 && quality.routineRate < 70) {
+    actions.push("MEDIUM: Routine adherence at " + quality.routineRate + "% — reinforce consistent bedtime routines across the home");
+  }
+
+  // Low trauma-informed sleep
+  if (staff.totalStaff > 0 && staff.traumaInformedSleepRate < 50) {
+    actions.push("MEDIUM: Trauma-informed sleep practice at " + staff.traumaInformedSleepRate + "% — arrange specialist training for care team");
+  }
+
+  if (actions.length === 0) {
+    actions.push("No immediate actions required. Sleep hygiene systems operating within expected standards.");
+  }
+
+  return actions;
+}
+
+// ── Regulatory Links ──────────────────────────────────────────────────────
+
+function generateRegulatoryLinks(): string[] {
+  return [
+    "CHR 2015 Regulation 6 — The health and wellbeing standard",
+    "CHR 2015 Regulation 9 — Quality of care standard",
+    "SCCIF — Health and wellbeing of children",
+    "NMS 6 — Health and wellbeing",
+    "NMS 7 — Leisure activities (rest and relaxation)",
+    "Children Act 1989 — Duty of care",
+    "NICE Guideline NG92 — Sleep disorders in children",
+  ];
 }

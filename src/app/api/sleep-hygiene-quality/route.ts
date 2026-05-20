@@ -1,72 +1,219 @@
-// ==============================================================================
+// ══════════════════════════════════════════════════════════════════════════════
 // API: /api/sleep-hygiene-quality
 //
 // Sleep Hygiene Quality Intelligence
 //
-// GET  — Returns assessment with Oak House demo data
-// POST — Accepts custom data and returns tailored assessment
-// ==============================================================================
+// GET  — Returns sleep hygiene quality metrics with demo data (Oak House)
+// POST — Accepts custom data and returns analysis
+// ══════════════════════════════════════════════════════════════════════════════
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import {
   generateSleepHygieneQualityIntelligence,
-  getSleepEnvironmentRatingLabel,
-  getSleepDisruptionTypeLabel,
-  getSleepQualityRatingLabel,
-  getRoutineAdherenceLabel,
-  getNightCheckOutcomeLabel,
+  getSleepTypeLabel,
+  getSleepQualityLabel,
   getRatingLabel,
 } from "@/lib/sleep-hygiene-quality";
 import type {
-  SleepEnvironmentAudit,
-  SleepRoutineRecord,
-  SleepOutcomeRecord,
+  SleepRecord,
+  SleepPolicy,
   StaffSleepTraining,
 } from "@/lib/sleep-hygiene-quality";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// ── Demo Data: Oak House ──────────────────────────────────────────────────
 
-const DEMO_AUDITS: SleepEnvironmentAudit[] = [
-  { id: "aud-1", childId: "child-alex", childName: "Alex", auditDate: "2026-04-01", auditedBy: "Darren Laville", bedroomTemperatureOk: true, lightingAdequate: true, noiseLevel: "good", beddingCleanComfortable: true, personalItemsAllowed: true, blackoutAvailable: true, overallRating: "excellent" },
-  { id: "aud-2", childId: "child-jordan", childName: "Jordan", auditDate: "2026-04-01", auditedBy: "Darren Laville", bedroomTemperatureOk: true, lightingAdequate: true, noiseLevel: "good", beddingCleanComfortable: true, personalItemsAllowed: true, blackoutAvailable: true, overallRating: "good" },
-  { id: "aud-3", childId: "child-morgan", childName: "Morgan", auditDate: "2026-04-01", auditedBy: "Darren Laville", bedroomTemperatureOk: true, lightingAdequate: true, noiseLevel: "excellent", beddingCleanComfortable: true, personalItemsAllowed: true, blackoutAvailable: true, overallRating: "excellent" },
-];
+function generateDemoData(): {
+  records: SleepRecord[];
+  policy: SleepPolicy;
+  training: StaffSleepTraining[];
+} {
+  const records: SleepRecord[] = [
+    {
+      id: "sr-001",
+      childId: "child-alex",
+      childName: "Alex",
+      recordDate: "2026-05-05",
+      sleepType: "bedtime_routine",
+      sleepQuality: "excellent",
+      routineFollowed: true,
+      environmentSuitable: true,
+      restfulSleep: true,
+      documentedInPlan: true,
+      staffMonitored: true,
+      feedbackGiven: true,
+    },
+    {
+      id: "sr-002",
+      childId: "child-alex",
+      childName: "Alex",
+      recordDate: "2026-05-06",
+      sleepType: "night_check",
+      sleepQuality: "good",
+      routineFollowed: true,
+      environmentSuitable: true,
+      restfulSleep: true,
+      documentedInPlan: true,
+      staffMonitored: true,
+      feedbackGiven: true,
+    },
+    {
+      id: "sr-003",
+      childId: "child-jordan",
+      childName: "Jordan",
+      recordDate: "2026-05-05",
+      sleepType: "morning_wakeup",
+      sleepQuality: "good",
+      routineFollowed: true,
+      environmentSuitable: true,
+      restfulSleep: true,
+      documentedInPlan: true,
+      staffMonitored: true,
+      feedbackGiven: true,
+    },
+    {
+      id: "sr-004",
+      childId: "child-jordan",
+      childName: "Jordan",
+      recordDate: "2026-05-06",
+      sleepType: "sleep_environment_review",
+      sleepQuality: "good",
+      routineFollowed: true,
+      environmentSuitable: true,
+      restfulSleep: true,
+      documentedInPlan: true,
+      staffMonitored: true,
+      feedbackGiven: false,
+    },
+    {
+      id: "sr-005",
+      childId: "child-jordan",
+      childName: "Jordan",
+      recordDate: "2026-05-07",
+      sleepType: "relaxation_activity",
+      sleepQuality: "excellent",
+      routineFollowed: true,
+      environmentSuitable: true,
+      restfulSleep: true,
+      documentedInPlan: true,
+      staffMonitored: true,
+      feedbackGiven: true,
+    },
+    {
+      id: "sr-006",
+      childId: "child-morgan",
+      childName: "Morgan",
+      recordDate: "2026-05-05",
+      sleepType: "screen_time_management",
+      sleepQuality: "good",
+      routineFollowed: true,
+      environmentSuitable: true,
+      restfulSleep: true,
+      documentedInPlan: true,
+      staffMonitored: true,
+      feedbackGiven: true,
+    },
+    {
+      id: "sr-007",
+      childId: "child-morgan",
+      childName: "Morgan",
+      recordDate: "2026-05-06",
+      sleepType: "sleep_hygiene_education",
+      sleepQuality: "excellent",
+      routineFollowed: true,
+      environmentSuitable: true,
+      restfulSleep: true,
+      documentedInPlan: true,
+      staffMonitored: true,
+      feedbackGiven: true,
+    },
+    {
+      id: "sr-008",
+      childId: "child-morgan",
+      childName: "Morgan",
+      recordDate: "2026-05-07",
+      sleepType: "sleep_concern_assessment",
+      sleepQuality: "good",
+      routineFollowed: true,
+      environmentSuitable: true,
+      restfulSleep: true,
+      documentedInPlan: true,
+      staffMonitored: true,
+      feedbackGiven: true,
+    },
+  ];
 
-const DEMO_ROUTINES: SleepRoutineRecord[] = [
-  { id: "rt-1", childId: "child-alex", childName: "Alex", date: "2026-05-12", bedtimeTarget: "21:30", actualBedtime: "21:25", windDownActivityOffered: true, screenFreeBeforeBed: true, routineAdherence: "fully_followed", staffSupporting: "Sarah Johnson" },
-  { id: "rt-2", childId: "child-alex", childName: "Alex", date: "2026-05-13", bedtimeTarget: "21:30", actualBedtime: "21:30", windDownActivityOffered: true, screenFreeBeforeBed: true, routineAdherence: "fully_followed", staffSupporting: "Tom Richards" },
-  { id: "rt-3", childId: "child-jordan", childName: "Jordan", date: "2026-05-12", bedtimeTarget: "21:00", actualBedtime: "21:15", windDownActivityOffered: true, screenFreeBeforeBed: true, routineAdherence: "mostly_followed", staffSupporting: "Lisa Williams" },
-  { id: "rt-4", childId: "child-jordan", childName: "Jordan", date: "2026-05-13", bedtimeTarget: "21:00", actualBedtime: "20:55", windDownActivityOffered: true, screenFreeBeforeBed: true, routineAdherence: "fully_followed", staffSupporting: "Sarah Johnson" },
-  { id: "rt-5", childId: "child-morgan", childName: "Morgan", date: "2026-05-12", bedtimeTarget: "22:00", actualBedtime: "21:50", windDownActivityOffered: true, screenFreeBeforeBed: true, routineAdherence: "fully_followed", staffSupporting: "Tom Richards" },
-  { id: "rt-6", childId: "child-morgan", childName: "Morgan", date: "2026-05-13", bedtimeTarget: "22:00", actualBedtime: "22:00", windDownActivityOffered: true, screenFreeBeforeBed: true, routineAdherence: "fully_followed", staffSupporting: "Lisa Williams" },
-];
+  const policy: SleepPolicy = {
+    id: "policy-001",
+    bedtimeRoutineGuideline: true,
+    sleepEnvironmentStandard: true,
+    nightMonitoringProcedure: true,
+    screenTimePolicy: true,
+    sleepConcernProtocol: true,
+    relaxationProgramme: true,
+    regularReview: true,
+  };
 
-const DEMO_OUTCOMES: SleepOutcomeRecord[] = [
-  { id: "out-1", childId: "child-alex", childName: "Alex", date: "2026-05-13", sleepQuality: "very_good", hoursSlept: 8.5, disruptions: ["none"], childSelfReport: true, wakeFeeling: "rested", nightChecks: ["sleeping_peacefully", "sleeping_peacefully"] },
-  { id: "out-2", childId: "child-alex", childName: "Alex", date: "2026-05-14", sleepQuality: "good", hoursSlept: 8, disruptions: ["none"], childSelfReport: true, wakeFeeling: "rested", nightChecks: ["sleeping_peacefully", "sleeping_peacefully"] },
-  { id: "out-3", childId: "child-jordan", childName: "Jordan", date: "2026-05-13", sleepQuality: "good", hoursSlept: 7.5, disruptions: ["none"], childSelfReport: true, wakeFeeling: "rested", nightChecks: ["sleeping_peacefully", "awake_settled"] },
-  { id: "out-4", childId: "child-jordan", childName: "Jordan", date: "2026-05-14", sleepQuality: "fair", hoursSlept: 6.5, disruptions: ["anxiety_at_bedtime"], childSelfReport: true, wakeFeeling: "tired", nightChecks: ["awake_unsettled", "sleeping_peacefully"] },
-  { id: "out-5", childId: "child-morgan", childName: "Morgan", date: "2026-05-13", sleepQuality: "very_good", hoursSlept: 9, disruptions: ["none"], childSelfReport: true, wakeFeeling: "rested", nightChecks: ["sleeping_peacefully"] },
-  { id: "out-6", childId: "child-morgan", childName: "Morgan", date: "2026-05-14", sleepQuality: "good", hoursSlept: 8, disruptions: ["none"], childSelfReport: true, wakeFeeling: "rested", nightChecks: ["sleeping_peacefully", "sleeping_peacefully"] },
-];
+  const training: StaffSleepTraining[] = [
+    {
+      id: "sst-001",
+      staffId: "staff-sarah",
+      staffName: "Sarah Johnson",
+      sleepHygieneKnowledge: true,
+      nightSupervision: true,
+      relaxationTechniques: true,
+      sleepDisorderAwareness: true,
+      traumaInformedSleep: true,
+      environmentManagement: true,
+    },
+    {
+      id: "sst-002",
+      staffId: "staff-tom",
+      staffName: "Tom Richards",
+      sleepHygieneKnowledge: true,
+      nightSupervision: true,
+      relaxationTechniques: true,
+      sleepDisorderAwareness: true,
+      traumaInformedSleep: true,
+      environmentManagement: true,
+    },
+    {
+      id: "sst-003",
+      staffId: "staff-lisa",
+      staffName: "Lisa Williams",
+      sleepHygieneKnowledge: true,
+      nightSupervision: true,
+      relaxationTechniques: true,
+      sleepDisorderAwareness: true,
+      traumaInformedSleep: true,
+      environmentManagement: true,
+    },
+    {
+      id: "sst-004",
+      staffId: "staff-darren",
+      staffName: "Darren Laville",
+      sleepHygieneKnowledge: true,
+      nightSupervision: true,
+      relaxationTechniques: true,
+      sleepDisorderAwareness: true,
+      traumaInformedSleep: true,
+      environmentManagement: true,
+    },
+  ];
 
-const DEMO_TRAINING: StaffSleepTraining[] = [
-  { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", sleepHygieneAwareness: true, nightCareProtocol: true, traumaInformedSleep: true, sleepDisorderAwareness: true, bedtimeRoutinesTrained: true, nightCheckProcedures: true },
-  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", sleepHygieneAwareness: true, nightCareProtocol: true, traumaInformedSleep: true, sleepDisorderAwareness: false, bedtimeRoutinesTrained: true, nightCheckProcedures: true },
-  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", sleepHygieneAwareness: true, nightCareProtocol: true, traumaInformedSleep: true, sleepDisorderAwareness: true, bedtimeRoutinesTrained: true, nightCheckProcedures: true },
-  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", sleepHygieneAwareness: true, nightCareProtocol: true, traumaInformedSleep: true, sleepDisorderAwareness: true, bedtimeRoutinesTrained: true, nightCheckProcedures: true },
-];
+  return { records, policy, training };
+}
 
-// -- GET ------------------------------------------------------------------------
+// ── GET ────────────────────────────────────────────────────────────────────
 
 export async function GET() {
+  const { records, policy, training } = generateDemoData();
+
   const result = generateSleepHygieneQualityIntelligence(
-    DEMO_AUDITS,
-    DEMO_ROUTINES,
-    DEMO_OUTCOMES,
-    DEMO_TRAINING,
+    records,
+    policy,
+    training,
     "oak-house",
-    "2026-01-01",
+    "2026-04-01",
     "2026-05-18",
   );
 
@@ -74,20 +221,11 @@ export async function GET() {
     data: {
       ...result,
       meta: {
-        sleepEnvironmentRatingLabels: Object.fromEntries(
-          (["excellent", "good", "adequate", "poor"] as const).map((r) => [r, getSleepEnvironmentRatingLabel(r)]),
+        sleepTypeLabels: Object.fromEntries(
+          (["bedtime_routine", "night_check", "morning_wakeup", "sleep_environment_review", "sleep_concern_assessment", "relaxation_activity", "screen_time_management", "sleep_hygiene_education"] as const).map((t) => [t, getSleepTypeLabel(t)]),
         ),
-        sleepDisruptionTypeLabels: Object.fromEntries(
-          (["nightmares", "insomnia", "night_waking", "sleepwalking", "anxiety_at_bedtime", "noise_disturbance", "peer_disturbance", "pain_discomfort", "medication_side_effect", "none"] as const).map((t) => [t, getSleepDisruptionTypeLabel(t)]),
-        ),
-        sleepQualityRatingLabels: Object.fromEntries(
-          (["very_good", "good", "fair", "poor", "very_poor"] as const).map((r) => [r, getSleepQualityRatingLabel(r)]),
-        ),
-        routineAdherenceLabels: Object.fromEntries(
-          (["fully_followed", "mostly_followed", "partially_followed", "not_followed"] as const).map((a) => [a, getRoutineAdherenceLabel(a)]),
-        ),
-        nightCheckOutcomeLabels: Object.fromEntries(
-          (["sleeping_peacefully", "awake_settled", "awake_unsettled", "not_in_room", "required_intervention"] as const).map((o) => [o, getNightCheckOutcomeLabel(o)]),
+        sleepQualityLabels: Object.fromEntries(
+          (["excellent", "good", "fair", "poor", "very_poor"] as const).map((q) => [q, getSleepQualityLabel(q)]),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
@@ -97,9 +235,9 @@ export async function GET() {
   });
 }
 
-// -- POST -----------------------------------------------------------------------
+// ── POST ───────────────────────────────────────────────────────────────────
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
     body = await req.json();
@@ -107,10 +245,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { audits, routines, outcomes, training, homeId, periodStart, periodEnd } = body as {
-    audits?: SleepEnvironmentAudit[];
-    routines?: SleepRoutineRecord[];
-    outcomes?: SleepOutcomeRecord[];
+  const {
+    records,
+    policy,
+    training,
+    homeId,
+    periodStart,
+    periodEnd,
+  } = body as {
+    records?: SleepRecord[];
+    policy?: SleepPolicy | null;
     training?: StaffSleepTraining[];
     homeId?: string;
     periodStart?: string;
@@ -118,13 +262,15 @@ export async function POST(req: Request) {
   };
 
   if (!periodStart || !periodEnd) {
-    return NextResponse.json({ error: "periodStart and periodEnd are required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "periodStart and periodEnd are required" },
+      { status: 400 },
+    );
   }
 
   const result = generateSleepHygieneQualityIntelligence(
-    audits ?? [],
-    routines ?? [],
-    outcomes ?? [],
+    records ?? [],
+    policy ?? null,
     training ?? [],
     homeId ?? "unknown",
     periodStart,

@@ -1,41 +1,129 @@
 "use client";
 
+// ══════════════════════════════════════════════════════════════════════════════
+// SLEEP HYGIENE QUALITY DASHBOARD WIDGET
+//
+// Displays the 4-layer sleep hygiene quality intelligence:
+// - Overall score with rating
+// - Layer scores: sleep quality, compliance, policy, staff readiness
+// - Child sleep profiles
+// - Strengths, areas for improvement, and actions
+// - Regulatory references
+// ══════════════════════════════════════════════════════════════════════════════
+
 import { useState, useEffect } from "react";
-import type { SleepHygieneQualityIntelligence } from "@/lib/sleep-hygiene-quality";
 
-const ratingColors: Record<string, string> = {
-  outstanding: "bg-green-100 text-green-800 border-green-300",
-  good: "bg-blue-100 text-blue-800 border-blue-300",
-  requires_improvement: "bg-amber-100 text-amber-800 border-amber-300",
-  inadequate: "bg-red-100 text-red-800 border-red-300",
-};
+// ── Local interfaces (mirrors API shape) ──────────────────────────────────
 
-const ratingLabels: Record<string, string> = {
-  outstanding: "Outstanding",
-  good: "Good",
-  requires_improvement: "Requires Improvement",
-  inadequate: "Inadequate",
-};
+interface SleepQualityData {
+  totalRecords: number;
+  sleepQualityRate: number;
+  routineRate: number;
+  environmentRate: number;
+  restfulRate: number;
+  qualityBreakdown: Record<string, number>;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface SleepComplianceData {
+  totalRecords: number;
+  documentedRate: number;
+  staffMonitoredRate: number;
+  feedbackRate: number;
+  sleepTypeDiversityRatio: number;
+  uniqueTypes: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface SleepPolicyData {
+  bedtimeRoutineGuideline: boolean;
+  sleepEnvironmentStandard: boolean;
+  nightMonitoringProcedure: boolean;
+  screenTimePolicy: boolean;
+  sleepConcernProtocol: boolean;
+  relaxationProgramme: boolean;
+  regularReview: boolean;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface StaffReadinessData {
+  totalStaff: number;
+  sleepHygieneKnowledgeRate: number;
+  nightSupervisionRate: number;
+  relaxationTechniquesRate: number;
+  sleepDisorderAwarenessRate: number;
+  traumaInformedSleepRate: number;
+  environmentManagementRate: number;
+  score: number;
+  strengths: string[];
+  concerns: string[];
+}
+
+interface ChildProfile {
+  childId: string;
+  childName: string;
+  totalRecords: number;
+  sleepQualityRate: number;
+  routineRate: number;
+  uniqueTypes: number;
+  sleepScore: number;
+}
+
+interface SleepHygieneData {
+  homeId: string;
+  assessedAt: string;
+  periodStart: string;
+  periodEnd: string;
+  overallScore: number;
+  rating: string;
+  sleepQuality: SleepQualityData;
+  sleepCompliance: SleepComplianceData;
+  sleepPolicy: SleepPolicyData;
+  staffReadiness: StaffReadinessData;
+  childProfiles: ChildProfile[];
+  strengths: string[];
+  areasForImprovement: string[];
+  actions: string[];
+  regulatoryLinks: string[];
+  meta?: Record<string, unknown>;
+}
+
+// ── ScoreBar ──────────────────────────────────────────────────────────────
 
 function ScoreBar({ score, label, maxScore = 100 }: { score: number; label: string; maxScore?: number }) {
-  const pct = (score / maxScore) * 100;
-  const color = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
+  const pctVal = Math.round((score / maxScore) * 100);
+  const color =
+    pctVal >= 80 ? "bg-green-500"
+      : pctVal >= 60 ? "bg-blue-500"
+        : pctVal >= 40 ? "bg-amber-500"
+          : "bg-red-500";
   return (
     <div className="flex items-center gap-3">
       <span className="text-sm text-gray-600 w-44 shrink-0">{label}</span>
       <div className="flex-1 bg-gray-100 rounded-full h-2.5">
-        <div className={`h-2.5 rounded-full ${color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+        <div className={`h-2.5 rounded-full ${color}`} style={{ width: `${Math.min(pctVal, 100)}%` }} />
       </div>
-      <span className="text-sm font-medium w-12 text-right">{score}</span>
+      <span className="text-sm font-medium w-12 text-right">{score}/{maxScore}</span>
     </div>
   );
 }
+
+// ── Section ──────────────────────────────────────────────────────────────
 
 function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden">
-      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
+      >
         <span className="font-medium text-gray-900">{title}</span>
         <span className="text-gray-400">{open ? "▲" : "▼"}</span>
       </button>
@@ -44,31 +132,58 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
   );
 }
 
-export function SleepHygieneQualityDashboardWidget() {
-  const [data, setData] = useState<SleepHygieneQualityIntelligence | null>(null);
+// ── Stat ──────────────────────────────────────────────────────────────────
+
+function Stat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div>
+      <span className="text-gray-500 text-sm">{label}: </span>
+      <span className="font-medium text-sm">{value}</span>
+    </div>
+  );
+}
+
+// ── Main Widget ──────────────────────────────────────────────────────────
+
+export default function SleepHygieneQualityDashboardWidget() {
+  const [data, setData] = useState<SleepHygieneData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/sleep-hygiene-quality")
-      .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
-      .then((json) => setData(json.data))
-      .catch((err) => setError(err.message))
-      .finally(() => setLoading(false));
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/sleep-hygiene-quality");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        setData(json.data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
   }, []);
 
+  // Loading skeleton
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-gray-200 rounded w-2/3" />
           <div className="h-4 bg-gray-200 rounded w-1/2" />
-          <div className="grid grid-cols-4 gap-4">{[1, 2, 3, 4].map((i) => <div key={i} className="h-20 bg-gray-200 rounded" />)}</div>
+          <div className="grid grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-20 bg-gray-200 rounded" />
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
+  // Error state
   if (error) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
@@ -78,119 +193,161 @@ export function SleepHygieneQualityDashboardWidget() {
     );
   }
 
+  // Null guard
   if (!data) return null;
+
+  const ratingColorClass =
+    data.rating === "outstanding"
+      ? "bg-green-100 text-green-800 border-green-300"
+      : data.rating === "good"
+        ? "bg-blue-100 text-blue-800 border-blue-300"
+        : data.rating === "requires_improvement"
+          ? "bg-amber-100 text-amber-800 border-amber-300"
+          : "bg-red-100 text-red-800 border-red-300";
+
+  const ratingLabel =
+    data.rating === "outstanding" ? "Outstanding"
+      : data.rating === "good" ? "Good"
+        : data.rating === "requires_improvement" ? "Requires Improvement"
+          : "Inadequate";
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">Sleep Hygiene Quality</h3>
-          <p className="text-sm text-gray-500 mt-1">{data.periodStart} to {data.periodEnd}</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {data.periodStart} to {data.periodEnd} | {data.sleepQuality.totalRecords} records | {data.staffReadiness.totalStaff} staff
+          </p>
         </div>
         <div className="text-right">
           <div className="text-3xl font-bold text-gray-900">{data.overallScore}</div>
-          <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${ratingColors[data.rating] || ""}`}>
-            {ratingLabels[data.rating] || data.rating}
+          <span className={`inline-block mt-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${ratingColorClass}`}>
+            {ratingLabel}
           </span>
         </div>
       </div>
 
+      {/* Key Metrics */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sleepEnvironment.totalAudits}</div>
-          <div className="text-xs text-gray-500 mt-1">Env Audits</div>
+          <div className="text-2xl font-bold text-gray-900">{data.sleepQuality.totalRecords}</div>
+          <div className="text-xs text-gray-500 mt-1">Sleep Records</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sleepRoutine.totalRecords}</div>
-          <div className="text-xs text-gray-500 mt-1">Routines</div>
+          <div className="text-2xl font-bold text-gray-900">{data.sleepQuality.sleepQualityRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Good+ Quality</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sleepOutcome.averageHours}h</div>
-          <div className="text-xs text-gray-500 mt-1">Avg Sleep</div>
+          <div className="text-2xl font-bold text-gray-900">{data.sleepQuality.routineRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Routine Followed</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.sleepOutcome.goodSleepRate}%</div>
-          <div className="text-xs text-gray-500 mt-1">Good Sleep</div>
+          <div className="text-2xl font-bold text-gray-900">{data.sleepQuality.restfulRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Restful Sleep</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.staffSleepReadiness.totalStaff}</div>
+          <div className="text-2xl font-bold text-gray-900">{data.staffReadiness.totalStaff}</div>
           <div className="text-xs text-gray-500 mt-1">Staff Trained</div>
         </div>
       </div>
 
+      {/* Layer Score Bars */}
       <div className="space-y-2">
-        <ScoreBar score={data.sleepEnvironment.overallScore} label="Sleep Environment" maxScore={25} />
-        <ScoreBar score={data.sleepRoutine.overallScore} label="Sleep Routine" maxScore={25} />
-        <ScoreBar score={data.sleepOutcome.overallScore} label="Sleep Outcomes" maxScore={25} />
-        <ScoreBar score={data.staffSleepReadiness.overallScore} label="Staff Readiness" maxScore={25} />
+        <ScoreBar score={data.sleepQuality.score} label="Sleep Quality" maxScore={25} />
+        <ScoreBar score={data.sleepCompliance.score} label="Compliance" maxScore={25} />
+        <ScoreBar score={data.sleepPolicy.score} label="Policy" maxScore={25} />
+        <ScoreBar score={data.staffReadiness.score} label="Staff Readiness" maxScore={25} />
       </div>
 
+      {/* Expandable Sections */}
       <div className="space-y-3">
+        {/* Child Profiles */}
         {data.childProfiles.length > 0 && (
           <Section title="Child Sleep Profiles" defaultOpen>
             <div className="space-y-3">
-              {data.childProfiles.map((child) => (
-                <div key={child.childId} className="border border-gray-100 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-gray-900">{child.childName}</span>
-                    <span className="text-sm font-medium text-gray-600">{child.overallScore}/10</span>
+              {data.childProfiles.map((child) => {
+                const scoreColor =
+                  child.sleepScore >= 8 ? "bg-green-100 text-green-700"
+                    : child.sleepScore >= 5 ? "bg-amber-100 text-amber-700"
+                      : "bg-red-100 text-red-700";
+                return (
+                  <div key={child.childId} className="border border-gray-100 rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-gray-900">{child.childName}</span>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded ${scoreColor}`}>
+                        {child.sleepScore}/10
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
+                      <Stat label="Records" value={child.totalRecords} />
+                      <Stat label="Quality" value={child.sleepQualityRate + "%"} />
+                      <Stat label="Routine" value={child.routineRate + "%"} />
+                      <Stat label="Types" value={child.uniqueTypes + "/8"} />
+                    </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                    <div>Environment: <span className="font-medium capitalize">{child.environmentRating}</span></div>
-                    <div>Routine: <span className="font-medium capitalize">{child.routineAdherence.replace(/_/g, " ")}</span></div>
-                    <div>Avg Hours: <span className="font-medium">{child.averageSleepHours}</span></div>
-                    <div>Good Sleep: <span className="font-medium">{child.goodSleepRate}%</span></div>
-                    <div>Disruptions: <span className={`font-medium ${child.disruptionCount === 0 ? "text-green-600" : "text-amber-600"}`}>{child.disruptionCount}</span></div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Section>
         )}
 
-        <Section title="Sleep Environment">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Audits:</span> <span className="font-medium">{data.sleepEnvironment.totalAudits}</span></div>
-            <div><span className="text-gray-500">Good+:</span> <span className="font-medium">{data.sleepEnvironment.excellentGoodRate}%</span></div>
-            <div><span className="text-gray-500">Temperature:</span> <span className="font-medium">{data.sleepEnvironment.temperatureOkRate}%</span></div>
-            <div><span className="text-gray-500">Bedding:</span> <span className="font-medium">{data.sleepEnvironment.beddingRate}%</span></div>
-            <div><span className="text-gray-500">Blackout:</span> <span className="font-medium">{data.sleepEnvironment.blackoutRate}%</span></div>
-            <div><span className="text-gray-500">Personal Items:</span> <span className="font-medium">{data.sleepEnvironment.personalItemsRate}%</span></div>
+        {/* Sleep Quality Detail */}
+        <Section title="Sleep Quality">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Stat label="Records" value={data.sleepQuality.totalRecords} />
+            <Stat label="Good+" value={data.sleepQuality.sleepQualityRate + "%"} />
+            <Stat label="Routine" value={data.sleepQuality.routineRate + "%"} />
+            <Stat label="Environment" value={data.sleepQuality.environmentRate + "%"} />
+            <Stat label="Restful" value={data.sleepQuality.restfulRate + "%"} />
           </div>
         </Section>
 
-        <Section title="Sleep Routine">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Records:</span> <span className="font-medium">{data.sleepRoutine.totalRecords}</span></div>
-            <div><span className="text-gray-500">Fully Followed:</span> <span className="font-medium">{data.sleepRoutine.fullyFollowedRate}%</span></div>
-            <div><span className="text-gray-500">Wind-Down:</span> <span className="font-medium">{data.sleepRoutine.windDownOfferedRate}%</span></div>
-            <div><span className="text-gray-500">Screen Free:</span> <span className="font-medium">{data.sleepRoutine.screenFreeRate}%</span></div>
-            <div><span className="text-gray-500">On Time:</span> <span className="font-medium">{data.sleepRoutine.onTimeBedtimeRate}%</span></div>
+        {/* Compliance Detail */}
+        <Section title="Sleep Compliance">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Stat label="Documented" value={data.sleepCompliance.documentedRate + "%"} />
+            <Stat label="Monitored" value={data.sleepCompliance.staffMonitoredRate + "%"} />
+            <Stat label="Feedback" value={data.sleepCompliance.feedbackRate + "%"} />
+            <Stat label="Types Used" value={data.sleepCompliance.uniqueTypes + "/8"} />
           </div>
         </Section>
 
-        <Section title="Sleep Outcomes">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Records:</span> <span className="font-medium">{data.sleepOutcome.totalRecords}</span></div>
-            <div><span className="text-gray-500">Good Sleep:</span> <span className="font-medium">{data.sleepOutcome.goodSleepRate}%</span></div>
-            <div><span className="text-gray-500">Avg Hours:</span> <span className="font-medium">{data.sleepOutcome.averageHours}h</span></div>
-            <div><span className="text-gray-500">No Disruptions:</span> <span className="font-medium">{data.sleepOutcome.disruptionFreeRate}%</span></div>
-            <div><span className="text-gray-500">Self-Report:</span> <span className="font-medium">{data.sleepOutcome.childSelfReportRate}%</span></div>
-            <div><span className="text-gray-500">Rested:</span> <span className="font-medium">{data.sleepOutcome.restedRate}%</span></div>
+        {/* Policy Detail */}
+        <Section title="Sleep Policy">
+          <div className="grid grid-cols-2 gap-2 text-sm">
+            {[
+              { label: "Bedtime Routine Guideline", value: data.sleepPolicy.bedtimeRoutineGuideline },
+              { label: "Sleep Environment Standard", value: data.sleepPolicy.sleepEnvironmentStandard },
+              { label: "Night Monitoring Procedure", value: data.sleepPolicy.nightMonitoringProcedure },
+              { label: "Screen Time Policy", value: data.sleepPolicy.screenTimePolicy },
+              { label: "Sleep Concern Protocol", value: data.sleepPolicy.sleepConcernProtocol },
+              { label: "Relaxation Programme", value: data.sleepPolicy.relaxationProgramme },
+              { label: "Regular Review", value: data.sleepPolicy.regularReview },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full shrink-0 ${item.value ? "bg-green-500" : "bg-red-400"}`} />
+                <span className="text-gray-600">{item.label}</span>
+              </div>
+            ))}
           </div>
         </Section>
 
+        {/* Staff Readiness Detail */}
         <Section title="Staff Sleep Readiness">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Staff:</span> <span className="font-medium">{data.staffSleepReadiness.totalStaff}</span></div>
-            <div><span className="text-gray-500">Sleep Hygiene:</span> <span className="font-medium">{data.staffSleepReadiness.sleepHygieneRate}%</span></div>
-            <div><span className="text-gray-500">Night Care:</span> <span className="font-medium">{data.staffSleepReadiness.nightCareRate}%</span></div>
-            <div><span className="text-gray-500">Trauma-Informed:</span> <span className="font-medium">{data.staffSleepReadiness.traumaInformedRate}%</span></div>
-            <div><span className="text-gray-500">Sleep Disorders:</span> <span className="font-medium">{data.staffSleepReadiness.sleepDisorderRate}%</span></div>
-            <div><span className="text-gray-500">Bedtime Routines:</span> <span className="font-medium">{data.staffSleepReadiness.bedtimeRoutinesRate}%</span></div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <Stat label="Staff" value={data.staffReadiness.totalStaff} />
+            <Stat label="Sleep Hygiene" value={data.staffReadiness.sleepHygieneKnowledgeRate + "%"} />
+            <Stat label="Night Supervision" value={data.staffReadiness.nightSupervisionRate + "%"} />
+            <Stat label="Relaxation" value={data.staffReadiness.relaxationTechniquesRate + "%"} />
+            <Stat label="Sleep Disorders" value={data.staffReadiness.sleepDisorderAwarenessRate + "%"} />
+            <Stat label="Trauma-Informed" value={data.staffReadiness.traumaInformedSleepRate + "%"} />
+            <Stat label="Environment" value={data.staffReadiness.environmentManagementRate + "%"} />
           </div>
         </Section>
 
+        {/* Strengths, Areas & Actions */}
         <Section title="Strengths, Areas & Actions">
           {data.strengths.length > 0 && (
             <div>
@@ -222,6 +379,7 @@ export function SleepHygieneQualityDashboardWidget() {
           )}
         </Section>
 
+        {/* Regulatory Framework */}
         <Section title="Regulatory Framework">
           <ul className="text-sm text-gray-600 space-y-1">
             {data.regulatoryLinks.map((link, i) => (

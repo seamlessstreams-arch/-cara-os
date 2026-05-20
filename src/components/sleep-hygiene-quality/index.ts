@@ -1,1 +1,1 @@
-export { SleepHygieneQualityDashboardWidget } from "./SleepHygieneQualityDashboardWidget";
+export { default as SleepHygieneQualityDashboardWidget } from "./SleepHygieneQualityDashboardWidget";
