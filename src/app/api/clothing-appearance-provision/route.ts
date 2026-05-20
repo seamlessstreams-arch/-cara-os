@@ -11,53 +11,44 @@ import { NextResponse } from "next/server";
 import {
   generateClothingAppearanceProvisionIntelligence,
   getClothingCategoryLabel,
-  getProvisionStatusLabel,
-  getSeasonalReadinessLabel,
+  getProvisionQualityLabel,
   getRatingLabel,
 } from "@/lib/clothing-appearance-provision";
 import type {
-  ClothingProvisionRecord,
-  ClothingBudgetRecord,
+  ClothingAssessment,
   ClothingPolicy,
   StaffClothingTraining,
 } from "@/lib/clothing-appearance-provision";
 
 // -- Demo Data: Oak House -------------------------------------------------------
 
-const DEMO_PROVISIONS: ClothingProvisionRecord[] = [
-  { id: "prov-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", clothingCategory: "everyday", provisionStatus: "fully_met", childChoice: true, ageAppropriate: true, fitCorrect: true, culturallyAppropriate: true },
-  { id: "prov-2", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", clothingCategory: "school_uniform", provisionStatus: "fully_met", childChoice: true, ageAppropriate: true, fitCorrect: true, culturallyAppropriate: true },
-  { id: "prov-3", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", clothingCategory: "outdoor", provisionStatus: "fully_met", childChoice: true, ageAppropriate: true, fitCorrect: true, culturallyAppropriate: true },
-  { id: "prov-4", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-01", clothingCategory: "everyday", provisionStatus: "fully_met", childChoice: true, ageAppropriate: true, fitCorrect: true, culturallyAppropriate: true },
-  { id: "prov-5", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-01", clothingCategory: "footwear", provisionStatus: "fully_met", childChoice: true, ageAppropriate: true, fitCorrect: true, culturallyAppropriate: true },
-  { id: "prov-6", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-01", clothingCategory: "everyday", provisionStatus: "fully_met", childChoice: true, ageAppropriate: true, fitCorrect: true, culturallyAppropriate: true },
-  { id: "prov-7", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-01", clothingCategory: "sports", provisionStatus: "fully_met", childChoice: true, ageAppropriate: true, fitCorrect: true, culturallyAppropriate: true },
-  { id: "prov-8", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-01", clothingCategory: "sleepwear", provisionStatus: "fully_met", childChoice: true, ageAppropriate: true, fitCorrect: true, culturallyAppropriate: true },
-];
-
-const DEMO_BUDGETS: ClothingBudgetRecord[] = [
-  { id: "bud-1", childId: "child-alex", childName: "Alex", periodStart: "2026-01-01", periodEnd: "2026-03-31", budgetAllocated: 250, budgetSpent: 220, childInvolved: true, receiptsRecorded: true },
-  { id: "bud-2", childId: "child-jordan", childName: "Jordan", periodStart: "2026-01-01", periodEnd: "2026-03-31", budgetAllocated: 250, budgetSpent: 195, childInvolved: true, receiptsRecorded: true },
-  { id: "bud-3", childId: "child-morgan", childName: "Morgan", periodStart: "2026-01-01", periodEnd: "2026-03-31", budgetAllocated: 250, budgetSpent: 230, childInvolved: true, receiptsRecorded: true },
+const DEMO_ASSESSMENTS: ClothingAssessment[] = [
+  { id: "a-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", clothingCategory: "everyday_wear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-2", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", clothingCategory: "school_uniform", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-3", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", clothingCategory: "seasonal_clothing", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-4", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-01", clothingCategory: "footwear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-5", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-01", clothingCategory: "sleepwear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-6", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-01", clothingCategory: "sportswear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-7", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-01", clothingCategory: "formal_occasion", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-8", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-01", clothingCategory: "cultural_religious", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
 ];
 
 const DEMO_POLICIES: ClothingPolicy[] = [
-  { id: "pol-1", individualClothingList: true, seasonalReviewScheduled: true, childChoiceRespected: true, culturalNeedsMet: true, labellingProtocol: true, laundryArrangements: true, budgetTransparency: true },
+  { id: "pol-1", clothingProvisionStrategy: true, clothingBudgetFramework: true, seasonalReviewProcedure: true, childChoiceGuidance: true, culturalAndReligiousAccommodation: true, laundryAndMaintenancePlan: true, regularReview: true },
 ];
 
 const DEMO_TRAINING: StaffClothingTraining[] = [
-  { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", clothingStandards: true, childChoice: true, culturalAwareness: true, budgetManagement: true, ageAppropriateness: true, dignityAndPrivacy: true },
-  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", clothingStandards: true, childChoice: true, culturalAwareness: true, budgetManagement: false, ageAppropriateness: true, dignityAndPrivacy: true },
-  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", clothingStandards: true, childChoice: true, culturalAwareness: true, budgetManagement: true, ageAppropriateness: true, dignityAndPrivacy: true },
-  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", clothingStandards: true, childChoice: true, culturalAwareness: true, budgetManagement: true, ageAppropriateness: true, dignityAndPrivacy: true },
+  { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
 ];
 
 // -- GET ------------------------------------------------------------------------
 
 export async function GET() {
   const result = generateClothingAppearanceProvisionIntelligence(
-    DEMO_PROVISIONS,
-    DEMO_BUDGETS,
+    DEMO_ASSESSMENTS,
     DEMO_POLICIES,
     DEMO_TRAINING,
     "oak-house",
@@ -70,13 +61,10 @@ export async function GET() {
       ...result,
       meta: {
         clothingCategoryLabels: Object.fromEntries(
-          (["everyday", "school_uniform", "outdoor", "sleepwear", "underwear", "footwear", "special_occasion", "sports"] as const).map((c) => [c, getClothingCategoryLabel(c)]),
+          (["everyday_wear", "school_uniform", "seasonal_clothing", "footwear", "sleepwear", "sportswear", "formal_occasion", "cultural_religious"] as const).map((c) => [c, getClothingCategoryLabel(c)]),
         ),
-        provisionStatusLabels: Object.fromEntries(
-          (["fully_met", "mostly_met", "partially_met", "not_met"] as const).map((s) => [s, getProvisionStatusLabel(s)]),
-        ),
-        seasonalReadinessLabels: Object.fromEntries(
-          (["fully_ready", "mostly_ready", "not_ready"] as const).map((r) => [r, getSeasonalReadinessLabel(r)]),
+        provisionQualityLabels: Object.fromEntries(
+          (["excellent", "good", "adequate", "poor", "not_assessed"] as const).map((q) => [q, getProvisionQualityLabel(q)]),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
@@ -96,9 +84,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { provisions, budgets, policies, training, homeId, periodStart, periodEnd } = body as {
-    provisions?: ClothingProvisionRecord[];
-    budgets?: ClothingBudgetRecord[];
+  const { assessments, policies, training, homeId, periodStart, periodEnd } = body as {
+    assessments?: ClothingAssessment[];
     policies?: ClothingPolicy[];
     training?: StaffClothingTraining[];
     homeId?: string;
@@ -111,8 +98,7 @@ export async function POST(req: Request) {
   }
 
   const result = generateClothingAppearanceProvisionIntelligence(
-    provisions ?? [],
-    budgets ?? [],
+    assessments ?? [],
     policies ?? [],
     training ?? [],
     homeId ?? "unknown",

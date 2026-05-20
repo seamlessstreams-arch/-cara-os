@@ -1,39 +1,24 @@
-// ==============================================================================
-// Clothing & Appearance Provision Intelligence Engine
-//
-// Pure deterministic engine — no AI, no external calls, no randomness.
-// Evaluates quality of clothing and appearance provision for children in care:
-//   1. Clothing Provision Quality (category coverage, child choice, fit, culture)
-//   2. Budget Management (adequacy, child involvement, transparency)
-//   3. Clothing Policy Compliance (individual lists, reviews, protocols)
-//   4. Staff Clothing Readiness (training on standards, choice, culture, budget)
-//
-// Regulatory: CHR 2015 Reg 10, CHR 2015 Reg 12, SCCIF, NMS 10,
-//             Children Act 1989, UNCRC Article 27, Care Planning Regulations 2010
-// ==============================================================================
+// Clothing Appearance Provision Intelligence Engine
+// Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
 // -- Type unions ---------------------------------------------------------------
 
 export type ClothingCategory =
-  | "everyday"
+  | "everyday_wear"
   | "school_uniform"
-  | "outdoor"
-  | "sleepwear"
-  | "underwear"
+  | "seasonal_clothing"
   | "footwear"
-  | "special_occasion"
-  | "sports";
+  | "sleepwear"
+  | "sportswear"
+  | "formal_occasion"
+  | "cultural_religious";
 
-export type ProvisionStatus =
-  | "fully_met"
-  | "mostly_met"
-  | "partially_met"
-  | "not_met";
-
-export type SeasonalReadiness =
-  | "fully_ready"
-  | "mostly_ready"
-  | "not_ready";
+export type ProvisionQuality =
+  | "excellent"
+  | "good"
+  | "adequate"
+  | "poor"
+  | "not_assessed";
 
 export type Rating =
   | "outstanding"
@@ -44,27 +29,22 @@ export type Rating =
 // -- Label maps ----------------------------------------------------------------
 
 const clothingCategoryLabels: Record<ClothingCategory, string> = {
-  everyday: "Everyday",
+  everyday_wear: "Everyday Wear",
   school_uniform: "School Uniform",
-  outdoor: "Outdoor",
-  sleepwear: "Sleepwear",
-  underwear: "Underwear",
+  seasonal_clothing: "Seasonal Clothing",
   footwear: "Footwear",
-  special_occasion: "Special Occasion",
-  sports: "Sports",
+  sleepwear: "Sleepwear",
+  sportswear: "Sportswear",
+  formal_occasion: "Formal Occasion",
+  cultural_religious: "Cultural / Religious",
 };
 
-const provisionStatusLabels: Record<ProvisionStatus, string> = {
-  fully_met: "Fully Met",
-  mostly_met: "Mostly Met",
-  partially_met: "Partially Met",
-  not_met: "Not Met",
-};
-
-const seasonalReadinessLabels: Record<SeasonalReadiness, string> = {
-  fully_ready: "Fully Ready",
-  mostly_ready: "Mostly Ready",
-  not_ready: "Not Ready",
+const provisionQualityLabels: Record<ProvisionQuality, string> = {
+  excellent: "Excellent",
+  good: "Good",
+  adequate: "Adequate",
+  poor: "Poor",
+  not_assessed: "Not Assessed",
 };
 
 const ratingLabels: Record<Rating, string> = {
@@ -79,11 +59,8 @@ const ratingLabels: Record<Rating, string> = {
 export function getClothingCategoryLabel(c: ClothingCategory): string {
   return clothingCategoryLabels[c] ?? c;
 }
-export function getProvisionStatusLabel(s: ProvisionStatus): string {
-  return provisionStatusLabels[s] ?? s;
-}
-export function getSeasonalReadinessLabel(r: SeasonalReadiness): string {
-  return seasonalReadinessLabels[r] ?? r;
+export function getProvisionQualityLabel(q: ProvisionQuality): string {
+  return provisionQualityLabels[q] ?? q;
 }
 export function getRatingLabel(r: Rating): string {
   return ratingLabels[r] ?? r;
@@ -91,106 +68,90 @@ export function getRatingLabel(r: Rating): string {
 
 // -- Input interfaces ----------------------------------------------------------
 
-export interface ClothingProvisionRecord {
+export interface ClothingAssessment {
   id: string;
   childId: string;
   childName: string;
-  recordDate: string;
+  assessmentDate: string;
   clothingCategory: ClothingCategory;
-  provisionStatus: ProvisionStatus;
-  childChoice: boolean;
+  provisionQuality: ProvisionQuality;
+  childChoiceRespected: boolean;
   ageAppropriate: boolean;
-  fitCorrect: boolean;
-  culturallyAppropriate: boolean;
-}
-
-export interface ClothingBudgetRecord {
-  id: string;
-  childId: string;
-  childName: string;
-  periodStart: string;
-  periodEnd: string;
-  budgetAllocated: number;
-  budgetSpent: number;
-  childInvolved: boolean;
-  receiptsRecorded: boolean;
+  culturalNeedsMet: boolean;
+  documentedInPlan: boolean;
+  staffAssessed: boolean;
+  feedbackGiven: boolean;
 }
 
 export interface ClothingPolicy {
   id: string;
-  individualClothingList: boolean;
-  seasonalReviewScheduled: boolean;
-  childChoiceRespected: boolean;
-  culturalNeedsMet: boolean;
-  labellingProtocol: boolean;
-  laundryArrangements: boolean;
-  budgetTransparency: boolean;
+  clothingProvisionStrategy: boolean;
+  clothingBudgetFramework: boolean;
+  seasonalReviewProcedure: boolean;
+  childChoiceGuidance: boolean;
+  culturalAndReligiousAccommodation: boolean;
+  laundryAndMaintenancePlan: boolean;
+  regularReview: boolean;
 }
 
 export interface StaffClothingTraining {
   id: string;
   staffId: string;
   staffName: string;
-  clothingStandards: boolean;
-  childChoice: boolean;
-  culturalAwareness: boolean;
+  clothingAssessment: boolean;
+  childChoiceFacilitation: boolean;
   budgetManagement: boolean;
-  ageAppropriateness: boolean;
-  dignityAndPrivacy: boolean;
+  culturalAwareness: boolean;
+  ageAppropriateGuidance: boolean;
+  recordKeeping: boolean;
 }
 
 // -- Result interfaces ---------------------------------------------------------
 
-export interface ClothingProvisionResult {
+export interface QualityResult {
   overallScore: number;
-  totalRecords: number;
-  fullyMetRate: number;
+  totalAssessments: number;
+  qualityRate: number;
   childChoiceRate: number;
   ageAppropriateRate: number;
-  fitCorrectRate: number;
-  culturallyAppropriateRate: number;
+  culturalRate: number;
 }
 
-export interface BudgetManagementResult {
+export interface ComplianceResult {
   overallScore: number;
-  totalRecords: number;
-  budgetAdequacyRate: number;
-  childInvolvedRate: number;
-  receiptsRecordedRate: number;
-  averageSpendRatio: number;
+  documentedRate: number;
+  staffAssessedRate: number;
+  feedbackRate: number;
+  categoryDiversityRatio: number;
 }
 
-export interface ClothingPolicyResult {
+export interface PolicyResult {
   overallScore: number;
-  totalPolicies: number;
-  individualClothingListRate: number;
-  seasonalReviewRate: number;
-  childChoiceRate: number;
-  culturalNeedsRate: number;
-  labellingProtocolRate: number;
-  laundryArrangementsRate: number;
-  budgetTransparencyRate: number;
+  clothingProvisionStrategyRate: number;
+  clothingBudgetFrameworkRate: number;
+  seasonalReviewProcedureRate: number;
+  childChoiceGuidanceRate: number;
+  culturalAndReligiousAccommodationRate: number;
+  laundryAndMaintenancePlanRate: number;
+  regularReviewRate: number;
 }
 
-export interface StaffClothingReadinessResult {
+export interface StaffReadinessResult {
   overallScore: number;
-  totalStaff: number;
-  clothingStandardsRate: number;
-  childChoiceRate: number;
-  culturalAwarenessRate: number;
+  clothingAssessmentRate: number;
+  childChoiceFacilitationRate: number;
   budgetManagementRate: number;
-  ageAppropriatenessRate: number;
-  dignityAndPrivacyRate: number;
+  culturalAwarenessRate: number;
+  ageAppropriateGuidanceRate: number;
+  recordKeepingRate: number;
 }
 
-export interface ChildClothingProfile {
+export interface ChildProfile {
   childId: string;
   childName: string;
-  totalRecords: number;
-  fullyMetRate: number;
+  totalAssessments: number;
+  qualityRate: number;
   childChoiceRate: number;
-  fitCorrectRate: number;
-  budgetAdequacy: boolean;
   overallScore: number;
 }
 
@@ -200,11 +161,11 @@ export interface ClothingAppearanceProvisionIntelligence {
   periodEnd: string;
   overallScore: number;
   rating: Rating;
-  clothingProvision: ClothingProvisionResult;
-  budgetManagement: BudgetManagementResult;
-  clothingPolicy: ClothingPolicyResult;
-  staffClothingReadiness: StaffClothingReadinessResult;
-  childProfiles: ChildClothingProfile[];
+  quality: QualityResult;
+  compliance: ComplianceResult;
+  policy: PolicyResult;
+  staffReadiness: StaffReadinessResult;
+  childProfiles: ChildProfile[];
   strengths: string[];
   areasForImprovement: string[];
   actions: string[];
@@ -228,145 +189,129 @@ export function getRating(score: number): Rating {
 // -- Evaluators ----------------------------------------------------------------
 
 /**
- * Evaluates clothing provision quality across all records.
- * Empty = 0 (no records = no evidence of provision).
+ * Evaluates clothing provision quality across all assessments.
+ * Empty = 0 (no assessments = no evidence of provision).
  *
- *   Fully met rate                       -> 0-7
- *   Child choice rate                    -> 0-6
- *   Age appropriate rate                 -> 0-6
- *   Fit correct + culturally appropriate -> 0-6
+ *   Quality rate (excellent+good)          -> 0-7
+ *   Child choice rate                      -> 0-6
+ *   Age appropriate rate                   -> 0-6
+ *   Cultural needs met rate                -> 0-6
  */
-export function evaluateClothingProvision(
-  records: ClothingProvisionRecord[],
-): ClothingProvisionResult {
-  if (records.length === 0) {
+export function evaluateQuality(
+  assessments: ClothingAssessment[],
+): QualityResult {
+  if (assessments.length === 0) {
     return {
       overallScore: 0,
-      totalRecords: 0,
-      fullyMetRate: 0,
+      totalAssessments: 0,
+      qualityRate: 0,
       childChoiceRate: 0,
       ageAppropriateRate: 0,
-      fitCorrectRate: 0,
-      culturallyAppropriateRate: 0,
+      culturalRate: 0,
     };
   }
 
   let score = 0;
 
-  const fullyMet = records.filter(
-    (r) => r.provisionStatus === "fully_met",
+  const highQuality = assessments.filter(
+    (a) => a.provisionQuality === "excellent" || a.provisionQuality === "good",
   ).length;
-  const fullyMetRate = pct(fullyMet, records.length);
-  if (fullyMetRate >= 90) score += 7;
-  else if (fullyMetRate >= 70) score += 5;
-  else if (fullyMetRate >= 50) score += 3;
-  else if (fullyMetRate > 0) score += 1;
+  const qualityRate = pct(highQuality, assessments.length);
+  if (qualityRate >= 90) score += 7;
+  else if (qualityRate >= 70) score += 5;
+  else if (qualityRate >= 50) score += 3;
+  else if (qualityRate > 0) score += 1;
 
-  const childChoice = records.filter((r) => r.childChoice).length;
-  const childChoiceRate = pct(childChoice, records.length);
+  const childChoice = assessments.filter((a) => a.childChoiceRespected).length;
+  const childChoiceRate = pct(childChoice, assessments.length);
   if (childChoiceRate >= 90) score += 6;
   else if (childChoiceRate >= 70) score += 4;
   else if (childChoiceRate >= 50) score += 3;
   else if (childChoiceRate > 0) score += 1;
 
-  const ageAppropriate = records.filter((r) => r.ageAppropriate).length;
-  const ageAppropriateRate = pct(ageAppropriate, records.length);
+  const ageAppropriate = assessments.filter((a) => a.ageAppropriate).length;
+  const ageAppropriateRate = pct(ageAppropriate, assessments.length);
   if (ageAppropriateRate >= 90) score += 6;
   else if (ageAppropriateRate >= 70) score += 4;
   else if (ageAppropriateRate >= 50) score += 3;
   else if (ageAppropriateRate > 0) score += 1;
 
-  const fitCorrect = records.filter((r) => r.fitCorrect).length;
-  const fitCorrectRate = pct(fitCorrect, records.length);
-  const culturallyAppropriate = records.filter(
-    (r) => r.culturallyAppropriate,
-  ).length;
-  const culturallyAppropriateRate = pct(culturallyAppropriate, records.length);
-  const combinedRate = Math.round((fitCorrectRate + culturallyAppropriateRate) / 2);
-  if (combinedRate >= 90) score += 6;
-  else if (combinedRate >= 70) score += 4;
-  else if (combinedRate >= 50) score += 3;
-  else if (combinedRate > 0) score += 1;
+  const cultural = assessments.filter((a) => a.culturalNeedsMet).length;
+  const culturalRate = pct(cultural, assessments.length);
+  if (culturalRate >= 90) score += 6;
+  else if (culturalRate >= 70) score += 4;
+  else if (culturalRate >= 50) score += 3;
+  else if (culturalRate > 0) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
-    totalRecords: records.length,
-    fullyMetRate,
+    totalAssessments: assessments.length,
+    qualityRate,
     childChoiceRate,
     ageAppropriateRate,
-    fitCorrectRate,
-    culturallyAppropriateRate,
+    culturalRate,
   };
 }
 
 /**
- * Evaluates budget management for clothing.
- * Empty = 0 (no budget records = no evidence of management).
+ * Evaluates compliance across all assessments.
+ * Empty = 0 (no assessments = no evidence of compliance).
  *
- *   Budget adequacy (spent <= allocated) rate -> 0-7
- *   Child involved rate                       -> 0-6
- *   Receipts recorded rate                    -> 0-6
- *   Average spend ratio (utilisation)         -> 0-6
+ *   Documented in plan rate               -> 0-8
+ *   Staff assessed rate                   -> 0-7
+ *   Feedback given rate                   -> 0-5
+ *   Category diversity ratio              -> 0-5
  */
-export function evaluateBudgetManagement(
-  records: ClothingBudgetRecord[],
-): BudgetManagementResult {
-  if (records.length === 0) {
+export function evaluateCompliance(
+  assessments: ClothingAssessment[],
+): ComplianceResult {
+  if (assessments.length === 0) {
     return {
       overallScore: 0,
-      totalRecords: 0,
-      budgetAdequacyRate: 0,
-      childInvolvedRate: 0,
-      receiptsRecordedRate: 0,
-      averageSpendRatio: 0,
+      documentedRate: 0,
+      staffAssessedRate: 0,
+      feedbackRate: 0,
+      categoryDiversityRatio: 0,
     };
   }
 
   let score = 0;
 
-  const adequate = records.filter(
-    (r) => r.budgetSpent <= r.budgetAllocated,
-  ).length;
-  const budgetAdequacyRate = pct(adequate, records.length);
-  if (budgetAdequacyRate >= 90) score += 7;
-  else if (budgetAdequacyRate >= 70) score += 5;
-  else if (budgetAdequacyRate >= 50) score += 3;
-  else if (budgetAdequacyRate > 0) score += 1;
+  const documented = assessments.filter((a) => a.documentedInPlan).length;
+  const documentedRate = pct(documented, assessments.length);
+  if (documentedRate >= 90) score += 8;
+  else if (documentedRate >= 70) score += 6;
+  else if (documentedRate >= 50) score += 4;
+  else if (documentedRate > 0) score += 2;
 
-  const childInvolved = records.filter((r) => r.childInvolved).length;
-  const childInvolvedRate = pct(childInvolved, records.length);
-  if (childInvolvedRate >= 90) score += 6;
-  else if (childInvolvedRate >= 70) score += 4;
-  else if (childInvolvedRate >= 50) score += 3;
-  else if (childInvolvedRate > 0) score += 1;
+  const staffAssessed = assessments.filter((a) => a.staffAssessed).length;
+  const staffAssessedRate = pct(staffAssessed, assessments.length);
+  if (staffAssessedRate >= 90) score += 7;
+  else if (staffAssessedRate >= 70) score += 5;
+  else if (staffAssessedRate >= 50) score += 3;
+  else if (staffAssessedRate > 0) score += 1;
 
-  const receipts = records.filter((r) => r.receiptsRecorded).length;
-  const receiptsRecordedRate = pct(receipts, records.length);
-  if (receiptsRecordedRate >= 90) score += 6;
-  else if (receiptsRecordedRate >= 70) score += 4;
-  else if (receiptsRecordedRate >= 50) score += 3;
-  else if (receiptsRecordedRate > 0) score += 1;
+  const feedback = assessments.filter((a) => a.feedbackGiven).length;
+  const feedbackRate = pct(feedback, assessments.length);
+  if (feedbackRate >= 90) score += 5;
+  else if (feedbackRate >= 70) score += 3;
+  else if (feedbackRate >= 50) score += 2;
+  else if (feedbackRate > 0) score += 1;
 
-  // Average spend ratio — higher utilisation (without overspending) is better
-  const totalAllocated = records.reduce((sum, r) => sum + r.budgetAllocated, 0);
-  const totalSpent = records.reduce((sum, r) => sum + r.budgetSpent, 0);
-  const averageSpendRatio =
-    totalAllocated > 0
-      ? Math.round((totalSpent / totalAllocated) * 100)
-      : 0;
-  // Good utilisation: 70-100% of budget used (not overspent)
-  if (averageSpendRatio >= 70 && averageSpendRatio <= 100) score += 6;
-  else if (averageSpendRatio >= 50 && averageSpendRatio <= 110) score += 4;
-  else if (averageSpendRatio >= 30 && averageSpendRatio <= 120) score += 2;
-  else if (averageSpendRatio > 0) score += 1;
+  const uniqueCategories = new Set(assessments.map((a) => a.clothingCategory)).size;
+  const totalCategories = 8; // total ClothingCategory values
+  const categoryDiversityRatio = pct(uniqueCategories, totalCategories);
+  if (categoryDiversityRatio >= 90) score += 5;
+  else if (categoryDiversityRatio >= 70) score += 3;
+  else if (categoryDiversityRatio >= 50) score += 2;
+  else if (categoryDiversityRatio > 0) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
-    totalRecords: records.length,
-    budgetAdequacyRate,
-    childInvolvedRate,
-    receiptsRecordedRate,
-    averageSpendRatio,
+    documentedRate,
+    staffAssessedRate,
+    feedbackRate,
+    categoryDiversityRatio,
   };
 }
 
@@ -374,103 +319,87 @@ export function evaluateBudgetManagement(
  * Evaluates clothing policy compliance.
  * Empty = 0 (no policies = no evidence of governance).
  *
- *   individualClothingList   -> 0-4
- *   seasonalReviewScheduled  -> 0-4
- *   childChoiceRespected     -> 0-4
- *   culturalNeedsMet         -> 0-4
- *   labellingProtocol        -> 0-3
- *   laundryArrangements      -> 0-3
- *   budgetTransparency       -> 0-3
+ *   clothingProvisionStrategy             -> 0-4
+ *   clothingBudgetFramework               -> 0-4
+ *   seasonalReviewProcedure               -> 0-4
+ *   childChoiceGuidance                   -> 0-4
+ *   culturalAndReligiousAccommodation     -> 0-3
+ *   laundryAndMaintenancePlan             -> 0-3
+ *   regularReview                         -> 0-3
  */
-export function evaluateClothingPolicy(
+export function evaluatePolicy(
   policies: ClothingPolicy[],
-): ClothingPolicyResult {
+): PolicyResult {
   if (policies.length === 0) {
     return {
       overallScore: 0,
-      totalPolicies: 0,
-      individualClothingListRate: 0,
-      seasonalReviewRate: 0,
-      childChoiceRate: 0,
-      culturalNeedsRate: 0,
-      labellingProtocolRate: 0,
-      laundryArrangementsRate: 0,
-      budgetTransparencyRate: 0,
+      clothingProvisionStrategyRate: 0,
+      clothingBudgetFrameworkRate: 0,
+      seasonalReviewProcedureRate: 0,
+      childChoiceGuidanceRate: 0,
+      culturalAndReligiousAccommodationRate: 0,
+      laundryAndMaintenancePlanRate: 0,
+      regularReviewRate: 0,
     };
   }
 
   let score = 0;
 
-  const individualList = policies.filter(
-    (p) => p.individualClothingList,
-  ).length;
-  const individualClothingListRate = pct(individualList, policies.length);
-  if (individualClothingListRate >= 90) score += 4;
-  else if (individualClothingListRate >= 70) score += 3;
-  else if (individualClothingListRate >= 50) score += 2;
-  else if (individualClothingListRate > 0) score += 1;
+  const strategy = policies.filter((p) => p.clothingProvisionStrategy).length;
+  const clothingProvisionStrategyRate = pct(strategy, policies.length);
+  if (clothingProvisionStrategyRate >= 90) score += 4;
+  else if (clothingProvisionStrategyRate >= 70) score += 3;
+  else if (clothingProvisionStrategyRate >= 50) score += 2;
+  else if (clothingProvisionStrategyRate > 0) score += 1;
 
-  const seasonal = policies.filter(
-    (p) => p.seasonalReviewScheduled,
-  ).length;
-  const seasonalReviewRate = pct(seasonal, policies.length);
-  if (seasonalReviewRate >= 90) score += 4;
-  else if (seasonalReviewRate >= 70) score += 3;
-  else if (seasonalReviewRate >= 50) score += 2;
-  else if (seasonalReviewRate > 0) score += 1;
+  const budget = policies.filter((p) => p.clothingBudgetFramework).length;
+  const clothingBudgetFrameworkRate = pct(budget, policies.length);
+  if (clothingBudgetFrameworkRate >= 90) score += 4;
+  else if (clothingBudgetFrameworkRate >= 70) score += 3;
+  else if (clothingBudgetFrameworkRate >= 50) score += 2;
+  else if (clothingBudgetFrameworkRate > 0) score += 1;
 
-  const childChoice = policies.filter(
-    (p) => p.childChoiceRespected,
-  ).length;
-  const childChoiceRate = pct(childChoice, policies.length);
-  if (childChoiceRate >= 90) score += 4;
-  else if (childChoiceRate >= 70) score += 3;
-  else if (childChoiceRate >= 50) score += 2;
-  else if (childChoiceRate > 0) score += 1;
+  const seasonal = policies.filter((p) => p.seasonalReviewProcedure).length;
+  const seasonalReviewProcedureRate = pct(seasonal, policies.length);
+  if (seasonalReviewProcedureRate >= 90) score += 4;
+  else if (seasonalReviewProcedureRate >= 70) score += 3;
+  else if (seasonalReviewProcedureRate >= 50) score += 2;
+  else if (seasonalReviewProcedureRate > 0) score += 1;
 
-  const cultural = policies.filter(
-    (p) => p.culturalNeedsMet,
-  ).length;
-  const culturalNeedsRate = pct(cultural, policies.length);
-  if (culturalNeedsRate >= 90) score += 4;
-  else if (culturalNeedsRate >= 70) score += 3;
-  else if (culturalNeedsRate >= 50) score += 2;
-  else if (culturalNeedsRate > 0) score += 1;
+  const childChoice = policies.filter((p) => p.childChoiceGuidance).length;
+  const childChoiceGuidanceRate = pct(childChoice, policies.length);
+  if (childChoiceGuidanceRate >= 90) score += 4;
+  else if (childChoiceGuidanceRate >= 70) score += 3;
+  else if (childChoiceGuidanceRate >= 50) score += 2;
+  else if (childChoiceGuidanceRate > 0) score += 1;
 
-  const labelling = policies.filter(
-    (p) => p.labellingProtocol,
-  ).length;
-  const labellingProtocolRate = pct(labelling, policies.length);
-  if (labellingProtocolRate >= 90) score += 3;
-  else if (labellingProtocolRate >= 70) score += 2;
-  else if (labellingProtocolRate >= 50) score += 1;
+  const cultural = policies.filter((p) => p.culturalAndReligiousAccommodation).length;
+  const culturalAndReligiousAccommodationRate = pct(cultural, policies.length);
+  if (culturalAndReligiousAccommodationRate >= 90) score += 3;
+  else if (culturalAndReligiousAccommodationRate >= 70) score += 2;
+  else if (culturalAndReligiousAccommodationRate >= 50) score += 1;
 
-  const laundry = policies.filter(
-    (p) => p.laundryArrangements,
-  ).length;
-  const laundryArrangementsRate = pct(laundry, policies.length);
-  if (laundryArrangementsRate >= 90) score += 3;
-  else if (laundryArrangementsRate >= 70) score += 2;
-  else if (laundryArrangementsRate >= 50) score += 1;
+  const laundry = policies.filter((p) => p.laundryAndMaintenancePlan).length;
+  const laundryAndMaintenancePlanRate = pct(laundry, policies.length);
+  if (laundryAndMaintenancePlanRate >= 90) score += 3;
+  else if (laundryAndMaintenancePlanRate >= 70) score += 2;
+  else if (laundryAndMaintenancePlanRate >= 50) score += 1;
 
-  const budget = policies.filter(
-    (p) => p.budgetTransparency,
-  ).length;
-  const budgetTransparencyRate = pct(budget, policies.length);
-  if (budgetTransparencyRate >= 90) score += 3;
-  else if (budgetTransparencyRate >= 70) score += 2;
-  else if (budgetTransparencyRate >= 50) score += 1;
+  const review = policies.filter((p) => p.regularReview).length;
+  const regularReviewRate = pct(review, policies.length);
+  if (regularReviewRate >= 90) score += 3;
+  else if (regularReviewRate >= 70) score += 2;
+  else if (regularReviewRate >= 50) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
-    totalPolicies: policies.length,
-    individualClothingListRate,
-    seasonalReviewRate,
-    childChoiceRate,
-    culturalNeedsRate,
-    labellingProtocolRate,
-    laundryArrangementsRate,
-    budgetTransparencyRate,
+    clothingProvisionStrategyRate,
+    clothingBudgetFrameworkRate,
+    seasonalReviewProcedureRate,
+    childChoiceGuidanceRate,
+    culturalAndReligiousAccommodationRate,
+    laundryAndMaintenancePlanRate,
+    regularReviewRate,
   };
 }
 
@@ -478,149 +407,123 @@ export function evaluateClothingPolicy(
  * Evaluates staff readiness for clothing provision.
  * Empty = 0 (no training = no evidence of competence).
  *
- *   clothingStandards   -> 0-6
- *   childChoice         -> 0-5
- *   culturalAwareness   -> 0-5
- *   budgetManagement    -> 0-4
- *   ageAppropriateness  -> 0-3
- *   dignityAndPrivacy   -> 0-2
+ *   clothingAssessment        -> 0-6
+ *   childChoiceFacilitation   -> 0-5
+ *   budgetManagement          -> 0-5
+ *   culturalAwareness         -> 0-4
+ *   ageAppropriateGuidance    -> 0-3
+ *   recordKeeping             -> 0-2
  */
-export function evaluateStaffClothingReadiness(
+export function evaluateStaffReadiness(
   training: StaffClothingTraining[],
-): StaffClothingReadinessResult {
+): StaffReadinessResult {
   if (training.length === 0) {
     return {
       overallScore: 0,
-      totalStaff: 0,
-      clothingStandardsRate: 0,
-      childChoiceRate: 0,
-      culturalAwarenessRate: 0,
+      clothingAssessmentRate: 0,
+      childChoiceFacilitationRate: 0,
       budgetManagementRate: 0,
-      ageAppropriatenessRate: 0,
-      dignityAndPrivacyRate: 0,
+      culturalAwarenessRate: 0,
+      ageAppropriateGuidanceRate: 0,
+      recordKeepingRate: 0,
     };
   }
 
   let score = 0;
 
-  const clothingStandards = training.filter(
-    (t) => t.clothingStandards,
-  ).length;
-  const clothingStandardsRate = pct(clothingStandards, training.length);
-  if (clothingStandardsRate >= 90) score += 6;
-  else if (clothingStandardsRate >= 70) score += 4;
-  else if (clothingStandardsRate >= 50) score += 3;
-  else if (clothingStandardsRate > 0) score += 1;
+  const clothingAssessment = training.filter((t) => t.clothingAssessment).length;
+  const clothingAssessmentRate = pct(clothingAssessment, training.length);
+  if (clothingAssessmentRate >= 90) score += 6;
+  else if (clothingAssessmentRate >= 70) score += 4;
+  else if (clothingAssessmentRate >= 50) score += 3;
+  else if (clothingAssessmentRate > 0) score += 1;
 
-  const childChoice = training.filter((t) => t.childChoice).length;
-  const childChoiceRate = pct(childChoice, training.length);
-  if (childChoiceRate >= 90) score += 5;
-  else if (childChoiceRate >= 70) score += 3;
-  else if (childChoiceRate >= 50) score += 2;
-  else if (childChoiceRate > 0) score += 1;
+  const childChoice = training.filter((t) => t.childChoiceFacilitation).length;
+  const childChoiceFacilitationRate = pct(childChoice, training.length);
+  if (childChoiceFacilitationRate >= 90) score += 5;
+  else if (childChoiceFacilitationRate >= 70) score += 3;
+  else if (childChoiceFacilitationRate >= 50) score += 2;
+  else if (childChoiceFacilitationRate > 0) score += 1;
 
-  const cultural = training.filter(
-    (t) => t.culturalAwareness,
-  ).length;
-  const culturalAwarenessRate = pct(cultural, training.length);
-  if (culturalAwarenessRate >= 90) score += 5;
-  else if (culturalAwarenessRate >= 70) score += 3;
-  else if (culturalAwarenessRate >= 50) score += 2;
-  else if (culturalAwarenessRate > 0) score += 1;
-
-  const budgetMgmt = training.filter(
-    (t) => t.budgetManagement,
-  ).length;
+  const budgetMgmt = training.filter((t) => t.budgetManagement).length;
   const budgetManagementRate = pct(budgetMgmt, training.length);
-  if (budgetManagementRate >= 90) score += 4;
+  if (budgetManagementRate >= 90) score += 5;
   else if (budgetManagementRate >= 70) score += 3;
   else if (budgetManagementRate >= 50) score += 2;
   else if (budgetManagementRate > 0) score += 1;
 
-  const ageApp = training.filter(
-    (t) => t.ageAppropriateness,
-  ).length;
-  const ageAppropriatenessRate = pct(ageApp, training.length);
-  if (ageAppropriatenessRate >= 90) score += 3;
-  else if (ageAppropriatenessRate >= 70) score += 2;
-  else if (ageAppropriatenessRate >= 50) score += 1;
+  const cultural = training.filter((t) => t.culturalAwareness).length;
+  const culturalAwarenessRate = pct(cultural, training.length);
+  if (culturalAwarenessRate >= 90) score += 4;
+  else if (culturalAwarenessRate >= 70) score += 3;
+  else if (culturalAwarenessRate >= 50) score += 2;
+  else if (culturalAwarenessRate > 0) score += 1;
 
-  const dignity = training.filter(
-    (t) => t.dignityAndPrivacy,
-  ).length;
-  const dignityAndPrivacyRate = pct(dignity, training.length);
-  if (dignityAndPrivacyRate >= 90) score += 2;
-  else if (dignityAndPrivacyRate >= 70) score += 1;
+  const ageApp = training.filter((t) => t.ageAppropriateGuidance).length;
+  const ageAppropriateGuidanceRate = pct(ageApp, training.length);
+  if (ageAppropriateGuidanceRate >= 90) score += 3;
+  else if (ageAppropriateGuidanceRate >= 70) score += 2;
+  else if (ageAppropriateGuidanceRate >= 50) score += 1;
+
+  const recordKeeping = training.filter((t) => t.recordKeeping).length;
+  const recordKeepingRate = pct(recordKeeping, training.length);
+  if (recordKeepingRate >= 90) score += 2;
+  else if (recordKeepingRate >= 70) score += 1;
 
   return {
     overallScore: Math.min(score, 25),
-    totalStaff: training.length,
-    clothingStandardsRate,
-    childChoiceRate,
-    culturalAwarenessRate,
+    clothingAssessmentRate,
+    childChoiceFacilitationRate,
     budgetManagementRate,
-    ageAppropriatenessRate,
-    dignityAndPrivacyRate,
+    culturalAwarenessRate,
+    ageAppropriateGuidanceRate,
+    recordKeepingRate,
   };
 }
 
 // -- Child Profiles ------------------------------------------------------------
 
-export function buildChildClothingProfiles(
-  provisions: ClothingProvisionRecord[],
-  budgets: ClothingBudgetRecord[],
-): ChildClothingProfile[] {
+export function buildChildProfiles(
+  assessments: ClothingAssessment[],
+): ChildProfile[] {
   const childIds = new Set<string>();
   const childNames = new Map<string, string>();
 
-  for (const p of provisions) {
-    childIds.add(p.childId);
-    childNames.set(p.childId, p.childName);
-  }
-  for (const b of budgets) {
-    childIds.add(b.childId);
-    childNames.set(b.childId, b.childName);
+  for (const a of assessments) {
+    childIds.add(a.childId);
+    childNames.set(a.childId, a.childName);
   }
 
   return Array.from(childIds).map((childId) => {
-    const childProvisions = provisions.filter((p) => p.childId === childId);
-    const childBudgets = budgets.filter((b) => b.childId === childId);
+    const childAssessments = assessments.filter((a) => a.childId === childId);
     const childName = childNames.get(childId) ?? childId;
 
-    const fullyMet = childProvisions.filter(
-      (p) => p.provisionStatus === "fully_met",
+    const highQuality = childAssessments.filter(
+      (a) => a.provisionQuality === "excellent" || a.provisionQuality === "good",
     ).length;
-    const fullyMetRate = pct(fullyMet, childProvisions.length);
+    const qualityRate = pct(highQuality, childAssessments.length);
 
-    const childChoice = childProvisions.filter((p) => p.childChoice).length;
-    const childChoiceRate = pct(childChoice, childProvisions.length);
-
-    const fitCorrect = childProvisions.filter((p) => p.fitCorrect).length;
-    const fitCorrectRate = pct(fitCorrect, childProvisions.length);
-
-    // Budget adequacy — all budget periods within allocation
-    const budgetAdequacy =
-      childBudgets.length > 0 &&
-      childBudgets.every((b) => b.budgetSpent <= b.budgetAllocated);
+    const childChoice = childAssessments.filter((a) => a.childChoiceRespected).length;
+    const childChoiceRate = pct(childChoice, childAssessments.length);
 
     // Score 0-10
     let score = 0;
 
-    // Provision quality (0-4)
-    if (childProvisions.length === 0) {
+    // Quality (0-4)
+    if (childAssessments.length === 0) {
       score += 0;
-    } else if (fullyMetRate >= 80) {
+    } else if (qualityRate >= 80) {
       score += 4;
-    } else if (fullyMetRate >= 60) {
+    } else if (qualityRate >= 60) {
       score += 3;
-    } else if (fullyMetRate >= 40) {
+    } else if (qualityRate >= 40) {
       score += 2;
     } else {
       score += 1;
     }
 
     // Child choice (0-3)
-    if (childProvisions.length === 0) {
+    if (childAssessments.length === 0) {
       score += 0;
     } else if (childChoiceRate >= 80) {
       score += 3;
@@ -630,19 +533,22 @@ export function buildChildClothingProfiles(
       score += 1;
     }
 
-    // Fit + budget (0-3)
-    if (childProvisions.length > 0 && fitCorrectRate >= 80) score += 2;
-    else if (childProvisions.length > 0 && fitCorrectRate >= 50) score += 1;
-    if (budgetAdequacy) score += 1;
+    // Cultural + age appropriate (0-3)
+    const culturalMet = childAssessments.filter((a) => a.culturalNeedsMet).length;
+    const culturalRate = pct(culturalMet, childAssessments.length);
+    const ageApp = childAssessments.filter((a) => a.ageAppropriate).length;
+    const ageRate = pct(ageApp, childAssessments.length);
+    const combinedRate = Math.round((culturalRate + ageRate) / 2);
+    if (combinedRate >= 80) score += 3;
+    else if (combinedRate >= 60) score += 2;
+    else if (combinedRate > 0) score += 1;
 
     return {
       childId,
       childName,
-      totalRecords: childProvisions.length,
-      fullyMetRate,
+      totalAssessments: childAssessments.length,
+      qualityRate,
       childChoiceRate,
-      fitCorrectRate,
-      budgetAdequacy,
       overallScore: Math.min(Math.max(score, 0), 10),
     };
   });
@@ -651,116 +557,110 @@ export function buildChildClothingProfiles(
 // -- Main generator ------------------------------------------------------------
 
 export function generateClothingAppearanceProvisionIntelligence(
-  provisions: ClothingProvisionRecord[],
-  budgets: ClothingBudgetRecord[],
+  assessments: ClothingAssessment[],
   policies: ClothingPolicy[],
   training: StaffClothingTraining[],
   homeId: string,
   periodStart: string,
   periodEnd: string,
 ): ClothingAppearanceProvisionIntelligence {
-  const clothingProvision = evaluateClothingProvision(provisions);
-  const budgetManagement = evaluateBudgetManagement(budgets);
-  const clothingPolicy = evaluateClothingPolicy(policies);
-  const staffClothingReadiness = evaluateStaffClothingReadiness(training);
+  const quality = evaluateQuality(assessments);
+  const compliance = evaluateCompliance(assessments);
+  const policy = evaluatePolicy(policies);
+  const staffReadiness = evaluateStaffReadiness(training);
 
   const rawScore =
-    clothingProvision.overallScore +
-    budgetManagement.overallScore +
-    clothingPolicy.overallScore +
-    staffClothingReadiness.overallScore;
+    quality.overallScore +
+    compliance.overallScore +
+    policy.overallScore +
+    staffReadiness.overallScore;
   const overallScore = Math.min(rawScore, 100);
   const rating = getRating(overallScore);
 
-  const childProfiles = buildChildClothingProfiles(provisions, budgets);
+  const childProfiles = buildChildProfiles(assessments);
 
   // -- Strengths ---------------------------------------------------------------
   const strengths: string[] = [];
 
-  if (clothingProvision.fullyMetRate >= 80) {
+  if (quality.qualityRate >= 80) {
     strengths.push(
-      "Clothing needs consistently fully met across all categories",
+      "Clothing provision consistently rated excellent or good across assessments",
     );
   }
-  if (clothingProvision.childChoiceRate >= 80) {
+  if (quality.childChoiceRate >= 80) {
     strengths.push(
       "Children actively involved in choosing their own clothing — strong child voice",
     );
   }
-  if (budgetManagement.budgetAdequacyRate >= 90 && budgets.length > 0) {
+  if (quality.culturalRate >= 90) {
     strengths.push(
-      "Excellent budget management — clothing spend within allocation across all periods",
+      "Cultural and religious clothing needs consistently recognised and met",
     );
   }
-  if (budgetManagement.childInvolvedRate >= 80 && budgets.length > 0) {
+  if (compliance.documentedRate >= 90 && assessments.length > 0) {
     strengths.push(
-      "Children meaningfully involved in clothing budget decisions",
+      "Clothing provision thoroughly documented in care plans",
     );
   }
-  if (clothingPolicy.individualClothingListRate >= 90 && policies.length > 0) {
+  if (compliance.staffAssessedRate >= 90 && assessments.length > 0) {
     strengths.push(
-      "Individual clothing lists maintained for all children — personalised approach",
+      "Staff consistently completing clothing assessments",
+    );
+  }
+  if (policy.clothingProvisionStrategyRate >= 90 && policies.length > 0) {
+    strengths.push(
+      "Comprehensive clothing provision strategy in place",
     );
   }
   if (
-    staffClothingReadiness.clothingStandardsRate >= 90 &&
-    staffClothingReadiness.childChoiceRate >= 90
+    staffReadiness.clothingAssessmentRate >= 90 &&
+    staffReadiness.childChoiceFacilitationRate >= 90
   ) {
     strengths.push(
-      "Staff team well-trained in clothing standards and supporting child choice",
-    );
-  }
-  if (clothingProvision.culturallyAppropriateRate >= 90) {
-    strengths.push(
-      "Cultural clothing needs consistently recognised and met",
+      "Staff team well-trained in clothing assessment and supporting child choice",
     );
   }
 
   // -- Areas for improvement ---------------------------------------------------
   const areasForImprovement: string[] = [];
 
-  if (clothingProvision.childChoiceRate < 70 && provisions.length > 0) {
+  if (quality.childChoiceRate < 70 && assessments.length > 0) {
     areasForImprovement.push(
       "Children's choice in clothing selection needs strengthening — ensure every child is offered meaningful choices",
     );
   }
-  if (clothingProvision.fitCorrectRate < 70 && provisions.length > 0) {
+  if (quality.culturalRate < 70 && assessments.length > 0) {
     areasForImprovement.push(
-      "Clothing fit issues identified — review sizing and replacement processes",
+      "Cultural and religious clothing needs require greater attention",
     );
   }
-  if (budgetManagement.receiptsRecordedRate < 70 && budgets.length > 0) {
+  if (compliance.documentedRate < 70 && assessments.length > 0) {
     areasForImprovement.push(
-      "Receipt recording inconsistent — strengthen financial record-keeping for clothing purchases",
+      "Clothing provision documentation in care plans needs improvement",
     );
   }
-  if (clothingPolicy.seasonalReviewRate < 70 && policies.length > 0) {
+  if (compliance.feedbackRate < 70 && assessments.length > 0) {
+    areasForImprovement.push(
+      "Feedback to children about clothing provision is inconsistent — strengthen feedback loops",
+    );
+  }
+  if (policy.seasonalReviewProcedureRate < 70 && policies.length > 0) {
     areasForImprovement.push(
       "Seasonal clothing reviews not consistently scheduled — implement quarterly wardrobe assessments",
     );
   }
-  if (staffClothingReadiness.culturalAwarenessRate < 70 && training.length > 0) {
+  if (staffReadiness.culturalAwarenessRate < 70 && training.length > 0) {
     areasForImprovement.push(
       "Staff cultural awareness training for clothing needs requires improvement",
-    );
-  }
-  if (clothingProvision.culturallyAppropriateRate < 70 && provisions.length > 0) {
-    areasForImprovement.push(
-      "Cultural appropriateness of clothing provision needs attention — ensure diverse needs are met",
     );
   }
 
   // -- Actions -----------------------------------------------------------------
   const actions: string[] = [];
 
-  if (provisions.length === 0) {
+  if (assessments.length === 0) {
     actions.push(
-      "URGENT: No clothing provision records — implement systematic recording of clothing needs and provision",
-    );
-  }
-  if (budgets.length === 0) {
-    actions.push(
-      "URGENT: No clothing budget records — establish transparent clothing budget tracking for each child",
+      "URGENT: No clothing assessments recorded — implement systematic clothing assessment process",
     );
   }
   if (policies.length === 0) {
@@ -773,31 +673,36 @@ export function generateClothingAppearanceProvisionIntelligence(
       "URGENT: No staff clothing training records — deliver training on clothing standards and child choice",
     );
   }
-  if (clothingProvision.fullyMetRate < 50 && provisions.length > 0) {
+  if (quality.qualityRate < 50 && assessments.length > 0) {
     actions.push(
-      "URGENT: Less than half of clothing needs fully met — conduct immediate wardrobe review for all children",
+      "URGENT: Less than half of clothing assessments rated good or above — conduct immediate wardrobe review for all children",
     );
   }
-  if (budgetManagement.budgetAdequacyRate < 50 && budgets.length > 0) {
+  if (compliance.staffAssessedRate < 50 && assessments.length > 0) {
     actions.push(
-      "Review clothing budget allocations — over half of periods show overspend",
+      "Review staff assessment completion — less than half of provisions have staff assessment recorded",
     );
   }
-  if (clothingPolicy.laundryArrangementsRate < 50 && policies.length > 0) {
+  if (policy.laundryAndMaintenancePlanRate < 50 && policies.length > 0) {
     actions.push(
-      "Review laundry arrangements — ensure children have access to clean clothing daily",
+      "Review laundry and maintenance arrangements — ensure children have access to clean clothing daily",
+    );
+  }
+  if (compliance.categoryDiversityRatio < 50 && assessments.length > 0) {
+    actions.push(
+      "Broaden clothing category coverage — assessments only cover a narrow range of clothing types",
     );
   }
 
   // -- Regulatory links --------------------------------------------------------
   const regulatoryLinks: string[] = [
-    "CHR 2015 Reg 10 — The health and well-being standard (adequate clothing provision)",
-    "CHR 2015 Reg 12 — The protection of children standard (dignity in appearance)",
-    "SCCIF — Social Care Common Inspection Framework (quality of care, personalisation)",
-    "NMS 10 — National Minimum Standards (clothing and personal possessions)",
-    "Children Act 1989 — Duty of care including adequate clothing provision",
-    "UNCRC Article 27 — Right to a standard of living adequate for physical and social development",
-    "Care Planning Regulations 2010 — Individual care planning including clothing needs",
+    "CHR 2015 Regulation 6 — Health and well-being (clothing provision)",
+    "CHR 2015 Regulation 10 — Dignity of children (appearance)",
+    "SCCIF — Health and well-being of children (clothing)",
+    "NMS 6 — Health and well-being (clothing and appearance)",
+    "Children Act 1989 — Welfare of the child",
+    "UNCRC Article 27 — Adequate standard of living (clothing)",
+    "Care Planning Regulations 2010 — Clothing provision",
   ];
 
   return {
@@ -806,10 +711,10 @@ export function generateClothingAppearanceProvisionIntelligence(
     periodEnd,
     overallScore,
     rating,
-    clothingProvision,
-    budgetManagement,
-    clothingPolicy,
-    staffClothingReadiness,
+    quality,
+    compliance,
+    policy,
+    staffReadiness,
     childProfiles,
     strengths,
     areasForImprovement,

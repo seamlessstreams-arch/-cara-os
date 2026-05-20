@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import type { ClothingAppearanceProvisionIntelligence } from "@/lib/clothing-appearance-provision";
+import type { TherapeuticInterventionQualityIntelligence } from "@/lib/therapeutic-intervention-quality";
 
 const ratingColors: Record<string, string> = {
   outstanding: "bg-green-100 text-green-800 border-green-300",
@@ -18,15 +18,15 @@ const ratingLabels: Record<string, string> = {
 };
 
 function ScoreBar({ score, label, maxScore = 100 }: { score: number; label: string; maxScore?: number }) {
-  const pct = (score / maxScore) * 100;
-  const color = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-blue-500" : pct >= 40 ? "bg-amber-500" : "bg-red-500";
+  const pctVal = (score / maxScore) * 100;
+  const color = pctVal >= 80 ? "bg-green-500" : pctVal >= 60 ? "bg-blue-500" : pctVal >= 40 ? "bg-amber-500" : "bg-red-500";
   return (
     <div className="flex items-center gap-3">
-      <span className="text-sm text-gray-600 w-44 shrink-0">{label}</span>
+      <span className="text-sm text-gray-600 w-48 shrink-0">{label}</span>
       <div className="flex-1 bg-gray-100 rounded-full h-2.5">
-        <div className={`h-2.5 rounded-full ${color}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+        <div className={`h-2.5 rounded-full ${color}`} style={{ width: `${Math.min(pctVal, 100)}%` }} />
       </div>
-      <span className="text-sm font-medium w-12 text-right">{score}</span>
+      <span className="text-sm font-medium w-12 text-right">{score}/{maxScore}</span>
     </div>
   );
 }
@@ -44,13 +44,22 @@ function Section({ title, defaultOpen = false, children }: { title: string; defa
   );
 }
 
-export function ClothingAppearanceProvisionDashboardWidget() {
-  const [data, setData] = useState<ClothingAppearanceProvisionIntelligence | null>(null);
+function Stat({ label, value, warn }: { label: string; value: string | number; warn?: boolean }) {
+  return (
+    <div>
+      <span className="text-gray-500">{label}:</span>{" "}
+      <span className={`font-medium ${warn ? "text-red-600" : ""}`}>{value}</span>
+    </div>
+  );
+}
+
+export function TherapeuticInterventionQualityDashboardWidget() {
+  const [data, setData] = useState<TherapeuticInterventionQualityIntelligence | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/clothing-appearance-provision")
+    fetch("/api/therapeutic-intervention-quality")
       .then((res) => { if (!res.ok) throw new Error(`HTTP ${res.status}`); return res.json(); })
       .then((json) => setData(json.data))
       .catch((err) => setError(err.message))
@@ -72,7 +81,7 @@ export function ClothingAppearanceProvisionDashboardWidget() {
   if (error) {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
-        <h3 className="text-lg font-semibold text-red-800">Clothing & Appearance Provision</h3>
+        <h3 className="text-lg font-semibold text-red-800">Therapeutic Intervention Quality</h3>
         <p className="text-red-600 mt-2">Failed to load: {error}</p>
       </div>
     );
@@ -84,7 +93,7 @@ export function ClothingAppearanceProvisionDashboardWidget() {
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Clothing & Appearance Provision</h3>
+          <h3 className="text-lg font-semibold text-gray-900">Therapeutic Intervention Quality</h3>
           <p className="text-sm text-gray-500 mt-1">{data.periodStart} to {data.periodEnd}</p>
         </div>
         <div className="text-right">
@@ -95,35 +104,39 @@ export function ClothingAppearanceProvisionDashboardWidget() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.totalAssessments}</div>
-          <div className="text-xs text-gray-500 mt-1">Assessments</div>
+          <div className="text-2xl font-bold text-gray-900">{data.quality.totalSessions}</div>
+          <div className="text-xs text-gray-500 mt-1">Sessions</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.qualityRate}%</div>
-          <div className="text-xs text-gray-500 mt-1">Quality Rate</div>
+          <div className="text-2xl font-bold text-gray-900">{data.quality.progressRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Progress</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.quality.childChoiceRate}%</div>
-          <div className="text-xs text-gray-500 mt-1">Child Choice</div>
+          <div className="text-2xl font-bold text-gray-900">{data.quality.engagementRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Engaged</div>
         </div>
         <div className="bg-gray-50 rounded-lg p-3 text-center">
-          <div className="text-2xl font-bold text-gray-900">{data.childProfiles.length}</div>
-          <div className="text-xs text-gray-500 mt-1">Children</div>
+          <div className="text-2xl font-bold text-gray-900">{data.compliance.documentedRate}%</div>
+          <div className="text-xs text-gray-500 mt-1">Documented</div>
+        </div>
+        <div className="bg-gray-50 rounded-lg p-3 text-center">
+          <div className="text-2xl font-bold text-gray-900">{data.staffReadiness.totalStaff}</div>
+          <div className="text-xs text-gray-500 mt-1">Trained Staff</div>
         </div>
       </div>
 
       <div className="space-y-2">
-        <ScoreBar score={data.quality.overallScore} label="Quality" maxScore={25} />
+        <ScoreBar score={data.quality.overallScore} label="Therapeutic Quality" maxScore={25} />
         <ScoreBar score={data.compliance.overallScore} label="Compliance" maxScore={25} />
-        <ScoreBar score={data.policy.overallScore} label="Policy" maxScore={25} />
+        <ScoreBar score={data.policy.overallScore} label="Therapeutic Policy" maxScore={25} />
         <ScoreBar score={data.staffReadiness.overallScore} label="Staff Readiness" maxScore={25} />
       </div>
 
       <div className="space-y-3">
         {data.childProfiles.length > 0 && (
-          <Section title="Child Profiles" defaultOpen>
+          <Section title="Child Therapy Profiles" defaultOpen>
             <div className="space-y-3">
               {data.childProfiles.map((child) => (
                 <div key={child.childId} className="border border-gray-100 rounded-lg p-3">
@@ -132,9 +145,10 @@ export function ClothingAppearanceProvisionDashboardWidget() {
                     <span className="text-sm font-medium text-gray-600">{child.overallScore}/10</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
-                    <div>Assessments: <span className="font-medium">{child.totalAssessments}</span></div>
-                    <div>Quality: <span className="font-medium">{child.qualityRate}%</span></div>
-                    <div>Child Choice: <span className="font-medium">{child.childChoiceRate}%</span></div>
+                    <div>Sessions: <span className="font-medium">{child.totalSessions}</span></div>
+                    <div>Progress: <span className="font-medium">{child.progressRate}%</span></div>
+                    <div>Engaged: <span className="font-medium">{child.engagementRate}%</span></div>
+                    <div>Score: <span className="font-medium">{child.overallScore}/10</span></div>
                   </div>
                 </div>
               ))}
@@ -142,45 +156,46 @@ export function ClothingAppearanceProvisionDashboardWidget() {
           </Section>
         )}
 
-        <Section title="Quality">
+        <Section title="Therapeutic Quality">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Assessments:</span> <span className="font-medium">{data.quality.totalAssessments}</span></div>
-            <div><span className="text-gray-500">Quality Rate:</span> <span className="font-medium">{data.quality.qualityRate}%</span></div>
-            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{data.quality.childChoiceRate}%</span></div>
-            <div><span className="text-gray-500">Age Appropriate:</span> <span className="font-medium">{data.quality.ageAppropriateRate}%</span></div>
-            <div><span className="text-gray-500">Cultural:</span> <span className="font-medium">{data.quality.culturalRate}%</span></div>
+            <Stat label="Total Sessions" value={data.quality.totalSessions} />
+            <Stat label="Progress Rate" value={`${data.quality.progressRate}%`} />
+            <Stat label="Engagement Rate" value={`${data.quality.engagementRate}%`} />
+            <Stat label="Goals Reviewed" value={`${data.quality.goalsReviewedRate}%`} />
+            <Stat label="Relationship" value={`${data.quality.relationshipRate}%`} />
           </div>
         </Section>
 
         <Section title="Compliance">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Documented:</span> <span className="font-medium">{data.compliance.documentedRate}%</span></div>
-            <div><span className="text-gray-500">Staff Assessed:</span> <span className="font-medium">{data.compliance.staffAssessedRate}%</span></div>
-            <div><span className="text-gray-500">Feedback:</span> <span className="font-medium">{data.compliance.feedbackRate}%</span></div>
-            <div><span className="text-gray-500">Category Diversity:</span> <span className="font-medium">{data.compliance.categoryDiversityRatio}%</span></div>
+            <Stat label="Documented" value={`${data.compliance.documentedRate}%`} />
+            <Stat label="Staff Supported" value={`${data.compliance.staffSupportedRate}%`} />
+            <Stat label="Feedback Given" value={`${data.compliance.feedbackRate}%`} />
+            <Stat label="Therapy Diversity" value={`${data.compliance.therapyDiversityRatio}%`} />
           </div>
         </Section>
 
-        <Section title="Clothing Policy">
+        <Section title="Therapeutic Policy">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Provision Strategy:</span> <span className="font-medium">{data.policy.clothingProvisionStrategyRate}%</span></div>
-            <div><span className="text-gray-500">Budget Framework:</span> <span className="font-medium">{data.policy.clothingBudgetFrameworkRate}%</span></div>
-            <div><span className="text-gray-500">Seasonal Review:</span> <span className="font-medium">{data.policy.seasonalReviewProcedureRate}%</span></div>
-            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{data.policy.childChoiceGuidanceRate}%</span></div>
-            <div><span className="text-gray-500">Cultural/Religious:</span> <span className="font-medium">{data.policy.culturalAndReligiousAccommodationRate}%</span></div>
-            <div><span className="text-gray-500">Laundry/Maintenance:</span> <span className="font-medium">{data.policy.laundryAndMaintenancePlanRate}%</span></div>
-            <div><span className="text-gray-500">Regular Review:</span> <span className="font-medium">{data.policy.regularReviewRate}%</span></div>
+            <Stat label="Framework" value={data.policy.therapeuticFramework ? "Yes" : "No"} warn={!data.policy.therapeuticFramework} />
+            <Stat label="Referral Pathway" value={data.policy.referralPathway ? "Yes" : "No"} warn={!data.policy.referralPathway} />
+            <Stat label="Consent Protocol" value={data.policy.consentAndConfidentialityProtocol ? "Yes" : "No"} warn={!data.policy.consentAndConfidentialityProtocol} />
+            <Stat label="Multi-disciplinary" value={data.policy.multiDisciplinaryApproach ? "Yes" : "No"} warn={!data.policy.multiDisciplinaryApproach} />
+            <Stat label="Outcome Measurement" value={data.policy.outcomeMeasurementPlan ? "Yes" : "No"} warn={!data.policy.outcomeMeasurementPlan} />
+            <Stat label="Crisis Provision" value={data.policy.crisisTherapyProvision ? "Yes" : "No"} warn={!data.policy.crisisTherapyProvision} />
+            <Stat label="Regular Review" value={data.policy.regularReview ? "Yes" : "No"} warn={!data.policy.regularReview} />
           </div>
         </Section>
 
-        <Section title="Staff Readiness">
+        <Section title="Staff Therapeutic Readiness">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><span className="text-gray-500">Clothing Assessment:</span> <span className="font-medium">{data.staffReadiness.clothingAssessmentRate}%</span></div>
-            <div><span className="text-gray-500">Child Choice:</span> <span className="font-medium">{data.staffReadiness.childChoiceFacilitationRate}%</span></div>
-            <div><span className="text-gray-500">Budget Mgmt:</span> <span className="font-medium">{data.staffReadiness.budgetManagementRate}%</span></div>
-            <div><span className="text-gray-500">Cultural Awareness:</span> <span className="font-medium">{data.staffReadiness.culturalAwarenessRate}%</span></div>
-            <div><span className="text-gray-500">Age Appropriate:</span> <span className="font-medium">{data.staffReadiness.ageAppropriateGuidanceRate}%</span></div>
-            <div><span className="text-gray-500">Record Keeping:</span> <span className="font-medium">{data.staffReadiness.recordKeepingRate}%</span></div>
+            <Stat label="Staff Trained" value={data.staffReadiness.totalStaff} />
+            <Stat label="Awareness" value={`${data.staffReadiness.therapeuticAwarenessRate}%`} />
+            <Stat label="Trauma-Informed" value={`${data.staffReadiness.traumaInformedPracticeRate}%`} />
+            <Stat label="Attachment Theory" value={`${data.staffReadiness.attachmentTheoryRate}%`} />
+            <Stat label="Communication" value={`${data.staffReadiness.therapeuticCommunicationRate}%`} />
+            <Stat label="Boundaries" value={`${data.staffReadiness.boundaryManagementRate}%`} />
+            <Stat label="Reflective Practice" value={`${data.staffReadiness.reflectivePracticeRate}%`} />
           </div>
         </Section>
 
@@ -229,3 +244,5 @@ export function ClothingAppearanceProvisionDashboardWidget() {
     </div>
   );
 }
+
+export default TherapeuticInterventionQualityDashboardWidget;
