@@ -3,6 +3,29 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
+  generateQualityEcologyIntelligence,
+  evaluateQualityEcologyQuality,
+  evaluateQualityEcologyCompliance,
+  evaluateQualityEcologyPolicy,
+  evaluateStaffQualityEcologyReadiness,
+  buildChildQualityEcologyProfiles,
+  pct,
+  getRating,
+  getQualityEcologyCategoryLabel,
+  getQualityEcologyOutcomeLabel,
+  getRatingLabel,
+} from "./quality-ecology-intelligence-engine";
+
+export type {
+  QualityEcologyCategory, QualityEcologyOutcome, Rating,
+  QualityEcologyRecord, QualityEcologyPolicy, StaffQualityEcologyTraining,
+  QualityEcologyQualityResult, QualityEcologyComplianceResult, QualityEcologyPolicyResult,
+  StaffQualityEcologyReadinessResult, ChildQualityEcologyProfile,
+  QualityEcologyIntelligence, GenerateQualityEcologyIntelligenceInput,
+} from "./quality-ecology-intelligence-engine";
+
+// Legacy re-exports from lifecycle-engine
+export {
   attemptTransition,
   checkOverdue,
   generateNextOccurrences,
