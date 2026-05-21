@@ -3,3 +3,4 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export { DigitalLiteracyDashboardWidget } from "./DigitalLiteracyDashboardWidget";
+export { DigitalLiteracyIntelligenceWidget } from "./DigitalLiteracyIntelligenceWidget";
