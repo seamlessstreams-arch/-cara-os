@@ -1,0 +1,43 @@
+"use client";
+import { useEffect, useState } from "react";
+function ScoreBar({ label, value, max = 25 }: { label: string; value: number; max?: number }) { const pct = Math.min(100, Math.round((value / max) * 100)); const colour = pct >= 80 ? "bg-green-500" : pct >= 60 ? "bg-yellow-500" : pct >= 40 ? "bg-orange-500" : "bg-red-500"; return (<div className="mb-2"><div className="flex justify-between text-sm mb-1"><span>{label}</span><span className="font-medium">{value}/{max}</span></div><div className="w-full h-2 bg-gray-200 rounded"><div className={`${colour} h-2 rounded`} style={{ width: `${pct}%` }} /></div></div>); }
+function Stat({ label, value }: { label: string; value: string | number }) { return <div className="bg-gray-50 rounded p-3 text-center"><p className="text-xs text-gray-500">{label}</p><p className="text-lg font-semibold">{String(value)}</p></div>; }
+function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) { const [open, setOpen] = useState(defaultOpen); return (<div className="border rounded mb-3"><button className="w-full flex justify-between items-center p-3 text-left font-medium text-sm" onClick={() => setOpen(!open)}>{title}<span>{open ? "▲" : "▼"}</span></button>{open && <div className="p-3 pt-0">{children}</div>}</div>); }
+function ratingBadge(rating: string) { const colours: Record<string, string> = { outstanding: "bg-green-100 text-green-800", good: "bg-yellow-100 text-yellow-800", requires_improvement: "bg-orange-100 text-orange-800", inadequate: "bg-red-100 text-red-800" }; return <span className={`text-xs font-medium px-2 py-0.5 rounded ${colours[rating] ?? "bg-gray-100"}`}>{rating.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</span>; }
+
+export function OnlineSafetyIntelligenceWidget() {
+  const [data, setData] = useState<Record<string, unknown> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => { fetch("/api/online-safety").then((r) => { if (!r.ok) throw new Error("Failed to load"); return r.json(); }).then((json) => setData(json.data)).catch((e) => setError(e.message)).finally(() => setLoading(false)); }, []);
+  if (loading) return <div className="animate-pulse space-y-3 p-4"><div className="h-6 bg-gray-200 rounded w-2/3" /><div className="h-4 bg-gray-200 rounded w-1/2" /><div className="h-32 bg-gray-200 rounded" /></div>;
+  if (error) return <div className="text-red-600 p-4 text-sm">Error loading online safety intelligence: {error}</div>;
+  if (!data) return null;
+  const d = data as Record<string, unknown>;
+  const risk = d.riskAssessments as Record<string, unknown>;
+  const incidents = d.incidentAnalysis as Record<string, unknown>;
+  const education = d.education as Record<string, unknown>;
+  const training = d.staffTraining as Record<string, unknown>;
+  const policyStatus = d.policyStatus as Record<string, unknown>;
+  const children = (d.childProfiles ?? []) as Record<string, unknown>[];
+  const strengths = (d.strengths ?? []) as string[];
+  const areas = (d.areasForDevelopment ?? []) as string[];
+  const actions = (d.immediateActions ?? []) as string[];
+  const regs = (d.regulatoryLinks ?? []) as string[];
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between"><h2 className="text-lg font-bold">Online Safety &amp; Digital Wellbeing Intelligence</h2>{ratingBadge(d.rating as string)}</div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2"><Stat label="Overall Score" value={`${d.overallScore}/100`} /><Stat label="Children" value={risk.totalChildren as number} /><Stat label="Incidents" value={incidents.totalIncidents as number} /><Stat label="Education Sessions" value={education.totalSessions as number} /></div>
+      <Section title="Risk Assessments" defaultOpen><div className="grid grid-cols-2 gap-2"><Stat label="Assessment Rate" value={`${risk.assessmentRate}%`} /><Stat label="Overdue" value={risk.overdueAssessments as number} /><Stat label="Device Agreements" value={`${risk.deviceAgreementRate}%`} /><Stat label="Avg Safety Measures" value={risk.averageSafetyMeasures as number} /></div>{(risk.childrenAtHighRisk as string[]).length > 0 && <p className="text-xs text-red-600 mt-2">High risk: {(risk.childrenAtHighRisk as string[]).join(", ")}</p>}{(risk.riskLevelBreakdown as Record<string, unknown>[]).length > 0 && <div className="grid grid-cols-4 gap-2 mt-2">{(risk.riskLevelBreakdown as Record<string, unknown>[]).map((r) => (<Stat key={r.level as string} label={(r.level as string).replace(/_/g, " ")} value={r.count as number} />))}</div>}</Section>
+      <Section title="Incident Analysis"><div className="grid grid-cols-2 gap-2"><Stat label="Total Incidents" value={incidents.totalIncidents as number} /><Stat label="Avg Severity" value={incidents.averageSeverity as number} /><Stat label="Resolved" value={`${incidents.resolvedRate}%`} /><Stat label="CEOP Referrals" value={incidents.ceopReferrals as number} /><Stat label="Police Involved" value={incidents.policeInvolvement as number} /><Stat label="Children Affected" value={incidents.childrenWithIncidents as number} /></div>{(incidents.childrenWithMultipleIncidents as string[]).length > 0 && <p className="text-xs text-orange-600 mt-2">Multiple incidents: {(incidents.childrenWithMultipleIncidents as string[]).join(", ")}</p>}</Section>
+      <Section title="Education Delivery"><div className="grid grid-cols-2 gap-2"><Stat label="Sessions/Child" value={education.sessionsPerChild as number} /><Stat label="Topic Coverage" value={`${education.topicCoverageRate}%`} /><Stat label="Topics Covered" value={`${education.topicsCovered}/${education.totalTopics}`} /><Stat label="Engagement" value={`${education.engagementRate}%`} /></div>{(education.childrenWithNoEducation as string[]).length > 0 && <p className="text-xs text-orange-600 mt-2">No education: {(education.childrenWithNoEducation as string[]).join(", ")}</p>}</Section>
+      <Section title="Staff Training"><div className="grid grid-cols-2 gap-2"><Stat label="Training Rate" value={`${training.trainingRate}%`} /><Stat label="Trained" value={`${training.staffTrained}/${training.totalStaff}`} /><Stat label="Expired" value={training.expiredTraining as number} /></div></Section>
+      <Section title="Policy Status"><ul className="text-sm space-y-1">{([["Policy Current", policyStatus.current], ["Filtering in Place", policyStatus.filteringInPlace], ["Monitoring in Place", policyStatus.monitoringInPlace], ["Reporting Pathway", policyStatus.reportingPathway], ["Child-Friendly Version", policyStatus.childFriendly]] as [string, unknown][]).map(([label, val]) => (<li key={label} className="flex items-center gap-2"><span className={val ? "text-green-600" : "text-red-500"}>{val ? "✓" : "✗"}</span>{label}</li>))}</ul></Section>
+      {children.length > 0 && (<Section title={`Child Profiles (${children.length})`}>{children.map((c) => (<div key={c.childId as string} className="mb-2 p-2 bg-gray-50 rounded"><div className="flex justify-between text-sm font-medium"><span>{c.childName as string}</span>{c.overallRiskLevel && <span className={`text-xs px-1.5 py-0.5 rounded ${(c.overallRiskLevel as string) === "very_high" || (c.overallRiskLevel as string) === "high" ? "bg-red-100 text-red-800" : (c.overallRiskLevel as string) === "medium" ? "bg-orange-100 text-orange-800" : "bg-green-100 text-green-800"}`}>{(c.overallRiskLevel as string).replace(/_/g, " ")}</span>}</div><p className="text-xs text-gray-500 mt-1">Assessment: {(c.hasRiskAssessment as boolean) ? "Yes" : "No"}{(c.assessmentOverdue as boolean) ? " (OVERDUE)" : ""} · {c.incidentCount as number} incidents · {c.educationSessionCount as number} education · {c.safetyMeasureCount as number} safety measures · {c.socialMediaAccounts as number} social media{c.primaryConcern ? ` · ${c.primaryConcern}` : ""}</p></div>))}</Section>)}
+      {strengths.length > 0 && <Section title="Strengths"><ul className="text-sm space-y-1">{strengths.map((s, i) => <li key={i} className="text-green-700">&#10003; {s}</li>)}</ul></Section>}
+      {areas.length > 0 && <Section title="Areas for Development"><ul className="text-sm space-y-1">{areas.map((a, i) => <li key={i} className="text-orange-700">&#9888; {a}</li>)}</ul></Section>}
+      {actions.length > 0 && <Section title="Immediate Actions"><ul className="text-sm space-y-1">{actions.map((a, i) => <li key={i}>{a}</li>)}</ul></Section>}
+      <Section title="Regulatory Links"><ul className="text-sm text-gray-600 space-y-1">{regs.map((r, i) => <li key={i}>{r}</li>)}</ul></Section>
+    </div>
+  );
+}
