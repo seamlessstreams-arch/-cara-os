@@ -3,3 +3,4 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export { TransitionPlanningDashboardWidget } from "./TransitionPlanningDashboardWidget";
+export { TransitionPlanningIntelligenceWidget } from "./TransitionPlanningIntelligenceWidget";
