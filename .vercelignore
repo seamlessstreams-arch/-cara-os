@@ -1,0 +1,25 @@
+# Test files — not needed for deployment
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+**/__tests__/**
+
+# E2E tests
+e2e/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Scripts
+scripts/
+
+# Local config
+playwright.config.ts
+vitest.config.ts
+
+# Misc
+index.mjs
+.agents/
