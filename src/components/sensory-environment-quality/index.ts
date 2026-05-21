@@ -3,3 +3,4 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export { default as SensoryEnvironmentQualityDashboardWidget } from "./SensoryEnvironmentQualityDashboardWidget";
+export { SensoryEnvironmentQualityIntelligenceWidget } from "./SensoryEnvironmentQualityIntelligenceWidget";

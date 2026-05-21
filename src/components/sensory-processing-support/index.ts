@@ -3,3 +3,4 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export { SensoryProcessingSupportDashboardWidget } from "./SensoryProcessingSupportDashboardWidget";
+export { SensoryProcessingSupportIntelligenceWidget } from "./SensoryProcessingSupportIntelligenceWidget";
