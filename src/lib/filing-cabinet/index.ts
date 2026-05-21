@@ -3,6 +3,37 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export {
+  generateFilingCabinetIntelligence,
+  evaluateFilingCabinetQuality,
+  evaluateFilingCabinetCompliance,
+  evaluateFilingCabinetPolicy,
+  evaluateStaffFilingCabinetReadiness,
+  buildChildFilingCabinetProfiles,
+  pct,
+  getRating,
+  getFilingCabinetCategoryLabel,
+  getFilingCabinetOutcomeLabel,
+  getRatingLabel,
+} from "./filing-cabinet-intelligence-engine";
+
+export type {
+  FilingCabinetCategory,
+  FilingCabinetOutcome,
+  Rating,
+  FilingCabinetRecord,
+  FilingCabinetPolicy,
+  StaffFilingCabinetTraining,
+  FilingCabinetQualityResult,
+  FilingCabinetComplianceResult,
+  FilingCabinetPolicyResult,
+  StaffFilingCabinetReadinessResult,
+  ChildFilingCabinetProfile,
+  FilingCabinetIntelligence,
+  GenerateFilingCabinetIntelligenceInput,
+} from "./filing-cabinet-intelligence-engine";
+
+// Legacy re-exports from retention-engine
+export {
   getRetentionPolicy,
   calculateRetentionExpiry,
   checkRetentionStatus,
