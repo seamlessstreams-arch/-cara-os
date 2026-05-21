@@ -2,6 +2,8 @@
 // Cornerstone Placement Stability Intelligence — Public API
 // ══════════════════════════════════════════════════════════════════════════════
 
+// ── Legacy Placement Stability Engine ─────────────────────────────────────
+
 export {
   evaluatePlacementDuration,
   evaluateDisruptionManagement,
@@ -39,3 +41,35 @@ export type {
   ChildStabilityProfile,
   PlacementStabilityIntelligence,
 } from "./placement-stability-engine";
+
+// ── New Intelligence Engine ───────────────────────────────────────────────
+
+export {
+  pct,
+  getRating,
+  getPlacementStabilityIntelligenceCategoryLabel,
+  getPlacementStabilityIntelligenceOutcomeLabel,
+  getRatingLabel,
+  evaluatePlacementStabilityQuality,
+  evaluatePlacementStabilityCompliance,
+  evaluatePlacementStabilityPolicyEval,
+  evaluateStaffPlacementStabilityReadiness,
+  buildChildPlacementStabilityProfiles,
+  generatePlacementStabilityIntelligenceReport,
+} from "./placement-stability-intelligence-engine";
+
+export type {
+  PlacementStabilityIntelligenceCategory,
+  PlacementStabilityIntelligenceOutcome,
+  Rating as PlacementStabilityRating,
+  PlacementStabilityRecord,
+  PlacementStabilityPolicy,
+  StaffPlacementStabilityTraining,
+  PlacementStabilityQualityResult,
+  PlacementStabilityComplianceResult,
+  PlacementStabilityPolicyResult,
+  StaffPlacementStabilityReadinessResult,
+  ChildPlacementStabilityProfile,
+  PlacementStabilityIntelligence as PlacementStabilityIntelligenceResult,
+  GeneratePlacementStabilityIntelligenceInput,
+} from "./placement-stability-intelligence-engine";

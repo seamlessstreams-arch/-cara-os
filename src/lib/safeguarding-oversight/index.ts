@@ -34,3 +34,35 @@ export type {
   StaffSafeguardingProfile,
   SafeguardingOversightIntelligence,
 } from "./safeguarding-oversight-engine";
+
+// -- Intelligence Engine (v2) ------------------------------------------------
+
+export {
+  pct as intelligencePct,
+  getRating as getIntelligenceRating,
+  getSafeguardingOversightIntelligenceCategoryLabel,
+  getSafeguardingOversightIntelligenceOutcomeLabel,
+  getIntelligenceRatingLabel,
+  evaluateSafeguardingOversightQuality,
+  evaluateSafeguardingOversightCompliance,
+  evaluateSafeguardingOversightPolicy,
+  evaluateStaffSafeguardingOversightReadiness,
+  buildChildSafeguardingOversightProfiles,
+  generateSafeguardingOversightIntelligenceResult,
+} from "./safeguarding-oversight-intelligence-engine";
+
+export type {
+  SafeguardingOversightIntelligenceCategory,
+  SafeguardingOversightIntelligenceOutcome,
+  Rating as IntelligenceRating,
+  SafeguardingOversightRecord,
+  SafeguardingOversightPolicy,
+  StaffSafeguardingOversightTraining,
+  SafeguardingOversightQualityResult,
+  SafeguardingOversightComplianceResult,
+  SafeguardingOversightPolicyResult,
+  StaffSafeguardingOversightReadinessResult,
+  ChildSafeguardingOversightProfile,
+  SafeguardingOversightIntelligenceResult,
+  GenerateSafeguardingOversightIntelligenceInput,
+} from "./safeguarding-oversight-intelligence-engine";
