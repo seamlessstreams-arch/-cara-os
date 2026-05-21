@@ -26,3 +26,35 @@ export type {
   ChildBehaviourProfile,
   BehaviourIntelligence,
 } from "./behaviour-engine";
+
+// ── Intelligence Engine ────────────────────────────────────────────────────
+
+export {
+  generateBehaviourIntelligenceReport,
+  evaluateBehaviourIntelligenceQuality,
+  evaluateBehaviourIntelligenceCompliance,
+  evaluateBehaviourIntelligencePolicy,
+  evaluateStaffBehaviourIntelligenceReadiness,
+  buildChildBehaviourIntelligenceProfiles,
+  pct as behaviourIntelligencePct,
+  getRating as getBehaviourIntelligenceRating,
+  getBehaviourIntelligenceCategoryLabel,
+  getBehaviourIntelligenceOutcomeLabel,
+  getBehaviourIntelligenceRatingLabel,
+} from "./behaviour-intelligence-engine";
+
+export type {
+  BehaviourIntelligenceCategory,
+  BehaviourIntelligenceOutcome,
+  BehaviourIntelligenceRating,
+  BehaviourIntelligenceRecord,
+  BehaviourIntelligencePolicy as BehaviourIntelligencePolicyInput,
+  StaffBehaviourIntelligenceTraining,
+  BehaviourIntelligenceQualityResult,
+  BehaviourIntelligenceComplianceResult,
+  BehaviourIntelligencePolicyResult,
+  StaffBehaviourIntelligenceReadinessResult,
+  ChildBehaviourIntelligenceProfile,
+  BehaviourIntelligenceResult,
+  GenerateBehaviourIntelligenceInput,
+} from "./behaviour-intelligence-engine";

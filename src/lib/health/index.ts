@@ -30,3 +30,35 @@ export type {
   ChildHealthProfile,
   HealthIntelligence,
 } from "./health-engine";
+
+/* ── Health Intelligence Engine (v2) ────────────────────────── */
+
+export {
+  healthIntelligencePct,
+  getHealthIntelligenceRating,
+  getHealthIntelligenceCategoryLabel,
+  getHealthIntelligenceOutcomeLabel,
+  getHealthIntelligenceRatingLabel,
+  evaluateHealthIntelligenceQuality,
+  evaluateHealthIntelligenceCompliance,
+  evaluateHealthIntelligencePolicy,
+  evaluateStaffHealthIntelligenceReadiness,
+  buildChildHealthIntelligenceProfiles,
+  generateHealthIntelligenceResult,
+} from "./health-intelligence-engine";
+
+export type {
+  HealthIntelligenceCategory,
+  HealthIntelligenceOutcome,
+  HealthIntelligenceRating,
+  HealthIntelligenceRecord,
+  HealthIntelligencePolicy,
+  StaffHealthIntelligenceTraining,
+  HealthIntelligenceQualityResult,
+  HealthIntelligenceComplianceResult,
+  HealthIntelligencePolicyResult,
+  StaffHealthIntelligenceReadinessResult,
+  ChildHealthIntelligenceProfile,
+  HealthIntelligenceResult,
+  GenerateHealthIntelligenceInput,
+} from "./health-intelligence-engine";

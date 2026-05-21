@@ -53,3 +53,34 @@ export type {
   ChildProfile,
   MissingFromCareIntelligence,
 } from "./missing-from-care-engine";
+
+// ── Intelligence engine (new 4-evaluator pattern) ──
+export {
+  evaluateMissingFromCareIntelligenceQuality,
+  evaluateMissingFromCareIntelligenceCompliance,
+  evaluateMissingFromCareIntelligencePolicy,
+  evaluateStaffMissingFromCareIntelligenceReadiness,
+  buildChildMissingFromCareIntelligenceProfiles,
+  generateMissingFromCareIntelligenceResult,
+  getRatingIntel,
+  getMissingFromCareIntelligenceRatingLabel,
+  getMissingFromCareIntelligenceCategoryLabel,
+  getMissingFromCareIntelligenceOutcomeLabel,
+  pctIntel,
+} from "./missing-from-care-intelligence-engine";
+
+export type {
+  MissingFromCareIntelligenceCategory,
+  MissingFromCareIntelligenceOutcome,
+  MissingFromCareIntelligenceRating,
+  MissingFromCareIntelligenceRecord,
+  MissingFromCareIntelligencePolicy,
+  StaffMissingFromCareIntelligenceTraining,
+  MissingFromCareIntelligenceQualityResult,
+  MissingFromCareIntelligenceComplianceResult,
+  MissingFromCareIntelligencePolicyResult,
+  StaffMissingFromCareIntelligenceReadinessResult,
+  ChildMissingFromCareIntelligenceProfile,
+  MissingFromCareIntelligenceResult,
+  GenerateMissingFromCareIntelligenceInput,
+} from "./missing-from-care-intelligence-engine";
