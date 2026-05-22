@@ -113,7 +113,7 @@ const SLUG_MAP: Record<string, string> = {
   "daily-log": "dailyLog",
   "daily-risk-briefings": "dailyRiskBriefings",
   "daily-routine-plans": "dailyRoutinePlans",
-  "dashboard": "tasks",
+  // "dashboard" — has dedicated route at /api/v1/dashboard/route.ts
   "data-breach-records": "dataBreachRecords",
   "data-protection-records": "dataProtectionRecords",
   "deaf-hearing-support-records": "deafHearingSupportRecords",
@@ -177,7 +177,7 @@ const SLUG_MAP: Record<string, string> = {
   "handover-audits": "handoverAudits",
   "hate-incidents": "hateIncidents",
   "health-assessments": "healthAssessments",
-  "health-check": "tasks",
+  // "health-check" — has dedicated route at /api/v1/health-check/route.ts
   "health-monitoring": "healthMonitoring",
   "health-passports": "healthPassports",
   "health-records": "healthRecordEntries",
