@@ -18,7 +18,7 @@ const SLUG_MAP: Record<string, string> = {
   "absence-tracking": "absenceTracking",
   "accident-book": "accidentBook",
   "activities": "activities",
-  "activity-feed": "incidents",
+  // "activity-feed": "incidents",  // ← dedicated route: /api/v1/activity-feed/route.ts
   "adhd-plans": "adhdPlans",
   "admissions": "admissionReferrals",
   "adoption-records": "adoptionRecords",
@@ -75,7 +75,7 @@ const SLUG_MAP: Record<string, string> = {
   "childrens-meeting-records": "childrensMeetingRecords",
   "childrens-rights": "childrensRights",
   "chosen-family-records": "chosenFamilyRecords",
-  "chronology-entries": "chronology",
+  // "chronology-entries": "chronology",  // ← dedicated route: /api/v1/young-people/[id]/chronology/route.ts
   "civic-records": "civicRecords",
   "cleaning-entries": "cleaningEntries",
   "clothing-allowance-records": "clothingAllowanceRecords",
@@ -368,7 +368,7 @@ const SLUG_MAP: Record<string, string> = {
   "service-user-agreement-records": "serviceUserAgreementRecords",
   "shift-checklists": "shiftChecklists",
   "shift-note-records": "shiftNoteRecords",
-  "shift-summary": "youngPeople",
+  // "shift-summary": "youngPeople",  // ← dedicated route: /api/v1/shift-summary/route.ts
   "sibling-contact-protocol-records": "siblingContactProtocolRecords",
   "significant-events": "significantEvents",
   "skin-condition-plans": "skinConditionPlans",
