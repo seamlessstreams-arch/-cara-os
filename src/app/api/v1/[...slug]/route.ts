@@ -38,7 +38,7 @@ const SLUG_MAP: Record<string, string> = {
   "aspiration-records": "aspirationRecords",
   "asthma-plans": "asthmaPlans",
   "attachment-profiles": "attachmentProfiles",
-  "audits": "audits",
+  // "audits": "audits",  // ← dedicated route: /api/v1/audits/route.ts
   "autism-plans": "autismPlans",
   "bcp-scenarios": "bcpScenarios",
   "bedroom-profiles": "bedroomProfiles",
@@ -130,7 +130,7 @@ const SLUG_MAP: Record<string, string> = {
   "disruption-prevention-plans": "disruptionPreventionPlans",
   "diversity-calendar-events": "diversityCalendarEvents",
   "doc-intelligence": "uploadedDocuments",
-  "documents": "documents",
+  // "documents": "documents",  // ← dedicated route: /api/v1/documents/route.ts
   "dol-records": "dolRecords",
   "driving-records": "drivingRecords",
   "duty-log-entries": "dutyLogEntries",
@@ -163,7 +163,7 @@ const SLUG_MAP: Record<string, string> = {
   "first-relationship-records": "firstRelationshipRecords",
   "food-budget-week-records": "foodBudgetWeekRecords",
   "food-hygiene-records": "foodHygieneRecords",
-  "forms": "careForms",
+  // "forms": "careForms",  // ← dedicated route: /api/v1/forms/route.ts
   "friendship-maps": "friendshipMaps",
   "funeral-records": "funeralRecords",
   "garden-plot-records": "gardenPlotRecords",
@@ -403,7 +403,7 @@ const SLUG_MAP: Record<string, string> = {
   "subject-access-request-records": "subjectAccessRequestRecords",
   "substance-screenings": "substanceScreenings",
   "success-factors": "successFactors",
-  "supervision": "supervisions",
+  // "supervision": "supervisions",  // ← dedicated route: /api/v1/supervision/route.ts
   "supervision-matrix-records": "supervisionMatrixRecords",
   "supervision-tracker-records": "supervisionTrackerRecords",
   "swim-records": "swimRecords",
