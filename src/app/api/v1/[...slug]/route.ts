@@ -378,7 +378,7 @@ const SLUG_MAP: Record<string, string> = {
   "smoking-vaping-records": "smokingVapingRecords",
   "social-worker-contact-records": "socialWorkerContactRecords",
   "spld-support-plans": "spldSupportPlans",
-  "staff": "staff",
+  // "staff": "staff",  // ← dedicated route: /api/v1/staff/route.ts (enriched with supervision/training/shift data)
   "staff-communication-preference-records": "staffCommunicationPreferenceRecords",
   "staff-competency-records": "staffCompetencyRecords",
   "staff-debrief-records": "staffDebriefRecords",
