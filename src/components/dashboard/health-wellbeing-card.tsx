@@ -2,8 +2,9 @@
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — HEALTH & WELLBEING INTELLIGENCE CARD
-// Dashboard card for health compliance, appointment tracking, wellbeing
-// trends, SDQ analysis, and ARIA health intelligence (Reg 23).
+// Dashboard widget for health compliance, appointment tracking, wellbeing
+// trends, SDQ analysis, CAMHS engagement, and ARIA health intelligence.
+// Powered by the Health & Wellbeing Engine — live data (Reg 23).
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
@@ -12,63 +13,12 @@ import { Badge } from "@/components/ui/badge";
 import {
   HeartPulse, ChevronRight, AlertTriangle, CheckCircle2,
   Brain, Stethoscope, SmilePlus, TrendingUp, TrendingDown,
+  Minus, Loader2, Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useHealthWellbeing } from "@/hooks/use-health-wellbeing";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
-
-const DEMO_COMPLIANCE = {
-  totalChildren: 4,
-  immunisationUpToDate: 3,
-  dentalUpToDate: 3,
-  opticianUpToDate: 2,
-  healthAssessmentCurrent: 4,
-  camhsActive: 1,
-  dnaRate: 5.0,
-};
-
-const CHILDREN_HEALTH = [
-  {
-    name: "Alex W",
-    wellbeing: 7,
-    trend: "improving" as const,
-    sdqBand: "borderline" as const,
-    dental: true,
-    optician: true,
-    immunised: true,
-    camhs: "active",
-  },
-  {
-    name: "Tyler R",
-    wellbeing: 5,
-    trend: "stable" as const,
-    sdqBand: "abnormal" as const,
-    dental: true,
-    optician: false,
-    immunised: true,
-    camhs: "none",
-  },
-  {
-    name: "Jordan K",
-    wellbeing: 8,
-    trend: "improving" as const,
-    sdqBand: "normal" as const,
-    dental: false,
-    optician: true,
-    immunised: true,
-    camhs: "none",
-  },
-  {
-    name: "Sam P",
-    wellbeing: 6,
-    trend: "declining" as const,
-    sdqBand: null,
-    dental: true,
-    optician: false,
-    immunised: false,
-    camhs: "referred",
-  },
-];
+// ── Styling maps ────────────────────────────────────────────────────────────
 
 const SDQ_COLOURS: Record<string, string> = {
   normal: "bg-green-100 text-green-700",
@@ -76,21 +26,58 @@ const SDQ_COLOURS: Record<string, string> = {
   abnormal: "bg-red-100 text-red-700",
 };
 
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "sdq_concern", severity: "high", message: "Tyler R SDQ total difficulties in abnormal range. Review with CAMHS referral team and key worker." },
-  { type: "wellbeing_declining", severity: "medium", message: "Sam P wellbeing score declining over last 4 assessments (8 → 6). CAMHS referral submitted — monitor closely." },
-];
+const TREND_ICON = {
+  improving: TrendingUp,
+  stable: Minus,
+  declining: TrendingDown,
+  unknown: Minus,
+};
 
-const ARIA_INSIGHTS = [
-  "Alex W's wellbeing is improving following increased CAMHS sessions. SDQ total difficulties moved from abnormal to borderline range over 3 months. Consider whether session frequency can be maintained.",
-  "2 children overdue for optician appointments. Jordan K dental appointment also overdue. Schedule routine health checks to maintain Reg 23 compliance.",
-  "Positive: All 4 children have current health assessments. 75% immunisation compliance. DNA rate at 5% is below the 10% threshold. Health care standards under Reg 23 are well evidenced.",
-];
+const TREND_COLOUR = {
+  improving: "text-green-500",
+  stable: "text-gray-400",
+  declining: "text-red-500",
+  unknown: "text-gray-300",
+};
+
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
+
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
+};
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function HealthWellbeingCard() {
-  const c = DEMO_COMPLIANCE;
+  const { data, isLoading } = useHealthWellbeing();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <HeartPulse className="h-4 w-4 text-brand" />
+            Health & Wellbeing
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const c = intel.compliance;
 
   return (
     <Card className="overflow-hidden">
@@ -110,97 +97,153 @@ export function HealthWellbeingCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", c.immunisationUpToDate === c.totalChildren ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.immunisationUpToDate === c.totalChildren ? "text-green-600" : "text-amber-600")}>
-              {c.immunisationUpToDate}/{c.totalChildren}
+          <div className={cn("text-center rounded-lg p-2", c.immunisation_up_to_date === c.total_children ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", c.immunisation_up_to_date === c.total_children ? "text-green-600" : "text-amber-600")}>
+              {c.immunisation_up_to_date}/{c.total_children}
             </p>
             <p className="text-[10px] text-muted-foreground">Immunised</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.dentalUpToDate === c.totalChildren ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.dentalUpToDate === c.totalChildren ? "text-green-600" : "text-amber-600")}>
-              {c.dentalUpToDate}/{c.totalChildren}
+          <div className={cn("text-center rounded-lg p-2", c.dental_up_to_date === c.total_children ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", c.dental_up_to_date === c.total_children ? "text-green-600" : "text-amber-600")}>
+              {c.dental_up_to_date}/{c.total_children}
             </p>
             <p className="text-[10px] text-muted-foreground">Dental</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.healthAssessmentCurrent === c.totalChildren ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.healthAssessmentCurrent === c.totalChildren ? "text-green-600" : "text-amber-600")}>
-              {c.healthAssessmentCurrent}/{c.totalChildren}
+          <div className={cn("text-center rounded-lg p-2", c.health_assessment_current === c.total_children ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", c.health_assessment_current === c.total_children ? "text-green-600" : "text-amber-600")}>
+              {c.health_assessment_current}/{c.total_children}
             </p>
             <p className="text-[10px] text-muted-foreground">Health Assess.</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.dnaRate <= 10 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.dnaRate <= 10 ? "text-green-600" : "text-red-600")}>
-              {c.dnaRate}%
+          <div className={cn("text-center rounded-lg p-2", intel.appointments.dna_rate <= 10 ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", intel.appointments.dna_rate <= 10 ? "text-green-600" : "text-red-600")}>
+              {intel.appointments.dna_rate}%
             </p>
             <p className="text-[10px] text-muted-foreground">DNA Rate</p>
           </div>
         </div>
 
-        {/* ── Children's health overview ──────────────────────────────── */}
+        {/* ── Appointments overview ────────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Stethoscope className="h-3 w-3" />
-            Children&apos;s Health
-          </p>
-          {CHILDREN_HEALTH.map((child, i) => (
-            <div key={i} className="rounded-lg border p-3 space-y-1 text-xs">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{child.name}</span>
-                  {child.sdqBand && (
-                    <Badge className={cn("text-[10px]", SDQ_COLOURS[child.sdqBand])}>
-                      SDQ {child.sdqBand}
-                    </Badge>
-                  )}
-                  {child.camhs !== "none" && (
-                    <Badge className={cn("text-[10px]",
-                      child.camhs === "active" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
-                    )}>
-                      CAMHS {child.camhs}
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <SmilePlus className={cn("h-3 w-3",
-                    child.wellbeing >= 7 ? "text-green-500" : child.wellbeing >= 5 ? "text-amber-500" : "text-red-500"
-                  )} />
-                  <span className="tabular-nums font-medium">{child.wellbeing}/10</span>
-                  {child.trend === "improving" && <TrendingUp className="h-3 w-3 text-green-500" />}
-                  {child.trend === "declining" && <TrendingDown className="h-3 w-3 text-red-500" />}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <span className={child.dental ? "text-green-600" : "text-amber-600"}>
-                  {child.dental ? "✓" : "✗"} Dental
-                </span>
-                <span className={child.optician ? "text-green-600" : "text-amber-600"}>
-                  {child.optician ? "✓" : "✗"} Optician
-                </span>
-                <span className={child.immunised ? "text-green-600" : "text-amber-600"}>
-                  {child.immunised ? "✓" : "✗"} Immunised
-                </span>
+        {intel.appointments.upcoming_7d > 0 && (
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-4 w-4 text-brand" />
+              <div>
+                <p className="text-xs font-medium">Upcoming Appointments</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {intel.appointments.attended} attended, {intel.appointments.missed} missed (90d)
+                </p>
               </div>
             </div>
-          ))}
-        </div>
+            <Badge className="text-[10px] bg-blue-100 text-blue-700">
+              {intel.appointments.upcoming_7d} this week
+            </Badge>
+          </div>
+        )}
 
-        {/* ── Alerts ──────────────────────────────────────────────────── */}
+        {/* ── Children's health profiles ──────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.child_profiles.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Stethoscope className="h-3 w-3" />
+              Children&apos;s Health
+            </p>
+            {intel.child_profiles.slice(0, 4).map((child) => {
+              const TIcon = TREND_ICON[child.wellbeing_trend];
+              return (
+                <div key={child.child_id} className="rounded-lg border p-3 space-y-1 text-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{child.child_name}</span>
+                      {child.sdq_band && (
+                        <Badge className={cn("text-[10px]", SDQ_COLOURS[child.sdq_band])}>
+                          SDQ {child.sdq_band}
+                        </Badge>
+                      )}
+                      {child.camhs_status && child.camhs_status !== "discharged" && (
+                        <Badge className={cn("text-[10px]",
+                          child.camhs_status === "active_engagement" ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"
+                        )}>
+                          CAMHS {child.camhs_status === "active_engagement" ? "active" : child.camhs_status === "on_waiting_list" ? "waiting" : child.camhs_status.replace(/_/g, " ")}
+                        </Badge>
+                      )}
+                    </div>
+                    {child.wellbeing_score !== null && (
+                      <div className="flex items-center gap-1.5">
+                        <SmilePlus className={cn("h-3 w-3",
+                          child.wellbeing_score >= 7 ? "text-green-500" : child.wellbeing_score >= 5 ? "text-amber-500" : "text-red-500"
+                        )} />
+                        <span className="tabular-nums font-medium">{child.wellbeing_score}/10</span>
+                        <TIcon className={cn("h-3 w-3", TREND_COLOUR[child.wellbeing_trend])} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <span className={child.dental_up_to_date ? "text-green-600" : "text-amber-600"}>
+                      {child.dental_up_to_date ? "✓" : "✗"} Dental
+                    </span>
+                    <span className={child.optician_up_to_date ? "text-green-600" : "text-amber-600"}>
+                      {child.optician_up_to_date ? "✓" : "✗"} Optician
+                    </span>
+                    <span className={child.immunisation_up_to_date ? "text-green-600" : "text-amber-600"}>
+                      {child.immunisation_up_to_date ? "✓" : "✗"} Immunised
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── CAMHS Summary ──────────────────────────────────────────── */}
+
+        {(intel.camhs.active_referrals > 0 || intel.camhs.waiting_list > 0) && (
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-purple-500" />
+              <div>
+                <p className="text-xs font-medium">CAMHS Engagement</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {intel.camhs.total_sessions_held} sessions held
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5">
+              {intel.camhs.active_referrals > 0 && (
+                <Badge className="text-[10px] bg-purple-100 text-purple-700">
+                  {intel.camhs.active_referrals} active
+                </Badge>
+              )}
+              {intel.camhs.waiting_list > 0 && (
+                <Badge className="text-[10px] bg-amber-100 text-amber-700">
+                  {intel.camhs.waiting_list} waiting
+                </Badge>
+              )}
+              {intel.camhs.disengaged_count > 0 && (
+                <Badge className="text-[10px] bg-red-100 text-red-700">
+                  {intel.camhs.disengaged_count} disengaged
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Health Alerts ──────────────────────────────────────────── */}
+
+        {intel.alerts.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Health Alerts
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
               >
                 {alert.message}
@@ -209,27 +252,27 @@ export function HealthWellbeingCard() {
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Health Intelligence ────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Health Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-blue-200 bg-blue-50 text-blue-800"
-                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Health Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
