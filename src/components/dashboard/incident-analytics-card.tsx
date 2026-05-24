@@ -2,93 +2,71 @@
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — INCIDENT ANALYTICS CARD
-// Dashboard widget showing incident trends, PI analysis, notification
-// compliance, and ARIA pattern intelligence.
+// Dashboard widget showing incident trends, severity breakdown, category
+// analysis, per-child profiles, oversight compliance, and ARIA intelligence.
+// Powered by the Incident Analytics Engine — live data.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  AlertTriangle, ChevronRight, TrendingDown, TrendingUp,
-  Minus, Brain, Bell, Shield, Activity,
+  Activity, ChevronRight, TrendingDown, TrendingUp,
+  Minus, Brain, Bell, Shield, AlertTriangle, CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIncidentAnalytics } from "@/hooks/use-incident-analytics";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
-
-const DEMO_SUMMARY = {
-  total: 18,
-  averagePerWeek: 4.5,
-  trendDirection: "decreasing" as const,
-  percentageChange: -15,
-  bySeverity: {
-    critical: 0,
-    major: 2,
-    moderate: 7,
-    minor: 9,
-  },
-  topCategories: [
-    { category: "Physical Intervention", count: 5 },
-    { category: "Missing", count: 4 },
-    { category: "Property Damage", count: 3 },
-    { category: "Self-Harm", count: 2 },
-  ],
-  piAnalysis: {
-    totalPI: 5,
-    uniqueChildren: 3,
-    avgDuration: 4.2,
-    injuryRate: 0,
-    debriefRate: 80,
-    repeatChildren: [{ name: "Alex W", count: 3 }],
-  },
-  notifications: {
-    required: 6,
-    sent: 5,
-    outstanding: 1,
-    compliancePercentage: 83,
-  },
-};
-
-const ARIA_PATTERNS = [
-  {
-    severity: "high" as const,
-    message: "3 incidents involving Alex W within a 48-hour window (Mon 5th – Tue 6th). Pattern suggests environmental trigger — all occurred during evening transition periods.",
-  },
-  {
-    severity: "info" as const,
-    message: "PI incidents down 25% compared to previous month. De-escalation training completed by 4 staff members correlates with reduced use of physical intervention.",
-  },
-];
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
+// ── Styling maps ────────────────────────────────────────────────────────────
 
 const SEVERITY_BAR: Record<string, string> = {
   critical: "bg-red-600",
-  major: "bg-red-400",
-  moderate: "bg-amber-400",
-  minor: "bg-green-400",
+  high: "bg-red-400",
+  medium: "bg-amber-400",
+  low: "bg-green-400",
 };
 
-const TREND_ICON: Record<string, typeof TrendingUp> = {
-  increasing: TrendingUp,
-  stable: Minus,
-  decreasing: TrendingDown,
+const TREND_COLOUR: Record<string, { text: string; bg: string; icon: typeof TrendingUp }> = {
+  increasing: { text: "text-red-600", bg: "bg-red-50", icon: TrendingUp },
+  stable: { text: "text-gray-600", bg: "bg-gray-50", icon: Minus },
+  decreasing: { text: "text-green-600", bg: "bg-green-50", icon: TrendingDown },
 };
 
-const TREND_COLOUR: Record<string, { text: string; bg: string }> = {
-  increasing: { text: "text-red-600", bg: "bg-red-50" },
-  stable: { text: "text-gray-600", bg: "bg-gray-50" },
-  decreasing: { text: "text-green-600", bg: "bg-green-50" },
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
 };
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function IncidentAnalyticsCard() {
-  const s = DEMO_SUMMARY;
-  const TrendIcon = TREND_ICON[s.trendDirection] ?? Minus;
-  const tColour = TREND_COLOUR[s.trendDirection] ?? TREND_COLOUR.stable;
-  const maxSev = Math.max(...Object.values(s.bySeverity), 1);
+  const { data, isLoading } = useIncidentAnalytics();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Activity className="h-4 w-4 text-brand" />
+            Incident Analytics
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const s = intel.summary;
+  const tColour = TREND_COLOUR[s.trend_direction] ?? TREND_COLOUR.stable;
+  const TrendIcon = tColour.icon;
+  const maxSev = Math.max(intel.severity.critical, intel.severity.high, intel.severity.medium, intel.severity.low, 1);
 
   return (
     <Card className="overflow-hidden">
@@ -109,30 +87,30 @@ export function IncidentAnalyticsCard() {
 
         <div className="grid grid-cols-3 gap-2">
           <div className="text-center rounded-lg bg-gray-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums">{s.total}</p>
+            <p className="text-lg font-bold tabular-nums">{s.total_30d}</p>
             <p className="text-[10px] text-muted-foreground">This Month</p>
           </div>
           <div className="text-center rounded-lg bg-gray-50 p-2.5">
-            <p className="text-lg font-bold tabular-nums">{s.averagePerWeek}</p>
+            <p className="text-lg font-bold tabular-nums">{s.average_per_week_30d}</p>
             <p className="text-[10px] text-muted-foreground">Per Week</p>
           </div>
           <div className={cn("text-center rounded-lg p-2.5", tColour.bg)}>
             <div className="flex items-center justify-center gap-1">
               <TrendIcon className={cn("h-4 w-4", tColour.text)} />
               <span className={cn("text-sm font-bold", tColour.text)}>
-                {Math.abs(s.percentageChange)}%
+                {Math.abs(s.percentage_change)}%
               </span>
             </div>
-            <p className="text-[10px] text-muted-foreground capitalize">{s.trendDirection}</p>
+            <p className="text-[10px] text-muted-foreground capitalize">{s.trend_direction}</p>
           </div>
         </div>
 
         {/* ── Severity breakdown ───────────────────────────────────────── */}
 
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground">Severity</p>
-          {(["critical", "major", "moderate", "minor"] as const).map((sev) => {
-            const count = s.bySeverity[sev];
+          <p className="text-xs font-medium text-muted-foreground">Severity (90 days)</p>
+          {(["critical", "high", "medium", "low"] as const).map((sev) => {
+            const count = intel.severity[sev];
             const pct = (count / maxSev) * 100;
             return (
               <div key={sev} className="flex items-center gap-2">
@@ -151,92 +129,100 @@ export function IncidentAnalyticsCard() {
 
         {/* ── Top categories ───────────────────────────────────────────── */}
 
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground">Top Categories</p>
-          {s.topCategories.map((cat, i) => (
-            <div key={i} className="flex items-center justify-between text-xs px-1">
-              <span>{cat.category}</span>
-              <span className="font-bold tabular-nums">{cat.count}</span>
-            </div>
-          ))}
-        </div>
+        {intel.categories.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground">Top Categories</p>
+            {intel.categories.slice(0, 4).map((cat, i) => (
+              <div key={i} className="flex items-center justify-between text-xs px-1">
+                <span>{cat.label}</span>
+                <span className="font-bold tabular-nums">{cat.count}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* ── PI analysis ──────────────────────────────────────────────── */}
+        {/* ── Per-child breakdown ─────────────────────────────────────── */}
 
-        <div className="rounded-lg border p-3 space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1">
-            <Shield className="h-3 w-3 text-brand" />
-            Physical Interventions
-          </p>
-          <div className="grid grid-cols-3 gap-2 text-center text-[11px]">
-            <div>
-              <p className="font-bold text-sm">{s.piAnalysis.totalPI}</p>
-              <p className="text-muted-foreground">Total PIs</p>
-            </div>
-            <div>
-              <p className="font-bold text-sm">{s.piAnalysis.avgDuration}m</p>
-              <p className="text-muted-foreground">Avg Duration</p>
-            </div>
-            <div>
-              <p className={cn("font-bold text-sm", s.piAnalysis.debriefRate >= 90 ? "text-green-600" : "text-amber-600")}>
-                {s.piAnalysis.debriefRate}%
-              </p>
-              <p className="text-muted-foreground">Debriefed</p>
+        {intel.child_profiles.length > 0 && (
+          <div className="rounded-lg border p-3 space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1">
+              <Shield className="h-3 w-3 text-brand" />
+              Per-Child (90 days)
+            </p>
+            <div className="space-y-1">
+              {intel.child_profiles.slice(0, 4).map((cp) => (
+                <div key={cp.child_id} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{cp.child_name}</span>
+                    <span className="text-[10px] text-muted-foreground">{cp.top_type}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold tabular-nums">{cp.count_90d}</span>
+                    <Badge className={cn(
+                      "text-[9px]",
+                      cp.highest_severity === "critical" ? "bg-red-100 text-red-700"
+                        : cp.highest_severity === "high" ? "bg-orange-100 text-orange-700"
+                        : "bg-gray-100 text-gray-600",
+                    )}>
+                      {cp.highest_severity}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          {s.piAnalysis.repeatChildren.length > 0 && (
-            <div className="text-[10px] text-amber-700 bg-amber-50 rounded px-2 py-1">
-              <AlertTriangle className="h-3 w-3 inline mr-1" />
-              Repeat PI: {s.piAnalysis.repeatChildren.map((c) => `${c.name} (${c.count}x)`).join(", ")}
-            </div>
-          )}
-        </div>
+        )}
 
-        {/* ── Notification compliance ──────────────────────────────────── */}
+        {/* ── Oversight compliance ──────────────────────────────────────── */}
 
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div className="flex items-center gap-2">
-            <Bell className={cn("h-4 w-4", s.notifications.outstanding > 0 ? "text-amber-500" : "text-green-500")} />
+            <Bell className={cn("h-4 w-4", intel.oversight.oversight_pending > 0 ? "text-amber-500" : "text-green-500")} />
             <div>
-              <p className="text-xs font-medium">Notifications</p>
+              <p className="text-xs font-medium">Management Oversight</p>
               <p className="text-[10px] text-muted-foreground">
-                {s.notifications.sent}/{s.notifications.required} sent
+                {intel.oversight.oversight_completed}/{intel.oversight.total_requiring_oversight} reviewed
               </p>
             </div>
           </div>
-          <Badge className={cn(
-            "text-[10px]",
-            s.notifications.compliancePercentage >= 100
-              ? "bg-green-100 text-green-700"
-              : "bg-amber-100 text-amber-700",
-          )}>
-            {s.notifications.outstanding > 0
-              ? `${s.notifications.outstanding} outstanding`
-              : "All sent"}
-          </Badge>
+          {intel.oversight.oversight_pending > 0 ? (
+            <Badge className="text-[10px] bg-amber-100 text-amber-700">
+              <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
+              {intel.oversight.oversight_pending} pending
+            </Badge>
+          ) : intel.oversight.total_requiring_oversight > 0 ? (
+            <Badge className="text-[10px] bg-green-100 text-green-700">
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+              All reviewed
+            </Badge>
+          ) : (
+            <Badge className="text-[10px] bg-gray-100 text-gray-600">
+              None required
+            </Badge>
+          )}
         </div>
 
-        {/* ── ARIA patterns ────────────────────────────────────────────── */}
+        {/* ── ARIA insights ───────────────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Pattern Intelligence
-          </p>
-          {ARIA_PATTERNS.map((pattern, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                pattern.severity === "high"
-                  ? "border-red-200 bg-red-50 text-red-800"
-                  : "border-blue-200 bg-blue-50 text-blue-800",
-              )}
-            >
-              {pattern.message}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Pattern Intelligence
+            </p>
+            {intel.insights.map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
