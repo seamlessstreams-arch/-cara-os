@@ -1,222 +1,228 @@
 "use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// DASHBOARD WIDGET — Key Working Intelligence
-//
-// Shows at a glance:
-//   - Overall score + rating
-//   - Session compliance (occurred vs expected)
-//   - Average duration + child-led rate
-//   - Sub-scores (frequency, quality, relationship, voice)
-//   - Topic coverage badges
-//   - Concerns + regulatory status
+// CORNERSTONE — KEYWORKING INTELLIGENCE CARD
+// Dashboard widget for keywork session frequency, mood impact, follow-up
+// compliance, per-child profiles, topic coverage, and ARIA insights.
+// Powered by the Keyworking Intelligence Engine — live data (Reg 9/14/22).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import {
-  HeartHandshake, AlertTriangle, CheckCircle2, Clock,
-  UserCheck, MessageCircle,
+  HeartHandshake, AlertTriangle, CheckCircle2, Brain,
+  Users, Loader2, ChevronRight, TrendingUp,
 } from "lucide-react";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import { useKeyworkingIntelligence } from "@/hooks/use-keyworking-intelligence";
 
-interface KeyworkingData {
-  childName: string;
-  overallScore: number;
-  overallRating: string;
-  frequencyScore: number;
-  qualityScore: number;
-  relationshipScore: number;
-  voiceScore: number;
-  totalSessions: number;
-  occurredSessions: number;
-  missedSessions: number;
-  complianceRate: number;
-  avgDuration: number;
-  childLedRate: number;
-  wishesRate: number;
-  actionCompletionRate: number;
-  topicCoverage: Array<{ topic: string; count: number; percentage: number }>;
-  concerns: Array<{ severity: string; category: string; description: string }>;
-  strengths: Array<{ category: string; description: string }>;
-  regulatoryFlags: Array<{ regulation: string; area: string; status: string; detail: string }>;
-  recommendations: string[];
-  summary: string;
-}
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-interface KeyworkingIntelligenceCardProps {
-  childId: string;
-}
-
-const RATING_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  excellent: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  good: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
-  adequate: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
-  requires_improvement: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
-  inadequate: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-export function KeyworkingIntelligenceCard({ childId }: KeyworkingIntelligenceCardProps) {
-  const [data, setData] = useState<KeyworkingData | null>(null);
-  const [loading, setLoading] = useState(true);
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/aria/keyworking?childId=${childId}`);
-        const json = await res.json();
-        if (json.success) setData(json.data);
-      } catch (err) {
-        console.error("Failed to fetch keyworking intelligence:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [childId]);
+const COMPLIANCE_STYLES: Record<string, string> = {
+  on_track: "text-green-600",
+  below_target: "text-amber-600",
+  overdue: "text-red-600",
+};
 
-  if (loading) {
+// ── Component ────────────────────────────────────────────────────────────────
+
+export function KeyworkingIntelligenceCard() {
+  const { data, isLoading } = useKeyworkingIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
     return (
-      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-5 animate-pulse">
-        <div className="h-5 bg-gray-200 rounded w-48 mb-4" />
-        <div className="h-20 bg-gray-100 rounded" />
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <HeartHandshake className="h-4 w-4 text-brand" />
+            Keyworking Intelligence
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  if (!data) {
-    return (
-      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-5">
-        <p className="text-sm text-[var(--cs-text-muted)]">Unable to load keyworking intelligence.</p>
-      </div>
-    );
-  }
-
-  const ratingStyle = RATING_STYLES[data.overallRating] ?? RATING_STYLES.adequate;
+  const o = intel.overview;
+  const fu = intel.follow_up_compliance;
 
   return (
-    <div className="rounded-xl border border-[var(--cs-border)] bg-white overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--cs-border)] px-5 py-3 bg-[var(--cs-surface)]">
-        <div className="flex items-center gap-2">
-          <HeartHandshake className="h-4 w-4 text-violet-500" />
-          <h3 className="text-sm font-semibold text-[var(--cs-navy)]">Key Working</h3>
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <HeartHandshake className="h-4 w-4 text-brand" />
+            Keyworking Intelligence
+          </CardTitle>
+          <Link href="/keyworking" className="text-xs text-brand hover:underline flex items-center gap-1">
+            Sessions <ChevronRight className="h-3 w-3" />
+          </Link>
         </div>
-        <Badge className={cn("text-[10px]", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>
-          {data.overallRating.replace(/_/g, " ")} ({data.overallScore}%)
-        </Badge>
-      </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
 
-      <div className="p-5 space-y-4">
-        {/* Stats row */}
-        <div className="grid grid-cols-4 gap-2 text-center">
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className={cn("text-xs font-bold", data.complianceRate >= 0.8 ? "text-emerald-600" : data.complianceRate >= 0.6 ? "text-amber-600" : "text-red-600")}>
-              {Math.round(data.complianceRate * 100)}%
-            </span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">Compliance</p>
-          </div>
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className="text-xs font-bold text-[var(--cs-navy)]">{data.avgDuration}m</span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">Avg Duration</p>
-          </div>
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className={cn("text-xs font-bold", data.childLedRate >= 0.6 ? "text-emerald-600" : data.childLedRate >= 0.3 ? "text-amber-600" : "text-red-600")}>
-              {Math.round(data.childLedRate * 100)}%
-            </span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">Child-Led</p>
-          </div>
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className={cn("text-xs font-bold", data.wishesRate >= 0.7 ? "text-emerald-600" : data.wishesRate >= 0.4 ? "text-amber-600" : "text-red-600")}>
-              {Math.round(data.wishesRate * 100)}%
-            </span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">Wishes</p>
-          </div>
-        </div>
+        {/* ── Summary strip ────────────────────────────────────────────── */}
 
-        {/* Sub-scores */}
         <div className="grid grid-cols-4 gap-2">
-          <MiniScore label="Frequency" score={data.frequencyScore} />
-          <MiniScore label="Quality" score={data.qualityScore} />
-          <MiniScore label="Relation" score={data.relationshipScore} />
-          <MiniScore label="Voice" score={data.voiceScore} />
+          <div className="text-center rounded-lg bg-blue-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums text-blue-600">{o.total_sessions_30d}</p>
+            <p className="text-[10px] text-muted-foreground">Sessions (30d)</p>
+          </div>
+          <div className="text-center rounded-lg bg-green-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums text-green-600">{o.mood_improvement_rate}%</p>
+            <p className="text-[10px] text-muted-foreground">Mood ↑</p>
+          </div>
+          <div className={cn("text-center rounded-lg p-2.5", o.child_voice_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", o.child_voice_rate >= 80 ? "text-green-600" : "text-amber-600")}>
+              {o.child_voice_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Voice</p>
+          </div>
+          <div className="text-center rounded-lg bg-purple-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums text-purple-600">{o.avg_duration_minutes}m</p>
+            <p className="text-[10px] text-muted-foreground">Avg Dur.</p>
+          </div>
         </div>
 
-        {/* Topic coverage */}
-        {data.topicCoverage.length > 0 && (
+        {/* ── Per-child profiles ───────────────────────────────────────── */}
+
+        {intel.child_profiles.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              Child Keywork
+            </p>
+            {intel.child_profiles.slice(0, 4).map((child) => (
+              <div key={child.child_id} className="rounded-lg border p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{child.child_name}</span>
+                    <span className={cn("text-[10px] font-medium", COMPLIANCE_STYLES[child.compliance])}>
+                      {child.compliance === "on_track" ? "on track" : child.compliance === "below_target" ? "below target" : "overdue"}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-bold tabular-nums">{child.sessions_30d}</span>
+                    <span className="text-muted-foreground text-[10px]">/ 30d</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-muted-foreground">
+                  {child.avg_mood_improvement > 0 && (
+                    <span className="text-[10px] text-green-600 flex items-center gap-0.5">
+                      <TrendingUp className="h-2.5 w-2.5" />+{child.avg_mood_improvement} mood
+                    </span>
+                  )}
+                  <span className="text-[10px]">{child.avg_duration}m avg</span>
+                  {child.last_session_days_ago <= 30 && (
+                    <span className="text-[10px]">{child.last_session_days_ago}d ago</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Session types ────────────────────────────────────────────── */}
+
+        {intel.session_type_breakdown.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {data.topicCoverage.slice(0, 5).map((topic, i) => (
-              <Badge key={i} className="text-[9px] bg-gray-100 text-gray-700 border-gray-200">
-                {topic.topic.replace(/_/g, " ")} ({topic.percentage}%)
+            {intel.session_type_breakdown.slice(0, 5).map((b) => (
+              <Badge key={b.type} variant="outline" className="text-[10px] gap-1">
+                {b.label}
+                <span className="font-bold">{b.count_30d}</span>
               </Badge>
             ))}
           </div>
         )}
 
-        {/* Top concerns */}
-        {data.concerns.length > 0 && (
-          <div className="space-y-1.5">
-            {data.concerns.slice(0, 2).map((concern, i) => {
-              const isHigh = concern.severity === "critical" || concern.severity === "significant";
-              return (
-                <div key={i} className={cn(
-                  "flex items-start gap-2 rounded-lg p-2 text-xs",
-                  isHigh ? "bg-red-50" : "bg-amber-50",
-                )}>
-                  <AlertTriangle className={cn(
-                    "h-3.5 w-3.5 shrink-0 mt-0.5",
-                    isHigh ? "text-red-600" : "text-amber-600",
-                  )} />
-                  <span className={isHigh ? "text-red-700" : "text-amber-700"}>
-                    {concern.description}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {/* ── Follow-up compliance ─────────────────────────────────────── */}
 
-        {/* Regulatory flags */}
-        {data.regulatoryFlags.some(f => f.status !== "met") && (
-          <div className="flex flex-wrap gap-1.5">
-            {data.regulatoryFlags.filter(f => f.status !== "met").slice(0, 3).map((flag, i) => (
-              <Badge
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className="flex items-center gap-2">
+            <HeartHandshake className={cn("h-4 w-4", fu.overdue > 0 ? "text-amber-500" : "text-green-500")} />
+            <div>
+              <p className="text-xs font-medium">Follow-up Actions</p>
+              <p className="text-[10px] text-muted-foreground">
+                {fu.completed}/{fu.total_due} completed · {fu.completion_rate}%
+              </p>
+            </div>
+          </div>
+          {fu.overdue > 0 ? (
+            <Badge className="text-[10px] bg-amber-100 text-amber-700">
+              <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
+              {fu.overdue} overdue
+            </Badge>
+          ) : (
+            <Badge className="text-[10px] bg-green-100 text-green-700">
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+              All done
+            </Badge>
+          )}
+        </div>
+
+        {/* ── Alerts ──────────────────────────────────────────────────── */}
+
+        {intel.alerts.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Keywork Alerts
+            </p>
+            {intel.alerts.slice(0, 3).map((alert, i) => (
+              <div
                 key={i}
                 className={cn(
-                  "text-[9px]",
-                  flag.status === "not_met" ? "bg-red-100 text-red-700 border-red-200" :
-                  "bg-amber-100 text-amber-700 border-amber-200",
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
-                title={flag.detail}
               >
-                {flag.area}
-              </Badge>
+                {alert.message}
+              </div>
             ))}
           </div>
         )}
 
-        {/* All clear */}
-        {data.concerns.length === 0 && data.totalSessions > 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 p-2.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            <span className="text-xs text-emerald-700">
-              Keywork sessions delivered consistently with strong child engagement.
-            </span>
+        {/* ── ARIA Keyworking Intelligence ─────────────────────────────── */}
+
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Keyworking Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-// ── Sub-component ───────────────────────────────────────────────────────────
-
-function MiniScore({ label, score }: { label: string; score: number }) {
-  const color = score >= 75 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-red-600";
-  return (
-    <div className="text-center">
-      <span className={cn("text-sm font-bold", color)}>{score}</span>
-      <p className="text-[9px] text-[var(--cs-text-muted)] mt-0.5">{label}</p>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
