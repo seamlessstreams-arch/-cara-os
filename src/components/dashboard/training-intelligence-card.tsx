@@ -3,7 +3,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — TRAINING & DEVELOPMENT INTELLIGENCE CARD
 // Dashboard card for mandatory training compliance, DBS status,
-// qualifications tracking, and ARIA workforce intelligence (Reg 33/34).
+// supervision, and ARIA workforce intelligence (Reg 32/33).
+// Powered by the Workforce Intelligence Engine — live data.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
@@ -11,61 +12,50 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   GraduationCap, ChevronRight, AlertTriangle, CheckCircle2,
-  Brain, Shield, BookOpen, Award,
+  Brain, Shield, BookOpen, Loader2, Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWorkforceIntelligence } from "@/hooks/use-workforce-intelligence";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Insight styling ──────────────────────────────────────────────────────────
 
-const DEMO_COMPLIANCE = {
-  overallComplianceRate: 87.5,
-  fullyCompliantStaff: 5,
-  totalStaff: 8,
-  expiredCount: 4,
-  expiringCount: 3,
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
 };
-
-const TRAINING_MATRIX = [
-  { type: "Safeguarding", current: 7, expiring: 1, expired: 0 },
-  { type: "First Aid", current: 6, expiring: 0, expired: 2 },
-  { type: "Fire Safety", current: 8, expiring: 0, expired: 0 },
-  { type: "PI Training", current: 7, expiring: 1, expired: 0 },
-  { type: "Medication", current: 6, expiring: 1, expired: 1 },
-  { type: "PREVENT", current: 8, expiring: 0, expired: 0 },
-];
-
-const DBS_STATUS = {
-  totalStaff: 8,
-  cleared: 7,
-  pending: 1,
-  expired: 0,
-  updateService: 5,
-};
-
-const QUALIFICATION_STATUS = {
-  level3Achieved: 5,
-  level3InProgress: 2,
-  level3NotStarted: 1,
-};
-
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "mandatory_expired", severity: "high", message: "Sarah J — First Aid certification expired 15 Apr. Book refresher course urgently." },
-  { type: "training_expiring", severity: "medium", message: "3 training certificates expiring within 30 days (PI Training × 2, Medication × 1). Schedule renewal." },
-  { type: "dbs_pending", severity: "medium", message: "New starter Ryan K — DBS application submitted, awaiting clearance. Cannot work unsupervised until cleared." },
-];
-
-const ARIA_INSIGHTS = [
-  "Training compliance at 87.5% — 5 of 8 staff fully compliant. 4 expired certificates need immediate attention (2× First Aid, 1× Medication, 1× CSE/CCE). Schedule training within 2 weeks. Reg 33 requires all staff to be suitably trained.",
-  "DBS compliance strong — 7 of 8 cleared, 1 pending (new starter). 5 staff registered with DBS Update Service enabling annual online checks. Consider enrolling remaining 2 permanent staff on the update service.",
-  "Positive: 5 staff have achieved Level 3 Diploma, 2 in progress. All fire safety and PREVENT training current. 100% PI training coverage (7 current + 1 expiring). Reg 34 fitness of workers standards well evidenced.",
-];
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function TrainingIntelligenceCard() {
-  const c = DEMO_COMPLIANCE;
-  const dbs = DBS_STATUS;
-  const quals = QUALIFICATION_STATUS;
+  const { data, isLoading } = useWorkforceIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <GraduationCap className="h-4 w-4 text-brand" />
+            Training & Development
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const p = intel.profile;
+  const dbs = intel.dbs;
+  const sup = intel.supervision;
+
+  // Compute totals from training matrix
+  const totalExpired = intel.training.reduce((sum, t) => sum + t.expired, 0);
+  const totalExpiring = intel.training.reduce((sum, t) => sum + t.expiring_soon, 0);
 
   return (
     <Card className="overflow-hidden">
@@ -85,27 +75,27 @@ export function TrainingIntelligenceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg p-2" style={{ background: c.overallComplianceRate >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", c.overallComplianceRate >= 90 ? "text-green-600" : "text-amber-600")}>
-              {c.overallComplianceRate}%
+          <div className="text-center rounded-lg p-2" style={{ background: p.training_compliance_rate >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", p.training_compliance_rate >= 90 ? "text-green-600" : "text-amber-600")}>
+              {p.training_compliance_rate}%
             </p>
             <p className="text-[10px] text-muted-foreground">Compliance</p>
           </div>
-          <div className="text-center rounded-lg bg-green-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-green-600">
-              {c.fullyCompliantStaff}/{c.totalStaff}
+          <div className="text-center rounded-lg p-2" style={{ background: p.supervision_compliance_rate >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", p.supervision_compliance_rate >= 90 ? "text-green-600" : "text-amber-600")}>
+              {p.supervision_compliance_rate}%
             </p>
-            <p className="text-[10px] text-muted-foreground">Compliant</p>
+            <p className="text-[10px] text-muted-foreground">Supervision</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.expiredCount > 0 ? "bg-red-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.expiredCount > 0 ? "text-red-600" : "text-green-600")}>
-              {c.expiredCount}
+          <div className={cn("text-center rounded-lg p-2", totalExpired > 0 ? "bg-red-50" : "bg-green-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", totalExpired > 0 ? "text-red-600" : "text-green-600")}>
+              {totalExpired}
             </p>
             <p className="text-[10px] text-muted-foreground">Expired</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.expiringCount > 0 ? "bg-amber-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.expiringCount > 0 ? "text-amber-600" : "text-green-600")}>
-              {c.expiringCount}
+          <div className={cn("text-center rounded-lg p-2", totalExpiring > 0 ? "bg-amber-50" : "bg-green-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", totalExpiring > 0 ? "text-amber-600" : "text-green-600")}>
+              {totalExpiring}
             </p>
             <p className="text-[10px] text-muted-foreground">Expiring</p>
           </div>
@@ -113,49 +103,48 @@ export function TrainingIntelligenceCard() {
 
         {/* ── Training matrix ────────────────────────────────────────── */}
 
-        <div className="space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <BookOpen className="h-3 w-3" />
-            Mandatory Training
-          </p>
+        {intel.training.length > 0 && (
           <div className="space-y-1">
-            {TRAINING_MATRIX.map((t) => (
-              <div key={t.type} className="flex items-center gap-2 text-xs">
-                <span className="w-24 text-muted-foreground">{t.type}</span>
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden flex">
-                  <div className="h-full bg-green-400" style={{ width: `${(t.current / 8) * 100}%` }} />
-                  <div className="h-full bg-amber-400" style={{ width: `${(t.expiring / 8) * 100}%` }} />
-                  <div className="h-full bg-red-400" style={{ width: `${(t.expired / 8) * 100}%` }} />
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <BookOpen className="h-3 w-3" />
+              Mandatory Training
+            </p>
+            <div className="space-y-1">
+              {intel.training.map((t) => (
+                <div key={t.category} className="flex items-center gap-2 text-xs">
+                  <span className="w-28 text-muted-foreground capitalize">{t.category.replace(/_/g, " ")}</span>
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden flex">
+                    <div className="h-full bg-green-400" style={{ width: `${(t.compliant / Math.max(t.total_required, 1)) * 100}%` }} />
+                    <div className="h-full bg-amber-400" style={{ width: `${(t.expiring_soon / Math.max(t.total_required, 1)) * 100}%` }} />
+                    <div className="h-full bg-red-400" style={{ width: `${(t.expired / Math.max(t.total_required, 1)) * 100}%` }} />
+                  </div>
+                  <span className="w-16 text-right tabular-nums font-medium text-[10px]">
+                    {t.compliant}
+                    {t.expiring_soon > 0 && <span className="text-amber-500"> +{t.expiring_soon}</span>}
+                    {t.expired > 0 && <span className="text-red-500"> -{t.expired}</span>}
+                  </span>
                 </div>
-                <span className="w-16 text-right tabular-nums font-medium text-[10px]">
-                  {t.current}
-                  {t.expiring > 0 && <span className="text-amber-500"> +{t.expiring}</span>}
-                  {t.expired > 0 && <span className="text-red-500"> -{t.expired}</span>}
-                </span>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ── DBS status ──────────────────────────────────────────────── */}
 
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div className="flex items-center gap-2">
-            <Shield className={cn("h-4 w-4", dbs.expired > 0 ? "text-red-500" : dbs.pending > 0 ? "text-amber-500" : "text-green-500")} />
+            <Shield className={cn("h-4 w-4", dbs.expired_or_missing > 0 ? "text-red-500" : "text-green-500")} />
             <div>
               <p className="text-xs font-medium">DBS Status</p>
               <p className="text-[10px] text-muted-foreground">
-                {dbs.cleared} cleared · {dbs.pending} pending · {dbs.updateService} on update service
+                {dbs.valid_dbs} valid · {dbs.update_service_enrolled} update service · {dbs.expired_or_missing} needing action
               </p>
             </div>
           </div>
-          {dbs.expired > 0 ? (
+          {dbs.expired_or_missing > 0 ? (
             <Badge className="text-[10px] bg-red-100 text-red-700">
-              {dbs.expired} expired
-            </Badge>
-          ) : dbs.pending > 0 ? (
-            <Badge className="text-[10px] bg-amber-100 text-amber-700">
-              {dbs.pending} pending
+              <AlertTriangle className="h-2.5 w-2.5 mr-0.5" />
+              {dbs.expired_or_missing} action
             </Badge>
           ) : (
             <Badge className="text-[10px] bg-green-100 text-green-700">
@@ -165,68 +154,51 @@ export function TrainingIntelligenceCard() {
           )}
         </div>
 
-        {/* ── Qualifications ──────────────────────────────────────────── */}
+        {/* ── Supervision overview ────────────────────────────────────── */}
 
         <div className="flex items-center justify-between rounded-lg border p-3">
           <div className="flex items-center gap-2">
-            <Award className={cn("h-4 w-4", quals.level3NotStarted > 0 ? "text-amber-500" : "text-green-500")} />
+            <Users className={cn("h-4 w-4", sup.overdue > 0 ? "text-amber-500" : "text-green-500")} />
             <div>
-              <p className="text-xs font-medium">Level 3 Diploma</p>
+              <p className="text-xs font-medium">Supervision</p>
               <p className="text-[10px] text-muted-foreground">
-                {quals.level3Achieved} achieved · {quals.level3InProgress} in progress · {quals.level3NotStarted} not started
+                {sup.up_to_date} up to date · {sup.overdue} overdue · {sup.due_within_7_days} due soon
               </p>
             </div>
           </div>
-          <Badge className={cn("text-[10px]", quals.level3NotStarted === 0 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>
-            {Math.round((quals.level3Achieved / 8) * 100)}%
-          </Badge>
+          {sup.overdue > 0 ? (
+            <Badge className="text-[10px] bg-amber-100 text-amber-700">
+              {sup.overdue} overdue
+            </Badge>
+          ) : (
+            <Badge className="text-[10px] bg-green-100 text-green-700">
+              <CheckCircle2 className="h-3 w-3 mr-1" />
+              All current
+            </Badge>
+          )}
         </div>
 
-        {/* ── Alerts ──────────────────────────────────────────────────── */}
+        {/* ── ARIA insights ────────────────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.insights.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-              <AlertTriangle className="h-3 w-3" />
-              Training Alerts
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Workforce Intelligence
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.insights.map((insight, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
                 )}
               >
-                {alert.message}
+                {insight.text}
               </div>
             ))}
           </div>
         )}
-
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
-
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Training Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-red-200 bg-red-50 text-red-800"
-                  : i === 1 ? "border-blue-200 bg-blue-50 text-blue-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
       </CardContent>
     </Card>
   );
