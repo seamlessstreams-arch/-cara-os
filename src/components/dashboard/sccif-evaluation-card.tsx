@@ -2,81 +2,75 @@
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — SCCIF SELF-EVALUATION INTELLIGENCE CARD
-// Dashboard card for Ofsted inspection readiness, SCCIF judgment areas,
-// evidence coverage, and ARIA inspection intelligence.
+// Dashboard card powered by the SCCIF Self-Evaluation Intelligence Engine.
+// SCCIF judgment areas, evidence coverage, action tracking,
+// inspection readiness score, alerts, and ARIA inspection intelligence.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  ClipboardList, ChevronRight, AlertTriangle, CheckCircle2,
-  Brain, Target, Star, TrendingUp,
+  ClipboardList, ChevronRight, AlertTriangle,
+  Brain, Target, Star, TrendingUp, Clock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSCCIFIntelligence } from "@/hooks/use-sccif-intelligence";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_EVALUATION = {
-  status: "draft" as "draft" | "in_review" | "final",
-  periodFrom: "2026-01-01",
-  periodTo: "2026-06-30",
-  totalEvidence: 45,
-  coverage: 85,
-  strengthPercentage: 68.9,
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high:     "border-red-200 bg-red-50 text-red-800",
+  medium:   "border-amber-200 bg-amber-50 text-amber-800",
+  low:      "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const JUDGMENT_SUMMARIES = [
-  {
-    key: "overall_experiences",
-    label: "Experiences & Progress",
-    suggested: "Good",
-    strengths: 12,
-    developments: 4,
-    total: 16,
-    ratio: 75,
-  },
-  {
-    key: "helped_and_protected",
-    label: "Helped & Protected",
-    suggested: "Good",
-    strengths: 10,
-    developments: 5,
-    total: 15,
-    ratio: 66.7,
-  },
-  {
-    key: "leadership_and_management",
-    label: "Leadership & Management",
-    suggested: "Good",
-    strengths: 9,
-    developments: 5,
-    total: 14,
-    ratio: 64.3,
-  },
-];
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning:  "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
 
-const UNCOVERED_AREAS = [
-  "Child voice",
-  "Missing & exploitation",
-  "Independent visits",
-];
+const GRADE_STYLES: Record<string, string> = {
+  outstanding:          "bg-green-100 text-green-700",
+  good:                 "bg-blue-100 text-blue-700",
+  requires_improvement: "bg-amber-100 text-amber-700",
+  inadequate:           "bg-red-100 text-red-700",
+};
 
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "uncovered_area", severity: "medium", message: "3 evidence areas have no entries: child voice, missing & exploitation, independent visits. Add evidence before finalising." },
-  { type: "draft_status", severity: "medium", message: "Self-evaluation is still in draft. Review and finalise with responsible individual before next Reg 44 visit." },
-];
+const GRADE_LABELS: Record<string, string> = {
+  outstanding:          "Outstanding",
+  good:                 "Good",
+  requires_improvement: "Requires Improvement",
+  inadequate:           "Inadequate",
+};
 
-const ARIA_INSIGHTS = [
-  "Current self-evaluation suggests 'Good' across all 3 judgments. Strength ratio ranges from 64-75%. To reach 'Outstanding', increase evidence of impact — show how practice changes improved outcomes for specific children.",
-  "3 evidence areas remain uncovered (child voice, missing/exploitation, independent visits). These are critical for the 'Helped & Protected' judgment. Gather evidence from key work sessions, missing episodes, and Reg 44 reports.",
-  "Positive: 85% evidence coverage across SCCIF areas. 45 evidence entries recorded. Care planning, education progress, and safeguarding have the strongest evidence base. The self-evaluation demonstrates awareness of strengths and areas for development.",
-];
-
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ───────────────────────────────────────────────────────────────
 
 export function SCCIFEvaluationCard() {
-  const e = DEMO_EVALUATION;
+  const { data, isLoading } = useSCCIFIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-brand" />
+            SCCIF Self-Evaluation
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const o = intel.overview;
 
   return (
     <Card className="overflow-hidden">
@@ -96,101 +90,187 @@ export function SCCIFEvaluationCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", e.status === "final" ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-sm font-bold capitalize", e.status === "final" ? "text-green-600" : "text-amber-600")}>
-              {e.status}
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.status === "final" ? "bg-green-50" : o.status === "in_review" ? "bg-blue-50" : "bg-amber-50",
+          )}>
+            <p className={cn(
+              "text-sm font-bold capitalize",
+              o.status === "final" ? "text-green-600" : o.status === "in_review" ? "text-blue-600" : "text-amber-600",
+            )}>
+              {o.status.replace("_", " ")}
             </p>
             <p className="text-[10px] text-muted-foreground">Status</p>
           </div>
-          <div className="text-center rounded-lg bg-blue-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-blue-600">
-              {e.totalEvidence}
-            </p>
+          <div className="text-center rounded-lg bg-blue-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums text-blue-600">{o.total_evidence}</p>
             <p className="text-[10px] text-muted-foreground">Evidence</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: e.coverage >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", e.coverage >= 90 ? "text-green-600" : "text-amber-600")}>
-              {e.coverage}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.coverage_rate >= 90 ? "bg-green-50" : "bg-amber-50",
+          )}>
+            <p className={cn("text-lg font-bold tabular-nums", o.coverage_rate >= 90 ? "text-green-600" : "text-amber-600")}>
+              {o.coverage_rate}%
             </p>
             <p className="text-[10px] text-muted-foreground">Coverage</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: e.strengthPercentage >= 60 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", e.strengthPercentage >= 60 ? "text-green-600" : "text-amber-600")}>
-              {e.strengthPercentage}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.inspection_readiness_score >= 75 ? "bg-green-50" : o.inspection_readiness_score >= 50 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.inspection_readiness_score >= 75 ? "text-green-600"
+                : o.inspection_readiness_score >= 50 ? "text-amber-600"
+                : "text-red-600",
+            )}>
+              {o.inspection_readiness_score}
             </p>
-            <p className="text-[10px] text-muted-foreground">Strengths</p>
+            <p className="text-[10px] text-muted-foreground">Readiness</p>
           </div>
         </div>
 
         {/* ── Judgment summaries ──────────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Target className="h-3 w-3" />
-            SCCIF Judgments
-          </p>
-          {JUDGMENT_SUMMARIES.map((j) => (
-            <div key={j.key} className="rounded-lg border p-3 text-xs">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="font-medium">{j.label}</span>
-                <Badge className={cn(
-                  "text-[10px]",
-                  j.suggested === "Outstanding" ? "bg-green-100 text-green-700"
-                    : j.suggested === "Good" ? "bg-blue-100 text-blue-700"
-                    : j.suggested === "Requires Improvement" ? "bg-amber-100 text-amber-700"
-                    : "bg-red-100 text-red-700",
-                )}>
-                  <Star className="h-2.5 w-2.5 mr-0.5" />
-                  {j.suggested}
-                </Badge>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden flex">
-                  <div className="h-full bg-green-400" style={{ width: `${(j.strengths / j.total) * 100}%` }} />
-                  <div className="h-full bg-red-300" style={{ width: `${(j.developments / j.total) * 100}%` }} />
+        {intel.judgment_summaries.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Target className="h-3 w-3" />
+              SCCIF Judgments
+            </p>
+            {intel.judgment_summaries.map((j) => {
+              const total = j.strengths_count + j.developments_count;
+              return (
+                <div key={j.area} className="rounded-lg border p-3 text-xs">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="font-medium">{j.area_label}</span>
+                    <Badge className={cn(
+                      "text-[10px]",
+                      GRADE_STYLES[j.self_grade] ?? "bg-gray-100 text-gray-700",
+                    )}>
+                      <Star className="h-2.5 w-2.5 mr-0.5" />
+                      {GRADE_LABELS[j.self_grade] ?? j.self_grade}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {total > 0 && (
+                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden flex">
+                        <div className="h-full bg-green-400" style={{ width: `${(j.strengths_count / total) * 100}%` }} />
+                        <div className="h-full bg-red-300" style={{ width: `${(j.developments_count / total) * 100}%` }} />
+                      </div>
+                    )}
+                    <span className="text-[10px] tabular-nums text-muted-foreground">
+                      {j.strengths_count}
+                      <TrendingUp className="h-2.5 w-2.5 inline mx-0.5 text-green-500" />
+                      {j.developments_count}
+                      <AlertTriangle className="h-2.5 w-2.5 inline mx-0.5 text-amber-500" />
+                    </span>
+                  </div>
                 </div>
-                <span className="text-[10px] tabular-nums text-muted-foreground">
-                  {j.strengths}
-                  <TrendingUp className="h-2.5 w-2.5 inline mx-0.5 text-green-500" />
-                  {j.developments}
-                  <AlertTriangle className="h-2.5 w-2.5 inline mx-0.5 text-amber-500" />
-                </span>
-              </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Action tracker ──────────────────────────────────────────── */}
+
+        <div className="rounded-lg border p-3 space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold flex items-center gap-1">
+              <Clock className="h-3 w-3 text-blue-500" />
+              Actions
+            </p>
+            <Badge className={cn(
+              "text-[10px]",
+              intel.action_tracker.overdue === 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700",
+            )}>
+              {intel.action_tracker.overdue} overdue
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-brand transition-all"
+                style={{ width: `${intel.action_tracker.completion_rate}%` }}
+              />
             </div>
-          ))}
+            <span className="text-[10px] font-bold tabular-nums text-muted-foreground">
+              {intel.action_tracker.completion_rate}%
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div>
+              <p className="font-bold text-slate-700 tabular-nums">{intel.action_tracker.total_actions}</p>
+              <p className="text-[10px] text-muted-foreground">Total</p>
+            </div>
+            <div>
+              <p className="font-bold text-green-600 tabular-nums">{intel.action_tracker.completed}</p>
+              <p className="text-[10px] text-muted-foreground">Completed</p>
+            </div>
+            <div>
+              <p className="font-bold text-blue-600 tabular-nums">{intel.action_tracker.in_progress}</p>
+              <p className="text-[10px] text-muted-foreground">In Progress</p>
+            </div>
+          </div>
         </div>
 
-        {/* ── Uncovered areas ──────────────────────────────────────────── */}
+        {/* ── Evidence gaps ────────────────────────────────────────────── */}
 
-        {UNCOVERED_AREAS.length > 0 && (
+        {intel.evidence_gaps.length > 0 && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
             <p className="text-xs font-medium text-amber-800 mb-1">Evidence Gaps</p>
             <div className="flex flex-wrap gap-1">
-              {UNCOVERED_AREAS.map((area) => (
-                <Badge key={area} variant="outline" className="text-[10px] border-amber-300 text-amber-700">
-                  {area}
+              {intel.evidence_gaps.map((gap) => (
+                <Badge key={gap} variant="outline" className="text-[10px] border-amber-300 text-amber-700">
+                  {gap}
                 </Badge>
               ))}
             </div>
           </div>
         )}
 
+        {/* ── Inspection readiness bar ────────────────────────────────── */}
+
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <span className="text-xs font-semibold">Inspection Readiness</span>
+          <div className="flex items-center gap-2">
+            <div className="w-20 h-2 rounded-full bg-gray-100 overflow-hidden">
+              <div
+                className={cn(
+                  "h-full rounded-full",
+                  o.inspection_readiness_score >= 75 ? "bg-green-500"
+                    : o.inspection_readiness_score >= 50 ? "bg-amber-500"
+                    : "bg-red-500",
+                )}
+                style={{ width: `${o.inspection_readiness_score}%` }}
+              />
+            </div>
+            <span className={cn(
+              "text-sm font-bold tabular-nums",
+              o.inspection_readiness_score >= 75 ? "text-green-600"
+                : o.inspection_readiness_score >= 50 ? "text-amber-600"
+                : "text-red-600",
+            )}>
+              {o.inspection_readiness_score}%
+            </span>
+          </div>
+        </div>
+
         {/* ── Alerts ──────────────────────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.alerts.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Evaluation Alerts
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
               >
                 {alert.message}
@@ -199,27 +279,27 @@ export function SCCIFEvaluationCard() {
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Inspection Intelligence ────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Inspection Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-blue-200 bg-blue-50 text-blue-800"
-                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Inspection Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
