@@ -1,256 +1,318 @@
 "use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// DASHBOARD WIDGET — Emotional Wellbeing Intelligence
-//
-// Shows at a glance:
-//   - Overall score + rating
-//   - SDQ band and trend
-//   - Mood average and trend
-//   - Self-harm risk level
-//   - Therapy status + attendance rate
-//   - Sub-scores (SDQ, therapeutic, safety, support)
-//   - Concerns + regulatory status
+// CORNERSTONE — EMOTIONAL WELLBEING INTELLIGENCE CARD
+// Dashboard widget for mood trends, SDQ scores, self-harm risk, CAMHS
+// engagement, and ARIA wellbeing intelligence.
+// Powered by the Health & Wellbeing Intelligence Engine — live data (Reg 23/7).
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import {
-  Brain, AlertTriangle, CheckCircle2, Heart,
-  TrendingUp, TrendingDown, Minus,
+  Heart, AlertTriangle, Brain, Loader2, Users,
+  TrendingUp, TrendingDown, Minus, ShieldAlert,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useHealthWellbeing } from "@/hooks/use-health-wellbeing";
 
-interface WellbeingData {
-  childName: string;
-  overallScore: number;
-  overallRating: string;
-  sdqScore: number;
-  therapeuticScore: number;
-  safetyScore: number;
-  supportScore: number;
-  latestSDQ?: {
-    totalDifficulties: number;
-    band: string;
-  };
-  sdqTrend: string;
-  averageMood: number;
-  moodTrend: string;
-  selfHarmRiskLevel: string;
-  selfHarmIncidentCount: number;
-  activeTherapy: boolean;
-  therapyAttendanceRate: number;
-  concerns: Array<{ severity: string; category: string; description: string }>;
-  strengths: Array<{ category: string; description: string }>;
-  regulatoryFlags: Array<{ regulation: string; area: string; status: string; detail: string }>;
-  recommendations: string[];
-  summary: string;
-}
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-interface EmotionalWellbeingIntelligenceCardProps {
-  childId: string;
-}
-
-const RATING_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  excellent: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  good: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
-  adequate: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
-  requires_improvement: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
-  inadequate: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const RISK_STYLES: Record<string, { bg: string; text: string }> = {
-  none: { bg: "bg-emerald-100", text: "text-emerald-700" },
-  low: { bg: "bg-green-100", text: "text-green-700" },
-  medium: { bg: "bg-amber-100", text: "text-amber-700" },
-  high: { bg: "bg-red-100", text: "text-red-700" },
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
 };
 
-const TREND_ICON: Record<string, React.ReactNode> = {
-  improving: <TrendingUp className="h-3 w-3 text-emerald-600" />,
-  stable: <Minus className="h-3 w-3 text-gray-400" />,
-  worsening: <TrendingDown className="h-3 w-3 text-red-500" />,
-  insufficient_data: <Minus className="h-3 w-3 text-gray-300" />,
+const TREND_STYLES: Record<string, { icon: React.ReactNode; text: string; label: string }> = {
+  improving: {
+    icon: <TrendingUp className="h-3.5 w-3.5" />,
+    text: "text-green-600",
+    label: "Improving",
+  },
+  stable: {
+    icon: <Minus className="h-3.5 w-3.5" />,
+    text: "text-gray-500",
+    label: "Stable",
+  },
+  declining: {
+    icon: <TrendingDown className="h-3.5 w-3.5" />,
+    text: "text-red-600",
+    label: "Declining",
+  },
+  unknown: {
+    icon: <Minus className="h-3.5 w-3.5" />,
+    text: "text-gray-400",
+    label: "Unknown",
+  },
 };
 
-function moodLabel(avg: number): string {
-  if (avg >= 4) return "Good";
-  if (avg >= 3) return "Fair";
-  if (avg >= 2) return "Low";
-  return "V.Low";
+const SDQ_BAND_STYLES: Record<string, { bg: string; text: string }> = {
+  normal: { bg: "bg-green-100", text: "text-green-700" },
+  borderline: { bg: "bg-amber-100", text: "text-amber-700" },
+  abnormal: { bg: "bg-red-100", text: "text-red-700" },
+};
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+function moodLabel(score: number): string {
+  if (score >= 8) return "Excellent";
+  if (score >= 6) return "Good";
+  if (score >= 4) return "Fair";
+  if (score >= 2) return "Low";
+  return "Very Low";
 }
 
-export function EmotionalWellbeingIntelligenceCard({ childId }: EmotionalWellbeingIntelligenceCardProps) {
-  const [data, setData] = useState<WellbeingData | null>(null);
-  const [loading, setLoading] = useState(true);
+function moodColor(score: number): string {
+  if (score >= 8) return "text-green-600";
+  if (score >= 6) return "text-blue-600";
+  if (score >= 4) return "text-amber-600";
+  return "text-red-600";
+}
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/aria/emotional-wellbeing?childId=${childId}`);
-        const json = await res.json();
-        if (json.success) setData(json.data);
-      } catch (err) {
-        console.error("Failed to fetch emotional wellbeing intelligence:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [childId]);
+// ── Component ────────────────────────────────────────────────────────────────
 
-  if (loading) {
+export function EmotionalWellbeingIntelligenceCard() {
+  const { data, isLoading } = useHealthWellbeing();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
     return (
-      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-5 animate-pulse">
-        <div className="h-5 bg-gray-200 rounded w-48 mb-4" />
-        <div className="h-20 bg-gray-100 rounded" />
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Heart className="h-4 w-4 text-brand" />
+            Emotional Wellbeing Intelligence
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  if (!data) {
-    return (
-      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-5">
-        <p className="text-sm text-[var(--cs-text-muted)]">Unable to load emotional wellbeing intelligence.</p>
-      </div>
-    );
-  }
+  const { wellbeing_trends, child_profiles, camhs, alerts, insights } = intel;
 
-  const ratingStyle = RATING_STYLES[data.overallRating] ?? RATING_STYLES.adequate;
-  const riskStyle = RISK_STYLES[data.selfHarmRiskLevel] ?? RISK_STYLES.none;
+  // Compute aggregate mood from child profiles with wellbeing data
+  const profilesWithMood = child_profiles.filter((p) => p.wellbeing_score !== null);
+  const avgMood = profilesWithMood.length > 0
+    ? Math.round((profilesWithMood.reduce((sum, p) => sum + (p.wellbeing_score ?? 0), 0) / profilesWithMood.length) * 10) / 10
+    : 0;
+
+  // Overall mood trend from wellbeing_trends
+  const improvingCount = wellbeing_trends.filter((t) => t.trend === "improving").length;
+  const decliningCount = wellbeing_trends.filter((t) => t.trend === "declining").length;
+  const overallTrend: "improving" | "stable" | "declining" =
+    improvingCount > decliningCount ? "improving" :
+    decliningCount > improvingCount ? "declining" : "stable";
+  const trendStyle = TREND_STYLES[overallTrend];
+
+  // SDQ profiles
+  const profilesWithSdq = child_profiles.filter((p) => p.sdq_band !== null);
+  const abnormalSdq = profilesWithSdq.filter((p) => p.sdq_band === "abnormal").length;
+  const borderlineSdq = profilesWithSdq.filter((p) => p.sdq_band === "borderline").length;
+
+  // Self-harm risk — from alerts that mention self-harm
+  const selfHarmAlerts = alerts.filter((a) =>
+    a.type?.toLowerCase().includes("self_harm") || a.message?.toLowerCase().includes("self-harm") || a.message?.toLowerCase().includes("self harm")
+  );
 
   return (
-    <div className="rounded-xl border border-[var(--cs-border)] bg-white overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--cs-border)] px-5 py-3 bg-[var(--cs-surface)]">
-        <div className="flex items-center gap-2">
-          <Brain className="h-4 w-4 text-purple-500" />
-          <h3 className="text-sm font-semibold text-[var(--cs-navy)]">Emotional Wellbeing</h3>
-        </div>
-        <Badge className={cn("text-[10px]", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>
-          {data.overallRating.replace(/_/g, " ")} ({data.overallScore}%)
-        </Badge>
-      </div>
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Heart className="h-4 w-4 text-brand" />
+          Emotional Wellbeing Intelligence
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
 
-      <div className="p-5 space-y-4">
-        {/* Stats row */}
-        <div className="grid grid-cols-4 gap-2 text-center">
-          {/* SDQ Band + Trend */}
-          <div className="rounded-lg bg-gray-50 p-2">
-            <div className="flex items-center justify-center gap-1">
-              <span className="text-xs font-bold text-[var(--cs-navy)]">
-                {data.latestSDQ ? data.latestSDQ.band : "N/A"}
-              </span>
-              {data.latestSDQ && TREND_ICON[data.sdqTrend]}
-            </div>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">SDQ</p>
-          </div>
+        {/* ── Summary strip ────────────────────────────────────────────── */}
 
-          {/* Mood */}
-          <div className="rounded-lg bg-gray-50 p-2">
-            <div className="flex items-center justify-center gap-1">
-              <span className="text-xs font-bold text-[var(--cs-navy)]">
-                {data.averageMood > 0 ? moodLabel(data.averageMood) : "N/A"}
-              </span>
-              {data.averageMood > 0 && TREND_ICON[data.moodTrend]}
-            </div>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">Mood</p>
-          </div>
-
-          {/* Self-harm risk */}
-          <div className="rounded-lg p-2" style={{ backgroundColor: "var(--cs-surface)" }}>
-            <span className={cn("text-xs font-bold", riskStyle.text)}>
-              {data.selfHarmRiskLevel}
-            </span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">SH Risk</p>
-          </div>
-
-          {/* Therapy */}
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className={cn(
-              "text-xs font-bold",
-              data.activeTherapy ? "text-emerald-600" : "text-gray-500",
-            )}>
-              {data.activeTherapy ? `${Math.round(data.therapyAttendanceRate * 100)}%` : "None"}
-            </span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">
-              {data.activeTherapy ? "Therapy" : "Therapy"}
-            </p>
-          </div>
-        </div>
-
-        {/* Sub-scores */}
         <div className="grid grid-cols-4 gap-2">
-          <MiniScore label="SDQ" score={data.sdqScore} />
-          <MiniScore label="Therapeutic" score={data.therapeuticScore} />
-          <MiniScore label="Safety" score={data.safetyScore} />
-          <MiniScore label="Support" score={data.supportScore} />
+          {/* Avg Mood */}
+          <div className={cn("text-center rounded-lg p-2.5", avgMood >= 6 ? "bg-green-50" : avgMood >= 4 ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", moodColor(avgMood))}>
+              {avgMood > 0 ? avgMood.toFixed(1) : "N/A"}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Avg Mood</p>
+          </div>
+
+          {/* Mood Trend */}
+          <div className="text-center rounded-lg bg-gray-50 p-2.5">
+            <div className={cn("flex items-center justify-center gap-1", trendStyle.text)}>
+              {trendStyle.icon}
+              <p className="text-xs font-bold">{trendStyle.label}</p>
+            </div>
+            <p className="text-[10px] text-muted-foreground">Mood Trend</p>
+          </div>
+
+          {/* SDQ */}
+          <div className={cn("text-center rounded-lg p-2.5", abnormalSdq > 0 ? "bg-red-50" : borderlineSdq > 0 ? "bg-amber-50" : "bg-green-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", abnormalSdq > 0 ? "text-red-600" : borderlineSdq > 0 ? "text-amber-600" : "text-green-600")}>
+              {profilesWithSdq.length > 0 ? profilesWithSdq.length : "N/A"}
+            </p>
+            <p className="text-[10px] text-muted-foreground">SDQ Scored</p>
+          </div>
+
+          {/* CAMHS Engaged */}
+          <div className="text-center rounded-lg bg-purple-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums text-purple-600">
+              {camhs.active_referrals}
+            </p>
+            <p className="text-[10px] text-muted-foreground">CAMHS Active</p>
+          </div>
         </div>
 
-        {/* Top concerns */}
-        {data.concerns.length > 0 && (
+        {/* ── Wellbeing trends by child ────────────────────────────────── */}
+
+        {wellbeing_trends.length > 0 && (
           <div className="space-y-1.5">
-            {data.concerns.slice(0, 2).map((concern, i) => {
-              const isHigh = concern.severity === "critical" || concern.severity === "significant";
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              Wellbeing Trends (7-day)
+            </p>
+            {wellbeing_trends.slice(0, 4).map((trend) => {
+              const ts = TREND_STYLES[trend.trend] ?? TREND_STYLES.stable;
               return (
-                <div key={i} className={cn(
-                  "flex items-start gap-2 rounded-lg p-2 text-xs",
-                  isHigh ? "bg-red-50" : "bg-amber-50",
-                )}>
-                  <AlertTriangle className={cn(
-                    "h-3.5 w-3.5 shrink-0 mt-0.5",
-                    isHigh ? "text-red-600" : "text-amber-600",
-                  )} />
-                  <span className={isHigh ? "text-red-700" : "text-amber-700"}>
-                    {concern.description}
-                  </span>
+                <div key={trend.child_id} className="rounded-lg border p-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{trend.child_name}</span>
+                    <div className={cn("flex items-center gap-1", ts.text)}>
+                      {ts.icon}
+                      <span className="text-[10px] font-medium">{ts.label}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 text-muted-foreground">
+                    <span className="text-[10px]">
+                      Current avg: <span className={cn("font-medium", moodColor(trend.current_avg))}>{trend.current_avg.toFixed(1)}</span>
+                    </span>
+                    <span className="text-[10px]">
+                      Previous: {trend.previous_avg.toFixed(1)}
+                    </span>
+                    <span className="text-[10px]">
+                      Latest: {trend.latest_score}/10
+                    </span>
+                  </div>
                 </div>
               );
             })}
           </div>
         )}
 
-        {/* Regulatory flags */}
-        {data.regulatoryFlags.some(f => f.status !== "met") && (
-          <div className="flex flex-wrap gap-1.5">
-            {data.regulatoryFlags.filter(f => f.status !== "met").slice(0, 3).map((flag, i) => (
-              <Badge
-                key={i}
-                className={cn(
-                  "text-[9px]",
-                  flag.status === "not_met" ? "bg-red-100 text-red-700 border-red-200" :
-                  "bg-amber-100 text-amber-700 border-amber-200",
-                )}
-                title={flag.detail}
-              >
-                {flag.area}
-              </Badge>
+        {/* ── SDQ overview ─────────────────────────────────────────────── */}
+
+        {profilesWithSdq.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground">SDQ Bands</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              {profilesWithSdq.map((profile) => {
+                const bandStyle = SDQ_BAND_STYLES[profile.sdq_band ?? "normal"] ?? SDQ_BAND_STYLES.normal;
+                return (
+                  <Badge
+                    key={profile.child_id}
+                    className={cn("text-[10px]", bandStyle.bg, bandStyle.text)}
+                  >
+                    {profile.child_name}: {profile.sdq_band} ({profile.sdq_total})
+                  </Badge>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Self-harm risk section ──────────────────────────────────── */}
+
+        {selfHarmAlerts.length > 0 && (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-xs space-y-1">
+            <p className="font-semibold text-red-800 flex items-center gap-1">
+              <ShieldAlert className="h-3.5 w-3.5" />
+              Self-Harm Risk
+            </p>
+            {selfHarmAlerts.slice(0, 2).map((alert, i) => (
+              <p key={i} className="text-red-700 leading-relaxed">
+                <span className="font-medium">{alert.child_name}:</span> {alert.message}
+              </p>
             ))}
           </div>
         )}
 
-        {/* All clear */}
-        {data.concerns.length === 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 p-2.5">
-            <Heart className="h-4 w-4 text-emerald-600" />
-            <span className="text-xs text-emerald-700">
-              Emotional wellbeing stable. Support in place, mood positive.
-            </span>
+        {/* ── CAMHS engagement ────────────────────────────────────────── */}
+
+        {camhs.active_referrals > 0 && (
+          <div className="rounded-lg border p-3 text-xs space-y-1">
+            <p className="font-semibold text-muted-foreground">CAMHS Engagement</p>
+            <div className="flex items-center gap-3 flex-wrap">
+              <span>{camhs.active_referrals} active referral{camhs.active_referrals > 1 ? "s" : ""}</span>
+              {camhs.waiting_list > 0 && (
+                <Badge className="text-[9px] bg-amber-100 text-amber-700">
+                  {camhs.waiting_list} waiting (avg {camhs.avg_waiting_weeks}wk)
+                </Badge>
+              )}
+              {camhs.disengaged_count > 0 && (
+                <Badge className="text-[9px] bg-red-100 text-red-700">
+                  {camhs.disengaged_count} disengaged
+                </Badge>
+              )}
+              <span className="text-muted-foreground">{camhs.total_sessions_held} sessions held</span>
+            </div>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
 
-// ── Sub-component ───────────────────────────────────────────────────────────
+        {/* ── Alerts ──────────────────────────────────────────────────── */}
 
-function MiniScore({ label, score }: { label: string; score: number }) {
-  const color = score >= 75 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-red-600";
-  return (
-    <div className="text-center">
-      <span className={cn("text-sm font-bold", color)}>{score}</span>
-      <p className="text-[9px] text-[var(--cs-text-muted)] mt-0.5">{label}</p>
-    </div>
+        {alerts.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Wellbeing Alerts
+            </p>
+            {alerts.slice(0, 3).map((alert, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
+                )}
+              >
+                <span className="font-medium">{alert.child_name}:</span> {alert.message}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── ARIA Wellbeing Intelligence ──────────────────────────────── */}
+
+        {insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Wellbeing Intelligence
+            </p>
+            {insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

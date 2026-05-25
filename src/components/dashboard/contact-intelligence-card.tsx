@@ -1,254 +1,241 @@
 "use client";
 
-// ═════════════��══════════════════════════���═════════════════════════════════════
-// DASHBOARD WIDGET — Contact & Relationships Intelligence
-//
-// Shows at a glance:
-//   - Overall score + rating
-//   - Sessions occurred/planned + missed rate
-//   - Positive/distressing rates
-//   - Sub-scores (frequency, quality, consistency, voice)
-//   - Per-person contact summaries
-//   - Concerns + regulatory status
+// ══════════════════════════════════════════════════════════════════════════════
+// CORNERSTONE — CONTACT & ENGAGEMENT INTELLIGENCE CARD
+// Dashboard card for contact compliance, family time, child profiles,
+// mood impact, and ARIA contact intelligence.
+// Powered by the Contact Engagement Engine — live data.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import {
-  Users, AlertTriangle, CheckCircle2, Heart,
-  PhoneOff, Calendar,
+  Users, Brain, AlertTriangle, Loader2,
+  Heart, Calendar, Smile, Frown,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useContactEngagement } from "@/hooks/use-contact-engagement";
 
-interface ContactData {
-  childName: string;
-  overallScore: number;
-  overallRating: string;
-  frequencyScore: number;
-  qualityScore: number;
-  consistencyScore: number;
-  voiceScore: number;
-  totalSessions: number;
-  occurredSessions: number;
-  missedSessions: number;
-  missedRate: number;
-  positiveRate: number;
-  distressingRate: number;
-  contactByPerson: Array<{
-    person: string;
-    personName: string;
-    sessionsPlanned: number;
-    sessionsOccurred: number;
-    complianceRate: number;
-    avgOutcome: number;
-    childWantsContact: boolean;
-  }>;
-  cancellationPatterns: Array<{ pattern: string; count: number; description: string }>;
-  concerns: Array<{ severity: string; category: string; description: string }>;
-  strengths: Array<{ category: string; description: string }>;
-  regulatoryFlags: Array<{ regulation: string; area: string; status: string; detail: string }>;
-  recommendations: string[];
-  summary: string;
-}
+// ── Colour maps ────────────────────────────────────────────────────────────
 
-interface ContactIntelligenceCardProps {
-  childId: string;
-}
-
-const RATING_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  excellent: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  good: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
-  adequate: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
-  requires_improvement: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
-  inadequate: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-export function ContactIntelligenceCard({ childId }: ContactIntelligenceCardProps) {
-  const [data, setData] = useState<ContactData | null>(null);
-  const [loading, setLoading] = useState(true);
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/aria/contact?childId=${childId}`);
-        const json = await res.json();
-        if (json.success) setData(json.data);
-      } catch (err) {
-        console.error("Failed to fetch contact intelligence:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [childId]);
+// ── Component ────────────────────────────────────────────────────────────────
 
-  if (loading) {
+export function ContactIntelligenceCard() {
+  const { data, isLoading } = useContactEngagement();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
     return (
-      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-5 animate-pulse">
-        <div className="h-5 bg-gray-200 rounded w-48 mb-4" />
-        <div className="h-20 bg-gray-100 rounded" />
-      </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Users className="h-4 w-4 text-brand" />
+            Contact & Engagement
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
-  if (!data) {
-    return (
-      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-5">
-        <p className="text-sm text-[var(--cs-text-muted)]">Unable to load contact intelligence.</p>
-      </div>
-    );
-  }
-
-  const ratingStyle = RATING_STYLES[data.overallRating] ?? RATING_STYLES.adequate;
+  const c = intel.compliance;
+  const ft = intel.family_time;
+  const mood = intel.mood_impact;
 
   return (
-    <div className="rounded-xl border border-[var(--cs-border)] bg-white overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--cs-border)] px-5 py-3 bg-[var(--cs-surface)]">
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-pink-500" />
-          <h3 className="text-sm font-semibold text-[var(--cs-navy)]">Contact</h3>
-        </div>
-        <Badge className={cn("text-[10px]", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>
-          {data.overallRating.replace(/_/g, " ")} ({data.overallScore}%)
-        </Badge>
-      </div>
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-sm flex items-center gap-2">
+          <Users className="h-4 w-4 text-brand" />
+          Contact & Engagement
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
 
-      <div className="p-5 space-y-4">
-        {/* Stats row */}
-        <div className="grid grid-cols-4 gap-2 text-center">
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className="text-xs font-bold text-[var(--cs-navy)]">
-              {data.occurredSessions}/{data.totalSessions}
-            </span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">Occurred</p>
-          </div>
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className={cn("text-xs font-bold", data.missedRate > 0.3 ? "text-red-600" : data.missedRate > 0.1 ? "text-amber-600" : "text-emerald-600")}>
-              {Math.round(data.missedRate * 100)}%
-            </span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">Missed</p>
-          </div>
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className={cn("text-xs font-bold", data.positiveRate >= 0.8 ? "text-emerald-600" : data.positiveRate >= 0.5 ? "text-amber-600" : "text-red-600")}>
-              {Math.round(data.positiveRate * 100)}%
-            </span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">Positive</p>
-          </div>
-          <div className="rounded-lg bg-gray-50 p-2">
-            <span className="text-xs font-bold text-[var(--cs-navy)]">{data.contactByPerson.length}</span>
-            <p className="text-[9px] text-[var(--cs-text-muted)]">People</p>
-          </div>
-        </div>
+        {/* ── Summary strip ────────────────────────────────────────────── */}
 
-        {/* Sub-scores */}
         <div className="grid grid-cols-4 gap-2">
-          <MiniScore label="Frequency" score={data.frequencyScore} />
-          <MiniScore label="Quality" score={data.qualityScore} />
-          <MiniScore label="Consistent" score={data.consistencyScore} />
-          <MiniScore label="Voice" score={data.voiceScore} />
+          <div className="text-center rounded-lg p-2" style={{ background: c.contact_plan_rate >= 80 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", c.contact_plan_rate >= 80 ? "text-green-600" : "text-amber-600")}>
+              {c.contact_plan_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Plan Rate</p>
+          </div>
+          <div className="text-center rounded-lg p-2" style={{ background: c.frequency_met_rate >= 80 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", c.frequency_met_rate >= 80 ? "text-green-600" : "text-amber-600")}>
+              {c.frequency_met_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Freq Met</p>
+          </div>
+          <div className="text-center rounded-lg p-2" style={{ background: c.supervised_rate >= 80 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", c.supervised_rate >= 80 ? "text-green-600" : "text-amber-600")}>
+              {c.supervised_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Supervised</p>
+          </div>
+          <div className="text-center rounded-lg p-2" style={{ background: c.risk_assessed_rate >= 80 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
+            <p className={cn("text-lg font-bold tabular-nums", c.risk_assessed_rate >= 80 ? "text-green-600" : "text-amber-600")}>
+              {c.risk_assessed_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Risk Assessed</p>
+          </div>
         </div>
 
-        {/* Per-person summaries */}
-        {data.contactByPerson.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {data.contactByPerson.slice(0, 4).map((p, i) => {
-              const compColor = p.complianceRate >= 0.8 ? "bg-emerald-100 text-emerald-700 border-emerald-200" :
-                p.complianceRate >= 0.5 ? "bg-amber-100 text-amber-700 border-amber-200" :
-                "bg-red-100 text-red-700 border-red-200";
-              return (
-                <Badge key={i} className={cn("text-[9px]", compColor)}>
-                  {p.personName} ({p.sessionsOccurred}/{p.sessionsPlanned})
-                </Badge>
-              );
-            })}
-          </div>
-        )}
+        {/* ── Family time stats ────────────────────────────────────────── */}
 
-        {/* Cancellation patterns */}
-        {data.cancellationPatterns.length > 0 && (
-          <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-2 text-xs">
-            <PhoneOff className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-600" />
-            <span className="text-amber-700">
-              {data.cancellationPatterns[0].description}
-            </span>
+        <div className="space-y-1.5">
+          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+            <Heart className="h-3 w-3" />
+            Family Time (30 days)
+          </p>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-lg border p-2">
+              <p className="text-sm font-bold tabular-nums text-[var(--cs-navy)]">{ft.attended}/{ft.total_sessions_30d}</p>
+              <p className="text-[10px] text-muted-foreground">Attended</p>
+            </div>
+            <div className="rounded-lg border p-2">
+              <p className={cn("text-sm font-bold tabular-nums", ft.cancelled_by_family > 0 ? "text-amber-600" : "text-green-600")}>
+                {ft.cancelled_by_family}
+              </p>
+              <p className="text-[10px] text-muted-foreground">Cancelled (Family)</p>
+            </div>
+            <div className="rounded-lg border p-2">
+              <p className={cn("text-sm font-bold tabular-nums", ft.cancelled_by_la > 0 ? "text-amber-600" : "text-green-600")}>
+                {ft.cancelled_by_la}
+              </p>
+              <p className="text-[10px] text-muted-foreground">Cancelled (LA)</p>
+            </div>
           </div>
-        )}
+          <div className="flex items-center justify-between rounded-lg border p-2.5 mt-2">
+            <div className="flex items-center gap-2">
+              <Smile className={cn("h-4 w-4", ft.positive_outcome_rate >= 75 ? "text-green-500" : "text-amber-500")} />
+              <div>
+                <p className="text-xs font-medium">Positive Outcomes</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {ft.positive_outcome_rate}% positive · {ft.child_enjoyed_rate}% child enjoyed
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        {/* Top concerns */}
-        {data.concerns.length > 0 && (
+        {/* ── Child contact profiles ──────────────────────────────────── */}
+
+        {intel.child_profiles.length > 0 && (
           <div className="space-y-1.5">
-            {data.concerns.slice(0, 2).map((concern, i) => {
-              const isHigh = concern.severity === "critical" || concern.severity === "significant";
-              return (
-                <div key={i} className={cn(
-                  "flex items-start gap-2 rounded-lg p-2 text-xs",
-                  isHigh ? "bg-red-50" : "bg-amber-50",
-                )}>
-                  <AlertTriangle className={cn(
-                    "h-3.5 w-3.5 shrink-0 mt-0.5",
-                    isHigh ? "text-red-600" : "text-amber-600",
-                  )} />
-                  <span className={isHigh ? "text-red-700" : "text-amber-700"}>
-                    {concern.description}
-                  </span>
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Calendar className="h-3 w-3" />
+              Child Contact Profiles
+            </p>
+            {intel.child_profiles.map((child) => (
+              <div key={child.child_id} className="rounded-lg border p-2.5 text-xs flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{child.child_name}</span>
+                  <Badge className={cn("text-[10px]", child.contact_plan ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-700")}>
+                    {child.contact_plan ? "Plan active" : "No plan"}
+                  </Badge>
                 </div>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Regulatory flags */}
-        {data.regulatoryFlags.some(f => f.status !== "met") && (
-          <div className="flex flex-wrap gap-1.5">
-            {data.regulatoryFlags.filter(f => f.status !== "met").slice(0, 3).map((flag, i) => (
-              <Badge
-                key={i}
-                className={cn(
-                  "text-[9px]",
-                  flag.status === "not_met" ? "bg-red-100 text-red-700 border-red-200" :
-                  "bg-amber-100 text-amber-700 border-amber-200",
-                )}
-                title={flag.detail}
-              >
-                {flag.area}
-              </Badge>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">{child.sessions_30d} sessions</span>
+                  <Badge className={cn("text-[10px]", child.positive_rate >= 75 ? "bg-green-100 text-green-700" : child.positive_rate >= 50 ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700")}>
+                    {child.positive_rate}% positive
+                  </Badge>
+                  {child.missed_rate > 20 && (
+                    <Badge className="text-[10px] bg-red-100 text-red-700">
+                      {child.missed_rate}% missed
+                    </Badge>
+                  )}
+                  {child.next_session && (
+                    <span className="text-[10px] text-muted-foreground">Next: {child.next_session}</span>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
         )}
 
-        {/* All clear */}
-        {data.concerns.length === 0 && data.totalSessions > 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 p-2.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            <span className="text-xs text-emerald-700">
-              Contact arrangements working well. Relationships being maintained.
-            </span>
+        {/* ── Mood impact ──────────────────────────────────────────────── */}
+
+        <div className="flex items-center justify-between rounded-lg border p-3">
+          <div className="flex items-center gap-2">
+            {mood.mood_improvement_rate >= 50 ? (
+              <Smile className="h-4 w-4 text-green-500" />
+            ) : (
+              <Frown className="h-4 w-4 text-amber-500" />
+            )}
+            <div>
+              <p className="text-xs font-medium">Mood Impact</p>
+              <p className="text-[10px] text-muted-foreground">
+                Before: {mood.avg_mood_before.toFixed(1)} · After: {mood.avg_mood_after.toFixed(1)}
+              </p>
+            </div>
+          </div>
+          <Badge className={cn("text-[10px]", mood.mood_improvement_rate >= 50 ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700")}>
+            {mood.mood_improvement_rate}% improved
+          </Badge>
+        </div>
+
+        {/* ── Alerts ──────────────────────────────────────────────────── */}
+
+        {intel.alerts.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Contact Alerts
+            </p>
+            {intel.alerts.slice(0, 3).map((alert, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
+                )}
+              >
+                {alert.message}
+              </div>
+            ))}
           </div>
         )}
 
-        {/* No data state */}
-        {data.totalSessions === 0 && data.concerns.length === 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-gray-50 p-2.5">
-            <Calendar className="h-4 w-4 text-gray-400" />
-            <span className="text-xs text-gray-600">
-              No contact sessions recorded in assessment period.
-            </span>
+        {/* ── ARIA insights ────────────────────────────────────────────── */}
+
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Contact Intelligence
+            </p>
+            {intel.insights.map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-// ── Sub-component ───────────────────────────────────────────────────────────
-
-function MiniScore({ label, score }: { label: string; score: number }) {
-  const color = score >= 75 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-red-600";
-  return (
-    <div className="text-center">
-      <span className={cn("text-sm font-bold", color)}>{score}</span>
-      <p className="text-[9px] text-[var(--cs-text-muted)] mt-0.5">{label}</p>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

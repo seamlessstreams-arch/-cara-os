@@ -1,220 +1,233 @@
 "use client";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// DASHBOARD WIDGET — Education Engagement Intelligence
-//
-// Shows at a glance:
-//   - Overall score + rating
-//   - Attendance %, category, and trend
-//   - Exclusion risk indicator
-//   - Sub-scores (attendance, engagement, stability, compliance)
-//   - Top concerns
-//   - Regulatory status badges
-// ══════════════════════════════════════════════════════════════════════════════
-
-import React, { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { GraduationCap, AlertTriangle, Brain, Loader2, Users, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  GraduationCap, AlertTriangle, CheckCircle2, TrendingDown,
-  TrendingUp, Minus, XCircle, Clock, BookOpen,
-} from "lucide-react";
+import { useEducationIntelligence } from "@/hooks/use-education-intelligence";
 
-interface EducationData {
-  childName: string;
-  overallScore: number;
-  overallRating: string;
-  attendanceScore: number;
-  engagementScore: number;
-  stabilityScore: number;
-  complianceScore: number;
-  currentAttendance: number;
-  attendanceCategory: string;
-  attendanceTrend: "improving" | "stable" | "declining";
-  exclusionRisk: "low" | "moderate" | "high" | "critical";
-  concerns: Array<{ severity: string; category: string; description: string }>;
-  strengths: Array<{ category: string; description: string }>;
-  regulatoryFlags: Array<{ regulation: string; area: string; status: string; detail: string }>;
-  summary: string;
-}
-
-interface EducationEngagementIntelligenceCardProps {
-  childId: string;
-}
-
-const RATING_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  excellent: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200" },
-  good: { bg: "bg-green-50", text: "text-green-700", border: "border-green-200" },
-  adequate: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200" },
-  requires_improvement: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200" },
-  inadequate: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200" },
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const EXCLUSION_RISK_STYLES: Record<string, { bg: string; text: string }> = {
-  low: { bg: "bg-emerald-100", text: "text-emerald-700" },
-  moderate: { bg: "bg-amber-100", text: "text-amber-700" },
-  high: { bg: "bg-orange-100", text: "text-orange-700" },
-  critical: { bg: "bg-red-100", text: "text-red-700" },
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
 };
 
-const TREND_ICONS = {
-  improving: TrendingUp,
-  stable: Minus,
-  declining: TrendingDown,
-};
+export function EducationEngagementIntelligenceCard() {
+  const { data, isLoading } = useEducationIntelligence();
 
-const TREND_COLORS = {
-  improving: "text-emerald-500",
-  stable: "text-gray-400",
-  declining: "text-red-500",
-};
-
-export function EducationEngagementIntelligenceCard({ childId }: EducationEngagementIntelligenceCardProps) {
-  const [data, setData] = useState<EducationData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`/api/aria/education-engagement?childId=${childId}`);
-        const json = await res.json();
-        if (json.success) setData(json.data);
-      } catch (err) {
-        console.error("Failed to fetch education intelligence:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [childId]);
-
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-5 animate-pulse">
-        <div className="h-5 bg-gray-200 rounded w-48 mb-4" />
-        <div className="h-20 bg-gray-100 rounded" />
-      </div>
+      <Card className="overflow-hidden">
+        <CardContent className="flex items-center justify-center py-12">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
     );
   }
 
-  if (!data) {
-    return (
-      <div className="rounded-xl border border-[var(--cs-border)] bg-white p-5">
-        <p className="text-sm text-[var(--cs-text-muted)]">Unable to load education intelligence.</p>
-      </div>
-    );
-  }
+  const intel = data?.data;
+  if (!intel) return null;
 
-  const ratingStyle = RATING_STYLES[data.overallRating] ?? RATING_STYLES.adequate;
-  const exclusionStyle = EXCLUSION_RISK_STYLES[data.exclusionRisk] ?? EXCLUSION_RISK_STYLES.low;
-  const TrendIcon = TREND_ICONS[data.attendanceTrend];
+  const overview = intel.overview;
+  const childProfiles = intel.child_profiles ?? [];
+  const activities = intel.activities ?? [];
+  const alerts = intel.alerts ?? [];
+  const insights = intel.insights ?? [];
 
   return (
-    <div className="rounded-xl border border-[var(--cs-border)] bg-white overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-[var(--cs-border)] px-5 py-3 bg-[var(--cs-surface)]">
-        <div className="flex items-center gap-2">
-          <GraduationCap className="h-4 w-4 text-blue-600" />
-          <h3 className="text-sm font-semibold text-[var(--cs-navy)]">Education</h3>
-        </div>
-        <Badge className={cn("text-[10px]", ratingStyle.bg, ratingStyle.text, ratingStyle.border)}>
-          {data.overallRating.replace(/_/g, " ")} ({data.overallScore}%)
-        </Badge>
-      </div>
-
-      <div className="p-5 space-y-4">
-        {/* Attendance headline */}
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-2xl font-bold text-[var(--cs-navy)]">{data.currentAttendance}%</span>
-              <TrendIcon className={cn("h-4 w-4", TREND_COLORS[data.attendanceTrend])} />
-            </div>
-            <span className="text-[10px] text-[var(--cs-text-muted)]">
-              Attendance ({data.attendanceCategory.replace(/_/g, " ")})
-            </span>
-          </div>
-          <div className="text-right">
-            <Badge className={cn("text-[10px]", exclusionStyle.bg, exclusionStyle.text)}>
-              {data.exclusionRisk === "low" ? (
-                <><CheckCircle2 className="h-3 w-3 mr-0.5" />No exclusion risk</>
-              ) : (
-                <><XCircle className="h-3 w-3 mr-0.5" />Exclusion: {data.exclusionRisk}</>
-              )}
-            </Badge>
-          </div>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <GraduationCap className="h-4 w-4 text-brand" />
+            Education Engagement
+          </CardTitle>
+          <Badge
+            variant="outline"
+            className={cn(
+              "text-[10px]",
+              overview.neet_count === 0
+                ? "text-green-700 bg-green-50 border-green-200"
+                : "text-red-700 bg-red-50 border-red-200"
+            )}
+          >
+            {overview.neet_count === 0 ? "All in EET" : `${overview.neet_count} NEET`}
+          </Badge>
         </div>
+      </CardHeader>
 
-        {/* Sub-scores */}
+      <CardContent className="space-y-4">
+        {/* Summary strip */}
         <div className="grid grid-cols-4 gap-2">
-          <MiniScore label="Attendance" score={data.attendanceScore} />
-          <MiniScore label="Engage" score={data.engagementScore} />
-          <MiniScore label="Stability" score={data.stabilityScore} />
-          <MiniScore label="Compliance" score={data.complianceScore} />
+          <div className="text-center rounded-lg p-2 bg-green-50">
+            <p className="text-lg font-bold tabular-nums text-green-600">
+              {overview.in_education}
+            </p>
+            <p className="text-[10px] text-muted-foreground">In Education</p>
+          </div>
+
+          <div
+            className={cn(
+              "text-center rounded-lg p-2",
+              overview.neet_count === 0 ? "bg-green-50" : "bg-red-50"
+            )}
+          >
+            <p
+              className={cn(
+                "text-lg font-bold tabular-nums",
+                overview.neet_count === 0 ? "text-green-600" : "text-red-600"
+              )}
+            >
+              {overview.neet_count}
+            </p>
+            <p className="text-[10px] text-muted-foreground">NEET</p>
+          </div>
+
+          <div
+            className={cn(
+              "text-center rounded-lg p-2",
+              overview.pep_overdue_count === 0 ? "bg-green-50" : "bg-amber-50"
+            )}
+          >
+            <p
+              className={cn(
+                "text-lg font-bold tabular-nums",
+                overview.pep_overdue_count === 0 ? "text-green-600" : "text-amber-600"
+              )}
+            >
+              {overview.pep_current_count}
+            </p>
+            <p className="text-[10px] text-muted-foreground">PEP Current</p>
+          </div>
+
+          <div className="text-center rounded-lg p-2 bg-blue-50">
+            <p className="text-lg font-bold tabular-nums text-blue-600">
+              {overview.total_children}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Children</p>
+          </div>
         </div>
 
-        {/* Top concerns */}
-        {data.concerns.length > 0 && (
+        {/* Child profiles */}
+        {childProfiles.length > 0 && (
           <div className="space-y-1.5">
-            {data.concerns.slice(0, 2).map((concern, i) => {
-              const isHigh = concern.severity === "critical" || concern.severity === "significant";
-              return (
-                <div key={i} className={cn(
-                  "flex items-start gap-2 rounded-lg p-2 text-xs",
-                  isHigh ? "bg-red-50" : "bg-amber-50",
-                )}>
-                  <AlertTriangle className={cn(
-                    "h-3.5 w-3.5 shrink-0 mt-0.5",
-                    isHigh ? "text-red-600" : "text-amber-600",
-                  )} />
-                  <span className={isHigh ? "text-red-700" : "text-amber-700"}>
-                    {concern.description}
-                  </span>
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              Child Profiles
+            </p>
+            <div className="space-y-1">
+              {childProfiles.map((child: { name: string; setting?: string; status?: string; pep_status?: string }, i: number) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between rounded border p-2 text-xs"
+                >
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <BookOpen className="h-3 w-3 text-teal-500 shrink-0" />
+                    <span className="font-medium">{child.name}</span>
+                    {child.setting && (
+                      <span className="text-muted-foreground truncate">{child.setting}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    {child.pep_status && (
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "text-[10px]",
+                          child.pep_status === "current"
+                            ? "text-green-700 bg-green-50 border-green-200"
+                            : "text-amber-700 bg-amber-50 border-amber-200"
+                        )}
+                      >
+                        PEP {child.pep_status}
+                      </Badge>
+                    )}
+                    {child.status && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] text-blue-700 bg-blue-50 border-blue-200"
+                      >
+                        {child.status}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Regulatory status */}
-        {data.regulatoryFlags.some(f => f.status !== "met") && (
-          <div className="flex flex-wrap gap-1.5">
-            {data.regulatoryFlags.filter(f => f.status !== "met").slice(0, 3).map((flag, i) => (
-              <Badge
+        {/* Activities */}
+        {activities.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              Activities &amp; Engagement
+            </p>
+            <div className="space-y-1">
+              {activities.map((activity: { type: string; description: string; date?: string }, i: number) => (
+                <div key={i} className="rounded border p-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{activity.type}</span>
+                    {activity.date && (
+                      <span className="text-muted-foreground text-[10px]">{activity.date}</span>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground mt-0.5">{activity.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Alerts */}
+        {alerts.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Education Alerts
+            </p>
+            {alerts.map((a: { severity: string; message: string }, i: number) => (
+              <div
                 key={i}
                 className={cn(
-                  "text-[9px]",
-                  flag.status === "not_met" ? "bg-red-100 text-red-700 border-red-200" :
-                  "bg-amber-100 text-amber-700 border-amber-200",
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  ALERT_STYLES[a.severity] ?? ALERT_STYLES.medium
                 )}
-                title={flag.detail}
               >
-                {flag.area}
-              </Badge>
+                {a.message}
+              </div>
             ))}
           </div>
         )}
 
-        {/* All clear */}
-        {data.concerns.length === 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 p-2.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            <span className="text-xs text-emerald-700">Education engagement on track. All requirements met.</span>
+        {/* ARIA Insights */}
+        {insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Engagement Intelligence
+            </p>
+            {insights.map((insight: { severity: string; text: string }, i: number) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-// ── Sub-component ───────────────────────────────────────────────────────────
-
-function MiniScore({ label, score }: { label: string; score: number }) {
-  const color = score >= 75 ? "text-emerald-600" : score >= 50 ? "text-amber-600" : "text-red-600";
-  return (
-    <div className="text-center">
-      <span className={cn("text-sm font-bold", color)}>{score}</span>
-      <p className="text-[9px] text-[var(--cs-text-muted)] mt-0.5">{label}</p>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
