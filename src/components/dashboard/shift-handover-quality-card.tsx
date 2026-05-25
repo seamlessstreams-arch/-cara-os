@@ -1,66 +1,292 @@
 "use client";
 
+// ══════════════════════════════════════════════════════════════════════════════
+// CORNERSTONE — HANDOVER CONTINUITY INTELLIGENCE CARD
+// Dashboard card powered by the Handover Continuity Intelligence Engine — live data.
+// Reg 34(1)(b) — staff must understand responsibilities at handover.
+// SCCIF: "Do staff share information effectively at handover?"
+// Quality Standards: continuity of care across shifts.
+// ══════════════════════════════════════════════════════════════════════════════
+
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowRightLeft, ChevronRight, AlertTriangle, Brain, Clock, FileText } from "lucide-react";
+import {
+  ArrowRightLeft, ChevronRight, AlertTriangle, Brain, Loader2,
+  CheckCircle2, Clock, Heart, FileWarning, Users, Shield,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useHandoverContinuityIntelligence } from "@/hooks/use-handover-continuity-intelligence";
 
-const DEMO_METRICS = { total_audits: 18, excellent_count: 5, good_count: 8, poor_count: 3, inadequate_count: 1, medication_info_rate: 83.3, safeguarding_updates_rate: 88.9, read_and_signed_rate: 72.2 };
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_RECORDS: { type: string; outgoing: string; quality: string; status: string }[] = [
-  { type: "Day→Night", outgoing: "Staff A", quality: "Good", status: "Good" },
-  { type: "Night→Day", outgoing: "Staff B", quality: "Excellent", status: "Excellent" },
-  { type: "Day→Night", outgoing: "Staff C", quality: "Poor", status: "Poor" },
-  { type: "Weekend", outgoing: "Staff D", quality: "Good", status: "Good" },
-  { type: "Day→Night", outgoing: "Staff E", quality: "Inadequate", status: "Inadeq." },
-  { type: "Day→Day", outgoing: "Staff A", quality: "Good", status: "Good" },
-];
-
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium"; message: string }[] = [
-  { type: "safeguarding", severity: "critical", message: "Inadequate handover — safeguarding updates not shared." },
-  { type: "medication", severity: "high", message: "3 handovers have medication info not shared." },
-  { type: "risk", severity: "high", message: "2 handovers have risk information not shared." },
-];
-
-const ARIA_INSIGHTS = [
-  "18 audits. Excellent: 5. Good: 8. Poor: 3. Inadequate: 1. Medication: 83.3%. Signed: 72.2%.",
-  "Priority: 1 safeguarding gap. 3 medication gaps. 2 risk gaps. Improve handover completeness.",
-  "Positive: Most handovers good+. Regular auditing. Written records maintained. Face-to-face standard.",
-];
-
-const STATUS_BADGES: Record<string, { label: string; color: string }> = {
-  "Excellent": { label: "Excellent", color: "text-green-700 bg-green-50 border-green-200" },
-  "Good": { label: "Good", color: "text-green-700 bg-green-50 border-green-200" },
-  "Poor": { label: "Poor", color: "text-amber-700 bg-amber-50 border-amber-200" },
-  "Inadeq.": { label: "Inadeq.", color: "text-red-700 bg-red-50 border-red-200" },
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
 };
 
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
+
+function moodColor(score: number): string {
+  if (score >= 7) return "text-green-600";
+  if (score >= 5) return "text-amber-600";
+  return "text-red-600";
+}
+
+function moodBg(score: number): string {
+  if (score >= 7) return "bg-green-50";
+  if (score >= 5) return "bg-amber-50";
+  return "bg-red-50";
+}
+
+// ── Component ───────────────────────────────────────────────────────────────
+
 export function ShiftHandoverQualityCard() {
-  const m = DEMO_METRICS;
+  const { data, isLoading } = useHandoverContinuityIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <ArrowRightLeft className="h-4 w-4 text-brand" />
+            Handover Quality
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const o = intel.overview;
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2"><ArrowRightLeft className="h-4 w-4 text-brand" />Handover Quality</CardTitle>
-          <Link href="/shift-handover-quality" className="text-xs text-brand hover:underline flex items-center gap-1">Handovers <ChevronRight className="h-3 w-3" /></Link>
+          <CardTitle className="text-sm flex items-center gap-2">
+            <ArrowRightLeft className="h-4 w-4 text-brand" />
+            Handover Quality
+          </CardTitle>
+          <Link href="/handovers" className="text-xs text-brand hover:underline flex items-center gap-1">
+            Handovers <ChevronRight className="h-3 w-3" />
+          </Link>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+
+        {/* ── Summary strip ────────────────────────────────────────────── */}
+
         <div className="grid grid-cols-4 gap-2">
-          <div className={cn("text-center rounded-lg p-2", m.medication_info_rate >= 100 ? "bg-green-50" : "bg-amber-50")}><p className={cn("text-lg font-bold tabular-nums", m.medication_info_rate >= 100 ? "text-green-600" : "text-amber-600")}>{m.medication_info_rate}%</p><p className="text-[10px] text-muted-foreground">Meds</p></div>
-          <div className="text-center rounded-lg p-2 bg-green-50"><p className="text-lg font-bold tabular-nums text-green-600">{m.excellent_count + m.good_count}</p><p className="text-[10px] text-muted-foreground">Good+</p></div>
-          <div className={cn("text-center rounded-lg p-2", m.poor_count === 0 ? "bg-green-50" : "bg-amber-50")}><p className={cn("text-lg font-bold tabular-nums", m.poor_count === 0 ? "text-green-600" : "text-amber-600")}>{m.poor_count}</p><p className="text-[10px] text-muted-foreground">Poor</p></div>
-          <div className={cn("text-center rounded-lg p-2", m.inadequate_count === 0 ? "bg-green-50" : "bg-red-50")}><p className={cn("text-lg font-bold tabular-nums", m.inadequate_count === 0 ? "text-green-600" : "text-red-600")}>{m.inadequate_count}</p><p className="text-[10px] text-muted-foreground">Inadeq.</p></div>
-        </div>
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />Recent Audits</p>
-          <div className="space-y-1">
-            {DEMO_RECORDS.map((r, i) => { const badge = STATUS_BADGES[r.status] ?? STATUS_BADGES["Good"]; return (<div key={i} className="flex items-center justify-between rounded border p-2 text-xs"><div className="flex items-center gap-2 flex-1 min-w-0"><FileText className="h-3 w-3 text-sky-500 shrink-0" /><span className="font-medium">{r.type}</span><span className="text-muted-foreground truncate">{r.outgoing} · {r.quality}</span></div><Badge variant="outline" className={cn("text-[10px] shrink-0", badge.color)}>{badge.label}</Badge></div>); })}
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.completion_rate === 100 ? "bg-green-50" : o.completion_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.completion_rate === 100 ? "text-green-600" : o.completion_rate >= 50 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.completion_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Complete</p>
+          </div>
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.sign_off_rate === 100 ? "bg-green-50" : o.sign_off_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.sign_off_rate === 100 ? "text-green-600" : o.sign_off_rate >= 50 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.sign_off_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Signed Off</p>
+          </div>
+          <div className={cn("text-center rounded-lg p-2.5", moodBg(o.avg_mood_score))}>
+            <p className={cn("text-lg font-bold tabular-nums", moodColor(o.avg_mood_score))}>
+              {o.avg_mood_score}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Avg Mood</p>
+          </div>
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.total_child_alerts === 0 ? "bg-green-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.total_child_alerts === 0 ? "text-green-600" : "text-red-600",
+            )}>
+              {o.total_child_alerts}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Alerts</p>
           </div>
         </div>
-        {DEMO_ALERTS.length > 0 && (<div className="space-y-1.5"><p className="text-xs font-semibold text-muted-foreground flex items-center gap-1"><AlertTriangle className="h-3 w-3" />Handover Alerts</p>{DEMO_ALERTS.map((a, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", a.severity === "critical" || a.severity === "high" ? "border-red-200 bg-red-50 text-red-800" : "border-amber-200 bg-amber-50 text-amber-800")}>{a.message}</div>))}</div>)}
-        <div className="space-y-1.5"><p className="text-xs font-semibold flex items-center gap-1 text-purple-700"><Brain className="h-3 w-3" />ARIA Handover Intelligence</p>{ARIA_INSIGHTS.map((insight, i) => (<div key={i} className={cn("rounded border p-2.5 text-xs leading-relaxed", i === 0 ? "border-blue-200 bg-blue-50 text-blue-800" : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800" : "border-green-200 bg-green-50 text-green-800")}>{insight}</div>))}</div>
+
+        {/* ── Key metrics bar ──────────────────────────────────────────── */}
+
+        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.total_handovers}</p>
+            <p className="text-[10px] text-muted-foreground">Handovers</p>
+          </div>
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.children_covered}</p>
+            <p className="text-[10px] text-muted-foreground">Children</p>
+          </div>
+          <div>
+            <p className={cn(
+              "font-bold tabular-nums",
+              o.total_flags === 0 ? "text-green-600" : "text-amber-600",
+            )}>
+              {o.total_flags}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Flags</p>
+          </div>
+        </div>
+
+        {/* ── Child mood summary ───────────────────────────────────────── */}
+
+        {intel.child_mood_summary.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Heart className="h-3 w-3" />
+              Child Mood
+            </p>
+            {intel.child_mood_summary.map((cm) => (
+              <div key={cm.child_id} className="rounded-lg border p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{cm.child_name}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Badge className={cn("text-[9px]", moodBg(cm.avg_mood), moodColor(cm.avg_mood))}>
+                      {cm.avg_mood}/10
+                    </Badge>
+                    {cm.total_alerts > 0 && (
+                      <Badge className="text-[9px] bg-red-100 text-red-700">
+                        {cm.total_alerts} alert{cm.total_alerts !== 1 ? "s" : ""}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                {cm.alert_themes.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {cm.alert_themes.slice(0, 3).map((theme, i) => (
+                      <span key={i} className="text-[10px] text-red-600 bg-red-50 rounded px-1.5 py-0.5">
+                        {theme}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Handover profiles ─────────────────────────────────────────── */}
+
+        {intel.handover_profiles.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              Recent Handovers
+            </p>
+            {intel.handover_profiles.slice(0, 4).map((hp) => (
+              <div key={hp.handover_id} className="rounded-lg border p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{hp.shift_label}</span>
+                  <div className="flex items-center gap-1.5">
+                    <Badge className={cn(
+                      "text-[9px]",
+                      hp.is_completed ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700",
+                    )}>
+                      {hp.is_completed ? "Complete" : "Incomplete"}
+                    </Badge>
+                    <Badge className={cn(
+                      "text-[9px]",
+                      hp.is_fully_signed ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700",
+                    )}>
+                      {hp.sign_off_count}/{hp.incoming_count} signed
+                    </Badge>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-muted-foreground">
+                  <span className="text-[10px]">{hp.handover_time}</span>
+                  <span className="text-[10px]">{hp.child_update_count} child updates</span>
+                  {hp.flag_count > 0 && (
+                    <span className="text-[10px] text-amber-600">{hp.flag_count} flags</span>
+                  )}
+                  {hp.incident_link_count > 0 && (
+                    <span className="text-[10px] text-red-600">{hp.incident_link_count} incidents</span>
+                  )}
+                </div>
+                {hp.risk_flags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {hp.risk_flags.slice(0, 3).map((flag, i) => (
+                      <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
+                        <FileWarning className="h-2.5 w-2.5 mr-0.5" />
+                        {flag.replace(/_/g, " ")}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Alerts ──────────────────────────────────────────────────── */}
+
+        {intel.alerts.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Handover Alerts
+            </p>
+            {intel.alerts.slice(0, 3).map((alert, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
+                )}
+              >
+                {alert.message}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── ARIA Handover Intelligence ──────────────────────────────── */}
+
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Handover Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

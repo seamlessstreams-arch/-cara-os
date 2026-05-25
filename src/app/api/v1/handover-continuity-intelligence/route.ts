@@ -1,0 +1,74 @@
+// ══════════════════════════════════════════════════════════════════════════════
+// CORNERSTONE — HANDOVER CONTINUITY INTELLIGENCE API ROUTE
+// GET /api/v1/handover-continuity-intelligence
+// Returns handover completion analysis, sign-off compliance, child mood
+// trends, escalation tracking, and ARIA shift continuity insights.
+// Reg 34(1)(b), SCCIF shift communication, Quality Standards continuity.
+// ══════════════════════════════════════════════════════════════════════════════
+
+export const dynamic = "force-dynamic";
+
+import { NextResponse } from "next/server";
+import { getStore } from "@/lib/db/store";
+import {
+  computeHandoverContinuityIntelligence,
+  type HandoverInput,
+  type StaffRef,
+  type ChildRef,
+} from "@/lib/engines/handover-continuity-intelligence-engine";
+
+export async function GET() {
+  const store = getStore();
+
+  // ── Map handovers ─────────────────────────────────────────────────────
+  const handovers: HandoverInput[] = (store.handovers ?? []).map((h: any) => ({
+    id: h.id,
+    shift_date: h.shift_date,
+    shift_from: h.shift_from,
+    shift_to: h.shift_to,
+    handover_time: h.handover_time,
+    completed_at: h.completed_at ?? null,
+    outgoing_staff: h.outgoing_staff ?? [],
+    incoming_staff: h.incoming_staff ?? [],
+    created_by: h.created_by,
+    signed_off_by: h.signed_off_by ?? null,
+    sign_offs: (h.sign_offs ?? []).map((s: any) => ({
+      staff_id: s.staff_id,
+      acknowledged_at: s.acknowledged_at,
+      notes: s.notes ?? null,
+    })),
+    child_updates: (h.child_updates ?? []).map((u: any) => ({
+      child_id: u.child_id,
+      mood_score: u.mood_score ?? null,
+      key_notes: u.key_notes ?? "",
+      alerts: u.alerts ?? [],
+    })),
+    general_notes: h.general_notes ?? "",
+    flags: h.flags ?? [],
+    linked_incident_ids: h.linked_incident_ids ?? [],
+    created_at: h.created_at,
+  }));
+
+  // ── Map active staff ──────────────────────────────────────────────────
+  const staff: StaffRef[] = (store.staff ?? [])
+    .filter((s: any) => s.is_active)
+    .map((s: any) => ({
+      id: s.id,
+      name: s.full_name ?? `${s.first_name} ${s.last_name}`,
+    }));
+
+  // ── Map young people ──────────────────────────────────────────────────
+  const children: ChildRef[] = (store.youngPeople ?? []).map((yp: any) => ({
+    id: yp.id,
+    name: yp.preferred_name ?? `${yp.first_name} ${yp.last_name}`,
+  }));
+
+  // ── Run engine ────────────────────────────────────────────────────────
+  const result = computeHandoverContinuityIntelligence({
+    handovers,
+    staff,
+    children,
+  });
+
+  return NextResponse.json({ data: result });
+}
