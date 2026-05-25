@@ -1,70 +1,66 @@
 "use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — PREMISES & MAINTENANCE INTELLIGENCE CARD
-// Dashboard card for premises safety checks, fire safety compliance,
-// maintenance tracking, and ARIA premises intelligence (Reg 25).
+// CORNERSTONE — PREMISES & SAFETY INTELLIGENCE CARD
+// Dashboard card powered by the Premises & Safety Intelligence Engine — live data.
+// Reg 25 (premises and safety), Reg 24 (accommodation), Schedule 5,
+// SCCIF: "Is the home safe?" Regulatory Reform (Fire Safety) Order 2005.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Building, ChevronRight, AlertTriangle, CheckCircle2,
-  Brain, Flame, Wrench, ShieldCheck,
+  Building, ChevronRight, AlertTriangle, Brain, Loader2,
+  Flame, Wrench, Car, ShieldCheck, FileWarning, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePremisesSafetyIntelligence } from "@/hooks/use-premises-safety-intelligence";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_COMPLIANCE = {
-  totalChecks: 28,
-  passRate: 92.3,
-  failCount: 2,
-  statutoryComplianceRate: 88.9,
-  overdueChecks: 1,
-  followUpsPending: 3,
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const FIRE_SAFETY_STATUS = [
-  { check: "Fire Alarm Test", lastDone: "2026-05-12", status: "current", daysUntil: 5 },
-  { check: "Emergency Lighting", lastDone: "2026-05-01", status: "current", daysUntil: 18 },
-  { check: "Fire Drill", lastDone: "2026-04-15", status: "current", daysUntil: 63 },
-  { check: "Fire Extinguishers", lastDone: "2025-12-01", status: "current", daysUntil: 201 },
-  { check: "Fire Risk Assessment", lastDone: "2025-08-20", status: "due_soon", daysUntil: 34 },
-];
-
-const MAINTENANCE_SUMMARY = {
-  open: 3,
-  inProgress: 2,
-  completed: 15,
-  safetyRisks: 0,
-  avgResolutionDays: 4.2,
-  overdueUrgent: 0,
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
 };
 
-const RECENT_MAINTENANCE = [
-  { title: "Bathroom extractor fan", priority: "medium", status: "in_progress", days: 3 },
-  { title: "Garden fence panel", priority: "low", status: "open", days: 5 },
-  { title: "Kitchen tap washer", priority: "medium", status: "open", days: 2 },
-];
-
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "check_due_soon", severity: "medium", message: "Fire Risk Assessment due within 34 days — schedule with fire safety contractor." },
-  { type: "follow_up", severity: "medium", message: "3 follow-up actions outstanding from recent premises checks. Review and action." },
-];
-
-const ARIA_INSIGHTS = [
-  "Fire safety compliance is strong — all weekly alarm tests current, last fire drill within 90 days. Fire risk assessment due in 34 days — book with approved contractor. Reg 25 fire safety requirements well evidenced.",
-  "Maintenance resolution averages 4.2 days which is within the 5-day target. No child safety risks in open requests. 3 open + 2 in-progress requests is manageable. Consider preventive maintenance schedule for kitchen appliances.",
-  "Positive: 92.3% check pass rate. Zero child safety risks in maintenance backlog. Statutory compliance at 88.9%. Legionella and water temperature checks current. Reg 25 premises standards well maintained.",
-];
+function formatCheckType(ct: string): string {
+  return ct.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function PremisesIntelligenceCard() {
-  const c = DEMO_COMPLIANCE;
-  const m = MAINTENANCE_SUMMARY;
+  const { data, isLoading } = usePremisesSafetyIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Building className="h-4 w-4 text-brand" />
+            Premises & Safety
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const o = intel.overview;
 
   return (
     <Card className="overflow-hidden">
@@ -72,10 +68,10 @@ export function PremisesIntelligenceCard() {
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
             <Building className="h-4 w-4 text-brand" />
-            Premises & Maintenance
+            Premises & Safety
           </CardTitle>
           <Link href="/premises" className="text-xs text-brand hover:underline flex items-center gap-1">
-            Premises <ChevronRight className="h-3 w-3" />
+            Full View <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
       </CardHeader>
@@ -84,111 +80,224 @@ export function PremisesIntelligenceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg p-2" style={{ background: c.passRate >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", c.passRate >= 90 ? "text-green-600" : "text-amber-600")}>
-              {c.passRate}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.check_completion_rate >= 80 ? "bg-green-50" : o.check_completion_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.check_completion_rate >= 80 ? "text-green-600" : o.check_completion_rate >= 50 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.check_completion_rate}%
             </p>
-            <p className="text-[10px] text-muted-foreground">Pass Rate</p>
+            <p className="text-[10px] text-muted-foreground">Checks Done</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: c.statutoryComplianceRate >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", c.statutoryComplianceRate >= 90 ? "text-green-600" : "text-amber-600")}>
-              {c.statutoryComplianceRate}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.checks_overdue === 0 ? "bg-green-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.checks_overdue === 0 ? "text-green-600" : "text-red-600",
+            )}>
+              {o.checks_overdue}
             </p>
-            <p className="text-[10px] text-muted-foreground">Statutory</p>
+            <p className="text-[10px] text-muted-foreground">Overdue</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", m.open > 5 ? "bg-amber-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", m.open > 5 ? "text-amber-600" : "text-green-600")}>
-              {m.open}
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.maintenance_urgent === 0 ? "bg-green-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.maintenance_urgent === 0 ? "text-green-600" : "text-red-600",
+            )}>
+              {o.maintenance_urgent}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Urgent Jobs</p>
+          </div>
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.fire_safety_compliant ? "bg-green-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.fire_safety_compliant ? "text-green-600" : "text-red-600",
+            )}>
+              {o.fire_safety_compliant ? (
+                <Flame className="h-5 w-5 mx-auto" />
+              ) : (
+                <Flame className="h-5 w-5 mx-auto" />
+              )}
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              Fire {o.fire_safety_compliant ? "OK" : "Gap"}
+            </p>
+          </div>
+        </div>
+
+        {/* ── Key metrics bar ──────────────────────────────────────────── */}
+
+        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+          <div>
+            <p className={cn("font-bold tabular-nums", o.maintenance_open > 5 ? "text-amber-600" : "text-slate-700")}>
+              {o.maintenance_open}
             </p>
             <p className="text-[10px] text-muted-foreground">Open Jobs</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", m.safetyRisks > 0 ? "bg-red-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", m.safetyRisks > 0 ? "text-red-600" : "text-green-600")}>
-              {m.safetyRisks}
+          <div>
+            <p className={cn("font-bold tabular-nums", o.certifications_expired > 0 ? "text-red-600" : o.certifications_expiring_soon > 0 ? "text-amber-600" : "text-green-600")}>
+              {o.certifications_expired > 0 ? `${o.certifications_expired} expired` : o.certifications_expiring_soon > 0 ? `${o.certifications_expiring_soon} expiring` : "Current"}
             </p>
-            <p className="text-[10px] text-muted-foreground">Safety Risks</p>
+            <p className="text-[10px] text-muted-foreground">Certs</p>
+          </div>
+          <div>
+            <p className={cn("font-bold tabular-nums", o.vehicles_roadworthy === o.total_vehicles ? "text-green-600" : "text-amber-600")}>
+              {o.vehicles_roadworthy}/{o.total_vehicles}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Fleet Ready</p>
           </div>
         </div>
 
-        {/* ── Fire safety status ──────────────────────────────────────── */}
+        {/* ── Check completion by type ─────────────────────────────────── */}
 
-        <div className="space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Flame className="h-3 w-3" />
-            Fire Safety
-          </p>
-          <div className="space-y-1">
-            {FIRE_SAFETY_STATUS.map((fs) => (
-              <div key={fs.check} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{fs.check}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] tabular-nums text-muted-foreground">{fs.lastDone}</span>
-                  <Badge className={cn(
-                    "text-[10px]",
-                    fs.status === "current" ? "bg-green-100 text-green-700"
-                      : fs.status === "due_soon" ? "bg-amber-100 text-amber-700"
-                      : "bg-red-100 text-red-700",
-                  )}>
-                    {fs.status === "current" ? (
-                      <><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />Current</>
-                    ) : (
-                      <>{fs.daysUntil}d</>
-                    )}
-                  </Badge>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* ── Maintenance summary ──────────────────────────────────────── */}
-
-        <div className="flex items-center justify-between rounded-lg border p-3">
-          <div className="flex items-center gap-2">
-            <Wrench className={cn("h-4 w-4", m.overdueUrgent > 0 ? "text-red-500" : "text-green-500")} />
-            <div>
-              <p className="text-xs font-medium">Maintenance</p>
-              <p className="text-[10px] text-muted-foreground">
-                {m.open} open · {m.inProgress} in progress · {m.avgResolutionDays}d avg resolution
-              </p>
-            </div>
-          </div>
-          {m.overdueUrgent > 0 ? (
-            <Badge className="text-[10px] bg-red-100 text-red-700">
-              {m.overdueUrgent} urgent overdue
-            </Badge>
-          ) : (
-            <Badge className="text-[10px] bg-green-100 text-green-700">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              On track
-            </Badge>
-          )}
-        </div>
-
-        {/* ── Recent maintenance requests ──────────────────────────────── */}
-
-        {RECENT_MAINTENANCE.length > 0 && (
+        {intel.check_analysis.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <ShieldCheck className="h-3 w-3" />
-              Recent Requests
+              Check Completion
             </p>
-            {RECENT_MAINTENANCE.map((req, i) => (
-              <div key={i} className="rounded-lg border p-2.5 text-xs flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{req.title}</span>
-                  <Badge variant="outline" className="text-[10px]">{req.priority}</Badge>
+            {intel.check_analysis.slice(0, 5).map((ca) => (
+              <div key={ca.check_type} className="flex items-center gap-2 text-xs">
+                <span className="w-28 text-right text-muted-foreground truncate">
+                  {formatCheckType(ca.check_type)}
+                </span>
+                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full rounded-full",
+                      ca.pass_rate >= 80 ? "bg-green-400" : ca.pass_rate >= 50 ? "bg-amber-400" : "bg-red-400",
+                    )}
+                    style={{ width: `${Math.max(4, ca.pass_rate)}%` }}
+                  />
                 </div>
-                <div className="flex items-center gap-1.5">
+                <span className="w-8 text-right font-medium tabular-nums">{ca.pass_rate}%</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Building profiles ────────────────────────────────────────── */}
+
+        {intel.building_profiles.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground">
+              Buildings ({intel.building_profiles.length})
+            </p>
+            {intel.building_profiles.map((bp) => (
+              <div key={bp.building_id} className="rounded-lg border p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{bp.building_name}</span>
                   <Badge className={cn(
-                    "text-[10px]",
-                    req.status === "open" ? "bg-blue-100 text-blue-700"
-                      : req.status === "in_progress" ? "bg-amber-100 text-amber-700"
-                      : "bg-green-100 text-green-700",
+                    "text-[9px]",
+                    bp.status === "operational" ? "bg-green-100 text-green-700"
+                      : bp.status === "restricted" ? "bg-amber-100 text-amber-700"
+                      : "bg-gray-100 text-gray-600",
                   )}>
-                    {req.status.replace("_", " ")}
+                    {bp.status}
                   </Badge>
-                  <span className="text-muted-foreground">{req.days}d</span>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-muted-foreground">
+                  <span className="text-[10px]">{bp.checks_completed}/{bp.checks_total} checks done</span>
+                  {bp.gas_cert_days_until_expiry !== null && (
+                    <span className="text-[10px]">Gas: {bp.gas_cert_days_until_expiry}d</span>
+                  )}
+                  {bp.electrical_cert_days_until_expiry !== null && (
+                    <span className="text-[10px]">Elec: {bp.electrical_cert_days_until_expiry}d</span>
+                  )}
+                </div>
+                {bp.risk_flags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {bp.risk_flags.map((flag, i) => (
+                      <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
+                        <FileWarning className="h-2.5 w-2.5 mr-0.5" />{flag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Vehicle fleet ───────────────────────────────────────────── */}
+
+        {intel.vehicle_profiles.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Car className="h-3 w-3" />
+              Fleet ({intel.vehicle_profiles.length})
+            </p>
+            {intel.vehicle_profiles.map((vp) => (
+              <div key={vp.vehicle_id} className="rounded-lg border p-3 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{vp.registration} — {vp.label}</span>
+                  <div className="flex items-center gap-1.5">
+                    {vp.latest_check_result && (
+                      <Badge className={cn(
+                        "text-[9px]",
+                        vp.latest_check_result === "pass" ? "bg-green-100 text-green-700"
+                          : vp.latest_check_result === "advisory" ? "bg-amber-100 text-amber-700"
+                          : "bg-red-100 text-red-700",
+                      )}>
+                        {vp.latest_check_result}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 mt-1 text-muted-foreground">
+                  {vp.mot_days_until_expiry !== null && (
+                    <span className="text-[10px]">MOT: {vp.mot_days_until_expiry}d</span>
+                  )}
+                  {vp.insurance_days_until_expiry !== null && (
+                    <span className="text-[10px]">Ins: {vp.insurance_days_until_expiry}d</span>
+                  )}
+                  <span className="text-[10px]">{vp.mileage.toLocaleString()} mi</span>
+                </div>
+                {vp.risk_flags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {vp.risk_flags.map((flag, i) => (
+                      <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
+                        <FileWarning className="h-2.5 w-2.5 mr-0.5" />{flag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Maintenance by category ─────────────────────────────────── */}
+
+        {intel.maintenance_analysis.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Wrench className="h-3 w-3" />
+              Maintenance
+            </p>
+            {intel.maintenance_analysis.map((ma) => (
+              <div key={ma.category} className="flex items-center justify-between text-xs rounded border p-2">
+                <span className="capitalize text-muted-foreground">{ma.category.replace(/_/g, " ")}</span>
+                <div className="flex items-center gap-2">
+                  {ma.urgent_count > 0 && (
+                    <Badge className="text-[9px] bg-red-100 text-red-700">
+                      {ma.urgent_count} urgent
+                    </Badge>
+                  )}
+                  <span className="text-[10px] tabular-nums">
+                    {ma.open} open / {ma.completed} done
+                  </span>
                 </div>
               </div>
             ))}
@@ -197,20 +306,18 @@ export function PremisesIntelligenceCard() {
 
         {/* ── Alerts ──────────────────────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.alerts.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Premises Alerts
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
               >
                 {alert.message}
@@ -219,27 +326,27 @@ export function PremisesIntelligenceCard() {
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Premises Intelligence ──────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Premises Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-blue-200 bg-blue-50 text-blue-800"
-                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Premises Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
