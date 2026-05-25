@@ -1,91 +1,58 @@
 "use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — DOCUMENT COMPLIANCE CARD
-// Dashboard widget showing document expiry alerts, read-and-sign completion
-// rates, and outstanding document actions.
-// Quality Standards — Reg 37 (Organisation and Management).
+// CORNERSTONE — DOCUMENT COMPLIANCE INTELLIGENCE CARD
+// Dashboard card powered by the Document Compliance Intelligence Engine — live data.
+// Reg 35 (policies and procedures), Reg 37 (notification), Schedule 1,
+// SCCIF: "Does the home have clear policies that staff understand and follow?"
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useMemo } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useDocuments } from "@/hooks/use-documents";
-import { useStaff } from "@/hooks/use-staff";
-import { cn, todayStr, daysFromNow } from "@/lib/utils";
 import {
-  FileText, Loader2, AlertTriangle, CheckCircle2,
-  Clock, FileCheck, Shield, BookOpen,
+  FileText, ChevronRight, AlertTriangle, Brain, Loader2,
+  FileCheck, FileWarning, Shield, Clock,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useDocumentComplianceIntelligence } from "@/hooks/use-document-compliance-intelligence";
 
-// ── Component ───────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
+
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
+};
+
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
+
+function formatCategory(cat: string): string {
+  return cat.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+// ── Component ────────────────────────────────────────────────────────────────
 
 export function DocumentComplianceCard() {
-  const docsQuery = useDocuments();
-  const staffQuery = useStaff();
-  const documents = docsQuery.data?.data ?? [];
-  const receipts = docsQuery.data?.receipts ?? [];
-  const allStaff = (staffQuery.data?.data ?? []).filter((s) => s.is_active);
+  const { data, isLoading } = useDocumentComplianceIntelligence();
+  const intel = data?.data;
 
-  const {
-    total, expired, expiringSoon,
-    requireSign, signCompletionPct, fullySignedCount,
-    outstandingDocs, hasAlert,
-  } = useMemo(() => {
-    const today = todayStr();
-    const soon = daysFromNow(30);
-    const expired = documents.filter((d) => d.expiry_date && d.expiry_date < today);
-    const expiringSoon = documents.filter((d) => d.expiry_date && d.expiry_date >= today && d.expiry_date <= soon);
-    const requireSign = documents.filter((d) => d.requires_read_sign);
-
-    const staffCount = allStaff.length || 1;
-    let totalSignable = 0;
-    let totalSigned = 0;
-    let fullySignedCount = 0;
-    const outstandingDocs: { id: string; title: string; outstanding: number }[] = [];
-
-    for (const doc of requireSign) {
-      const signedIds = new Set(receipts.filter((r) => r.document_id === doc.id && r.signed_at).map((r) => r.staff_id));
-      totalSignable += staffCount;
-      totalSigned += signedIds.size;
-      if (signedIds.size >= staffCount) {
-        fullySignedCount++;
-      } else {
-        outstandingDocs.push({
-          id: doc.id,
-          title: doc.title,
-          outstanding: staffCount - signedIds.size,
-        });
-      }
-    }
-
-    const signCompletionPct = totalSignable > 0 ? Math.round((totalSigned / totalSignable) * 100) : 100;
-    outstandingDocs.sort((a, b) => b.outstanding - a.outstanding);
-
-    return {
-      total: documents.length,
-      expired: expired.length,
-      expiringSoon: expiringSoon.length,
-      requireSign: requireSign.length,
-      signCompletionPct,
-      fullySignedCount,
-      outstandingDocs: outstandingDocs.slice(0, 4),
-      hasAlert: expired.length > 0 || signCompletionPct < 80,
-    };
-  }, [documents, receipts, allStaff]);
-
-  if (docsQuery.isPending) {
+  if (isLoading || !intel) {
     return (
       <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-[13px]">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
             <FileText className="h-4 w-4 text-blue-500" />
-            Documents
+            Document Compliance
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-8">
             <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
           </div>
         </CardContent>
@@ -93,112 +60,216 @@ export function DocumentComplianceCard() {
     );
   }
 
+  const o = intel.overview;
+
   return (
-    <Card className={cn(hasAlert && "border-amber-200")}>
-      <CardHeader className="pb-2">
+    <Card className="overflow-hidden">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-[13px]">
+          <CardTitle className="text-sm flex items-center gap-2">
             <FileText className="h-4 w-4 text-blue-500" />
-            Documents
+            Document Compliance
           </CardTitle>
-          <Link href="/documents">
-            <Badge className="text-[9px] bg-blue-100 text-blue-700 border-0 rounded-full hover:bg-blue-200 cursor-pointer">
-              View all
-            </Badge>
+          <Link href="/documents" className="text-xs text-brand hover:underline flex items-center gap-1">
+            All Docs <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
       </CardHeader>
-      <CardContent className="pt-0 space-y-2.5">
-        {/* KPI strip */}
-        <div className="grid grid-cols-3 gap-2">
-          <div className="rounded-xl bg-blue-50 p-2 text-center">
-            <BookOpen className="h-3 w-3 text-blue-500 mx-auto mb-0.5" />
-            <div className="text-sm font-bold text-blue-700 tabular-nums">{total}</div>
-            <div className="text-[9px] text-blue-500">Total</div>
+      <CardContent className="space-y-4">
+
+        {/* ── Summary strip ────────────────────────────────────────────── */}
+
+        <div className="grid grid-cols-4 gap-2">
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.avg_sign_off_rate >= 80 ? "bg-green-50" : o.avg_sign_off_rate >= 50 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.avg_sign_off_rate >= 80 ? "text-green-600" : o.avg_sign_off_rate >= 50 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.avg_sign_off_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Signed Off</p>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", expired > 0 ? "bg-red-50" : "bg-emerald-50")}>
-            <AlertTriangle className={cn("h-3 w-3 mx-auto mb-0.5", expired > 0 ? "text-red-500" : "text-emerald-500")} />
-            <div className={cn("text-sm font-bold tabular-nums", expired > 0 ? "text-red-700" : "text-emerald-700")}>{expired}</div>
-            <div className={cn("text-[9px]", expired > 0 ? "text-red-500" : "text-emerald-500")}>Expired</div>
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.documents_expired === 0 ? "bg-green-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.documents_expired === 0 ? "text-green-600" : "text-red-600",
+            )}>
+              {o.documents_expired}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Expired</p>
           </div>
-          <div className={cn("rounded-xl p-2 text-center", expiringSoon > 0 ? "bg-amber-50" : "bg-[var(--cs-surface)]")}>
-            <Clock className={cn("h-3 w-3 mx-auto mb-0.5", expiringSoon > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")} />
-            <div className={cn("text-sm font-bold tabular-nums", expiringSoon > 0 ? "text-amber-700" : "text-[var(--cs-text-muted)]")}>{expiringSoon}</div>
-            <div className={cn("text-[9px]", expiringSoon > 0 ? "text-amber-500" : "text-[var(--cs-text-muted)]")}>Expiring</div>
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.documents_expiring_soon === 0 ? "bg-green-50" : "bg-amber-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.documents_expiring_soon === 0 ? "text-green-600" : "text-amber-600",
+            )}>
+              {o.documents_expiring_soon}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Expiring</p>
+          </div>
+          <div className="text-center rounded-lg bg-blue-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums text-blue-600">{o.total_documents}</p>
+            <p className="text-[10px] text-muted-foreground">Total</p>
           </div>
         </div>
 
-        {/* Read & Sign completion */}
-        {requireSign > 0 && (
+        {/* ── Key metrics bar ──────────────────────────────────────────── */}
+
+        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.fully_signed_documents}/{o.documents_requiring_sign}</p>
+            <p className="text-[10px] text-muted-foreground">Fully Signed</p>
+          </div>
+          <div>
+            <p className={cn("font-bold tabular-nums", o.mandatory_sign_off_rate >= 80 ? "text-green-600" : o.mandatory_sign_off_rate >= 50 ? "text-amber-600" : "text-red-600")}>
+              {o.mandatory_sign_off_rate}%
+            </p>
+            <p className="text-[10px] text-muted-foreground">Mandatory</p>
+          </div>
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.categories_count}</p>
+            <p className="text-[10px] text-muted-foreground">Categories</p>
+          </div>
+        </div>
+
+        {/* ── Category sign-off rates ─────────────────────────────────── */}
+
+        {intel.category_analysis.filter((ca) => ca.requiring_sign > 0).length > 0 && (
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-[10px] px-1">
-              <span className="flex items-center gap-1 text-[var(--cs-text-muted)]">
-                <FileCheck className="h-3 w-3" /> Read & Sign
-              </span>
-              <span className={cn(
-                "font-bold tabular-nums",
-                signCompletionPct >= 90 ? "text-emerald-600" : signCompletionPct >= 70 ? "text-amber-600" : "text-red-600",
-              )}>
-                {signCompletionPct}%
-              </span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-[var(--cs-surface)] overflow-hidden">
-              <div
-                className={cn(
-                  "h-full rounded-full transition-all",
-                  signCompletionPct >= 90 ? "bg-emerald-500" : signCompletionPct >= 70 ? "bg-amber-500" : "bg-red-500",
-                )}
-                style={{ width: `${signCompletionPct}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-[9px] text-[var(--cs-text-muted)] px-1">
-              <span>{fullySignedCount} of {requireSign} fully signed</span>
-            </div>
-          </div>
-        )}
-
-        {/* Expired document alert */}
-        {expired > 0 && (
-          <div className="rounded-lg bg-red-50 border border-red-100 p-2 flex items-start gap-2">
-            <AlertTriangle className="h-3 w-3 text-red-500 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-[10px] font-semibold text-red-700">
-                {expired} expired document{expired !== 1 ? "s" : ""}
-              </p>
-              <p className="text-[10px] text-red-600">
-                Review and update expired policies to maintain compliance
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Outstanding sign-offs */}
-        {outstandingDocs.length > 0 && (
-          <div className="space-y-1">
-            <span className="text-[10px] font-medium text-[var(--cs-text-muted)] px-1">Outstanding Sign-offs</span>
-            {outstandingDocs.map((doc) => (
-              <Link key={doc.id} href="/documents">
-                <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--cs-surface)] transition-colors">
-                  <Shield className="h-3 w-3 text-[var(--cs-aria-gold)] shrink-0" />
-                  <span className="text-[11px] font-medium text-[var(--cs-text-secondary)] flex-1 truncate">
-                    {doc.title}
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <FileCheck className="h-3 w-3" />
+              Sign-Off by Category
+            </p>
+            {intel.category_analysis
+              .filter((ca) => ca.requiring_sign > 0)
+              .slice(0, 5)
+              .map((ca) => (
+                <div key={ca.category} className="flex items-center gap-2 text-xs">
+                  <span className="w-28 text-right text-muted-foreground capitalize truncate">
+                    {formatCategory(ca.category)}
                   </span>
-                  <Badge className="text-[8px] px-1.5 py-0 rounded-full border-0 bg-amber-100 text-amber-700">
-                    {doc.outstanding} pending
-                  </Badge>
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full",
+                        ca.avg_sign_off_rate >= 80 ? "bg-green-400" : ca.avg_sign_off_rate >= 50 ? "bg-amber-400" : "bg-red-400",
+                      )}
+                      style={{ width: `${Math.max(4, ca.avg_sign_off_rate)}%` }}
+                    />
+                  </div>
+                  <span className="w-8 text-right font-medium tabular-nums">{ca.avg_sign_off_rate}%</span>
                 </div>
-              </Link>
+              ))}
+          </div>
+        )}
+
+        {/* ── Document profiles (outstanding) ─────────────────────────── */}
+
+        {intel.document_profiles.filter((dp) => dp.outstanding_staff.length > 0).length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Outstanding Sign-offs
+            </p>
+            {intel.document_profiles
+              .filter((dp) => dp.outstanding_staff.length > 0)
+              .sort((a, b) => b.outstanding_staff.length - a.outstanding_staff.length)
+              .slice(0, 4)
+              .map((dp) => (
+                <div key={dp.document_id} className="rounded-lg border p-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium truncate flex-1">{dp.title}</span>
+                    <div className="flex items-center gap-1.5">
+                      <Badge className={cn(
+                        "text-[9px]",
+                        dp.sign_off_rate >= 80 ? "bg-green-100 text-green-700"
+                          : dp.sign_off_rate >= 50 ? "bg-amber-100 text-amber-700"
+                          : "bg-red-100 text-red-700",
+                      )}>
+                        {dp.sign_off_rate}%
+                      </Badge>
+                      {dp.is_mandatory && (
+                        <Badge className="text-[9px] bg-purple-100 text-purple-700">
+                          <Shield className="h-2.5 w-2.5 mr-0.5" />Mandatory
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 text-muted-foreground">
+                    <span className="text-[10px]">{dp.outstanding_staff.length} staff outstanding</span>
+                    {dp.days_until_expiry !== null && (
+                      <span className={cn(
+                        "text-[10px]",
+                        dp.days_until_expiry < 0 ? "text-red-600" : dp.days_until_expiry <= 30 ? "text-amber-600" : "",
+                      )}>
+                        {dp.is_expired ? "Expired" : `${dp.days_until_expiry}d until expiry`}
+                      </span>
+                    )}
+                  </div>
+                  {dp.risk_flags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {dp.risk_flags.slice(0, 2).map((flag, i) => (
+                        <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
+                          <FileWarning className="h-2.5 w-2.5 mr-0.5" />{flag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+        )}
+
+        {/* ── Alerts ──────────────────────────────────────────────────── */}
+
+        {intel.alerts.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <AlertTriangle className="h-3 w-3" />
+              Document Alerts
+            </p>
+            {intel.alerts.slice(0, 3).map((alert, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
+                )}
+              >
+                {alert.message}
+              </div>
             ))}
           </div>
         )}
 
-        {/* All clear */}
-        {expired === 0 && expiringSoon === 0 && outstandingDocs.length === 0 && (
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-            <span className="text-[11px] font-medium text-emerald-700">
-              All documents compliant
-            </span>
+        {/* ── ARIA Document Intelligence ──────────────────────────────── */}
+
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Document Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
           </div>
         )}
       </CardContent>
