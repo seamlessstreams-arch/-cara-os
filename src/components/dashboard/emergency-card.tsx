@@ -2,10 +2,8 @@
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — EMERGENCY PLANNING INTELLIGENCE CARD
-// Dashboard card for fire drills, emergency contacts, contingency plans,
-// evacuation metrics, and ARIA emergency preparedness intelligence.
-// CHR 2015 Reg 22 (arrangements), Reg 25 (premises), Reg 40 (notifications).
-// SCCIF Helped & Protected / Leadership & Management.
+// Dashboard card powered by the Emergency Intelligence Engine.
+// Reg 22 (arrangements), Reg 25 (premises), Reg 40 (notifications).
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
@@ -13,65 +11,64 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Flame, ChevronRight, AlertTriangle, Brain,
-  Timer, Phone, FileCheck, ShieldAlert,
-  Users, CheckCircle2,
+  Timer, FileCheck, ShieldAlert, Loader2, CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useEmergencyIntelligence } from "@/hooks/use-emergency-intelligence";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_EMERGENCY_METRICS = {
-  total_drills: 14,
-  avg_evacuation_time: 187,
-  all_accounted_rate: 93,
-  drills_with_issues: 3,
-  active_contacts: 12,
-  contacts_verified: 9,
-  contacts_verification_rate: 75,
-  current_plans: 7,
-  expired_plans: 1,
-  total_plan_types_covered: 7,
-  total_plan_types_required: 10,
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high:     "border-red-200 bg-red-50 text-red-800",
+  medium:   "border-amber-200 bg-amber-50 text-amber-800",
+  low:      "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const DEMO_DRILL_TYPES = [
-  { type: "Fire Evacuation", count: 8, last: "2026-05-01", status: "current" },
-  { type: "Night-Time Fire", count: 2, last: "2026-03-15", status: "current" },
-  { type: "Lockdown", count: 2, last: "2026-02-20", status: "due" },
-  { type: "Missing Child", count: 1, last: "2025-12-10", status: "overdue" },
-  { type: "Medical Emergency", count: 1, last: "2025-11-05", status: "overdue" },
-];
-
-const DEMO_RECENT_DRILLS = [
-  { date: "2026-05-01", type: "Fire Evacuation", time: 165, accounted: true, issues: 0 },
-  { date: "2026-04-03", type: "Fire Evacuation", time: 198, accounted: true, issues: 1 },
-  { date: "2026-03-15", type: "Night-Time Fire", time: 245, accounted: true, issues: 2 },
-];
-
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "overdue_drills", severity: "high", message: "Missing child and medical emergency drills are overdue. 6-monthly drills required." },
-  { type: "expired_plans", severity: "high", message: "1 contingency plan expired. Review and update immediately." },
-  { type: "unverified_contacts", severity: "medium", message: "3 emergency contacts not verified in the last 6 months." },
-];
-
-const ARIA_INSIGHTS = [
-  "Lockdown drill is due and missing child / medical emergency drills are overdue — schedule these within the next 2 weeks to maintain compliance. Fire evacuation drills are current (monthly) with average evacuation time of 3m 7s.",
-  "1 expired contingency plan (data breach/IT failure) needs urgent review. 7 of 10 plan types covered — missing plans for flood, gas leak, and pandemic scenarios. Prepare at least the flood and gas leak plans before the next Reg 44 visit.",
-  "Overall preparedness: 14 drills completed, 93% all-accounted rate (1 drill had missing headcount — investigate). 12 active contacts, 75% verified. Average evacuation time trending slightly up from 2m 45s to 3m 18s over 3 drills — review assembly point signage and staff familiarity.",
-];
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-
-const formatSeconds = (s: number): string => {
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  return `${m}m ${sec}s`;
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning:  "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
 };
 
-// ── Component ────────────────────────────────────────────────────────────────
+const STATUS_COLOURS: Record<string, string> = {
+  current: "bg-green-100 text-green-700",
+  due: "bg-amber-100 text-amber-700",
+  overdue: "bg-red-100 text-red-700",
+};
+
+const OUTCOME_COLOURS: Record<string, string> = {
+  satisfactory: "bg-green-100 text-green-700",
+  needs_improvement: "bg-amber-100 text-amber-700",
+  failed: "bg-red-100 text-red-700",
+};
+
+// ── Component ───────────────────────────────────────────────────────────────
 
 export function EmergencyCard() {
-  const e = DEMO_EMERGENCY_METRICS;
+  const { data, isLoading } = useEmergencyIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Flame className="h-4 w-4 text-brand" />
+            Emergency Planning
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const o = intel.overview;
+  const pc = intel.plan_coverage;
 
   return (
     <Card className="overflow-hidden">
@@ -91,111 +88,95 @@ export function EmergencyCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg bg-blue-50 p-2">
+          <div className="text-center rounded-lg bg-blue-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-blue-600">
-              {e.total_drills}
+              {o.total_drills}
             </p>
             <p className="text-[10px] text-muted-foreground">Drills</p>
           </div>
-          <div className="text-center rounded-lg bg-indigo-50 p-2">
+          <div className="text-center rounded-lg bg-indigo-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-indigo-600">
-              {formatSeconds(e.avg_evacuation_time)}
+              {o.avg_response_time_minutes.toFixed(1)}m
             </p>
             <p className="text-[10px] text-muted-foreground">Avg Time</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", e.all_accounted_rate === 100 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", e.all_accounted_rate === 100 ? "text-green-600" : "text-amber-600")}>
-              {e.all_accounted_rate}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.protocol_followed_rate >= 95 ? "bg-green-50" : o.protocol_followed_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.protocol_followed_rate >= 95 ? "text-green-600" : o.protocol_followed_rate >= 80 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.protocol_followed_rate}%
             </p>
-            <p className="text-[10px] text-muted-foreground">Accounted</p>
+            <p className="text-[10px] text-muted-foreground">Protocol</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", e.expired_plans === 0 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", e.expired_plans === 0 ? "text-green-600" : "text-red-600")}>
-              {e.current_plans}
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.expired_plans === 0 ? "bg-green-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.expired_plans === 0 ? "text-green-600" : "text-red-600",
+            )}>
+              {o.current_plans}
             </p>
             <p className="text-[10px] text-muted-foreground">Active Plans</p>
           </div>
         </div>
 
-        {/* ── Drill types tracker ─────────────────────────────────────── */}
+        {/* ── Drill types ─────────────────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <ShieldAlert className="h-3 w-3" />
-            Drill Types
-          </p>
-          {DEMO_DRILL_TYPES.map((d) => (
-            <div key={d.type} className="flex items-center justify-between rounded border p-2 text-xs">
-              <span className="truncate flex-1">{d.type}</span>
-              <div className="flex items-center gap-1.5 ml-2">
-                <Badge variant="outline" className="text-[10px] tabular-nums">{d.count}</Badge>
-                <Badge className={cn(
-                  "text-[10px]",
-                  d.status === "current" ? "bg-green-100 text-green-700"
-                    : d.status === "due" ? "bg-amber-100 text-amber-700"
-                    : "bg-red-100 text-red-700",
-                )}>
-                  {d.status === "current" ? "Current" : d.status === "due" ? "Due" : "Overdue"}
-                </Badge>
+        {intel.drill_types.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <ShieldAlert className="h-3 w-3" />
+              Drill Types
+            </p>
+            {intel.drill_types.slice(0, 7).map((d) => (
+              <div key={d.scenario_type} className="flex items-center justify-between rounded border p-2 text-xs">
+                <span className="truncate flex-1">{d.type_label}</span>
+                <div className="flex items-center gap-1.5 ml-2">
+                  <Badge variant="outline" className="text-[10px] tabular-nums">{d.drill_count}</Badge>
+                  <Badge className={cn("text-[10px]", STATUS_COLOURS[d.status] ?? "bg-gray-100 text-gray-600")}>
+                    {d.status === "current" ? "Current" : d.status === "due" ? "Due" : "Overdue"}
+                  </Badge>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* ── Recent drills ───────────────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Timer className="h-3 w-3" />
-            Recent Drills
-          </p>
-          {DEMO_RECENT_DRILLS.map((d, i) => (
-            <div key={i} className="flex items-center justify-between rounded border p-2 text-xs">
-              <div className="flex items-center gap-2 flex-1">
-                <span className="text-muted-foreground">{new Date(d.date).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}</span>
-                <span className="font-medium truncate">{d.type}</span>
+        {intel.recent_drills.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Timer className="h-3 w-3" />
+              Recent Drills
+            </p>
+            {intel.recent_drills.slice(0, 3).map((d) => (
+              <div key={d.drill_id} className="flex items-center justify-between rounded border p-2 text-xs">
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-muted-foreground">{d.date}</span>
+                  <span className="font-medium truncate">{d.type_label}</span>
+                </div>
+                <div className="flex items-center gap-1.5 ml-2">
+                  <Badge variant="outline" className="text-[10px] tabular-nums">{d.response_time_minutes}m</Badge>
+                  <Badge className={cn("text-[10px]", OUTCOME_COLOURS[d.outcome] ?? "bg-gray-100 text-gray-600")}>
+                    {d.outcome === "satisfactory" ? "OK" : d.outcome === "needs_improvement" ? "Improve" : "Failed"}
+                  </Badge>
+                  {d.issues_count > 0 && (
+                    <Badge className="text-[10px] bg-amber-100 text-amber-700">{d.issues_count}</Badge>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 ml-2">
-                <Badge variant="outline" className="text-[10px] tabular-nums">{formatSeconds(d.time)}</Badge>
-                {d.accounted ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                ) : (
-                  <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
-                )}
-                {d.issues > 0 && (
-                  <Badge className="text-[10px] bg-amber-100 text-amber-700">{d.issues} issue{d.issues > 1 ? "s" : ""}</Badge>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Emergency contacts ──────────────────────────────────────── */}
-
-        <div className="rounded-lg border p-3 space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1">
-            <Phone className="h-3 w-3 text-blue-500" />
-            Emergency Contacts
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center rounded border p-2">
-              <p className="text-sm font-bold tabular-nums text-blue-600">{e.active_contacts}</p>
-              <p className="text-[10px] text-muted-foreground">Active</p>
-            </div>
-            <div className="text-center rounded border p-2">
-              <p className="text-sm font-bold tabular-nums text-green-600">{e.contacts_verified}</p>
-              <p className="text-[10px] text-muted-foreground">Verified</p>
-            </div>
-            <div className={cn("text-center rounded border p-2", e.contacts_verification_rate >= 90 ? "" : "")}>
-              <p className={cn("text-sm font-bold tabular-nums", e.contacts_verification_rate >= 90 ? "text-green-600" : "text-amber-600")}>
-                {e.contacts_verification_rate}%
-              </p>
-              <p className="text-[10px] text-muted-foreground">Verified Rate</p>
-            </div>
+            ))}
           </div>
-        </div>
+        )}
 
-        {/* ── Contingency plan coverage ───────────────────────────────── */}
+        {/* ── Plan coverage ───────────────────────────────────────────── */}
 
         <div className="rounded-lg border p-3 space-y-1.5">
           <p className="text-xs font-semibold flex items-center gap-1">
@@ -207,71 +188,73 @@ export function EmergencyCard() {
               <div
                 className={cn(
                   "h-full rounded-full transition-all",
-                  e.total_plan_types_covered >= 8 ? "bg-green-500" : e.total_plan_types_covered >= 5 ? "bg-amber-500" : "bg-red-500",
+                  pc.plan_types_covered >= pc.plan_types_required ? "bg-green-500"
+                    : pc.plan_types_covered >= 3 ? "bg-amber-500"
+                    : "bg-red-500",
                 )}
-                style={{ width: `${Math.round((e.total_plan_types_covered / e.total_plan_types_required) * 100)}%` }}
+                style={{ width: `${Math.round((pc.plan_types_covered / pc.plan_types_required) * 100)}%` }}
               />
             </div>
             <span className={cn(
               "text-xs font-bold tabular-nums",
-              e.total_plan_types_covered >= 8 ? "text-green-600" : e.total_plan_types_covered >= 5 ? "text-amber-600" : "text-red-600",
+              pc.plan_types_covered >= pc.plan_types_required ? "text-green-600"
+                : pc.plan_types_covered >= 3 ? "text-amber-600"
+                : "text-red-600",
             )}>
-              {e.total_plan_types_covered}/{e.total_plan_types_required}
+              {pc.plan_types_covered}/{pc.plan_types_required}
             </span>
           </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Current plans</span>
-            <span className="font-bold text-green-600">{e.current_plans}</span>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Expired plans</span>
-            <span className={cn("font-bold", e.expired_plans > 0 ? "text-red-600" : "text-green-600")}>
-              {e.expired_plans}
-            </span>
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div>
+              <p className="font-bold text-green-600 tabular-nums">{pc.plans_current}</p>
+              <p className="text-[10px] text-muted-foreground">Current</p>
+            </div>
+            <div>
+              <p className={cn("font-bold tabular-nums", pc.plans_review_due > 0 ? "text-amber-600" : "text-slate-700")}>
+                {pc.plans_review_due}
+              </p>
+              <p className="text-[10px] text-muted-foreground">Review Due</p>
+            </div>
+            <div>
+              <p className="font-bold text-slate-700 tabular-nums">{pc.plans_draft}</p>
+              <p className="text-[10px] text-muted-foreground">Draft</p>
+            </div>
           </div>
         </div>
 
-        {/* ── Evacuation performance ──────────────────────────────────── */}
+        {/* ── Key metrics ─────────────────────────────────────────────── */}
 
-        <div className="rounded-lg border p-3 space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1">
-            <Users className="h-3 w-3 text-indigo-500" />
-            Evacuation Performance
-          </p>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Average evacuation time</span>
-            <span className="font-bold tabular-nums">{formatSeconds(e.avg_evacuation_time)}</span>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex items-center gap-2 rounded border p-2.5 text-xs">
+            <CheckCircle2 className={cn("h-4 w-4 shrink-0", o.satisfactory_rate >= 90 ? "text-green-500" : "text-amber-500")} />
+            <div>
+              <p className="font-medium">{o.satisfactory_rate}% satisfactory</p>
+              <p className="text-[10px] text-muted-foreground">drill outcomes</p>
+            </div>
           </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">All accounted for rate</span>
-            <span className={cn("font-bold tabular-nums", e.all_accounted_rate === 100 ? "text-green-600" : "text-amber-600")}>
-              {e.all_accounted_rate}%
-            </span>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Drills with issues</span>
-            <span className={cn("font-bold tabular-nums", e.drills_with_issues > 0 ? "text-amber-600" : "text-green-600")}>
-              {e.drills_with_issues}
-            </span>
+          <div className="flex items-center gap-2 rounded border p-2.5 text-xs">
+            <Timer className="h-4 w-4 text-blue-500 shrink-0" />
+            <div>
+              <p className="font-medium">{o.drills_last_90_days} drills</p>
+              <p className="text-[10px] text-muted-foreground">last 90 days</p>
+            </div>
           </div>
         </div>
 
         {/* ── Alerts ──────────────────────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.alerts.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Emergency Alerts
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
               >
                 {alert.message}
@@ -280,27 +263,27 @@ export function EmergencyCard() {
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Emergency Intelligence ─────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Emergency Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-red-200 bg-red-50 text-red-800"
-                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Emergency Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,76 +1,61 @@
 "use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — CHILDREN'S MEETINGS & CONSULTATION CARD
-// Dashboard card for house meetings, children's council, consultation records,
-// participation rates, action tracking, and ARIA child voice intelligence.
-// CHR 2015 Reg 7 (wishes & feelings), Reg 16 (consultation with children).
+// CORNERSTONE — CHILDREN'S MEETINGS & CONSULTATION INTELLIGENCE CARD
+// Dashboard card powered by the Meetings Intelligence Engine.
+// Reg 7 (wishes & feelings), Reg 16 (consultation), SCCIF.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  MessageCircle, ChevronRight, AlertTriangle, CheckCircle2,
-  Brain, Users, HandHeart, Megaphone, ClipboardCheck,
+  MessageCircle, ChevronRight, AlertTriangle,
+  Brain, Users, ClipboardCheck, Loader2, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMeetingsIntelligence } from "@/hooks/use-meetings-intelligence";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_MEETING_COMPLIANCE = {
-  total_meetings: 14,
-  avg_attendance: 4.8,
-  attendance_rate: 80,
-  total_actions: 22,
-  actions_completed: 16,
-  actions_overdue: 3,
-  action_completion_rate: 73,
-  minutes_approved_rate: 86,
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high:     "border-red-200 bg-red-50 text-red-800",
+  medium:   "border-amber-200 bg-amber-50 text-amber-800",
+  low:      "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const DEMO_CONSULTATION = {
-  total_consultations: 31,
-  children_consulted: 5,
-  consultation_rate: 83,
-  avg_impact: 2.4,
-  with_action_taken: 24,
-  action_rate: 77,
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning:  "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
 };
 
-const DEMO_MEETING_TYPES = [
-  { type: "House Meeting", count: 8 },
-  { type: "Children's Council", count: 2 },
-  { type: "Menu Planning", count: 3 },
-  { type: "Activities", count: 1 },
-];
-
-const DEMO_CONSULTATION_TYPES = [
-  { type: "Care Plan", count: 8 },
-  { type: "Daily Living", count: 6 },
-  { type: "Education", count: 5 },
-  { type: "Activities", count: 4 },
-  { type: "Contact", count: 4 },
-  { type: "Other", count: 4 },
-];
-
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "overdue_actions", severity: "medium", message: "3 meeting actions overdue — children may perceive their views are not being acted upon." },
-  { type: "unconsulted_children", severity: "high", message: "1 of 6 children have no consultation records — Reg 7 requires seeking each child's wishes and feelings." },
-  { type: "unapproved_minutes", severity: "low", message: "2 sets of meeting minutes not yet approved." },
-];
-
-const ARIA_INSIGHTS = [
-  "1 child has no consultation records. Cross-reference with key work sessions — if this child's voice is also absent from daily logs and LAC reviews, this represents a significant Reg 7 gap. Consider independent advocacy referral.",
-  "3 meeting actions overdue. Action completion rate dropped from 85% to 73% this quarter. Review whether actions are realistic and time-bound. Children's council feedback shows they notice when promises aren't kept.",
-  "80% attendance rate at house meetings. 83% of children have been consulted this month. Care plan consultations lead with 8 records. Impact rating averaging 2.4/4 (moderate) — good evidence that children's views are influencing decisions.",
-];
-
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ───────────────────────────────────────────────────────────────
 
 export function MeetingsCard() {
-  const m = DEMO_MEETING_COMPLIANCE;
-  const c = DEMO_CONSULTATION;
+  const { data, isLoading } = useMeetingsIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <MessageCircle className="h-4 w-4 text-brand" />
+            Children&apos;s Voice & Meetings
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const o = intel.overview;
 
   return (
     <Card className="overflow-hidden">
@@ -90,115 +75,146 @@ export function MeetingsCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg bg-blue-50 p-2">
+          <div className="text-center rounded-lg bg-blue-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-blue-600">
-              {m.total_meetings}
+              {o.total_meetings}
             </p>
             <p className="text-[10px] text-muted-foreground">Meetings</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", m.attendance_rate >= 75 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", m.attendance_rate >= 75 ? "text-green-600" : "text-amber-600")}>
-              {m.attendance_rate}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.avg_attendance_rate >= 80 ? "bg-green-50" : o.avg_attendance_rate >= 60 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.avg_attendance_rate >= 80 ? "text-green-600" : o.avg_attendance_rate >= 60 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.avg_attendance_rate}%
             </p>
             <p className="text-[10px] text-muted-foreground">Attendance</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.consultation_rate >= 80 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.consultation_rate >= 80 ? "text-green-600" : "text-amber-600")}>
-              {c.consultation_rate}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.action_completion_rate >= 80 ? "bg-green-50" : o.action_completion_rate >= 60 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.action_completion_rate >= 80 ? "text-green-600" : o.action_completion_rate >= 60 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.action_completion_rate}%
             </p>
-            <p className="text-[10px] text-muted-foreground">Consulted</p>
+            <p className="text-[10px] text-muted-foreground">Actions Done</p>
           </div>
-          <div className="text-center rounded-lg bg-purple-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-purple-600">
-              {c.total_consultations}
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.actions_overdue === 0 ? "bg-green-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.actions_overdue === 0 ? "text-green-600" : "text-red-600",
+            )}>
+              {o.actions_overdue}
             </p>
-            <p className="text-[10px] text-muted-foreground">Consults</p>
+            <p className="text-[10px] text-muted-foreground">Overdue</p>
           </div>
         </div>
 
         {/* ── Meeting types ───────────────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            Meeting Types
-          </p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {DEMO_MEETING_TYPES.map((t) => (
-              <div key={t.type} className="flex items-center justify-between rounded border p-2 text-xs">
-                <span className="truncate">{t.type}</span>
-                <Badge variant="outline" className="text-[10px] tabular-nums ml-1">{t.count}</Badge>
+        {intel.type_breakdown.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Users className="h-3 w-3" />
+              Meeting Types
+            </p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {intel.type_breakdown.slice(0, 4).map((t) => (
+                <div key={t.meeting_type} className="flex items-center justify-between rounded border p-2 text-xs">
+                  <span className="truncate">{t.type_label}</span>
+                  <Badge variant="outline" className="text-[10px] tabular-nums ml-1">{t.count}</Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Child participation ──────────────────────────────────────── */}
+
+        {intel.child_participation.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <ClipboardCheck className="h-3 w-3" />
+              Child Participation
+            </p>
+            {intel.child_participation.slice(0, 4).map((c) => (
+              <div key={c.child_id} className="rounded-lg border p-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{c.child_name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="tabular-nums text-slate-600">
+                      {c.meetings_attended}/{c.meetings_attended + c.meetings_absent}
+                    </span>
+                    <Badge className={cn(
+                      "text-[10px] tabular-nums",
+                      c.attendance_rate >= 80 ? "bg-green-100 text-green-700"
+                        : c.attendance_rate >= 50 ? "bg-amber-100 text-amber-700"
+                        : "bg-red-100 text-red-700",
+                    )}>
+                      {c.attendance_rate}%
+                    </Badge>
+                  </div>
+                </div>
+                {c.risk_flags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {c.risk_flags.slice(0, 3).map((flag, i) => (
+                      <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
+                        <FileWarning className="h-2.5 w-2.5 mr-0.5" />
+                        {flag.replace(/_/g, " ")}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* ── Action tracking ─────────────────────────────────────────── */}
+        {/* ── Key metrics ──────────────────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <ClipboardCheck className="h-3 w-3" />
-            Meeting Actions
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <div className="text-center rounded border p-2">
-              <p className="text-sm font-bold tabular-nums text-green-600">{m.actions_completed}</p>
-              <p className="text-[10px] text-muted-foreground">Completed</p>
-            </div>
-            <div className="text-center rounded border p-2">
-              <p className={cn("text-sm font-bold tabular-nums", m.actions_overdue > 0 ? "text-red-600" : "text-gray-600")}>{m.actions_overdue}</p>
-              <p className="text-[10px] text-muted-foreground">Overdue</p>
-            </div>
-            <div className="text-center rounded border p-2">
-              <p className="text-sm font-bold tabular-nums">{m.action_completion_rate}%</p>
-              <p className="text-[10px] text-muted-foreground">Rate</p>
-            </div>
+        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.meetings_last_30_days}</p>
+            <p className="text-[10px] text-muted-foreground">Last 30d</p>
           </div>
-        </div>
-
-        {/* ── Consultation summary ────────────────────────────────────── */}
-
-        <div className="rounded-lg border p-3 space-y-2">
-          <p className="text-xs font-semibold flex items-center gap-1">
-            <HandHeart className="h-3 w-3 text-pink-500" />
-            Consultation Impact
-          </p>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Action taken on consultations</span>
-            <span className={cn("font-bold", c.action_rate >= 70 ? "text-green-600" : "text-amber-600")}>
-              {c.action_rate}%
-            </span>
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.avg_duration_minutes}m</p>
+            <p className="text-[10px] text-muted-foreground">Avg Duration</p>
           </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Average impact rating</span>
-            <span className="font-bold">{c.avg_impact}/4</span>
-          </div>
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Minutes approved</span>
-            <span className={cn("font-bold", m.minutes_approved_rate >= 90 ? "text-green-600" : "text-amber-600")}>
-              {m.minutes_approved_rate}%
-            </span>
+          <div>
+            <p className={cn(
+              "font-bold tabular-nums",
+              o.children_never_attended === 0 ? "text-green-600" : "text-red-600",
+            )}>
+              {o.children_never_attended}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Never Attended</p>
           </div>
         </div>
 
         {/* ── Alerts ──────────────────────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.alerts.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Participation Alerts
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : alert.severity === "medium"
-                    ? "border-amber-200 bg-amber-50 text-amber-800"
-                    : "border-blue-200 bg-blue-50 text-blue-800",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
               >
                 {alert.message}
@@ -207,27 +223,27 @@ export function MeetingsCard() {
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Child Voice Intelligence ───────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Child Voice Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-red-200 bg-red-50 text-red-800"
-                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Child Voice Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

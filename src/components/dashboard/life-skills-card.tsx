@@ -2,61 +2,60 @@
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — LIFE SKILLS & INDEPENDENCE INTELLIGENCE CARD
-// Dashboard card for independence readiness, skill assessments,
-// pathway planning, and ARIA independence intelligence (Reg 8/9/14).
+// Dashboard card powered by the Life Skills Intelligence Engine.
+// Reg 8, Reg 9, Reg 14, SCCIF Experiences & Progress.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Compass, ChevronRight, AlertTriangle, CheckCircle2,
-  Brain, Target, Star, MapPin,
+  Compass, ChevronRight, AlertTriangle,
+  Brain, Target, Star, MapPin, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLifeSkillsIntelligence } from "@/hooks/use-life-skills-intelligence";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_OVERVIEW = {
-  totalChildren: 4,
-  avgReadiness: 52.5,
-  childrenWithPathwayPlans: 2,
-  pathwayPlansActive: 2,
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high:     "border-red-200 bg-red-50 text-red-800",
+  medium:   "border-amber-200 bg-amber-50 text-amber-800",
+  low:      "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const CHILD_READINESS = [
-  { name: "Alex W", age: 17, readiness: 68, pathwayPlan: true, strongest: "Personal Care", weakest: "Money Management" },
-  { name: "Tyler R", age: 16, readiness: 45, pathwayPlan: true, strongest: "Social Networks", weakest: "Cooking & Nutrition" },
-  { name: "Jordan M", age: 14, readiness: 52, pathwayPlan: false, strongest: "Practical Skills", weakest: "Home Management" },
-  { name: "Casey L", age: 13, readiness: 45, pathwayPlan: false, strongest: "Emotional Wellbeing", weakest: "Education & Employment" },
-];
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning:  "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
 
-const DOMAIN_AVERAGES = [
-  { domain: "Personal Care", avg: 72 },
-  { domain: "Social Networks", avg: 65 },
-  { domain: "Practical Skills", avg: 58 },
-  { domain: "Emotional Wellbeing", avg: 55 },
-  { domain: "Cooking & Nutrition", avg: 48 },
-  { domain: "Education & Employment", avg: 42 },
-  { domain: "Home Management", avg: 38 },
-  { domain: "Money Management", avg: 32 },
-];
-
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "low_readiness", severity: "medium", message: "Money Management is the weakest domain across the home (32% avg). Consider group sessions on budgeting and banking." },
-  { type: "pathway_plan", severity: "medium", message: "Tyler R turns 17 in 3 months — pathway plan needs review. Accommodation and education plans need updating." },
-];
-
-const ARIA_INSIGHTS = [
-  "Alex W (17) has the highest independence readiness at 68% — strong in personal care but needs support with money management. With pathway plan active and target move in 8 months, focus weekly key work sessions on budgeting skills.",
-  "Home-wide, personal care and social networks are strongest domains. Money management and home management are weakest. Consider a structured programme covering cooking, budgeting and cleaning for all children. Reg 8 enjoyment & achievement standards partially evidenced.",
-  "Positive: Both 16+ children have active pathway plans. All 4 children have had skills assessments in the last 60 days. Tyler R has improved 12 points in practical skills since last assessment. Reg 14 pathway planning requirements met for eligible children.",
-];
-
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ───────────────────────────────────────────────────────────────
 
 export function LifeSkillsCard() {
-  const o = DEMO_OVERVIEW;
+  const { data, isLoading } = useLifeSkillsIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Compass className="h-4 w-4 text-brand" />
+            Life Skills & Independence
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const o = intel.overview;
 
   return (
     <Card className="overflow-hidden">
@@ -76,125 +75,154 @@ export function LifeSkillsCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg p-2" style={{ background: o.avgReadiness >= 60 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", o.avgReadiness >= 60 ? "text-green-600" : "text-amber-600")}>
-              {o.avgReadiness}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.avg_readiness >= 60 ? "bg-green-50" : o.avg_readiness >= 40 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.avg_readiness >= 60 ? "text-green-600" : o.avg_readiness >= 40 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.avg_readiness}%
             </p>
             <p className="text-[10px] text-muted-foreground">Readiness</p>
           </div>
-          <div className="text-center rounded-lg bg-blue-50 p-2">
+          <div className="text-center rounded-lg bg-blue-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-blue-600">
-              {o.totalChildren}
+              {o.children_assessed}
             </p>
-            <p className="text-[10px] text-muted-foreground">Children</p>
+            <p className="text-[10px] text-muted-foreground">Assessed</p>
           </div>
-          <div className="text-center rounded-lg bg-green-50 p-2">
+          <div className="text-center rounded-lg bg-green-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-green-600">
-              {o.pathwayPlansActive}
+              {o.pathway_plans_active}
             </p>
             <p className="text-[10px] text-muted-foreground">Pathways</p>
           </div>
-          <div className="text-center rounded-lg bg-purple-50 p-2">
+          <div className="text-center rounded-lg bg-purple-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-purple-600">
-              8
+              {o.domains_count}
             </p>
             <p className="text-[10px] text-muted-foreground">Domains</p>
           </div>
         </div>
 
-        {/* ── Child readiness ──────────────────────────────────────────── */}
+        {/* ── Child readiness profiles ─────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Target className="h-3 w-3" />
-            Independence Readiness
-          </p>
-          {CHILD_READINESS.map((child) => (
-            <div key={child.name} className="rounded-lg border p-2.5 text-xs">
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium">{child.name}</span>
-                  <span className="text-muted-foreground">age {child.age}</span>
-                  {child.pathwayPlan && (
-                    <Badge className="text-[10px] bg-purple-100 text-purple-700">
-                      <MapPin className="h-2.5 w-2.5 mr-0.5" />
-                      Pathway
-                    </Badge>
-                  )}
+        {intel.child_profiles.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Target className="h-3 w-3" />
+              Independence Readiness
+            </p>
+            {intel.child_profiles.slice(0, 4).map((child) => (
+              <div key={child.child_id} className="rounded-lg border p-2.5 text-xs">
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{child.child_name}</span>
+                    {child.pathway_plan_linked && (
+                      <Badge className="text-[10px] bg-purple-100 text-purple-700">
+                        <MapPin className="h-2.5 w-2.5 mr-0.5" />
+                        Pathway
+                      </Badge>
+                    )}
+                  </div>
+                  <Badge className={cn(
+                    "text-[10px]",
+                    child.readiness >= 60 ? "bg-green-100 text-green-700"
+                      : child.readiness >= 40 ? "bg-amber-100 text-amber-700"
+                      : "bg-red-100 text-red-700",
+                  )}>
+                    {child.readiness}%
+                  </Badge>
                 </div>
-                <Badge className={cn(
-                  "text-[10px]",
-                  child.readiness >= 60 ? "bg-green-100 text-green-700"
-                    : child.readiness >= 40 ? "bg-amber-100 text-amber-700"
-                    : "bg-red-100 text-red-700",
-                )}>
-                  {child.readiness}%
-                </Badge>
-              </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                <div
-                  className={cn(
-                    "h-full rounded-full",
-                    child.readiness >= 60 ? "bg-green-400"
-                      : child.readiness >= 40 ? "bg-amber-400"
-                      : "bg-red-400",
-                  )}
-                  style={{ width: `${child.readiness}%` }}
-                />
-              </div>
-              <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
-                <span>
-                  <Star className="h-2.5 w-2.5 inline mr-0.5 text-green-500" />
-                  {child.strongest}
-                </span>
-                <span>
-                  <AlertTriangle className="h-2.5 w-2.5 inline mr-0.5 text-amber-500" />
-                  {child.weakest}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Domain averages ──────────────────────────────────────────── */}
-
-        <div className="space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground">Skill Domains (Home Average)</p>
-          <div className="space-y-1">
-            {DOMAIN_AVERAGES.map((d) => (
-              <div key={d.domain} className="flex items-center gap-2 text-xs">
-                <span className="w-36 text-muted-foreground">{d.domain}</span>
-                <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className={cn(
                       "h-full rounded-full",
-                      d.avg >= 60 ? "bg-green-400" : d.avg >= 40 ? "bg-amber-400" : "bg-red-400",
+                      child.readiness >= 60 ? "bg-green-400"
+                        : child.readiness >= 40 ? "bg-amber-400"
+                        : "bg-red-400",
                     )}
-                    style={{ width: `${d.avg}%` }}
+                    style={{ width: `${child.readiness}%` }}
                   />
                 </div>
-                <span className="w-8 text-right tabular-nums font-medium">{d.avg}%</span>
+                <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
+                  <span>
+                    <Star className="h-2.5 w-2.5 inline mr-0.5 text-green-500" />
+                    {child.strongest_domain}
+                  </span>
+                  <span>
+                    <AlertTriangle className="h-2.5 w-2.5 inline mr-0.5 text-amber-500" />
+                    {child.weakest_domain}
+                  </span>
+                </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ── Domain averages ──────────────────────────────────────────── */}
+
+        {intel.domain_averages.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground">Skill Domains (Home Average)</p>
+            <div className="space-y-1">
+              {intel.domain_averages.map((d) => (
+                <div key={d.domain} className="flex items-center gap-2 text-xs">
+                  <span className="w-36 text-muted-foreground truncate">{d.domain}</span>
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={cn(
+                        "h-full rounded-full",
+                        d.avg_pct >= 60 ? "bg-green-400" : d.avg_pct >= 40 ? "bg-amber-400" : "bg-red-400",
+                      )}
+                      style={{ width: `${d.avg_pct}%` }}
+                    />
+                  </div>
+                  <span className="w-8 text-right tabular-nums font-medium">{d.avg_pct}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Key metrics ──────────────────────────────────────────────── */}
+
+        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+          <div>
+            <p className="font-bold text-green-600 tabular-nums">{o.children_on_track}</p>
+            <p className="text-[10px] text-muted-foreground">On Track</p>
+          </div>
+          <div>
+            <p className={cn(
+              "font-bold tabular-nums",
+              o.children_attention_needed > 0 ? "text-amber-600" : "text-green-600",
+            )}>
+              {o.children_attention_needed}
+            </p>
+            <p className="text-[10px] text-muted-foreground">Need Attention</p>
+          </div>
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.total_children}</p>
+            <p className="text-[10px] text-muted-foreground">Total Children</p>
           </div>
         </div>
 
         {/* ── Alerts ──────────────────────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.alerts.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Independence Alerts
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
               >
                 {alert.message}
@@ -203,27 +231,27 @@ export function LifeSkillsCard() {
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Independence Intelligence ──────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Independence Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-blue-200 bg-blue-50 text-blue-800"
-                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Independence Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

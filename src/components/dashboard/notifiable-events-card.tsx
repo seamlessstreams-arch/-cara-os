@@ -2,8 +2,8 @@
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — NOTIFIABLE EVENTS INTELLIGENCE CARD
-// Dashboard card for Reg 40 notifiable events tracking, notification
-// compliance, response times, and ARIA notification intelligence.
+// Dashboard card powered by the Notifiable Events Intelligence Engine.
+// Reg 40 (notifiable events), SCCIF Leadership & Management.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
@@ -11,51 +11,58 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Bell, ChevronRight, AlertTriangle, CheckCircle2,
-  Brain, Clock, Send, ShieldAlert,
+  Brain, Clock, Send, ShieldAlert, Loader2, FileWarning,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNotifiableEventsIntelligence } from "@/hooks/use-notifiable-events-intelligence";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_COMPLIANCE = {
-  totalEvents: 8,
-  totalNotificationsRequired: 18,
-  totalNotificationsSent: 16,
-  complianceRate: 88.9,
-  overdueCount: 1,
-  avgResponseHours: 6.4,
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high:     "border-red-200 bg-red-50 text-red-800",
+  medium:   "border-amber-200 bg-amber-50 text-amber-800",
+  low:      "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const RECENT_EVENTS = [
-  { type: "Physical Intervention", date: "2026-05-10", child: "Tyler R", notified: true, status: "sent" },
-  { type: "Missing from home", date: "2026-05-08", child: "Alex W", notified: true, status: "acknowledged" },
-  { type: "Substance misuse", date: "2026-05-05", child: "Tyler R", notified: true, status: "sent" },
-  { type: "Allegation against staff", date: "2026-05-03", child: null, notified: false, status: "overdue" },
-];
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning:  "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
 
-const EVENT_TYPE_BREAKDOWN = [
-  { type: "Physical Intervention", count: 3 },
-  { type: "Missing from home", count: 2 },
-  { type: "Substance misuse", count: 1 },
-  { type: "Allegation against staff", count: 1 },
-  { type: "Police involvement", count: 1 },
-];
+const STATUS_STYLES: Record<string, { bg: string; text: string; icon: typeof CheckCircle2 }> = {
+  notified_within_24h: { bg: "bg-green-100", text: "text-green-700", icon: CheckCircle2 },
+  notified_late:       { bg: "bg-amber-100", text: "text-amber-700", icon: Clock },
+  pending:             { bg: "bg-red-100", text: "text-red-700", icon: Clock },
+  not_required:        { bg: "bg-gray-100", text: "text-gray-700", icon: Send },
+};
 
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "overdue_notification", severity: "critical", message: "Allegation against staff (3 May) — Ofsted notification overdue. 24-hour deadline passed. Send immediately and document reason for delay." },
-  { type: "repeat_child", severity: "medium", message: "Tyler R involved in 3 notifiable events in the last 14 days (PI, substance misuse, PI). Review care plan and consider multi-agency strategy meeting." },
-];
-
-const ARIA_INSIGHTS = [
-  "1 overdue Ofsted notification requires immediate action — allegation against staff on 3 May. This is a regulatory breach. Send notification via Ofsted online portal and record the delay reason. All other notifications sent within deadline.",
-  "Tyler R is involved in 37.5% of all notifiable events this period. Pattern suggests escalating risk — PI events and substance misuse may be linked. Recommend multi-agency meeting with social worker, YOT, and substance misuse service.",
-  "Positive: 88.9% notification compliance rate. Average response time of 6.4 hours is well within most deadlines. 2 of 8 events have been acknowledged by recipients. Missing from home notifications now include police referral as standard. Reg 40 requirements broadly met.",
-];
-
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ───────────────────────────────────────────────────────────────
 
 export function NotifiableEventsCard() {
-  const c = DEMO_COMPLIANCE;
+  const { data, isLoading } = useNotifiableEventsIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Bell className="h-4 w-4 text-brand" />
+            Notifiable Events (Reg 40)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const o = intel.overview;
 
   return (
     <Card className="overflow-hidden">
@@ -75,102 +82,163 @@ export function NotifiableEventsCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg bg-blue-50 p-2">
+          <div className="text-center rounded-lg bg-blue-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-blue-600">
-              {c.totalEvents}
+              {o.total_events}
             </p>
             <p className="text-[10px] text-muted-foreground">Events</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: c.complianceRate >= 95 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", c.complianceRate >= 95 ? "text-green-600" : "text-amber-600")}>
-              {c.complianceRate}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.compliance_rate === 100 ? "bg-green-50" : o.compliance_rate >= 80 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.compliance_rate === 100 ? "text-green-600" : o.compliance_rate >= 80 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.compliance_rate}%
             </p>
-            <p className="text-[10px] text-muted-foreground">Notified</p>
+            <p className="text-[10px] text-muted-foreground">Compliant</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.overdueCount > 0 ? "bg-red-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.overdueCount > 0 ? "text-red-600" : "text-green-600")}>
-              {c.overdueCount}
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.pending === 0 ? "bg-green-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.pending === 0 ? "text-green-600" : "text-red-600",
+            )}>
+              {o.pending}
             </p>
-            <p className="text-[10px] text-muted-foreground">Overdue</p>
+            <p className="text-[10px] text-muted-foreground">Pending</p>
           </div>
-          <div className="text-center rounded-lg bg-green-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-green-600">
-              {c.avgResponseHours}h
+          <div className="text-center rounded-lg bg-slate-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums text-slate-600">
+              {o.events_last_30_days}
             </p>
-            <p className="text-[10px] text-muted-foreground">Avg Response</p>
+            <p className="text-[10px] text-muted-foreground">Last 30d</p>
           </div>
         </div>
 
         {/* ── Recent events ────────────────────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <ShieldAlert className="h-3 w-3" />
-            Recent Events
-          </p>
-          {RECENT_EVENTS.map((event, i) => (
-            <div key={i} className="rounded-lg border p-2.5 text-xs flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{event.type}</span>
-                {event.child && <span className="text-muted-foreground">— {event.child}</span>}
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Badge className={cn(
-                  "text-[10px]",
-                  event.status === "acknowledged" ? "bg-green-100 text-green-700"
-                    : event.status === "sent" ? "bg-blue-100 text-blue-700"
-                    : "bg-red-100 text-red-700",
-                )}>
-                  {event.status === "acknowledged" ? (
-                    <><CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />Ack</>
-                  ) : event.status === "sent" ? (
-                    <><Send className="h-2.5 w-2.5 mr-0.5" />Sent</>
-                  ) : (
-                    <><Clock className="h-2.5 w-2.5 mr-0.5" />Overdue</>
-                  )}
-                </Badge>
-                <span className="text-muted-foreground">{event.date}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── Event type breakdown ──────────────────────────────────────── */}
-
-        <div className="space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground">Event Types</p>
-          <div className="space-y-1">
-            {EVENT_TYPE_BREAKDOWN.map((et) => {
-              const pct = Math.round((et.count / c.totalEvents) * 100);
+        {intel.recent_events.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <ShieldAlert className="h-3 w-3" />
+              Recent Events
+            </p>
+            {intel.recent_events.slice(0, 4).map((event) => {
+              const style = STATUS_STYLES[event.ofsted_status] ?? STATUS_STYLES.pending;
+              const Icon = style.icon;
               return (
-                <div key={et.type} className="flex items-center gap-2 text-xs">
-                  <span className="w-36 text-muted-foreground">{et.type}</span>
-                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full bg-blue-400" style={{ width: `${pct}%` }} />
+                <div key={event.id} className="rounded-lg border p-2.5 text-xs flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-medium truncate">{event.type_label}</span>
+                    {event.child_name && (
+                      <span className="text-muted-foreground">— {event.child_name}</span>
+                    )}
                   </div>
-                  <span className="w-6 text-right tabular-nums font-medium">{et.count}</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Badge className={cn("text-[10px]", style.bg, style.text)}>
+                      <Icon className="h-2.5 w-2.5 mr-0.5" />
+                      {event.ofsted_status === "notified_within_24h" ? "Sent" :
+                       event.ofsted_status === "notified_late" ? "Late" :
+                       event.ofsted_status === "pending" ? "Pending" : "N/A"}
+                    </Badge>
+                  </div>
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* ── Event type breakdown ──────────────────────────────────────── */}
+
+        {intel.event_types.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground">Event Types</p>
+            <div className="space-y-1">
+              {intel.event_types.slice(0, 5).map((et) => (
+                <div key={et.event_type} className="flex items-center gap-2 text-xs">
+                  <span className="w-36 text-muted-foreground truncate">{et.type_label}</span>
+                  <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full bg-blue-400" style={{ width: `${et.pct}%` }} />
+                  </div>
+                  <span className="w-6 text-right tabular-nums font-medium">{et.count}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Per-child breakdown ──────────────────────────────────────── */}
+
+        {intel.child_profiles.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <ShieldAlert className="h-3 w-3" />
+              Per Child
+            </p>
+            {intel.child_profiles.slice(0, 4).map((c) => (
+              <div key={c.child_id} className="rounded-lg border p-2.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{c.child_name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="tabular-nums text-slate-600">{c.total_events} events</span>
+                    {c.pending_notifications > 0 && (
+                      <Badge className="text-[10px] bg-red-100 text-red-700">
+                        {c.pending_notifications} pending
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                {c.risk_flags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {c.risk_flags.slice(0, 3).map((flag, i) => (
+                      <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
+                        <FileWarning className="h-2.5 w-2.5 mr-0.5" />
+                        {flag.replace(/_/g, " ")}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Key metrics ──────────────────────────────────────────────── */}
+
+        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.unique_children_involved}</p>
+            <p className="text-[10px] text-muted-foreground">Children</p>
+          </div>
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.unique_staff_reporting}</p>
+            <p className="text-[10px] text-muted-foreground">Staff Reporting</p>
+          </div>
+          <div>
+            <p className="font-bold text-slate-700 tabular-nums">{o.events_last_90_days}</p>
+            <p className="text-[10px] text-muted-foreground">Last 90d</p>
           </div>
         </div>
 
         {/* ── Alerts ──────────────────────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.alerts.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Notification Alerts
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
               >
                 {alert.message}
@@ -179,27 +247,27 @@ export function NotifiableEventsCard() {
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Notification Intelligence ──────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Notification Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-red-200 bg-red-50 text-red-800"
-                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Notification Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

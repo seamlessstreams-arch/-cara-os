@@ -2,67 +2,60 @@
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — STAFF ROTA & WORKFORCE INTELLIGENCE CARD
-// Dashboard card for staffing levels, shift coverage, agency usage,
-// absence tracking, and ARIA workforce intelligence (Reg 16/33).
+// Dashboard card powered by the Rota Intelligence Engine.
+// Reg 16/33/34 — staffing levels, shift coverage, workforce compliance.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  Users, ChevronRight, AlertTriangle, CheckCircle2,
-  Brain, Clock, UserX, CalendarClock,
+  Users, ChevronRight, AlertTriangle,
+  Brain, Clock, CalendarClock, Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRotaIntelligence } from "@/hooks/use-rota-intelligence";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_SUMMARY = {
-  totalStaffToday: 6,
-  dayShiftStaff: 4,
-  nightShiftStaff: 2,
-  agencyCount: 1,
-  agencyPercentage: 16.7,
-  totalHoursWeek: 312,
-  overtimeHoursWeek: 28,
-  complianceRate: 85.7,
+const ALERT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  high:     "border-red-200 bg-red-50 text-red-800",
+  medium:   "border-amber-200 bg-amber-50 text-amber-800",
+  low:      "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const SHIFT_COVERAGE = [
-  { shift: "Early (7am-3pm)", staff: 2, min: 2, ok: true },
-  { shift: "Late (2pm-10pm)", staff: 2, min: 2, ok: true },
-  { shift: "Waking Night", staff: 1, min: 1, ok: true },
-  { shift: "Sleep-In", staff: 1, min: 1, ok: true },
-];
-
-const ABSENCE_SUMMARY = {
-  currentAbsences: 1,
-  sickDaysThisMonth: 8,
-  returnToWorkRate: 75,
-  annualLeaveToday: 1,
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning:  "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
 };
 
-const UPCOMING_GAPS = [
-  { date: "2026-05-15", shift: "Late", reason: "Annual leave — no replacement yet" },
-  { date: "2026-05-18", shift: "Waking Night", reason: "Vacancy — agency requested" },
-];
-
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "unfilled_shift", severity: "high", message: "Unfilled late shift on 15 May — Sarah J on annual leave, no cover arranged." },
-  { type: "high_sickness", severity: "medium", message: "Mark T has 12 sick days this quarter — consider welfare meeting and referral to occupational health." },
-];
-
-const ARIA_INSIGHTS = [
-  "Staffing compliance at 85.7% this week — 1 day below minimum due to short-notice sickness. Agency reliance at 16.7% which is within the 25% target. Reg 16 staffing requirements broadly met.",
-  "Overtime hours (28h) are 40% above average. 3 staff members have worked more than 48 hours this week. Review working time compliance and consider additional recruitment.",
-  "Positive: All waking night shifts covered this month. Return-to-work interviews completed for 75% of sickness absences. Sleep-in cover stable with no gaps. Reg 33 employment standards evidenced.",
-];
-
-// ── Component ────────────────────────────────────────────────────────────────
+// ── Component ───────────────────────────────────────────────────────────────
 
 export function RotaIntelligenceCard() {
-  const s = DEMO_SUMMARY;
-  const abs = ABSENCE_SUMMARY;
+  const { data, isLoading } = useRotaIntelligence();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Users className="h-4 w-4 text-brand" />
+            Staff Rota & Workforce
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const o = intel.overview;
 
   return (
     <Card className="overflow-hidden">
@@ -82,91 +75,113 @@ export function RotaIntelligenceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg bg-green-50 p-2">
+          <div className="text-center rounded-lg bg-green-50 p-2.5">
             <p className="text-lg font-bold tabular-nums text-green-600">
-              {s.totalStaffToday}
+              {o.total_staff_today}
             </p>
             <p className="text-[10px] text-muted-foreground">Staff Today</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: s.complianceRate >= 90 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", s.complianceRate >= 90 ? "text-green-600" : "text-amber-600")}>
-              {s.complianceRate}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.completion_rate >= 95 ? "bg-green-50" : o.completion_rate >= 85 ? "bg-amber-50" : "bg-red-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.completion_rate >= 95 ? "text-green-600" : o.completion_rate >= 85 ? "text-amber-600" : "text-red-600",
+            )}>
+              {o.completion_rate}%
             </p>
-            <p className="text-[10px] text-muted-foreground">Compliance</p>
+            <p className="text-[10px] text-muted-foreground">Completion</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", s.agencyPercentage <= 25 ? "bg-green-50" : "bg-amber-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", s.agencyPercentage <= 25 ? "text-green-600" : "text-amber-600")}>
-              {s.agencyPercentage}%
+          <div className={cn(
+            "text-center rounded-lg p-2.5",
+            o.open_shifts_7_days === 0 ? "bg-green-50" : "bg-amber-50",
+          )}>
+            <p className={cn(
+              "text-lg font-bold tabular-nums",
+              o.open_shifts_7_days === 0 ? "text-green-600" : "text-amber-600",
+            )}>
+              {o.open_shifts_7_days}
             </p>
-            <p className="text-[10px] text-muted-foreground">Agency</p>
+            <p className="text-[10px] text-muted-foreground">Open Shifts</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", abs.currentAbsences > 0 ? "bg-amber-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", abs.currentAbsences > 0 ? "text-amber-600" : "text-green-600")}>
-              {abs.currentAbsences}
+          <div className="text-center rounded-lg bg-blue-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums text-blue-600">
+              {Math.round(o.total_hours_week)}h
             </p>
-            <p className="text-[10px] text-muted-foreground">Absent</p>
+            <p className="text-[10px] text-muted-foreground">This Week</p>
           </div>
         </div>
 
-        {/* ── Shift coverage ──────────────────────────────────────────── */}
+        {/* ── Shift coverage today ────────────────────────────────────── */}
 
-        <div className="space-y-1">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Today&apos;s Shift Coverage
-          </p>
-          <div className="grid grid-cols-2 gap-1.5">
-            {SHIFT_COVERAGE.map((sc) => (
-              <div key={sc.shift} className={cn(
-                "rounded-lg border p-2 text-xs flex items-center justify-between",
-                sc.ok ? "border-green-200" : "border-red-200 bg-red-50",
-              )}>
-                <span className="text-muted-foreground">{sc.shift}</span>
-                <Badge className={cn("text-[10px]", sc.ok ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700")}>
-                  {sc.staff}/{sc.min}
-                </Badge>
+        {intel.shift_coverage.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Today&apos;s Shift Coverage
+            </p>
+            <div className="grid grid-cols-2 gap-1.5">
+              {intel.shift_coverage.map((sc) => (
+                <div key={sc.shift_type} className={cn(
+                  "rounded-lg border p-2 text-xs flex items-center justify-between",
+                  sc.is_covered ? "border-green-200" : "border-red-200 bg-red-50",
+                )}>
+                  <span className="text-muted-foreground">{sc.shift_label}</span>
+                  <Badge className={cn(
+                    "text-[10px]",
+                    sc.is_covered ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700",
+                  )}>
+                    {sc.staff_count} staff
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Staff hours (top 4 by hours) ────────────────────────────── */}
+
+        {intel.staff_hours.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground">Staff Hours (This Week)</p>
+            {intel.staff_hours.slice(0, 4).map((sh) => (
+              <div key={sh.staff_id} className="flex items-center justify-between rounded border p-2 text-xs">
+                <span className="font-medium">{sh.staff_name}</span>
+                <div className="flex items-center gap-2">
+                  <span className={cn(
+                    "tabular-nums font-bold",
+                    sh.exceeds_48h ? "text-red-600" : "text-slate-600",
+                  )}>
+                    {Math.round(sh.hours_this_week)}h
+                  </span>
+                  {sh.exceeds_48h && (
+                    <Badge className="text-[10px] bg-red-100 text-red-700">&gt;48h</Badge>
+                  )}
+                  {sh.overtime_this_week > 0 && !sh.exceeds_48h && (
+                    <Badge variant="outline" className="text-[10px] tabular-nums">
+                      +{Math.round(sh.overtime_this_week)}h OT
+                    </Badge>
+                  )}
+                </div>
               </div>
             ))}
           </div>
-        </div>
-
-        {/* ── Absence summary ──────────────────────────────────────────── */}
-
-        <div className="flex items-center justify-between rounded-lg border p-3">
-          <div className="flex items-center gap-2">
-            <UserX className={cn("h-4 w-4", abs.sickDaysThisMonth > 10 ? "text-amber-500" : "text-green-500")} />
-            <div>
-              <p className="text-xs font-medium">Absences</p>
-              <p className="text-[10px] text-muted-foreground">
-                {abs.sickDaysThisMonth} sick days · {abs.annualLeaveToday} on leave · {abs.returnToWorkRate}% RTW rate
-              </p>
-            </div>
-          </div>
-          {abs.currentAbsences > 0 ? (
-            <Badge className="text-[10px] bg-amber-100 text-amber-700">
-              {abs.currentAbsences} absent today
-            </Badge>
-          ) : (
-            <Badge className="text-[10px] bg-green-100 text-green-700">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              Full team
-            </Badge>
-          )}
-        </div>
+        )}
 
         {/* ── Upcoming gaps ────────────────────────────────────────────── */}
 
-        {UPCOMING_GAPS.length > 0 && (
+        {intel.upcoming_gaps.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <CalendarClock className="h-3 w-3" />
               Upcoming Gaps
             </p>
-            {UPCOMING_GAPS.map((gap, i) => (
+            {intel.upcoming_gaps.slice(0, 3).map((gap, i) => (
               <div key={i} className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs flex items-center justify-between">
                 <div>
                   <span className="font-medium">{gap.date}</span>
-                  <span className="text-muted-foreground ml-2">{gap.shift}</span>
+                  <span className="text-muted-foreground ml-2">{gap.shift_label}</span>
                 </div>
                 <span className="text-amber-700 text-[10px]">{gap.reason}</span>
               </div>
@@ -176,20 +191,18 @@ export function RotaIntelligenceCard() {
 
         {/* ── Alerts ──────────────────────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.alerts.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Workforce Alerts
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.alerts.slice(0, 3).map((alert, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  ALERT_STYLES[alert.severity] ?? ALERT_STYLES.medium,
                 )}
               >
                 {alert.message}
@@ -198,27 +211,27 @@ export function RotaIntelligenceCard() {
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Workforce Intelligence ─────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Workforce Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-blue-200 bg-blue-50 text-blue-800"
-                  : i === 1 ? "border-amber-200 bg-amber-50 text-amber-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Workforce Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
