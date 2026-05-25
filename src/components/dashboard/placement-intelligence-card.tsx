@@ -1,86 +1,87 @@
 "use client";
 
 // ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — PLACEMENT & CARE PLANNING INTELLIGENCE CARD
-// Dashboard card for placement plan compliance, LAC review tracking,
-// objectives progress, and ARIA care planning intelligence (Reg 11/12/14).
+// CORNERSTONE — PLACEMENT STABILITY INTELLIGENCE CARD
+// Dashboard card showing placement stability scores, child risk profiles,
+// disruption indicators, and ARIA stability intelligence.
+// Powered by the Placement Stability Engine — live data (Reg 11/12/14).
 // ══════════════════════════════════════════════════════════════════════════════
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  FileText, ChevronRight, AlertTriangle, CheckCircle2,
-  Brain, Target, Calendar, ClipboardCheck,
+  Home, ChevronRight, AlertTriangle, Brain, Loader2,
+  TrendingUp, TrendingDown, Minus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { usePlacementStability } from "@/hooks/use-placement-stability";
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Styling ─────────────────────────────────────────────────────────────────
 
-const DEMO_COMPLIANCE = {
-  totalPlans: 12,
-  activePlans: 10,
-  draftPlans: 2,
-  overdueReviews: 1,
-  completionRate: 80,
-  objectivesMetRate: 62.5,
-  avgSectionsComplete: 78.3,
+const STABILITY_COLOURS: Record<string, string> = {
+  excellent: "bg-green-100 text-green-700",
+  good: "bg-green-50 text-green-600",
+  moderate: "bg-amber-100 text-amber-700",
+  at_risk: "bg-red-100 text-red-700",
+  critical: "bg-red-600 text-white",
 };
 
-const CHILDREN_PLANS = [
-  {
-    name: "Alex W",
-    plans: [
-      { type: "Placement Plan", status: "active", nextReview: "2026-05-28", complete: 12, total: 13 },
-      { type: "Care Plan", status: "active", nextReview: "2026-08-15", complete: 10, total: 13 },
-      { type: "Behaviour Support", status: "active", nextReview: "2026-06-10", complete: 8, total: 10 },
-    ],
-  },
-  {
-    name: "Tyler R",
-    plans: [
-      { type: "Placement Plan", status: "active", nextReview: "2026-05-20", complete: 11, total: 13 },
-      { type: "Care Plan", status: "active", nextReview: "2026-09-01", complete: 13, total: 13 },
-      { type: "Missing Protocol", status: "active", nextReview: "2026-06-15", complete: 6, total: 8 },
-    ],
-  },
-];
-
-const LAC_REVIEW_STATUS = {
-  completedThisQuarter: 3,
-  scheduled: 1,
-  childParticipationRate: 100,
-  actionCompletionRate: 75,
-  overdueActions: 2,
+const DISRUPTION_STYLES: Record<string, string> = {
+  high: "border-red-200 bg-red-50 text-red-800",
+  medium: "border-amber-200 bg-amber-50 text-amber-800",
+  low: "border-blue-200 bg-blue-50 text-blue-800",
 };
 
-const DEMO_ALERTS: { type: string; severity: "critical" | "high" | "medium" | "low"; message: string }[] = [
-  { type: "review_overdue", severity: "high", message: "Tyler R — Placement Plan review overdue (due 20 May). Schedule review with social worker and key worker." },
-  { type: "action_overdue", severity: "medium", message: "2 LAC review actions overdue. Review and update action tracker." },
-];
+const INSIGHT_STYLES: Record<string, string> = {
+  critical: "border-red-200 bg-red-50 text-red-800",
+  warning: "border-amber-200 bg-amber-50 text-amber-800",
+  positive: "border-green-200 bg-green-50 text-green-800",
+};
 
-const ARIA_INSIGHTS = [
-  "Tyler R's placement plan review is 1 week overdue. The plan was last reviewed 8 weeks ago. Reg 12 requires regular review — schedule urgently with the placing authority.",
-  "Alex W has achieved 5 of 8 care plan objectives. 2 objectives are in progress (education targets). Consider updating targets at the next LAC review to reflect current progress.",
-  "Positive: 100% child participation in LAC reviews this quarter. All 4 children have active placement plans. 80% plan completion rate exceeds the 70% target. Reg 11/12 compliance is strong.",
-];
+const MOOD_ICON: Record<string, typeof TrendingUp> = {
+  improving: TrendingUp,
+  declining: TrendingDown,
+  stable: Minus,
+  insufficient_data: Minus,
+};
 
 // ── Component ────────────────────────────────────────────────────────────────
 
 export function PlacementIntelligenceCard() {
-  const c = DEMO_COMPLIANCE;
-  const lac = LAC_REVIEW_STATUS;
+  const { data, isLoading } = usePlacementStability();
+  const intel = data?.data;
+
+  if (isLoading || !intel) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm flex items-center gap-2">
+            <Home className="h-4 w-4 text-brand" />
+            Placement Stability
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-text-muted)]" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const m = intel.home_metrics;
 
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <FileText className="h-4 w-4 text-brand" />
-            Placement & Care Planning
+            <Home className="h-4 w-4 text-brand" />
+            Placement Stability
           </CardTitle>
           <Link href="/placement" className="text-xs text-brand hover:underline flex items-center gap-1">
-            Plans <ChevronRight className="h-3 w-3" />
+            Details <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
       </CardHeader>
@@ -89,131 +90,137 @@ export function PlacementIntelligenceCard() {
         {/* ── Summary strip ────────────────────────────────────────────── */}
 
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg p-2" style={{ background: c.completionRate >= 75 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", c.completionRate >= 75 ? "text-green-600" : "text-amber-600")}>
-              {c.completionRate}%
-            </p>
-            <p className="text-[10px] text-muted-foreground">Plans Complete</p>
+          <div className="text-center rounded-lg bg-gray-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums">{m.total_children}</p>
+            <p className="text-[10px] text-muted-foreground">Children</p>
           </div>
-          <div className="text-center rounded-lg p-2" style={{ background: c.objectivesMetRate >= 60 ? "hsl(var(--chart-2) / 0.1)" : "hsl(var(--destructive) / 0.08)" }}>
-            <p className={cn("text-lg font-bold tabular-nums", c.objectivesMetRate >= 60 ? "text-green-600" : "text-amber-600")}>
-              {c.objectivesMetRate}%
+          <div className={cn("text-center rounded-lg p-2.5", m.average_stability_score >= 70 ? "bg-green-50" : m.average_stability_score >= 50 ? "bg-amber-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", m.average_stability_score >= 70 ? "text-green-600" : m.average_stability_score >= 50 ? "text-amber-600" : "text-red-600")}>
+              {Math.round(m.average_stability_score)}
             </p>
-            <p className="text-[10px] text-muted-foreground">Objectives Met</p>
+            <p className="text-[10px] text-muted-foreground">Stability</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.overdueReviews > 0 ? "bg-amber-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.overdueReviews > 0 ? "text-amber-600" : "text-green-600")}>
-              {c.overdueReviews}
+          <div className={cn("text-center rounded-lg p-2.5", m.children_at_risk === 0 ? "bg-green-50" : "bg-amber-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", m.children_at_risk === 0 ? "text-green-600" : "text-amber-600")}>
+              {m.children_at_risk}
             </p>
-            <p className="text-[10px] text-muted-foreground">Reviews Due</p>
+            <p className="text-[10px] text-muted-foreground">At Risk</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", c.draftPlans > 0 ? "bg-blue-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", c.draftPlans > 0 ? "text-blue-600" : "text-green-600")}>
-              {c.draftPlans}
-            </p>
-            <p className="text-[10px] text-muted-foreground">Drafts</p>
+          <div className="text-center rounded-lg bg-gray-50 p-2.5">
+            <p className="text-lg font-bold tabular-nums">{Math.round(m.average_placement_days)}d</p>
+            <p className="text-[10px] text-muted-foreground">Avg Stay</p>
           </div>
         </div>
 
-        {/* ── LAC review bar ──────────────────────────────────────────── */}
+        {/* ── Home metrics bar ─────────────────────────────────────────── */}
 
         <div className="flex items-center justify-between rounded-lg border p-3">
-          <div className="flex items-center gap-2">
-            <Calendar className={cn("h-4 w-4", lac.overdueActions > 0 ? "text-amber-500" : "text-green-500")} />
+          <div className="flex items-center gap-4">
             <div>
-              <p className="text-xs font-medium">LAC Reviews</p>
-              <p className="text-[10px] text-muted-foreground">
-                {lac.completedThisQuarter} completed · {lac.scheduled} scheduled · {lac.childParticipationRate}% participation
-              </p>
+              <p className="text-xs font-medium">{m.incident_rate_per_child_30d.toFixed(1)}</p>
+              <p className="text-[10px] text-muted-foreground">Incidents/child</p>
             </div>
-          </div>
-          {lac.overdueActions > 0 ? (
-            <Badge className="text-[10px] bg-amber-100 text-amber-700">
-              {lac.overdueActions} actions overdue
-            </Badge>
-          ) : (
-            <Badge className="text-[10px] bg-green-100 text-green-700">
-              <CheckCircle2 className="h-3 w-3 mr-1" />
-              On track
-            </Badge>
-          )}
-        </div>
-
-        {/* ── Children's plans ────────────────────────────────────────── */}
-
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
-            <Target className="h-3 w-3" />
-            Active Plans by Child
-          </p>
-          {CHILDREN_PLANS.map((child, i) => (
-            <div key={i} className="rounded-lg border p-3 space-y-1.5 text-xs">
-              <p className="font-medium">{child.name}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {child.plans.map((plan, j) => (
-                  <div key={j} className="flex items-center gap-1">
-                    <Badge variant="outline" className="text-[10px] gap-0.5">
-                      <ClipboardCheck className="h-2.5 w-2.5" />
-                      {plan.type}
-                    </Badge>
-                    <span className={cn(
-                      "text-[10px] tabular-nums",
-                      plan.complete === plan.total ? "text-green-600" : "text-muted-foreground",
-                    )}>
-                      {plan.complete}/{plan.total}
-                    </span>
-                  </div>
-                ))}
+            <div>
+              <p className="text-xs font-medium">{m.keywork_frequency_per_child_30d.toFixed(1)}</p>
+              <p className="text-[10px] text-muted-foreground">Keywork/child</p>
+            </div>
+            {m.avg_mood_home !== null && (
+              <div>
+                <p className="text-xs font-medium">{m.avg_mood_home.toFixed(1)}/10</p>
+                <p className="text-[10px] text-muted-foreground">Avg Mood</p>
               </div>
-            </div>
-          ))}
+            )}
+          </div>
         </div>
 
-        {/* ── Alerts ──────────────────────────────────────────────────── */}
+        {/* ── Child Stability Profiles ──────────────────────────────────── */}
 
-        {DEMO_ALERTS.length > 0 && (
+        {intel.children.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold text-muted-foreground">
+              Child Stability Profiles
+            </p>
+            {intel.children.map((child) => {
+              const MoodIcon = MOOD_ICON[child.mood_trend] ?? Minus;
+              return (
+                <div key={child.child_id} className="rounded-lg border p-3 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">{child.child_name}</span>
+                    <div className="flex items-center gap-1.5">
+                      <Badge className={cn("text-[9px] capitalize", STABILITY_COLOURS[child.stability_level])}>
+                        {child.stability_level.replace("_", " ")}
+                      </Badge>
+                      <span className="text-[10px] font-bold tabular-nums">{child.stability_score}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 text-muted-foreground">
+                    <span className="text-[10px]">{child.placement_days}d placed</span>
+                    <span className="text-[10px] flex items-center gap-0.5">
+                      <MoodIcon className={cn("h-2.5 w-2.5", child.mood_trend === "improving" ? "text-green-500" : child.mood_trend === "declining" ? "text-red-500" : "text-gray-400")} />
+                      {child.avg_mood_recent !== null ? `${child.avg_mood_recent.toFixed(1)} mood` : "No mood data"}
+                    </span>
+                    {child.incident_count_30d > 0 && (
+                      <span className="text-[10px] text-red-500">{child.incident_count_30d} incidents</span>
+                    )}
+                  </div>
+                  {child.risk_factors.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {child.risk_factors.slice(0, 3).map((rf, i) => (
+                        <span key={i} className="text-[9px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded">
+                          {rf}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── Disruption Indicators ────────────────────────────────────── */}
+
+        {intel.disruption_indicators.length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
-              Planning Alerts
+              Disruption Indicators
             </p>
-            {DEMO_ALERTS.map((alert, i) => (
+            {intel.disruption_indicators.slice(0, 3).map((d, i) => (
               <div
                 key={i}
                 className={cn(
                   "rounded border p-2.5 text-xs leading-relaxed",
-                  alert.severity === "critical" || alert.severity === "high"
-                    ? "border-red-200 bg-red-50 text-red-800"
-                    : "border-amber-200 bg-amber-50 text-amber-800",
+                  DISRUPTION_STYLES[d.severity] ?? DISRUPTION_STYLES.medium,
                 )}
               >
-                {alert.message}
+                <span className="font-medium">{d.child_name}</span> — {d.detail}
               </div>
             ))}
           </div>
         )}
 
-        {/* ── ARIA insights ────────────────────────────────────────────── */}
+        {/* ── ARIA Stability Intelligence ──────────────────────────────── */}
 
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
-            <Brain className="h-3 w-3" />
-            ARIA Planning Intelligence
-          </p>
-          {ARIA_INSIGHTS.map((insight, i) => (
-            <div
-              key={i}
-              className={cn(
-                "rounded border p-2.5 text-xs leading-relaxed",
-                i === 0 ? "border-red-200 bg-red-50 text-red-800"
-                  : i === 1 ? "border-blue-200 bg-blue-50 text-blue-800"
-                  : "border-green-200 bg-green-50 text-green-800",
-              )}
-            >
-              {insight}
-            </div>
-          ))}
-        </div>
+        {intel.insights.length > 0 && (
+          <div className="space-y-1.5">
+            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+              <Brain className="h-3 w-3" />
+              ARIA Stability Intelligence
+            </p>
+            {intel.insights.slice(0, 3).map((insight, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "rounded border p-2.5 text-xs leading-relaxed",
+                  INSIGHT_STYLES[insight.severity] ?? INSIGHT_STYLES.positive,
+                )}
+              >
+                {insight.text}
+              </div>
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
