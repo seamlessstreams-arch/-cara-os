@@ -44,6 +44,7 @@ import { useKeyWorkSessions, useCreateKeyWorkSession } from "@/hooks/use-intelli
 import { EmptyState } from "@/components/ui/empty-state";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { Child360IntelligenceCard } from "@/components/intelligence/child-360-intelligence-card";
+import { TherapeuticProgressCard } from "@/components/intelligence/therapeutic-progress-card";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -616,6 +617,11 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
             {/* Child 360 Intelligence Profile */}
             <div className="sm:col-span-2">
               <Child360IntelligenceCard childId={id} />
+            </div>
+
+            {/* Therapeutic Progress Intelligence */}
+            <div className="sm:col-span-2">
+              <TherapeuticProgressCard childId={id} />
             </div>
           </div>
         )}
