@@ -36,6 +36,7 @@ const IntelligenceBriefWidget = dynamic(() => import("@/components/intelligence/
 const ManagerIntelligenceBriefingCard = dynamic(() => import("@/components/dashboard/manager-intelligence-briefing-card").then(m => m.ManagerIntelligenceBriefingCard ? { default: m.ManagerIntelligenceBriefingCard } : m), { ssr: false });
 const InspectionReadinessIntelligenceCard = dynamic(() => import("@/components/dashboard/inspection-readiness-intelligence-card").then(m => m.InspectionReadinessIntelligenceCard ? { default: m.InspectionReadinessIntelligenceCard } : m), { ssr: false });
 const StaffWellbeingIntelligenceCard = dynamic(() => import("@/components/dashboard/staff-wellbeing-intelligence-card").then(m => m.StaffWellbeingIntelligenceCard ? { default: m.StaffWellbeingIntelligenceCard } : m), { ssr: false });
+const RiskIntelligenceDashboardCard = dynamic(() => import("@/components/dashboard/risk-intelligence-dashboard-card").then(m => m.RiskIntelligenceDashboardCard ? { default: m.RiskIntelligenceDashboardCard } : m), { ssr: false });
 const AriaDashboardPanel = dynamic(() => import("@/components/dashboard/aria-dashboard-panel").then(m => m.AriaDashboardPanel ? { default: m.AriaDashboardPanel } : m), { ssr: false });
 const AriaDailyIntelligence = dynamic(() => import("@/components/aria/aria-daily-intelligence").then(m => m.AriaDailyIntelligence ? { default: m.AriaDailyIntelligence } : m), { ssr: false });
 const AriaTodayBriefing = dynamic(() => import("@/components/aria/aria-today-briefing").then(m => m.AriaTodayBriefing ? { default: m.AriaTodayBriefing } : m), { ssr: false });
@@ -1204,6 +1205,7 @@ export default function DashboardPage() {
                     <ManagerIntelligenceBriefingCard />
                     <InspectionReadinessIntelligenceCard />
                     <StaffWellbeingIntelligenceCard />
+                    <RiskIntelligenceDashboardCard />
                     <AriaTodayBriefing />
                     <AriaShiftSafety />
                     <AriaRegulatoryPulse />
