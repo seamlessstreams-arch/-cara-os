@@ -106,6 +106,9 @@ const HomeNotifiableEventsIntelligenceCard = dynamic(() => import("@/components/
 const HomeRestrictivePracticeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-restrictive-practice-intelligence-card").then(m => m.HomeRestrictivePracticeIntelligenceCard ? { default: m.HomeRestrictivePracticeIntelligenceCard } : m), { ssr: false });
 const HomeSupervisionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-supervision-intelligence-card").then(m => m.HomeSupervisionIntelligenceCard ? { default: m.HomeSupervisionIntelligenceCard } : m), { ssr: false });
 const HomeBehaviourIntelligenceCard = dynamic(() => import("@/components/dashboard/home-behaviour-intelligence-card").then(m => m.HomeBehaviourIntelligenceCard ? { default: m.HomeBehaviourIntelligenceCard } : m), { ssr: false });
+const HomeSafeguardingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-safeguarding-intelligence-card").then(m => m.HomeSafeguardingIntelligenceCard ? { default: m.HomeSafeguardingIntelligenceCard } : m), { ssr: false });
+const HomeReg44IntelligenceCard = dynamic(() => import("@/components/dashboard/home-reg44-intelligence-card").then(m => m.HomeReg44IntelligenceCard ? { default: m.HomeReg44IntelligenceCard } : m), { ssr: false });
+const HomeFamilyEngagementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-family-engagement-intelligence-card").then(m => m.HomeFamilyEngagementIntelligenceCard ? { default: m.HomeFamilyEngagementIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1257,6 +1260,9 @@ export default function DashboardPage() {
                     <HomeRestrictivePracticeIntelligenceCard />
                     <HomeSupervisionIntelligenceCard />
                     <HomeBehaviourIntelligenceCard />
+                    <HomeSafeguardingIntelligenceCard />
+                    <HomeReg44IntelligenceCard />
+                    <HomeFamilyEngagementIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
