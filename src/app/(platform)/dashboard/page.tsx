@@ -103,6 +103,9 @@ const HomeRiskAssessmentIntelligenceCard = dynamic(() => import("@/components/da
 const HomeIndependenceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-independence-intelligence-card").then(m => m.HomeIndependenceIntelligenceCard ? { default: m.HomeIndependenceIntelligenceCard } : m), { ssr: false });
 const HomeParticipationIntelligenceCard = dynamic(() => import("@/components/dashboard/home-participation-intelligence-card").then(m => m.HomeParticipationIntelligenceCard ? { default: m.HomeParticipationIntelligenceCard } : m), { ssr: false });
 const HomeNotifiableEventsIntelligenceCard = dynamic(() => import("@/components/dashboard/home-notifiable-events-intelligence-card").then(m => m.HomeNotifiableEventsIntelligenceCard ? { default: m.HomeNotifiableEventsIntelligenceCard } : m), { ssr: false });
+const HomeRestrictivePracticeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-restrictive-practice-intelligence-card").then(m => m.HomeRestrictivePracticeIntelligenceCard ? { default: m.HomeRestrictivePracticeIntelligenceCard } : m), { ssr: false });
+const HomeSupervisionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-supervision-intelligence-card").then(m => m.HomeSupervisionIntelligenceCard ? { default: m.HomeSupervisionIntelligenceCard } : m), { ssr: false });
+const HomeBehaviourIntelligenceCard = dynamic(() => import("@/components/dashboard/home-behaviour-intelligence-card").then(m => m.HomeBehaviourIntelligenceCard ? { default: m.HomeBehaviourIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1251,6 +1254,9 @@ export default function DashboardPage() {
                     <HomeIndependenceIntelligenceCard />
                     <HomeParticipationIntelligenceCard />
                     <HomeNotifiableEventsIntelligenceCard />
+                    <HomeRestrictivePracticeIntelligenceCard />
+                    <HomeSupervisionIntelligenceCard />
+                    <HomeBehaviourIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
