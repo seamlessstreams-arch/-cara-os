@@ -109,6 +109,9 @@ const HomeBehaviourIntelligenceCard = dynamic(() => import("@/components/dashboa
 const HomeSafeguardingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-safeguarding-intelligence-card").then(m => m.HomeSafeguardingIntelligenceCard ? { default: m.HomeSafeguardingIntelligenceCard } : m), { ssr: false });
 const HomeReg44IntelligenceCard = dynamic(() => import("@/components/dashboard/home-reg44-intelligence-card").then(m => m.HomeReg44IntelligenceCard ? { default: m.HomeReg44IntelligenceCard } : m), { ssr: false });
 const HomeFamilyEngagementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-family-engagement-intelligence-card").then(m => m.HomeFamilyEngagementIntelligenceCard ? { default: m.HomeFamilyEngagementIntelligenceCard } : m), { ssr: false });
+const HomeAdmissionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-admission-intelligence-card").then(m => m.HomeAdmissionIntelligenceCard ? { default: m.HomeAdmissionIntelligenceCard } : m), { ssr: false });
+const HomeVisitorIntelligenceCard = dynamic(() => import("@/components/dashboard/home-visitor-intelligence-card").then(m => m.HomeVisitorIntelligenceCard ? { default: m.HomeVisitorIntelligenceCard } : m), { ssr: false });
+const HomeEmergencyPreparednessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-emergency-preparedness-intelligence-card").then(m => m.HomeEmergencyPreparednessIntelligenceCard ? { default: m.HomeEmergencyPreparednessIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1263,6 +1266,9 @@ export default function DashboardPage() {
                     <HomeSafeguardingIntelligenceCard />
                     <HomeReg44IntelligenceCard />
                     <HomeFamilyEngagementIntelligenceCard />
+                    <HomeAdmissionIntelligenceCard />
+                    <HomeVisitorIntelligenceCard />
+                    <HomeEmergencyPreparednessIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
