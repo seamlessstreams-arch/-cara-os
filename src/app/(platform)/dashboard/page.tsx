@@ -94,6 +94,7 @@ const HomeRegulatoryComplianceIntelligenceCard = dynamic(() => import("@/compone
 const HomeStaffDevelopmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-development-intelligence-card").then(m => m.HomeStaffDevelopmentIntelligenceCard ? { default: m.HomeStaffDevelopmentIntelligenceCard } : m), { ssr: false });
 const HomeIncidentSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-incident-safety-intelligence-card").then(m => m.HomeIncidentSafetyIntelligenceCard ? { default: m.HomeIncidentSafetyIntelligenceCard } : m), { ssr: false });
 const HomeChildVoiceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-child-voice-intelligence-card").then(m => m.HomeChildVoiceIntelligenceCard ? { default: m.HomeChildVoiceIntelligenceCard } : m), { ssr: false });
+const HomeKeyWorkingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-key-working-intelligence-card").then(m => m.HomeKeyWorkingIntelligenceCard ? { default: m.HomeKeyWorkingIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1233,6 +1234,7 @@ export default function DashboardPage() {
                     <HomeStaffDevelopmentIntelligenceCard />
                     <HomeIncidentSafetyIntelligenceCard />
                     <HomeChildVoiceIntelligenceCard />
+                    <HomeKeyWorkingIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
