@@ -53,6 +53,9 @@ import { ChildIndependenceIntelligenceCard } from "@/components/intelligence/chi
 import { ChildSafeguardingIntelligenceCard } from "@/components/intelligence/child-safeguarding-intelligence-card";
 import { ChildPlacementQualityCard } from "@/components/intelligence/child-placement-quality-card";
 import { ChildMissingIntelligenceCard } from "@/components/intelligence/child-missing-intelligence-card";
+import { ChildLACReviewIntelligenceCard } from "@/components/intelligence/child-lac-review-intelligence-card";
+import { ChildOutcomeIntelligenceCard } from "@/components/intelligence/child-outcome-intelligence-card";
+import { ChildKeyworkingIntelligenceCard } from "@/components/intelligence/child-keyworking-intelligence-card";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -670,6 +673,21 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
             {/* Missing & Return Intelligence */}
             <div className="sm:col-span-2">
               <ChildMissingIntelligenceCard childId={id} />
+            </div>
+
+            {/* LAC Review Intelligence */}
+            <div className="sm:col-span-2">
+              <ChildLACReviewIntelligenceCard childId={id} />
+            </div>
+
+            {/* Outcome Progress Intelligence */}
+            <div className="sm:col-span-2">
+              <ChildOutcomeIntelligenceCard childId={id} />
+            </div>
+
+            {/* Keyworking Intelligence */}
+            <div className="sm:col-span-2">
+              <ChildKeyworkingIntelligenceCard childId={id} />
             </div>
           </div>
         )}
