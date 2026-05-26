@@ -90,6 +90,8 @@ const ChildVoiceParticipationCard = dynamic(() => import("@/components/dashboard
 const HomeWellbeingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-wellbeing-intelligence-card").then(m => m.HomeWellbeingIntelligenceCard ? { default: m.HomeWellbeingIntelligenceCard } : m), { ssr: false });
 const HomeActivityEnrichmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-activity-enrichment-intelligence-card").then(m => m.HomeActivityEnrichmentIntelligenceCard ? { default: m.HomeActivityEnrichmentIntelligenceCard } : m), { ssr: false });
 const HomeNightSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-night-safety-intelligence-card").then(m => m.HomeNightSafetyIntelligenceCard ? { default: m.HomeNightSafetyIntelligenceCard } : m), { ssr: false });
+const HomeRegulatoryComplianceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-regulatory-compliance-intelligence-card").then(m => m.HomeRegulatoryComplianceIntelligenceCard ? { default: m.HomeRegulatoryComplianceIntelligenceCard } : m), { ssr: false });
+const HomeStaffDevelopmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-development-intelligence-card").then(m => m.HomeStaffDevelopmentIntelligenceCard ? { default: m.HomeStaffDevelopmentIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1225,6 +1227,8 @@ export default function DashboardPage() {
                     <HomeWellbeingIntelligenceCard />
                     <HomeActivityEnrichmentIntelligenceCard />
                     <HomeNightSafetyIntelligenceCard />
+                    <HomeRegulatoryComplianceIntelligenceCard />
+                    <HomeStaffDevelopmentIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
