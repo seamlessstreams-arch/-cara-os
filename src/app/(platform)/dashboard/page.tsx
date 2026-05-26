@@ -117,6 +117,9 @@ const HomeQualityAssuranceIntelligenceCard = dynamic(() => import("@/components/
 const HomeFinancialWellbeingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-financial-wellbeing-intelligence-card").then(m => m.HomeFinancialWellbeingIntelligenceCard ? { default: m.HomeFinancialWellbeingIntelligenceCard } : m), { ssr: false });
 const HomePolicyComplianceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-policy-compliance-intelligence-card").then(m => m.HomePolicyComplianceIntelligenceCard ? { default: m.HomePolicyComplianceIntelligenceCard } : m), { ssr: false });
 const HomePremisesSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-premises-safety-intelligence-card").then(m => m.HomePremisesSafetyIntelligenceCard ? { default: m.HomePremisesSafetyIntelligenceCard } : m), { ssr: false });
+const HomeHandoverContinuityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-handover-continuity-intelligence-card").then(m => m.HomeHandoverContinuityIntelligenceCard ? { default: m.HomeHandoverContinuityIntelligenceCard } : m), { ssr: false });
+const HomeDocumentGovernanceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-document-governance-intelligence-card").then(m => m.HomeDocumentGovernanceIntelligenceCard ? { default: m.HomeDocumentGovernanceIntelligenceCard } : m), { ssr: false });
+const HomeRecordingQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-recording-quality-intelligence-card").then(m => m.HomeRecordingQualityIntelligenceCard ? { default: m.HomeRecordingQualityIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1279,6 +1282,9 @@ export default function DashboardPage() {
                     <HomeFinancialWellbeingIntelligenceCard />
                     <HomePolicyComplianceIntelligenceCard />
                     <HomePremisesSafetyIntelligenceCard />
+                    <HomeHandoverContinuityIntelligenceCard />
+                    <HomeDocumentGovernanceIntelligenceCard />
+                    <HomeRecordingQualityIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
