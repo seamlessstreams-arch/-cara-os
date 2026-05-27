@@ -208,6 +208,11 @@ const HomeLadoAllegationManagementIntelligenceCard = dynamic(() => import("@/com
 const HomePlacementDisruptionPreventionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-placement-disruption-prevention-intelligence-card").then(m => m.HomePlacementDisruptionPreventionIntelligenceCard ? { default: m.HomePlacementDisruptionPreventionIntelligenceCard } : m), { ssr: false });
 const HomeLessonsLearnedImprovementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-lessons-learned-improvement-intelligence-card").then(m => m.HomeLessonsLearnedImprovementIntelligenceCard ? { default: m.HomeLessonsLearnedImprovementIntelligenceCard } : m), { ssr: false });
 const HomeDiversityInclusionEqualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-diversity-inclusion-equality-intelligence-card").then(m => m.HomeDiversityInclusionEqualityIntelligenceCard ? { default: m.HomeDiversityInclusionEqualityIntelligenceCard } : m), { ssr: false });
+// Batch 15 — Lone Working Safety, Food Nutrition Hygiene, Whistleblowing Transparency, Staff Debrief
+const HomeLoneWorkingStaffSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-lone-working-staff-safety-intelligence-card").then(m => m.HomeLoneWorkingStaffSafetyIntelligenceCard ? { default: m.HomeLoneWorkingStaffSafetyIntelligenceCard } : m), { ssr: false });
+const HomeFoodNutritionHygieneSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-food-nutrition-hygiene-safety-intelligence-card").then(m => m.HomeFoodNutritionHygieneSafetyIntelligenceCard ? { default: m.HomeFoodNutritionHygieneSafetyIntelligenceCard } : m), { ssr: false });
+const HomeWhistleblowingTransparencyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-whistleblowing-transparency-intelligence-card").then(m => m.HomeWhistleblowingTransparencyIntelligenceCard ? { default: m.HomeWhistleblowingTransparencyIntelligenceCard } : m), { ssr: false });
+const HomeStaffDebriefEmotionalSupportIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-debrief-emotional-support-intelligence-card").then(m => m.HomeStaffDebriefEmotionalSupportIntelligenceCard ? { default: m.HomeStaffDebriefEmotionalSupportIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1457,6 +1462,10 @@ export default function DashboardPage() {
                     <HomePlacementDisruptionPreventionIntelligenceCard />
                     <HomeLessonsLearnedImprovementIntelligenceCard />
                     <HomeDiversityInclusionEqualityIntelligenceCard />
+                    <HomeLoneWorkingStaffSafetyIntelligenceCard />
+                    <HomeFoodNutritionHygieneSafetyIntelligenceCard />
+                    <HomeWhistleblowingTransparencyIntelligenceCard />
+                    <HomeStaffDebriefEmotionalSupportIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
