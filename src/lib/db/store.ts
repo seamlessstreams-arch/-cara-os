@@ -5693,6 +5693,51 @@ store.transitionPlanningRecords = [
   },
 ] as TransitionPlanningRecord[];
 
+// ── Delegated Authority (Reg 22) ────────────────────────────────────────────
+store.delegatedAuthority = [
+  {
+    id: "da_001", child_id: "yp_alex",
+    last_reviewed: daysFromNow(-15), next_review: daysFromNow(75),
+    items: [
+      { category: "medical" as const, status: "granted" as const, detail: "RM to consent to routine medical/dental appointments.", conditions: "Excludes elective surgery — requires SW authorisation.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "education" as const, status: "granted" as const, detail: "RM/keyworker to authorise school trips, parent evening attendance.", conditions: "Overnight trips require SW approval.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "haircut_appearance" as const, status: "granted" as const, detail: "Alex can choose own haircut. Staff to facilitate.", conditions: "No extreme changes without discussion with Alex's mother.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "overnight_stays" as const, status: "partial" as const, detail: "Overnight stays with approved friends — RM to authorise after DBS check.", conditions: "Maximum 2 consecutive nights. New friends need SW approval.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "social_media" as const, status: "granted" as const, detail: "Alex can use social media with agreed safety plan.", conditions: "Staff to monitor periodically. No location sharing.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "leisure" as const, status: "granted" as const, detail: "Staff to facilitate leisure activities and clubs.", conditions: "None.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "travel" as const, status: "granted" as const, detail: "Local independent travel agreed. Public transport from age 16.", conditions: "Must inform staff of destination and expected return.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "pocket_money" as const, status: "granted" as const, detail: "Weekly pocket money managed by keyworker.", conditions: "Recorded in finance log.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "photography" as const, status: "granted" as const, detail: "Consent for home's internal photos. No social media of Alex.", conditions: "No identifying photos on home's website or social media.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+      { category: "emergency" as const, status: "granted" as const, detail: "RM authorised for emergency medical decisions.", conditions: "Notify SW as soon as practicable.", granted_by: "SW Sarah Collins", granted_date: "2026-02-10", review_date: daysFromNow(75) },
+    ],
+    notes: "Comprehensive delegated authority in place. Alex's mother consulted and agrees.",
+  },
+  {
+    id: "da_002", child_id: "yp_jordan",
+    last_reviewed: daysFromNow(-40), next_review: daysFromNow(50),
+    items: [
+      { category: "medical" as const, status: "granted" as const, detail: "RM to consent to routine medical.", conditions: "None.", granted_by: "SW Marcus Obi", granted_date: "2026-01-20", review_date: daysFromNow(50) },
+      { category: "education" as const, status: "granted" as const, detail: "RM to sign school documents and attend parents' evenings.", conditions: "None.", granted_by: "SW Marcus Obi", granted_date: "2026-01-20", review_date: daysFromNow(50) },
+      { category: "leisure" as const, status: "granted" as const, detail: "Staff to take Jordan to football and swimming.", conditions: "None.", granted_by: "SW Marcus Obi", granted_date: "2026-01-20", review_date: daysFromNow(50) },
+      { category: "overnight_stays" as const, status: "not_granted" as const, detail: "Not yet agreed due to placement stability concerns.", conditions: "To review at next LAC review.", granted_by: "SW Marcus Obi", granted_date: "2026-01-20", review_date: daysFromNow(50) },
+      { category: "contact" as const, status: "partial" as const, detail: "Supervised contact with father. Unsupervised phone with mother.", conditions: "Father contact must be supervised by staff member.", granted_by: "SW Marcus Obi", granted_date: "2026-01-20", review_date: daysFromNow(50) },
+      { category: "emergency" as const, status: "granted" as const, detail: "RM authorised for emergency decisions.", conditions: "Notify SW immediately.", granted_by: "SW Marcus Obi", granted_date: "2026-01-20", review_date: daysFromNow(50) },
+    ],
+    notes: "Review due after LAC review in July. Some areas pending due to father's contact order.",
+  },
+  {
+    id: "da_003", child_id: "yp_casey",
+    last_reviewed: daysFromNow(-90), next_review: daysFromNow(-5),
+    items: [
+      { category: "medical" as const, status: "granted" as const, detail: "RM to consent to routine medical.", conditions: "None.", granted_by: "SW Lisa Chen", granted_date: "2025-12-01", review_date: daysFromNow(-5) },
+      { category: "education" as const, status: "pending" as const, detail: "Awaiting new school placement confirmation.", conditions: "To be updated once school is confirmed.", granted_by: "SW Lisa Chen", granted_date: "2025-12-01", review_date: daysFromNow(-5) },
+      { category: "leisure" as const, status: "granted" as const, detail: "Staff to facilitate art club and drama group.", conditions: "None.", granted_by: "SW Lisa Chen", granted_date: "2025-12-01", review_date: daysFromNow(-5) },
+      { category: "emergency" as const, status: "granted" as const, detail: "RM authorised.", conditions: "Notify SW asap.", granted_by: "SW Lisa Chen", granted_date: "2025-12-01", review_date: daysFromNow(-5) },
+    ],
+    notes: "Review overdue — chase SW Lisa Chen. Education authority pending school confirmation.",
+  },
+] as DelegatedAuthority[];
+
 // ── CRUD helpers ──────────────────────────────────────────────────────────────
 
 export function getStore() { return store; }
