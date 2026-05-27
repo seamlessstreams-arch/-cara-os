@@ -150,6 +150,9 @@ const HomeStaffSafetyIntelligenceCard = dynamic(() => import("@/components/dashb
 const HomeOrganizationalLearningIntelligenceCard = dynamic(() => import("@/components/dashboard/home-organizational-learning-intelligence-card").then(m => m.HomeOrganizationalLearningIntelligenceCard ? { default: m.HomeOrganizationalLearningIntelligenceCard } : m), { ssr: false });
 const HomeMultiAgencyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-multi-agency-intelligence-card").then(m => m.HomeMultiAgencyIntelligenceCard ? { default: m.HomeMultiAgencyIntelligenceCard } : m), { ssr: false });
 const HomeDataGovernanceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-data-governance-intelligence-card").then(m => m.HomeDataGovernanceIntelligenceCard ? { default: m.HomeDataGovernanceIntelligenceCard } : m), { ssr: false });
+const HomeNutritionCateringIntelligenceCard = dynamic(() => import("@/components/dashboard/home-nutrition-catering-intelligence-card").then(m => m.HomeNutritionCateringIntelligenceCard ? { default: m.HomeNutritionCateringIntelligenceCard } : m), { ssr: false });
+const HomeHealthMonitoringIntelligenceCard = dynamic(() => import("@/components/dashboard/home-health-monitoring-intelligence-card").then(m => m.HomeHealthMonitoringIntelligenceCard ? { default: m.HomeHealthMonitoringIntelligenceCard } : m), { ssr: false });
+const HomeMedicationGovernanceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-medication-governance-intelligence-card").then(m => m.HomeMedicationGovernanceIntelligenceCard ? { default: m.HomeMedicationGovernanceIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1345,6 +1348,9 @@ export default function DashboardPage() {
                     <HomeStaffSafetyIntelligenceCard />
                     <HomeMultiAgencyIntelligenceCard />
                     <HomeDataGovernanceIntelligenceCard />
+                    <HomeNutritionCateringIntelligenceCard />
+                    <HomeHealthMonitoringIntelligenceCard />
+                    <HomeMedicationGovernanceIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
