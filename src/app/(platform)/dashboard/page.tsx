@@ -188,6 +188,11 @@ const HomeConsentRightsLiteracyIntelligenceCard = dynamic(() => import("@/compon
 const HomeStaffReflectivePracticeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-reflective-practice-intelligence-card").then(m => m.HomeStaffReflectivePracticeIntelligenceCard ? { default: m.HomeStaffReflectivePracticeIntelligenceCard } : m), { ssr: false });
 const HomeSensoryTherapeuticEnvironmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-sensory-therapeutic-environment-intelligence-card").then(m => m.HomeSensoryTherapeuticEnvironmentIntelligenceCard ? { default: m.HomeSensoryTherapeuticEnvironmentIntelligenceCard } : m), { ssr: false });
 const HomeDailyRoutineCareContinuityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-daily-routine-care-continuity-intelligence-card").then(m => m.HomeDailyRoutineCareContinuityIntelligenceCard ? { default: m.HomeDailyRoutineCareContinuityIntelligenceCard } : m), { ssr: false });
+// Batch 11 — Outcome Star, Infection Control, Case File Audit, Stakeholder Engagement
+const HomeOutcomeStarNeedsIntelligenceCard = dynamic(() => import("@/components/dashboard/home-outcome-star-needs-intelligence-card").then(m => m.HomeOutcomeStarNeedsIntelligenceCard ? { default: m.HomeOutcomeStarNeedsIntelligenceCard } : m), { ssr: false });
+const HomeInfectionControlHealthSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-infection-control-health-safety-intelligence-card").then(m => m.HomeInfectionControlHealthSafetyIntelligenceCard ? { default: m.HomeInfectionControlHealthSafetyIntelligenceCard } : m), { ssr: false });
+const HomeCaseFileAuditQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-case-file-audit-quality-intelligence-card").then(m => m.HomeCaseFileAuditQualityIntelligenceCard ? { default: m.HomeCaseFileAuditQualityIntelligenceCard } : m), { ssr: false });
+const HomeStakeholderEngagementFeedbackIntelligenceCard = dynamic(() => import("@/components/dashboard/home-stakeholder-engagement-feedback-intelligence-card").then(m => m.HomeStakeholderEngagementFeedbackIntelligenceCard ? { default: m.HomeStakeholderEngagementFeedbackIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1421,6 +1426,10 @@ export default function DashboardPage() {
                     <HomeStaffReflectivePracticeIntelligenceCard />
                     <HomeSensoryTherapeuticEnvironmentIntelligenceCard />
                     <HomeDailyRoutineCareContinuityIntelligenceCard />
+                    <HomeOutcomeStarNeedsIntelligenceCard />
+                    <HomeInfectionControlHealthSafetyIntelligenceCard />
+                    <HomeCaseFileAuditQualityIntelligenceCard />
+                    <HomeStakeholderEngagementFeedbackIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
