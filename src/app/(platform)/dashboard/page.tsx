@@ -247,6 +247,12 @@ const HomePlacementImpactAssessmentIntelligenceCard = dynamic(() => import("@/co
 const HomeMultidisciplinaryFormulationIntelligenceCard = dynamic(() => import("@/components/dashboard/home-multidisciplinary-formulation-intelligence-card").then(m => m.HomeMultidisciplinaryFormulationIntelligenceCard ? { default: m.HomeMultidisciplinaryFormulationIntelligenceCard } : m), { ssr: false });
 const HomeSocialWorkerContactIntelligenceCard = dynamic(() => import("@/components/dashboard/home-social-worker-contact-intelligence-card").then(m => m.HomeSocialWorkerContactIntelligenceCard ? { default: m.HomeSocialWorkerContactIntelligenceCard } : m), { ssr: false });
 
+// Batch 22 — Trauma Therapy, Attachment Profile, Self-Harm Safety Plan, Post-Incident Child Debrief
+const HomeTraumaTherapyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-trauma-therapy-intelligence-card").then(m => m.HomeTraumaTherapyIntelligenceCard ? { default: m.HomeTraumaTherapyIntelligenceCard } : m), { ssr: false });
+const HomeAttachmentProfileIntelligenceCard = dynamic(() => import("@/components/dashboard/home-attachment-profile-intelligence-card").then(m => m.HomeAttachmentProfileIntelligenceCard ? { default: m.HomeAttachmentProfileIntelligenceCard } : m), { ssr: false });
+const HomeSelfHarmSafetyPlanIntelligenceCard = dynamic(() => import("@/components/dashboard/home-self-harm-safety-plan-intelligence-card").then(m => m.HomeSelfHarmSafetyPlanIntelligenceCard ? { default: m.HomeSelfHarmSafetyPlanIntelligenceCard } : m), { ssr: false });
+const HomePostIncidentChildDebriefIntelligenceCard = dynamic(() => import("@/components/dashboard/home-post-incident-child-debrief-intelligence-card").then(m => m.HomePostIncidentChildDebriefIntelligenceCard ? { default: m.HomePostIncidentChildDebriefIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1523,6 +1529,10 @@ export default function DashboardPage() {
                     <HomePlacementImpactAssessmentIntelligenceCard />
                     <HomeMultidisciplinaryFormulationIntelligenceCard />
                     <HomeSocialWorkerContactIntelligenceCard />
+                    <HomeTraumaTherapyIntelligenceCard />
+                    <HomeAttachmentProfileIntelligenceCard />
+                    <HomeSelfHarmSafetyPlanIntelligenceCard />
+                    <HomePostIncidentChildDebriefIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
