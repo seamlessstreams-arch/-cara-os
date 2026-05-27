@@ -5616,6 +5616,83 @@ store.onCallShifts = [
   },
 ] as OnCallShift[];
 
+// ── Transition Planning Records (Reg 14) ────────────────────────────────────
+store.transitionPlanningRecords = [
+  // Alex — 17, should have robust transition plan. 4 goals across areas.
+  {
+    id: "tpr_001", child_id: "yp_alex",
+    area: "independent_living" as const, goal: "Cook 3 meals independently per week",
+    description: "Alex is learning to plan, shop, and cook basic meals. Building towards full independence.",
+    status: "on_track" as const, target_date: "2026-09-01", start_date: "2026-01-15",
+    key_worker: "staff_darren", actions: ["Weekly cooking session", "Create meal planner", "Budget for ingredients"],
+    progress: "Now confidently cooking pasta dishes and jacket potatoes. Learning stir-fry this month.",
+    percent_complete: 65, review_date: daysFromNow(-10), notes: "Enjoying cooking — wants to try baking next.",
+    created_at: "2026-01-15T10:00:00Z",
+  },
+  {
+    id: "tpr_002", child_id: "yp_alex",
+    area: "financial" as const, goal: "Open and manage own bank account",
+    description: "Alex needs to understand banking, budgeting, and managing money for post-18 transition.",
+    status: "in_progress" as const, target_date: "2026-07-01", start_date: "2026-02-01",
+    key_worker: "staff_darren", actions: ["Visit bank to open account", "Set up standing order for savings", "Complete budgeting workbook"],
+    progress: "Account opened. Learning to use banking app. Budgeting workbook 50% complete.",
+    percent_complete: 50, review_date: daysFromNow(-5), notes: "PA also supporting with this.",
+    created_at: "2026-02-01T10:00:00Z",
+  },
+  {
+    id: "tpr_003", child_id: "yp_alex",
+    area: "education_employment" as const, goal: "Secure part-time employment or apprenticeship",
+    description: "Alex wants to work in IT. Exploring apprenticeships and part-time roles.",
+    status: "at_risk" as const, target_date: "2026-08-01", start_date: "2026-03-01",
+    key_worker: "staff_ryan", actions: ["Create CV", "Apply to 3 apprenticeships", "Practice interview skills"],
+    progress: "CV created but applications not yet submitted. Needs more support with confidence.",
+    percent_complete: 25, review_date: daysFromNow(-20), notes: "Review overdue — needs chasing.",
+    created_at: "2026-03-01T10:00:00Z",
+  },
+  {
+    id: "tpr_004", child_id: "yp_alex",
+    area: "health_wellbeing" as const, goal: "Register with GP and dentist independently",
+    description: "Preparing Alex to manage own health appointments post-18.",
+    status: "achieved" as const, target_date: "2026-06-01", start_date: "2026-01-15",
+    key_worker: "staff_darren", actions: ["Visit GP surgery together", "Register at dentist", "Create health folder"],
+    progress: "Registered with GP and dentist. Health folder maintained. Attended last appointment independently.",
+    percent_complete: 100, review_date: daysFromNow(-7), notes: "Excellent progress — fully independent here.",
+    created_at: "2026-01-15T10:00:00Z",
+  },
+  // Jordan — 15, earlier stage. 2 goals started.
+  {
+    id: "tpr_005", child_id: "yp_jordan",
+    area: "relationships" as const, goal: "Identify and maintain positive support network",
+    description: "Jordan is mapping trusted adults and peers for long-term support.",
+    status: "in_progress" as const, target_date: "2026-12-01", start_date: "2026-04-01",
+    key_worker: "staff_anna", actions: ["Complete relationship map", "Reconnect with mentor", "Attend youth group"],
+    progress: "Relationship map started. Attending youth group fortnightly.",
+    percent_complete: 30, review_date: daysFromNow(-12), notes: "",
+    created_at: "2026-04-01T10:00:00Z",
+  },
+  {
+    id: "tpr_006", child_id: "yp_jordan",
+    area: "independent_living" as const, goal: "Learn to do own laundry and basic cleaning",
+    description: "Building practical independent living skills appropriate to age.",
+    status: "not_started" as const, target_date: "2026-10-01", start_date: "2026-06-01",
+    key_worker: "staff_anna", actions: ["Create laundry routine", "Practice weekly with support", "Learn to use washing machine"],
+    progress: "",
+    percent_complete: 0, review_date: "", notes: "Planned to start after half-term.",
+    created_at: "2026-05-20T10:00:00Z",
+  },
+  // Casey — 14, just 1 early goal (younger child, earlier pathway stage).
+  {
+    id: "tpr_007", child_id: "yp_casey",
+    area: "identity" as const, goal: "Explore life story work and cultural identity",
+    description: "Casey wants to understand their history and build a strong sense of identity.",
+    status: "in_progress" as const, target_date: "2027-03-01", start_date: "2026-03-15",
+    key_worker: "staff_chervelle", actions: ["Begin life story book", "Connect with cultural community group", "Therapeutic sessions around identity"],
+    progress: "Life story book started. Two therapeutic sessions completed. Cultural group identified.",
+    percent_complete: 35, review_date: daysFromNow(-8), notes: "Casey is engaging well. Sensitive area — pace carefully.",
+    created_at: "2026-03-15T10:00:00Z",
+  },
+] as TransitionPlanningRecord[];
+
 // ── CRUD helpers ──────────────────────────────────────────────────────────────
 
 export function getStore() { return store; }
