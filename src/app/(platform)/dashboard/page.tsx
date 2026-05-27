@@ -130,6 +130,7 @@ const HomeOutcomesProgressIntelligenceCard = dynamic(() => import("@/components/
 const HomeRiskLandscapeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-risk-landscape-intelligence-card").then(m => m.HomeRiskLandscapeIntelligenceCard ? { default: m.HomeRiskLandscapeIntelligenceCard } : m), { ssr: false });
 const HomeTherapeuticClimateIntelligenceCard = dynamic(() => import("@/components/dashboard/home-therapeutic-climate-intelligence-card").then(m => m.HomeTherapeuticClimateIntelligenceCard ? { default: m.HomeTherapeuticClimateIntelligenceCard } : m), { ssr: false });
 const HomeBSPEffectivenessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-bsp-effectiveness-intelligence-card").then(m => m.HomeBSPEffectivenessIntelligenceCard ? { default: m.HomeBSPEffectivenessIntelligenceCard } : m), { ssr: false });
+const HomeCompetencyLandscapeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-competency-landscape-intelligence-card").then(m => m.HomeCompetencyLandscapeIntelligenceCard ? { default: m.HomeCompetencyLandscapeIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1305,6 +1306,7 @@ export default function DashboardPage() {
                     <HomeRiskLandscapeIntelligenceCard />
                     <HomeTherapeuticClimateIntelligenceCard />
                     <HomeBSPEffectivenessIntelligenceCard />
+                    <HomeCompetencyLandscapeIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
