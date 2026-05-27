@@ -198,6 +198,11 @@ const HomeFinancialLiteracyMoneyManagementIntelligenceCard = dynamic(() => impor
 const HomeSaferRecruitmentVettingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-safer-recruitment-vetting-intelligence-card").then(m => m.HomeSaferRecruitmentVettingIntelligenceCard ? { default: m.HomeSaferRecruitmentVettingIntelligenceCard } : m), { ssr: false });
 const HomeLeavingCareTransitionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-leaving-care-transition-intelligence-card").then(m => m.HomeLeavingCareTransitionIntelligenceCard ? { default: m.HomeLeavingCareTransitionIntelligenceCard } : m), { ssr: false });
 const HomeGovernanceManagementOversightIntelligenceCard = dynamic(() => import("@/components/dashboard/home-governance-management-oversight-intelligence-card").then(m => m.HomeGovernanceManagementOversightIntelligenceCard ? { default: m.HomeGovernanceManagementOversightIntelligenceCard } : m), { ssr: false });
+// Batch 13 — Staff Competency, Children's Voice, Digital Safety, Therapeutic Wellbeing
+const HomeStaffCompetencyTrainingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-competency-training-intelligence-card").then(m => m.HomeStaffCompetencyTrainingIntelligenceCard ? { default: m.HomeStaffCompetencyTrainingIntelligenceCard } : m), { ssr: false });
+const HomeChildrensVoiceParticipationIntelligenceCard = dynamic(() => import("@/components/dashboard/home-childrens-voice-participation-intelligence-card").then(m => m.HomeChildrensVoiceParticipationIntelligenceCard ? { default: m.HomeChildrensVoiceParticipationIntelligenceCard } : m), { ssr: false });
+const HomeDigitalLiteracyOnlineSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-digital-literacy-online-safety-intelligence-card").then(m => m.HomeDigitalLiteracyOnlineSafetyIntelligenceCard ? { default: m.HomeDigitalLiteracyOnlineSafetyIntelligenceCard } : m), { ssr: false });
+const HomeTherapeuticWellbeingImpactIntelligenceCard = dynamic(() => import("@/components/dashboard/home-therapeutic-wellbeing-impact-intelligence-card").then(m => m.HomeTherapeuticWellbeingImpactIntelligenceCard ? { default: m.HomeTherapeuticWellbeingImpactIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1439,6 +1444,10 @@ export default function DashboardPage() {
                     <HomeSaferRecruitmentVettingIntelligenceCard />
                     <HomeLeavingCareTransitionIntelligenceCard />
                     <HomeGovernanceManagementOversightIntelligenceCard />
+                    <HomeStaffCompetencyTrainingIntelligenceCard />
+                    <HomeChildrensVoiceParticipationIntelligenceCard />
+                    <HomeDigitalLiteracyOnlineSafetyIntelligenceCard />
+                    <HomeTherapeuticWellbeingImpactIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
