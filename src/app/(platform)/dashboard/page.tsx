@@ -235,6 +235,12 @@ const HomeReturnInterviewQualityIntelligenceCard = dynamic(() => import("@/compo
 const HomeFireDrillEmergencyPreparednessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-fire-drill-emergency-preparedness-intelligence-card").then(m => m.HomeFireDrillEmergencyPreparednessIntelligenceCard ? { default: m.HomeFireDrillEmergencyPreparednessIntelligenceCard } : m), { ssr: false });
 const HomeParentPartnershipEngagementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-parent-partnership-engagement-intelligence-card").then(m => m.HomeParentPartnershipEngagementIntelligenceCard ? { default: m.HomeParentPartnershipEngagementIntelligenceCard } : m), { ssr: false });
 
+// Batch 20 — Advocacy, Substance Screening, Annual Health Assessment, PEP Education
+const HomeAdvocacyIndependentVoiceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-advocacy-independent-voice-intelligence-card").then(m => m.HomeAdvocacyIndependentVoiceIntelligenceCard ? { default: m.HomeAdvocacyIndependentVoiceIntelligenceCard } : m), { ssr: false });
+const HomeSubstanceMisuseScreeningIntelligenceCard = dynamic(() => import("@/components/dashboard/home-substance-misuse-screening-intelligence-card").then(m => m.HomeSubstanceMisuseScreeningIntelligenceCard ? { default: m.HomeSubstanceMisuseScreeningIntelligenceCard } : m), { ssr: false });
+const HomeAnnualHealthAssessmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-annual-health-assessment-intelligence-card").then(m => m.HomeAnnualHealthAssessmentIntelligenceCard ? { default: m.HomeAnnualHealthAssessmentIntelligenceCard } : m), { ssr: false });
+const HomePepEducationQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-pep-education-quality-intelligence-card").then(m => m.HomePepEducationQualityIntelligenceCard ? { default: m.HomePepEducationQualityIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1503,6 +1509,10 @@ export default function DashboardPage() {
                     <HomeReturnInterviewQualityIntelligenceCard />
                     <HomeFireDrillEmergencyPreparednessIntelligenceCard />
                     <HomeParentPartnershipEngagementIntelligenceCard />
+                    <HomeAdvocacyIndependentVoiceIntelligenceCard />
+                    <HomeSubstanceMisuseScreeningIntelligenceCard />
+                    <HomeAnnualHealthAssessmentIntelligenceCard />
+                    <HomePepEducationQualityIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
