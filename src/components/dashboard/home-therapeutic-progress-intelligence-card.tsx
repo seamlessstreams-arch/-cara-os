@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Loader2, AlertCircle, AlertTriangle,
   Sparkles, Brain, Heart,
-  Moon, Puzzle, ShieldHeart,
+  Moon, Puzzle, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHomeTherapeuticProgressIntelligence } from "@/hooks/use-home-therapeutic-progress-intelligence";
@@ -85,7 +85,7 @@ export function HomeTherapeuticProgressIntelligenceCard() {
             {/* De-escalation Rate */}
             <div className="text-center rounded-lg bg-slate-50 p-2">
               <div className="flex items-center justify-center gap-1">
-                <ShieldHeart className="h-3.5 w-3.5 text-slate-400" />
+                <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
                 <p className={cn("text-lg font-bold tabular-nums",
                   d.behaviour_map.de_escalation_rate >= 90 ? "text-green-600" :
                   d.behaviour_map.de_escalation_rate >= 70 ? "text-blue-600" : "text-red-600"
