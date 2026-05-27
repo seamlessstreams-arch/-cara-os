@@ -5810,6 +5810,95 @@ store.fireDrills = [
   },
 ] as FireDrill[];
 
+// ── Sleep Log (Reg 7/10) ────────────────────────────────────────────────────
+store.sleepLog = [
+  {
+    id: "sl_001", date: daysFromNow(-1), shift_type: "waking_night" as const,
+    staff_id: "staff_anna", start_time: "22:00", end_time: "07:00",
+    disturbance_level: "none" as const, disturbances: [],
+    checks_completed: ["22:30", "00:00", "02:00", "04:00", "06:00"],
+    building_secure: true, alarms_set: true,
+    handover_notes: "All young people settled by 22:15. Quiet night.",
+    morning_handover: "All well. Alex up at 06:30 independently. Jordan and Casey still asleep at handover.",
+    hours_slept: null,
+  },
+  {
+    id: "sl_002", date: daysFromNow(-2), shift_type: "waking_night" as const,
+    staff_id: "staff_lackson", start_time: "22:00", end_time: "07:00",
+    disturbance_level: "minor" as const,
+    disturbances: [
+      { time: "01:30", young_person: "yp_casey", description: "Casey woke briefly — needed reassurance after a bad dream.", action_taken: "Sat with Casey for 10 minutes. Settled back to sleep.", duration: 15 },
+    ],
+    checks_completed: ["22:30", "00:00", "02:00", "04:00", "06:00"],
+    building_secure: true, alarms_set: true,
+    handover_notes: "Casey had bad dream around 01:30 — settled quickly with reassurance.",
+    morning_handover: "Casey fine in morning — no further issues. All young people had good sleep.",
+    hours_slept: null,
+  },
+  {
+    id: "sl_003", date: daysFromNow(-3), shift_type: "waking_night" as const,
+    staff_id: "staff_edward", start_time: "22:00", end_time: "07:00",
+    disturbance_level: "moderate" as const,
+    disturbances: [
+      { time: "23:45", young_person: "yp_alex", description: "Alex not settling — anxiety about school next day.", action_taken: "Offered warm drink and conversation. Used grounding techniques from BSP.", duration: 25 },
+      { time: "03:00", young_person: "yp_jordan", description: "Jordan up for toilet — heard noise and became unsettled.", action_taken: "Brief reassurance. Settled quickly.", duration: 5 },
+    ],
+    checks_completed: ["22:30", "00:30", "02:00", "04:00", "06:00"],
+    building_secure: true, alarms_set: true,
+    handover_notes: "Alex had difficulty settling — anxiety re: school. Jordan brief wake at 03:00.",
+    morning_handover: "Both Alex and Jordan tired. Consider informing school about Alex's sleep.",
+    hours_slept: null,
+  },
+  {
+    id: "sl_004", date: daysFromNow(-4), shift_type: "sleep_in" as const,
+    staff_id: "staff_chervelle", start_time: "22:30", end_time: "07:00",
+    disturbance_level: "none" as const, disturbances: [],
+    checks_completed: ["22:30", "06:30"],
+    building_secure: true, alarms_set: true,
+    handover_notes: "Sleep-in shift. All quiet. Checked young people at 22:30 — all asleep.",
+    morning_handover: "Uneventful night. All YP well rested.",
+    hours_slept: 7,
+  },
+  {
+    id: "sl_005", date: daysFromNow(-5), shift_type: "waking_night" as const,
+    staff_id: "staff_anna", start_time: "22:00", end_time: "07:00",
+    disturbance_level: "significant" as const,
+    disturbances: [
+      { time: "00:30", young_person: "yp_alex", description: "Alex woke screaming — night terror episode.", action_taken: "Stayed with Alex. Used calming voice. Did not restrain. Alex re-settled after 20 mins.", duration: 30 },
+      { time: "01:15", young_person: "yp_casey", description: "Casey woken by Alex's distress — became upset.", action_taken: "Comforted Casey in their room. Read together until settled.", duration: 20 },
+      { time: "04:00", young_person: "yp_alex", description: "Alex woke again — went to kitchen for water.", action_taken: "Accompanied to kitchen. Brief chat. Back to bed by 04:15.", duration: 15 },
+    ],
+    checks_completed: ["22:30", "00:00", "02:00", "04:30", "06:00"],
+    building_secure: true, alarms_set: true,
+    handover_notes: "Difficult night — Alex had night terror at 00:30, woke Casey. Third disturbance at 04:00. Informed RM in morning.",
+    morning_handover: "Alex and Casey both tired. RM to discuss with therapist. Night terrors increasing — may need CAMHS referral.",
+    hours_slept: null,
+  },
+  {
+    id: "sl_006", date: daysFromNow(-6), shift_type: "waking_night" as const,
+    staff_id: "staff_lackson", start_time: "22:00", end_time: "07:00",
+    disturbance_level: "none" as const, disturbances: [],
+    checks_completed: ["22:30", "00:00", "02:00", "04:00", "06:00"],
+    building_secure: true, alarms_set: true,
+    handover_notes: "All settled by 21:45. Completely quiet night.",
+    morning_handover: "All well. Everyone slept through.",
+    hours_slept: null,
+  },
+  {
+    id: "sl_007", date: daysFromNow(-7), shift_type: "waking_night" as const,
+    staff_id: "staff_mirela", start_time: "22:00", end_time: "07:00",
+    disturbance_level: "minor" as const,
+    disturbances: [
+      { time: "02:30", young_person: "yp_jordan", description: "Jordan woke — said feeling unwell (stomach).", action_taken: "Offered water and checked temperature. No fever. Settled back to sleep.", duration: 10 },
+    ],
+    checks_completed: ["22:30", "00:00", "02:00", "04:00", "06:00"],
+    building_secure: true, alarms_set: true,
+    handover_notes: "Jordan briefly unwell at 02:30 — stomach complaint. No temperature.",
+    morning_handover: "Jordan fine in morning. Ate breakfast. Monitor today.",
+    hours_slept: null,
+  },
+] as SleepLogEntry[];
+
 // ── CRUD helpers ──────────────────────────────────────────────────────────────
 
 export function getStore() { return store; }
