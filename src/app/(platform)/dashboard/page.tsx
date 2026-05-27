@@ -184,6 +184,10 @@ const HomeAccidentInjurySurveillanceIntelligenceCard = dynamic(() => import("@/c
 const HomeStatutoryVisitComplianceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-statutory-visit-compliance-intelligence-card").then(m => m.HomeStatutoryVisitComplianceIntelligenceCard ? { default: m.HomeStatutoryVisitComplianceIntelligenceCard } : m), { ssr: false });
 const HomeBelongingPersonalPropertyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-belonging-personal-property-intelligence-card").then(m => m.HomeBelongingPersonalPropertyIntelligenceCard ? { default: m.HomeBelongingPersonalPropertyIntelligenceCard } : m), { ssr: false });
 const HomeCamhsSpecialistReferralIntelligenceCard = dynamic(() => import("@/components/dashboard/home-camhs-specialist-referral-intelligence-card").then(m => m.HomeCamhsSpecialistReferralIntelligenceCard ? { default: m.HomeCamhsSpecialistReferralIntelligenceCard } : m), { ssr: false });
+const HomeConsentRightsLiteracyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-consent-rights-literacy-intelligence-card").then(m => m.HomeConsentRightsLiteracyIntelligenceCard ? { default: m.HomeConsentRightsLiteracyIntelligenceCard } : m), { ssr: false });
+const HomeStaffReflectivePracticeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-reflective-practice-intelligence-card").then(m => m.HomeStaffReflectivePracticeIntelligenceCard ? { default: m.HomeStaffReflectivePracticeIntelligenceCard } : m), { ssr: false });
+const HomeSensoryTherapeuticEnvironmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-sensory-therapeutic-environment-intelligence-card").then(m => m.HomeSensoryTherapeuticEnvironmentIntelligenceCard ? { default: m.HomeSensoryTherapeuticEnvironmentIntelligenceCard } : m), { ssr: false });
+const HomeDailyRoutineCareContinuityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-daily-routine-care-continuity-intelligence-card").then(m => m.HomeDailyRoutineCareContinuityIntelligenceCard ? { default: m.HomeDailyRoutineCareContinuityIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1413,6 +1417,10 @@ export default function DashboardPage() {
                     <HomeStatutoryVisitComplianceIntelligenceCard />
                     <HomeBelongingPersonalPropertyIntelligenceCard />
                     <HomeCamhsSpecialistReferralIntelligenceCard />
+                    <HomeConsentRightsLiteracyIntelligenceCard />
+                    <HomeStaffReflectivePracticeIntelligenceCard />
+                    <HomeSensoryTherapeuticEnvironmentIntelligenceCard />
+                    <HomeDailyRoutineCareContinuityIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
