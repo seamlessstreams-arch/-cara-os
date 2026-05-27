@@ -213,6 +213,11 @@ const HomeLoneWorkingStaffSafetyIntelligenceCard = dynamic(() => import("@/compo
 const HomeFoodNutritionHygieneSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-food-nutrition-hygiene-safety-intelligence-card").then(m => m.HomeFoodNutritionHygieneSafetyIntelligenceCard ? { default: m.HomeFoodNutritionHygieneSafetyIntelligenceCard } : m), { ssr: false });
 const HomeWhistleblowingTransparencyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-whistleblowing-transparency-intelligence-card").then(m => m.HomeWhistleblowingTransparencyIntelligenceCard ? { default: m.HomeWhistleblowingTransparencyIntelligenceCard } : m), { ssr: false });
 const HomeStaffDebriefEmotionalSupportIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-debrief-emotional-support-intelligence-card").then(m => m.HomeStaffDebriefEmotionalSupportIntelligenceCard ? { default: m.HomeStaffDebriefEmotionalSupportIntelligenceCard } : m), { ssr: false });
+// Batch 16 — Agency Staff Management, Holiday Experiences, Quality of Care Review, Transport Safety
+const HomeAgencyStaffManagementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-agency-staff-management-intelligence-card").then(m => m.HomeAgencyStaffManagementIntelligenceCard ? { default: m.HomeAgencyStaffManagementIntelligenceCard } : m), { ssr: false });
+const HomeHolidayEnrichingExperiencesIntelligenceCard = dynamic(() => import("@/components/dashboard/home-holiday-enriching-experiences-intelligence-card").then(m => m.HomeHolidayEnrichingExperiencesIntelligenceCard ? { default: m.HomeHolidayEnrichingExperiencesIntelligenceCard } : m), { ssr: false });
+const HomeQualityOfCareReviewIntelligenceCard = dynamic(() => import("@/components/dashboard/home-quality-of-care-review-intelligence-card").then(m => m.HomeQualityOfCareReviewIntelligenceCard ? { default: m.HomeQualityOfCareReviewIntelligenceCard } : m), { ssr: false });
+const HomeTransportJourneySafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-transport-journey-safety-intelligence-card").then(m => m.HomeTransportJourneySafetyIntelligenceCard ? { default: m.HomeTransportJourneySafetyIntelligenceCard } : m), { ssr: false });
 
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
@@ -1466,6 +1471,10 @@ export default function DashboardPage() {
                     <HomeFoodNutritionHygieneSafetyIntelligenceCard />
                     <HomeWhistleblowingTransparencyIntelligenceCard />
                     <HomeStaffDebriefEmotionalSupportIntelligenceCard />
+                    <HomeAgencyStaffManagementIntelligenceCard />
+                    <HomeHolidayEnrichingExperiencesIntelligenceCard />
+                    <HomeQualityOfCareReviewIntelligenceCard />
+                    <HomeTransportJourneySafetyIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
