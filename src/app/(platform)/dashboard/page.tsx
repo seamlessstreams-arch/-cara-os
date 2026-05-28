@@ -355,6 +355,12 @@ const HomeFireSafetyEmergencyDrillIntelligenceCard = dynamic(() => import("@/com
 const HomeInfectionPreventionControlIntelligenceCard = dynamic(() => import("@/components/dashboard/home-infection-prevention-control-intelligence-card").then(m => m.HomeInfectionPreventionControlIntelligenceCard ? { default: m.HomeInfectionPreventionControlIntelligenceCard } : m), { ssr: false });
 const HomePrivacyDignityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-privacy-dignity-intelligence-card").then(m => m.HomePrivacyDignityIntelligenceCard ? { default: m.HomePrivacyDignityIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 40 ──
+const HomeAllegationsInvestigationsManagementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-allegations-investigations-management-intelligence-card").then(m => m.HomeAllegationsInvestigationsManagementIntelligenceCard ? { default: m.HomeAllegationsInvestigationsManagementIntelligenceCard } : m), { ssr: false });
+const HomeAdmissionsMatchingAssessmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-admissions-matching-assessment-intelligence-card").then(m => m.HomeAdmissionsMatchingAssessmentIntelligenceCard ? { default: m.HomeAdmissionsMatchingAssessmentIntelligenceCard } : m), { ssr: false });
+const HomeDailyRoutineStructureIntelligenceCard = dynamic(() => import("@/components/dashboard/home-daily-routine-structure-intelligence-card").then(m => m.HomeDailyRoutineStructureIntelligenceCard ? { default: m.HomeDailyRoutineStructureIntelligenceCard } : m), { ssr: false });
+const HomeOutdoorNatureEngagementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-outdoor-nature-engagement-intelligence-card").then(m => m.HomeOutdoorNatureEngagementIntelligenceCard ? { default: m.HomeOutdoorNatureEngagementIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1703,6 +1709,10 @@ export default function DashboardPage() {
                     <HomeFireSafetyEmergencyDrillIntelligenceCard />
                     <HomeInfectionPreventionControlIntelligenceCard />
                     <HomePrivacyDignityIntelligenceCard />
+                    <HomeAllegationsInvestigationsManagementIntelligenceCard />
+                    <HomeAdmissionsMatchingAssessmentIntelligenceCard />
+                    <HomeDailyRoutineStructureIntelligenceCard />
+                    <HomeOutdoorNatureEngagementIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
