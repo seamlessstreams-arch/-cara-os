@@ -271,6 +271,12 @@ const HomeDeprivationOfLibertyIntelligenceCard = dynamic(() => import("@/compone
 const HomeSanctionRewardBalanceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-sanction-reward-balance-intelligence-card").then(m => m.HomeSanctionRewardBalanceIntelligenceCard ? { default: m.HomeSanctionRewardBalanceIntelligenceCard } : m), { ssr: false });
 const HomeStaffDisciplinaryConductIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-disciplinary-conduct-intelligence-card").then(m => m.HomeStaffDisciplinaryConductIntelligenceCard ? { default: m.HomeStaffDisciplinaryConductIntelligenceCard } : m), { ssr: false });
 
+// Batch 26 — Care Event Quality, Statutory Notification Compliance, Staff Performance Composite, Young Person Daily Wellbeing
+const HomeCareEventQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-care-event-quality-intelligence-card").then(m => m.HomeCareEventQualityIntelligenceCard ? { default: m.HomeCareEventQualityIntelligenceCard } : m), { ssr: false });
+const HomeStatutoryNotificationComplianceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-statutory-notification-compliance-intelligence-card").then(m => m.HomeStatutoryNotificationComplianceIntelligenceCard ? { default: m.HomeStatutoryNotificationComplianceIntelligenceCard } : m), { ssr: false });
+const HomeStaffPerformanceCompositeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-performance-composite-intelligence-card").then(m => m.HomeStaffPerformanceCompositeIntelligenceCard ? { default: m.HomeStaffPerformanceCompositeIntelligenceCard } : m), { ssr: false });
+const HomeYoungPersonDailyWellbeingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-young-person-daily-wellbeing-intelligence-card").then(m => m.HomeYoungPersonDailyWellbeingIntelligenceCard ? { default: m.HomeYoungPersonDailyWellbeingIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1563,6 +1569,10 @@ export default function DashboardPage() {
                     <HomeDeprivationOfLibertyIntelligenceCard />
                     <HomeSanctionRewardBalanceIntelligenceCard />
                     <HomeStaffDisciplinaryConductIntelligenceCard />
+                    <HomeCareEventQualityIntelligenceCard />
+                    <HomeStatutoryNotificationComplianceIntelligenceCard />
+                    <HomeStaffPerformanceCompositeIntelligenceCard />
+                    <HomeYoungPersonDailyWellbeingIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
