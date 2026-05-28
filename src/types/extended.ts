@@ -22139,3 +22139,91 @@ export interface HomeEmergencyContact {
   available: string;
   created_at: string;
 }
+
+// ── Visitor Management & Security Intelligence ────────────────────────────────
+
+export interface VisitorRegistrationRecord {
+  id: string;
+  visitor_name: string;
+  visitor_type: "professional" | "family" | "contractor" | "inspector" | "volunteer" | "other";
+  visit_date: string;
+  pre_registered: boolean;
+  registration_complete: boolean;
+  purpose_recorded: boolean;
+  host_staff_assigned: boolean;
+  host_staff_name: string | null;
+  approved_by: string | null;
+  approval_date: string | null;
+  visit_duration_minutes: number | null;
+  child_ids_involved: string[];
+  created_at: string;
+}
+
+export interface DbsCheckRecord {
+  id: string;
+  visitor_name: string;
+  visitor_type: "professional" | "family" | "contractor" | "inspector" | "volunteer" | "other";
+  dbs_required: boolean;
+  dbs_verified: boolean;
+  dbs_certificate_number: string | null;
+  dbs_level: "basic" | "standard" | "enhanced" | "enhanced_barred" | null;
+  dbs_check_date: string | null;
+  dbs_expiry_date: string | null;
+  dbs_expired: boolean;
+  verified_by: string | null;
+  verified_date: string | null;
+  exemption_reason: string | null;
+  created_at: string;
+}
+
+export interface IdVerificationRecord {
+  id: string;
+  visitor_name: string;
+  visit_date: string;
+  id_requested: boolean;
+  id_provided: boolean;
+  id_type: "photo_id" | "driving_licence" | "passport" | "professional_id" | "other" | null;
+  id_verified: boolean;
+  verified_by: string | null;
+  photo_match_confirmed: boolean;
+  refusal_action_taken: string | null;
+  created_at: string;
+}
+
+export interface SafeguardingProtocolRecord {
+  id: string;
+  visit_date: string;
+  visitor_name: string;
+  visitor_type: "professional" | "family" | "contractor" | "inspector" | "volunteer" | "other";
+  safeguarding_briefing_given: boolean;
+  emergency_procedures_shared: boolean;
+  confidentiality_agreement_signed: boolean;
+  prohibited_areas_communicated: boolean;
+  child_protection_policy_acknowledged: boolean;
+  lone_access_permitted: boolean;
+  lone_access_risk_assessed: boolean;
+  escort_required: boolean;
+  escort_provided: boolean;
+  escort_staff_name: string | null;
+  incident_during_visit: boolean;
+  incident_details: string | null;
+  created_at: string;
+}
+
+export interface VisitorLogRecord {
+  id: string;
+  visitor_name: string;
+  visit_date: string;
+  sign_in_time: string | null;
+  sign_out_time: string | null;
+  sign_in_recorded: boolean;
+  sign_out_recorded: boolean;
+  badge_issued: boolean;
+  badge_returned: boolean;
+  vehicle_registration_recorded: boolean;
+  belongings_checked: boolean;
+  departure_confirmed: boolean;
+  log_reviewed_by: string | null;
+  log_review_date: string | null;
+  created_at: string;
+}
