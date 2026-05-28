@@ -295,6 +295,12 @@ const HomeHolisticChildProgressIntelligenceCard = dynamic(() => import("@/compon
 const HomeInformationFlowQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-information-flow-quality-intelligence-card").then(m => m.HomeInformationFlowQualityIntelligenceCard ? { default: m.HomeInformationFlowQualityIntelligenceCard } : m), { ssr: false });
 const HomeRegulatoryEvidenceCompletenessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-regulatory-evidence-completeness-intelligence-card").then(m => m.HomeRegulatoryEvidenceCompletenessIntelligenceCard ? { default: m.HomeRegulatoryEvidenceCompletenessIntelligenceCard } : m), { ssr: false });
 
+// Batch 30 — Family Social Connectivity, Emotional Safety Climate, Staff Induction Onboarding, Living Environment Standards
+const HomeFamilySocialConnectivityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-family-social-connectivity-intelligence-card").then(m => m.HomeFamilySocialConnectivityIntelligenceCard ? { default: m.HomeFamilySocialConnectivityIntelligenceCard } : m), { ssr: false });
+const HomeEmotionalSafetyClimateIntelligenceCard = dynamic(() => import("@/components/dashboard/home-emotional-safety-climate-intelligence-card").then(m => m.HomeEmotionalSafetyClimateIntelligenceCard ? { default: m.HomeEmotionalSafetyClimateIntelligenceCard } : m), { ssr: false });
+const HomeStaffInductionOnboardingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-induction-onboarding-intelligence-card").then(m => m.HomeStaffInductionOnboardingIntelligenceCard ? { default: m.HomeStaffInductionOnboardingIntelligenceCard } : m), { ssr: false });
+const HomeLivingEnvironmentStandardsIntelligenceCard = dynamic(() => import("@/components/dashboard/home-living-environment-standards-intelligence-card").then(m => m.HomeLivingEnvironmentStandardsIntelligenceCard ? { default: m.HomeLivingEnvironmentStandardsIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1603,6 +1609,10 @@ export default function DashboardPage() {
                     <HomeHolisticChildProgressIntelligenceCard />
                     <HomeInformationFlowQualityIntelligenceCard />
                     <HomeRegulatoryEvidenceCompletenessIntelligenceCard />
+                    <HomeFamilySocialConnectivityIntelligenceCard />
+                    <HomeEmotionalSafetyClimateIntelligenceCard />
+                    <HomeStaffInductionOnboardingIntelligenceCard />
+                    <HomeLivingEnvironmentStandardsIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
