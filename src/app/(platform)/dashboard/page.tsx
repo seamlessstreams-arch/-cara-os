@@ -349,6 +349,12 @@ const HomeClothingPersonalPossessionsIntelligenceCard = dynamic(() => import("@/
 const HomeCommunicationLanguageSupportIntelligenceCard = dynamic(() => import("@/components/dashboard/home-communication-language-support-intelligence-card").then(m => m.HomeCommunicationLanguageSupportIntelligenceCard ? { default: m.HomeCommunicationLanguageSupportIntelligenceCard } : m), { ssr: false });
 const HomeHomeworkAcademicSupportIntelligenceCard = dynamic(() => import("@/components/dashboard/home-homework-academic-support-intelligence-card").then(m => m.HomeHomeworkAcademicSupportIntelligenceCard ? { default: m.HomeHomeworkAcademicSupportIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 39 ──
+const HomeConsentCapacityManagementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-consent-capacity-management-intelligence-card").then(m => m.HomeConsentCapacityManagementIntelligenceCard ? { default: m.HomeConsentCapacityManagementIntelligenceCard } : m), { ssr: false });
+const HomeFireSafetyEmergencyDrillIntelligenceCard = dynamic(() => import("@/components/dashboard/home-fire-safety-emergency-drill-intelligence-card").then(m => m.HomeFireSafetyEmergencyDrillIntelligenceCard ? { default: m.HomeFireSafetyEmergencyDrillIntelligenceCard } : m), { ssr: false });
+const HomeInfectionPreventionControlIntelligenceCard = dynamic(() => import("@/components/dashboard/home-infection-prevention-control-intelligence-card").then(m => m.HomeInfectionPreventionControlIntelligenceCard ? { default: m.HomeInfectionPreventionControlIntelligenceCard } : m), { ssr: false });
+const HomePrivacyDignityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-privacy-dignity-intelligence-card").then(m => m.HomePrivacyDignityIntelligenceCard ? { default: m.HomePrivacyDignityIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1693,6 +1699,10 @@ export default function DashboardPage() {
                     <HomeClothingPersonalPossessionsIntelligenceCard />
                     <HomeCommunicationLanguageSupportIntelligenceCard />
                     <HomeHomeworkAcademicSupportIntelligenceCard />
+                    <HomeConsentCapacityManagementIntelligenceCard />
+                    <HomeFireSafetyEmergencyDrillIntelligenceCard />
+                    <HomeInfectionPreventionControlIntelligenceCard />
+                    <HomePrivacyDignityIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
