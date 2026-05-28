@@ -277,6 +277,12 @@ const HomeStatutoryNotificationComplianceIntelligenceCard = dynamic(() => import
 const HomeStaffPerformanceCompositeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-performance-composite-intelligence-card").then(m => m.HomeStaffPerformanceCompositeIntelligenceCard ? { default: m.HomeStaffPerformanceCompositeIntelligenceCard } : m), { ssr: false });
 const HomeYoungPersonDailyWellbeingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-young-person-daily-wellbeing-intelligence-card").then(m => m.HomeYoungPersonDailyWellbeingIntelligenceCard ? { default: m.HomeYoungPersonDailyWellbeingIntelligenceCard } : m), { ssr: false });
 
+// Batch 27 — Automation ROI, Task Action Completion, Professional Network, Locality Safeguarding
+const HomeAutomationROIIntelligenceCard = dynamic(() => import("@/components/dashboard/home-automation-roi-intelligence-card").then(m => m.HomeAutomationROIIntelligenceCard ? { default: m.HomeAutomationROIIntelligenceCard } : m), { ssr: false });
+const HomeTaskActionCompletionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-task-action-completion-intelligence-card").then(m => m.HomeTaskActionCompletionIntelligenceCard ? { default: m.HomeTaskActionCompletionIntelligenceCard } : m), { ssr: false });
+const HomeProfessionalNetworkIntelligenceCard = dynamic(() => import("@/components/dashboard/home-professional-network-intelligence-card").then(m => m.HomeProfessionalNetworkIntelligenceCard ? { default: m.HomeProfessionalNetworkIntelligenceCard } : m), { ssr: false });
+const HomeLocalitySafeguardingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-locality-safeguarding-intelligence-card").then(m => m.HomeLocalitySafeguardingIntelligenceCard ? { default: m.HomeLocalitySafeguardingIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1573,6 +1579,10 @@ export default function DashboardPage() {
                     <HomeStatutoryNotificationComplianceIntelligenceCard />
                     <HomeStaffPerformanceCompositeIntelligenceCard />
                     <HomeYoungPersonDailyWellbeingIntelligenceCard />
+                    <HomeAutomationROIIntelligenceCard />
+                    <HomeTaskActionCompletionIntelligenceCard />
+                    <HomeProfessionalNetworkIntelligenceCard />
+                    <HomeLocalitySafeguardingIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
