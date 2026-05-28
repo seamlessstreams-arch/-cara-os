@@ -307,6 +307,12 @@ const HomeCulturalIdentityDiversityIntelligenceCard = dynamic(() => import("@/co
 const HomeNightCareQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-night-care-quality-intelligence-card").then(m => m.HomeNightCareQualityIntelligenceCard ? { default: m.HomeNightCareQualityIntelligenceCard } : m), { ssr: false });
 const HomeComplaintAdvocacyResponsivenessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-complaint-advocacy-responsiveness-intelligence-card").then(m => m.HomeComplaintAdvocacyResponsivenessIntelligenceCard ? { default: m.HomeComplaintAdvocacyResponsivenessIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 32 ──
+const HomeMedicationSafetyComplianceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-medication-safety-compliance-intelligence-card").then(m => m.HomeMedicationSafetyComplianceIntelligenceCard ? { default: m.HomeMedicationSafetyComplianceIntelligenceCard } : m), { ssr: false });
+const HomeTransportVehicleSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-transport-vehicle-safety-intelligence-card").then(m => m.HomeTransportVehicleSafetyIntelligenceCard ? { default: m.HomeTransportVehicleSafetyIntelligenceCard } : m), { ssr: false });
+const HomeTransitionLeavingCareReadinessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-transition-leaving-care-readiness-intelligence-card").then(m => m.HomeTransitionLeavingCareReadinessIntelligenceCard ? { default: m.HomeTransitionLeavingCareReadinessIntelligenceCard } : m), { ssr: false });
+const HomeStaffSupervisionReflectivePracticeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-supervision-reflective-practice-intelligence-card").then(m => m.HomeStaffSupervisionReflectivePracticeIntelligenceCard ? { default: m.HomeStaffSupervisionReflectivePracticeIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1623,6 +1629,10 @@ export default function DashboardPage() {
                     <HomeCulturalIdentityDiversityIntelligenceCard />
                     <HomeNightCareQualityIntelligenceCard />
                     <HomeComplaintAdvocacyResponsivenessIntelligenceCard />
+                    <HomeMedicationSafetyComplianceIntelligenceCard />
+                    <HomeTransportVehicleSafetyIntelligenceCard />
+                    <HomeTransitionLeavingCareReadinessIntelligenceCard />
+                    <HomeStaffSupervisionReflectivePracticeIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
