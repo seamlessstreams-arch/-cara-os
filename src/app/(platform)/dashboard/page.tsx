@@ -301,6 +301,12 @@ const HomeEmotionalSafetyClimateIntelligenceCard = dynamic(() => import("@/compo
 const HomeStaffInductionOnboardingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-induction-onboarding-intelligence-card").then(m => m.HomeStaffInductionOnboardingIntelligenceCard ? { default: m.HomeStaffInductionOnboardingIntelligenceCard } : m), { ssr: false });
 const HomeLivingEnvironmentStandardsIntelligenceCard = dynamic(() => import("@/components/dashboard/home-living-environment-standards-intelligence-card").then(m => m.HomeLivingEnvironmentStandardsIntelligenceCard ? { default: m.HomeLivingEnvironmentStandardsIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 31 ──
+const HomeHealthWellbeingOversightIntelligenceCard = dynamic(() => import("@/components/dashboard/home-health-wellbeing-oversight-intelligence-card").then(m => m.HomeHealthWellbeingOversightIntelligenceCard ? { default: m.HomeHealthWellbeingOversightIntelligenceCard } : m), { ssr: false });
+const HomeCulturalIdentityDiversityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-cultural-identity-diversity-intelligence-card").then(m => m.HomeCulturalIdentityDiversityIntelligenceCard ? { default: m.HomeCulturalIdentityDiversityIntelligenceCard } : m), { ssr: false });
+const HomeNightCareQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-night-care-quality-intelligence-card").then(m => m.HomeNightCareQualityIntelligenceCard ? { default: m.HomeNightCareQualityIntelligenceCard } : m), { ssr: false });
+const HomeComplaintAdvocacyResponsivenessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-complaint-advocacy-responsiveness-intelligence-card").then(m => m.HomeComplaintAdvocacyResponsivenessIntelligenceCard ? { default: m.HomeComplaintAdvocacyResponsivenessIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1613,6 +1619,10 @@ export default function DashboardPage() {
                     <HomeEmotionalSafetyClimateIntelligenceCard />
                     <HomeStaffInductionOnboardingIntelligenceCard />
                     <HomeLivingEnvironmentStandardsIntelligenceCard />
+                    <HomeHealthWellbeingOversightIntelligenceCard />
+                    <HomeCulturalIdentityDiversityIntelligenceCard />
+                    <HomeNightCareQualityIntelligenceCard />
+                    <HomeComplaintAdvocacyResponsivenessIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
