@@ -313,6 +313,12 @@ const HomeTransportVehicleSafetyIntelligenceCard = dynamic(() => import("@/compo
 const HomeTransitionLeavingCareReadinessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-transition-leaving-care-readiness-intelligence-card").then(m => m.HomeTransitionLeavingCareReadinessIntelligenceCard ? { default: m.HomeTransitionLeavingCareReadinessIntelligenceCard } : m), { ssr: false });
 const HomeStaffSupervisionReflectivePracticeIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-supervision-reflective-practice-intelligence-card").then(m => m.HomeStaffSupervisionReflectivePracticeIntelligenceCard ? { default: m.HomeStaffSupervisionReflectivePracticeIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 33 ──
+const HomeEmergencyPreparednessContinuityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-emergency-preparedness-continuity-intelligence-card").then(m => m.HomeEmergencyPreparednessContinuityIntelligenceCard ? { default: m.HomeEmergencyPreparednessContinuityIntelligenceCard } : m), { ssr: false });
+const HomePeerRelationshipSocialDevelopmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-peer-relationship-social-development-intelligence-card").then(m => m.HomePeerRelationshipSocialDevelopmentIntelligenceCard ? { default: m.HomePeerRelationshipSocialDevelopmentIntelligenceCard } : m), { ssr: false });
+const HomeDigitalSafetyOnlineProtectionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-digital-safety-online-protection-intelligence-card").then(m => m.HomeDigitalSafetyOnlineProtectionIntelligenceCard ? { default: m.HomeDigitalSafetyOnlineProtectionIntelligenceCard } : m), { ssr: false });
+const HomeTherapeuticInterventionEffectivenessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-therapeutic-intervention-effectiveness-intelligence-card").then(m => m.HomeTherapeuticInterventionEffectivenessIntelligenceCard ? { default: m.HomeTherapeuticInterventionEffectivenessIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1633,6 +1639,10 @@ export default function DashboardPage() {
                     <HomeTransportVehicleSafetyIntelligenceCard />
                     <HomeTransitionLeavingCareReadinessIntelligenceCard />
                     <HomeStaffSupervisionReflectivePracticeIntelligenceCard />
+                    <HomeEmergencyPreparednessContinuityIntelligenceCard />
+                    <HomePeerRelationshipSocialDevelopmentIntelligenceCard />
+                    <HomeDigitalSafetyOnlineProtectionIntelligenceCard />
+                    <HomeTherapeuticInterventionEffectivenessIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
