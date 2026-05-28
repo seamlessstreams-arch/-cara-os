@@ -283,6 +283,12 @@ const HomeTaskActionCompletionIntelligenceCard = dynamic(() => import("@/compone
 const HomeProfessionalNetworkIntelligenceCard = dynamic(() => import("@/components/dashboard/home-professional-network-intelligence-card").then(m => m.HomeProfessionalNetworkIntelligenceCard ? { default: m.HomeProfessionalNetworkIntelligenceCard } : m), { ssr: false });
 const HomeLocalitySafeguardingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-locality-safeguarding-intelligence-card").then(m => m.HomeLocalitySafeguardingIntelligenceCard ? { default: m.HomeLocalitySafeguardingIntelligenceCard } : m), { ssr: false });
 
+// Batch 28 — Recruitment Audit Trail, Filing Evidence Governance, Independence Skills Readiness, ARIA Content Quality
+const HomeRecruitmentAuditTrailIntelligenceCard = dynamic(() => import("@/components/dashboard/home-recruitment-audit-trail-intelligence-card").then(m => m.HomeRecruitmentAuditTrailIntelligenceCard ? { default: m.HomeRecruitmentAuditTrailIntelligenceCard } : m), { ssr: false });
+const HomeFilingEvidenceGovernanceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-filing-evidence-governance-intelligence-card").then(m => m.HomeFilingEvidenceGovernanceIntelligenceCard ? { default: m.HomeFilingEvidenceGovernanceIntelligenceCard } : m), { ssr: false });
+const HomeIndependenceSkillsReadinessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-independence-skills-readiness-intelligence-card").then(m => m.HomeIndependenceSkillsReadinessIntelligenceCard ? { default: m.HomeIndependenceSkillsReadinessIntelligenceCard } : m), { ssr: false });
+const HomeAriaContentQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-aria-content-quality-intelligence-card").then(m => m.HomeAriaContentQualityIntelligenceCard ? { default: m.HomeAriaContentQualityIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1583,6 +1589,10 @@ export default function DashboardPage() {
                     <HomeTaskActionCompletionIntelligenceCard />
                     <HomeProfessionalNetworkIntelligenceCard />
                     <HomeLocalitySafeguardingIntelligenceCard />
+                    <HomeRecruitmentAuditTrailIntelligenceCard />
+                    <HomeFilingEvidenceGovernanceIntelligenceCard />
+                    <HomeIndependenceSkillsReadinessIntelligenceCard />
+                    <HomeAriaContentQualityIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
