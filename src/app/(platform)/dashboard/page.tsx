@@ -343,6 +343,12 @@ const HomeMultiAgencyCollaborationIntelligenceCard = dynamic(() => import("@/com
 const HomeStaffWellbeingRetentionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-wellbeing-retention-intelligence-card").then(m => m.HomeStaffWellbeingRetentionIntelligenceCard ? { default: m.HomeStaffWellbeingRetentionIntelligenceCard } : m), { ssr: false });
 const HomePlacementStabilityPermanenceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-placement-stability-permanence-intelligence-card").then(m => m.HomePlacementStabilityPermanenceIntelligenceCard ? { default: m.HomePlacementStabilityPermanenceIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 38 ──
+const HomeRecordKeepingDocumentationQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-record-keeping-documentation-quality-intelligence-card").then(m => m.HomeRecordKeepingDocumentationQualityIntelligenceCard ? { default: m.HomeRecordKeepingDocumentationQualityIntelligenceCard } : m), { ssr: false });
+const HomeClothingPersonalPossessionsIntelligenceCard = dynamic(() => import("@/components/dashboard/home-clothing-personal-possessions-intelligence-card").then(m => m.HomeClothingPersonalPossessionsIntelligenceCard ? { default: m.HomeClothingPersonalPossessionsIntelligenceCard } : m), { ssr: false });
+const HomeCommunicationLanguageSupportIntelligenceCard = dynamic(() => import("@/components/dashboard/home-communication-language-support-intelligence-card").then(m => m.HomeCommunicationLanguageSupportIntelligenceCard ? { default: m.HomeCommunicationLanguageSupportIntelligenceCard } : m), { ssr: false });
+const HomeHomeworkAcademicSupportIntelligenceCard = dynamic(() => import("@/components/dashboard/home-homework-academic-support-intelligence-card").then(m => m.HomeHomeworkAcademicSupportIntelligenceCard ? { default: m.HomeHomeworkAcademicSupportIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1683,6 +1689,10 @@ export default function DashboardPage() {
                     <HomeMultiAgencyCollaborationIntelligenceCard />
                     <HomeStaffWellbeingRetentionIntelligenceCard />
                     <HomePlacementStabilityPermanenceIntelligenceCard />
+                    <HomeRecordKeepingDocumentationQualityIntelligenceCard />
+                    <HomeClothingPersonalPossessionsIntelligenceCard />
+                    <HomeCommunicationLanguageSupportIntelligenceCard />
+                    <HomeHomeworkAcademicSupportIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
