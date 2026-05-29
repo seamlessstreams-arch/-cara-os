@@ -403,6 +403,12 @@ const HomeNoiseSoundManagementIntelligenceCard = dynamic(() => import("@/compone
 const HomeStaffPerformanceAppraisalIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-performance-appraisal-intelligence-card").then(m => m.HomeStaffPerformanceAppraisalIntelligenceCard ? { default: m.HomeStaffPerformanceAppraisalIntelligenceCard } : m), { ssr: false });
 const HomeAdvocacyIndependentVisitorIntelligenceCard = dynamic(() => import("@/components/dashboard/home-advocacy-independent-visitor-intelligence-card").then(m => m.HomeAdvocacyIndependentVisitorIntelligenceCard ? { default: m.HomeAdvocacyIndependentVisitorIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 48 ──
+const HomeEmotionalLiteracyFeelingsExpressionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-emotional-literacy-feelings-expression-intelligence-card").then(m => m.HomeEmotionalLiteracyFeelingsExpressionIntelligenceCard ? { default: m.HomeEmotionalLiteracyFeelingsExpressionIntelligenceCard } : m), { ssr: false });
+const HomeSavingsBankingSkillsIntelligenceCard = dynamic(() => import("@/components/dashboard/home-savings-banking-skills-intelligence-card").then(m => m.HomeSavingsBankingSkillsIntelligenceCard ? { default: m.HomeSavingsBankingSkillsIntelligenceCard } : m), { ssr: false });
+const HomeHazardNearMissReportingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-hazard-near-miss-reporting-intelligence-card").then(m => m.HomeHazardNearMissReportingIntelligenceCard ? { default: m.HomeHazardNearMissReportingIntelligenceCard } : m), { ssr: false });
+const HomeMenstruationPubertySupportIntelligenceCard = dynamic(() => import("@/components/dashboard/home-menstruation-puberty-support-intelligence-card").then(m => m.HomeMenstruationPubertySupportIntelligenceCard ? { default: m.HomeMenstruationPubertySupportIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1783,6 +1789,10 @@ export default function DashboardPage() {
                     <HomeNoiseSoundManagementIntelligenceCard />
                     <HomeStaffPerformanceAppraisalIntelligenceCard />
                     <HomeAdvocacyIndependentVisitorIntelligenceCard />
+                    <HomeEmotionalLiteracyFeelingsExpressionIntelligenceCard />
+                    <HomeSavingsBankingSkillsIntelligenceCard />
+                    <HomeHazardNearMissReportingIntelligenceCard />
+                    <HomeMenstruationPubertySupportIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
