@@ -379,6 +379,12 @@ const HomeSiblingContactRelationshipsIntelligenceCard = dynamic(() => import("@/
 const HomeStaffRotaAdequateStaffingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-rota-adequate-staffing-intelligence-card").then(m => m.HomeStaffRotaAdequateStaffingIntelligenceCard ? { default: m.HomeStaffRotaAdequateStaffingIntelligenceCard } : m), { ssr: false });
 const HomeWhistleblowingSafeguardingCultureIntelligenceCard = dynamic(() => import("@/components/dashboard/home-whistleblowing-safeguarding-culture-intelligence-card").then(m => m.HomeWhistleblowingSafeguardingCultureIntelligenceCard ? { default: m.HomeWhistleblowingSafeguardingCultureIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 44 ──
+const HomeAnxietyMentalHealthScreeningIntelligenceCard = dynamic(() => import("@/components/dashboard/home-anxiety-mental-health-screening-intelligence-card").then(m => m.HomeAnxietyMentalHealthScreeningIntelligenceCard ? { default: m.HomeAnxietyMentalHealthScreeningIntelligenceCard } : m), { ssr: false });
+const HomeMinorRepairsMaintenanceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-minor-repairs-maintenance-intelligence-card").then(m => m.HomeMinorRepairsMaintenanceIntelligenceCard ? { default: m.HomeMinorRepairsMaintenanceIntelligenceCard } : m), { ssr: false });
+const HomeCommunityIntegrationVolunteeringIntelligenceCard = dynamic(() => import("@/components/dashboard/home-community-integration-volunteering-intelligence-card").then(m => m.HomeCommunityIntegrationVolunteeringIntelligenceCard ? { default: m.HomeCommunityIntegrationVolunteeringIntelligenceCard } : m), { ssr: false });
+const HomePersonalCalendarAppointmentsIntelligenceCard = dynamic(() => import("@/components/dashboard/home-personal-calendar-appointments-intelligence-card").then(m => m.HomePersonalCalendarAppointmentsIntelligenceCard ? { default: m.HomePersonalCalendarAppointmentsIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1743,6 +1749,10 @@ export default function DashboardPage() {
                     <HomeSiblingContactRelationshipsIntelligenceCard />
                     <HomeStaffRotaAdequateStaffingIntelligenceCard />
                     <HomeWhistleblowingSafeguardingCultureIntelligenceCard />
+                    <HomeAnxietyMentalHealthScreeningIntelligenceCard />
+                    <HomeMinorRepairsMaintenanceIntelligenceCard />
+                    <HomeCommunityIntegrationVolunteeringIntelligenceCard />
+                    <HomePersonalCalendarAppointmentsIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
