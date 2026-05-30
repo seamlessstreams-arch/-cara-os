@@ -427,6 +427,12 @@ const HomeCookingKitchenSkillsIntelligenceCard = dynamic(() => import("@/compone
 const HomeBedwettingEnuresisSupportIntelligenceCard = dynamic(() => import("@/components/dashboard/home-bedwetting-enuresis-support-intelligence-card").then(m => m.HomeBedwettingEnuresisSupportIntelligenceCard ? { default: m.HomeBedwettingEnuresisSupportIntelligenceCard } : m), { ssr: false });
 const HomeStaffLoneWorkingSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-staff-lone-working-safety-intelligence-card").then(m => m.HomeStaffLoneWorkingSafetyIntelligenceCard ? { default: m.HomeStaffLoneWorkingSafetyIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 52 ──
+const HomeTeethBrushingOralRoutineIntelligenceCard = dynamic(() => import("@/components/dashboard/home-teeth-brushing-oral-routine-intelligence-card").then(m => m.HomeTeethBrushingOralRoutineIntelligenceCard ? { default: m.HomeTeethBrushingOralRoutineIntelligenceCard } : m), { ssr: false });
+const HomeGardenOutdoorSpaceMaintenanceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-garden-outdoor-space-maintenance-intelligence-card").then(m => m.HomeGardenOutdoorSpaceMaintenanceIntelligenceCard ? { default: m.HomeGardenOutdoorSpaceMaintenanceIntelligenceCard } : m), { ssr: false });
+const HomeEmergencyContactNextOfKinIntelligenceCard = dynamic(() => import("@/components/dashboard/home-emergency-contact-next-of-kin-intelligence-card").then(m => m.HomeEmergencyContactNextOfKinIntelligenceCard ? { default: m.HomeEmergencyContactNextOfKinIntelligenceCard } : m), { ssr: false });
+const HomeWeeklyPlannerActivityScheduleIntelligenceCard = dynamic(() => import("@/components/dashboard/home-weekly-planner-activity-schedule-intelligence-card").then(m => m.HomeWeeklyPlannerActivityScheduleIntelligenceCard ? { default: m.HomeWeeklyPlannerActivityScheduleIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1823,6 +1829,10 @@ export default function DashboardPage() {
                     <HomeCookingKitchenSkillsIntelligenceCard />
                     <HomeBedwettingEnuresisSupportIntelligenceCard />
                     <HomeStaffLoneWorkingSafetyIntelligenceCard />
+                    <HomeTeethBrushingOralRoutineIntelligenceCard />
+                    <HomeGardenOutdoorSpaceMaintenanceIntelligenceCard />
+                    <HomeEmergencyContactNextOfKinIntelligenceCard />
+                    <HomeWeeklyPlannerActivityScheduleIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
