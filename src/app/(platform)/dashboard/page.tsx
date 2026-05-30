@@ -469,6 +469,12 @@ const HomeItEquipmentConnectivityIntelligenceCard = dynamic(() => import("@/comp
 const HomeWindowBlindCurtainSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-window-blind-curtain-safety-intelligence-card").then(m => m.HomeWindowBlindCurtainSafetyIntelligenceCard ? { default: m.HomeWindowBlindCurtainSafetyIntelligenceCard } : m), { ssr: false });
 const HomeSharpsDisposalHazardousWasteIntelligenceCard = dynamic(() => import("@/components/dashboard/home-sharps-disposal-hazardous-waste-intelligence-card").then(m => m.HomeSharpsDisposalHazardousWasteIntelligenceCard ? { default: m.HomeSharpsDisposalHazardousWasteIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 59 ──
+const HomeReg4445QualityAssuranceReportingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-reg44-45-quality-assurance-reporting-intelligence-card").then(m => m.HomeReg4445QualityAssuranceReportingIntelligenceCard ? { default: m.HomeReg4445QualityAssuranceReportingIntelligenceCard } : m), { ssr: false });
+const HomeDampMouldManagementIntelligenceCard = dynamic(() => import("@/components/dashboard/home-damp-mould-management-intelligence-card").then(m => m.HomeDampMouldManagementIntelligenceCard ? { default: m.HomeDampMouldManagementIntelligenceCard } : m), { ssr: false });
+const HomeFoodStorageRefrigerationSafetyIntelligenceCard = dynamic(() => import("@/components/dashboard/home-food-storage-refrigeration-safety-intelligence-card").then(m => m.HomeFoodStorageRefrigerationSafetyIntelligenceCard ? { default: m.HomeFoodStorageRefrigerationSafetyIntelligenceCard } : m), { ssr: false });
+const HomeSlipsTripsFallsPreventionIntelligenceCard = dynamic(() => import("@/components/dashboard/home-slips-trips-falls-prevention-intelligence-card").then(m => m.HomeSlipsTripsFallsPreventionIntelligenceCard ? { default: m.HomeSlipsTripsFallsPreventionIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1893,6 +1899,10 @@ export default function DashboardPage() {
                     <HomeItEquipmentConnectivityIntelligenceCard />
                     <HomeWindowBlindCurtainSafetyIntelligenceCard />
                     <HomeSharpsDisposalHazardousWasteIntelligenceCard />
+                    <HomeReg4445QualityAssuranceReportingIntelligenceCard />
+                    <HomeDampMouldManagementIntelligenceCard />
+                    <HomeFoodStorageRefrigerationSafetyIntelligenceCard />
+                    <HomeSlipsTripsFallsPreventionIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
