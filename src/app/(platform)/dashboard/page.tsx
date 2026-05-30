@@ -445,6 +445,12 @@ const HomeBedroomTemperatureVentilationIntelligenceCard = dynamic(() => import("
 const HomeHomeworkEnvironmentStudySpaceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-homework-environment-study-space-intelligence-card").then(m => m.HomeHomeworkEnvironmentStudySpaceIntelligenceCard ? { default: m.HomeHomeworkEnvironmentStudySpaceIntelligenceCard } : m), { ssr: false });
 const HomeWeightManagementHealthyEatingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-weight-management-healthy-eating-intelligence-card").then(m => m.HomeWeightManagementHealthyEatingIntelligenceCard ? { default: m.HomeWeightManagementHealthyEatingIntelligenceCard } : m), { ssr: false });
 
+// ── Batch 55 ──
+const HomeFirstAidKitMedicalSuppliesIntelligenceCard = dynamic(() => import("@/components/dashboard/home-first-aid-kit-medical-supplies-intelligence-card").then(m => m.HomeFirstAidKitMedicalSuppliesIntelligenceCard ? { default: m.HomeFirstAidKitMedicalSuppliesIntelligenceCard } : m), { ssr: false });
+const HomeKeyholdingAccessControlIntelligenceCard = dynamic(() => import("@/components/dashboard/home-keyholding-access-control-intelligence-card").then(m => m.HomeKeyholdingAccessControlIntelligenceCard ? { default: m.HomeKeyholdingAccessControlIntelligenceCard } : m), { ssr: false });
+const HomeHandoverCommunicationQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-handover-communication-quality-intelligence-card").then(m => m.HomeHandoverCommunicationQualityIntelligenceCard ? { default: m.HomeHandoverCommunicationQualityIntelligenceCard } : m), { ssr: false });
+const HomeClothingLabellingStorageIntelligenceCard = dynamic(() => import("@/components/dashboard/home-clothing-labelling-storage-intelligence-card").then(m => m.HomeClothingLabellingStorageIntelligenceCard ? { default: m.HomeClothingLabellingStorageIntelligenceCard } : m), { ssr: false });
+
 // ─── Greeting ─────────────────────────────────────────────────────────────────
 
 function getGreeting(): string {
@@ -1853,6 +1859,10 @@ export default function DashboardPage() {
                     <HomeBedroomTemperatureVentilationIntelligenceCard />
                     <HomeHomeworkEnvironmentStudySpaceIntelligenceCard />
                     <HomeWeightManagementHealthyEatingIntelligenceCard />
+                    <HomeFirstAidKitMedicalSuppliesIntelligenceCard />
+                    <HomeKeyholdingAccessControlIntelligenceCard />
+                    <HomeHandoverCommunicationQualityIntelligenceCard />
+                    <HomeClothingLabellingStorageIntelligenceCard />
                     <IntelligenceBriefWidget />
                   </>
                 )}
