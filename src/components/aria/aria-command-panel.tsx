@@ -496,9 +496,9 @@ export function AriaCommandPanel({
                 </div>
               )}
               {!aria.result.llmUsed && (
-                <div className="flex items-center gap-1 text-[9px] text-amber-600">
-                  <AlertTriangle className="h-3 w-3" />
-                  AI provider not configured. Showing template output.
+                <div className="flex items-center gap-1.5 rounded border border-amber-200 bg-amber-50 px-2 py-1 text-[10px] text-amber-700">
+                  <AlertTriangle className="h-3 w-3 shrink-0" />
+                  <span>Showing template output — AI enhancement available when provider is connected.</span>
                 </div>
               )}
 
@@ -647,8 +647,9 @@ export function AriaCommandPanel({
                   <div className="text-xs text-red-800">
                     {aria.error}
                     {aria.providerConfigured === false && (
-                      <div className="mt-1 text-[10px] text-red-600">
-                        ARIA is not configured yet. Ask your administrator to set up the AI provider.
+                      <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                        <p className="text-xs font-medium text-amber-800">Aria is being set up by your administrator.</p>
+                        <p className="mt-0.5 text-[10px] text-amber-600">Intelligence features will be available once configuration is complete.</p>
                       </div>
                     )}
                   </div>

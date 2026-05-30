@@ -3,11 +3,13 @@
 //
 // Server-side only. Never imported into client code.
 //
-// Default provider: OpenAI. The repo also has Anthropic-based engines
+// Supports both Anthropic and OpenAI providers. The default provider is
+// determined by ARIA_PROVIDER or AI_PROVIDER env vars (defaults to
+// "anthropic"). The repo also has Anthropic-based engines
 // (managementOversightEngine, voiceOfChildSummariser, hrProcessGuardian)
 // that talk to Anthropic directly via the @anthropic-ai/sdk package. This
 // abstraction is for the universal /api/aria/generate and /api/aria/transcribe
-// routes, where OpenAI is the default per the spec.
+// routes.
 //
 // The provider is built lazily per request so process.env is read at runtime
 // rather than at module-load time (Turbopack / Next.js 16 compatibility).
@@ -18,7 +20,7 @@
 
 export interface AriaProviderConfig {
   configured: boolean;
-  providerId: "openai" | "none";
+  providerId: "openai" | "anthropic" | "none";
   textModel: string;
   transcribeModel: string;
   maxAudioBytes: number;
@@ -26,41 +28,68 @@ export interface AriaProviderConfig {
 }
 
 export function getAriaProviderConfig(): AriaProviderConfig {
-  const apiKey = process.env.OPENAI_API_KEY;
-  const providerEnv = (process.env.ARIA_PROVIDER ?? "openai").toLowerCase();
-  const textModel = process.env.ARIA_TEXT_MODEL ?? "gpt-4.1-mini";
+  const providerEnv = (process.env.ARIA_PROVIDER ?? process.env.AI_PROVIDER ?? "anthropic").toLowerCase();
   const transcribeModel = process.env.ARIA_TRANSCRIBE_MODEL ?? "gpt-4o-transcribe";
   const maxAudioMb = Number.parseInt(process.env.ARIA_MAX_AUDIO_MB ?? "25", 10);
   const maxAudioBytes = Number.isFinite(maxAudioMb) ? maxAudioMb * 1024 * 1024 : 25 * 1024 * 1024;
 
-  if (providerEnv !== "openai") {
+  if (providerEnv === "anthropic") {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const textModel = process.env.ARIA_MODEL ?? process.env.ARIA_TEXT_MODEL ?? "claude-sonnet-4-20250514";
+
+    if (!apiKey || apiKey.includes("placeholder")) {
+      return {
+        configured: false,
+        providerId: "anthropic",
+        textModel,
+        transcribeModel,
+        maxAudioBytes,
+        reason: "ANTHROPIC_API_KEY is not set. Configure it server-side to enable the universal Aria layer.",
+      };
+    }
+
     return {
-      configured: false,
-      providerId: "none",
+      configured: true,
+      providerId: "anthropic",
       textModel,
       transcribeModel,
       maxAudioBytes,
-      reason: `Unsupported ARIA_PROVIDER value "${providerEnv}". Only "openai" is supported by the universal layer in this build.`,
     };
   }
 
-  if (!apiKey || apiKey.includes("placeholder")) {
+  if (providerEnv === "openai") {
+    const apiKey = process.env.OPENAI_API_KEY;
+    const textModel = process.env.ARIA_TEXT_MODEL ?? "gpt-4.1-mini";
+
+    if (!apiKey || apiKey.includes("placeholder")) {
+      return {
+        configured: false,
+        providerId: "openai",
+        textModel,
+        transcribeModel,
+        maxAudioBytes,
+        reason: "OPENAI_API_KEY is not set. Configure it server-side to enable the universal Aria layer.",
+      };
+    }
+
     return {
-      configured: false,
+      configured: true,
       providerId: "openai",
       textModel,
       transcribeModel,
       maxAudioBytes,
-      reason: "OPENAI_API_KEY is not set. Configure it server-side to enable the universal Aria layer.",
     };
   }
 
+  // Unsupported provider value
+  const textModel = process.env.ARIA_TEXT_MODEL ?? "gpt-4.1-mini";
   return {
-    configured: true,
-    providerId: "openai",
+    configured: false,
+    providerId: "none",
     textModel,
     transcribeModel,
     maxAudioBytes,
+    reason: `Unsupported ARIA_PROVIDER / AI_PROVIDER value "${providerEnv}". Supported providers: "anthropic", "openai".`,
   };
 }
 
@@ -87,7 +116,7 @@ export async function generateText(
   input: AriaTextGenerationInput,
 ): Promise<AriaTextGenerationResult> {
   const config = getAriaProviderConfig();
-  if (!config.configured || config.providerId !== "openai") {
+  if (!config.configured) {
     return {
       text: ariaNotConfiguredFallback(input.expectJson === true),
       llmUsed: false,
@@ -96,6 +125,56 @@ export async function generateText(
     };
   }
 
+  // ── Anthropic path ──────────────────────────────────────────────────────
+  if (config.providerId === "anthropic") {
+    const apiKey = process.env.ANTHROPIC_API_KEY!;
+    const url = "https://api.anthropic.com/v1/messages";
+    const body = {
+      model: config.textModel,
+      max_tokens: input.maxOutputTokens ?? 1500,
+      messages: [
+        { role: "user" as const, content: input.userPrompt },
+      ],
+      system: input.systemPrompt,
+      ...(input.temperature != null ? { temperature: input.temperature } : {}),
+    };
+
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const detail = await res.text();
+        throw new Error(`Anthropic text generation failed (${res.status}): ${detail.slice(0, 400)}`);
+      }
+      const data = (await res.json()) as {
+        content?: { type: string; text?: string }[];
+      };
+      const text = data.content?.[0]?.text?.trim() ?? "";
+      return {
+        text,
+        llmUsed: true,
+        providerId: "anthropic",
+        modelId: config.textModel,
+      };
+    } catch (err) {
+      console.warn("[aria-provider] generateText (anthropic) failed:", err);
+      return {
+        text: ariaNotConfiguredFallback(input.expectJson === true),
+        llmUsed: false,
+        providerId: "anthropic",
+        modelId: config.textModel,
+      };
+    }
+  }
+
+  // ── OpenAI path ─────────────────────────────────────────────────────────
   // Lazy import: OpenAI is loaded only when actually called, and only on
   // the server. Falling back to fetch keeps the dependency surface light if
   // the openai package isn't already in the project.
@@ -165,11 +244,22 @@ export async function transcribeAudio(
   input: AriaTranscriptionProviderInput,
 ): Promise<AriaTranscriptionProviderResult> {
   const config = getAriaProviderConfig();
-  if (!config.configured || config.providerId !== "openai") {
+  if (!config.configured) {
     return {
       transcript: "",
       llmUsed: false,
       providerId: "none",
+      modelId: config.transcribeModel,
+    };
+  }
+
+  // Anthropic does not support audio transcription. Return empty transcript
+  // without crashing so callers can handle gracefully.
+  if (config.providerId === "anthropic") {
+    return {
+      transcript: "",
+      llmUsed: false,
+      providerId: "anthropic",
       modelId: config.transcribeModel,
     };
   }
@@ -225,7 +315,7 @@ export async function transcribeAudio(
 
 function ariaNotConfiguredFallback(expectJson: boolean): string {
   const message =
-    "Aria is not configured in this environment. The provider key has not been set, so the universal Aria layer cannot generate text. Add OPENAI_API_KEY to your server environment to enable it. Domain engines that talk to Anthropic directly (oversight, voice of child, HR Process Guardian) continue to work with their own configuration.";
+    "Aria is not configured in this environment. The provider key has not been set, so the universal Aria layer cannot generate text. Add ANTHROPIC_API_KEY or OPENAI_API_KEY to your server environment to enable it. Domain engines that talk to Anthropic directly (oversight, voice of child, HR Process Guardian) continue to work with their own configuration.";
   if (expectJson) {
     return JSON.stringify({ ariaNotConfigured: true, message });
   }
