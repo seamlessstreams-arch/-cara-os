@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { EnterOnceIndicator } from "@/components/forms/enter-once-indicator";
 import {
   ChevronDown,
   ChevronUp,
@@ -514,6 +515,9 @@ export function QuickDailyLog({
                 </div>
               </div>
             )}
+
+            {/* ── Enter Once indicator ──────────────────────────────── */}
+            <EnterOnceIndicator recordType="daily_log" compact />
 
             {/* ── Sticky submit bar ──────────────────────────────────── */}
             <div className="sticky bottom-0 bg-[var(--cs-surface-elevated)] pt-3 pb-1 border-t border-[var(--cs-border-subtle)] -mx-6 px-6 flex items-center justify-between gap-3">

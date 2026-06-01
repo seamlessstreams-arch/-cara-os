@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { EnterOnceIndicator } from "@/components/forms/enter-once-indicator";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -644,6 +645,11 @@ export function QuickIncidentForm({
               </div>
             )}
           </div>
+
+          {/* ── Enter Once indicator (final step only) ────────────────── */}
+          {currentStep === STEPS.length - 1 && (
+            <EnterOnceIndicator recordType="incident" severity={form.severity} compact />
+          )}
 
           {/* ── Step navigation ───────────────────────────────────────── */}
           <div className="flex items-center justify-between pt-4 mt-4 border-t border-[var(--cs-border-subtle)]">
