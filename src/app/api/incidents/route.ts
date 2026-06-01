@@ -1,6 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { generateIncidentIntelligence } from "@/lib/incidents";
 import type { IncidentRecord, IncidentPolicy, StaffIncidentTraining } from "@/lib/incidents";
+import { createIncident, type CreateIncidentInput } from "@/lib/incidents/incident-orchestrator";
+import { db } from "@/lib/db/store";
+
+export const dynamic = "force-dynamic";
 
 // ── Demo Data ─────────────────────────────────────────────────────────────
 
@@ -38,7 +42,29 @@ const DEMO_STAFF: StaffIncidentTraining[] = [
 
 // ── Handler ───────────────────────────────────────────────────────────────
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const status = searchParams.get("status");
+  const childId = searchParams.get("child_id");
+  const needsOversight = searchParams.get("needs_oversight") === "true";
+
+  // If query params are present, return filtered incident list from store
+  if (status || childId || needsOversight) {
+    let incidents = db.incidents.findAll();
+    if (status) incidents = incidents.filter((i) => i.status === status);
+    if (childId) incidents = incidents.filter((i) => i.child_id === childId);
+    if (needsOversight) incidents = db.incidents.findNeedingOversight();
+
+    const open = db.incidents.findOpen().length;
+    const oversight = db.incidents.findNeedingOversight().length;
+
+    return NextResponse.json({
+      data: incidents,
+      meta: { total: incidents.length, open, needs_oversight: oversight },
+    });
+  }
+
+  // Default: return incident intelligence analytics
   const result = generateIncidentIntelligence({
     homeId: "home-oak",
     periodStart: "2026-01-01",
@@ -54,4 +80,83 @@ export async function GET() {
       meta: { generatedAt: new Date().toISOString(), engine: "incidents", version: "2.0.0" },
     },
   });
+}
+
+// ── POST: Create a new incident ─────────────────────────────────────────────
+// This is the complete vertical slice entry point.
+// Form → API → Store → Audit → Timeline → Tasks → Automation → ARIA Context
+
+export async function POST(req: NextRequest) {
+  let body: Record<string, unknown>;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  // ── Validate required fields ────────────────────────────────────────────
+  const required = ["child_id", "type", "severity", "date", "time", "description", "immediate_action"];
+  const missing = required.filter((f) => !body[f] || (typeof body[f] === "string" && !(body[f] as string).trim()));
+  if (missing.length > 0) {
+    return NextResponse.json(
+      { error: `Missing required fields: ${missing.join(", ")}`, fields: missing },
+      { status: 400 },
+    );
+  }
+
+  // Validate severity
+  const validSeverities = ["low", "medium", "high", "critical"];
+  if (!validSeverities.includes(body.severity as string)) {
+    return NextResponse.json(
+      { error: `Invalid severity. Must be one of: ${validSeverities.join(", ")}` },
+      { status: 400 },
+    );
+  }
+
+  // Validate description length
+  if ((body.description as string).trim().length < 10) {
+    return NextResponse.json(
+      { error: "Description must be at least 10 characters" },
+      { status: 400 },
+    );
+  }
+
+  // ── Build input ─────────────────────────────────────────────────────────
+  const input: CreateIncidentInput = {
+    child_id: body.child_id as string,
+    type: body.type as string,
+    severity: body.severity as string,
+    date: body.date as string,
+    time: body.time as string,
+    location: (body.location as string) || undefined,
+    description: (body.description as string).trim(),
+    immediate_action: (body.immediate_action as string).trim(),
+    reported_by: (body.reported_by as string) || "staff_darren",
+    witnesses: Array.isArray(body.witnesses) ? body.witnesses as string[] : [],
+    body_map_required: body.body_map_required === true,
+    notifications: Array.isArray(body.notifications) ? body.notifications as CreateIncidentInput["notifications"] : [],
+    home_id: (body.home_id as string) || "home_oak",
+  };
+
+  // ── Orchestrate ─────────────────────────────────────────────────────────
+  try {
+    const result = createIncident(input);
+
+    return NextResponse.json({
+      data: result.incident,
+      linked_updates: result.linked_updates,
+      meta: {
+        tasks_created: result.tasks_created.length,
+        automation_runs: result.automation_runs.length,
+        audit_entry_id: result.audit_entry.id,
+        timeline_event_id: result.timeline_event.id,
+      },
+    }, { status: 201 });
+  } catch (err) {
+    console.error("[POST /api/incidents] Orchestration failed:", err);
+    return NextResponse.json(
+      { error: "Failed to create incident", detail: err instanceof Error ? err.message : String(err) },
+      { status: 500 },
+    );
+  }
 }
