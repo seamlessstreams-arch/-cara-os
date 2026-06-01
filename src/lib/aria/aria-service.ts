@@ -1495,15 +1495,42 @@ export async function invokeAriaCommand(
     });
   }
 
-  // Provider call
-  const generation = await generateText({
-    systemPrompt,
-    userPrompt,
-    expectJson: false,
+  // ── Rules-first: try deterministic rules before making an API call ────
+  // This saves cost, reduces latency, and improves reliability for ~60%
+  // of commands that don't genuinely need natural language synthesis.
+  const { tryRulesFirst } = await import("@/lib/aria/rules-engine");
+  const ruleResult = tryRulesFirst(command.id, args.inputText ?? "", {
+    childId: args.childId ?? undefined,
+    staffId: args.staffId ?? undefined,
+    module: args.sourceModule ?? undefined,
+    recordType: args.sourceRecordType ?? undefined,
+    severity: (args.inputMetadata as Record<string, unknown>)?.severity as string | undefined,
   });
 
-  const cleanedText = applyAriaPostprocessor(generation.text);
-  const confidence = inferConfidence(command, cleanedText);
+  let cleanedText: string;
+  let confidence: string;
+  let generation: { text: string; llmUsed: boolean; providerId: string; modelId: string };
+
+  if (ruleResult) {
+    // Rules handled it — no API call needed
+    generation = {
+      text: ruleResult.output,
+      llmUsed: false,
+      providerId: "rules_engine",
+      modelId: "deterministic",
+    };
+    cleanedText = ruleResult.output;
+    confidence = ruleResult.confidence;
+  } else {
+    // Rules couldn't handle it — fall through to LLM provider
+    generation = await generateText({
+      systemPrompt,
+      userPrompt,
+      expectJson: false,
+    });
+    cleanedText = applyAriaPostprocessor(generation.text);
+    confidence = inferConfidence(command, cleanedText);
+  }
   const outputId = `aria_out_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   if (supabase) {
