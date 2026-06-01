@@ -694,7 +694,7 @@ function SupportWorkerDashboard({ data }: { data: RoleDashboardData }) {
           iconBg="bg-emerald-50"
           iconColor="text-emerald-600"
         />
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <QuickActionButton
             label="Daily Log"
             icon={PenLine}
