@@ -30,6 +30,7 @@ import { TASK_CATEGORY_LABELS, TASK_PRIORITIES, TASK_CATEGORIES, TASK_STATUSES }
 import type { Task } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
+import { ProvenanceBadge } from "@/components/forms/enter-once-indicator";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -553,6 +554,24 @@ export default function TaskDetailPage() {
                 </dl>
               </CardContent>
             </Card>
+
+            {/* Provenance — where this task came from (Enter Once, Use Everywhere) */}
+            {(() => {
+              const t = task as Task & { linked_record_type?: string; linked_record_id?: string };
+              if (!t.linked_record_type || !t.linked_record_id) return null;
+              if (t.linked_record_type === "incident" && task.linked_incident_id) return null; // shown below
+              return (
+                <Card className="rounded-2xl border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]">
+                  <CardContent className="py-3">
+                    <p className="text-[11px] font-semibold text-[var(--cs-text-secondary)] mb-1.5">This task was created automatically from:</p>
+                    <ProvenanceBadge
+                      sourceType={t.linked_record_type}
+                      sourceId={t.linked_record_id}
+                    />
+                  </CardContent>
+                </Card>
+              );
+            })()}
 
             {/* Linked records */}
             {(task.linked_child_id || task.linked_incident_id || task.linked_document_id) && (
