@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuditLog as getUniversalAudit } from "@/lib/orchestrator/universal-record-orchestrator";
 import { getAuditLog as getIncidentAudit } from "@/lib/incidents/incident-orchestrator";
+import { fetchPersistedAudit } from "@/lib/orchestrator/record-persistence";
 
 export const dynamic = "force-dynamic";
 
@@ -18,11 +19,21 @@ export async function GET(req: NextRequest) {
   const actorId = searchParams.get("actor_id");
   const limit = Math.min(Number(searchParams.get("limit") ?? "100"), 500);
 
-  // Merge both orchestrator audit logs
+  // Merge both in-memory orchestrator audit logs
   const universal = getUniversalAudit().map((e) => ({ ...e, source: "universal" }));
   const incident = getIncidentAudit().map((e) => ({ ...e, source: "incident" }));
 
-  let entries = [...universal, ...incident];
+  // When Supabase is configured, fold in durable persisted entries (deduped by id).
+  // Returns null when Supabase is off — feed falls back to in-memory only.
+  const persisted = await fetchPersistedAudit({ entityType: entityType ?? undefined, actorId: actorId ?? undefined, limit });
+  const inMemory = [...universal, ...incident];
+  let entries: Record<string, unknown>[];
+  if (persisted) {
+    const seen = new Set(persisted.map((e) => e.id));
+    entries = [...persisted, ...inMemory.filter((e) => !seen.has((e as Record<string, unknown>).id))];
+  } else {
+    entries = inMemory as Record<string, unknown>[];
+  }
 
   // Filter
   if (entityType) {
@@ -47,7 +58,12 @@ export async function GET(req: NextRequest) {
     meta: {
       total,
       returned: entries.length,
-      sources: { universal: universal.length, incident: incident.length },
+      persistent: persisted !== null,
+      sources: {
+        universal: universal.length,
+        incident: incident.length,
+        persisted: persisted ? persisted.length : 0,
+      },
     },
   });
 }

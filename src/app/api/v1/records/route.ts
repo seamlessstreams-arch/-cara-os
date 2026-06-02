@@ -14,6 +14,7 @@ import {
   createRecord,
   type CreateRecordInput,
 } from "@/lib/orchestrator/universal-record-orchestrator";
+import { persistRecord, persistAuditEntry } from "@/lib/orchestrator/record-persistence";
 
 export const dynamic = "force-dynamic";
 
@@ -104,6 +105,21 @@ export async function POST(req: NextRequest) {
   try {
     const result = createRecord(input);
 
+    // ── Durable write-through (gated) ─────────────────────────────────────
+    // No-op when Supabase isn't configured; otherwise persists the record and
+    // its audit entry so they survive restarts. Best-effort — never blocks the
+    // response on a persistence failure (the in-memory write already succeeded).
+    let persisted = false;
+    try {
+      const [rec] = await Promise.all([
+        persistRecord(result.record),
+        persistAuditEntry(result.audit_entry, "universal"),
+      ]);
+      persisted = rec.persisted;
+    } catch {
+      /* persistence is best-effort */
+    }
+
     return NextResponse.json({
       data: result.record,
       linked_updates: result.linked_updates,
@@ -113,6 +129,7 @@ export async function POST(req: NextRequest) {
         has_alerts: result.alerts.length > 0,
         risk_level: result.audit_entry.risk_level,
         reference: result.record.reference,
+        persisted,
       },
     });
   } catch (err) {
