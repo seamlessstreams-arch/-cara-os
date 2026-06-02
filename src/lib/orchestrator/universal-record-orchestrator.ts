@@ -23,6 +23,8 @@ import { db } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { recordEvent } from "@/lib/timeline/timeline-service";
 import { logInteraction } from "@/lib/aria/aria-config";
+import { createIncident } from "@/lib/incidents/incident-orchestrator";
+import { createDailyLog } from "@/lib/daily-log/daily-log-orchestrator";
 import type { Task } from "@/types";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -490,9 +492,93 @@ function createFollowUpTasks(
   return tasks;
 }
 
+// ─── Delegation helpers ──────────────────────────────────────────────────────
+
+/** Route an "incident" classification through the dedicated incident orchestrator. */
+function delegateToIncident(input: CreateRecordInput): OrchestrationResult {
+  const now = new Date();
+  const data = input.data ?? {};
+  // Derive incident sub-type from classifier hints, defaulting to behaviour_incident
+  const secondaryTypes = (data.secondary_types as string[]) ?? [];
+  const tags = (data.tags as string[]) ?? [];
+  let incidentType = "behaviour_incident";
+  if (tags.includes("self-harm")) incidentType = "self_harm";
+  else if (tags.includes("missing")) incidentType = "missing_from_care";
+  else if (tags.includes("restraint")) incidentType = "physical_intervention";
+  else if (tags.includes("bullying")) incidentType = "bullying";
+  else if (tags.includes("police-involvement")) incidentType = "police_involvement";
+  else if (secondaryTypes.includes("health_update")) incidentType = "hospital_attendance";
+
+  const result = createIncident({
+    child_id: input.child_id ?? "unknown",
+    type: incidentType,
+    severity: (input.severity as string) ?? "medium",
+    date: now.toISOString().slice(0, 10),
+    time: now.toTimeString().slice(0, 5),
+    description: input.description,
+    immediate_action: (data.immediate_action as string) ?? "Recorded via universal entry — see description. Immediate action to be confirmed by recording staff.",
+    reported_by: input.staff_id,
+    body_map_required: tags.includes("self-harm") || tags.includes("restraint"),
+    home_id: input.home_id,
+  });
+
+  return {
+    record: result.incident as unknown as Record<string, unknown>,
+    audit_entry: result.audit_entry as unknown as Record<string, unknown>,
+    timeline_event: result.timeline_event as unknown as Record<string, unknown>,
+    tasks_created: result.tasks_created as unknown as Record<string, unknown>[],
+    linked_updates: result.linked_updates,
+    alerts: result.automation_runs.map((r) => `Automation: ${r.rule_name}`),
+  };
+}
+
+/** Route a "daily_log" classification through the dedicated daily-log orchestrator. */
+function delegateToDailyLog(input: CreateRecordInput): OrchestrationResult {
+  const now = new Date();
+  const data = input.data ?? {};
+  const tags = (data.tags as string[]) ?? [];
+  // Derive mood from tags/severity
+  let mood: "great" | "good" | "okay" | "low" | "distressed" = "okay";
+  if (tags.includes("positive")) mood = "good";
+  else if (tags.includes("emotional-wellbeing")) mood = "low";
+  if (input.severity === "high" || input.severity === "critical") mood = "distressed";
+
+  const result = createDailyLog({
+    child_id: input.child_id ?? "unknown",
+    date: now.toISOString().slice(0, 10),
+    staff_id: input.staff_id,
+    mood,
+    engagement: mood === "good" ? 4 : mood === "distressed" ? 2 : 3,
+    key_events: input.description,
+    concerns: tags.some((t) => ["safeguarding", "self-harm", "emotional-wellbeing"].includes(t)) ? input.description : "",
+    follow_up_needed: ((data.flags as unknown[])?.length ?? 0) > 0 || tags.includes("emotional-wellbeing"),
+    home_id: input.home_id,
+  });
+
+  return {
+    record: result.log as Record<string, unknown>,
+    audit_entry: result.audit_entry as Record<string, unknown>,
+    timeline_event: result.timeline_event as Record<string, unknown>,
+    tasks_created: [],
+    linked_updates: result.linked_updates,
+    alerts: result.alerts,
+  };
+}
+
 // ─── Main Orchestrator ──────────────────────────────────────────────────────
 
 export function createRecord(input: CreateRecordInput): OrchestrationResult {
+  // ── Delegation: route the two specialised types to their own orchestrators ──
+  // This ensures incidents land in store.incidents with an INC- reference and
+  // full incident task generation, and daily logs land in store.dailyLog with
+  // mood/engagement alerts — so they appear on /incidents and /daily-log.
+  if (input.record_type === "incident") {
+    return delegateToIncident(input);
+  }
+  if (input.record_type === "daily_log") {
+    return delegateToDailyLog(input);
+  }
+
   const now = new Date().toISOString();
   const linkedUpdates: string[] = [];
 

@@ -20,6 +20,8 @@ export const dynamic = "force-dynamic";
 // ── Valid record types ──────────────────────────────────────────────────────
 
 const VALID_RECORD_TYPES = new Set([
+  "incident",          // delegates to incident-orchestrator
+  "daily_log",         // delegates to daily-log-orchestrator
   "safeguarding_concern",
   "risk_assessment",
   "care_plan",

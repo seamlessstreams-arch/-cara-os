@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FileText, Users, AlertTriangle, PhoneCall, ClipboardList } from "lucide-react";
+import { FileText, Users, AlertTriangle, PhoneCall, ClipboardList, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ChildQuickActionsProps { childId: string; className?: string }
@@ -17,6 +17,15 @@ const ACTIONS = [
 export function ChildQuickActions({ childId, className }: ChildQuickActionsProps) {
   return (
     <div className={cn("flex gap-2 overflow-x-auto pb-2", className)}>
+      {/* Primary: Universal record entry — "just write what happened" */}
+      <Link
+        href={`/record/${childId}`}
+        className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all hover:shadow-md active:scale-95 min-h-[40px] bg-[var(--cs-navy)] text-white shrink-0"
+      >
+        <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+        Record anything
+      </Link>
+
       {ACTIONS.map((action) => {
         const Icon = action.icon;
         return (
