@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateIncidentIntelligence } from "@/lib/incidents";
 import type { IncidentRecord, IncidentPolicy, StaffIncidentTraining } from "@/lib/incidents";
 import { createIncident, type CreateIncidentInput } from "@/lib/incidents/incident-orchestrator";
+import { persistRecord, persistAuditEntry } from "@/lib/orchestrator/record-persistence";
 import { db } from "@/lib/db/store";
 
 export const dynamic = "force-dynamic";
@@ -142,6 +143,26 @@ export async function POST(req: NextRequest) {
   try {
     const result = createIncident(input);
 
+    // ── Durable write-through (gated — no-op unless Supabase is configured) ──
+    const inc = result.incident as unknown as Record<string, unknown>;
+    let persisted = false;
+    try {
+      const [rec] = await Promise.all([
+        persistRecord({
+          ...inc,
+          record_type: "incident",
+          staff_id: inc.reported_by ?? input.reported_by,
+          title: `${input.type.replace(/_/g, " ")} ${inc.reference ?? ""}`.trim(),
+          data: {
+            type: inc.type, immediate_action: inc.immediate_action, location: inc.location,
+            witnesses: inc.witnesses, body_map_required: inc.body_map_required, notifications: inc.notifications,
+          },
+        }),
+        persistAuditEntry(result.audit_entry as unknown as Record<string, unknown>, "incident"),
+      ]);
+      persisted = rec.persisted;
+    } catch { /* best-effort */ }
+
     return NextResponse.json({
       data: result.incident,
       linked_updates: result.linked_updates,
@@ -150,6 +171,7 @@ export async function POST(req: NextRequest) {
         automation_runs: result.automation_runs.length,
         audit_entry_id: result.audit_entry.id,
         timeline_event_id: result.timeline_event.id,
+        persisted,
       },
     }, { status: 201 });
   } catch (err) {

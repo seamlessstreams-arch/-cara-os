@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createDailyLog, type CreateDailyLogInput } from "@/lib/daily-log/daily-log-orchestrator";
+import { persistRecord, persistAuditEntry } from "@/lib/orchestrator/record-persistence";
 
 export const dynamic = "force-dynamic";
 import {
@@ -116,10 +117,31 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = createDailyLog(input);
+
+    // ── Durable write-through (gated — no-op unless Supabase is configured) ──
+    const log = result.log as Record<string, unknown>;
+    let persisted = false;
+    try {
+      const [rec] = await Promise.all([
+        persistRecord({
+          ...log,
+          reference: (log.id as string), // daily logs have no separate reference
+          record_type: "daily_log",
+          title: `Daily log — ${input.date}`,
+          description: input.key_events,
+          severity: null,
+          data: { mood: log.mood, engagement_level: log.engagement_level, concerns: log.concerns, shift: log.shift, follow_up_needed: log.follow_up_needed },
+        }),
+        persistAuditEntry(result.audit_entry as Record<string, unknown>, "daily_log"),
+      ]);
+      persisted = rec.persisted;
+    } catch { /* best-effort */ }
+
     return NextResponse.json({
       data: result.log,
       linked_updates: result.linked_updates,
       alerts: result.alerts,
+      meta: { persisted },
     }, { status: 201 });
   } catch (err) {
     return NextResponse.json({ error: "Failed to create daily log", detail: err instanceof Error ? err.message : String(err) }, { status: 500 });
