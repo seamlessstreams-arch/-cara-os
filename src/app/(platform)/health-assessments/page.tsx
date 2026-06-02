@@ -81,7 +81,7 @@ export default function HealthAssessmentsPage() {
     if (filterYP !== "all") list = list.filter((a) => a.child_id === filterYP);
     if (search) {
       const q = search.toLowerCase();
-      list = list.filter((a) => a.conducted_by.toLowerCase().includes(q) || a.key_findings.join(" ").toLowerCase().includes(q));
+      list = list.filter((a) => a.conducted_by.toLowerCase().includes(q) || (a.key_findings ?? []).join(" ").toLowerCase().includes(q));
     }
     list.sort((a, b) => {
       switch (sortBy) {
@@ -102,8 +102,8 @@ export default function HealthAssessmentsPage() {
     nextDue: a.next_due,
     conductedBy: a.conducted_by,
     location: a.location,
-    keyFindings: a.key_findings.join("; "),
-    recommendations: a.recommendations.join("; "),
+    keyFindings: (a.key_findings ?? []).join("; "),
+    recommendations: (a.recommendations ?? []).join("; "),
     sdqTotal: a.sdq_scores ? String(a.sdq_scores.total) : "N/A",
     sdqBand: a.sdq_scores ? SDQ_BAND_LABEL[a.sdq_scores.band] : "N/A",
     healthNeeds: a.health_needs.map((h) => `${h.need}: ${h.how_met}`).join("; "),

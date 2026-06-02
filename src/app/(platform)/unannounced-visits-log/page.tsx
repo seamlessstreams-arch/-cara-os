@@ -331,13 +331,13 @@ export default function UnannouncedVisitsLogPage() {
                     )}
 
                     {/* Concerns */}
-                    {visit.concerns.length > 0 && (
+                    {(visit.concerns?.length ?? 0) > 0 && (
                       <div className="bg-amber-50 rounded-lg p-3">
                         <p className="font-medium text-amber-800 mb-2 flex items-center gap-1">
                           <AlertTriangle className="h-3.5 w-3.5" /> Concerns
                         </p>
                         <ul className="space-y-1">
-                          {visit.concerns.map((concern, i) => (
+                          {(visit.concerns ?? []).map((concern, i) => (
                             <li key={i} className="text-amber-700 text-xs flex items-start gap-2">
                               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
                               {concern}

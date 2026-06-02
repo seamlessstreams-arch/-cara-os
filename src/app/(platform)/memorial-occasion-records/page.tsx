@@ -147,7 +147,7 @@ export default function MemorialOccasionRecordsPage() {
                   <div className="min-w-0">
                     <p className="font-medium truncate">{m.who_is_remembered}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {m.date} &middot; {m.affected_children.map(getYPName).join(", ")}
+                      {m.date} &middot; {(m.affected_children ?? []).map(getYPName).join(", ")}
                     </p>
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export default function MemorialOccasionRecordsPage() {
 
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
                     <span>Follow-up: {m.follow_up_date}</span>
-                    <span>Children: {m.affected_children.map(getYPName).join(", ")}</span>
+                    <span>Children: {(m.affected_children ?? []).map(getYPName).join(", ")}</span>
                   </div>
 
                   <SmartLinkPanel sourceType="memorial-occasion-records" sourceId={m.id} childId={m.affected_children[0]} compact />

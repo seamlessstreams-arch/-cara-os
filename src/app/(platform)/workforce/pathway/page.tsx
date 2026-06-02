@@ -153,14 +153,14 @@ function StaffReadinessCard({
         {expanded && (
           <div className="mt-3 pt-3 border-t border-[var(--cs-border-subtle)] space-y-3">
             {/* Strengths & Development */}
-            {profile.strengths.length > 0 && (
+            {(profile.strengths?.length ?? 0) > 0 && (
               <div className="rounded-lg bg-emerald-50 border border-emerald-100 px-3 py-2">
                 <p className="text-[10px] font-semibold text-emerald-700 mb-1 flex items-center gap-1">
                   <Star className="h-3 w-3" />
                   Strengths
                 </p>
                 <ul className="space-y-0.5">
-                  {profile.strengths.map((s, i) => (
+                  {(profile.strengths ?? []).map((s, i) => (
                     <li key={i} className="text-[11px] text-emerald-800 flex items-start gap-1.5">
                       <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0 mt-0.5" />
                       {s}

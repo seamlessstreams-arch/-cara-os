@@ -164,7 +164,7 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
           <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xs">✕ Close</button>
           <AriaPanel
             mode="staff_development_summary"
-            pageContext={`Staff: ${member.full_name} (${member.job_title}). Current stage: ${PATHWAY_STAGE_LABELS[profile.current_stage]}. Readiness: ${profile.overall_readiness_score}%. Target: ${profile.target_stage ? PATHWAY_STAGE_LABELS[profile.target_stage] : "none"}. Strengths: ${profile.strengths.join("; ")}. Development areas: ${profile.development_areas.join("; ")}. Active plan: ${activePlan ? activePlan.title : "none"}. Observations: ${obs.length}.`}
+            pageContext={`Staff: ${member.full_name} (${member.job_title}). Current stage: ${PATHWAY_STAGE_LABELS[profile.current_stage]}. Readiness: ${profile.overall_readiness_score}%. Target: ${profile.target_stage ? PATHWAY_STAGE_LABELS[profile.target_stage] : "none"}. Strengths: ${(profile.strengths ?? []).join("; ")}. Development areas: ${profile.development_areas.join("; ")}. Active plan: ${activePlan ? activePlan.title : "none"}. Observations: ${obs.length}.`}
           />
         </div>
       )}
@@ -288,7 +288,7 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
                 <ThumbsUp className="h-3.5 w-3.5" /> Strengths
               </p>
               <ul className="space-y-2">
-                {profile.strengths.map((s) => (
+                {(profile.strengths ?? []).map((s) => (
                   <li key={s} className="flex items-start gap-2 text-xs text-emerald-800">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
                     <span>{s}</span>

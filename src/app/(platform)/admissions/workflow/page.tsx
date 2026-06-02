@@ -229,7 +229,7 @@ export default function AdmissionWorkflowPage() {
                 <Card
                   key={wf.id}
                   className="cursor-pointer hover:shadow-md transition-shadow border-l-4"
-                  style={{ borderLeftColor: wf.current_phase === "completed" ? "#10b981" : wf.risk_factors.length > 2 ? "#ef4444" : "#6366f1" }}
+                  style={{ borderLeftColor: wf.current_phase === "completed" ? "#10b981" : (wf.risk_factors?.length ?? 0) > 2 ? "#ef4444" : "#6366f1" }}
                   onClick={() => { setSelectedId(wf.id); setViewMode("detail"); }}
                 >
                   <CardContent className="p-5">
@@ -282,12 +282,12 @@ export default function AdmissionWorkflowPage() {
                           {wf.presenting_needs.slice(0, 3).map((n) => (
                             <span key={n} className="px-2 py-0.5 text-xs rounded-full bg-slate-100 text-slate-600">{n}</span>
                           ))}
-                          {wf.risk_factors.slice(0, 2).map((r) => (
+                          {(wf.risk_factors ?? []).slice(0, 2).map((r) => (
                             <span key={r} className="px-2 py-0.5 text-xs rounded-full bg-red-50 text-red-600">{r}</span>
                           ))}
-                          {wf.presenting_needs.length + wf.risk_factors.length > 5 && (
+                          {wf.presenting_needs.length + (wf.risk_factors?.length ?? 0) > 5 && (
                             <span className="px-2 py-0.5 text-xs rounded-full bg-gray-100 text-gray-500">
-                              +{wf.presenting_needs.length + wf.risk_factors.length - 5} more
+                              +{wf.presenting_needs.length + (wf.risk_factors?.length ?? 0) - 5} more
                             </span>
                           )}
                         </div>

@@ -206,11 +206,11 @@ export default function ManagementWalkroundPage() {
                     </div>
                   )}
 
-                  {w.child_interactions.length > 0 && (
+                  {(w.child_interactions?.length ?? 0) > 0 && (
                     <div className="bg-pink-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-pink-800 uppercase tracking-wide mb-2">Child Interactions</p>
                       <div className="space-y-1">
-                        {w.child_interactions.map((c: WalkroundChildInteraction, i: number) => (
+                        {(w.child_interactions ?? []).map((c: WalkroundChildInteraction, i: number) => (
                           <div key={i} className="bg-white rounded-lg p-2 border text-sm">
                             <p className="font-medium">{c.child_initial}</p>
                             <p className="text-xs text-muted-foreground">{c.observation}</p>
@@ -223,7 +223,7 @@ export default function ManagementWalkroundPage() {
                   <div className="bg-purple-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-2">Staff Interactions</p>
                     <div className="space-y-1">
-                      {w.staff_interactions.map((s: WalkroundStaffInteraction, i: number) => (
+                      {(w.staff_interactions ?? []).map((s: WalkroundStaffInteraction, i: number) => (
                         <div key={i} className="bg-white rounded-lg p-2 border text-sm">
                           <p className="font-medium">{s.staff_member.startsWith("staff_") ? getStaffName(s.staff_member) : s.staff_member}</p>
                           <p className="text-xs text-muted-foreground">{s.observation}</p>

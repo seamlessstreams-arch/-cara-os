@@ -136,7 +136,7 @@ export default function MultiAgencyMeetingsPage() {
     attendeeCount: m.attendees.filter((a: MeetingAttendee) => a.attended).length + "/" + m.attendees.length,
     decisions: m.decisions_reached.join("; "),
     childParticipation: m.child_participation,
-    pendingActions: m.action_items.filter((a: MultiAgencyActionItem) => a.status === "pending").length,
+    pendingActions: (m.action_items ?? []).filter((a: MultiAgencyActionItem) => a.status === "pending").length,
     nextMeeting: m.next_meeting_date || "TBC",
     notes: m.notes,
   })), [data]);

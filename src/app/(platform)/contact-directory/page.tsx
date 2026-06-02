@@ -128,7 +128,7 @@ export default function ContactDirectoryPage() {
   /* ── stats ──────────────────────────────────────────────────────────────── */
   const stats = {
     total: contacts.length,
-    linked: contacts.filter(c => c.linked_children.length > 0).length,
+    linked: contacts.filter(c => (c.linked_children?.length ?? 0) > 0).length,
     emergency: contacts.filter(c => c.is_emergency).length,
     categories: new Set(contacts.map(c => c.category)).size,
     recentlyUpdated: contacts.filter(c => {

@@ -137,9 +137,9 @@ function FilingItemCard({
               )}
             </div>
 
-            {item.tags.length > 0 && (
+            {(item.tags?.length ?? 0) > 0 && (
               <div className="flex gap-1 flex-wrap mt-2">
-                {item.tags.map((tag) => (
+                {(item.tags ?? []).map((tag) => (
                   <span key={tag} className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded">
                     {tag}
                   </span>

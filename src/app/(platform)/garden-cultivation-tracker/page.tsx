@@ -338,11 +338,11 @@ export default function GardenCultivationTrackerPage() {
                     </ul>
                   </div>
 
-                  {p.challenges_issues.length > 0 && (
+                  {(p.challenges_issues?.length ?? 0) > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Challenges / Issues</p>
                       <ul className="space-y-1">
-                        {p.challenges_issues.map((c, i) => (
+                        {(p.challenges_issues ?? []).map((c, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-rose-600 mt-0.5">•</span>
                             <span>{c}</span>
@@ -360,7 +360,7 @@ export default function GardenCultivationTrackerPage() {
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
                     <span>
                       <Users className="h-3 w-3 inline mr-1" />
-                      Contributors: {p.contributing_children.map(getYPName).join(", ")}
+                      Contributors: {(p.contributing_children ?? []).map(getYPName).join(", ")}
                     </span>
                     <span>
                       <Wrench className="h-3 w-3 inline mr-1" />

@@ -78,10 +78,10 @@ export default function WarmWelcomePacksPage() {
     const total = packs.length;
     const delivered = packs.filter((p) => p.status === "delivered").length;
     const preparing = packs.filter((p) => p.status === "preparing").length;
-    const avgItems = Math.round(packs.reduce((s, p) => s + p.items.length, 0) / packs.length);
+    const avgItems = Math.round(packs.reduce((s, p) => s + (p.items?.length ?? 0), 0) / packs.length);
     const personalisedPct = Math.round(
-      (packs.reduce((s, p) => s + p.items.filter((i) => i.personalised).length, 0) /
-        packs.reduce((s, p) => s + p.items.length, 0)) * 100
+      (packs.reduce((s, p) => s + (p.items ?? []).filter((i) => i.personalised).length, 0) /
+        packs.reduce((s, p) => s + (p.items?.length ?? 0), 0)) * 100
     );
     return { total, delivered, preparing, avgItems, personalisedPct };
   }, [packs]);

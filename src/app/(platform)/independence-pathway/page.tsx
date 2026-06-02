@@ -65,7 +65,7 @@ export default function IndependencePathwayPage() {
     if (!data.length) return { avgReadiness: 0, domainsNeedingAttention: [] as { domain: string; youngPerson: string; score: number }[], nextReviews: [] as { youngPerson: string; reviewDate: string }[] };
     const avgReadiness = Math.round(data.reduce((s, a) => s + a.overall_readiness, 0) / data.length);
     const domainsNeedingAttention = data.flatMap((a) =>
-      a.domains.filter((dm) => dm.score <= 2).map((dm) => ({ domain: dm.name, youngPerson: getYPName(a.child_id), score: dm.score }))
+      (a.domains ?? []).filter((dm) => dm.score <= 2).map((dm) => ({ domain: dm.name, youngPerson: getYPName(a.child_id), score: dm.score }))
     );
     const nextReviews = data
       .map((a) => ({ youngPerson: getYPName(a.child_id), reviewDate: a.review_date }))
@@ -86,7 +86,7 @@ export default function IndependencePathwayPage() {
     "bg-red-100 text-red-700";
 
   /* ── export ──────────────────────────────────────────────────────────── */
-  const exportData = useMemo(() => data.flatMap((a) => a.domains.map((dm) => ({
+  const exportData = useMemo(() => data.flatMap((a) => (a.domains ?? []).map((dm) => ({
     youngPerson: getYPName(a.child_id),
     assessedBy: getStaffName(a.assessed_by),
     assessmentDate: a.assessment_date,
@@ -186,7 +186,7 @@ export default function IndependencePathwayPage() {
         {/* ── per-child readiness overview ──────────────────────────────── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {data.map((a) => {
-            const avgDomain = Math.round((a.domains.reduce((s, dm) => s + dm.score, 0) / a.domains.length) * 20);
+            const avgDomain = Math.round(((a.domains ?? []).reduce((s, dm) => s + dm.score, 0) / (a.domains?.length ?? 0)) * 20);
             return (
               <div key={a.id} className="rounded-lg border bg-white p-4 space-y-3">
                 <div className="flex items-center justify-between">

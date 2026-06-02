@@ -254,7 +254,7 @@ export default function StaffShadowingLogPage() {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Follow-Up Actions</p>
                     <ul className="space-y-1">
-                      {shift.follow_up_actions.map((a, i) => (
+                      {(shift.follow_up_actions ?? []).map((a, i) => (
                         <li key={i} className="text-sm flex items-start gap-2">
                           <Clock className="h-3 w-3 text-blue-500 mt-1 shrink-0" />
                           <span>{a}</span>

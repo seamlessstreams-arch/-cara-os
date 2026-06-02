@@ -154,11 +154,11 @@ function ChildProfileCard({ profile }: { profile: ChildBehaviourProfile }) {
         </span>
       </div>
 
-      {profile.strengths.length > 0 && (
+      {(profile.strengths?.length ?? 0) > 0 && (
         <div className="mb-2">
           <p className="text-xs font-medium text-green-700 mb-1">Strengths</p>
           <ul className="text-xs text-gray-600 space-y-0.5">
-            {profile.strengths.map((s, i) => (
+            {(profile.strengths ?? []).map((s, i) => (
               <li key={i} className="flex items-start gap-1">
                 <span className="text-green-500 mt-0.5">+</span>
                 {s}
@@ -168,11 +168,11 @@ function ChildProfileCard({ profile }: { profile: ChildBehaviourProfile }) {
         </div>
       )}
 
-      {profile.concerns.length > 0 && (
+      {(profile.concerns?.length ?? 0) > 0 && (
         <div>
           <p className="text-xs font-medium text-red-700 mb-1">Concerns</p>
           <ul className="text-xs text-gray-600 space-y-0.5">
-            {profile.concerns.map((c, i) => (
+            {(profile.concerns ?? []).map((c, i) => (
               <li key={i} className="flex items-start gap-1">
                 <span className="text-red-500 mt-0.5">!</span>
                 {c}

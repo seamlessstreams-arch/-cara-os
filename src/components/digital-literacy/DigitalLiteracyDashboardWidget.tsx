@@ -168,9 +168,9 @@ function ChildDigitalCard({ child }: { child: ChildDigitalProfileData }) {
           </div>
         </div>
       </div>
-      {child.strengths.length > 0 && (
+      {(child.strengths?.length ?? 0) > 0 && (
         <div className="mt-2">
-          {child.strengths.map((s, i) => (
+          {(child.strengths ?? []).map((s, i) => (
             <div key={i} className="text-[10px] text-green-700 bg-green-50 rounded px-2 py-0.5 mt-0.5">
               {s}
             </div>

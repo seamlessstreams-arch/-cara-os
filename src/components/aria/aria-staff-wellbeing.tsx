@@ -273,9 +273,9 @@ export function AriaStaffWellbeing() {
                   </div>
 
                   {/* Flags */}
-                  {entry.flags.length > 0 && (
+                  {(entry.flags?.length ?? 0) > 0 && (
                     <div className="space-y-1">
-                      {entry.flags.map((flag, i) => (
+                      {(entry.flags ?? []).map((flag, i) => (
                         <div key={i} className="flex items-center gap-1.5 text-[11px] text-amber-700">
                           <AlertTriangle className="h-3 w-3 shrink-0" />
                           <span>{flag}</span>

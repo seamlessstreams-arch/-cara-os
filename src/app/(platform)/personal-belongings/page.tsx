@@ -167,7 +167,7 @@ export default function PersonalBelongingsPage() {
     const out = [...list];
     switch (sortBy) {
       case "name":    out.sort((a, b) => getYPName(a.child_id).localeCompare(getYPName(b.child_id))); break;
-      case "items":   out.sort((a, b) => b.items.length - a.items.length); break;
+      case "items":   out.sort((a, b) => (b.items?.length ?? 0) - (a.items?.length ?? 0)); break;
       case "audit":   out.sort((a, b) => a.next_audit_due.localeCompare(b.next_audit_due)); break;
     }
     return out;

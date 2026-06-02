@@ -328,7 +328,7 @@ export default function TransitionPlanningPage() {
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Action Steps</p>
                         <ul className="list-disc list-inside space-y-1">
-                          {g.actions.map((a, i) => <li key={i}>{a}</li>)}
+                          {(g.actions ?? []).map((a, i) => <li key={i}>{a}</li>)}
                         </ul>
                       </div>
                       {g.progress && (

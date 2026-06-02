@@ -355,7 +355,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
   }
 
   const displayName = yp.preferred_name ?? yp.first_name;
-  const hasRisk     = yp.risk_flags.length > 0;
+  const hasRisk     = (yp.risk_flags?.length ?? 0) > 0;
 
   // Tab groups — defined here to access live counts
   const TAB_GROUPS: Array<{
@@ -490,7 +490,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
           {/* Risk flags */}
           {hasRisk && (
             <div className="mt-4 flex flex-wrap gap-1.5">
-              {yp.risk_flags.map((flag) => (
+              {(yp.risk_flags ?? []).map((flag) => (
                 <Badge key={flag} variant="warning" className="text-[9px] rounded-full gap-0.5 px-2 py-0.5">
                   <AlertTriangle className="h-2.5 w-2.5 shrink-0" />{flag}
                 </Badge>
@@ -848,7 +848,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                         <AlertTriangle className="h-2.5 w-2.5" />{flag.replace("_", " ")}
                       </Badge>
                     ))}
-                  {yp.risk_flags.filter((f) => ["self_harm", "mental_health", "substance_misuse"].includes(f)).length === 0 && (
+                  {(yp.risk_flags ?? []).filter((f) => ["self_harm", "mental_health", "substance_misuse"].includes(f)).length === 0 && (
                     <p className="text-xs text-slate-400">No health-specific risk flags</p>
                   )}
                 </div>
@@ -958,9 +958,9 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
           <div className="space-y-4">
             {hasRisk && (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                <SectionHeading icon={AlertTriangle} label="Risk Flags" count={yp.risk_flags.length} />
+                <SectionHeading icon={AlertTriangle} label="Risk Flags" count={(yp.risk_flags?.length ?? 0)} />
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {yp.risk_flags.map((flag) => (
+                  {(yp.risk_flags ?? []).map((flag) => (
                     <Badge key={flag} variant="warning" className="text-[10px] rounded-full gap-1 px-2.5 py-1">
                       <AlertTriangle className="h-2.5 w-2.5 shrink-0" />{flag.replace(/_/g, " ")}
                     </Badge>

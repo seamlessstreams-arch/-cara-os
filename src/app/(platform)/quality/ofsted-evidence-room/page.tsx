@@ -883,7 +883,7 @@ export default function OfstedEvidenceRoomPage() {
                   <p className="text-xs text-muted-foreground">Avg Confidence</p>
                 </div>
                 <div className="bg-slate-50 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-[var(--cs-navy)]">{generatedPack.byArea.filter((a) => a.items.length > 0).length}/3</p>
+                  <p className="text-2xl font-bold text-[var(--cs-navy)]">{generatedPack.byArea.filter((a) => (a.items?.length ?? 0) > 0).length}/3</p>
                   <p className="text-xs text-muted-foreground">ILACS Areas Covered</p>
                 </div>
               </div>

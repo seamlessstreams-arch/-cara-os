@@ -166,7 +166,7 @@ export default function ContactSupervisionPage() {
     venue: s.venue,
     supervisedBy: getStaffName(s.supervising_staff),
     outcome: CONTACT_SESSION_OUTCOME_LABEL[s.outcome],
-    concerns: s.concerns.join("; "),
+    concerns: (s.concerns ?? []).join("; "),
     positives: s.positives.join("; "),
     childViews: s.child_views,
     notes: s.notes,
@@ -342,11 +342,11 @@ export default function ContactSupervisionPage() {
                         </ul>
                       </div>
                     )}
-                    {s.concerns.length > 0 && (
+                    {(s.concerns?.length ?? 0) > 0 && (
                       <div className="rounded-md bg-amber-50 p-3">
                         <h4 className="text-xs font-semibold text-amber-700 mb-1">Concerns</h4>
                         <ul className="list-disc list-inside text-sm text-amber-800 space-y-0.5">
-                          {s.concerns.map((c, i) => <li key={i}>{c}</li>)}
+                          {(s.concerns ?? []).map((c, i) => <li key={i}>{c}</li>)}
                         </ul>
                       </div>
                     )}

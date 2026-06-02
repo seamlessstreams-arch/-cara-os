@@ -383,7 +383,7 @@ export default function PlacementSuccessFactorsPage() {
                         <TrendingUp className="h-3 w-3" /> Recommended actions
                       </p>
                       <ul className="space-y-0.5">
-                        {f.recommended_actions.map((a, i) => (
+                        {(f.recommended_actions ?? []).map((a, i) => (
                           <li key={i} className="text-xs text-muted-foreground">• {a}</li>
                         ))}
                       </ul>

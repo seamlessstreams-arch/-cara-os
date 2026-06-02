@@ -116,8 +116,8 @@ export default function ChildrensMeetingsPage() {
 
   /* ── stats ────────────────────────────────────────────────────────── */
   const total = items.length;
-  const totalActions = items.reduce((s, m) => s + m.actions.length, 0);
-  const completedActions = items.reduce((s, m) => s + m.actions.filter((a) => a.status === "completed").length, 0);
+  const totalActions = items.reduce((s, m) => s + (m.actions?.length ?? 0), 0);
+  const completedActions = items.reduce((s, m) => s + (m.actions ?? []).filter((a) => a.status === "completed").length, 0);
   const pendingActions = totalActions - completedActions;
 
   /* ── filtered / sorted ────────────────────────────────────────────── */
@@ -144,8 +144,8 @@ export default function ChildrensMeetingsPage() {
     yp_present: m.yp_present.map(getYPName).join(", "),
     yp_absent: m.yp_absent.length ? m.yp_absent.map(getYPName).join(", ") : "None",
     agenda_topics: m.agenda.map((a) => a.topic).join("; "),
-    actions_count: `${m.actions.length}`,
-    actions_completed: `${m.actions.filter((a) => a.status === "completed").length}/${m.actions.length}`,
+    actions_count: `${(m.actions?.length ?? 0)}`,
+    actions_completed: `${(m.actions ?? []).filter((a) => a.status === "completed").length}/${(m.actions?.length ?? 0)}`,
     mood: MEETING_MOOD_LABEL[m.overall_mood],
     complaints: m.complaints_raised ? m.complaints_details : "None",
     suggestions: m.suggestions_box.join("; "),
@@ -241,7 +241,7 @@ export default function ChildrensMeetingsPage() {
       <div className="space-y-4 mb-8">
         {filtered.map((m) => {
           const open = expanded[m.id] ?? false;
-          const completedActs = m.actions.filter((a) => a.status === "completed").length;
+          const completedActs = (m.actions ?? []).filter((a) => a.status === "completed").length;
           return (
             <div key={m.id} className="rounded-lg border bg-white">
               <button onClick={() => toggle(m.id)} className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50">
@@ -251,7 +251,7 @@ export default function ChildrensMeetingsPage() {
                     <h3 className="font-semibold">{CHILDRENS_MEETING_TYPE_LABEL[m.type]} Meeting — {m.date}</h3>
                     <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", MOOD_COLOURS[m.overall_mood])}>{MEETING_MOOD_LABEL[m.overall_mood]}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{m.agenda.length} agenda items · {completedActs}/{m.actions.length} actions complete · {m.yp_present.length} children present</p>
+                  <p className="text-xs text-gray-500 mt-1">{m.agenda.length} agenda items · {completedActs}/{(m.actions?.length ?? 0)} actions complete · {m.yp_present.length} children present</p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
               </button>
@@ -297,7 +297,7 @@ export default function ChildrensMeetingsPage() {
                   </div>
 
                   {/* actions */}
-                  {m.actions.length > 0 && (
+                  {(m.actions?.length ?? 0) > 0 && (
                     <div>
                       <h4 className="text-xs font-semibold text-gray-500 mb-2">Actions</h4>
                       <div className="overflow-x-auto">
@@ -312,7 +312,7 @@ export default function ChildrensMeetingsPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {m.actions.map((a) => (
+                            {(m.actions ?? []).map((a) => (
                               <tr key={a.id} className="border-b last:border-0">
                                 <td className="py-2 pr-3">{a.action}</td>
                                 <td className="py-2 pr-3">{a.owner.startsWith("yp_") ? getYPName(a.owner) : getStaffName(a.owner)}</td>

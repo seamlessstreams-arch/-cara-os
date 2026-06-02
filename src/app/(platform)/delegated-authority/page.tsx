@@ -193,7 +193,7 @@ export default function DelegatedAuthorityPage() {
 
                 {isExpanded && (
                   <div className="border-t bg-slate-50 p-4 space-y-3">
-                    {record.items.map((item: DelegatedAuthorityItem, idx: number) => (
+                    {(record.items ?? []).map((item: DelegatedAuthorityItem, idx: number) => (
                       <div key={idx} className={cn("rounded-lg border p-3 text-sm",
                         item.status === "granted" ? "bg-green-50 border-green-200" :
                         item.status === "not_granted" ? "bg-red-50 border-red-200" :

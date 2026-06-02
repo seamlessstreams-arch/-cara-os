@@ -145,7 +145,7 @@ export default function HomePetsCareLogPage() {
       children_involved_in_care: p.children_involved_in_care.map((c) => getYPName(c)).join("; "),
       child_allergies_cleared: p.child_allergies_cleared.map((c) => getYPName(c)).join("; "),
       risk_assessment_date: p.risk_assessment_date,
-      flags: p.flags.join("; "),
+      flags: (p.flags ?? []).join("; "),
       logged_by: getStaffName(p.logged_by),
     })), [data]);
 
@@ -276,9 +276,9 @@ export default function HomePetsCareLogPage() {
                     )}>
                       {p.insurance ? "Insured" : "No insurance"}
                     </span>
-                    {p.flags.length > 0 && (
+                    {(p.flags?.length ?? 0) > 0 && (
                       <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                        {p.flags.length} flag{p.flags.length === 1 ? "" : "s"}
+                        {(p.flags?.length ?? 0)} flag{(p.flags?.length ?? 0) === 1 ? "" : "s"}
                       </span>
                     )}
                   </div>
@@ -386,11 +386,11 @@ export default function HomePetsCareLogPage() {
                   </div>
 
                   {/* flags */}
-                  {p.flags.length > 0 && (
+                  {(p.flags?.length ?? 0) > 0 && (
                     <div className="rounded-md bg-amber-50 border border-amber-300 p-3">
                       <h4 className="text-xs font-semibold text-amber-800 mb-1">Flags</h4>
                       <ul className="list-disc list-inside text-sm text-amber-900 space-y-0.5">
-                        {p.flags.map((f, i) => <li key={i}>{f}</li>)}
+                        {(p.flags ?? []).map((f, i) => <li key={i}>{f}</li>)}
                       </ul>
                     </div>
                   )}

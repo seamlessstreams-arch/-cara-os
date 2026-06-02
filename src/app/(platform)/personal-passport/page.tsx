@@ -172,7 +172,7 @@ export default function PersonalPassportPage() {
                         <Star className="h-3 w-3 inline mr-1" />My Strengths
                       </p>
                       <ul className="space-y-1">
-                        {p.my_strengths.map((s, i) => (
+                        {(p.my_strengths ?? []).map((s, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-emerald-600 mt-0.5">•</span>
                             <span>{s}</span>

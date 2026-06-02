@@ -280,11 +280,11 @@ export default function KitchenHygieneMonitoringPage() {
                     </div>
                   )}
 
-                  {c.immediate_actions.length > 0 && (
+                  {(c.immediate_actions?.length ?? 0) > 0 && (
                     <div className="bg-blue-50 rounded-lg p-3">
                       <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Immediate Actions</p>
                       <ul className="space-y-1">
-                        {c.immediate_actions.map((a, i) => (
+                        {(c.immediate_actions ?? []).map((a, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <CheckCircle className="h-3 w-3 text-blue-500 mt-1 shrink-0" />
                             <span>{a}</span>
@@ -294,11 +294,11 @@ export default function KitchenHygieneMonitoringPage() {
                     </div>
                   )}
 
-                  {c.follow_up_actions.length > 0 && (
+                  {(c.follow_up_actions?.length ?? 0) > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Follow-Up Actions</p>
                       <ul className="space-y-1">
-                        {c.follow_up_actions.map((a, i) => (
+                        {(c.follow_up_actions ?? []).map((a, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <Clock className="h-3 w-3 text-amber-500 mt-1 shrink-0" />
                             <span>{a}</span>

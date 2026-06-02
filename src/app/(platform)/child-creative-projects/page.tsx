@@ -359,13 +359,13 @@ export default function ChildCreativeProjectsPage() {
                     </div>
                   )}
 
-                  {p.flags_concerns.length > 0 && (
+                  {(p.flags_concerns?.length ?? 0) > 0 && (
                     <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
                       <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
                         Flags / Things to Watch
                       </p>
                       <ul className="space-y-1">
-                        {p.flags_concerns.map((f, i) => (
+                        {(p.flags_concerns ?? []).map((f, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-amber-600 mt-0.5">•</span>
                             <span>{f}</span>

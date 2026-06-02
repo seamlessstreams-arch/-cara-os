@@ -143,7 +143,7 @@ export default function DebriefsPage() {
           {filtered.map((db) => {
             const open = !!expanded[db.id];
             const typeM = TYPE_META[db.type];
-            const pending = db.follow_up_actions.filter((a) => !a.completed).length;
+            const pending = (db.follow_up_actions ?? []).filter((a) => !a.completed).length;
             return (
               <Card key={db.id} className={cn("border-l-4", db.type === "post_restraint" || db.type === "post_incident" ? "border-l-red-400" : db.type === "safeguarding" ? "border-l-pink-400" : "border-l-blue-400")}>
                 <CardContent className="p-4">
@@ -196,10 +196,10 @@ export default function DebriefsPage() {
                           <ul className="space-y-0.5 text-xs">{db.changes_needed.map((c, i) => <li key={i} className="flex items-start gap-1"><AlertTriangle className="h-3 w-3 mt-0.5 text-amber-500 flex-shrink-0" />{c}</li>)}</ul>
                         </div>
                       )}
-                      {db.follow_up_actions.length > 0 && (
+                      {(db.follow_up_actions?.length ?? 0) > 0 && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Follow-Up Actions</p>
-                          <div className="space-y-1">{db.follow_up_actions.map((a, i) => (
+                          <div className="space-y-1">{(db.follow_up_actions ?? []).map((a, i) => (
                             <div key={i} className="flex items-center gap-2 text-xs">
                               {a.completed ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Clock className="h-3.5 w-3.5 text-amber-600" />}
                               <span className={a.completed ? "line-through text-muted-foreground" : ""}>{a.action}</span>

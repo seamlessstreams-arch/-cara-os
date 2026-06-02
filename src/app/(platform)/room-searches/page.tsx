@@ -461,7 +461,7 @@ export default function RoomSearchesPage() {
                     </div>
                   </div>
 
-                  {rs.follow_up_actions.length > 0 && (
+                  {(rs.follow_up_actions?.length ?? 0) > 0 && (
                     <div>
                       <h4 className="text-sm font-semibold mb-2">Follow-Up Actions</h4>
                       <div className="overflow-x-auto">
@@ -475,7 +475,7 @@ export default function RoomSearchesPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {rs.follow_up_actions.map((fa, idx) => {
+                            {(rs.follow_up_actions ?? []).map((fa, idx) => {
                               const overdue = fa.status !== "completed" && fa.due_date < today;
                               return (
                                 <tr key={idx} className={cn("border-b last:border-0", overdue && "bg-red-50")}>

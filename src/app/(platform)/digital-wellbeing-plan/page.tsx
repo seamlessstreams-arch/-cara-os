@@ -268,7 +268,7 @@ export default function DigitalWellbeingPlanPage() {
                         <AlertTriangle className="h-3 w-3 inline mr-1" />Risk Factors
                       </p>
                       <ul className="space-y-1">
-                        {p.exploitation_risk_factors.map((r, i) => (
+                        {(p.exploitation_risk_factors ?? []).map((r, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-amber-600 mt-0.5">•</span>
                             <span>{r}</span>

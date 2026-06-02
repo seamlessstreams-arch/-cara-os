@@ -154,7 +154,7 @@ export default function FilingCabinetIndexPage() {
                       )}
                     </p>
                     <ul className="mt-3 space-y-1 text-sm">
-                      {g.recent_items.map((it) => (
+                      {(g.recent_items ?? []).map((it) => (
                         <li key={it.id} className="flex items-center justify-between gap-2">
                           <Link
                             href={`/care-events/${it.care_event_id}`}

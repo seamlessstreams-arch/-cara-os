@@ -97,7 +97,7 @@ export default function PlacementMeetingMinutesPage() {
   }
 
   const total = entries.length;
-  const openActions = entries.reduce((sum, m) => sum + m.actions.filter((a) => a.status !== "done").length, 0);
+  const openActions = entries.reduce((sum, m) => sum + (m.actions ?? []).filter((a) => a.status !== "done").length, 0);
   const childAttendedCount = entries.filter((m) => m.child_attended).length;
   const todayStr = new Date().toISOString().slice(0, 10);
   const in14 = new Date();

@@ -94,7 +94,7 @@ export default function QualityOfCarePage() {
       switch (sortBy) {
         case "date": return b.date.localeCompare(a.date);
         case "rating": return RATINGS.indexOf(a.overall_rating) - RATINGS.indexOf(b.overall_rating);
-        case "actions": return b.actions.filter((a: QocActionItem) => a.status !== "completed").length - a.actions.filter((a: QocActionItem) => a.status !== "completed").length;
+        case "actions": return (b.actions ?? []).filter((a: QocActionItem) => a.status !== "completed").length - (a.actions ?? []).filter((a: QocActionItem) => a.status !== "completed").length;
         default: return 0;
       }
     });
@@ -232,7 +232,7 @@ export default function QualityOfCarePage() {
           )}
           {filtered.map((review) => {
             const isExpanded = expanded === review.id;
-            const open = review.actions.filter((a: QocActionItem) => a.status !== "completed").length;
+            const open = (review.actions ?? []).filter((a: QocActionItem) => a.status !== "completed").length;
 
             return (
               <div key={review.id} className="rounded-xl border bg-white overflow-hidden">
@@ -263,7 +263,7 @@ export default function QualityOfCarePage() {
                     <div>
                       <p className="text-sm font-medium mb-2">Domain Ratings</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        {review.domains.map((da: QocDomainAssessment) => (
+                        {(review.domains ?? []).map((da: QocDomainAssessment) => (
                           <div key={da.domain} className="flex items-start gap-2 rounded-lg border bg-white p-2.5">
                             <Badge className={cn("text-xs shrink-0 mt-0.5", RATING_COLORS[da.rating])}>
                               {QOC_RATING_LABEL[da.rating]}
@@ -286,7 +286,7 @@ export default function QualityOfCarePage() {
                       <div className="rounded-lg bg-green-50 border border-green-200 p-3">
                         <p className="text-xs font-medium text-green-700 mb-2">Strengths</p>
                         <ul className="space-y-1">
-                          {review.strengths.map((s: string, i: number) => (
+                          {(review.strengths ?? []).map((s: string, i: number) => (
                             <li key={i} className="flex items-start gap-1 text-sm">
                               <CheckCircle2 className="h-3 w-3 text-green-600 mt-0.5 shrink-0" />
                               <span>{s}</span>
@@ -326,11 +326,11 @@ export default function QualityOfCarePage() {
                     </div>
 
                     {/* actions */}
-                    {review.actions.length > 0 && (
+                    {(review.actions?.length ?? 0) > 0 && (
                       <div>
                         <p className="text-sm font-medium mb-2">Action Plan</p>
                         <div className="space-y-2">
-                          {review.actions.map((action: QocActionItem, idx: number) => (
+                          {(review.actions ?? []).map((action: QocActionItem, idx: number) => (
                             <div key={idx} className="flex items-start gap-2 rounded-lg border bg-white p-2.5">
                               <CheckCircle2 className={cn("h-4 w-4 mt-0.5 shrink-0",
                                 action.status === "completed" ? "text-green-600" : action.status === "in_progress" ? "text-blue-600" : "text-[var(--cs-text-muted)]"

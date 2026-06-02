@@ -111,7 +111,7 @@ export default function DailyRiskBriefingPage() {
                 <div>
                   <p className="font-medium mb-1 flex items-center gap-1"><AlertTriangle className="h-3.5 w-3.5 text-amber-500" /> Alerts</p>
                   <ul className="space-y-0.5">
-                    {yp.alerts.map((a, i) => (
+                    {(yp.alerts ?? []).map((a, i) => (
                       <li key={i} className="text-muted-foreground">• {a}</li>
                     ))}
                   </ul>

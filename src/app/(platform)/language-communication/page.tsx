@@ -176,7 +176,7 @@ export default function LanguageCommunicationPage() {
                       <div className="bg-green-50 border border-green-200 rounded p-2">
                         <p className="font-medium text-xs text-green-800 mb-1">Strengths</p>
                         <ul className="space-y-0.5">
-                          {profile.strengths.map((s, i) => (
+                          {(profile.strengths ?? []).map((s, i) => (
                             <li key={i} className="text-xs text-green-700 flex items-start gap-1">
                               <CheckCircle2 className="h-3 w-3 shrink-0 mt-0.5" />
                               <span>{s}</span>
@@ -201,7 +201,7 @@ export default function LanguageCommunicationPage() {
                     <div>
                       <p className="font-medium mb-1 flex items-center gap-1"><BookOpen className="h-4 w-4 text-blue-600" /> Communication Strategies</p>
                       <div className="space-y-1">
-                        {profile.strategies.map((s, i) => (
+                        {(profile.strategies ?? []).map((s, i) => (
                           <div key={i} className="bg-muted/40 rounded p-2">
                             <div className="flex items-start justify-between mb-0.5">
                               <p className="text-xs font-medium flex-1">{s.strategy}</p>

@@ -63,7 +63,7 @@ export function StudioOutputPreview({ output }: StudioOutputPreviewProps) {
       .map((s) => {
         let text = `## ${s.heading}\n\n${s.content}`;
         if (s.items?.length) {
-          text += "\n\n" + s.items.map((item) => `- ${item}`).join("\n");
+          text += "\n\n" + (s.items ?? []).map((item) => `- ${item}`).join("\n");
         }
         return text;
       })

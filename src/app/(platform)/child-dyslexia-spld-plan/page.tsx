@@ -167,7 +167,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
         out.sort((a, b) => a.review_date.localeCompare(b.review_date));
         break;
       case "strengths":
-        out.sort((a, b) => b.strengths.length - a.strengths.length);
+        out.sort((a, b) => (b.strengths?.length ?? 0) - (a.strengths?.length ?? 0));
         break;
     }
     return out;

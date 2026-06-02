@@ -88,7 +88,7 @@ export default function OnlineGamingTrackerPage() {
         case "hours":
           return b.weekly_hours - a.weekly_hours;
         case "flags":
-          return b.flags_concerns.length - a.flags_concerns.length;
+          return (b.flags_concerns?.length ?? 0) - (a.flags_concerns?.length ?? 0);
         case "spend":
           return b.in_game_spend_this_month - a.in_game_spend_this_month;
         default:

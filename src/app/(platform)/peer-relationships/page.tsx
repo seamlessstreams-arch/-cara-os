@@ -316,13 +316,13 @@ export default function PeerRelationshipsPage() {
                     <div className="rounded-md bg-green-50 p-3">
                       <h4 className="text-xs font-semibold text-green-700 mb-1">Strengths</h4>
                       <ul className="list-disc list-inside text-sm text-green-800 space-y-0.5">
-                        {pd.strengths.map((s, i) => <li key={i}>{s}</li>)}
+                        {(pd.strengths ?? []).map((s, i) => <li key={i}>{s}</li>)}
                       </ul>
                     </div>
                     <div className="rounded-md bg-amber-50 p-3">
                       <h4 className="text-xs font-semibold text-amber-700 mb-1">Concerns</h4>
                       <ul className="list-disc list-inside text-sm text-amber-800 space-y-0.5">
-                        {pd.concerns.map((c, i) => <li key={i}>{c}</li>)}
+                        {(pd.concerns ?? []).map((c, i) => <li key={i}>{c}</li>)}
                       </ul>
                     </div>
                   </div>
@@ -331,7 +331,7 @@ export default function PeerRelationshipsPage() {
                   <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
                     <h4 className="text-xs font-semibold text-blue-700 mb-1">Management Strategies</h4>
                     <ul className="list-disc list-inside text-sm text-blue-800 space-y-0.5">
-                      {pd.strategies.map((s, i) => <li key={i}>{s}</li>)}
+                      {(pd.strategies ?? []).map((s, i) => <li key={i}>{s}</li>)}
                     </ul>
                   </div>
 

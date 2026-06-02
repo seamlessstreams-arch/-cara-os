@@ -75,7 +75,7 @@ export default function GovernanceMeetingMinutesPage() {
         case "date":
           return b.date.localeCompare(a.date);
         case "actions":
-          return b.actions.filter((x) => x.status !== "completed").length - a.actions.filter((x) => x.status !== "completed").length;
+          return (b.actions ?? []).filter((x) => x.status !== "completed").length - (a.actions ?? []).filter((x) => x.status !== "completed").length;
         case "type":
           return a.meeting_type.localeCompare(b.meeting_type);
         default:

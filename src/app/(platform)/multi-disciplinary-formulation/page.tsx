@@ -95,7 +95,7 @@ export default function MultiDisciplinaryFormulationPage() {
     protective: f.protective.join("; "),
     keyHypotheses: f.key_hypotheses.join("; "),
     agreedInterventions: f.agreed_interventions.join("; "),
-    riskFactors: f.risk_factors.join("; "),
+    riskFactors: (f.risk_factors ?? []).join("; "),
     childContribution: f.child_contribution,
     internalLead: getStaffName(f.internal_lead),
     nextReviewDate: f.next_review_date,
@@ -260,7 +260,7 @@ export default function MultiDisciplinaryFormulationPage() {
 
                   <div className="rounded-md bg-red-50 border border-red-200 p-3">
                     <h4 className="text-xs font-semibold text-red-700 mb-1 flex items-center gap-1"><Shield className="h-3.5 w-3.5" /> Risk Factors</h4>
-                    <ul className="list-disc list-inside text-sm text-red-900 space-y-0.5">{f.risk_factors.map((r: string, i: number) => <li key={i}>{r}</li>)}</ul>
+                    <ul className="list-disc list-inside text-sm text-red-900 space-y-0.5">{(f.risk_factors ?? []).map((r: string, i: number) => <li key={i}>{r}</li>)}</ul>
                   </div>
 
                   <div className="rounded-md bg-pink-50 border border-pink-200 p-3">

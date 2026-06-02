@@ -361,7 +361,7 @@ export default function FriendshipMappingPage() {
                         Friendship Strengths
                       </h4>
                       <ul className="list-disc list-inside text-sm text-green-800 space-y-0.5">
-                        {m.friendship_strengths.map((s, i) => (
+                        {(m.friendship_strengths ?? []).map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
                       </ul>

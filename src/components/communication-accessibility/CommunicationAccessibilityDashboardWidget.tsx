@@ -315,9 +315,9 @@ export function CommunicationAccessibilityDashboardWidget() {
                     </span>
                   </div>
                 </div>
-                {child.concerns.length > 0 && (
+                {(child.concerns?.length ?? 0) > 0 && (
                   <div className="mt-2 text-xs text-red-600">
-                    {child.concerns.join(" • ")}
+                    {(child.concerns ?? []).join(" • ")}
                   </div>
                 )}
               </div>

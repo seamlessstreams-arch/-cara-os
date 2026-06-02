@@ -230,7 +230,7 @@ export default function AriaTrainingCompliance({ homeId = "home_oak" }: Props) {
                     <span>{staff.mandatoryComplete}/{staff.mandatoryTotal} mandatory</span>
                     {staff.expiredCount > 0 && <span className="text-red-600">{staff.expiredCount} expired</span>}
                     {staff.bookedCount > 0 && <span className="text-blue-600">{staff.bookedCount} booked</span>}
-                    {staff.gaps.length > 0 && <span className="text-amber-600">Needs: {staff.gaps.slice(0, 2).join(", ")}</span>}
+                    {(staff.gaps?.length ?? 0) > 0 && <span className="text-amber-600">Needs: {(staff.gaps ?? []).slice(0, 2).join(", ")}</span>}
                   </div>
                 </div>
               ))}

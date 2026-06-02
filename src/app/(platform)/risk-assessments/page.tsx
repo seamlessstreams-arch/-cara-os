@@ -261,7 +261,7 @@ export default function RiskAssessmentsPage() {
                     <div className="mt-4 space-y-3 border-t pt-3 text-sm">
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Known Triggers</p>
-                        <div className="flex flex-wrap gap-1">{a.triggers.map((t, i) => <Badge key={i} variant="outline" className="text-xs text-red-600 border-red-200">{t}</Badge>)}</div>
+                        <div className="flex flex-wrap gap-1">{(a.triggers ?? []).map((t, i) => <Badge key={i} variant="outline" className="text-xs text-red-600 border-red-200">{t}</Badge>)}</div>
                       </div>
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Warning Indicators</p>

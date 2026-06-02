@@ -41,7 +41,7 @@ const YP_EXPORT_COLS: ExportColumn<YPEnriched>[] = [
   { header: "Social Worker", accessor: (yp) => yp.social_worker_name },
   { header: "Key Worker", accessor: (yp) => yp.key_worker?.full_name ?? "" },
   { header: "Legal Status", accessor: (yp) => yp.legal_status },
-  { header: "Risk Flags", accessor: (yp) => yp.risk_flags.join(", ") },
+  { header: "Risk Flags", accessor: (yp) => (yp.risk_flags ?? []).join(", ") },
   { header: "Open Incidents", accessor: (yp) => String(yp.open_incidents) },
   { header: "Missing Episodes", accessor: (yp) => String(yp.missing_episodes_total) },
   { header: "Active Medications", accessor: (yp) => String(yp.active_medications) },
@@ -389,7 +389,7 @@ interface YPCardProps {
 
 function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCardProps) {
   const displayName = yp.preferred_name ?? yp.first_name;
-  const hasRisk = yp.risk_flags.length > 0;
+  const hasRisk = (yp.risk_flags?.length ?? 0) > 0;
 
   return (
     <Card
@@ -432,7 +432,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
         {/* Risk flags */}
         {hasRisk && (
           <div className="flex flex-wrap gap-1 mb-3">
-            {yp.risk_flags.map((flag) => (
+            {(yp.risk_flags ?? []).map((flag) => (
               <Badge key={flag} variant="warning" className="text-[9px] rounded-full gap-0.5 px-2 py-0.5">
                 <AlertTriangle className="h-2.5 w-2.5 shrink-0" />
                 {flag}
@@ -688,7 +688,7 @@ export default function YoungPeoplePage() {
   // Summary stats (based on current tab data)
   const stats = useMemo(() => {
     const current = youngPeople.filter((yp) => yp.status === "current");
-    const withRisk = current.filter((yp) => yp.risk_flags.length > 0).length;
+    const withRisk = current.filter((yp) => (yp.risk_flags?.length ?? 0) > 0).length;
     const withMissing = current.filter((yp) => yp.missing_episodes_total > 0).length;
     const noKeyWorker = current.filter((yp) => !yp.key_worker).length;
     const onMeds = current.filter((yp) => yp.active_medications > 0).length;
@@ -733,7 +733,7 @@ export default function YoungPeoplePage() {
     const today = new Date();
     switch (riskFilter) {
       case "high_risk":
-        result = result.filter((yp) => yp.risk_flags.length > 0);
+        result = result.filter((yp) => (yp.risk_flags?.length ?? 0) > 0);
         break;
       case "missing_history":
         result = result.filter((yp) => yp.missing_episodes_total > 0);
@@ -758,7 +758,7 @@ export default function YoungPeoplePage() {
         case "age":
           return (b.age ?? 0) - (a.age ?? 0);
         case "risk":
-          return b.risk_flags.length - a.risk_flags.length;
+          return (b.risk_flags?.length ?? 0) - (a.risk_flags?.length ?? 0);
         case "placement":
           return new Date(b.placement_start ?? 0).getTime() - new Date(a.placement_start ?? 0).getTime();
         default:

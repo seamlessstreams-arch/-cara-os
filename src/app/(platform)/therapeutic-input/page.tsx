@@ -288,10 +288,10 @@ export default function TherapeuticInputPage() {
                             <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", ENG_META[s.engagement].colour)}>{ENG_META[s.engagement].label}</span>
                           </div>
                           <p className="text-sm text-muted-foreground mb-2">{s.summary}</p>
-                          {s.home_actions.length > 0 && (
+                          {(s.home_actions?.length ?? 0) > 0 && (
                             <div className="rounded bg-blue-50 p-2">
                               <p className="text-xs font-semibold text-blue-800 mb-1">Home Actions:</p>
-                              <ul className="list-disc list-inside text-xs text-blue-900">{s.home_actions.map((a, j) => <li key={j}>{a}</li>)}</ul>
+                              <ul className="list-disc list-inside text-xs text-blue-900">{(s.home_actions ?? []).map((a, j) => <li key={j}>{a}</li>)}</ul>
                             </div>
                           )}
                         </div>

@@ -109,7 +109,7 @@ export default function YPSavingsPage() {
     return list;
   }, [records, filterYP, search, sortBy]);
 
-  const exportData = useMemo(() => records.flatMap((a) => a.transactions.map((t) => ({
+  const exportData = useMemo(() => records.flatMap((a) => (a.transactions ?? []).map((t) => ({
     youngPerson: getYPName(a.child_id),
     accountType: a.account_type,
     provider: a.provider,

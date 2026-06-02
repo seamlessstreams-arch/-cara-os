@@ -331,14 +331,14 @@ export default function CommissioningFeedbackPage() {
                     </div>
 
                     {/* strengths */}
-                    {entry.strengths.length > 0 && (
+                    {(entry.strengths?.length ?? 0) > 0 && (
                       <div className="rounded-lg bg-green-50 border border-green-200 p-3">
                         <div className="flex items-center gap-1 mb-2">
                           <ThumbsUp className="h-4 w-4 text-green-700" />
                           <p className="text-xs font-medium text-green-800">Strengths</p>
                         </div>
                         <ul className="text-sm list-disc pl-5 space-y-1">
-                          {entry.strengths.map((s, i) => (
+                          {(entry.strengths ?? []).map((s, i) => (
                             <li key={i}>{s}</li>
                           ))}
                         </ul>

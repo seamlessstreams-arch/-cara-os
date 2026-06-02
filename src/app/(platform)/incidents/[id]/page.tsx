@@ -388,9 +388,9 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
               View Profile <ChevronRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </div>
-          {yp && yp.risk_flags.length > 0 && (
+          {yp && (yp.risk_flags?.length ?? 0) > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
-              {yp.risk_flags.map((flag) => (
+              {(yp.risk_flags ?? []).map((flag) => (
                 <Badge key={flag} variant="warning" className="text-[9px] rounded-full gap-0.5">
                   <AlertTriangle className="h-2.5 w-2.5 shrink-0" />{flag}
                 </Badge>

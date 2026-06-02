@@ -117,7 +117,7 @@ export default function VisitorsFeedbackPage() {
   const positivePercent = entries.length > 0
     ? Math.round((entries.filter((e) => e.rating >= 4).length / entries.length) * 100)
     : 0;
-  const concernsRaised = entries.filter((e) => e.concerns.length > 0).length;
+  const concernsRaised = entries.filter((e) => (e.concerns?.length ?? 0) > 0).length;
 
   /* ── export columns ─────────────────────────────────────────────────── */
   const exportCols: ExportColumn<VisitorsFeedbackRecord>[] = [
@@ -283,14 +283,14 @@ export default function VisitorsFeedbackPage() {
                     )}
 
                     {/* concerns */}
-                    {entry.concerns.length > 0 && (
+                    {(entry.concerns?.length ?? 0) > 0 && (
                       <div className="rounded-lg bg-red-50 border border-red-200 p-3">
                         <div className="flex items-center gap-1 mb-2">
                           <AlertTriangle className="h-4 w-4 text-red-600" />
                           <p className="text-xs font-medium text-red-700">Concerns</p>
                         </div>
                         <ul className="space-y-1">
-                          {entry.concerns.map((c, i) => (
+                          {(entry.concerns ?? []).map((c, i) => (
                             <li key={i} className="text-sm flex items-start gap-2">
                               <AlertTriangle className="h-3.5 w-3.5 text-red-500 mt-0.5 shrink-0" />
                               <span>{c}</span>

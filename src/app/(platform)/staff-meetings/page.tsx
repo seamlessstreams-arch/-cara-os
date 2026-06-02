@@ -182,7 +182,7 @@ export default function StaffMeetingsPage() {
           {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No meetings match your filters.</p>}
           {filtered.map((m) => {
             const open = !!expanded[m.id];
-            const pendingActions = m.new_actions.filter((a) => !a.completed).length;
+            const pendingActions = (m.new_actions ?? []).filter((a) => !a.completed).length;
             return (
               <Card key={m.id} className={cn("border-l-4", BORDER_CLR[m.type])}>
                 <CardContent className="p-4">
@@ -236,7 +236,7 @@ export default function StaffMeetingsPage() {
                       <div>
                         <p className="font-medium text-muted-foreground mb-2">Agenda & Discussion</p>
                         <div className="space-y-3">
-                          {m.agenda_items.map((a, i) => (
+                          {(m.agenda_items ?? []).map((a, i) => (
                             <div key={i} className="bg-muted/40 p-3 rounded-lg">
                               <p className="font-medium text-xs">{i + 1}. {a.topic}</p>
                               <p className="text-xs text-muted-foreground mt-1">{a.discussion}</p>
@@ -249,11 +249,11 @@ export default function StaffMeetingsPage() {
                         </div>
                       </div>
 
-                      {m.new_actions.length > 0 && (
+                      {(m.new_actions?.length ?? 0) > 0 && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">New Actions</p>
                           <div className="space-y-1">
-                            {m.new_actions.map((a, i) => (
+                            {(m.new_actions ?? []).map((a, i) => (
                               <div key={i} className="flex items-center gap-2 text-xs">
                                 {a.completed ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Clock className="h-3.5 w-3.5 text-blue-500" />}
                                 <span>{a.action}</span>

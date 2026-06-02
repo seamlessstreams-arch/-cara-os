@@ -204,7 +204,7 @@ export default function MenuPlanningPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <Badge variant="outline" className="text-xs">{mealM.icon}<span className="ml-1">{mealM.label}</span></Badge>
-                        {m.dietary_flags.filter((f: DietaryFlag) => f !== "none").map((f: DietaryFlag) => (
+                        {(m.dietary_flags ?? []).filter((f: DietaryFlag) => f !== "none").map((f: DietaryFlag) => (
                           <Badge key={f} className={cn("text-xs", DIETARY_META[f].color)}>{DIETARY_META[f].label}</Badge>
                         ))}
                         {isFuture && <Badge className="bg-blue-100 text-blue-700 text-xs">Planned</Badge>}

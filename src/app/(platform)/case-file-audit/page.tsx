@@ -126,7 +126,7 @@ export default function CaseFileAuditPage() {
     const avg = data.reduce((s, a) => s + a.overall_score, 0) / (data.length || 1);
     const green = data.filter((a) => a.overall_rag_rating === "green").length;
     const amberRed = data.filter((a) => a.overall_rag_rating === "amber" || a.overall_rag_rating === "red").length;
-    const openActions = data.reduce((s, a) => s + a.priority_actions.filter((p) => p.status !== "complete").length, 0);
+    const openActions = data.reduce((s, a) => s + (a.priority_actions ?? []).filter((p) => p.status !== "complete").length, 0);
     return { avg: avg.toFixed(1), green, amberRed, openActions };
   })();
 
@@ -189,7 +189,7 @@ export default function CaseFileAuditPage() {
                     <span className={ragDot(a.overall_rag_rating)} />
                     <span className="font-medium">{getYPName(a.child_id)}</span>
                     <span className="text-red-600">
-                      — {RAG_RATING_LABEL[a.overall_rag_rating]} rating ({a.overall_score.toFixed(1)}/5), {a.priority_actions.filter((p) => p.status !== "complete").length} open action(s)
+                      — {RAG_RATING_LABEL[a.overall_rag_rating]} rating ({a.overall_score.toFixed(1)}/5), {(a.priority_actions ?? []).filter((p) => p.status !== "complete").length} open action(s)
                     </span>
                   </li>
                 ))}
@@ -284,8 +284,8 @@ export default function CaseFileAuditPage() {
                             </div>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1.5">{s.findings}</p>
-                          {s.required_actions.length > 0 && (
-                            <ul className="text-xs mt-2 list-disc pl-4 space-y-0.5">{s.required_actions.map((a, i) => (<li key={i}>{a}</li>))}</ul>
+                          {(s.required_actions?.length ?? 0) > 0 && (
+                            <ul className="text-xs mt-2 list-disc pl-4 space-y-0.5">{(s.required_actions ?? []).map((a, i) => (<li key={i}>{a}</li>))}</ul>
                           )}
                         </div>
                       ))}

@@ -178,7 +178,7 @@ function ActionPlanProgress({
   isPending: boolean;
 }) {
   const allRecs = visits.flatMap((v) =>
-    v.recommendations.map((r) => ({ ...r, visitId: v.id, visitDate: v.visit_date }))
+    (v.recommendations ?? []).map((r) => ({ ...r, visitId: v.id, visitDate: v.visit_date }))
   );
 
   const completed = allRecs.filter((r) => r.status === "completed").length;
@@ -404,7 +404,7 @@ export default function Reg44VisitorReportsPage() {
   /* summary stats */
   const visitsCompleted = data.length;
   const outstandingRecommendations = data.reduce(
-    (sum, v) => sum + v.recommendations.filter((r) => r.status === "outstanding" || r.status === "in_progress").length,
+    (sum, v) => sum + (v.recommendations ?? []).filter((r) => r.status === "outstanding" || r.status === "in_progress").length,
     0
   );
   const avgInterval = useMemo(() => {
@@ -557,7 +557,7 @@ export default function Reg44VisitorReportsPage() {
                         <CheckCircle2 className="h-3.5 w-3.5" /> Strengths Identified
                       </p>
                       <ul className="space-y-1">
-                        {visit.strengths.map((s, i) => (
+                        {(visit.strengths ?? []).map((s, i) => (
                           <li key={i} className="text-green-700 text-xs flex items-start gap-2">
                             <span className="mt-1 h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
                             {s}
@@ -584,13 +584,13 @@ export default function Reg44VisitorReportsPage() {
                     )}
 
                     {/* Recommendations */}
-                    {visit.recommendations.length > 0 && (
+                    {(visit.recommendations?.length ?? 0) > 0 && (
                       <div>
                         <p className="font-medium mb-2 flex items-center gap-1">
-                          <Eye className="h-3.5 w-3.5" /> Recommendations ({visit.recommendations.length})
+                          <Eye className="h-3.5 w-3.5" /> Recommendations ({(visit.recommendations?.length ?? 0)})
                         </p>
                         <div className="space-y-2">
-                          {visit.recommendations.map((rec) => (
+                          {(visit.recommendations ?? []).map((rec) => (
                             <RecommendationRow
                               key={rec.id}
                               rec={rec}

@@ -389,7 +389,7 @@ function SafeguardingConcernsTab() {
           { label: "Open Concerns", value: concerns.length, color: "text-red-600" },
           { label: "Critical", value: concerns.filter((c) => c.severity === "critical").length, color: "text-red-700" },
           { label: "Needs Oversight", value: concerns.filter((c) => c.requires_oversight && !c.oversight_by).length, color: "text-amber-600" },
-          { label: "YP with Risk Flags", value: allYP.filter((y) => y.risk_flags.length > 0).length, color: "text-violet-600" },
+          { label: "YP with Risk Flags", value: allYP.filter((y) => (y.risk_flags?.length ?? 0) > 0).length, color: "text-violet-600" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl border bg-white p-4 text-center">
             <div className={cn("text-2xl font-bold", s.color)}>{s.value}</div>
@@ -1087,9 +1087,9 @@ function ChronologyTab() {
             <div className="text-sm font-bold text-slate-900">{yp.preferred_name || yp.first_name} {yp.last_name}</div>
             <div className="text-xs text-slate-500">{yp.legal_status} · {yp.local_authority} · Key worker: {getStaffName(yp.key_worker_id ?? "")}</div>
           </div>
-          {yp.risk_flags.length > 0 && (
+          {(yp.risk_flags?.length ?? 0) > 0 && (
             <div className="flex gap-1.5 flex-wrap">
-              {yp.risk_flags.map((f) => (
+              {(yp.risk_flags ?? []).map((f) => (
                 <span key={f} className="rounded-full bg-red-50 border border-red-100 px-2 py-0.5 text-[10px] font-medium text-red-700">
                   {f}
                 </span>

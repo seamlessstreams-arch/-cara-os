@@ -294,17 +294,17 @@ export default function StaffCompetencePassportPage() {
         </Card>
 
         {/* Warnings */}
-        {staff.warnings.length > 0 && (
+        {(staff.warnings?.length ?? 0) > 0 && (
           <Card className="border-amber-200">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-amber-800">
                 <AlertTriangle className="h-5 w-5" />
-                Warnings ({staff.warnings.length})
+                Warnings ({(staff.warnings?.length ?? 0)})
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {staff.warnings.map((warning) => (
+                {(staff.warnings ?? []).map((warning) => (
                   <div
                     key={warning.id}
                     className="border rounded-lg p-3 space-y-1.5 bg-amber-50/30"

@@ -122,7 +122,7 @@ export default function GrabBagPage() {
   /* flatten for export */
   const exportData = useMemo(() => {
     return bags.flatMap((b) =>
-      b.items.map((item) => ({ bagId: b.id, child_id: b.child_id, ...item, bagStatus: b.overall_status, last_checked: b.last_checked, checked_by: b.checked_by }))
+      (b.items ?? []).map((item) => ({ bagId: b.id, child_id: b.child_id, ...item, bagStatus: b.overall_status, last_checked: b.last_checked, checked_by: b.checked_by }))
     );
   }, [bags]);
 

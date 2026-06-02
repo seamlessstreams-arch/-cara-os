@@ -109,7 +109,7 @@ function daysUntil(dateStr: string) {
 }
 
 function countOpenActions(visit: Reg44Visit) {
-  return visit.findings.filter((f) => f.action_required && !f.action_completed).length;
+  return (visit.findings ?? []).filter((f) => f.action_required && !f.action_completed).length;
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -195,9 +195,9 @@ function VisitCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const openActions = countOpenActions(visit);
-  const strengths = visit.findings.filter((f) => f.type === "strength");
-  const concerns  = visit.findings.filter((f) => f.type === "concern" || f.type === "requirement");
-  const recommendations = visit.findings.filter((f) => f.type === "recommendation");
+  const strengths = (visit.findings ?? []).filter((f) => f.type === "strength");
+  const concerns  = (visit.findings ?? []).filter((f) => f.type === "concern" || f.type === "requirement");
+  const recommendations = (visit.findings ?? []).filter((f) => f.type === "recommendation");
 
   const isScheduled = visit.status === "scheduled";
 
@@ -248,7 +248,7 @@ function VisitCard({
           </div>
 
           {/* Quick finding counts */}
-          {!isScheduled && visit.findings.length > 0 && (
+          {!isScheduled && (visit.findings?.length ?? 0) > 0 && (
             <div className="flex items-center gap-3 mt-2 text-[10px]">
               {strengths.length > 0 && (
                 <span className="text-emerald-600 font-medium">{strengths.length} strength{strengths.length > 1 ? "s" : ""}</span>
@@ -277,7 +277,7 @@ function VisitCard({
             </Button>
           )}
           {/* Expand/collapse for completed visits */}
-          {!isScheduled && visit.findings.length > 0 && (
+          {!isScheduled && (visit.findings?.length ?? 0) > 0 && (
             <button
               onClick={() => setExpanded(!expanded)}
               className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] transition-colors"
@@ -320,11 +320,11 @@ function VisitCard({
       {expanded && !isScheduled && (
         <div className="border-t border-[var(--cs-border-subtle)] px-4 pb-4 pt-3 space-y-4">
           {/* Findings */}
-          {visit.findings.length > 0 && (
+          {(visit.findings?.length ?? 0) > 0 && (
             <div>
               <p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-widest mb-2">Findings</p>
               <div className="space-y-2">
-                {visit.findings.map((f) => (
+                {(visit.findings ?? []).map((f) => (
                   <FindingRow key={f.id} finding={f} />
                 ))}
               </div>
@@ -396,18 +396,18 @@ export default function Reg44Page() {
   const stats = useMemo(() => {
     const totalOpenActions = visits.reduce((n, v) => n + countOpenActions(v), 0);
     const totalConcerns = allCompletedVisits.reduce(
-      (n, v) => n + v.findings.filter((f) => f.type === "concern" || f.type === "requirement").length, 0,
+      (n, v) => n + (v.findings ?? []).filter((f) => f.type === "concern" || f.type === "requirement").length, 0,
     );
     const resolvedConcerns = allCompletedVisits.reduce(
-      (n, v) => n + v.findings.filter(
+      (n, v) => n + (v.findings ?? []).filter(
         (f) => (f.type === "concern" || f.type === "requirement") && f.action_completed,
       ).length, 0,
     );
     const totalStrengths = allCompletedVisits.reduce(
-      (n, v) => n + v.findings.filter((f) => f.type === "strength").length, 0,
+      (n, v) => n + (v.findings ?? []).filter((f) => f.type === "strength").length, 0,
     );
     const totalFindings = allCompletedVisits.reduce(
-      (n, v) => n + v.findings.length, 0,
+      (n, v) => n + (v.findings?.length ?? 0), 0,
     );
     const avgFindings = allCompletedVisits.length > 0
       ? Math.round((totalFindings / allCompletedVisits.length) * 10) / 10 : 0;
@@ -437,7 +437,7 @@ export default function Reg44Page() {
     if (q) {
       list = list.filter((v) => {
         const visitor = `${v.visitor_name} ${v.visitor_organisation ?? ""}`;
-        const findings = v.findings.map((f) => `${f.area} ${f.description} ${f.action_required ?? ""}`).join(" ");
+        const findings = (v.findings ?? []).map((f) => `${f.area} ${f.description} ${f.action_required ?? ""}`).join(" ");
         const response = v.manager_response ?? "";
         const date = v.visit_date ?? v.scheduled_date;
         const haystack = `${visitor} ${findings} ${response} ${date} ${v.ri_comments ?? ""}`.toLowerCase();
@@ -490,7 +490,7 @@ export default function Reg44Page() {
     setAriaBusy(visit.id);
     setAriaError(null);
     try {
-      const findingSummary = visit.findings.map((f) =>
+      const findingSummary = (visit.findings ?? []).map((f) =>
         `[${f.type.toUpperCase()}] ${f.area}: ${f.description}${f.action_required ? ` (Action: ${f.action_required}${f.action_completed ? " — COMPLETED" : " — PENDING"})` : ""}`,
       ).join("\n");
 
@@ -512,7 +512,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
 
       const summary =
         response?.choices?.[0]?.message?.content ??
-        `Visit ${visit.visit_number} (${formatDate(visit.visit_date ?? visit.scheduled_date)}): Overall finding was ${visit.overall_finding ? OVERALL_LABELS[visit.overall_finding] : "not recorded"}. ${visit.findings.filter(f => f.type === "concern").length} concern(s) and ${visit.findings.filter(f => f.type === "strength").length} strength(s) identified. ${countOpenActions(visit)} action(s) remain open.`;
+        `Visit ${visit.visit_number} (${formatDate(visit.visit_date ?? visit.scheduled_date)}): Overall finding was ${visit.overall_finding ? OVERALL_LABELS[visit.overall_finding] : "not recorded"}. ${(visit.findings ?? []).filter(f => f.type === "concern").length} concern(s) and ${(visit.findings ?? []).filter(f => f.type === "strength").length} strength(s) identified. ${countOpenActions(visit)} action(s) remain open.`;
 
       await updateVisit.mutateAsync({ id: visit.id, data: { aria_summary: summary } });
     } catch {
@@ -703,7 +703,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
               <div key={visit.id}>
                 <VisitCard visit={visit} onRespondClick={setRespondingTo} />
                 {/* ARIA analysis button for visits with findings but no aria_summary */}
-                {!visit.aria_summary && visit.findings.length > 0 && (
+                {!visit.aria_summary && (visit.findings?.length ?? 0) > 0 && (
                   <div className="mt-1.5 flex justify-end">
                     <button
                       onClick={() => handleAriaAnalysis(visit)}

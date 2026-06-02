@@ -147,7 +147,7 @@ export default function SensoryProfilesPage() {
         domain: SENSORY_DOMAIN_LABEL[e.domain],
         responsePattern: SENSORY_RESPONSE_PATTERN_LABEL[e.response_pattern],
         intensity: `${e.intensity}/5`,
-        triggers: e.triggers.join("; "),
+        triggers: (e.triggers ?? []).join("; "),
         calming: e.calming.join("; "),
         diagnosis: r.diagnosis.join(", "),
         status: SENSORY_PROFILE_STATUS_LABEL[r.status],
@@ -326,11 +326,11 @@ export default function SensoryProfilesPage() {
                             </div>
                             <span className="text-xs font-medium">{e.intensity}/5</span>
                           </div>
-                          {e.triggers.length > 0 && (
+                          {(e.triggers?.length ?? 0) > 0 && (
                             <div className="mb-1">
                               <span className="text-xs font-medium text-red-700">Triggers:</span>
                               <div className="flex flex-wrap gap-1 mt-0.5">
-                                {e.triggers.map((t, i) => <span key={i} className="px-1.5 py-0.5 bg-red-50 text-red-700 rounded text-xs">{t}</span>)}
+                                {(e.triggers ?? []).map((t, i) => <span key={i} className="px-1.5 py-0.5 bg-red-50 text-red-700 rounded text-xs">{t}</span>)}
                               </div>
                             </div>
                           )}

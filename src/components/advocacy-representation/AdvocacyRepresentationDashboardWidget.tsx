@@ -211,9 +211,9 @@ export function AdvocacyRepresentationDashboardWidget() {
                     {profile.satisfaction > 0 ? `${profile.satisfaction}/10` : "N/A"}
                   </div>
                 </div>
-                {profile.concerns.length > 0 && (
+                {(profile.concerns?.length ?? 0) > 0 && (
                   <div className="mt-2 text-xs text-red-600">
-                    {profile.concerns.join(" • ")}
+                    {(profile.concerns ?? []).join(" • ")}
                   </div>
                 )}
               </div>

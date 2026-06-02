@@ -293,7 +293,7 @@ export function CommandPalette() {
                       {GROUP_LABELS[g.group]}
                     </span>
                   </div>
-                  {g.items.map((item) => {
+                  {(g.items ?? []).map((item) => {
                     flatIndex++;
                     const idx = flatIndex;
                     const isSelected = idx === selectedIndex;

@@ -67,13 +67,13 @@ export default function PlacementBudgetTrackerPage() {
     l.sort((a, b) => {
       switch (sortBy) {
         case "spent": {
-          const aS = a.breakdown.reduce((s, x) => s + x.spent, 0);
-          const bS = b.breakdown.reduce((s, x) => s + x.spent, 0);
+          const aS = (a.breakdown ?? []).reduce((s, x) => s + x.spent, 0);
+          const bS = (b.breakdown ?? []).reduce((s, x) => s + x.spent, 0);
           return bS - aS;
         }
         case "remaining": {
-          const aR = a.total_annual_budget - a.breakdown.reduce((s, x) => s + x.spent, 0);
-          const bR = b.total_annual_budget - b.breakdown.reduce((s, x) => s + x.spent, 0);
+          const aR = a.total_annual_budget - (a.breakdown ?? []).reduce((s, x) => s + x.spent, 0);
+          const bR = b.total_annual_budget - (b.breakdown ?? []).reduce((s, x) => s + x.spent, 0);
           return bR - aR;
         }
         case "reviewed":

@@ -252,7 +252,7 @@ export default function BedtimeRoutinesPage() {
                         <Heart className="h-3 w-3 inline mr-1" />Comfort Items
                       </p>
                       <ul className="space-y-1">
-                        {routine.comfort_items.map((c, i) => (
+                        {(routine.comfort_items ?? []).map((c, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-pink-600 mt-0.5">•</span>
                             <span>{c}</span>

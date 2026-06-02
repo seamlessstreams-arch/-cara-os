@@ -117,7 +117,7 @@ function DomainBar({ domain }: { domain: DomainCaptureData }) {
 // ── Child Voice Card ──────────────────────────────────────────────────────
 
 function ChildVoiceCard({ child }: { child: ChildVoiceData }) {
-  const hasConcerns = child.concerns.length > 0;
+  const hasConcerns = (child.concerns?.length ?? 0) > 0;
   const rateColor = (r: number) =>
     r >= 80 ? "text-green-700" : r >= 60 ? "text-blue-700" : r >= 40 ? "text-orange-700" : "text-red-700";
 
@@ -152,7 +152,7 @@ function ChildVoiceCard({ child }: { child: ChildVoiceData }) {
           <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded">No Advocate</span>
         )}
       </div>
-      {hasConcerns && child.concerns.length > 0 && (
+      {hasConcerns && (child.concerns?.length ?? 0) > 0 && (
         <div className="mt-2 text-[10px] text-orange-600">
           {child.concerns[0]}
         </div>

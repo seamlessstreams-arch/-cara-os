@@ -368,13 +368,13 @@ export default function ChildExtracurricularClubsPage() {
                     </ul>
                   </div>
 
-                  {c.flags_concerns.length > 0 && (
+                  {(c.flags_concerns?.length ?? 0) > 0 && (
                     <div className="bg-amber-50 rounded-lg p-3 border border-amber-200">
                       <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
                         Flags / Concerns
                       </p>
                       <ul className="space-y-1">
-                        {c.flags_concerns.map((f, i) => (
+                        {(c.flags_concerns ?? []).map((f, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
                             <span className="text-amber-600 mt-0.5">•</span>
                             <span>{f}</span>

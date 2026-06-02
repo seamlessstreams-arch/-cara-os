@@ -475,7 +475,7 @@ export default function HandoverQualityAuditPage() {
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                          {a.scoring_domains.map((dom: HandoverDomainScore) => (
+                          {(a.scoring_domains ?? []).map((dom: HandoverDomainScore) => (
                             <tr key={dom.domain}>
                               <td className="px-3 py-2 align-top font-medium text-[var(--cs-navy)]">
                                 {dom.domain}

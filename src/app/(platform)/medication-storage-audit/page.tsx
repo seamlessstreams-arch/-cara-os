@@ -276,11 +276,11 @@ export default function MedicationStorageAuditPage() {
                     </div>
                   )}
 
-                  {a.follow_up_actions.length > 0 && (
+                  {(a.follow_up_actions?.length ?? 0) > 0 && (
                     <div>
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Follow-Up Actions</p>
                       <div className="space-y-1">
-                        {a.follow_up_actions.map((f: StorageAuditFollowUp, i: number) => (
+                        {(a.follow_up_actions ?? []).map((f: StorageAuditFollowUp, i: number) => (
                           <div key={i} className="bg-white rounded-lg p-2 border text-sm flex items-start justify-between gap-2">
                             <span className="flex-1">{f.action}</span>
                             <span className="text-xs text-muted-foreground whitespace-nowrap">

@@ -71,7 +71,7 @@ export default function LacReviewPrepPage() {
 
   const total = data.length;
   const reportsSubmitted = data.filter((p) => p.home_report_submitted).length;
-  const totalOpenActions = data.reduce((sum, p) => sum + p.outstanding_actions.filter((a) => a.status !== "done").length, 0);
+  const totalOpenActions = data.reduce((sum, p) => sum + (p.outstanding_actions ?? []).filter((a) => a.status !== "done").length, 0);
   const todayStr = new Date().toISOString().slice(0, 10);
   const d30 = new Date(); d30.setDate(d30.getDate() + 30);
   const d30Str = d30.toISOString().slice(0, 10);

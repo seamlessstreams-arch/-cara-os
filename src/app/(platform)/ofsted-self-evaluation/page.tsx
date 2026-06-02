@@ -98,7 +98,7 @@ export default function OfstedSelfEvaluationPage() {
   /* ── stats ──────────────────────────────────────────────────────── */
   const totalAreas = entries.length;
   const areasAtGoodPlus = entries.filter((e) => e.self_grade === "good" || e.self_grade === "outstanding").length;
-  const totalActions = entries.reduce((sum, e) => sum + e.actions.length, 0);
+  const totalActions = entries.reduce((sum, e) => sum + (e.actions?.length ?? 0), 0);
   const overallGrade = "Good (with Outstanding leadership)";
 
   /* ── export columns ─────────────────────────────────────────────── */
@@ -266,7 +266,7 @@ export default function OfstedSelfEvaluationPage() {
                           {SELF_EVALUATION_GRADE_LABEL[item.self_grade]}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {item.strengths.length} strengths &middot; {item.areas_for_development.length} development areas &middot; {item.actions.length} actions
+                          {(item.strengths?.length ?? 0)} strengths &middot; {item.areas_for_development.length} development areas &middot; {(item.actions?.length ?? 0)} actions
                         </span>
                       </div>
                     </div>
@@ -291,7 +291,7 @@ export default function OfstedSelfEvaluationPage() {
                       </CardHeader>
                       <CardContent>
                         <ul className="space-y-2">
-                          {item.strengths.map((s, i) => (
+                          {(item.strengths ?? []).map((s, i) => (
                             <li key={i} className="flex items-start gap-2 text-sm text-[var(--cs-text-secondary)]">
                               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 shrink-0 mt-0.5" />
                               {s}
@@ -342,7 +342,7 @@ export default function OfstedSelfEvaluationPage() {
                     </Card>
 
                     {/* actions in progress */}
-                    {item.actions.length > 0 && (
+                    {(item.actions?.length ?? 0) > 0 && (
                       <Card>
                         <CardHeader className="pb-2">
                           <CardTitle className="text-sm flex items-center gap-2">
@@ -352,7 +352,7 @@ export default function OfstedSelfEvaluationPage() {
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-3">
-                            {item.actions.map((action, i) => (
+                            {(item.actions ?? []).map((action, i) => (
                               <div key={i} className="rounded-lg border border-[var(--cs-border)] bg-white p-3">
                                 <p className="text-sm text-[var(--cs-text-secondary)] font-medium">{action.action}</p>
                                 <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">

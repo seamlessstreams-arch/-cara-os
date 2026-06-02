@@ -127,8 +127,8 @@ export default function EqualityDiversityPage() {
   const stats = useMemo(() => {
     const active = initiatives.filter((i) => ["active", "ongoing"].includes(i.status)).length;
     const completed = initiatives.filter((i) => i.status === "completed").length;
-    const totalActions = initiatives.reduce((s, i) => s + i.actions.length, 0);
-    const completedActions = initiatives.reduce((s, i) => s + i.actions.filter((a) => a.status === "completed").length, 0);
+    const totalActions = initiatives.reduce((s, i) => s + (i.actions?.length ?? 0), 0);
+    const completedActions = initiatives.reduce((s, i) => s + (i.actions ?? []).filter((a) => a.status === "completed").length, 0);
     return { active, completed, totalActions, completedActions };
   }, [initiatives]);
 
@@ -148,8 +148,8 @@ export default function EqualityDiversityPage() {
     initiatives.map((i) => ({
       initiative: i.title, status: EQUALITY_INITIATIVE_STATUS_LABEL[i.status], lead: getStaffName(i.lead_by),
       characteristics: i.characteristics.map((c) => PROTECTED_CHARACTERISTIC_LABEL[c]).join(", "),
-      actionsTotal: `${i.actions.length}`,
-      actionsComplete: `${i.actions.filter((a) => a.status === "completed").length}`,
+      actionsTotal: `${(i.actions?.length ?? 0)}`,
+      actionsComplete: `${(i.actions ?? []).filter((a) => a.status === "completed").length}`,
       outcomes: i.outcomes.join("; "), startDate: i.start_date, targetDate: i.target_date, notes: i.notes,
     })), [initiatives]);
 

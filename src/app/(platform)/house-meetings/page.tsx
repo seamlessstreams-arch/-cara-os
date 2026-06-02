@@ -274,11 +274,11 @@ export default function HouseMeetingsPage() {
                       )}
 
                       {/* New actions */}
-                      {m.new_actions.length > 0 && (
+                      {(m.new_actions?.length ?? 0) > 0 && (
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">New Actions</p>
                           <div className="space-y-1">
-                            {m.new_actions.map((a, i) => (
+                            {(m.new_actions ?? []).map((a, i) => (
                               <div key={i} className="flex items-center gap-2 text-xs">
                                 <AlertTriangle className="h-3.5 w-3.5 text-blue-500" />
                                 <span>{a.action}</span>

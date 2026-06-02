@@ -116,9 +116,9 @@ function LibraryEntryCard({ entry }: { entry: ResourceLibraryEntry }) {
             </div>
 
             {/* Tags */}
-            {Array.isArray(entry.tags) && entry.tags.length > 0 && (
+            {Array.isArray(entry.tags) && (entry.tags?.length ?? 0) > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
-                {entry.tags.map((tag) => (
+                {(entry.tags ?? []).map((tag) => (
                   <span
                     key={tag}
                     className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] text-[var(--cs-text-muted)]"

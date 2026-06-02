@@ -228,10 +228,10 @@ export default function PracticeIntelligencePage() {
         </div>
 
         {/* ── Key themes ─────────────────────────────────────────────────── */}
-        {hd.key_themes.length > 0 && (
+        {(hd.key_themes?.length ?? 0) > 0 && (
           <div className="flex flex-wrap gap-2">
             <span className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide self-center mr-1">Key Themes:</span>
-            {hd.key_themes.map((t, i) => (
+            {(hd.key_themes ?? []).map((t, i) => (
               <Badge key={i} className="text-[10px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border border-[var(--cs-aria-gold-soft)]">{t}</Badge>
             ))}
           </div>
@@ -268,12 +268,12 @@ export default function PracticeIntelligencePage() {
                           ))}
                         </div>
                       )}
-                      {child.concerns.length > 0 && (
+                      {(child.concerns?.length ?? 0) > 0 && (
                         <div>
                           <p className="text-[10px] font-semibold text-amber-700 uppercase tracking-wide mb-1.5 flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3" /> Concerns
                           </p>
-                          {child.concerns.map((c, i) => (
+                          {(child.concerns ?? []).map((c, i) => (
                             <div key={i} className="flex items-start gap-1.5 mb-1">
                               <div className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                               <span className="text-xs text-[var(--cs-text-secondary)]">{c}</span>
@@ -282,12 +282,12 @@ export default function PracticeIntelligencePage() {
                         </div>
                       )}
                     </div>
-                    {child.suggested_actions.length > 0 && (
+                    {(child.suggested_actions?.length ?? 0) > 0 && (
                       <div>
                         <p className="text-[10px] font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1.5 flex items-center gap-1">
                           <Target className="h-3 w-3" /> Suggested Actions
                         </p>
-                        {child.suggested_actions.map((a, i) => (
+                        {(child.suggested_actions ?? []).map((a, i) => (
                           <div key={i} className="flex items-start gap-1.5 mb-1">
                             <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] mt-1.5 shrink-0" />
                             <span className="text-xs text-[var(--cs-text-secondary)]">{a}</span>

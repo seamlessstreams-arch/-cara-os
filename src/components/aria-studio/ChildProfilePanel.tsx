@@ -65,7 +65,7 @@ export function ChildProfilePanel({ profile, expanded = false }: ChildProfilePan
         )}
         <Badge className="text-[10px] bg-emerald-100 text-emerald-700 border-emerald-200">
           <Star className="h-3 w-3 mr-0.5" />
-          {profile.strengths.length} strength{profile.strengths.length > 1 ? "s" : ""}
+          {(profile.strengths?.length ?? 0)} strength{(profile.strengths?.length ?? 0) > 1 ? "s" : ""}
         </Badge>
         <Badge className="text-[10px] bg-amber-100 text-amber-700 border-amber-200">
           <Target className="h-3 w-3 mr-0.5" />
@@ -77,11 +77,11 @@ export function ChildProfilePanel({ profile, expanded = false }: ChildProfilePan
       {isExpanded && (
         <div className="mt-4 space-y-3 border-t border-blue-200 pt-3">
           {/* Strengths */}
-          {profile.strengths.length > 0 && (
+          {(profile.strengths?.length ?? 0) > 0 && (
             <div>
               <h4 className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700 mb-1">Strengths</h4>
               <div className="flex flex-wrap gap-1">
-                {profile.strengths.map((s, i) => (
+                {(profile.strengths ?? []).map((s, i) => (
                   <Badge key={i} className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-100 font-normal">
                     {s}
                   </Badge>
@@ -128,10 +128,10 @@ export function ChildProfilePanel({ profile, expanded = false }: ChildProfilePan
           )}
 
           {/* Triggers */}
-          {profile.triggers && profile.triggers.length > 0 && (
+          {profile.triggers && (profile.triggers?.length ?? 0) > 0 && (
             <div>
               <h4 className="text-[10px] font-semibold uppercase tracking-wide text-orange-700 mb-1">Known Triggers</h4>
-              <p className="text-xs text-[var(--cs-text-secondary)]">{profile.triggers.join(", ")}</p>
+              <p className="text-xs text-[var(--cs-text-secondary)]">{(profile.triggers ?? []).join(", ")}</p>
             </div>
           )}
 

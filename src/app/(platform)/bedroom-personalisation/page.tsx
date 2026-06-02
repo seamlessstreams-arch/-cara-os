@@ -163,7 +163,7 @@ export default function BedroomPersonalisationPage() {
                   <div className="min-w-0">
                     <p className="font-medium truncate">{getYPName(b.child_id)} &middot; {b.room_number}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {b.decor_themes.slice(0, 3).join(" · ")} &middot; £{b.total_budget_spent} of £{b.total_budget_spent + b.budget_remaining} spent
+                      {(b.decor_themes ?? []).slice(0, 3).join(" · ")} &middot; £{b.total_budget_spent} of £{b.total_budget_spent + b.budget_remaining} spent
                     </p>
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export default function BedroomPersonalisationPage() {
                     <div className="bg-white rounded-lg p-3 border">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Decor Themes</p>
                       <div className="flex flex-wrap gap-1">
-                        {b.decor_themes.map((t, i) => (
+                        {(b.decor_themes ?? []).map((t, i) => (
                           <span key={i} className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-medium">{t}</span>
                         ))}
                       </div>
@@ -200,7 +200,7 @@ export default function BedroomPersonalisationPage() {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Furniture</p>
                     <div className="space-y-1">
-                      {b.furniture_items.map((f, i) => (
+                      {(b.furniture_items ?? []).map((f, i) => (
                         <div key={i} className="bg-white rounded-lg p-2 border text-sm flex items-start justify-between gap-2">
                           <div>
                             <span className="font-medium">{f.item}</span>
@@ -231,7 +231,7 @@ export default function BedroomPersonalisationPage() {
                       <Heart className="h-3 w-3 inline mr-1" />Comfort Items
                     </p>
                     <ul className="space-y-1">
-                      {b.comfort_items.map((c, i) => (
+                      {(b.comfort_items ?? []).map((c, i) => (
                         <li key={i} className="text-sm flex items-start gap-1">
                           <Heart className="h-3 w-3 text-pink-500 mt-1 shrink-0" />
                           <span>{c}</span>
@@ -269,7 +269,7 @@ export default function BedroomPersonalisationPage() {
                   <div className="bg-amber-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">Meaningful Items</p>
                     <div className="space-y-1">
-                      {b.meaningful_items.map((m, i) => (
+                      {(b.meaningful_items ?? []).map((m, i) => (
                         <div key={i} className="bg-white rounded-lg p-2 border text-sm">
                           <p className="font-medium">{m.item}</p>
                           <p className="text-xs text-muted-foreground">{m.significance}</p>

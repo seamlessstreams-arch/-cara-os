@@ -263,7 +263,7 @@ export default function StakeholderFeedbackPage() {
                   <div className="border-t bg-slate-50 p-4 space-y-4">
                     {/* themes */}
                     <div className="flex flex-wrap gap-1">
-                      {entry.themes.map((t) => (
+                      {(entry.themes ?? []).map((t) => (
                         <Badge key={t} variant="outline" className="text-xs">{STAKEHOLDER_FEEDBACK_THEME_LABEL[t]}</Badge>
                       ))}
                     </div>

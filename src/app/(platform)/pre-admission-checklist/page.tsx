@@ -63,8 +63,8 @@ export default function PreAdmissionChecklistPage() {
         case "date":
           return b.referral_date.localeCompare(a.referral_date);
         case "completion": {
-          const pctA = a.items.filter((i) => i.completed).length / a.items.length;
-          const pctB = b.items.filter((i) => i.completed).length / b.items.length;
+          const pctA = (a.items ?? []).filter((i) => i.completed).length / (a.items?.length ?? 0);
+          const pctB = (b.items ?? []).filter((i) => i.completed).length / (b.items?.length ?? 0);
           return pctA - pctB;
         }
         case "child":
@@ -79,8 +79,8 @@ export default function PreAdmissionChecklistPage() {
   // ── stats ──────────────────────────────────────────────────────────────────
   const totalChecklists = records.length;
   const complete = records.filter((c) => c.status === "complete").length;
-  const totalTasks = records.reduce((sum, c) => sum + c.items.length, 0);
-  const completedTasks = records.reduce((sum, c) => sum + c.items.filter((i) => i.completed).length, 0);
+  const totalTasks = records.reduce((sum, c) => sum + (c.items?.length ?? 0), 0);
+  const completedTasks = records.reduce((sum, c) => sum + (c.items ?? []).filter((i) => i.completed).length, 0);
 
   if (isLoading) {
     return (

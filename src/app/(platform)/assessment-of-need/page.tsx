@@ -364,7 +364,7 @@ export default function AssessmentOfNeedPage() {
                                 <div>
                                   <p className="font-semibold uppercase tracking-wide text-[10px] opacity-80 mb-0.5">Strengths</p>
                                   <ul className="list-disc list-inside space-y-0.5">
-                                    {da.strengths.map((n, i) => (<li key={i}>{n}</li>))}
+                                    {(da.strengths ?? []).map((n, i) => (<li key={i}>{n}</li>))}
                                   </ul>
                                 </div>
                                 <div>
@@ -376,7 +376,7 @@ export default function AssessmentOfNeedPage() {
                                 <div>
                                   <p className="font-semibold uppercase tracking-wide text-[10px] opacity-80 mb-0.5">Immediate Actions</p>
                                   <ul className="list-disc list-inside space-y-0.5">
-                                    {da.immediate_actions.map((n, i) => (<li key={i}>{n}</li>))}
+                                    {(da.immediate_actions ?? []).map((n, i) => (<li key={i}>{n}</li>))}
                                   </ul>
                                 </div>
                               </div>

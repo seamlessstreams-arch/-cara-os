@@ -182,8 +182,8 @@ function InductionCard({
   const statusCfg = STATUS_CONFIG[record.overall_status];
   const StatusIcon = statusCfg.icon;
 
-  const completedItems = record.items.filter((i) => i.status === "completed" || i.status === "signed_off").length;
-  const totalItems = record.items.length;
+  const completedItems = (record.items ?? []).filter((i) => i.status === "completed" || i.status === "signed_off").length;
+  const totalItems = (record.items?.length ?? 0);
   const pct = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
   // Days since start
@@ -263,7 +263,7 @@ function InductionCard({
             return record.items.some((i) => i.required_by_day > prevMaxDay && i.required_by_day <= p.maxDay);
           }).map((phase) => {
             const prevMaxDay = PHASES[PHASES.indexOf(phase) - 1]?.maxDay ?? 0;
-            const phaseItems = record.items.filter((i) => i.required_by_day > prevMaxDay && i.required_by_day <= phase.maxDay);
+            const phaseItems = (record.items ?? []).filter((i) => i.required_by_day > prevMaxDay && i.required_by_day <= phase.maxDay);
             const phaseCompleted = phaseItems.filter((i) => i.status === "completed" || i.status === "signed_off").length;
             const phasePct = phaseItems.length > 0 ? Math.round((phaseCompleted / phaseItems.length) * 100) : 0;
             const PhaseIcon = phase.icon;
@@ -373,8 +373,8 @@ export default function InductionTrackerPage() {
         }
         case "progress":
         default: {
-          const pctA = a.items.length ? a.items.filter((i) => i.status === "completed" || i.status === "signed_off").length / a.items.length : 0;
-          const pctB = b.items.length ? b.items.filter((i) => i.status === "completed" || i.status === "signed_off").length / b.items.length : 0;
+          const pctA = (a.items?.length ?? 0) ? (a.items ?? []).filter((i) => i.status === "completed" || i.status === "signed_off").length / (a.items?.length ?? 0) : 0;
+          const pctB = (b.items?.length ?? 0) ? (b.items ?? []).filter((i) => i.status === "completed" || i.status === "signed_off").length / (b.items?.length ?? 0) : 0;
           return pctA - pctB;
         }
       }
@@ -450,8 +450,8 @@ export default function InductionTrackerPage() {
             <CardContent>
               <div className="space-y-2">
                 {records.map((record) => {
-                  const completedItems = record.items.filter((i) => i.status === "completed" || i.status === "signed_off").length;
-                  const pct = record.items.length > 0 ? Math.round((completedItems / record.items.length) * 100) : 0;
+                  const completedItems = (record.items ?? []).filter((i) => i.status === "completed" || i.status === "signed_off").length;
+                  const pct = (record.items?.length ?? 0) > 0 ? Math.round((completedItems / (record.items?.length ?? 0)) * 100) : 0;
                   const daysSinceStart = Math.ceil((Date.now() - new Date(record.start_date).getTime()) / 86400000);
 
                   return (

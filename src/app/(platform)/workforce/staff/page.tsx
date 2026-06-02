@@ -394,7 +394,7 @@ export default function StaffProfilesPage() {
                       </div>
 
                       {/* Strengths preview (for profiled staff) */}
-                      {hasProfile && profile.strengths.length > 0 && (
+                      {hasProfile && (profile.strengths?.length ?? 0) > 0 && (
                         <div className="mt-3 pt-3 border-t border-slate-50 flex items-center gap-3">
                           <div className="flex-1 min-w-0">
                             <p className="text-[10px] text-emerald-600 font-semibold mb-0.5">Top Strength</p>

@@ -95,7 +95,7 @@ export default function ShiftNotesPage() {
   const stats = useMemo(() => {
     const total = records.length;
     const today = records.filter((n) => n.date === d(0)).length;
-    const outstandingTotal = records.reduce((a, n) => a + n.outstanding_tasks.length, 0);
+    const outstandingTotal = records.reduce((a, n) => a + (n.outstanding_tasks?.length ?? 0), 0);
     const concerns = records.flatMap((n) => n.child_notes).filter((cn) => cn.concerns).length;
     return { total, today, outstandingTotal, concerns };
   }, [records]);
@@ -192,7 +192,7 @@ export default function ShiftNotesPage() {
           {filtered.map((n) => {
             const open = !!expanded[n.id];
             const shiftM = SHIFT_META[n.shift];
-            const hasOutstanding = n.outstanding_tasks.length > 0;
+            const hasOutstanding = (n.outstanding_tasks?.length ?? 0) > 0;
             const hasConcerns = n.child_notes.some((cn) => cn.concerns);
             return (
               <Card key={n.id} className={cn("border-l-4", n.shift === "night" || n.shift === "sleep_in" ? "border-l-indigo-400" : n.shift === "morning" ? "border-l-amber-400" : "border-l-orange-400")}>
@@ -202,7 +202,7 @@ export default function ShiftNotesPage() {
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <Badge className={cn("text-xs", shiftM.color)}>{shiftM.icon}<span className="ml-1">{SHIFT_NOTE_SHIFT_TYPE_LABEL[n.shift]}</span></Badge>
                         <Badge variant="outline" className="text-xs">{shiftM.times}</Badge>
-                        {hasOutstanding && <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">{n.outstanding_tasks.length} outstanding</Badge>}
+                        {hasOutstanding && <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">{(n.outstanding_tasks?.length ?? 0)} outstanding</Badge>}
                         {hasConcerns && <Badge variant="outline" className="text-xs text-red-600 border-red-300">Concerns</Badge>}
                       </div>
                       <p className="font-semibold">{n.date} — {SHIFT_NOTE_SHIFT_TYPE_LABEL[n.shift]} Shift</p>
@@ -212,7 +212,7 @@ export default function ShiftNotesPage() {
                       </div>
                       {/* Child mood overview */}
                       <div className="flex items-center gap-3 mt-2">
-                        {n.child_notes.map((cn) => (
+                        {(n.child_notes ?? []).map((cn) => (
                           <span key={cn.child_id} className="flex items-center gap-1 text-xs">
                             <span>{getYPName(cn.child_id)}</span>
                             <span className={MOOD_META[cn.mood]?.color}>{MOOD_META[cn.mood]?.emoji}</span>
@@ -226,7 +226,7 @@ export default function ShiftNotesPage() {
                   {open && (
                     <div className="mt-4 space-y-4 border-t pt-3 text-sm">
                       {/* Per-child notes */}
-                      {n.child_notes.map((childNote) => (
+                      {(n.child_notes ?? []).map((childNote) => (
                         <div key={childNote.child_id} className="bg-muted/40 p-3 rounded-lg">
                           <div className="flex items-center justify-between mb-1">
                             <p className="font-medium">{getYPName(childNote.child_id)}</p>
@@ -265,14 +265,14 @@ export default function ShiftNotesPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Completed Tasks</p>
-                          <ul className="text-xs space-y-0.5">{n.completed_tasks.map((t, i) => (
+                          <ul className="text-xs space-y-0.5">{(n.completed_tasks ?? []).map((t, i) => (
                             <li key={i} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-green-600" />{t}</li>
                           ))}</ul>
                         </div>
-                        {n.outstanding_tasks.length > 0 && (
+                        {(n.outstanding_tasks?.length ?? 0) > 0 && (
                           <div>
                             <p className="font-medium text-muted-foreground mb-1">Outstanding Tasks</p>
-                            <ul className="text-xs space-y-0.5">{n.outstanding_tasks.map((t, i) => (
+                            <ul className="text-xs space-y-0.5">{(n.outstanding_tasks ?? []).map((t, i) => (
                               <li key={i} className="flex items-center gap-1"><Clock className="h-3 w-3 text-amber-600" />{t}</li>
                             ))}</ul>
                           </div>

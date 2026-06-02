@@ -40,7 +40,7 @@ const HANDOVER_EXPORT_COLS: ExportColumn<HandoverEntry>[] = [
   { header: "Outgoing Staff", accessor: (h) => h.outgoing_staff.map(getStaffName).join(", ") },
   { header: "Incoming Staff", accessor: (h) => h.incoming_staff.map(getStaffName).join(", ") },
   { header: "General Notes", accessor: (h) => h.general_notes },
-  { header: "Flags", accessor: (h) => h.flags.join(", ") },
+  { header: "Flags", accessor: (h) => (h.flags ?? []).join(", ") },
   { header: "Signed Off", accessor: (h) => h.signed_off_by ? getStaffName(h.signed_off_by) : "No" },
   { header: "Created By", accessor: (h) => getStaffName(h.created_by) },
 ];
@@ -107,9 +107,9 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
         </div>
       </div>
       <p className="text-xs text-slate-600 leading-relaxed">{cu.key_notes}</p>
-      {cu.alerts.length > 0 && (
+      {(cu.alerts?.length ?? 0) > 0 && (
         <div className="flex flex-wrap gap-1.5">
-          {cu.alerts.map((alert, i) => (
+          {(cu.alerts ?? []).map((alert, i) => (
             <span key={i} className="text-[10px] bg-amber-100 text-amber-700 rounded-full px-2 py-0.5 flex items-center gap-1">
               <AlertTriangle className="h-2.5 w-2.5" />{alert}
             </span>
@@ -498,7 +498,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
   function removeAlert(childId: string, idx: number) {
     const cu = childUpdates.find((c) => c.child_id === childId);
     if (!cu) return;
-    updateChild(childId, { alerts: cu.alerts.filter((_, i) => i !== idx) });
+    updateChild(childId, { alerts: (cu.alerts ?? []).filter((_, i) => i !== idx) });
   }
 
   function addFlag() {
@@ -634,9 +634,9 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
                   {/* Alerts */}
                   <div>
                     <label className="text-[11px] text-slate-500 mb-1 block">Alerts</label>
-                    {cu.alerts.length > 0 && (
+                    {(cu.alerts?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-2">
-                        {cu.alerts.map((alert, idx) => (
+                        {(cu.alerts ?? []).map((alert, idx) => (
                           <span key={idx} className="inline-flex items-center gap-1 text-[10px] bg-amber-100 text-amber-700 rounded-full px-2 py-0.5">
                             {alert}
                             <button type="button" onClick={() => removeAlert(yp.id, idx)}>
@@ -773,9 +773,9 @@ export default function HandoverPage() {
   const stats = useMemo(() => {
     const total = allHandovers.length;
     const signedOff = allHandovers.filter((h) => h.signed_off_by).length;
-    const withFlags = allHandovers.filter((h) => h.flags.length > 0).length;
+    const withFlags = allHandovers.filter((h) => (h.flags?.length ?? 0) > 0).length;
     const totalAlerts = allHandovers.reduce(
-      (sum, h) => sum + h.child_updates.reduce((s, cu) => s + cu.alerts.length, 0), 0
+      (sum, h) => sum + h.child_updates.reduce((s, cu) => s + (cu.alerts?.length ?? 0), 0), 0
     );
     const moodScores = allHandovers.flatMap((h) =>
       h.child_updates.filter((cu) => cu.mood_score !== null).map((cu) => cu.mood_score!)
@@ -807,7 +807,7 @@ export default function HandoverPage() {
         ].join(" ");
         const ypNames = h.child_updates.map((cu) => getYPName(cu.child_id)).join(" ");
         const notes = h.general_notes ?? "";
-        const flags = h.flags.join(" ");
+        const flags = (h.flags ?? []).join(" ");
         const childNotes = h.child_updates.map((cu) => cu.key_notes).join(" ");
         const alerts = h.child_updates.flatMap((cu) => cu.alerts).join(" ");
         const haystack = `${staffNames} ${ypNames} ${notes} ${flags} ${childNotes} ${alerts}`.toLowerCase();

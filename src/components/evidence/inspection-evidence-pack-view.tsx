@@ -605,7 +605,7 @@ function EvidenceItemsList({ items }: { items: EvidenceItem[] }) {
                 <span className="text-[10px] text-muted-foreground">
                   {item.type.replace(/_/g, " ")}
                 </span>
-                {item.tags.slice(0, 3).map((tag) => (
+                {(item.tags ?? []).slice(0, 3).map((tag) => (
                   <span
                     key={tag}
                     className="inline-flex px-1 py-0 rounded text-[9px] bg-muted text-muted-foreground"

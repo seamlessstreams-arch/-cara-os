@@ -180,8 +180,8 @@ export default function AttachmentProfilesPage() {
       assessedBy: getStaffName(p.assessed_by),
       assessmentDate: p.assessment_date,
       reviewDate: p.review_date,
-      protectiveFactors: p.protective_factors.join("; "),
-      riskFactors: p.risk_factors.join("; "),
+      protectiveFactors: (p.protective_factors ?? []).join("; "),
+      riskFactors: (p.risk_factors ?? []).join("; "),
       therapeuticApproach: p.therapeutic_approach.join("; "),
       keyGuidance: p.staff_guidance.join("; "),
       childViews: p.child_views,
@@ -382,13 +382,13 @@ export default function AttachmentProfilesPage() {
                     <div className="rounded-md bg-green-50 p-3">
                       <h4 className="text-xs font-semibold text-green-700 mb-1">Protective Factors</h4>
                       <ul className="list-disc list-inside text-sm text-green-800 space-y-0.5">
-                        {p.protective_factors.map((f, i) => <li key={i}>{f}</li>)}
+                        {(p.protective_factors ?? []).map((f, i) => <li key={i}>{f}</li>)}
                       </ul>
                     </div>
                     <div className="rounded-md bg-red-50 p-3">
                       <h4 className="text-xs font-semibold text-red-700 mb-1">Risk Factors</h4>
                       <ul className="list-disc list-inside text-sm text-red-800 space-y-0.5">
-                        {p.risk_factors.map((f, i) => <li key={i}>{f}</li>)}
+                        {(p.risk_factors ?? []).map((f, i) => <li key={i}>{f}</li>)}
                       </ul>
                     </div>
                   </div>

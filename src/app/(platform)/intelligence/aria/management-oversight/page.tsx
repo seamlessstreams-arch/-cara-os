@@ -504,7 +504,7 @@ export default function ManagementOversightPage() {
                 </CardContent>
               </Card>
 
-              {review.strengths.length > 0 ? (
+              {(review.strengths?.length ?? 0) > 0 ? (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-base">
@@ -513,7 +513,7 @@ export default function ManagementOversightPage() {
                   </CardHeader>
                   <CardContent>
                     <ul className="text-sm space-y-1">
-                      {review.strengths.map((s, i) => (
+                      {(review.strengths ?? []).map((s, i) => (
                         <li key={i} className="flex gap-2">
                           <span className="text-emerald-500">+</span>
                           <span>{s}</span>

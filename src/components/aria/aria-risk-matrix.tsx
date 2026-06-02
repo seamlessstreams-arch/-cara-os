@@ -258,7 +258,7 @@ export function AriaRiskMatrix() {
                             </div>
                           )}
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                            {profile.domains.map((entry) => {
+                            {(profile.domains ?? []).map((entry) => {
                               const dcfg = DOMAIN_CONFIG[entry.domain];
                               const lcfg = RISK_LEVEL_CONFIG[entry.level];
                               return (

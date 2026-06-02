@@ -187,7 +187,7 @@ function VisitCard({ visit, onUpdate }: {
             <div>
               <div className="text-xs font-semibold text-slate-700 mb-2">Strengths</div>
               <ul className="space-y-1">
-                {visit.strengths.map((s, i) => (
+                {(visit.strengths ?? []).map((s, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
                     <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />{s}
                   </li>
@@ -215,7 +215,7 @@ function VisitCard({ visit, onUpdate }: {
             <div>
               <div className="text-xs font-semibold text-slate-700 mb-2">Recommendations</div>
               <div className="space-y-2">
-                {visit.recommendations.map((rec) => (
+                {(visit.recommendations ?? []).map((rec) => (
                   <RecommendationRow key={rec.id} rec={rec} visitId={visit.id} onUpdate={onUpdate} />
                 ))}
               </div>

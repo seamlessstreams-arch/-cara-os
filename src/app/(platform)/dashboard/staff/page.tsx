@@ -891,8 +891,8 @@ export default function StaffDashboardPage() {
                           <div className="text-xs font-medium text-slate-800">{yp.preferred_name}</div>
                           <div className="text-[11px] text-slate-400">{yp.legal_status}</div>
                         </div>
-                        {yp.risk_flags.length > 0 && (
-                          <div title={yp.risk_flags.join(", ")}>
+                        {(yp.risk_flags?.length ?? 0) > 0 && (
+                          <div title={(yp.risk_flags ?? []).join(", ")}>
                             <BadgeAlert className="h-4 w-4 text-amber-400 shrink-0" />
                           </div>
                         )}

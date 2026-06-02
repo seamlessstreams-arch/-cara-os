@@ -439,15 +439,15 @@ export default function HrProcessGuardianPage() {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <AlertTriangle className="h-4 w-4 text-amber-500" /> Flags ({review.flags.length})
+                <AlertTriangle className="h-4 w-4 text-amber-500" /> Flags ({(review.flags?.length ?? 0)})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {review.flags.length === 0 ? (
+              {(review.flags?.length ?? 0) === 0 ? (
                 <p className="text-sm text-emerald-700">No issues flagged. The draft reads as safe to approve based on the context provided.</p>
               ) : (
                 <ul className="space-y-3">
-                  {review.flags.map((f, i) => (
+                  {(review.flags ?? []).map((f, i) => (
                     <li key={i} className="border-l-2 pl-3" style={{ borderColor: f.severity === "block" ? "#fecaca" : f.severity === "warning" ? "#fde68a" : "#bfdbfe" }}>
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <Badge className={cn("border text-xs", SEVERITY_COLOUR[f.severity])}>{f.severity}</Badge>

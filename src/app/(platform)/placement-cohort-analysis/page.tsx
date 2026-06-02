@@ -216,7 +216,7 @@ export default function PlacementCohortAnalysisPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold">{a.period}</h3>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                      {a.cohort_members.length} children
+                      {(a.cohort_members?.length ?? 0)} children
                     </span>
                     <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                       <Heart className="inline h-3 w-3 mr-0.5" />
@@ -230,7 +230,7 @@ export default function PlacementCohortAnalysisPage() {
                     </span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {a.analysis_date} — Authored by {getStaffName(a.authored_by)} · Cohort: {a.cohort_members.map(getYPName).join(", ")}
+                    {a.analysis_date} — Authored by {getStaffName(a.authored_by)} · Cohort: {(a.cohort_members ?? []).map(getYPName).join(", ")}
                   </p>
                 </div>
                 {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
@@ -283,7 +283,7 @@ export default function PlacementCohortAnalysisPage() {
                     <div className="rounded-md bg-blue-50 p-3">
                       <h4 className="text-xs font-semibold text-blue-700 mb-2">Individual → Group Impact</h4>
                       <div className="space-y-2">
-                        {a.cohort_members.map((m) => (
+                        {(a.cohort_members ?? []).map((m) => (
                           <div key={m}>
                             <p className="text-xs font-semibold text-blue-900">{getYPName(m)}</p>
                             <p className="text-sm text-blue-800">{a.individual_impacts_on_group[m] ?? "—"}</p>
@@ -294,7 +294,7 @@ export default function PlacementCohortAnalysisPage() {
                     <div className="rounded-md bg-indigo-50 p-3">
                       <h4 className="text-xs font-semibold text-indigo-700 mb-2">Group → Individual Impact</h4>
                       <div className="space-y-2">
-                        {a.cohort_members.map((m) => (
+                        {(a.cohort_members ?? []).map((m) => (
                           <div key={m}>
                             <p className="text-xs font-semibold text-indigo-900">{getYPName(m)}</p>
                             <p className="text-sm text-indigo-800">{a.group_impacts_on_individual[m] ?? "—"}</p>
@@ -318,7 +318,7 @@ export default function PlacementCohortAnalysisPage() {
                   <div className="rounded-md bg-pink-50 border border-pink-200 p-3">
                     <h4 className="text-xs font-semibold text-pink-700 mb-2">Individualised Support in Group Context</h4>
                     <div className="space-y-2">
-                      {a.cohort_members.map((m) => (
+                      {(a.cohort_members ?? []).map((m) => (
                         <div key={m}>
                           <p className="text-xs font-semibold text-pink-900">{getYPName(m)}</p>
                           <p className="text-sm text-pink-800">{a.individualised_support_in_group_context[m] ?? "—"}</p>
@@ -363,7 +363,7 @@ export default function PlacementCohortAnalysisPage() {
                   <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
                     <h4 className="text-xs font-semibold text-blue-700 mb-1">Recommended Actions</h4>
                     <ul className="list-disc list-inside text-sm text-blue-800 space-y-0.5">
-                      {a.recommended_actions.map((r, i) => <li key={i}>{r}</li>)}
+                      {(a.recommended_actions ?? []).map((r, i) => <li key={i}>{r}</li>)}
                     </ul>
                   </div>
                 </div>

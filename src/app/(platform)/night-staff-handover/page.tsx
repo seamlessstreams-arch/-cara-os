@@ -119,7 +119,7 @@ export default function NightStaffHandoverPage() {
     list.sort((a, b) => {
       switch (sortBy) {
         case "date_asc":  return a.date.localeCompare(b.date);
-        case "events":    return b.night_events.length - a.night_events.length;
+        case "events":    return (b.night_events?.length ?? 0) - (a.night_events?.length ?? 0);
         case "concerns":  return Object.keys(b.specific_concerns).length - Object.keys(a.specific_concerns).length;
         case "date_desc":
         default:          return b.date.localeCompare(a.date);
