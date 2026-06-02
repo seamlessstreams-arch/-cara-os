@@ -27,6 +27,7 @@ import { useCareEventAuditLog, type AuditLogEntryEnriched } from "@/hooks/use-da
 import type { AuditAction } from "@/types/care-events";
 import { formatDate } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { RecordActivityFeed } from "@/components/audit/record-activity-feed";
 import { AriaPanel } from "@/components/aria/aria-panel";
 import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 
@@ -198,6 +199,14 @@ export default function AuditTrailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Record Activity — universal "Enter Once" orchestrator audit stream */}
+      <div className="mb-6">
+        <RecordActivityFeed limit={25} />
+      </div>
+
+      {/* Care Event audit trail below */}
+      <h2 className="text-sm font-semibold text-[var(--cs-navy)] mb-2">Care Event Audit Trail</h2>
 
       {/* Action filter */}
       <div className="flex gap-1 flex-wrap mb-4 border-b border-slate-200 pb-2">
