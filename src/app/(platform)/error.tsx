@@ -64,13 +64,7 @@ export default function PlatformError({
             : "Something went wrong loading this page. Your data is safe — try again, or head back to the dashboard."}
         </p>
         {error?.digest && (
-          <p className="text-[10px] text-[var(--cs-text-gentle)] mb-2 font-mono">ref: {error.digest}</p>
-        )}
-        {!chunk && error?.message && (
-          <pre className="text-left text-[10px] leading-snug text-red-700 bg-red-50 border border-red-100 rounded-lg p-2.5 mb-4 overflow-auto max-h-32 whitespace-pre-wrap break-words">
-            {error.name ? error.name + ": " : ""}{error.message}
-            {error.stack ? "\n\n" + error.stack.split("\n").slice(1, 4).join("\n") : ""}
-          </pre>
+          <p className="text-[10px] text-[var(--cs-text-gentle)] mb-4 font-mono">ref: {error.digest}</p>
         )}
         <div className="flex items-center justify-center gap-3">
           <button

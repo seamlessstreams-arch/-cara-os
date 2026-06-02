@@ -127,9 +127,9 @@ export function IndependenceIntelligenceCard() {
                 <div className="flex items-center gap-2 mt-1 text-muted-foreground">
                   <span className="text-[10px]">{child.pathway_plan_status}</span>
                 </div>
-                {child.key_gaps.length > 0 && (
+                {(child.key_gaps?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
-                    {child.key_gaps.slice(0, 3).map((gap, i) => (
+                    {(child.key_gaps ?? []).slice(0, 3).map((gap, i) => (
                       <Badge key={i} className="text-[9px] bg-red-50 text-red-700 border-red-200">
                         {gap}
                       </Badge>
