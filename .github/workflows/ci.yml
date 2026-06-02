@@ -1,0 +1,63 @@
+name: CI
+
+# Runs the test suite and a production build on every PR to main and on pushes
+# to main and the active development branch. Replaces the previously-removed
+# boilerplate workflows so the ~114k vitest suite actually guards main.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, feat/cornerstone-platform-build]
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref to save CI minutes.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Test suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests (vitest)
+        run: npx vitest run
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Next.js build
+        run: npx next build
+        env:
+          NODE_OPTIONS: --max-old-space-size=6144
+          # CI has no AI/Supabase secrets — the app must build without them
+          # (providers are lazily read at request time; build stays clean).
+          NEXT_TELEMETRY_DISABLED: "1"
