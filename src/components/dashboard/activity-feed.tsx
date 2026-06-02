@@ -72,7 +72,7 @@ function FeedItemRow({ item }: { item: FeedItem }) {
 
   const dateLabel = (() => {
     try {
-      return formatRelative(item.timestamp.slice(0, 10));
+      return formatRelative((item.timestamp ?? []).slice(0, 10));
     } catch {
       return "";
     }

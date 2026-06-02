@@ -127,11 +127,11 @@ export function ParentalContactArrangementCard() {
 
         {/* ── Supervision breakdown ──────────────────────────────────── */}
 
-        {ft.supervision_breakdown.length > 0 && (
+        {(ft.supervision_breakdown?.length ?? 0) > 0 && (
           <div className="rounded-lg border p-3 space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground">Supervision Levels</p>
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              {ft.supervision_breakdown.slice(0, 3).map((sb) => (
+              {(ft.supervision_breakdown ?? []).slice(0, 3).map((sb) => (
                 <div key={sb.level}>
                   <p className="font-bold tabular-nums text-blue-600">{sb.count}</p>
                   <p className="text-[10px] text-muted-foreground capitalize">{sb.level}</p>

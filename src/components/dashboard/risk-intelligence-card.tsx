@@ -214,7 +214,7 @@ export function RiskIntelligenceCard() {
                 </div>
                 <div className="flex items-center gap-3 mt-1 text-muted-foreground">
                   <span className="text-[10px]">{profile.active_assessments} risks</span>
-                  <span className="text-[10px]">{profile.domains.join(", ")}</span>
+                  <span className="text-[10px]">{(profile.domains ?? []).join(", ")}</span>
                   {!profile.child_voice_present && (
                     <span className="text-[10px] text-red-500">No voice</span>
                   )}

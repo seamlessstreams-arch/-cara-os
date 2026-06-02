@@ -80,8 +80,8 @@ export function StaffSicknessManagementCard() {
             <p className="text-lg font-bold tabular-nums text-blue-600">{s.staff_with_sickness}</p>
             <p className="text-[10px] text-muted-foreground">Staff Sick</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2.5", s.bradford_factor_alerts.length === 0 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", s.bradford_factor_alerts.length === 0 ? "text-green-600" : "text-red-600")}>{s.bradford_factor_alerts.length}</p>
+          <div className={cn("text-center rounded-lg p-2.5", (s.bradford_factor_alerts?.length ?? 0) === 0 ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (s.bradford_factor_alerts?.length ?? 0) === 0 ? "text-green-600" : "text-red-600")}>{(s.bradford_factor_alerts?.length ?? 0)}</p>
             <p className="text-[10px] text-muted-foreground">Bradford</p>
           </div>
           <div className="text-center rounded-lg bg-gray-50 p-2.5">
@@ -108,13 +108,13 @@ export function StaffSicknessManagementCard() {
 
         {/* ── Bradford factor alerts ──────────────────────────────────── */}
 
-        {s.bradford_factor_alerts.length > 0 && (
+        {(s.bradford_factor_alerts?.length ?? 0) > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Bradford Factor Alerts
             </p>
-            {s.bradford_factor_alerts.slice(0, 4).map((bf) => (
+            {(s.bradford_factor_alerts ?? []).slice(0, 4).map((bf) => (
               <div key={bf.staff_id} className="flex items-center justify-between rounded border p-2.5 text-xs">
                 <span className="font-medium">{bf.staff_name}</span>
                 <div className="flex items-center gap-1.5">

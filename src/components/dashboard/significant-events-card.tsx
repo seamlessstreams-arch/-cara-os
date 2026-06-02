@@ -180,7 +180,7 @@ export function SignificantEventsCard() {
                       className={cn("w-full rounded-sm", t.critical > 0 ? "bg-red-400" : "bg-blue-400")}
                       style={{ height: `${height}px` }}
                     />
-                    <span className="text-[8px] text-muted-foreground">{t.period.slice(5)}</span>
+                    <span className="text-[8px] text-muted-foreground">{(t.period ?? []).slice(5)}</span>
                   </div>
                 );
               })}

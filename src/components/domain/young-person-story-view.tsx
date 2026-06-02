@@ -533,9 +533,9 @@ export function YoungPersonStoryView({ childId }: YoungPersonStoryViewProps) {
             <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700/60 mb-1">
               Risk flags
             </p>
-            {child.risk_flags.length > 0 ? (
+            {(child.risk_flags?.length ?? 0) > 0 ? (
               <div className="flex flex-wrap gap-1">
-                {child.risk_flags.slice(0, 2).map((flag) => (
+                {(child.risk_flags ?? []).slice(0, 2).map((flag) => (
                   <span
                     key={flag}
                     className="inline-block rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-[10px] font-medium"
@@ -543,9 +543,9 @@ export function YoungPersonStoryView({ childId }: YoungPersonStoryViewProps) {
                     {flag}
                   </span>
                 ))}
-                {child.risk_flags.length > 2 && (
+                {(child.risk_flags?.length ?? 0) > 2 && (
                   <span className="text-[10px] text-[var(--cs-text-gentle)]">
-                    +{child.risk_flags.length - 2} more
+                    +{(child.risk_flags?.length ?? 0) - 2} more
                   </span>
                 )}
               </div>
@@ -1044,7 +1044,7 @@ export function YoungPersonStoryView({ childId }: YoungPersonStoryViewProps) {
                 </p>
                 {child.allergies.length > 0 ? (
                   <div className="flex flex-wrap gap-1">
-                    {child.allergies.map((a) => (
+                    {(child.allergies ?? []).map((a) => (
                       <span
                         key={a}
                         className="rounded-full bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 text-[10px] font-medium"

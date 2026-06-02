@@ -96,11 +96,11 @@ export function FamilyEngagementCard() {
 
         {/* ── Presentation breakdown ──────────────────────────────────── */}
 
-        {ft.presentation_breakdown.length > 0 && (
+        {(ft.presentation_breakdown?.length ?? 0) > 0 && (
           <div className="rounded-lg border p-3 space-y-2">
             <p className="text-xs font-semibold">Child Presentation</p>
             <div className="flex flex-wrap gap-1">
-              {ft.presentation_breakdown.map((p) => (
+              {(ft.presentation_breakdown ?? []).map((p) => (
                 <Badge key={p.presentation} variant="outline" className="text-[10px] capitalize">
                   {p.presentation.replace(/_/g, " ")} ({p.count})
                 </Badge>

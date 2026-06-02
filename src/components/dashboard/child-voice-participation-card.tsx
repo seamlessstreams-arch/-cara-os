@@ -183,14 +183,14 @@ export function ChildVoiceParticipationCard() {
         )}
 
         {/* Top Key Work Themes */}
-        {kw.top_themes.length > 0 && (
+        {(kw.top_themes?.length ?? 0) > 0 && (
           <div className="rounded border border-cyan-200 bg-cyan-50 p-2 text-xs">
             <p className="font-medium text-cyan-700 flex items-center gap-1 mb-1">
               <Target className="h-3 w-3" />
               Key Work Themes (30d)
             </p>
             <div className="flex flex-wrap gap-1">
-              {kw.top_themes.slice(0, 6).map((t, i) => (
+              {(kw.top_themes ?? []).slice(0, 6).map((t, i) => (
                 <span key={i} className="inline-flex items-center gap-1 bg-white/60 rounded px-1.5 py-0.5 text-[10px] text-cyan-800 border border-cyan-200">
                   {t.theme} <span className="font-bold">{t.count}</span>
                 </span>
@@ -200,14 +200,14 @@ export function ChildVoiceParticipationCard() {
         )}
 
         {/* Top Advocacy Issues */}
-        {ao.top_issues.length > 0 && (
+        {(ao.top_issues?.length ?? 0) > 0 && (
           <div className="rounded border border-purple-200 bg-purple-50 p-2 text-xs">
             <p className="font-medium text-purple-700 flex items-center gap-1 mb-1">
               <Megaphone className="h-3 w-3" />
               Advocacy Issues Raised
             </p>
             <div className="flex flex-wrap gap-1">
-              {ao.top_issues.slice(0, 5).map((issue, i) => (
+              {(ao.top_issues ?? []).slice(0, 5).map((issue, i) => (
                 <span key={i} className="inline-flex items-center gap-1 bg-white/60 rounded px-1.5 py-0.5 text-[10px] text-purple-800 border border-purple-200">
                   {issue.issue} <span className="font-bold">{issue.count}</span>
                 </span>
@@ -242,9 +242,9 @@ export function ChildVoiceParticipationCard() {
                       <span className="text-[10px] bg-blue-100 text-blue-700 px-1 rounded">Feedback</span>
                     )}
                   </div>
-                  {cp.flags.length > 0 && (
+                  {(cp.flags?.length ?? 0) > 0 && (
                     <div className="mt-1 space-y-0.5">
-                      {cp.flags.map((f, i) => (
+                      {(cp.flags ?? []).map((f, i) => (
                         <p key={i} className="text-[10px] text-red-700 flex items-center gap-1">
                           <AlertCircle className="h-2.5 w-2.5 shrink-0" />
                           {f}

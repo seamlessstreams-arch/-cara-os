@@ -109,7 +109,7 @@ export function MedicationSideEffectsCard() {
               <Activity className="h-3 w-3" />
               PRN Breakdown
             </p>
-            {prn.by_medication.slice(0, 5).map((med, i) => (
+            {(prn.by_medication ?? []).slice(0, 5).map((med, i) => (
               <div key={i} className="flex items-center justify-between rounded-lg border p-3 text-xs">
                 <span className="font-medium">{med.name}</span>
                 <div className="flex items-center gap-2">

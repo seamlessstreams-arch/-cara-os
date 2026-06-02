@@ -124,7 +124,7 @@ export function ChildIndependenceIntelligenceCard({ childId }: { childId: string
 
             {/* Per-Skill Bars */}
             <div className="space-y-1.5">
-              {so.skills_by_category.map((skill, i) => (
+              {(so.skills_by_category ?? []).map((skill, i) => (
                 <div key={i} className="flex items-center gap-2 text-xs">
                   <span className="w-24 text-slate-700 font-medium truncate capitalize">{skill.category}</span>
                   <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -209,7 +209,7 @@ export function ChildIndependenceIntelligenceCard({ childId }: { childId: string
               <Target className="h-3 w-3" />
               Aspirations
             </p>
-            {pc.aspirations.map((a, i) => (
+            {(pc.aspirations ?? []).map((a, i) => (
               <p key={i} className="text-[10px] text-violet-800">• {a}</p>
             ))}
           </div>

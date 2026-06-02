@@ -43,7 +43,7 @@ export function StaffBurnoutIndicatorCard() {
   const { sickness, staffing } = d;
   const trend = TREND_CONFIG[sickness.trend];
   const TrendIcon = trend.icon;
-  const bradfordCount = sickness.bradford_factor_alerts.length;
+  const bradfordCount = (sickness.bradford_factor_alerts?.length ?? 0);
 
   return (
     <Card className="overflow-hidden border-purple-200">
@@ -82,7 +82,7 @@ export function StaffBurnoutIndicatorCard() {
         </div>
 
         {/* ── Bradford factor list ────────────────────────────────────── */}
-        {sickness.bradford_factor_alerts.length > 0 && (
+        {(sickness.bradford_factor_alerts?.length ?? 0) > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Flame className="h-3 w-3" />Bradford Factor Alerts

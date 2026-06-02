@@ -126,9 +126,9 @@ export function VisitorsCard() {
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-medium truncate">{v.visitor_name}</span>
                   <span className="text-muted-foreground">{v.category_label}</span>
-                  {v.children_seen_names.length > 0 && (
+                  {(v.children_seen_names?.length ?? 0) > 0 && (
                     <span className="text-muted-foreground truncate">
-                      → {v.children_seen_names.join(", ")}
+                      → {(v.children_seen_names ?? []).join(", ")}
                     </span>
                   )}
                 </div>

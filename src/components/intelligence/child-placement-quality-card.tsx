@@ -183,14 +183,14 @@ export function ChildPlacementQualityCard({ childId }: { childId: string }) {
         )}
 
         {/* Top Key Work Themes */}
-        {kw.top_themes.length > 0 && (
+        {(kw.top_themes?.length ?? 0) > 0 && (
           <div className="rounded border border-teal-200 bg-teal-50 p-2 text-xs">
             <p className="font-medium text-teal-700 flex items-center gap-1 mb-1">
               <Target className="h-3 w-3" />
               Key Work Themes
             </p>
             <div className="flex flex-wrap gap-1">
-              {kw.top_themes.slice(0, 5).map((t, i) => (
+              {(kw.top_themes ?? []).slice(0, 5).map((t, i) => (
                 <span key={i} className="inline-flex items-center gap-1 bg-white/60 rounded px-1.5 py-0.5 text-[10px] text-teal-800 border border-teal-200">
                   {t.theme} <span className="font-bold">{t.count}</span>
                 </span>
@@ -207,7 +207,7 @@ export function ChildPlacementQualityCard({ childId }: { childId: string }) {
               Recording Coverage ({eng.staff_variety_30d} staff)
             </p>
             <div className="flex flex-wrap gap-1">
-              {eng.entry_type_spread.map((t, i) => (
+              {(eng.entry_type_spread ?? []).map((t, i) => (
                 <span key={i} className="inline-flex items-center gap-1 bg-white/60 rounded px-1.5 py-0.5 text-[10px] text-slate-700 border border-slate-200 capitalize">
                   {t.type} <span className="font-bold">{t.count}</span>
                 </span>

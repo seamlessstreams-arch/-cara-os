@@ -225,13 +225,13 @@ export function AppraisalsCard() {
 
         {/* ── Staff profiles (at-risk first) ──────────────────────────── */}
 
-        {intel.staff_profiles.some((p) => p.risk_flags.length > 0) && (
+        {intel.staff_profiles.some((p) => (p.risk_flags?.length ?? 0) > 0) && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <UserCheck className="h-3 w-3" />
               Staff Status
             </p>
-            {intel.staff_profiles.filter((p) => p.risk_flags.length > 0).slice(0, 4).map((sp) => (
+            {intel.staff_profiles.filter((p) => (p.risk_flags?.length ?? 0) > 0).slice(0, 4).map((sp) => (
               <div key={sp.staff_id} className="rounded-lg border p-3 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="font-medium">{sp.staff_name}</span>
@@ -254,9 +254,9 @@ export function AppraisalsCard() {
                     )}
                   </div>
                 </div>
-                {sp.risk_flags.length > 0 && (
+                {(sp.risk_flags?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
-                    {sp.risk_flags.slice(0, 3).map((flag, i) => (
+                    {(sp.risk_flags ?? []).slice(0, 3).map((flag, i) => (
                       <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
                         <FileWarning className="h-2.5 w-2.5 mr-0.5" />
                         {flag.replace(/_/g, " ")}

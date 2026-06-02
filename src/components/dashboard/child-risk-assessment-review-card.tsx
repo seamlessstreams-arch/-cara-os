@@ -117,7 +117,7 @@ export function ChildRiskAssessmentReviewCard() {
                   </Badge>
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  {cp.domains.map((d) => (
+                  {(cp.domains ?? []).map((d) => (
                     <Badge key={d} variant="outline" className="text-[10px] capitalize">
                       {d.replace(/_/g, " ")}
                     </Badge>

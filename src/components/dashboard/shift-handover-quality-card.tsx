@@ -178,9 +178,9 @@ export function ShiftHandoverQualityCard() {
                     )}
                   </div>
                 </div>
-                {cm.alert_themes.length > 0 && (
+                {(cm.alert_themes?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
-                    {cm.alert_themes.slice(0, 3).map((theme, i) => (
+                    {(cm.alert_themes ?? []).slice(0, 3).map((theme, i) => (
                       <span key={i} className="text-[10px] text-red-600 bg-red-50 rounded px-1.5 py-0.5">
                         {theme}
                       </span>
@@ -229,9 +229,9 @@ export function ShiftHandoverQualityCard() {
                     <span className="text-[10px] text-red-600">{hp.incident_link_count} incidents</span>
                   )}
                 </div>
-                {hp.risk_flags.length > 0 && (
+                {(hp.risk_flags?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
-                    {hp.risk_flags.slice(0, 3).map((flag, i) => (
+                    {(hp.risk_flags ?? []).slice(0, 3).map((flag, i) => (
                       <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
                         <FileWarning className="h-2.5 w-2.5 mr-0.5" />
                         {flag.replace(/_/g, " ")}

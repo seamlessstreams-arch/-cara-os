@@ -134,7 +134,7 @@ export function OutcomesSummary() {
             </div>
             {declining.slice(0, 3).map((t) => (
               <p key={t.id} className="text-[10px] text-red-600 ml-4">
-                {getYPName(t.child_id)} — {t.target_description.slice(0, 50)}...
+                {getYPName(t.child_id)} — {(t.target_description ?? []).slice(0, 50)}...
               </p>
             ))}
           </div>

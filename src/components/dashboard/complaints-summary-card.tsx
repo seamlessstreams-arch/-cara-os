@@ -169,7 +169,7 @@ export function ComplaintsSummaryCard() {
                 <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[var(--cs-surface)] transition-colors bg-orange-50/50">
                   <Scale className="h-3 w-3 text-orange-500 shrink-0" />
                   <span className="text-[11px] font-medium text-[var(--cs-text-secondary)] flex-1 truncate">
-                    {c.reference}: {c.summary.length > 40 ? c.summary.slice(0, 40) + "…" : c.summary}
+                    {c.reference}: {c.summary.length > 40 ? (c.summary ?? []).slice(0, 40) + "…" : c.summary}
                   </span>
                   <span className="text-[9px] text-[var(--cs-text-muted)] shrink-0">
                     {STAGE_LABELS[c.stage] ?? c.stage}

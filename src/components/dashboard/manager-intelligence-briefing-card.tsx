@@ -183,7 +183,7 @@ export function ManagerIntelligenceBriefingCard() {
                   </span>
                 </div>
                 <p className="text-muted-foreground mt-0.5">
-                  {child.domains_flagged.join(", ")} — {child.action_required}
+                  {(child.domains_flagged ?? []).join(", ")} — {child.action_required}
                 </p>
               </div>
             ))}

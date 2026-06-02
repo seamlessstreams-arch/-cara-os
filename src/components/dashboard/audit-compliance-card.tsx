@@ -171,14 +171,14 @@ export function AuditComplianceCard() {
 
         {/* ── Audit profiles ────────────────────────────────────────────── */}
 
-        {intel.audit_profiles.filter((ap) => ap.risk_flags.length > 0 || ap.status !== "completed").length > 0 && (
+        {intel.audit_profiles.filter((ap) => (ap.risk_flags?.length ?? 0) > 0 || ap.status !== "completed").length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <Shield className="h-3 w-3" />
               Audit Status
             </p>
             {intel.audit_profiles
-              .filter((ap) => ap.risk_flags.length > 0 || ap.status !== "completed")
+              .filter((ap) => (ap.risk_flags?.length ?? 0) > 0 || ap.status !== "completed")
               .slice(0, 4)
               .map((ap) => (
                 <div key={ap.audit_id} className="rounded-lg border p-3 text-xs">
@@ -224,9 +224,9 @@ export function AuditComplianceCard() {
                       </span>
                     )}
                   </div>
-                  {ap.risk_flags.length > 0 && (
+                  {(ap.risk_flags?.length ?? 0) > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
-                      {ap.risk_flags.slice(0, 3).map((flag, i) => (
+                      {(ap.risk_flags ?? []).slice(0, 3).map((flag, i) => (
                         <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
                           <FileWarning className="h-2.5 w-2.5 mr-0.5" />
                           {flag.replace(/_/g, " ")}

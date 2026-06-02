@@ -227,26 +227,26 @@ export function ChildBehaviourSafetyIntelligenceCard({ childId }: { childId: str
         </div>
 
         {/* Top Triggers & Effective Strategies */}
-        {(bp.top_triggers.length > 0 || bp.effective_strategies.length > 0) && (
+        {((bp.top_triggers?.length ?? 0) > 0 || (bp.effective_strategies?.length ?? 0) > 0) && (
           <div className="grid grid-cols-2 gap-1.5">
-            {bp.top_triggers.length > 0 && (
+            {(bp.top_triggers?.length ?? 0) > 0 && (
               <div className="rounded border border-amber-200 bg-amber-50 p-2 text-xs">
                 <p className="font-medium text-amber-700 flex items-center gap-1 mb-1">
                   <AlertTriangle className="h-3 w-3" />
                   Top Triggers
                 </p>
-                {bp.top_triggers.map((t, i) => (
+                {(bp.top_triggers ?? []).map((t, i) => (
                   <p key={i} className="text-[10px] text-amber-800">• {t}</p>
                 ))}
               </div>
             )}
-            {bp.effective_strategies.length > 0 && (
+            {(bp.effective_strategies?.length ?? 0) > 0 && (
               <div className="rounded border border-green-200 bg-green-50 p-2 text-xs">
                 <p className="font-medium text-green-700 flex items-center gap-1 mb-1">
                   <ThumbsUp className="h-3 w-3" />
                   Effective Strategies
                 </p>
-                {bp.effective_strategies.map((s, i) => (
+                {(bp.effective_strategies ?? []).map((s, i) => (
                   <p key={i} className="text-[10px] text-green-800">• {s}</p>
                 ))}
               </div>

@@ -100,9 +100,9 @@ export function StaffAbsenceCard() {
             </Badge>
             <p className="text-[10px] text-muted-foreground mt-1">Trend</p>
           </div>
-          <div className={cn("text-center rounded-lg p-2", s.bradford_factor_alerts.length === 0 ? "bg-green-50" : "bg-red-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", s.bradford_factor_alerts.length === 0 ? "text-green-600" : "text-red-600")}>
-              {s.bradford_factor_alerts.length}
+          <div className={cn("text-center rounded-lg p-2", (s.bradford_factor_alerts?.length ?? 0) === 0 ? "bg-green-50" : "bg-red-50")}>
+            <p className={cn("text-lg font-bold tabular-nums", (s.bradford_factor_alerts?.length ?? 0) === 0 ? "text-green-600" : "text-red-600")}>
+              {(s.bradford_factor_alerts?.length ?? 0)}
             </p>
             <p className="text-[10px] text-muted-foreground">Bradford</p>
           </div>
@@ -141,14 +141,14 @@ export function StaffAbsenceCard() {
 
         {/* ── Bradford factor alerts ──────────────────────────────────── */}
 
-        {s.bradford_factor_alerts.length > 0 && (
+        {(s.bradford_factor_alerts?.length ?? 0) > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Bradford Factor Alerts
             </p>
             <div className="space-y-1">
-              {s.bradford_factor_alerts.map((alert) => (
+              {(s.bradford_factor_alerts ?? []).map((alert) => (
                 <div key={alert.staff_id} className="flex items-center justify-between rounded border border-red-200 bg-red-50 p-2 text-xs">
                   <div className="flex-1 min-w-0">
                     <span className="font-medium text-red-800">{alert.staff_name}</span>

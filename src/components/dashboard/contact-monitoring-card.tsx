@@ -96,11 +96,11 @@ export function ContactMonitoringCard() {
 
         {/* ── Supervision breakdown ───────────────────────────────────── */}
 
-        {ft.supervision_breakdown.length > 0 && (
+        {(ft.supervision_breakdown?.length ?? 0) > 0 && (
           <div className="rounded-lg border p-3 space-y-2">
             <p className="text-xs font-semibold">Supervision Levels</p>
             <div className="flex flex-wrap gap-1">
-              {ft.supervision_breakdown.map((sb) => (
+              {(ft.supervision_breakdown ?? []).map((sb) => (
                 <Badge key={sb.level} variant="outline" className="text-[10px] capitalize">
                   {sb.level.replace(/_/g, " ")} ({sb.count})
                 </Badge>

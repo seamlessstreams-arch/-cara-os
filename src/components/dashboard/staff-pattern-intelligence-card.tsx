@@ -97,7 +97,7 @@ export function StaffPatternIntelligenceCard() {
             </div>
             <div className="rounded border p-2">
               <span className="text-muted-foreground">Bradford alerts:</span>{" "}
-              <span className="font-semibold">{sickness.bradford_factor_alerts.length}</span>
+              <span className="font-semibold">{(sickness.bradford_factor_alerts?.length ?? 0)}</span>
             </div>
           </div>
         </div>

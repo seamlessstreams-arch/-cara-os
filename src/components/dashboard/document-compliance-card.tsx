@@ -215,9 +215,9 @@ export function DocumentComplianceCard() {
                       </span>
                     )}
                   </div>
-                  {dp.risk_flags.length > 0 && (
+                  {(dp.risk_flags?.length ?? 0) > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
-                      {dp.risk_flags.slice(0, 2).map((flag, i) => (
+                      {(dp.risk_flags ?? []).slice(0, 2).map((flag, i) => (
                         <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
                           <FileWarning className="h-2.5 w-2.5 mr-0.5" />{flag}
                         </Badge>

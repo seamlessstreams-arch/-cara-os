@@ -43,7 +43,7 @@ export function StaffReturnToWorkInterviewCard() {
   const { sickness } = d;
   const trend = TREND_CONFIG[sickness.trend];
   const TrendIcon = trend.icon;
-  const bradfordCount = sickness.bradford_factor_alerts.length;
+  const bradfordCount = (sickness.bradford_factor_alerts?.length ?? 0);
 
   return (
     <Card className="overflow-hidden border-cyan-200">

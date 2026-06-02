@@ -79,9 +79,9 @@ function YPCard({ yp }: { yp: YPEnriched }) {
       </div>
 
       {/* Risk flags */}
-      {yp.risk_flags.length > 0 && (
+      {(yp.risk_flags?.length ?? 0) > 0 && (
         <div className="flex flex-wrap gap-1 mt-3">
-          {yp.risk_flags.map((flag) => (
+          {(yp.risk_flags ?? []).map((flag) => (
             <Badge
               key={flag}
               className={cn("text-[9px] rounded-full border px-1.5 py-0 font-medium", getRiskFlagColor(flag))}

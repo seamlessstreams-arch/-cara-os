@@ -174,9 +174,9 @@ export function HomeNightSafetyIntelligenceCard() {
                   <div className="w-full bg-slate-200 rounded-full h-1.5">
                     <div className={cn("h-1.5 rounded-full", scoreBg(cp.night_safety_score))} style={{ width: `${Math.min(cp.night_safety_score, 100)}%` }} />
                   </div>
-                  {cp.flags.length > 0 && (
+                  {(cp.flags?.length ?? 0) > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {cp.flags.map((f, i) => (
+                      {(cp.flags ?? []).map((f, i) => (
                         <span key={i} className="inline-flex text-[9px] px-1.5 py-0.5 rounded bg-red-100 text-red-700 border border-red-200">
                           {f}
                         </span>

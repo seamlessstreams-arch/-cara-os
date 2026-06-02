@@ -193,9 +193,9 @@ export function NotifiableEventsCard() {
                     )}
                   </div>
                 </div>
-                {c.risk_flags.length > 0 && (
+                {(c.risk_flags?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
-                    {c.risk_flags.slice(0, 3).map((flag, i) => (
+                    {(c.risk_flags ?? []).slice(0, 3).map((flag, i) => (
                       <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
                         <FileWarning className="h-2.5 w-2.5 mr-0.5" />
                         {flag.replace(/_/g, " ")}

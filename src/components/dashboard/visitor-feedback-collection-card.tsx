@@ -146,7 +146,7 @@ export function VisitorFeedbackCollectionCard() {
                   <span className="font-medium truncate">{v.visitor_name}</span>
                   <span className="text-muted-foreground truncate">
                     {v.category_label}
-                    {v.children_seen_names.length > 0 && ` · ${v.children_seen_names.join(", ")}`}
+                    {(v.children_seen_names?.length ?? 0) > 0 && ` · ${(v.children_seen_names ?? []).join(", ")}`}
                   </span>
                 </div>
                 <Badge variant="outline" className="text-[10px] shrink-0">

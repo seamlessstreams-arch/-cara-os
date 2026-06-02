@@ -216,9 +216,9 @@ export function PremisesIntelligenceCard() {
                     <span className="text-[10px]">Elec: {bp.electrical_cert_days_until_expiry}d</span>
                   )}
                 </div>
-                {bp.risk_flags.length > 0 && (
+                {(bp.risk_flags?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
-                    {bp.risk_flags.map((flag, i) => (
+                    {(bp.risk_flags ?? []).map((flag, i) => (
                       <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
                         <FileWarning className="h-2.5 w-2.5 mr-0.5" />{flag}
                       </Badge>
@@ -264,9 +264,9 @@ export function PremisesIntelligenceCard() {
                   )}
                   <span className="text-[10px]">{vp.mileage.toLocaleString()} mi</span>
                 </div>
-                {vp.risk_flags.length > 0 && (
+                {(vp.risk_flags?.length ?? 0) > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
-                    {vp.risk_flags.map((flag, i) => (
+                    {(vp.risk_flags ?? []).map((flag, i) => (
                       <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
                         <FileWarning className="h-2.5 w-2.5 mr-0.5" />{flag}
                       </Badge>

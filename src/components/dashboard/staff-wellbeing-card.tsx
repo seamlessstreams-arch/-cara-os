@@ -104,7 +104,7 @@ export function StaffWellbeingCard() {
 
         {/* ── Bradford alerts ─────────────────────────────────────────── */}
 
-        {sickness.bradford_factor_alerts.length > 0 && (
+        {(sickness.bradford_factor_alerts?.length ?? 0) > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground">Bradford Factor Alerts</p>
             {sickness.bradford_factor_alerts.slice(0, 3).map((a) => (

@@ -32,8 +32,8 @@ function lacDaysUntil(dateStr: string | null): number | null {
 }
 
 function overallRAG(plan: CarePlan): "green" | "amber" | "red" {
-  const attention = plan.goals.filter((g) => g.status === "attention_needed").length;
-  const notStarted = plan.goals.filter((g) => g.status === "not_started").length;
+  const attention = (plan.goals ?? []).filter((g) => g.status === "attention_needed").length;
+  const notStarted = (plan.goals ?? []).filter((g) => g.status === "not_started").length;
   if (attention >= 2 || (attention >= 1 && notStarted >= 2)) return "red";
   if (attention >= 1 || notStarted >= 1) return "amber";
   return "green";
@@ -63,8 +63,8 @@ export function CarePlanComplianceCard() {
     const greenCount = plans.filter((p) => overallRAG(p) === "green").length;
 
     const totalGoals = plans.reduce((n, p) => n + p.goals.length, 0);
-    const attentionGoals = plans.reduce((n, p) => n + p.goals.filter((g) => g.status === "attention_needed").length, 0);
-    const achievedGoals = plans.reduce((n, p) => n + p.goals.filter((g) => g.status === "achieved").length, 0);
+    const attentionGoals = plans.reduce((n, p) => n + (p.goals ?? []).filter((g) => g.status === "attention_needed").length, 0);
+    const achievedGoals = plans.reduce((n, p) => n + (p.goals ?? []).filter((g) => g.status === "achieved").length, 0);
 
     const lacItems: { childId: string; days: number }[] = [];
     let lacOverdue = 0;

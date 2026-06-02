@@ -187,15 +187,15 @@ export function FormComplianceCard() {
 
         {/* ── Form profiles (at-risk) ────────────────────────────────── */}
 
-        {intel.form_profiles.filter((fp) => fp.risk_flags.length > 0).length > 0 && (
+        {intel.form_profiles.filter((fp) => (fp.risk_flags?.length ?? 0) > 0).length > 0 && (
           <div className="space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
               <FileWarning className="h-3 w-3" />
               At-Risk Forms
             </p>
             {intel.form_profiles
-              .filter((fp) => fp.risk_flags.length > 0)
-              .sort((a, b) => b.risk_flags.length - a.risk_flags.length)
+              .filter((fp) => (fp.risk_flags?.length ?? 0) > 0)
+              .sort((a, b) => (b.risk_flags?.length ?? 0) - (a.risk_flags?.length ?? 0))
               .slice(0, 4)
               .map((fp) => (
                 <div key={fp.form_id} className="rounded-lg border p-3 text-xs">
@@ -216,9 +216,9 @@ export function FormComplianceCard() {
                       <span className="text-[10px]">{fp.days_since_submitted}d since submitted</span>
                     )}
                   </div>
-                  {fp.risk_flags.length > 0 && (
+                  {(fp.risk_flags?.length ?? 0) > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1.5">
-                      {fp.risk_flags.slice(0, 3).map((flag, i) => (
+                      {(fp.risk_flags ?? []).slice(0, 3).map((flag, i) => (
                         <Badge key={i} className="text-[9px] bg-red-100 text-red-700">
                           <FileWarning className="h-2.5 w-2.5 mr-0.5" />
                           {flag.replace(/_/g, " ")}

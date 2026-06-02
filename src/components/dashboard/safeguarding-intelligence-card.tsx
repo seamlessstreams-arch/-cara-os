@@ -225,7 +225,7 @@ export function SafeguardingIntelligenceCard() {
 
         {ra.by_domain.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {ra.by_domain.slice(0, 4).map((d) => (
+            {(ra.by_domain ?? []).slice(0, 4).map((d) => (
               <Badge
                 key={d.domain}
                 className={cn("text-[10px]", RISK_LEVEL_STYLES[d.highest_level] ?? "bg-gray-100 text-gray-600")}

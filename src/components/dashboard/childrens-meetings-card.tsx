@@ -98,11 +98,11 @@ export function ChildrensMeetingsCard() {
 
         {/* ── Presentation breakdown ─────────────────────────────────── */}
 
-        {ft.presentation_breakdown.length > 0 && (
+        {(ft.presentation_breakdown?.length ?? 0) > 0 && (
           <div className="rounded-lg border p-3 space-y-1.5">
             <p className="text-xs font-semibold text-muted-foreground">Meeting Presentation</p>
             <div className="grid grid-cols-3 gap-2 text-center text-xs">
-              {ft.presentation_breakdown.slice(0, 3).map((pb) => (
+              {(ft.presentation_breakdown ?? []).slice(0, 3).map((pb) => (
                 <div key={pb.presentation}>
                   <p className="font-bold tabular-nums text-blue-600">{pb.count}</p>
                   <p className="text-[10px] text-muted-foreground capitalize">{pb.presentation}</p>

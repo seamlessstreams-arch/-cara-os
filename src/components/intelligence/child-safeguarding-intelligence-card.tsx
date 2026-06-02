@@ -138,9 +138,9 @@ export function ChildSafeguardingIntelligenceCard({ childId }: { childId: string
                       </span>
                     )}
                   </div>
-                  {rd.triggers.length > 0 && (
+                  {(rd.triggers?.length ?? 0) > 0 && (
                     <p className="text-[10px] text-slate-600 mt-1 truncate">
-                      Triggers: {rd.triggers.join(", ")}
+                      Triggers: {(rd.triggers ?? []).join(", ")}
                     </p>
                   )}
                   <p className="text-[10px] text-slate-500 mt-0.5">

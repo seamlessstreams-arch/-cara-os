@@ -330,9 +330,9 @@ function ChildRiskRow({ profile: cp }: { profile: ChildRiskProfile }) {
         {cp.missing_episodes_90d > 0 && <span>{cp.missing_episodes_90d} missing</span>}
         {cp.restraints_90d > 0 && <span>{cp.restraints_90d} restraint{cp.restraints_90d !== 1 ? "s" : ""}</span>}
       </div>
-      {cp.escalating_domains.length > 0 && (
+      {(cp.escalating_domains?.length ?? 0) > 0 && (
         <p className="text-[10px] text-red-600 mt-0.5">
-          Escalating: {cp.escalating_domains.map((d) => d.replace(/_/g, " ")).join(", ")}
+          Escalating: {(cp.escalating_domains ?? []).map((d) => d.replace(/_/g, " ")).join(", ")}
         </p>
       )}
     </div>

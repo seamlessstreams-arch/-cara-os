@@ -163,9 +163,9 @@ export function PlacementIntelligenceCard() {
                       <span className="text-[10px] text-red-500">{child.incident_count_30d} incidents</span>
                     )}
                   </div>
-                  {child.risk_factors.length > 0 && (
+                  {(child.risk_factors?.length ?? 0) > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {child.risk_factors.slice(0, 3).map((rf, i) => (
+                      {(child.risk_factors ?? []).slice(0, 3).map((rf, i) => (
                         <span key={i} className="text-[9px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded">
                           {rf}
                         </span>

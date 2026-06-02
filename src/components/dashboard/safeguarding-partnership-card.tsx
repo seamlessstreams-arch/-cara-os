@@ -118,7 +118,7 @@ export function SafeguardingPartnershipCard() {
 
         {ne.by_type.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
-            {ne.by_type.map((t, i) => (
+            {(ne.by_type ?? []).map((t, i) => (
               <Badge key={i} variant="outline" className="text-[10px] capitalize">
                 {t.type.replace(/_/g, " ")} ({t.count})
               </Badge>
