@@ -74,6 +74,9 @@ const RECORD_PREFIX_MAP: Record<string, string> = {
   training_record: "TRN",
   wellbeing_check: "WBC",
   performance_support: "PSP",
+  health_safety_check: "HSC",
+  maintenance_request: "MNT",
+  home_audit: "AUD",
 };
 
 /** Maps record_type to the timeline event_type string. */
@@ -99,6 +102,9 @@ const TIMELINE_EVENT_TYPE_MAP: Record<string, string> = {
   training_record: "staff_training_completed",
   wellbeing_check: "staff_wellbeing_check",
   performance_support: "staff_performance_support",
+  health_safety_check: "health_safety_check_completed",
+  maintenance_request: "maintenance_logged",
+  home_audit: "home_audit_completed",
 };
 
 /** Record types that are inherently high-risk by default. */
@@ -138,6 +144,9 @@ const STORE_COLLECTION_MAP: Record<string, string> = {
   training_record: "trainingRecords",
   wellbeing_check: "staffWellbeingChecks",
   performance_support: "performanceSupportPlans",
+  health_safety_check: "buildingChecks",
+  maintenance_request: "maintenanceRequests",
+  home_audit: "homeAudits",
 };
 
 // ─── Reference Number Generator ─────────────────────────────────────────────

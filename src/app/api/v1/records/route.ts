@@ -43,6 +43,9 @@ const VALID_RECORD_TYPES = new Set([
   "training_record",
   "wellbeing_check",
   "performance_support",
+  "health_safety_check",
+  "maintenance_request",
+  "home_audit",
 ]);
 
 // ── POST Handler ────────────────────────────────────────────────────────────
