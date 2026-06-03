@@ -15,6 +15,7 @@ import {
   type RiskAssessmentSource,
   type LacReviewSource,
   type NotifiableEventSource,
+  type BehaviourSupportPlanSource,
 } from "../event-projector";
 
 const inc = (o: Partial<IncidentSource> & { id: string }): IncidentSource => ({
@@ -374,5 +375,34 @@ describe("projectNotifiableEvent (new spine domain)", () => {
   it("flags a late notification", () => {
     const [e] = projectEvents({ notifiableEvents: [ne({ id: "ne3", ofsted_status: "notified_late" })] });
     expect(e.ariaAnalysis!.complianceFlags.some((f) => /made late/i.test(f))).toBe(true);
+  });
+});
+
+const bsp = (o: Partial<BehaviourSupportPlanSource> & { id: string }): BehaviourSupportPlanSource => ({
+  child_id: "yp_alex", created_date: "2026-03-01", created_by: "staff_darren", review_date: "2026-06-01",
+  last_reviewed: "2026-05-01", status: "active",
+  primary_behaviours: [{ severity: "medium" }, { severity: "high" }], ...o,
+});
+
+describe("projectBehaviourSupportPlan (new spine domain)", () => {
+  it("projects a BSP taking the max behaviour severity as the risk", () => {
+    const [e] = projectEvents({ behaviourSupportPlans: [bsp({ id: "bsp1" })] });
+    expect(e.id).toBe("evt_bsp_bsp1");
+    expect(e.eventType).toBe("behaviour_support_plan");
+    expect(e.childId).toBe("yp_alex");
+    expect(e.riskLevel).toBe("high");          // max of medium + high
+    expect(e.structuredTags).toContain("behaviour_support_plan");
+    expect(e.evidenceCategories).toContain("positive relationships");
+    expect(e.summary).toMatch(/2 target behaviours, up to high severity/);
+  });
+
+  it("flags a not-finalised (draft/under_review) plan", () => {
+    const [e] = projectEvents({ behaviourSupportPlans: [bsp({ id: "bsp2", status: "under_review" })] });
+    expect(e.ariaAnalysis!.complianceFlags.some((f) => /not finalised/i.test(f))).toBe(true);
+  });
+
+  it("flags a suspended plan", () => {
+    const [e] = projectEvents({ behaviourSupportPlans: [bsp({ id: "bsp3", status: "suspended" })] });
+    expect(e.ariaAnalysis!.complianceFlags.some((f) => /suspended/i.test(f))).toBe(true);
   });
 });

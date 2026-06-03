@@ -114,6 +114,10 @@ export interface NotifiableEventSource {
   id: string; date: string; event_type?: string; child_id?: string | null; summary?: string;
   reported_by?: string; ofsted_status?: string; home_id?: string; created_at?: string;
 }
+export interface BehaviourSupportPlanSource {
+  id: string; child_id: string; created_date: string; created_by?: string; review_date?: string; last_reviewed?: string | null;
+  status?: string; primary_behaviours?: { severity?: string }[]; home_id?: string; created_at?: string;
+}
 
 export interface EventProjectorInput {
   dailyLogs?: DailyLogSource[];
@@ -135,6 +139,7 @@ export interface EventProjectorInput {
   riskAssessments?: RiskAssessmentSource[];
   lacReviews?: LacReviewSource[];
   notifiableEvents?: NotifiableEventSource[];
+  behaviourSupportPlans?: BehaviourSupportPlanSource[];
   homeId?: string;
 }
 
@@ -219,6 +224,7 @@ const THEMES: Partial<Record<CornerstoneEventType, string[]>> = {
   risk_assessment: ["risk management", "help and protection"],
   lac_review: ["statutory reviews", "children's progress", "child voice"],
   notifiable_event: ["statutory notifications", "leadership and management", "help and protection"],
+  behaviour_support_plan: ["behaviour management", "restraint reduction", "positive relationships"],
   staff_absence: ["staff wellbeing", "staffing"],
 };
 const ACTIONS: Partial<Record<CornerstoneEventType, string[]>> = {
@@ -238,6 +244,7 @@ const ACTIONS: Partial<Record<CornerstoneEventType, string[]>> = {
   risk_assessment: ["Review and update the risk assessment by the review date", "Check the mitigations are in place and effective"],
   lac_review: ["Complete the agreed actions by their due dates", "Update the care plan and confirm the next review date"],
   notifiable_event: ["Confirm Ofsted, the placing authority and the LA were notified", "Record the follow-up and lessons learned"],
+  behaviour_support_plan: ["Review the plan by the review date with the child and team", "Make sure de-escalation strategies are known and applied"],
   staff_absence: ["Complete the return-to-work interview where required"],
 };
 
@@ -651,6 +658,29 @@ function projectNotifiableEvent(r: NotifiableEventSource, homeId?: string): Corn
   };
 }
 
+const BSP_SEV_RANK: Record<string, number> = { low: 1, medium: 2, high: 3 };
+
+function projectBehaviourSupportPlan(r: BehaviourSupportPlanSource, homeId?: string): CornerstoneEvent {
+  const sevs = (r.primary_behaviours ?? []).map((b) => b.severity ?? "").filter(Boolean);
+  const maxSev = sevs.reduce((m, s) => ((BSP_SEV_RANK[s] ?? 0) > (BSP_SEV_RANK[m] ?? 0) ? s : m), "low");
+  const risk: CornerstoneRiskLevel = maxSev === "high" ? "high" : maxSev === "medium" ? "medium" : "low";
+  const notFinal = r.status === "draft" || r.status === "under_review";
+  const tags = ["behaviour_support_plan", r.status, maxSev].filter(Boolean) as string[];
+  const compliance: string[] = [];
+  if (notFinal) compliance.push(`Behaviour support plan not finalised (${r.status}) — complete and sign off`);
+  if (r.status === "suspended") compliance.push("Behaviour support plan suspended — confirm interim behaviour arrangements");
+  const occurredAt = toIso(r.last_reviewed ?? r.created_date);
+  const { requiresApproval, approvalLevel } = deriveApproval("behaviour_support_plan", risk);
+  return {
+    id: `evt_bsp_${r.id}`, eventType: "behaviour_support_plan", ...base(r.home_id ?? homeId, occurredAt, r.created_at),
+    childId: r.child_id, staffId: r.created_by, occurredAt, createdBy: r.created_by ?? "system",
+    summary: `Behaviour support plan (${r.status ?? "active"}): ${sevs.length} target behaviour${sevs.length === 1 ? "" : "s"}${maxSev !== "low" ? `, up to ${maxSev} severity` : ""}`,
+    structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
+    linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
+    ariaAnalysis: buildAria("behaviour_support_plan", compliance, [], risk),
+  };
+}
+
 const ABSENCE_TYPE = /sick|emergency|unauth|compassion|bereav/i;
 
 // ── Evidence category mapping (Ofsted evidence bank) ────────────────────────────
@@ -670,6 +700,7 @@ const EVIDENCE_MAP: Partial<Record<CornerstoneEventType, string[]>> = {
   risk_assessment: ["risk management", "help and protection", "children's progress"],
   lac_review: ["leadership and management", "children's progress", "consultation"],
   notifiable_event: ["help and protection", "leadership and management", "Regulation 45"],
+  behaviour_support_plan: ["positive relationships", "help and protection", "children's progress"],
   supervision: ["workforce development", "leadership and management"],
   training: ["workforce development"],
   overtime: ["workforce development", "leadership and management"],
@@ -716,6 +747,7 @@ export function projectEvents(input: EventProjectorInput): CornerstoneEvent[] {
     ...(input.riskAssessments ?? []).map((r) => projectRiskAssessment(r, home)),
     ...(input.lacReviews ?? []).map((r) => projectLacReview(r, home)),
     ...(input.notifiableEvents ?? []).map((r) => projectNotifiableEvent(r, home)),
+    ...(input.behaviourSupportPlans ?? []).map((r) => projectBehaviourSupportPlan(r, home)),
   ];
   // Populate evidence categories for every event (spine completion).
   for (const e of events) e.evidenceCategories = evidenceCategoriesFor(e.eventType, e.riskLevel);
