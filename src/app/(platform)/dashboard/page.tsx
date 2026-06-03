@@ -107,6 +107,7 @@ const ComplianceRulesCard = dynamic(() => import("@/components/dashboard/complia
 const DuplicateDetectionCard = dynamic(() => import("@/components/dashboard/duplicate-detection-card").then(m => m.DuplicateDetectionCard ? { default: m.DuplicateDetectionCard } : m), { ssr: false });
 const IntegrationHubCard = dynamic(() => import("@/components/dashboard/integration-hub-card").then(m => m.IntegrationHubCard ? { default: m.IntegrationHubCard } : m), { ssr: false });
 const EventCaptureCard = dynamic(() => import("@/components/dashboard/event-capture-card").then(m => m.EventCaptureCard ? { default: m.EventCaptureCard } : m), { ssr: false });
+const WorkflowOrchestrationCard = dynamic(() => import("@/components/dashboard/workflow-orchestration-card").then(m => m.WorkflowOrchestrationCard ? { default: m.WorkflowOrchestrationCard } : m), { ssr: false });
 const EventStreamCard = dynamic(() => import("@/components/dashboard/event-stream-card").then(m => m.EventStreamCard ? { default: m.EventStreamCard } : m), { ssr: false });
 const EventIntelligenceCard = dynamic(() => import("@/components/dashboard/event-intelligence-card").then(m => m.EventIntelligenceCard ? { default: m.EventIntelligenceCard } : m), { ssr: false });
 const EventRoutingCard = dynamic(() => import("@/components/dashboard/event-routing-card").then(m => m.EventRoutingCard ? { default: m.EventRoutingCard } : m), { ssr: false });
@@ -1659,6 +1660,7 @@ export default function DashboardPage() {
                     <EvidenceBankCard />
                     <ComplianceRulesCard />
                     <EventCaptureCard />
+                    <WorkflowOrchestrationCard />
                     <DuplicateDetectionCard />
                     <IntegrationHubCard />
                     <EventStreamCard />
