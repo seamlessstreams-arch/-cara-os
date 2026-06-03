@@ -105,6 +105,7 @@ const EventStreamCard = dynamic(() => import("@/components/dashboard/event-strea
 const EventIntelligenceCard = dynamic(() => import("@/components/dashboard/event-intelligence-card").then(m => m.EventIntelligenceCard ? { default: m.EventIntelligenceCard } : m), { ssr: false });
 const EventRoutingCard = dynamic(() => import("@/components/dashboard/event-routing-card").then(m => m.EventRoutingCard ? { default: m.EventRoutingCard } : m), { ssr: false });
 const RecordingQualityScoreCard = dynamic(() => import("@/components/dashboard/recording-quality-score-card").then(m => m.RecordingQualityScoreCard ? { default: m.RecordingQualityScoreCard } : m), { ssr: false });
+const StaffRecordingPracticeCard = dynamic(() => import("@/components/dashboard/staff-recording-practice-card").then(m => m.StaffRecordingPracticeCard ? { default: m.StaffRecordingPracticeCard } : m), { ssr: false });
 const ChildPriorityCard = dynamic(() => import("@/components/dashboard/child-priority-card").then(m => m.ChildPriorityCard ? { default: m.ChildPriorityCard } : m), { ssr: false });
 const PlacementBreakdownForecastCard = dynamic(() => import("@/components/dashboard/placement-breakdown-forecast-card").then(m => m.PlacementBreakdownForecastCard ? { default: m.PlacementBreakdownForecastCard } : m), { ssr: false });
 const MedicationErrorTrendsCard = dynamic(() => import("@/components/dashboard/medication-error-trends-card").then(m => m.MedicationErrorTrendsCard ? { default: m.MedicationErrorTrendsCard } : m), { ssr: false });
@@ -1651,6 +1652,7 @@ export default function DashboardPage() {
                     <EventIntelligenceCard />
                     <EventRoutingCard />
                     <RecordingQualityScoreCard />
+                    <StaffRecordingPracticeCard />
                     <ChildPriorityCard />
                     <PlacementBreakdownForecastCard />
                     <MedicationErrorTrendsCard />
