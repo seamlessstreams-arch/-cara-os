@@ -60,6 +60,29 @@ export async function GET() {
       id: s.id, staff_id: s.staff_id, supervisor_id: s.supervisor_id, type: s.type, scheduled_date: d(s.scheduled_date),
       actual_date: s.actual_date ? d(s.actual_date) : null, status: s.status, home_id: s.home_id, created_at: s.created_at, updated_at: s.updated_at,
     })),
+    shifts: ((store.shifts ?? []) as any[]).map((s: any) => ({
+      id: s.id, staff_id: s.staff_id, date: d(s.date ?? s.created_at), start_time: s.start_time, shift_type: s.shift_type,
+      overtime_minutes: s.overtime_minutes, status: s.status, home_id: s.home_id, created_at: s.created_at,
+    })),
+    maintenance: ((store.maintenance ?? []) as any[]).map((m: any) => ({
+      id: m.id, title: m.title, category: m.category, priority: m.priority, status: m.status, due_date: d(m.due_date), home_id: m.home_id, created_at: m.created_at,
+    })),
+    audits: ((store.audits ?? []) as any[]).map((a: any) => ({
+      id: a.id, title: a.title, category: a.category, date: d(a.date ?? a.created_at), score: a.score, max_score: a.max_score, status: a.status, home_id: a.home_id, created_at: a.created_at,
+    })),
+    reg44Reports: ((store.reg44VisitReports ?? []) as any[]).map((r: any) => ({
+      id: r.id, visit_date: d(r.visit_date), visitor: r.visitor, overall_judgement: r.overall_judgement,
+      report_sent_to_ofsted: r.report_sent_to_ofsted, home_id: r.home_id, created_at: r.created_at,
+    })),
+    appointments: ((store.appointments ?? []) as any[]).map((a: any) => ({
+      id: a.id, child_id: a.child_id, date: d(a.date ?? a.created_at), time: a.time, type: a.type, title: a.title,
+      status: a.status, outcome: a.outcome, recorded_by: a.recorded_by, home_id: a.home_id, created_at: a.created_at,
+    })),
+    leaveRequests: ((store.leaveRequests ?? []) as any[]).map((l: any) => ({
+      id: l.id, staff_id: l.staff_id, leave_type: l.leave_type, start_date: d(l.start_date), end_date: d(l.end_date),
+      total_days: l.total_days, status: l.status, return_to_work_required: l.return_to_work_required, return_to_work_completed: l.return_to_work_completed,
+      home_id: l.home_id, created_at: l.created_at,
+    })),
   });
 
   return NextResponse.json({ data: result });

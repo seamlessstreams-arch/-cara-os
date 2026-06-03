@@ -66,6 +66,32 @@ export interface SupervisionSource {
   actual_date?: string | null; status?: string; home_id?: string; created_at?: string; updated_at?: string;
 }
 
+export interface ShiftSource {
+  id: string; staff_id: string; date: string; start_time?: string; shift_type?: string;
+  overtime_minutes?: number; status?: string; home_id?: string; created_at?: string;
+}
+export interface MaintenanceSource {
+  id: string; title: string; category?: string; priority?: string; status?: string;
+  due_date?: string; home_id?: string; created_at?: string;
+}
+export interface AuditSource {
+  id: string; title: string; category?: string; date?: string; score?: number; max_score?: number;
+  status?: string; home_id?: string; created_at?: string;
+}
+export interface Reg44Source {
+  id: string; visit_date: string; visitor?: string; overall_judgement?: string;
+  report_sent_to_ofsted?: boolean; home_id?: string; created_at?: string;
+}
+export interface AppointmentSource {
+  id: string; child_id: string; date: string; time?: string; type?: string; title?: string;
+  status?: string; outcome?: string | null; recorded_by?: string; home_id?: string; created_at?: string;
+}
+export interface LeaveSource {
+  id: string; staff_id: string; leave_type: string; start_date: string; end_date?: string;
+  total_days?: number; status?: string; return_to_work_required?: boolean; return_to_work_completed?: boolean;
+  home_id?: string; created_at?: string;
+}
+
 export interface EventProjectorInput {
   dailyLogs?: DailyLogSource[];
   incidents?: IncidentSource[];
@@ -75,6 +101,12 @@ export interface EventProjectorInput {
   keyworkSessions?: KeyworkSource[];
   educationRecords?: EducationSource[];
   supervisions?: SupervisionSource[];
+  shifts?: ShiftSource[];
+  maintenance?: MaintenanceSource[];
+  audits?: AuditSource[];
+  reg44Reports?: Reg44Source[];
+  appointments?: AppointmentSource[];
+  leaveRequests?: LeaveSource[];
   homeId?: string;
 }
 
@@ -147,6 +179,12 @@ const THEMES: Partial<Record<CornerstoneEventType, string[]>> = {
   keywork: ["positive relationships", "child voice"],
   education: ["education & achievement"],
   supervision: ["staff support & development"],
+  overtime: ["staffing", "working time"],
+  maintenance: ["premises & safety"],
+  qa_check: ["quality assurance"],
+  reg44: ["independent oversight", "Reg 44"],
+  health: ["health & wellbeing"],
+  staff_absence: ["staff wellbeing", "staffing"],
 };
 const ACTIONS: Partial<Record<CornerstoneEventType, string[]>> = {
   safeguarding: ["Consider a strategy discussion with partner agencies", "Check whether an Ofsted notification (Reg 40) is required"],
@@ -155,6 +193,12 @@ const ACTIONS: Partial<Record<CornerstoneEventType, string[]>> = {
   medication: ["Complete the duty of candour where required", "Review the medicines system for a root cause"],
   incident: ["Record the outcome and lessons learned", "Check whether linked tasks are complete"],
   education: ["Update the PEP and engage the Virtual School where needed"],
+  overtime: ["Confirm the overtime is authorised and recorded for pay"],
+  maintenance: ["Complete the maintenance task and record sign-off"],
+  qa_check: ["Action the audit findings and re-check"],
+  reg44: ["Respond to the Reg 44 recommendations", "Send the report to Ofsted if not already sent"],
+  health: ["Ensure the appointment is attended or rebooked and the outcome recorded"],
+  staff_absence: ["Complete the return-to-work interview where required"],
 };
 
 function buildAria(
@@ -352,6 +396,119 @@ function projectSupervision(r: SupervisionSource, homeId?: string): CornerstoneE
   };
 }
 
+function projectOvertime(r: ShiftSource, homeId?: string): CornerstoneEvent {
+  const mins = r.overtime_minutes ?? 0;
+  const significant = mins >= 60;
+  const tags = ["overtime", r.shift_type].filter(Boolean) as string[];
+  const occurredAt = toIso(r.date, r.start_time);
+  return {
+    id: `evt_ot_${r.id}`, eventType: "overtime", ...base(r.home_id ?? homeId, occurredAt, r.created_at),
+    staffId: r.staff_id, shiftId: r.id, occurredAt, createdBy: r.staff_id ?? "system",
+    summary: `Overtime: ${mins} minutes${r.shift_type ? ` (${r.shift_type.replace(/_/g, " ")})` : ""}`,
+    structuredTags: tags, riskLevel: "low",
+    requiresApproval: significant, approvalLevel: significant ? "team_leader" : undefined,
+    linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
+    ariaAnalysis: buildAria("overtime", [], [], "low"),
+  };
+}
+
+function projectMaintenance(r: MaintenanceSource, homeId?: string): CornerstoneEvent {
+  const urgent = /urgent|high/i.test(r.priority ?? "");
+  const open = (r.status ?? "").toLowerCase() !== "completed";
+  const risk: CornerstoneRiskLevel = urgent && open ? "medium" : "low";
+  const tags = ["maintenance", r.category, r.priority, r.status].filter(Boolean) as string[];
+  const compliance: string[] = [];
+  if (urgent && open) compliance.push("Urgent maintenance outstanding");
+  const occurredAt = toIso(r.created_at ?? r.due_date);
+  const { requiresApproval, approvalLevel } = urgent && open
+    ? { requiresApproval: true, approvalLevel: "team_leader" as CornerstoneApprovalLevel }
+    : { requiresApproval: false, approvalLevel: undefined };
+  return {
+    id: `evt_mnt_${r.id}`, eventType: "maintenance", ...base(r.home_id ?? homeId, occurredAt, r.created_at),
+    occurredAt, createdBy: "system",
+    summary: `Maintenance: ${r.title}${r.status ? ` (${r.status})` : ""}`,
+    structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
+    linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
+    ariaAnalysis: buildAria("maintenance", compliance, [], risk),
+  };
+}
+
+function projectAudit(r: AuditSource, homeId?: string): CornerstoneEvent {
+  const ratio = r.max_score && r.max_score > 0 ? (r.score ?? 0) / r.max_score : 1;
+  const risk: CornerstoneRiskLevel = ratio < 0.6 ? "high" : ratio < 0.8 ? "medium" : "low";
+  const tags = ["qa_check", r.category, r.status].filter(Boolean) as string[];
+  const compliance: string[] = [];
+  if (ratio < 0.7) compliance.push("Audit score below expected standard — action plan required");
+  const occurredAt = toIso(r.date ?? r.created_at);
+  const { requiresApproval, approvalLevel } = deriveApproval("qa_check", risk);
+  return {
+    id: `evt_qa_${r.id}`, eventType: "qa_check", ...base(r.home_id ?? homeId, occurredAt, r.created_at),
+    occurredAt, createdBy: "system",
+    summary: `QA audit: ${r.title}${r.max_score ? ` — ${r.score ?? 0}/${r.max_score}` : ""}${r.status ? ` (${r.status})` : ""}`,
+    structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
+    linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
+    ariaAnalysis: buildAria("qa_check", compliance, [], risk),
+  };
+}
+
+function projectReg44(r: Reg44Source, homeId?: string): CornerstoneEvent {
+  const j = (r.overall_judgement ?? "").toLowerCase();
+  const risk: CornerstoneRiskLevel = /inadequate/.test(j) ? "high" : /requires|improvement/.test(j) ? "medium" : "low";
+  const tags = ["reg44", r.overall_judgement].filter(Boolean) as string[];
+  const compliance: string[] = [];
+  if (r.report_sent_to_ofsted === false) compliance.push("Reg 44 report not yet sent to Ofsted");
+  const occurredAt = toIso(r.visit_date);
+  const { requiresApproval, approvalLevel } = deriveApproval("reg44", risk);
+  return {
+    id: `evt_r44_${r.id}`, eventType: "reg44", ...base(r.home_id ?? homeId, occurredAt, r.created_at),
+    occurredAt, createdBy: r.visitor ?? "system",
+    summary: `Reg 44 visit${r.visitor ? ` by ${r.visitor}` : ""}${r.overall_judgement ? ` — ${r.overall_judgement.replace(/_/g, " ")}` : ""}`,
+    structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
+    linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
+    ariaAnalysis: buildAria("reg44", compliance, [], risk),
+  };
+}
+
+function projectHealth(r: AppointmentSource, homeId?: string): CornerstoneEvent {
+  const status = (r.status ?? "").toLowerCase();
+  const missed = /missed|cancelled|dna|did_not_attend/.test(status);
+  const risk: CornerstoneRiskLevel = missed ? "medium" : "low";
+  const tags = ["health", r.type, r.status].filter(Boolean) as string[];
+  const compliance: string[] = [];
+  if (missed) compliance.push("Health appointment missed — rebook and consider impact");
+  const missing: string[] = [];
+  if (status === "completed" && !r.outcome) missing.push("outcome");
+  const occurredAt = toIso(r.date, r.time);
+  const { requiresApproval, approvalLevel } = deriveApproval("health", risk);
+  return {
+    id: `evt_hlt_${r.id}`, eventType: "health", ...base(r.home_id ?? homeId, occurredAt, r.created_at),
+    childId: r.child_id, staffId: r.recorded_by, occurredAt, createdBy: r.recorded_by ?? "system",
+    summary: `Health: ${r.title ?? r.type ?? "appointment"}${r.status ? ` (${r.status})` : ""}`,
+    structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
+    linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
+    ariaAnalysis: buildAria("health", compliance, missing, risk),
+  };
+}
+
+function projectStaffAbsence(r: LeaveSource, homeId?: string): CornerstoneEvent {
+  const risk: CornerstoneRiskLevel = "low";
+  const tags = ["staff_absence", r.leave_type, r.status].filter(Boolean) as string[];
+  const compliance: string[] = [];
+  const ended = (r.status ?? "").toLowerCase() === "approved" || (r.status ?? "").toLowerCase() === "completed";
+  if (r.return_to_work_required && !r.return_to_work_completed && ended) compliance.push("Return-to-work interview outstanding");
+  const occurredAt = toIso(r.start_date);
+  return {
+    id: `evt_abs_${r.id}`, eventType: "staff_absence", ...base(r.home_id ?? homeId, occurredAt, r.created_at),
+    staffId: r.staff_id, occurredAt, createdBy: "system",
+    summary: `Staff absence: ${r.leave_type.replace(/_/g, " ")}${r.total_days ? ` (${r.total_days} day${r.total_days === 1 ? "" : "s"})` : ""}${r.status ? ` — ${r.status}` : ""}`,
+    structuredTags: tags, riskLevel: risk, requiresApproval: false,
+    linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
+    ariaAnalysis: buildAria("staff_absence", compliance, [], risk),
+  };
+}
+
+const ABSENCE_TYPE = /sick|emergency|unauth|compassion|bereav/i;
+
 // ── Projection + aggregation ──────────────────────────────────────────────────
 
 export function projectEvents(input: EventProjectorInput): CornerstoneEvent[] {
@@ -365,6 +522,12 @@ export function projectEvents(input: EventProjectorInput): CornerstoneEvent[] {
     ...(input.keyworkSessions ?? []).map((r) => projectKeywork(r, home)),
     ...(input.educationRecords ?? []).map((r) => projectEducation(r, home)),
     ...(input.supervisions ?? []).map((r) => projectSupervision(r, home)),
+    ...(input.shifts ?? []).filter((s) => (s.overtime_minutes ?? 0) > 0).map((r) => projectOvertime(r, home)),
+    ...(input.maintenance ?? []).map((r) => projectMaintenance(r, home)),
+    ...(input.audits ?? []).map((r) => projectAudit(r, home)),
+    ...(input.reg44Reports ?? []).map((r) => projectReg44(r, home)),
+    ...(input.appointments ?? []).map((r) => projectHealth(r, home)),
+    ...(input.leaveRequests ?? []).filter((l) => ABSENCE_TYPE.test(l.leave_type ?? "")).map((r) => projectStaffAbsence(r, home)),
   ];
   // Newest first.
   events.sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));

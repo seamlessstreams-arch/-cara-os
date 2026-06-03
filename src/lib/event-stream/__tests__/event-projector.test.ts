@@ -136,6 +136,53 @@ describe("daily log / keywork / education projection", () => {
   });
 });
 
+describe("extended event types", () => {
+  it("projects overtime only for shifts with overtime and routes significant overtime for sign-off", () => {
+    const big = projectEvents({ shifts: [{ id: "s1", staff_id: "staff_anna", date: "2026-06-01", start_time: "20:00", shift_type: "waking_night", overtime_minutes: 90, status: "completed" }] });
+    expect(big).toHaveLength(1);
+    expect(big[0].eventType).toBe("overtime");
+    expect(big[0].requiresApproval).toBe(true);
+    expect(big[0].approvalLevel).toBe("team_leader");
+    expect(big[0].shiftId).toBe("s1");
+    const none = projectEvents({ shifts: [{ id: "s2", staff_id: "x", date: "2026-06-01", overtime_minutes: 0 }] });
+    expect(none).toHaveLength(0);
+  });
+  it("flags urgent outstanding maintenance", () => {
+    const e = projectEvents({ maintenance: [{ id: "m1", title: "Boiler fault", priority: "urgent", status: "open" }] })[0];
+    expect(e.eventType).toBe("maintenance");
+    expect(e.riskLevel).toBe("medium");
+    expect(e.ariaAnalysis?.complianceFlags.some((f) => /Urgent maintenance/.test(f))).toBe(true);
+  });
+  it("scores a low QA audit as high risk with an action-plan flag", () => {
+    const e = projectEvents({ audits: [{ id: "a1", title: "Medication audit", score: 5, max_score: 10, status: "completed" }] })[0];
+    expect(e.eventType).toBe("qa_check");
+    expect(e.riskLevel).toBe("high");
+    expect(e.ariaAnalysis?.complianceFlags.some((f) => /below expected/.test(f))).toBe(true);
+  });
+  it("routes a Reg 44 visit to the RI and flags an unsent report", () => {
+    const e = projectEvents({ reg44Reports: [{ id: "r1", visit_date: "2026-05-20", visitor: "J. Visitor", overall_judgement: "requires_improvement", report_sent_to_ofsted: false }] })[0];
+    expect(e.eventType).toBe("reg44");
+    expect(e.approvalLevel).toBe("ri");
+    expect(e.riskLevel).toBe("medium");
+    expect(e.ariaAnalysis?.complianceFlags.some((f) => /not yet sent to Ofsted/.test(f))).toBe(true);
+  });
+  it("flags a missed health appointment", () => {
+    const e = projectEvents({ appointments: [{ id: "h1", child_id: "yp_casey", date: "2026-06-01", type: "dental", title: "Dental check", status: "missed" }] })[0];
+    expect(e.eventType).toBe("health");
+    expect(e.childId).toBe("yp_casey");
+    expect(e.riskLevel).toBe("medium");
+    expect(e.ariaAnalysis?.complianceFlags.some((f) => /missed/i.test(f))).toBe(true);
+  });
+  it("projects staff sickness absence (with RTW flag) and filters out annual leave", () => {
+    const sick = projectEvents({ leaveRequests: [{ id: "l1", staff_id: "staff_anna", leave_type: "sick", start_date: "2026-06-01", total_days: 3, status: "approved", return_to_work_required: true, return_to_work_completed: false }] });
+    expect(sick).toHaveLength(1);
+    expect(sick[0].eventType).toBe("staff_absence");
+    expect(sick[0].ariaAnalysis?.complianceFlags.some((f) => /Return-to-work/.test(f))).toBe(true);
+    const annual = projectEvents({ leaveRequests: [{ id: "l2", staff_id: "x", leave_type: "annual", start_date: "2026-06-01" }] });
+    expect(annual).toHaveLength(0);
+  });
+});
+
 describe("buildEventStream overview", () => {
   const r = buildEventStream({
     incidents: [inc({ id: "1", type: "safeguarding_concern", severity: "critical", date: "2026-06-02" }), inc({ id: "2", severity: "low", date: "2026-05-01" })],
