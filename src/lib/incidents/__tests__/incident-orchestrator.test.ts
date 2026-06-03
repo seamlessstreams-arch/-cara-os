@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { createIncident, getAuditLog, type CreateIncidentInput } from "../incident-orchestrator";
+import { getStore } from "@/lib/db/store";
+import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 
 function baseInput(overrides?: Partial<CreateIncidentInput>): CreateIncidentInput {
   return {
@@ -399,6 +401,31 @@ describe("Incident Orchestrator — createIncident", () => {
       expect(taskTitles.some((t) => t.includes("debrief"))).toBe(true);
       expect(taskTitles.some((t) => t.includes("body map"))).toBe(true);
       expect(taskTitles.some((t) => t.includes("Reg 40"))).toBe(true);
+    });
+  });
+
+  // ── Canonical spine write-through (forms-as-views increment 2) ─────────────
+  describe("canonical spine write-through", () => {
+    it("emits a validated canonical evt_inc_ event that surfaces in the live spine, de-duped vs projection", () => {
+      getStore().cornerstoneEvents.length = 0;
+      const result = createIncident(baseInput({ severity: "high", description: "Distinctive incident write-through probe: sustained verbal aggression in the kitchen." }));
+      expect(result.canonical_event_id).toBe(`evt_inc_${result.incident.id}`);
+
+      const live = buildLiveEventStream(getStore());
+      const ev = live.events.find((e) => e.id === result.canonical_event_id);
+      expect(ev).toBeDefined();
+      expect(ev!.structuredTags).toContain("spine_capture");
+      expect(ev!.summary).toMatch(/write-through probe/);
+      expect(ev!.linkedTasks.length).toBe(result.tasks_created.length); // links carried onto the canonical event
+      expect(live.events.filter((e) => e.id === result.canonical_event_id).length).toBe(1); // persisted wins, no double-count
+    });
+
+    it("routes a safeguarding-type incident through as a safeguarding event", () => {
+      getStore().cornerstoneEvents.length = 0;
+      const result = createIncident(baseInput({ type: "safeguarding_concern", severity: "high", description: "Probe: safeguarding disclosure requiring a strategy discussion." }));
+      const ev = buildLiveEventStream(getStore()).events.find((e) => e.id === result.canonical_event_id);
+      expect(ev).toBeDefined();
+      expect(ev!.eventType).toBe("safeguarding");
     });
   });
 });

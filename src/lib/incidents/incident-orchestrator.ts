@@ -17,6 +17,7 @@ import type { Incident, Task } from "@/types";
 import { recordEvent, type TimelineEvent } from "@/lib/timeline/timeline-service";
 import { evaluateRules, getApplicableRules } from "@/lib/automation/automation-engine";
 import { logInteraction } from "@/lib/aria/aria-config";
+import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,8 @@ export interface IncidentOrchestrationResult {
   tasks_created: Task[];
   automation_runs: { rule_name: string; actions: string[] }[];
   linked_updates: string[];
+  /** Canonical spine event id written through at creation (forms-as-views), or null. */
+  canonical_event_id?: string | null;
 }
 
 export interface AuditEntry {
@@ -395,6 +398,44 @@ export function createIncident(input: CreateIncidentInput): IncidentOrchestratio
     linkedUpdates.push("Flagged for manager oversight");
   }
 
+  // ── 8. Write through the canonical event spine (forms-as-views) ─────────────
+  // Emit a validated canonical event under the projection's stable id
+  // (evt_inc_<id>) so it de-dupes by id (persisted wins, no double-count) and the
+  // create path — not just the projection — is the source of the spine event.
+  // Mirrors projectIncident's type/risk/summary. Best-effort: never blocks creation.
+  let canonicalEventId: string | null = null;
+  try {
+    const isSafeguarding = /safeguard/i.test(input.type);
+    const sevMap: Record<string, "low" | "medium" | "high" | "critical"> = { low: "low", medium: "medium", high: "high", critical: "critical" };
+    let risk = sevMap[input.severity] ?? "medium";
+    if (isSafeguarding && (risk === "low" || risk === "medium")) risk = "high";
+    const tags = [isSafeguarding ? "safeguarding" : "incident", input.type, input.severity].filter(Boolean) as string[];
+    if (requiresOversight) tags.push("oversight_required");
+    if (input.body_map_required) tags.push("body_map_outstanding");
+    const t = /^\d{2}:\d{2}$/.test(input.time) ? input.time : "00:00";
+    const outcome = captureDomainEvent(
+      {
+        eventType: isSafeguarding ? "safeguarding" : "incident",
+        childId: input.child_id,
+        staffId: input.reported_by,
+        homeId: input.home_id ?? "home_oak",
+        occurredAt: `${input.date}T${t}:00.000Z`,
+        createdBy: input.reported_by,
+        summary: `${isSafeguarding ? "Safeguarding" : "Incident"} ${reference}: ${(input.description ?? input.type).slice(0, 140)}`,
+        riskLevel: risk,
+        structuredTags: tags,
+        linkedTasks: taskIds,
+      },
+      { id: `evt_inc_${incident.id}`, now },
+    );
+    if (outcome.persisted) {
+      canonicalEventId = outcome.event!.id;
+      linkedUpdates.push("Captured to the canonical event spine — surfaces across the timeline and intelligence");
+    }
+  } catch {
+    // Write-through is best-effort; never block the incident creation.
+  }
+
   return {
     incident,
     audit_entry: auditEntry,
@@ -402,5 +443,6 @@ export function createIncident(input: CreateIncidentInput): IncidentOrchestratio
     tasks_created: tasksCreated,
     automation_runs: automationRuns,
     linked_updates: linkedUpdates,
+    canonical_event_id: canonicalEventId,
   };
 }
