@@ -103,5 +103,11 @@ export function mapStoreToEventInput(store: any): EventProjectorInput {
       id: r.id, date: d(r.date ?? r.created_at), event_type: r.event_type, child_id: r.child_id, summary: r.summary,
       reported_by: r.reported_by, ofsted_status: r.ofsted_status, home_id: r.home_id, created_at: r.created_at,
     })),
+    behaviourSupportPlans: ((store.behaviourSupportPlans ?? []) as any[]).map((r: any) => ({
+      id: r.id, child_id: r.child_id, created_date: d(r.created_date ?? r.created_at), created_by: r.created_by,
+      review_date: d(r.review_date), last_reviewed: r.last_reviewed ? d(r.last_reviewed) : null, status: r.status,
+      primary_behaviours: ((r.primary_behaviours ?? []) as any[]).map((b: any) => ({ severity: b.severity })),
+      home_id: r.home_id, created_at: r.created_at,
+    })),
   };
 }

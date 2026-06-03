@@ -24,6 +24,7 @@ export type CornerstoneEventType =
   | "risk_assessment"
   | "lac_review"
   | "notifiable_event"
+  | "behaviour_support_plan"
   | "staff_absence"
   | "overtime"
   | "supervision"
