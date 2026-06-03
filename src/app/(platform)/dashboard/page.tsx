@@ -101,6 +101,7 @@ const HomeMissingEpisodesIntelligenceCard = dynamic(() => import("@/components/d
 const HomeHealthWellbeingIntelligenceCard = dynamic(() => import("@/components/dashboard/home-health-wellbeing-intelligence-card").then(m => m.HomeHealthWellbeingIntelligenceCard ? { default: m.HomeHealthWellbeingIntelligenceCard } : m), { ssr: false });
 const HomeLACReviewIntelligenceCard = dynamic(() => import("@/components/dashboard/home-lac-review-intelligence-card").then(m => m.HomeLACReviewIntelligenceCard ? { default: m.HomeLACReviewIntelligenceCard } : m), { ssr: false });
 const HomeRiskAssessmentIntelligenceCard = dynamic(() => import("@/components/dashboard/home-risk-assessment-intelligence-card").then(m => m.HomeRiskAssessmentIntelligenceCard ? { default: m.HomeRiskAssessmentIntelligenceCard } : m), { ssr: false });
+const EventStreamCard = dynamic(() => import("@/components/dashboard/event-stream-card").then(m => m.EventStreamCard ? { default: m.EventStreamCard } : m), { ssr: false });
 const ChildPriorityCard = dynamic(() => import("@/components/dashboard/child-priority-card").then(m => m.ChildPriorityCard ? { default: m.ChildPriorityCard } : m), { ssr: false });
 const PlacementBreakdownForecastCard = dynamic(() => import("@/components/dashboard/placement-breakdown-forecast-card").then(m => m.PlacementBreakdownForecastCard ? { default: m.PlacementBreakdownForecastCard } : m), { ssr: false });
 const MedicationErrorTrendsCard = dynamic(() => import("@/components/dashboard/medication-error-trends-card").then(m => m.MedicationErrorTrendsCard ? { default: m.MedicationErrorTrendsCard } : m), { ssr: false });
@@ -1643,6 +1644,7 @@ export default function DashboardPage() {
                     <HomeHealthWellbeingIntelligenceCard />
                     <HomeLACReviewIntelligenceCard />
                     <HomeRiskAssessmentIntelligenceCard />
+                    <EventStreamCard />
                     <ChildPriorityCard />
                     <PlacementBreakdownForecastCard />
                     <MedicationErrorTrendsCard />
