@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEventIntelligence } from "@/hooks/use-event-intelligence";
+import { eventTypeLabel } from "@/lib/event-stream/event-type-meta";
 
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",
@@ -118,7 +119,7 @@ export default function EventIntelligencePage() {
                       </p>
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {c.top_event_types.map((t, i) => (
-                          <Badge key={i} className="text-[9px] bg-gray-50 text-gray-600 border">{t.type} {t.count}</Badge>
+                          <Badge key={i} className="text-[9px] bg-gray-50 text-gray-600 border">{eventTypeLabel(t.type)} {t.count}</Badge>
                         ))}
                       </div>
                     </div>

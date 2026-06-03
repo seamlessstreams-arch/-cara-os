@@ -14,18 +14,13 @@ import { Badge } from "@/components/ui/badge";
 import { Layers, ChevronRight, Loader2, ShieldCheck, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEventStream } from "@/hooks/use-event-stream";
+import { eventTypeLabel } from "@/lib/event-stream/event-type-meta";
 
 const RISK_STYLES: Record<string, { bg: string; text: string }> = {
   low: { bg: "bg-gray-100", text: "text-gray-600" },
   medium: { bg: "bg-blue-100", text: "text-blue-700" },
   high: { bg: "bg-amber-100", text: "text-amber-700" },
   critical: { bg: "bg-red-100", text: "text-red-700" },
-};
-const TYPE_LABEL: Record<string, string> = {
-  daily_log: "Log", incident: "Incident", safeguarding: "Safeguarding", medication: "Medication",
-  missing: "Missing", physical_intervention: "Restraint", keywork: "Key-work", education: "Education",
-  health: "Health", staff_absence: "Absence", overtime: "Overtime", supervision: "Supervision",
-  maintenance: "Maintenance", qa_check: "QA", reg44: "Reg 44", reg45: "Reg 45",
 };
 
 function timeAgo(iso: string): string {
@@ -102,7 +97,7 @@ export function EventStreamCard() {
                 <div key={e.id} className="rounded-lg border p-2.5 text-xs">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <Badge className="text-[9px] bg-[var(--cs-bg)] text-[var(--cs-text-secondary)] border">{TYPE_LABEL[e.eventType] ?? e.eventType}</Badge>
+                      <Badge className="text-[9px] bg-[var(--cs-bg)] text-[var(--cs-text-secondary)] border">{eventTypeLabel(e.eventType, true)}</Badge>
                       <span className="truncate text-[var(--cs-text-secondary)]">{e.summary}</span>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">

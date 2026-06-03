@@ -12,18 +12,13 @@ import { Badge } from "@/components/ui/badge";
 import { Layers, Loader2, Info, ShieldCheck, AlertTriangle, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEventStream } from "@/hooks/use-event-stream";
+import { eventTypeLabel } from "@/lib/event-stream/event-type-meta";
 
 const RISK_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
   low: { bg: "bg-gray-100", text: "text-gray-600", ring: "ring-gray-200" },
   medium: { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200" },
   high: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200" },
   critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200" },
-};
-const TYPE_LABEL: Record<string, string> = {
-  daily_log: "Daily log", incident: "Incident", safeguarding: "Safeguarding", medication: "Medication",
-  missing: "Missing", physical_intervention: "Physical intervention", keywork: "Key-working", education: "Education",
-  health: "Health", staff_absence: "Staff absence", overtime: "Overtime", supervision: "Supervision",
-  maintenance: "Maintenance", qa_check: "QA check", reg44: "Reg 44", reg45: "Reg 45",
 };
 
 export default function EventStreamPage() {
@@ -45,7 +40,7 @@ export default function EventStreamPage() {
   return (
     <PageShell
       title="Unified Event Stream"
-      subtitle="Every domain event — incidents, logs, missing, medication, restraint, key-working, education, supervision — in one normalised timeline"
+      subtitle="Every domain event — incidents, logs, missing, medication, restraint, complaints, family contact, risk assessments, LAC reviews, notifiable events, behaviour plans and more — in one normalised timeline"
       icon={<Layers className="h-5 w-5" />}
       showQuickCreate={false}
       ariaContext={{ pageTitle: "Unified Event Stream", sourceType: "general" }}
@@ -82,7 +77,7 @@ export default function EventStreamPage() {
             <Chip active={typeFilter === "all"} onClick={() => setTypeFilter("all")}>All types</Chip>
             {typeOptions.map((t) => (
               <Chip key={t} active={typeFilter === t} onClick={() => setTypeFilter(t)}>
-                {TYPE_LABEL[t] ?? t} <span className="opacity-60">{intel.overview.by_type[t]}</span>
+                {eventTypeLabel(t)} <span className="opacity-60">{intel.overview.by_type[t]}</span>
               </Chip>
             ))}
             <span className="mx-1 text-[var(--cs-text-gentle)]">|</span>
@@ -102,7 +97,7 @@ export default function EventStreamPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <CardTitle className="text-sm flex items-center gap-2 flex-wrap">
-                          <Badge className="text-[10px] bg-[var(--cs-bg)] text-[var(--cs-text-secondary)] border">{TYPE_LABEL[e.eventType] ?? e.eventType}</Badge>
+                          <Badge className="text-[10px] bg-[var(--cs-bg)] text-[var(--cs-text-secondary)] border">{eventTypeLabel(e.eventType)}</Badge>
                           <span className="font-medium">{e.summary}</span>
                         </CardTitle>
                         <p className="text-[10px] text-[var(--cs-text-muted)] mt-1">
