@@ -36,10 +36,21 @@ import {
   computeComplaintsIncidentCorrelation,
   type ComplaintCorrInput,
 } from "../complaints-incident-correlation/complaints-incident-correlation-engine";
+import {
+  computeStaffChildContinuity,
+  type ContinuityStaffInput,
+  type ContinuitySessionInput,
+} from "../staff-child-continuity/staff-child-continuity-engine";
 
 // ── Input Types ───────────────────────────────────────────────────────────────
 
 export type MedErrorSeverity = "no_harm" | "low" | "moderate" | "severe" | "death";
+
+export interface KeyWorkerLink {
+  child_id: string;
+  key_worker_id: string | null;
+  secondary_worker_id: string | null;
+}
 
 export interface PriorityIncidentInput {
   child_id: string;
@@ -65,13 +76,18 @@ export interface ChildPriorityInput {
   behaviour: BehaviourInput[];
   education: EducationInput[];
   keyworking: KeyworkingInput[];
+  // Optional relational-continuity inputs (4th stream). When all three are
+  // provided, a "continuity" risk domain is folded into the fusion.
+  staff?: ContinuityStaffInput[];
+  keyWorkingSessions?: ContinuitySessionInput[];
+  keyWorkers?: KeyWorkerLink[];
   today?: string;
 }
 
 // ── Output Types ──────────────────────────────────────────────────────────────
 
 export type PriorityBand = "critical" | "high" | "medium" | "low";
-export type Domain = "placement" | "complaints" | "medication";
+export type Domain = "placement" | "complaints" | "medication" | "continuity";
 
 export interface DomainSignal {
   domain: Domain;
@@ -188,6 +204,24 @@ export function computeChildPriority(input: ChildPriorityInput): ChildPriorityRe
     medByChild.set(e.child_id, cur);
   }
 
+  // ── Relational continuity (4th stream) — optional ──────────────────────
+  const continuityByChild = new Map<string, ReturnType<typeof computeStaffChildContinuity>["children"][number]>();
+  if (input.staff && input.keyWorkingSessions && input.keyWorkers) {
+    const kwLink = new Map(input.keyWorkers.map((k) => [k.child_id, k]));
+    const continuity = computeStaffChildContinuity({
+      children: input.children.map((c) => ({
+        id: c.id,
+        name: c.name,
+        key_worker_id: kwLink.get(c.id)?.key_worker_id ?? null,
+        secondary_worker_id: kwLink.get(c.id)?.secondary_worker_id ?? null,
+      })),
+      staff: input.staff,
+      sessions: input.keyWorkingSessions,
+      today,
+    });
+    for (const c of continuity.children) continuityByChild.set(c.child_id, c);
+  }
+
   // ── Per-child safeguarding incident flag (last 90 days) ─────────────────
   const sgIncidentByChild = new Set<string>();
   for (const i of input.incidents) {
@@ -210,6 +244,7 @@ export function computeChildPriority(input: ChildPriorityInput): ChildPriorityRe
     const pf = placementByChild.get(childId);
     const corr = correlationByChild.get(childId);
     const med = medByChild.get(childId);
+    const cont = continuityByChild.get(childId);
 
     const domains: DomainSignal[] = [];
 
@@ -252,6 +287,18 @@ export function computeChildPriority(input: ChildPriorityInput): ChildPriorityRe
       });
     }
 
+    // Continuity domain — low continuity of care is a relational risk.
+    const continuityRisk = cont ? clamp(100 - cont.continuity_index, 0, 100) : 0;
+    if (cont && continuityRisk >= DOMAIN_FLOOR) {
+      domains.push({
+        domain: "continuity",
+        label: "Relationship continuity gap",
+        score: continuityRisk,
+        detail: `${cont.band} continuity (${cont.continuity_index}/100)${cont.flags[0] ? ` — ${cont.flags[0]}` : ""}`,
+        active: continuityRisk >= ACTIVE_THRESHOLD,
+      });
+    }
+
     if (domains.length === 0) continue;
 
     // Fusion: reward a strong single domain, boost for convergent multi-domain risk.
@@ -276,7 +323,7 @@ export function computeChildPriority(input: ChildPriorityInput): ChildPriorityRe
       multi_domain: presentCount >= 2,
       safeguarding,
       domains: domains.sort((a, b) => b.score - a.score),
-      top_action: pickTopAction(domains, pf, corr, med),
+      top_action: pickTopAction(domains, pf, corr, med, cont),
     });
   }
 
@@ -296,6 +343,7 @@ function pickTopAction(
   pf: ReturnType<typeof computePlacementBreakdownForecast>["child_forecasts"][number] | undefined,
   corr: ReturnType<typeof computeComplaintsIncidentCorrelation>["child_correlations"][number] | undefined,
   med: { count: number; maxRank: number } | undefined,
+  cont: ReturnType<typeof computeStaffChildContinuity>["children"][number] | undefined,
 ): PriorityAction | null {
   const top = domains[0];
   if (!top) return null;
@@ -317,6 +365,10 @@ function pickTopAction(
       regulatory_link: "CHR 2015 Reg 23 — medicines; Reg 13 — learning",
       domain: "medication",
     };
+  }
+  if (top.domain === "continuity" && cont && (cont.recommended_actions ?? []).length > 0) {
+    const a = cont.recommended_actions[0];
+    return { priority: a.priority, action: a.action, regulatory_link: a.regulatory_link, domain: "continuity" };
   }
   return null;
 }
