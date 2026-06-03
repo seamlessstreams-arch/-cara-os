@@ -23,6 +23,7 @@ export type CornerstoneEventType =
   | "family_contact"
   | "risk_assessment"
   | "lac_review"
+  | "notifiable_event"
   | "staff_absence"
   | "overtime"
   | "supervision"

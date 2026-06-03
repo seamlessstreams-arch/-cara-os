@@ -14,6 +14,7 @@ import {
   type ContactLogSource,
   type RiskAssessmentSource,
   type LacReviewSource,
+  type NotifiableEventSource,
 } from "../event-projector";
 
 const inc = (o: Partial<IncidentSource> & { id: string }): IncidentSource => ({
@@ -342,5 +343,36 @@ describe("projectLacReview (new spine domain)", () => {
     expect(e.structuredTags).toContain("care_plan_not_updated");
     expect(e.ariaAnalysis!.complianceFlags.some((f) => /did not participate/i.test(f))).toBe(true);
     expect(e.ariaAnalysis!.complianceFlags.some((f) => /care plan not updated/i.test(f))).toBe(true);
+  });
+});
+
+const ne = (o: Partial<NotifiableEventSource> & { id: string }): NotifiableEventSource => ({
+  date: "2026-06-01", event_type: "restraint", child_id: "yp_alex", summary: "Physical intervention — imminent harm",
+  reported_by: "staff_edward", ofsted_status: "notified_within_24h", ...o,
+});
+
+describe("projectNotifiableEvent (new spine domain)", () => {
+  it("projects a notifiable event with RM/RI approval and evidence", () => {
+    const [e] = projectEvents({ notifiableEvents: [ne({ id: "ne1" })] });
+    expect(e.id).toBe("evt_ne_ne1");
+    expect(e.eventType).toBe("notifiable_event");
+    expect(e.riskLevel).toBe("high");          // notified within 24h
+    expect(e.requiresApproval).toBe(true);
+    expect(e.approvalLevel).toBe("manager");   // notifiable events are RM-owned
+    expect(e.structuredTags).toContain("notifiable_event");
+    expect(e.evidenceCategories).toContain("Regulation 45");
+    expect(e.summary).toMatch(/Notifiable event \(restraint\)/);
+  });
+
+  it("rates an outstanding (pending) Ofsted notification critical, RI-owned, and flags it", () => {
+    const [e] = projectEvents({ notifiableEvents: [ne({ id: "ne2", ofsted_status: "pending" })] });
+    expect(e.riskLevel).toBe("critical");
+    expect(e.approvalLevel).toBe("ri");
+    expect(e.ariaAnalysis!.complianceFlags.some((f) => /notification outstanding/i.test(f))).toBe(true);
+  });
+
+  it("flags a late notification", () => {
+    const [e] = projectEvents({ notifiableEvents: [ne({ id: "ne3", ofsted_status: "notified_late" })] });
+    expect(e.ariaAnalysis!.complianceFlags.some((f) => /made late/i.test(f))).toBe(true);
   });
 });

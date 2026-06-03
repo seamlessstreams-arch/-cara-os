@@ -99,5 +99,9 @@ export function mapStoreToEventInput(store: any): EventProjectorInput {
       child_participation: r.child_participation, outcome: r.outcome, placement_stability: r.placement_stability,
       care_plan_updated: r.care_plan_updated, recorded_by: r.recorded_by, home_id: r.home_id, created_at: r.created_at,
     })),
+    notifiableEvents: ((store.notifiableEvents ?? []) as any[]).map((r: any) => ({
+      id: r.id, date: d(r.date ?? r.created_at), event_type: r.event_type, child_id: r.child_id, summary: r.summary,
+      reported_by: r.reported_by, ofsted_status: r.ofsted_status, home_id: r.home_id, created_at: r.created_at,
+    })),
   };
 }

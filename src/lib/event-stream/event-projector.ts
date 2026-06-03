@@ -110,6 +110,10 @@ export interface LacReviewSource {
   id: string; child_id: string; date: string; review_type?: string; iro?: string; child_participation?: string;
   outcome?: string; placement_stability?: string; care_plan_updated?: boolean; recorded_by?: string; home_id?: string; created_at?: string;
 }
+export interface NotifiableEventSource {
+  id: string; date: string; event_type?: string; child_id?: string | null; summary?: string;
+  reported_by?: string; ofsted_status?: string; home_id?: string; created_at?: string;
+}
 
 export interface EventProjectorInput {
   dailyLogs?: DailyLogSource[];
@@ -130,6 +134,7 @@ export interface EventProjectorInput {
   familyContacts?: ContactLogSource[];
   riskAssessments?: RiskAssessmentSource[];
   lacReviews?: LacReviewSource[];
+  notifiableEvents?: NotifiableEventSource[];
   homeId?: string;
 }
 
@@ -189,6 +194,7 @@ export function deriveApproval(
   if (eventType === "missing") level = bumpAtLeast(level, "deputy");
   if (eventType === "medication" && (risk === "high" || risk === "critical")) level = bumpAtLeast(level, "manager");
   if (eventType === "complaint" && (risk === "high" || risk === "medium")) level = bumpAtLeast(level, "manager");
+  if (eventType === "notifiable_event") level = bumpAtLeast(level, risk === "critical" ? "ri" : "manager");
   if (eventType === "reg44" || eventType === "reg45") level = bumpAtLeast(level, "ri");
   return level ? { requiresApproval: true, approvalLevel: level } : { requiresApproval: false };
 }
@@ -212,6 +218,7 @@ const THEMES: Partial<Record<CornerstoneEventType, string[]>> = {
   family_contact: ["positive relationships", "family time", "child voice"],
   risk_assessment: ["risk management", "help and protection"],
   lac_review: ["statutory reviews", "children's progress", "child voice"],
+  notifiable_event: ["statutory notifications", "leadership and management", "help and protection"],
   staff_absence: ["staff wellbeing", "staffing"],
 };
 const ACTIONS: Partial<Record<CornerstoneEventType, string[]>> = {
@@ -230,6 +237,7 @@ const ACTIONS: Partial<Record<CornerstoneEventType, string[]>> = {
   family_contact: ["Record the child's wishes and feelings about the contact", "Follow up any concerns and update the contact plan"],
   risk_assessment: ["Review and update the risk assessment by the review date", "Check the mitigations are in place and effective"],
   lac_review: ["Complete the agreed actions by their due dates", "Update the care plan and confirm the next review date"],
+  notifiable_event: ["Confirm Ofsted, the placing authority and the LA were notified", "Record the follow-up and lessons learned"],
   staff_absence: ["Complete the return-to-work interview where required"],
 };
 
@@ -624,6 +632,25 @@ function projectLacReview(r: LacReviewSource, homeId?: string): CornerstoneEvent
   };
 }
 
+function projectNotifiableEvent(r: NotifiableEventSource, homeId?: string): CornerstoneEvent {
+  const pending = r.ofsted_status === "pending";
+  const late = r.ofsted_status === "notified_late";
+  const risk: CornerstoneRiskLevel = pending ? "critical" : r.ofsted_status === "not_required" ? "medium" : "high";
+  const tags = ["notifiable_event", r.event_type, r.ofsted_status].filter(Boolean) as string[];
+  const compliance: string[] = [];
+  if (pending) compliance.push("Ofsted notification outstanding — Regulation 40 notification required without delay");
+  if (late) compliance.push("Ofsted notification was made late — review the notification process");
+  const { requiresApproval, approvalLevel } = deriveApproval("notifiable_event", risk);
+  return {
+    id: `evt_ne_${r.id}`, eventType: "notifiable_event", ...base(r.home_id ?? homeId, toIso(r.date), r.created_at),
+    childId: r.child_id ?? undefined, staffId: r.reported_by, occurredAt: toIso(r.date), createdBy: r.reported_by ?? "system",
+    summary: `Notifiable event${r.event_type ? ` (${r.event_type.replace(/_/g, " ")})` : ""}: ${(r.summary ?? "").slice(0, 120)}`,
+    structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
+    linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
+    ariaAnalysis: buildAria("notifiable_event", compliance, [], risk),
+  };
+}
+
 const ABSENCE_TYPE = /sick|emergency|unauth|compassion|bereav/i;
 
 // ── Evidence category mapping (Ofsted evidence bank) ────────────────────────────
@@ -642,6 +669,7 @@ const EVIDENCE_MAP: Partial<Record<CornerstoneEventType, string[]>> = {
   complaint: ["complaints", "leadership and management", "consultation"],
   risk_assessment: ["risk management", "help and protection", "children's progress"],
   lac_review: ["leadership and management", "children's progress", "consultation"],
+  notifiable_event: ["help and protection", "leadership and management", "Regulation 45"],
   supervision: ["workforce development", "leadership and management"],
   training: ["workforce development"],
   overtime: ["workforce development", "leadership and management"],
@@ -687,6 +715,7 @@ export function projectEvents(input: EventProjectorInput): CornerstoneEvent[] {
     ...(input.familyContacts ?? []).map((r) => projectFamilyContact(r, home)),
     ...(input.riskAssessments ?? []).map((r) => projectRiskAssessment(r, home)),
     ...(input.lacReviews ?? []).map((r) => projectLacReview(r, home)),
+    ...(input.notifiableEvents ?? []).map((r) => projectNotifiableEvent(r, home)),
   ];
   // Populate evidence categories for every event (spine completion).
   for (const e of events) e.evidenceCategories = evidenceCategoriesFor(e.eventType, e.riskLevel);
