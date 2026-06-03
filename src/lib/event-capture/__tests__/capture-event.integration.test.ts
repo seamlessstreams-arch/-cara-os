@@ -74,18 +74,18 @@ describe("captureEvent integration (write path → spine)", () => {
   it("captureDomainEvent (write-through) upserts by stable id, tags provenance, and is not gated by content-duplication", () => {
     const draft = { eventType: "daily_log" as const, childId: "yp_alex", riskLevel: "low" as const, summary: "Write-through probe: settled evening, dinner and a film together." };
 
-    const a = captureDomainEvent(draft, { id: "evt_log_wt_x", now: "2026-06-02T18:00:00.000Z", today: TODAY });
+    const a = captureDomainEvent(draft, { id: "evt_log_wt_x", now: "2026-06-02T18:00:00.000Z" });
     expect(a.persisted).toBe(true);
     expect(a.event!.structuredTags).toContain("spine_capture");
     expect(getStore().cornerstoneEvents.length).toBe(1);
 
     // Same id again → upsert (replace), not a second row.
-    const b = captureDomainEvent(draft, { id: "evt_log_wt_x", now: "2026-06-02T19:00:00.000Z", today: TODAY });
+    const b = captureDomainEvent(draft, { id: "evt_log_wt_x", now: "2026-06-02T19:00:00.000Z" });
     expect(b.persisted).toBe(true);
     expect(getStore().cornerstoneEvents.length).toBe(1);
 
     // Content-identical but DIFFERENT id → still persists (no content-dedupe gate; id is identity).
-    const c = captureDomainEvent(draft, { id: "evt_log_wt_y", now: "2026-06-02T20:00:00.000Z", today: TODAY });
+    const c = captureDomainEvent(draft, { id: "evt_log_wt_y", now: "2026-06-02T20:00:00.000Z" });
     expect(c.persisted).toBe(true);
     expect(getStore().cornerstoneEvents.length).toBe(2);
 

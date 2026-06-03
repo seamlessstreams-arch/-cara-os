@@ -21,7 +21,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CornerstoneEvent, CornerstoneEventType, CornerstoneRiskLevel, CornerstoneApprovalLevel } from "@/types/cornerstone-event";
-import { computeEventCapture, type EventCaptureResult } from "./event-capture-engine";
+import { computeEventCapture, validateDraft, type EventCaptureResult, type ValidationIssue } from "./event-capture-engine";
 import { deriveApproval, evidenceCategoriesFor } from "@/lib/event-stream/event-projector";
 import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 import { getStore, db } from "@/lib/db/store";
@@ -59,6 +59,14 @@ export interface CaptureOutcome {
   persisted: boolean;
   event: CornerstoneEvent | null;
   capture: EventCaptureResult;
+  hold_reason: string | null;
+}
+
+/** Lighter outcome for the write-through path (validate-once + upsert by id; no content dedupe). */
+export interface DomainCaptureOutcome {
+  persisted: boolean;
+  event: CornerstoneEvent | null;
+  validation: { passed: boolean; issues: ValidationIssue[] };
   hold_reason: string | null;
 }
 
@@ -159,22 +167,20 @@ export function captureEvent(
  */
 export function captureDomainEvent(
   draft: CaptureDraft,
-  opts: { id: string; now?: string; today?: string },
-): CaptureOutcome {
+  opts: { id: string; now?: string },
+): DomainCaptureOutcome {
   const now = opts.now ?? new Date().toISOString();
-  const today = opts.today ?? now.slice(0, 10);
   const store = getStore() as any;
 
   const tags = [...(draft.structuredTags ?? [draft.eventType]), "spine_capture"];
   const candidate = draftToEvent({ ...draft, structuredTags: tags }, { id: opts.id, now });
 
-  // Capture metadata against the spine minus this id, so the record's own projection
-  // is never treated as a duplicate of itself.
-  const existingEvents = buildLiveEventStream(store).events.filter((e: CornerstoneEvent) => e.id !== opts.id);
-  const capture = computeEventCapture({ draft: candidate, existingEvents, today });
-
-  if (!capture.validation.passed) {
-    return { persisted: false, event: null, capture, hold_reason: "Validation failed — canonical event not written." };
+  // Write-through validates once; the stable id is the dedup key, so — unlike the
+  // form path (captureEvent) — there is no content de-duplication and no need to
+  // read the whole spine. Just validate and upsert by id.
+  const validation = validateDraft(candidate);
+  if (!validation.passed) {
+    return { persisted: false, event: null, validation, hold_reason: "Validation failed — canonical event not written." };
   }
 
   // Upsert by stable id (idempotent write-through).
@@ -182,5 +188,5 @@ export function captureDomainEvent(
   if (idx >= 0) store.cornerstoneEvents[idx] = candidate;
   else db.cornerstoneEvents.append(candidate);
 
-  return { persisted: true, event: candidate, capture, hold_reason: null };
+  return { persisted: true, event: candidate, validation, hold_reason: null };
 }
