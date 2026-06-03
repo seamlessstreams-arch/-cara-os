@@ -6149,6 +6149,8 @@ const additionalDailyLogs: DailyLogEntry[] = [
   { ...dlBase, id: "log_121", child_id: "yp_alex", date: daysFromNow(-11), time: "14:00", entry_type: "activity" as const, content: "Alex went to climbing wall with Lackson. Great engagement and confidence building.", mood_score: 9, staff_id: "staff_lackson", linked_incident_id: null, is_significant: true },
   { ...dlBase, id: "log_122", child_id: "yp_jordan", date: daysFromNow(-12), time: "09:00", entry_type: "general" as const, content: "Jordan had a good morning. Calm and engaged.", mood_score: 7, staff_id: "staff_anna", linked_incident_id: null, is_significant: false },
   { ...dlBase, id: "log_123", child_id: "yp_casey", date: daysFromNow(-13), time: "10:30", entry_type: "health" as const, content: "Casey attended GP appointment. Routine check — no concerns.", mood_score: 6, staff_id: "staff_chervelle", linked_incident_id: null, is_significant: false },
+  // Day -10, 21:30 — night welfare log that contradicts the restraint injury recorded earlier the same day (rst_003, 18:30: minor bruise to left forearm). Intentional recording inconsistency for the conflict-detection engine to surface for human reconciliation.
+  { ...dlBase, id: "log_124", child_id: "yp_alex", date: daysFromNow(-10), time: "21:30", entry_type: "general" as const, content: "Night welfare check completed. Alex settled in room by 21:00 and slept through. Visual observation on rounds — no injuries or marks observed, appeared comfortable.", mood_score: 5, staff_id: "staff_anna", linked_incident_id: null, is_significant: false },
 ];
 store.dailyLog.push(...additionalDailyLogs);
 

@@ -105,6 +105,7 @@ const ManagerInboxCard = dynamic(() => import("@/components/dashboard/manager-in
 const EvidenceBankCard = dynamic(() => import("@/components/dashboard/evidence-bank-card").then(m => m.EvidenceBankCard ? { default: m.EvidenceBankCard } : m), { ssr: false });
 const ComplianceRulesCard = dynamic(() => import("@/components/dashboard/compliance-rules-card").then(m => m.ComplianceRulesCard ? { default: m.ComplianceRulesCard } : m), { ssr: false });
 const DuplicateDetectionCard = dynamic(() => import("@/components/dashboard/duplicate-detection-card").then(m => m.DuplicateDetectionCard ? { default: m.DuplicateDetectionCard } : m), { ssr: false });
+const ConflictDetectionCard = dynamic(() => import("@/components/dashboard/conflict-detection-card").then(m => m.ConflictDetectionCard ? { default: m.ConflictDetectionCard } : m), { ssr: false });
 const IntegrationHubCard = dynamic(() => import("@/components/dashboard/integration-hub-card").then(m => m.IntegrationHubCard ? { default: m.IntegrationHubCard } : m), { ssr: false });
 const EventCaptureCard = dynamic(() => import("@/components/dashboard/event-capture-card").then(m => m.EventCaptureCard ? { default: m.EventCaptureCard } : m), { ssr: false });
 const WorkflowOrchestrationCard = dynamic(() => import("@/components/dashboard/workflow-orchestration-card").then(m => m.WorkflowOrchestrationCard ? { default: m.WorkflowOrchestrationCard } : m), { ssr: false });
@@ -1662,6 +1663,7 @@ export default function DashboardPage() {
                     <EventCaptureCard />
                     <WorkflowOrchestrationCard />
                     <DuplicateDetectionCard />
+                    <ConflictDetectionCard />
                     <IntegrationHubCard />
                     <EventStreamCard />
                     <EventIntelligenceCard />

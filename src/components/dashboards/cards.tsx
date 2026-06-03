@@ -22,6 +22,7 @@ export const EventStream = d(() => import("@/components/dashboard/event-stream-c
 export const EventRouting = d(() => import("@/components/dashboard/event-routing-card"), "EventRoutingCard");
 export const EventCapture = d(() => import("@/components/dashboard/event-capture-card"), "EventCaptureCard");
 export const DuplicateDetection = d(() => import("@/components/dashboard/duplicate-detection-card"), "DuplicateDetectionCard");
+export const ConflictDetection = d(() => import("@/components/dashboard/conflict-detection-card"), "ConflictDetectionCard");
 export const IntegrationHub = d(() => import("@/components/dashboard/integration-hub-card"), "IntegrationHubCard");
 
 // Per-child intelligence
