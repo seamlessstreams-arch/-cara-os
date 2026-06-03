@@ -15,8 +15,22 @@
 
 import { db } from "@/lib/db/store";
 import { generateId, todayStr } from "@/lib/utils";
-import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
+import { captureDomainEvent, type CaptureDraft } from "@/lib/event-capture/capture-event-service";
 import { classifyCareEvent, buildRoutingSummary } from "./routing-engine";
+
+// ── Forms-as-views: spine write-through helpers ───────────────────────────────
+// When a care event materialises a domain record, also emit a validated canonical
+// event under the projection's stable id (evt_<type>_<recordId>) so it de-dupes by
+// id on the live spine (persisted wins, no double-count) — the create path, not
+// just the projection, becomes the source. Best-effort: never blocks processing.
+function isoAt(date: string | undefined, time?: string | null): string {
+  const d = (date ?? "").slice(0, 10) || "1970-01-01";
+  const t = /^\d{2}:\d{2}$/.test(time ?? "") ? (time as string) : "00:00";
+  return `${d}T${t}:00.000Z`;
+}
+function writeThroughSpine(draft: CaptureDraft, id: string): void {
+  try { captureDomainEvent(draft, { id }); } catch { /* best-effort; never block care-event processing */ }
+}
 import type { CareEvent, RouteType, CareEventRoute, FilingCategory } from "@/types/care-events";
 
 // ── Time saved per route type (minutes) ───────────────────────────────────────
@@ -70,6 +84,22 @@ function processDailyLog(event: CareEvent, route: CareEventRoute): void {
     created_by: event.staff_id,
     updated_by: event.staff_id,
   } as never);
+  {
+    const e = entry as any;
+    const significant = !!e.is_significant;
+    writeThroughSpine({
+      eventType: "daily_log",
+      childId: e.child_id,
+      staffId: e.staff_id,
+      homeId: e.home_id,
+      occurredAt: isoAt(e.date, e.time),
+      createdBy: e.created_by ?? e.staff_id ?? "system",
+      summary: `${e.entry_type} log: ${(e.content ?? "").slice(0, 140)}`,
+      riskLevel: significant ? "medium" : "low",
+      structuredTags: ["daily_log", e.entry_type, significant ? "significant" : ""].filter(Boolean) as string[],
+    }, `evt_log_${e.id}`);
+  }
+
   db.careEventRoutes.patch(route.id, {
     status: "completed",
     linked_record_id: entry.id,
@@ -446,6 +476,27 @@ function processIncident(event: CareEvent, route: CareEventRoute): void {
     updated_at: new Date().toISOString(),
   } as never);
 
+  {
+    const inc = incident as any;
+    const isSg = /safeguard/i.test(inc.type ?? "");
+    const sev: Record<string, "low" | "medium" | "high" | "critical"> = { low: "low", medium: "medium", high: "high", critical: "critical" };
+    let risk = sev[inc.severity] ?? "medium";
+    if (isSg && (risk === "low" || risk === "medium")) risk = "high";
+    const tags = [isSg ? "safeguarding" : "incident", inc.type, inc.severity].filter(Boolean) as string[];
+    if (inc.requires_oversight) tags.push("oversight_required");
+    writeThroughSpine({
+      eventType: isSg ? "safeguarding" : "incident",
+      childId: inc.child_id,
+      staffId: inc.reported_by,
+      homeId: inc.home_id,
+      occurredAt: isoAt(inc.date, inc.time),
+      createdBy: inc.reported_by ?? "system",
+      summary: `${isSg ? "Safeguarding" : "Incident"} ${inc.reference}: ${(inc.description ?? inc.type ?? "").slice(0, 140)}`,
+      riskLevel: risk,
+      structuredTags: tags,
+    }, `evt_inc_${inc.id}`);
+  }
+
   db.careEventRoutes.patch(route.id, {
     status: "completed",
     linked_record_id: incident.id,
@@ -492,29 +543,21 @@ function processMissingEpisode(event: CareEvent, route: CareEventRoute): void {
     created_by: event.staff_id,
   } as never);
 
-  // Write through the canonical event spine (forms-as-views). The care event has
-  // materialised a missing episode; also emit a validated canonical event under
-  // the projection's stable id (evt_mis_<id>) so it surfaces on the spine with a
-  // clean summary — the projection sees no `risk_level` on care-event episodes and
-  // renders "(undefined risk)". De-dupes by id (persisted wins). Best-effort.
-  try {
+  // Spine write-through. Care-event episodes carry no `risk_level`, so the
+  // projection renders "(undefined risk)"; derive a sensible risk + clean summary.
+  {
+    const ep = episode as any;
     const risk = event.is_safeguarding ? "critical" : "high";
-    const t = /^\d{2}:\d{2}$/.test(episode.time_missing ?? "") ? episode.time_missing! : "00:00";
-    captureDomainEvent(
-      {
-        eventType: "missing",
-        childId: episode.child_id,
-        homeId: episode.home_id,
-        occurredAt: `${episode.date_missing}T${t}:00.000Z`,
-        createdBy: episode.created_by ?? "system",
-        summary: `Missing episode ${episode.reference} (${risk} risk) — active`,
-        riskLevel: risk,
-        structuredTags: ["missing", risk, "rhi_outstanding"],
-      },
-      { id: `evt_mis_${episode.id}` },
-    );
-  } catch {
-    // Best-effort write-through; never block care-event processing.
+    writeThroughSpine({
+      eventType: "missing",
+      childId: ep.child_id,
+      homeId: ep.home_id,
+      occurredAt: isoAt(ep.date_missing, ep.time_missing),
+      createdBy: ep.created_by ?? "system",
+      summary: `Missing episode ${ep.reference} (${risk} risk) — active`,
+      riskLevel: risk,
+      structuredTags: ["missing", risk, "rhi_outstanding"],
+    }, `evt_mis_${ep.id}`);
   }
 
   db.careEventRoutes.patch(route.id, {
@@ -569,6 +612,25 @@ function processPhysicalIntervention(event: CareEvent, route: CareEventRoute): v
     care_event_id: event.id,
     created_at: new Date().toISOString(),
   } as never);
+
+  {
+    const r = record as any;
+    const injuries = Array.isArray(r.injuries) ? r.injuries.length : 0;
+    const risk = injuries > 0 ? "critical" : "high";
+    const tags = ["physical_intervention", r.restraint_type].filter(Boolean) as string[];
+    if (injuries > 0) tags.push("injury");
+    if (!r.child_debriefed) tags.push("debrief_outstanding");
+    writeThroughSpine({
+      eventType: "physical_intervention",
+      childId: r.child_id,
+      staffId: r.recorded_by,
+      occurredAt: isoAt(r.date, r.start_time),
+      createdBy: r.recorded_by ?? "system",
+      summary: `Physical intervention${r.restraint_type ? ` (${r.restraint_type})` : ""}${injuries > 0 ? " — injury recorded" : ""}`,
+      riskLevel: risk,
+      structuredTags: tags,
+    }, `evt_res_${r.id}`);
+  }
 
   db.careEventRoutes.patch(route.id, {
     status: "completed",
@@ -683,6 +745,24 @@ function processEducationRecord(event: CareEvent, route: CareEventRoute): void {
     care_event_id: event.id,
     created_at: new Date().toISOString(),
   } as never);
+
+  {
+    const r = record as any;
+    const status = r.attendance_status ?? "";
+    const risk = status === "excluded" ? "high" : status === "absent_unauthorised" ? "medium" : "low";
+    const tags = ["education", r.record_type, status].filter(Boolean) as string[];
+    writeThroughSpine({
+      eventType: "education",
+      childId: r.child_id,
+      staffId: r.staff_id,
+      homeId: r.home_id,
+      occurredAt: isoAt(r.date),
+      createdBy: r.staff_id ?? "system",
+      summary: `Education: ${r.title ?? r.record_type ?? "record"}${status ? ` (${String(status).replace(/_/g, " ")})` : ""}`,
+      riskLevel: risk,
+      structuredTags: tags,
+    }, `evt_edu_${r.id}`);
+  }
 
   db.careEventRoutes.patch(route.id, {
     status: "completed",
@@ -907,6 +987,23 @@ function processSafeguardingRecord(event: CareEvent, route: CareEventRoute): voi
       entity_id: incident.id,
     });
   } catch { /* non-critical */ }
+
+  {
+    const inc = incident as any;
+    const tags = ["safeguarding", inc.type, inc.severity].filter(Boolean) as string[];
+    if (inc.requires_oversight) tags.push("oversight_required");
+    writeThroughSpine({
+      eventType: "safeguarding",
+      childId: inc.child_id,
+      staffId: inc.reported_by,
+      homeId: inc.home_id,
+      occurredAt: isoAt(inc.date, inc.time),
+      createdBy: inc.reported_by ?? "system",
+      summary: `Safeguarding ${inc.reference}: ${(inc.description ?? "").slice(0, 140)}`,
+      riskLevel: "high",
+      structuredTags: tags,
+    }, `evt_inc_${inc.id}`);
+  }
 
   db.careEventRoutes.patch(route.id, {
     status: "completed",

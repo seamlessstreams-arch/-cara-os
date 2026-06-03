@@ -906,9 +906,9 @@ describe("Regulation 40 triage", () => {
     expect(updated?.requires_reg40_triage).toBe(true);
   });
 
-  // ── Canonical spine write-through (forms-as-views increment 3) ─────────────
-  describe("missing episode writes through the canonical spine", () => {
-    it("emits a validated canonical evt_mis_ event with a clean summary (not the lossy projection)", () => {
+  // ── Canonical spine write-through (forms-as-views) ─────────────────────────
+  describe("care-events write through the canonical spine", () => {
+    it("missing episode → a validated canonical evt_mis_ event with a clean summary (not the lossy projection)", () => {
       getStore().cornerstoneEvents.length = 0; // isolate the persisted spine
       const event = makeEvent({ category: "missing_episode", title: "Alex missing from home", content: "Alex left without permission at 19:00.", event_date: "2026-06-02", event_time: "19:00", is_safeguarding: true });
       processCareEvent(event);
@@ -925,6 +925,53 @@ describe("Regulation 40 triage", () => {
       expect(ev!.summary).not.toMatch(/undefined risk/); // the projection's lossiness is fixed
       expect(ev!.summary).toMatch(/Missing episode MFC-/);
       expect(live.events.filter((e) => e.id === `evt_mis_${episode!.id}`).length).toBe(1); // de-duped vs projection
+    });
+
+    it("general care event → a daily_log canonical event tagged spine_capture", () => {
+      getStore().cornerstoneEvents.length = 0;
+      const event = makeEvent({ category: "general", content: "Distinctive probe: calm afternoon, enjoyed art club and a walk.", event_date: "2026-06-02", event_time: "16:00" });
+      processCareEvent(event);
+      const caps = buildLiveEventStream(getStore()).events.filter((e) => e.id.startsWith("evt_log_") && e.structuredTags.includes("spine_capture"));
+      expect(caps.some((e) => e.summary.includes("enjoyed art club"))).toBe(true);
+    });
+
+    it("physical_intervention care event → restraint + incident canonical events", () => {
+      getStore().cornerstoneEvents.length = 0;
+      const event = makeEvent({ category: "physical_intervention", title: "PI on Alex", content: "Two-person standing hold after escalation in the lounge.", event_date: "2026-06-02", event_time: "17:00", child_id: "yp_alex" });
+      processCareEvent(event);
+      const live = buildLiveEventStream(getStore());
+      const restraint = getStore().restraints.find((r: any) => r.care_event_id === event.id);
+      expect(restraint).toBeDefined();
+      const resEv = live.events.find((e) => e.id === `evt_res_${restraint!.id}`);
+      expect(resEv).toBeDefined();
+      expect(resEv!.eventType).toBe("physical_intervention");
+      expect(resEv!.structuredTags).toContain("spine_capture");
+      const incident = getStore().incidents.find((i: any) => i.care_event_id === event.id);
+      if (incident) {
+        const incEv = live.events.find((e) => e.id === `evt_inc_${incident.id}`);
+        expect(incEv).toBeDefined();
+        expect(incEv!.structuredTags).toContain("spine_capture");
+      }
+    });
+
+    it("education care event → an education canonical event", () => {
+      getStore().cornerstoneEvents.length = 0;
+      const event = makeEvent({ category: "education", title: "School attendance concern", content: "Missed lessons; teacher raised an attendance concern.", event_date: "2026-06-02", child_id: "yp_jordan" });
+      processCareEvent(event);
+      const rec = getStore().educationRecords.find((r: any) => r.care_event_id === event.id);
+      expect(rec).toBeDefined();
+      const ev = buildLiveEventStream(getStore()).events.find((e) => e.id === `evt_edu_${rec!.id}`);
+      expect(ev).toBeDefined();
+      expect(ev!.eventType).toBe("education");
+      expect(ev!.structuredTags).toContain("spine_capture");
+    });
+
+    it("safeguarding care event → a safeguarding canonical event", () => {
+      getStore().cornerstoneEvents.length = 0;
+      const event = makeEvent({ category: "safeguarding", title: "Disclosure", content: "Child disclosed a safeguarding concern requiring strategy discussion.", event_date: "2026-06-02", child_id: "yp_casey", is_safeguarding: true });
+      processCareEvent(event);
+      const sgEvents = buildLiveEventStream(getStore()).events.filter((e) => e.eventType === "safeguarding" && e.structuredTags.includes("spine_capture"));
+      expect(sgEvents.length).toBeGreaterThan(0);
     });
   });
 });
