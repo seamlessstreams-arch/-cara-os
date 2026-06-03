@@ -32,6 +32,7 @@ export const NAV_GROUPS: NavGroup[] = [
     module: "dashboard",
     children: [
       { label: "Command Centre",  href: "/dashboard",       icon: "LayoutDashboard", module: "dashboard"  },
+      { label: "Dashboards",      href: "/dashboards",      icon: "Activity",        module: "dashboard"  },
       { label: "Manager Control Centre", href: "/dashboard/manager-control-centre", icon: "ShieldCheck", module: "dashboard" },
       { label: "Provider Oversight",     href: "/dashboard/provider-oversight",     icon: "Building2",   module: "ri"        },
       { label: "My Day",          href: "/dashboard/my-day",icon: "Target",          module: "my-day"     },
