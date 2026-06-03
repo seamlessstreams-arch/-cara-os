@@ -572,9 +572,12 @@ export function projectEvents(input: EventProjectorInput): CornerstoneEvent[] {
   return events;
 }
 
-export function buildEventStream(input: EventProjectorInput): EventStreamResult {
-  const events = projectEvents(input);
-
+/**
+ * Summarise a CornerstoneEvent[] into the stream overview. Assumes events are
+ * sorted newest-first (events[0] is the latest). Exported so the live spine
+ * (projected ∪ persisted) can reuse the exact same reducer.
+ */
+export function summariseEvents(events: CornerstoneEvent[]): EventStreamOverview {
   const by_type: Record<string, number> = {};
   const by_risk: Record<CornerstoneRiskLevel, number> = { low: 0, medium: 0, high: 0, critical: 0 };
   let pending_approvals = 0;
@@ -590,15 +593,17 @@ export function buildEventStream(input: EventProjectorInput): EventStreamResult 
   }
 
   return {
-    events,
-    overview: {
-      total: events.length,
-      by_type,
-      by_risk,
-      pending_approvals,
-      high_or_critical,
-      compliance_flags,
-      latest_occurred_at: events[0]?.occurredAt ?? null,
-    },
+    total: events.length,
+    by_type,
+    by_risk,
+    pending_approvals,
+    high_or_critical,
+    compliance_flags,
+    latest_occurred_at: events[0]?.occurredAt ?? null,
   };
+}
+
+export function buildEventStream(input: EventProjectorInput): EventStreamResult {
+  const events = projectEvents(input);
+  return { events, overview: summariseEvents(events) };
 }

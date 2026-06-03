@@ -13,15 +13,14 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
-import { buildEventStream } from "@/lib/event-stream/event-projector";
-import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
+import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 import { computeEventIntelligence } from "@/lib/event-intelligence/event-intelligence-engine";
 
 export async function GET() {
   const store = getStore();
 
-  // Capture once → one canonical stream → analytics.
-  const stream = buildEventStream(mapStoreToEventInput(store));
+  // Capture once → one canonical stream (projected ∪ captured) → analytics.
+  const stream = buildLiveEventStream(store);
 
   const children = ((store.youngPeople ?? []) as any[])
     .filter((yp: any) => yp.status === "current")

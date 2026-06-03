@@ -12,10 +12,11 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
-import { buildEventStream } from "@/lib/event-stream/event-projector";
-import { mapStoreToEventInput } from "@/lib/event-stream/store-mapper";
+import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 
 export async function GET() {
-  const result = buildEventStream(mapStoreToEventInput(getStore()));
+  // Live spine = read-only projection of domain collections ∪ events captured
+  // directly to the spine (store.cornerstoneEvents). Capture once, surface here.
+  const result = buildLiveEventStream(getStore());
   return NextResponse.json({ data: result });
 }

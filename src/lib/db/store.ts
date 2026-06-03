@@ -18,6 +18,7 @@ import type {
   MedicationAdministration, DailyLogEntry, LeaveRequest,
   TrainingRecord, Home, CareForm, Supervision,
 } from "@/types";
+import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -555,6 +556,9 @@ const store = {
   leaveRequests: [...LEAVE_REQUESTS] as LeaveRequest[],
   trainingRecords: [...TRAINING_RECORDS] as TrainingRecord[],
   missingEpisodes: [] as MissingEpisode[],
+  // Canonical persisted event spine (forms-as-views write path). Empty by default —
+  // the read-only projection of domain collections is unchanged until events are captured here.
+  cornerstoneEvents: [] as CornerstoneEvent[],
   chronology: [] as ChronologyEntry[],
   handovers: [] as HandoverEntry[],
   buildings: [] as Building[],
@@ -6171,6 +6175,16 @@ export const db = {
     findAll: () => store.youngPeople,
     findById: (id: string) => store.youngPeople.find((yp) => yp.id === id),
     findCurrent: () => store.youngPeople.filter((yp) => yp.status === "current"),
+  },
+
+  // ── Cornerstone Events (canonical persisted spine — capture-once write path) ─
+  cornerstoneEvents: {
+    findAll: (): CornerstoneEvent[] => store.cornerstoneEvents,
+    findById: (id: string): CornerstoneEvent | undefined => store.cornerstoneEvents.find((e) => e.id === id),
+    append: (event: CornerstoneEvent): CornerstoneEvent => {
+      store.cornerstoneEvents.push(event);
+      return event;
+    },
   },
 
   // ── Incidents ─────────────────────────────────────────────────────────────
