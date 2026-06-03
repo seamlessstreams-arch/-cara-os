@@ -172,6 +172,37 @@ describe("ranking across a cohort", () => {
   });
 });
 
+describe("continuity stream folds into the fusion when provided", () => {
+  const A = "a";
+  const r = computeChildPriority(run({
+    children: [makeChild({ id: A, name: "Alex" })],
+    incidents: [incident({ child_id: A, date: ago(5), severity: "high" })],
+    staff: [
+      { id: "edward", name: "Edward", active: true },
+      { id: "darren", name: "Darren", active: true },
+    ],
+    keyWorkers: [{ child_id: A, key_worker_id: "edward", secondary_worker_id: null }],
+    keyWorkingSessions: [
+      { child_id: A, staff_id: "darren", date: ago(3) },
+      { child_id: A, staff_id: "darren", date: ago(10) },
+    ],
+  }));
+  it("adds a continuity domain when the named key worker delivers none of the sessions", () => {
+    const top = r.children.find((c) => c.child_id === A)!;
+    expect(top.domains.map((d) => d.domain)).toContain("continuity");
+    const cont = top.domains.find((d) => d.domain === "continuity")!;
+    expect(cont.score).toBeGreaterThanOrEqual(35); // low continuity → high relational risk
+  });
+  it("does not add a continuity domain when continuity inputs are omitted", () => {
+    const r2 = computeChildPriority(run({
+      children: [makeChild({ id: A, name: "Alex" })],
+      incidents: [incident({ child_id: A, date: ago(5), severity: "high" })],
+    }));
+    const top = r2.children.find((c) => c.child_id === A)!;
+    expect(top.domains.map((d) => d.domain)).not.toContain("continuity");
+  });
+});
+
 describe("determinism", () => {
   it("returns identical output for identical input", () => {
     const input = run({

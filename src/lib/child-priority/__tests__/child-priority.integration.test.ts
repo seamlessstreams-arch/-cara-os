@@ -39,10 +39,14 @@ describe("child-priority integration (real seed data)", () => {
   const behaviour = (store.behaviourLog as any[]).map((b) => ({ child_id: b.child_id ?? "", date: d(b.date ?? b.created_at), direction: b.direction ?? "concern", intensity: b.intensity ?? "low" }));
   const education = (store.educationRecords as any[]).map((e) => ({ child_id: e.child_id ?? "", date: d(e.date ?? e.created_at), attendance_status: e.attendance_status ?? null }));
   const keyworking = (store.keyWorkingSessions as any[]).map((k) => ({ child_id: k.child_id ?? "", date: d(k.date ?? k.created_at), mood_before: typeof k.mood_before === "number" ? k.mood_before : 3, mood_after: typeof k.mood_after === "number" ? k.mood_after : 3 }));
+  const staff = (store.staff as any[]).map((s) => ({ id: s.id, name: s.full_name ?? s.id, active: s.is_active ?? s.employment_status === "active" }));
+  const keyWorkingSessions = (store.keyWorkingSessions as any[]).filter((k) => k.child_id && k.staff_id).map((k) => ({ child_id: k.child_id, staff_id: k.staff_id, date: d(k.date ?? k.created_at) }));
+  const keyWorkers = (store.youngPeople as any[]).filter((yp) => yp.status === "current").map((yp) => ({ child_id: yp.id, key_worker_id: yp.key_worker_id ?? null, secondary_worker_id: yp.secondary_worker_id ?? null }));
 
   const result = computeChildPriority({
     children, incidents, complaints, medicationErrors,
     missingEpisodes, restraints, sanctions, behaviour, education, keyworking,
+    staff, keyWorkingSessions, keyWorkers,
   });
 
   it("produces a ranked priority list from real data", () => {
@@ -57,10 +61,11 @@ describe("child-priority integration (real seed data)", () => {
     expect(top.multi_domain).toBe(true);
     expect(top.safeguarding).toBe(true);
     expect(top.priority_band).toBe("critical");
-    // Alex is flagged by both placement and complaints streams
+    // Alex is flagged across placement, complaints AND continuity streams
     const domains = top.domains.map((x) => x.domain);
     expect(domains).toContain("placement");
     expect(domains).toContain("complaints");
+    expect(domains).toContain("continuity"); // his key worker delivers none of his sessions
   });
 
   it("surfaces a multi-stream ARIA insight and a top action for the lead child", () => {

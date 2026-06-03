@@ -25,6 +25,8 @@ import type {
   BehaviourInput, EducationInput, KeyworkingInput,
 } from "@/lib/placement-breakdown-forecast/placement-breakdown-forecast-engine";
 import type { ComplaintCorrInput } from "@/lib/complaints-incident-correlation/complaints-incident-correlation-engine";
+import type { ContinuityStaffInput, ContinuitySessionInput } from "@/lib/staff-child-continuity/staff-child-continuity-engine";
+import type { KeyWorkerLink } from "@/lib/child-priority/child-priority-engine";
 
 const d = (v: unknown, fallback = ""): string => (v == null ? fallback : v.toString().slice(0, 10));
 
@@ -96,9 +98,23 @@ export async function GET() {
     mood_after: typeof k.mood_after === "number" ? k.mood_after : 3,
   }));
 
+  // ── Relational-continuity inputs (4th stream) ──────────────────────────
+  const staff: ContinuityStaffInput[] = ((store.staff ?? []) as any[]).map((s: any) => ({
+    id: s.id,
+    name: s.full_name || `${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id,
+    active: s.is_active ?? (s.employment_status ? s.employment_status === "active" : true),
+  }));
+  const keyWorkingSessions: ContinuitySessionInput[] = ((store.keyWorkingSessions ?? []) as any[])
+    .filter((k: any) => k.child_id && k.staff_id)
+    .map((k: any) => ({ child_id: k.child_id, staff_id: k.staff_id, date: d(k.date ?? k.created_at) }));
+  const keyWorkers: KeyWorkerLink[] = ((store.youngPeople ?? []) as any[])
+    .filter((yp: any) => yp.status === "current")
+    .map((yp: any) => ({ child_id: yp.id, key_worker_id: yp.key_worker_id ?? null, secondary_worker_id: yp.secondary_worker_id ?? null }));
+
   const result = computeChildPriority({
     children, incidents, complaints, medicationErrors,
     missingEpisodes, restraints, sanctions, behaviour, education, keyworking,
+    staff, keyWorkingSessions, keyWorkers,
   });
 
   return NextResponse.json({ data: result });

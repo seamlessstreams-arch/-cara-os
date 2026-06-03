@@ -24,6 +24,7 @@ const DOMAIN_STYLES: Record<string, { bar: string; label: string }> = {
   placement: { bar: "bg-amber-400", label: "Placement breakdown risk" },
   complaints: { bar: "bg-indigo-400", label: "Complaints ↔ incident signal" },
   medication: { bar: "bg-rose-400", label: "Medication-error involvement" },
+  continuity: { bar: "bg-teal-400", label: "Relationship continuity gap" },
 };
 const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
   urgent: { bg: "bg-red-100", text: "text-red-700" },

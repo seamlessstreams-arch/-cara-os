@@ -27,6 +27,7 @@ const DOMAIN_STYLES: Record<string, { bg: string; text: string; label: string }>
   placement: { bg: "bg-amber-50", text: "text-amber-700", label: "Placement" },
   complaints: { bg: "bg-indigo-50", text: "text-indigo-700", label: "Complaints" },
   medication: { bg: "bg-rose-50", text: "text-rose-700", label: "Medication" },
+  continuity: { bg: "bg-teal-50", text: "text-teal-700", label: "Continuity" },
 };
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",
