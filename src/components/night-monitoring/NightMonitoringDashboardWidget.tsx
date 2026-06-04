@@ -231,7 +231,7 @@ export function NightMonitoringDashboardWidget({ homeId = "home-oak" }: Props) {
 
       {/* Footer */}
       <div className="p-3 text-center">
-        <a href="/night-monitoring" className="text-xs text-primary font-medium hover:underline">
+        <a href="/night-checks" className="text-xs text-primary font-medium hover:underline">
           View night log →
         </a>
       </div>

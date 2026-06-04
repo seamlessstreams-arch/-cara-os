@@ -460,7 +460,7 @@ export function RegulatorySelfAssessmentDashboardWidget({
       {/* Footer */}
       <div className="p-3 text-center">
         <a
-          href="/regulatory-self-assessment"
+          href="/ri/scorecard"
           className="text-xs text-primary font-medium hover:underline"
         >
           View full self-assessment report →

@@ -75,7 +75,7 @@ export function OfstedInspectionReadinessCard() {
             <ClipboardCheck className="h-4 w-4 text-blue-600" />
             <span className="text-blue-900">Inspection Readiness</span>
           </CardTitle>
-          <Link href="/quality-assurance" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+          <Link href="/audits" className="text-xs text-blue-600 hover:underline flex items-center gap-1">
             Readiness <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

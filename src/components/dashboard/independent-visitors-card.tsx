@@ -74,7 +74,7 @@ export function IndependentVisitorsCard() {
             <UserPlus className="h-4 w-4 text-brand" />
             Independent Visitors
           </CardTitle>
-          <Link href="/visitors" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/visitor-log" className="text-xs text-brand hover:underline flex items-center gap-1">
             Visitors <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

@@ -63,7 +63,7 @@ export function UtilityManagementCard() {
             <Building2 className="h-4 w-4 text-brand" />
             Utility Management
           </CardTitle>
-          <Link href="/premises" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/buildings" className="text-xs text-brand hover:underline flex items-center gap-1">
             Utilities <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

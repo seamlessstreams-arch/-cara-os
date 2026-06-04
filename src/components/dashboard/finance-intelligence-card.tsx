@@ -65,7 +65,7 @@ export function FinanceIntelligenceCard() {
             <Wallet className="h-4 w-4 text-brand" />
             Financial Management
           </CardTitle>
-          <Link href="/finance" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/pocket-money" className="text-xs text-brand hover:underline flex items-center gap-1">
             Finance <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

@@ -606,8 +606,8 @@ export default function AnnexAReadinessPage() {
               <PeriodStat icon={UserCheck} label="Active staff" value={staff.length} status={staff.length > 0 ? "ok" : "gap"} href="/staff" />
               <PeriodStat icon={ShieldAlert} label="Incidents" value={incidentsThisYear.length} status={incidentsThisYear.length > 0 ? "warn" : "ok"} href="/incidents" />
               <PeriodStat icon={MessageSquareWarning} label="Complaints" value={complaintsThisYear.length} status={complaintsThisYear.length > 0 ? "warn" : "ok"} href="/complaints" />
-              <PeriodStat icon={MapPin} label="Missing eps." value={missingThisYear.length} status={missingThisYear.length > 0 ? "warn" : "ok"} href="/missing-episodes" />
-              <PeriodStat icon={Activity} label="Restraints" value={restraintsThisYear.length} status={restraintsThisYear.length > 0 ? "warn" : "ok"} href="/restraints" />
+              <PeriodStat icon={MapPin} label="Missing eps." value={missingThisYear.length} status={missingThisYear.length > 0 ? "warn" : "ok"} href="/missing-from-care" />
+              <PeriodStat icon={Activity} label="Restraints" value={restraintsThisYear.length} status={restraintsThisYear.length > 0 ? "warn" : "ok"} href="/restraint-log" />
               <PeriodStat icon={ClipboardCheck} label="Reg 44 visits" value={reg44ThisYear.length} status={reg44ThisYear.length > 0 ? "ok" : "gap"} href="/regulation-44" />
               <PeriodStat icon={ScrollText} label="Reg 45 evidence" value={approvedReg45.length} status={approvedReg45.length > 0 ? "ok" : "gap"} href="/regulation-45" />
             </div>

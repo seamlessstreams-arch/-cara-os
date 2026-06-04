@@ -60,7 +60,7 @@ export function PositiveBehaviourReinforcementCard() {
             <Star className="h-4 w-4 text-brand" />
             Positive Reinforcement
           </CardTitle>
-          <Link href="/behaviour" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/behaviour-log" className="text-xs text-brand hover:underline flex items-center gap-1">
             Behaviour <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

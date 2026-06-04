@@ -197,7 +197,7 @@ export function QualityEcologyDashboardWidget({ homeId = "home-oak" }: Props) {
 
       {/* Footer */}
       <div className="p-3 text-center">
-        <a href="/quality-assurance" className="text-xs text-primary font-medium hover:underline">
+        <a href="/audits" className="text-xs text-primary font-medium hover:underline">
           View quality dashboard →
         </a>
       </div>

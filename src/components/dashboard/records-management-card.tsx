@@ -52,7 +52,7 @@ export function RecordsManagementCard() {
             <FolderOpen className="h-4 w-4 text-slate-600" />
             <span className="text-slate-900">Records Management</span>
           </CardTitle>
-          <Link href="/quality" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
+          <Link href="/quality-of-care" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
             View <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

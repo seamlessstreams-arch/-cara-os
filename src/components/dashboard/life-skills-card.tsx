@@ -65,7 +65,7 @@ export function LifeSkillsCard() {
             <Compass className="h-4 w-4 text-brand" />
             Life Skills & Independence
           </CardTitle>
-          <Link href="/life-skills" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/independence-skills" className="text-xs text-brand hover:underline flex items-center gap-1">
             Skills <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

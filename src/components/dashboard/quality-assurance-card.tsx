@@ -72,7 +72,7 @@ export function QualityAssuranceCard() {
             <ClipboardCheck className="h-4 w-4 text-brand" />
             Quality Assurance
           </CardTitle>
-          <Link href="/quality-assurance" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/audits" className="text-xs text-brand hover:underline flex items-center gap-1">
             QA <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

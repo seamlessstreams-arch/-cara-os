@@ -65,7 +65,7 @@ export function PossessionsCard() {
             <Package className="h-4 w-4 text-brand" />
             Possessions & Property
           </CardTitle>
-          <Link href="/possessions" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/personal-belongings" className="text-xs text-brand hover:underline flex items-center gap-1">
             Inventory <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

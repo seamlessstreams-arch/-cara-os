@@ -236,7 +236,7 @@ export function Reg44DashboardWidget({ homeId = "home-oak" }: Props) {
 
       {/* Footer */}
       <div className="p-3 text-center">
-        <a href="/reg44-visits" className="text-xs text-primary font-medium hover:underline">
+        <a href="/ri/reg44" className="text-xs text-primary font-medium hover:underline">
           View visit reports →
         </a>
       </div>

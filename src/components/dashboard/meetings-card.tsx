@@ -65,7 +65,7 @@ export function MeetingsCard() {
             <MessageCircle className="h-4 w-4 text-brand" />
             Children&apos;s Voice & Meetings
           </CardTitle>
-          <Link href="/meetings" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/house-meetings" className="text-xs text-brand hover:underline flex items-center gap-1">
             Meetings <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

@@ -51,7 +51,7 @@ export function PeerRelationshipAssessmentCard() {
             <UserPlus className="h-4 w-4 text-brand" />
             Peer Relationships
           </CardTitle>
-          <Link href="/peer-relationship-assessment" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/peer-relationships" className="text-xs text-brand hover:underline flex items-center gap-1">
             Assessments <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

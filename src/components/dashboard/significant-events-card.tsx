@@ -86,7 +86,7 @@ export function SignificantEventsCard() {
             <BookOpen className="h-4 w-4 text-brand" />
             Chronology Intelligence
           </CardTitle>
-          <Link href="/chronology" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/intelligence/chronology" className="text-xs text-brand hover:underline flex items-center gap-1">
             Timeline <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

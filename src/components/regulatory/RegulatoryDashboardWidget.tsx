@@ -213,7 +213,7 @@ export function RegulatoryDashboardWidget({ homeId = "home-oak" }: Props) {
 
       {/* Footer */}
       <div className="p-3 text-center">
-        <a href="/regulatory" className="text-xs text-primary font-medium hover:underline">
+        <a href="/ri" className="text-xs text-primary font-medium hover:underline">
           View regulatory reports →
         </a>
       </div>

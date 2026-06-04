@@ -66,7 +66,7 @@ export function IndependenceIntelligenceCard() {
             <Compass className="h-4 w-4 text-brand" />
             Independence & Pathway Planning
           </CardTitle>
-          <Link href="/leaving-care" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/pathway-plan-16plus" className="text-xs text-brand hover:underline flex items-center gap-1">
             Leaving Care <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

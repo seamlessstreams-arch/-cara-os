@@ -66,7 +66,7 @@ export function Reg44IndependentVisitorCard() {
             <ClipboardCheck className="h-4 w-4 text-brand" />
             Reg 44 Visits
           </CardTitle>
-          <Link href="/reg44" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/ri/reg44" className="text-xs text-brand hover:underline flex items-center gap-1">
             Reports <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

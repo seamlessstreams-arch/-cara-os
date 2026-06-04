@@ -66,7 +66,7 @@ export function MultiAgencyCard() {
             <Network className="h-4 w-4 text-brand" />
             Multi-Agency Working
           </CardTitle>
-          <Link href="/multi-agency" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/multi-agency-meetings" className="text-xs text-brand hover:underline flex items-center gap-1">
             Contacts <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

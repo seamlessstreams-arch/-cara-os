@@ -51,7 +51,7 @@ export function ChildrensAspirationsGoalsCard() {
             <Star className="h-4 w-4 text-brand" />
             Aspirations & Goals
           </CardTitle>
-          <Link href="/childrens-aspirations-goals" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/child-aspirations-tracker" className="text-xs text-brand hover:underline flex items-center gap-1">
             Goals <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

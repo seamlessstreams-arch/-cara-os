@@ -52,7 +52,7 @@ export function RespiteShortBreaksCard() {
             <Palmtree className="h-4 w-4 text-brand" />
             Respite & Short Breaks
           </CardTitle>
-          <Link href="/respite-short-breaks" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/placement-plan" className="text-xs text-brand hover:underline flex items-center gap-1">
             Breaks <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

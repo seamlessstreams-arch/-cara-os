@@ -54,7 +54,7 @@ export function PlacementMatchingAssessmentCard() {
             <Puzzle className="h-4 w-4 text-brand" />
             Placement Matching
           </CardTitle>
-          <Link href="/placements" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/placement-plan" className="text-xs text-brand hover:underline flex items-center gap-1">
             Placements <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

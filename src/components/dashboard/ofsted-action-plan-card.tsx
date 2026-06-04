@@ -68,7 +68,7 @@ export function OfstedActionPlanCard() {
             <ClipboardCheck className="h-4 w-4 text-brand" />
             Ofsted Action Plan
           </CardTitle>
-          <Link href="/quality-assurance" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/audits" className="text-xs text-brand hover:underline flex items-center gap-1">
             Actions <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

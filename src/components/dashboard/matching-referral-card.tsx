@@ -82,7 +82,7 @@ export function MatchingReferralCard() {
             <GitPullRequest className="h-4 w-4 text-brand" />
             Matching & Referrals
           </CardTitle>
-          <Link href="/matching-referral" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/matching-referrals" className="text-xs text-brand hover:underline flex items-center gap-1">
             Referrals <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

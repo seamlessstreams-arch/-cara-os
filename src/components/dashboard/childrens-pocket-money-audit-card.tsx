@@ -52,7 +52,7 @@ export function ChildrensPocketMoneyAuditCard() {
             <Coins className="h-4 w-4 text-slate-600" />
             <span className="text-slate-900">Pocket Money Audit</span>
           </CardTitle>
-          <Link href="/finance" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
+          <Link href="/pocket-money" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
             View <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

@@ -184,7 +184,7 @@ export function AutomationDashboardCard() {
         {/* View All Rules link */}
         <div className="pt-1">
           <a
-            href="/platform/automation"
+            href="/workflow-orchestration"
             className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
           >
             View All Rules

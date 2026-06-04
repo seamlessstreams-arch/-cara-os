@@ -52,7 +52,7 @@ export function ChildrensWishesFeelingsCard() {
             <Heart className="h-4 w-4 text-slate-600" />
             <span className="text-slate-900">Wishes & Feelings</span>
           </CardTitle>
-          <Link href="/contact" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
+          <Link href="/contact-directory" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
             View <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

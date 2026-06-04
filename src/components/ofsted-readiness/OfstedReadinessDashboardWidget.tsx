@@ -420,7 +420,7 @@ export function OfstedReadinessDashboardWidget({
       {/* Footer */}
       <div className="p-3 text-center">
         <a
-          href="/ofsted-readiness"
+          href="/ri/ofsted"
           className="text-xs text-primary font-medium hover:underline"
         >
           View full readiness report →

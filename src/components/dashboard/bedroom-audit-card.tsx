@@ -65,7 +65,7 @@ export function BedroomAuditCard() {
             <BedDouble className="h-4 w-4 text-brand" />
             Bedroom Audits
           </CardTitle>
-          <Link href="/bedroom-audits" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/bedroom-personalisation" className="text-xs text-brand hover:underline flex items-center gap-1">
             Audits <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
