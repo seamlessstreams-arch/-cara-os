@@ -96,6 +96,9 @@ export function useTriageReg40Task() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reg40-triage"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      // a notify_ofsted triage queues a pending notifiable event
+      queryClient.invalidateQueries({ queryKey: ["notifiable-events"] });
+      queryClient.invalidateQueries({ queryKey: ["notifiable-events-intelligence"] });
     },
   });
 }

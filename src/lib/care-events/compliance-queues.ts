@@ -21,6 +21,7 @@ import type {
   AnnexAEvidenceItem,
   ManagerDecision,
 } from "@/types/care-events";
+import type { NotifiableEvent, NotifiableEventType } from "@/types/extended";
 
 const APPROVED_DECISIONS: ManagerDecision[] = ["approved", "accepted"];
 
@@ -251,5 +252,44 @@ export function buildReg40Queue(
   return {
     data: tasks,
     meta: { total: tasks.length, active, overdue, care_events_pending_triage: pendingTriageCount },
+  };
+}
+
+// ── Reg 40 → notifiable event (when a manager triages "notify_ofsted") ─────────
+//
+// Best-effort mapping of a care event's category to a notifiable-event type; the
+// manager refines it before it is actually submitted.
+export function reg40NotifiableEventType(ce: CareEvent): NotifiableEventType {
+  const cat = (ce.category ?? "").toLowerCase();
+  if (cat.includes("restraint")) return "restraint";
+  if (cat.includes("abscond") || cat.includes("missing")) return "absconding";
+  if (cat.includes("allegation")) return "allegation_against_staff";
+  if (cat.includes("police")) return "police_involvement";
+  if (ce.is_safeguarding || cat.includes("protection") || cat.includes("safeguard")) return "child_protection";
+  return "serious_incident";
+}
+
+// Builds a *pending* notifiable event from a triaged care event. It is queued in
+// `ofsted_status: "pending"` with no notification recorded — a human still has to
+// review and submit it. This never sends anything to Ofsted.
+export function buildReg40NotifiableDraft(
+  ce: CareEvent,
+  opts: { reportedBy: string; note?: string | null; today: string },
+): Partial<NotifiableEvent> {
+  const emptyNotification = { body: "", notified_date: null, method: "", reference: null };
+  return {
+    date: opts.today,
+    event_type: reg40NotifiableEventType(ce),
+    child_id: ce.child_id,
+    summary: ce.title || "Reg 40 notifiable event",
+    detail: excerpt(ce.content, 1000),
+    immediate_action: opts.note ?? "",
+    reported_by: opts.reportedBy,
+    ofsted_status: "pending", // queued for a human to notify — NOT sent
+    ofsted: { ...emptyNotification },
+    local_authority: { ...emptyNotification },
+    placing: { ...emptyNotification },
+    follow_up: "",
+    lesson_learned: "",
   };
 }

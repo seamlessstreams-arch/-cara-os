@@ -4,6 +4,8 @@ import {
   buildAnnexAQueue,
   buildOversightQueue,
   buildReg40Queue,
+  buildReg40NotifiableDraft,
+  reg40NotifiableEventType,
   careEventRef,
 } from "@/lib/care-events/compliance-queues";
 import type { CareEvent, Reg45EvidenceItem, AnnexAEvidenceItem } from "@/types/care-events";
@@ -149,5 +151,30 @@ describe("buildReg40Queue", () => {
     const { data, meta } = buildReg40Queue(events, 1, "2026-05-01");
     expect(meta).toEqual({ total: 1, active: 1, overdue: 1, care_events_pending_triage: 1 });
     expect(data[0].care_event?.content_excerpt).toContain("Some content");
+  });
+});
+
+describe("reg40NotifiableEventType", () => {
+  it("maps category/safeguarding to a notifiable type, defaulting to serious_incident", () => {
+    expect(reg40NotifiableEventType(ce({ category: "restraint" }))).toBe("restraint");
+    expect(reg40NotifiableEventType(ce({ category: "child_missing" }))).toBe("absconding");
+    expect(reg40NotifiableEventType(ce({ category: "general", is_safeguarding: true }))).toBe("child_protection");
+    expect(reg40NotifiableEventType(ce({ category: "general", is_safeguarding: false }))).toBe("serious_incident");
+  });
+});
+
+describe("buildReg40NotifiableDraft", () => {
+  it("builds a PENDING (unsent) notifiable event from a care event", () => {
+    const draft = buildReg40NotifiableDraft(ce({ child_id: "child9", title: "Serious event" }), {
+      reportedBy: "staff_darren",
+      note: "Manager note",
+      today: "2026-05-19",
+    });
+    expect(draft.ofsted_status).toBe("pending"); // queued for a human, never auto-sent
+    expect(draft.ofsted?.notified_date).toBeNull();
+    expect(draft.child_id).toBe("child9");
+    expect(draft.reported_by).toBe("staff_darren");
+    expect(draft.summary).toBe("Serious event");
+    expect(draft.date).toBe("2026-05-19");
   });
 });

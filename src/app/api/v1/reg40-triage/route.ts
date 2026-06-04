@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { buildReg40Queue } from "@/lib/care-events/compliance-queues";
+import { buildReg40Queue, buildReg40NotifiableDraft } from "@/lib/care-events/compliance-queues";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +18,9 @@ export async function GET(req: NextRequest) {
 }
 
 // PATCH /api/v1/reg40-triage  → manager records a triage decision.
-// IMPORTANT: this only RECORDS the decision (incl. "notify_ofsted") on the care
-// event — it never auto-sends any Ofsted notification. Acting on a
-// notify_ofsted decision stays a separate, human-gated step.
+// IMPORTANT: a "notify_ofsted" decision creates a *pending* notifiable event
+// (queued in ofsted_status:"pending") for a human to review and submit — it
+// NEVER auto-sends any Ofsted notification. Acting on it stays a human step.
 export async function PATCH(req: NextRequest) {
   let body: {
     task_id?: string;
@@ -46,5 +46,18 @@ export async function PATCH(req: NextRequest) {
     manager_review_note: note,
   });
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ data: updated });
+
+  // A "notify_ofsted" triage decision queues a pending notifiable event for a
+  // human to submit. This records intent only — it does not notify Ofsted.
+  let notifiable_event_id: string | null = null;
+  if (body.action === "notify_ofsted") {
+    const draft = buildReg40NotifiableDraft(updated, {
+      reportedBy: body.completed_by ?? "",
+      note: body.evidence_note,
+      today: new Date().toISOString().slice(0, 10),
+    });
+    notifiable_event_id = db.notifiableEvents.create(draft).id;
+  }
+
+  return NextResponse.json({ data: updated, notifiable_event_id });
 }
