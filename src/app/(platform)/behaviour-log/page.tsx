@@ -142,7 +142,7 @@ export default function BehaviourLogPage() {
     { header: "Date", accessor: r => r.date },
     { header: "Time", accessor: r => r.time },
     { header: "Direction", accessor: r => r.direction === "positive" ? "Positive" : "Concern" },
-    { header: "Intensity", accessor: r => INTENSITY_CONFIG[r.intensity].label },
+    { header: "Intensity", accessor: r => INTENSITY_CONFIG[r.intensity]?.label ?? String(r.intensity ?? "—") },
     { header: "Title", accessor: r => r.title },
     { header: "Antecedent", accessor: r => r.antecedent },
     { header: "Behaviour", accessor: r => r.behaviour },
@@ -316,7 +316,7 @@ export default function BehaviourLogPage() {
         {filtered.map(entry => {
           const isOpen = expandedId === entry.id;
           const isPositive = entry.direction === "positive";
-          const ic = INTENSITY_CONFIG[entry.intensity];
+          const ic = INTENSITY_CONFIG[entry.intensity] ?? { label: String(entry.intensity ?? "—"), colour: "bg-slate-100 text-slate-700" };
 
           return (
             <div key={entry.id} className={cn("rounded-lg border bg-card overflow-hidden",

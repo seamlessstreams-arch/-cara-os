@@ -189,9 +189,9 @@ export default function AuditTrailPage() {
               <AlertTriangle className="h-4 w-4 text-red-500" />
               <div>
                 <div className="text-2xl font-bold text-red-700">
-                  {(meta?.action_counts["permission_denied"] ?? 0) +
-                    (meta?.action_counts["validation_failed"] ?? 0) +
-                    (meta?.action_counts["care_event_route_failed"] ?? 0)}
+                  {(meta?.action_counts?.["permission_denied"] ?? 0) +
+                    (meta?.action_counts?.["validation_failed"] ?? 0) +
+                    (meta?.action_counts?.["care_event_route_failed"] ?? 0)}
                 </div>
                 <div className="text-xs text-slate-500">Errors/Failures</div>
               </div>

@@ -540,7 +540,7 @@ function DashboardTab({ data, onAddCheck }: { data: BuildingsData; onAddCheck: (
                   </div>
                   <span>{freq.label} Checks</span>
                   <Badge className={cn("text-[9px] rounded-full ml-auto border-0", freq.bg, freq.color)}>
-                    {freq.checks.length} items
+                    {(freq.checks?.length ?? 0)} items
                   </Badge>
                 </CardTitle>
               </CardHeader>
@@ -1048,7 +1048,7 @@ export default function BuildingsPage() {
     { id: "hazards" as const, label: "Hazards & Maintenance", icon: AlertTriangle },
   ];
 
-  const alertCount = raw ? raw.overdue.length + raw.failed.length : 0;
+  const alertCount = raw ? (raw.overdue?.length ?? 0) + (raw.failed?.length ?? 0) : 0;
 
   return (
     <PageShell
