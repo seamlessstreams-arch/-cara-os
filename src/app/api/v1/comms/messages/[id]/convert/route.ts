@@ -111,8 +111,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       targetRecordId = outcome.event.id;
     } else {
       // Held (validation issue / suspected duplicate) — don't link a phantom record.
+      const issueReason = outcome.validation?.issues
+        ?.filter((i) => i.severity === "error")
+        .map((i) => i.message)
+        .join(" ");
+      const reason = outcome.hold_reason || issueReason || "This record could not be captured.";
       return NextResponse.json(
-        { data: { converted: false, action_type: actionType, capture: outcome, hold_reason: outcome.hold_reason } },
+        { data: { converted: false, action_type: actionType, reason, capture: outcome, hold_reason: outcome.hold_reason } },
         { status: 200 },
       );
     }

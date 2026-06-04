@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import {
-  FileText, Lock, Unlock, AlertTriangle, Sparkles, CheckCircle2, ChevronDown, ChevronUp, Loader2,
+  FileText, Lock, Unlock, AlertTriangle, Sparkles, CheckCircle2, ChevronDown, ChevronUp, Loader2, ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import {
   useConvertMessage, useSetInvestigationHold, type MessageGovernanceAnalysis,
 } from "@/hooks/use-comms";
+import { useYoungPeople } from "@/hooks/use-young-people";
 import { CONVERSION_ACTIONS, ACTION_EVENT_MAP, RETENTION_CATEGORIES } from "@/lib/comms/comms-governance";
 import type { CommsMessageEnriched, CommsMessageActionType, CommsLinkedRecordType } from "@/types/comms";
 
@@ -65,17 +66,42 @@ export function MessageActionMenu({
 }) {
   const [open, setOpen] = useState(false);
   const [showRetention, setShowRetention] = useState(false);
+  const [childPickerFor, setChildPickerFor] = useState<CommsMessageActionType | null>(null);
+  const [heldReason, setHeldReason] = useState<string | null>(null);
   const convert = useConvertMessage();
   const hold = useSetInvestigationHold();
+  const { data: ypEnvelope } = useYoungPeople("current");
+  const youngPeople = ypEnvelope?.data ?? [];
 
   const hasChild = !!message.linked_child_id;
   const held = message.investigation_hold;
 
-  const doConvert = (action_type: CommsMessageActionType) => {
+  const runConvert = (action_type: CommsMessageActionType, child_id?: string | null) => {
+    setHeldReason(null);
     convert.mutate(
-      { messageId: message.id, channelId, action_type },
-      { onSuccess: () => setOpen(false) },
+      { messageId: message.id, channelId, action_type, child_id },
+      {
+        onSuccess: (res) => {
+          if (res?.data?.converted === false) {
+            setHeldReason(res.data.reason ?? "This record could not be captured.");
+          } else {
+            setOpen(false);
+            setChildPickerFor(null);
+          }
+        },
+      },
     );
+  };
+
+  const onPickAction = (action_type: CommsMessageActionType) => {
+    const m = ACTION_EVENT_MAP[action_type];
+    // Child-scoped record with no child on the message → ask which child it's about.
+    if (m.requiresChild && !hasChild) {
+      setHeldReason(null);
+      setChildPickerFor(action_type);
+      return;
+    }
+    runConvert(action_type, message.linked_child_id);
   };
   const toggleHold = (retention_category?: string) => {
     hold.mutate(
@@ -116,6 +142,38 @@ export function MessageActionMenu({
             <p className="text-[11px] text-amber-700 px-1 py-1">
               This message is frozen under investigation hold. Release the hold to convert it.
             </p>
+          ) : childPickerFor ? (
+            <>
+              <div className="flex items-center gap-1 px-1 pb-1">
+                <button
+                  onClick={() => setChildPickerFor(null)}
+                  className="inline-flex items-center gap-0.5 text-[10px] text-[var(--cs-text-muted)] hover:text-[var(--cs-teal)]"
+                >
+                  <ArrowLeft className="h-3 w-3" />Back
+                </button>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">
+                  Which child is this {ACTION_EVENT_MAP[childPickerFor].label.toLowerCase()} about?
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-0.5 max-h-[180px] overflow-y-auto">
+                {youngPeople.length === 0 ? (
+                  <p className="text-[11px] text-[var(--cs-text-muted)] px-2 py-1">No children loaded.</p>
+                ) : (
+                  youngPeople.map((yp) => (
+                    <button
+                      key={yp.id}
+                      disabled={convert.isPending}
+                      onClick={() => runConvert(childPickerFor, yp.id)}
+                      className="flex items-center justify-between rounded-lg px-2 py-1.5 text-left text-[12px] hover:bg-[var(--cs-surface)]"
+                    >
+                      <span className="text-[var(--cs-text-secondary)]">
+                        {yp.preferred_name || `${yp.first_name} ${yp.last_name}`}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </>
           ) : (
             <>
               <p className="text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)] px-1 pb-1">
@@ -124,25 +182,29 @@ export function MessageActionMenu({
               <div className="grid grid-cols-1 gap-0.5">
                 {CONVERSION_ACTIONS.map((a) => {
                   const m = ACTION_EVENT_MAP[a];
-                  const blocked = m.requiresChild && !hasChild;
                   return (
                     <button
                       key={a}
-                      disabled={blocked || convert.isPending}
-                      onClick={() => doConvert(a)}
-                      className={cn(
-                        "flex items-center justify-between rounded-lg px-2 py-1.5 text-left text-[12px]",
-                        blocked ? "opacity-40 cursor-not-allowed" : "hover:bg-[var(--cs-surface)]",
-                      )}
-                      title={blocked ? "Link this message to a child first" : undefined}
+                      disabled={convert.isPending}
+                      onClick={() => onPickAction(a)}
+                      className="flex items-center justify-between rounded-lg px-2 py-1.5 text-left text-[12px] hover:bg-[var(--cs-surface)] disabled:opacity-50"
                     >
                       <span className="text-[var(--cs-text-secondary)]">{m.label}</span>
-                      {blocked && <span className="text-[9px] text-[var(--cs-text-muted)]">needs child</span>}
+                      {m.requiresChild && !hasChild && (
+                        <span className="text-[9px] text-[var(--cs-text-muted)]">choose child</span>
+                      )}
                     </button>
                   );
                 })}
               </div>
             </>
+          )}
+
+          {heldReason && (
+            <p className="flex items-start gap-1 text-[11px] text-amber-700 px-1 pt-1.5">
+              <AlertTriangle className="h-3 w-3 mt-0.5 shrink-0" />
+              <span>Not recorded — {heldReason}</span>
+            </p>
           )}
 
           {convert.isError && (

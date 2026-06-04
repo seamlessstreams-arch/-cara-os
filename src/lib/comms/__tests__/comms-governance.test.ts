@@ -107,7 +107,22 @@ describe("ACTION_EVENT_MAP", () => {
   it("child-scoped records require a linked child", () => {
     expect(ACTION_EVENT_MAP.daily_log.requiresChild).toBe(true);
     expect(ACTION_EVENT_MAP.medication_note.requiresChild).toBe(true);
-    expect(ACTION_EVENT_MAP.safeguarding_concern.requiresChild).toBe(false);
+    expect(ACTION_EVENT_MAP.task.requiresChild).toBe(false);
+    expect(ACTION_EVENT_MAP.management_oversight.requiresChild).toBe(false);
+  });
+
+  it("every CHILD_EVENT-typed action requires a child (matches the spine's validateDraft)", () => {
+    // Mirror of CHILD_EVENTS in event-capture-engine.ts — these reject a draft
+    // with no childId, so converting to them MUST require a child up-front.
+    const CHILD_EVENTS = new Set([
+      "daily_log", "incident", "safeguarding", "medication", "missing",
+      "physical_intervention", "keywork", "education", "health", "family_contact", "complaint",
+    ]);
+    for (const [action, m] of Object.entries(ACTION_EVENT_MAP)) {
+      if (m.eventType && CHILD_EVENTS.has(m.eventType)) {
+        expect(m.requiresChild, `${action} → ${m.eventType} must requireChild`).toBe(true);
+      }
+    }
   });
 });
 

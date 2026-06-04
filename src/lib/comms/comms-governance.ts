@@ -234,8 +234,10 @@ export interface ActionMapping {
 export const ACTION_EVENT_MAP: Record<CommsMessageActionType, ActionMapping> = {
   task: { eventType: null, taskCategory: "professional_communication", linkedRecordType: "task", requiresChild: false, label: "Task / follow-up", riskLevel: "low" },
   daily_log: { eventType: "daily_log", taskCategory: "young_person_plans", linkedRecordType: "daily_log", requiresChild: true, label: "Daily log entry", riskLevel: "low" },
-  incident_follow_up: { eventType: "incident", taskCategory: "safeguarding", linkedRecordType: "incident", requiresChild: false, label: "Incident record", riskLevel: "high" },
-  safeguarding_concern: { eventType: "safeguarding", taskCategory: "safeguarding", linkedRecordType: "incident", requiresChild: false, label: "Safeguarding concern", riskLevel: "high" },
+  // incident + safeguarding are CHILD_EVENTS on the spine — a child link is mandatory
+  // (validateDraft rejects them otherwise), so requiresChild must be true here.
+  incident_follow_up: { eventType: "incident", taskCategory: "safeguarding", linkedRecordType: "incident", requiresChild: true, label: "Incident record", riskLevel: "high" },
+  safeguarding_concern: { eventType: "safeguarding", taskCategory: "safeguarding", linkedRecordType: "incident", requiresChild: true, label: "Safeguarding concern", riskLevel: "high" },
   medication_note: { eventType: "medication", taskCategory: "medication", linkedRecordType: "medication_record", requiresChild: true, label: "Medication record", riskLevel: "medium" },
   risk_assessment_review: { eventType: "risk_assessment", taskCategory: "young_person_plans", linkedRecordType: "risk_assessment", requiresChild: true, label: "Risk assessment review", riskLevel: "medium" },
   management_oversight: { eventType: "qa_check", taskCategory: "compliance", linkedRecordType: "management_oversight", requiresChild: false, label: "Management oversight", riskLevel: "low" },

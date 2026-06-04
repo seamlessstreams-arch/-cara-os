@@ -91,6 +91,15 @@ export function useAnalyseLanguage() {
   });
 }
 
+export interface ConvertMessageResult {
+  data: {
+    converted: boolean;
+    action_type: CommsMessageActionType;
+    reason?: string;
+    target_record_id?: string | null;
+  };
+}
+
 /** Convert a message into a formal record (event spine) or a task — capture once. */
 export function useConvertMessage() {
   const qc = useQueryClient();
@@ -107,7 +116,7 @@ export function useConvertMessage() {
       task_title?: string;
       task_priority?: "low" | "medium" | "high" | "urgent";
       due_date?: string | null;
-    }) => api.post(`/comms/messages/${messageId}/convert`, payload),
+    }) => api.post<ConvertMessageResult>(`/comms/messages/${messageId}/convert`, payload),
     onSuccess: (_d, vars) => {
       qc.invalidateQueries({ queryKey: ["comms", "messages", vars.channelId] });
       qc.invalidateQueries({ queryKey: ["tasks"] });
