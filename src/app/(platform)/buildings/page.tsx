@@ -311,7 +311,7 @@ function AddCheckForm({ onClose, onSubmit }: { onClose: () => void; onSubmit: (d
 // ── Tab: Dashboard (Home Operations Hub) ─────────────────────────────────────
 
 function DashboardTab({ data, onAddCheck }: { data: BuildingsData; onAddCheck: () => void }) {
-  const { checks, summary, overdue, failed } = data;
+  const { checks = [], summary, overdue = [], failed = [] } = data;
   const today = todayStr();
   const completedToday = checks.filter((c) => c.check_date === today && c.status === "completed").length;
   const hasAlerts = overdue.length > 0 || failed.length > 0;
@@ -394,7 +394,7 @@ function DashboardTab({ data, onAddCheck }: { data: BuildingsData; onAddCheck: (
               <div className="text-[10px] text-slate-500">Done today</div>
             </div>
             <div className="text-center">
-              <div className={cn("text-2xl font-bold tabular-nums", summary.overdue > 0 ? "text-red-700" : "text-slate-600")}>{summary.overdue}</div>
+              <div className={cn("text-2xl font-bold tabular-nums", (summary?.overdue ?? 0) > 0 ? "text-red-700" : "text-slate-600")}>{summary?.overdue ?? 0}</div>
               <div className="text-[10px] text-slate-500">Overdue</div>
             </div>
           </div>
@@ -601,10 +601,10 @@ function CheckHistoryTab({ data, onAddCheck }: { data: BuildingsData; onAddCheck
   const [filterStatus, setFilterStatus] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "type" | "status" | "risk">("date");
 
-  const areas = [...new Set(data.checks.map((c) => c.area))].filter(Boolean);
+  const areas = [...new Set((data.checks ?? []).map((c) => c.area))].filter(Boolean);
 
   const filtered = useMemo(() => {
-    let list = [...data.checks];
+    let list = [...(data.checks ?? [])];
     if (search) {
       const q = search.toLowerCase();
       list = list.filter((c) =>
@@ -739,7 +739,7 @@ function CheckHistoryTab({ data, onAddCheck }: { data: BuildingsData; onAddCheck
 // ── Tab: Certificates & Compliance ────────────────────────────────────────────
 
 function CertificatesTab({ data }: { data: BuildingsData }) {
-  const building = data.buildings[0];
+  const building = data.buildings?.[0];
   if (!building) return null;
 
   const certs = [
@@ -873,7 +873,7 @@ function CertificatesTab({ data }: { data: BuildingsData }) {
 function HazardsTab({ data }: { data: BuildingsData }) {
   const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
 
-  const openHazards = [...data.failed, ...data.overdue].filter((c) =>
+  const openHazards = [...(data.failed ?? []), ...(data.overdue ?? [])].filter((c) =>
     c.action_required || c.status === "overdue"
   );
 

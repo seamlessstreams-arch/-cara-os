@@ -221,8 +221,8 @@ export default function AuditTrailPage() {
             }`}
           >
             {f.label}
-            {f.value !== "all" && meta?.action_counts[f.value] ? (
-              <span className="ml-1 opacity-70">({meta.action_counts[f.value]})</span>
+            {f.value !== "all" && meta?.action_counts?.[f.value] ? (
+              <span className="ml-1 opacity-70">({meta.action_counts?.[f.value]})</span>
             ) : null}
           </button>
         ))}
