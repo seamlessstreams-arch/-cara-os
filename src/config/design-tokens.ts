@@ -19,8 +19,12 @@ export const CORNERSTONE_TOKENS = {
     infoBlue: "#2563eb",
     // Accents
     ariaGold: "#d4a843",    // AI features
-    calmTeal: "#0d9488",    // Positive progress
+    calmTeal: "#119488",    // Cornerstone signature teal (logo growth/plant)
     softPurple: "#7c3aed",  // Intelligence
+    // Avisaar — warm children's-care accent trio (logo puzzle pieces)
+    avisaarSage: "#6fb497",
+    avisaarCoral: "#d9685c",
+    avisaarAmber: "#eaba3f",
   },
   spacing: {
     xs: "0.25rem",

@@ -76,6 +76,24 @@
   --cs-aria-glow:       rgba(200, 155, 60, 0.28);
   --cs-aria-shimmer:    linear-gradient(135deg, #f5e7c6 0%, #fdf8ef 50%, #f5e7c6 100%);
 
+  /* ── Cornerstone teal — signature brand accent (logo growth/plant tone) ── */
+  --cs-teal:            #119488;
+  --cs-teal-strong:     #0c6b62;
+  --cs-teal-soft:       #c9ece6;
+  --cs-teal-bg:         #eefaf7;
+  --cs-teal-glow:       rgba(17, 148, 136, 0.26);
+
+  /* ── Avisaar — warm children's-care accent trio (sage · coral · amber) ─── */
+  --cs-avisaar-sage:      #6fb497;
+  --cs-avisaar-sage-soft: #dcefe6;
+  --cs-avisaar-sage-bg:   #f1faf5;
+  --cs-avisaar-coral:     #d9685c;
+  --cs-avisaar-coral-soft:#faddd8;
+  --cs-avisaar-coral-bg:  #fdf2f0;
+  --cs-avisaar-amber:     #eaba3f;
+  --cs-avisaar-amber-soft:#fbedc1;
+  --cs-avisaar-amber-bg:  #fef9eb;
+
   /* Semantic — calm tones, not harsh */
   --cs-risk:            #b42318;
   --cs-risk-soft:       #fee4e2;
@@ -127,8 +145,8 @@
   /* Sidebar — calm navy */
   --sidebar-bg:           #0f1e36;
   --sidebar-border:       rgba(255, 255, 255, 0.08);
-  --sidebar-active-bg:    rgba(200, 155, 60, 0.15);
-  --sidebar-active-text:  #f5e7c6;
+  --sidebar-active-bg:    rgba(17, 148, 136, 0.20);
+  --sidebar-active-text:  #5fd6c4;
   --sidebar-text:         rgba(255, 255, 255, 0.75);
   --sidebar-muted:        rgba(255, 255, 255, 0.45);
   --sidebar-hover-bg:     rgba(255, 255, 255, 0.06);
@@ -159,25 +177,26 @@
   --secondary-foreground: var(--cs-text);
   --muted: var(--cs-surface);
   --muted-foreground: var(--cs-text-muted);
-  --accent: var(--cs-aria-gold-bg);
+  --accent: var(--cs-teal-bg);
   --accent-foreground: var(--cs-navy);
   --destructive: var(--cs-risk);
   --border: var(--cs-border);
   --input: var(--cs-border);
-  --ring: var(--cs-aria-gold);
-  --chart-1: var(--cs-aria-gold);
-  --chart-2: var(--cs-info);
-  --chart-3: var(--cs-success);
-  --chart-4: var(--cs-warning);
-  --chart-5: var(--cs-oversight);
+  --ring: var(--cs-teal);
+  /* Charts — Cornerstone (teal, navy) + Avisaar (amber, coral, sage) */
+  --chart-1: var(--cs-teal);
+  --chart-2: var(--cs-navy-muted);
+  --chart-3: var(--cs-avisaar-amber);
+  --chart-4: var(--cs-avisaar-coral);
+  --chart-5: var(--cs-avisaar-sage);
   --radius: 0.875rem;
   --sidebar: var(--cs-navy);
   --sidebar-foreground: rgba(255, 255, 255, 0.85);
-  --sidebar-primary: var(--cs-aria-gold);
+  --sidebar-primary: var(--cs-teal);
   --sidebar-primary-foreground: var(--cs-navy);
   --sidebar-accent: rgba(255, 255, 255, 0.06);
   --sidebar-accent-foreground: rgba(255, 255, 255, 0.85);
-  --sidebar-ring: var(--cs-aria-gold);
+  --sidebar-ring: var(--cs-teal);
 }
 
 @theme inline {
@@ -237,6 +256,19 @@
   --color-cs-aria-gold: var(--cs-aria-gold);
   --color-cs-aria-gold-soft: var(--cs-aria-gold-soft);
   --color-cs-aria-gold-bg: var(--cs-aria-gold-bg);
+  --color-cs-teal: var(--cs-teal);
+  --color-cs-teal-strong: var(--cs-teal-strong);
+  --color-cs-teal-soft: var(--cs-teal-soft);
+  --color-cs-teal-bg: var(--cs-teal-bg);
+  --color-cs-avisaar-sage: var(--cs-avisaar-sage);
+  --color-cs-avisaar-sage-soft: var(--cs-avisaar-sage-soft);
+  --color-cs-avisaar-sage-bg: var(--cs-avisaar-sage-bg);
+  --color-cs-avisaar-coral: var(--cs-avisaar-coral);
+  --color-cs-avisaar-coral-soft: var(--cs-avisaar-coral-soft);
+  --color-cs-avisaar-coral-bg: var(--cs-avisaar-coral-bg);
+  --color-cs-avisaar-amber: var(--cs-avisaar-amber);
+  --color-cs-avisaar-amber-soft: var(--cs-avisaar-amber-soft);
+  --color-cs-avisaar-amber-bg: var(--cs-avisaar-amber-bg);
   --color-cs-risk: var(--cs-risk);
   --color-cs-risk-soft: var(--cs-risk-soft);
   --color-cs-success: var(--cs-success);
@@ -498,25 +530,25 @@ body {
   --secondary-foreground: var(--cs-text);
   --muted: var(--cs-surface);
   --muted-foreground: var(--cs-text-muted);
-  --accent: rgba(200, 155, 60, 0.12);
-  --accent-foreground: var(--cs-aria-gold-soft);
+  --accent: rgba(17, 148, 136, 0.14);
+  --accent-foreground: var(--cs-teal-soft);
   --destructive: #ef4444;
   --border: var(--cs-border);
   --input: rgba(255, 255, 255, 0.1);
-  --ring: var(--cs-aria-gold);
-  --chart-1: var(--cs-aria-gold);
+  --ring: var(--cs-teal);
+  --chart-1: var(--cs-teal);
   --chart-2: #60a5fa;
-  --chart-3: #34d399;
-  --chart-4: #fbbf24;
-  --chart-5: #a78bfa;
+  --chart-3: var(--cs-avisaar-amber);
+  --chart-4: var(--cs-avisaar-coral);
+  --chart-5: var(--cs-avisaar-sage);
   --sidebar: #0a1222;
   --sidebar-foreground: rgba(255, 255, 255, 0.85);
-  --sidebar-primary: var(--cs-aria-gold);
+  --sidebar-primary: var(--cs-teal);
   --sidebar-primary-foreground: var(--cs-navy);
   --sidebar-accent: rgba(255, 255, 255, 0.06);
   --sidebar-accent-foreground: rgba(255, 255, 255, 0.85);
   --sidebar-border: rgba(255, 255, 255, 0.06);
-  --sidebar-ring: var(--cs-aria-gold);
+  --sidebar-ring: var(--cs-teal);
 }
 
 @layer base {

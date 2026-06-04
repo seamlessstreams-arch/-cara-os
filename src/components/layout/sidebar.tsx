@@ -230,8 +230,8 @@ export function Sidebar() {
         collapsed ? "justify-center px-0" : "gap-3 px-4",
       )}>
         <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
-          {/* Logo mark — gold accent on dark */}
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-aria-gold)] text-[var(--cs-navy)]">
+          {/* Logo mark — Cornerstone teal accent on dark */}
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-teal)] text-white">
             <span className="text-sm font-bold tracking-tight">C</span>
           </div>
           {!collapsed && (
@@ -298,7 +298,7 @@ export function Sidebar() {
                   className={cn(
                     "flex h-10 w-10 mx-auto items-center justify-center rounded-xl transition-all",
                     childActive
-                      ? "bg-[var(--cs-aria-gold)]/15 text-[var(--cs-aria-gold)]"
+                      ? "bg-[var(--cs-teal)]/15 text-[var(--cs-teal)]"
                       : "text-white/50 hover:bg-white/10 hover:text-white/80",
                   )}
                 >
@@ -324,7 +324,7 @@ export function Sidebar() {
                 >
                   <PrimaryIcon className={cn(
                     "h-[18px] w-[18px] shrink-0 transition-colors",
-                    childActive ? "text-[var(--cs-aria-gold)]" : "text-white/40",
+                    childActive ? "text-[var(--cs-teal)]" : "text-white/40",
                   )} />
                   <span className="flex-1 text-left truncate">{group.label}</span>
                   {isOpen
@@ -363,13 +363,13 @@ export function Sidebar() {
                         className={cn(
                           "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[13px] transition-all",
                           isChildActive
-                            ? "bg-[var(--cs-aria-gold)]/10 text-[var(--cs-aria-gold)] font-medium"
+                            ? "bg-[var(--cs-teal)]/10 text-[var(--cs-teal)] font-medium"
                             : "text-white/50 hover:bg-white/5 hover:text-white/80",
                         )}
                       >
                         <ChildIcon className={cn(
                           "h-3.5 w-3.5 shrink-0",
-                          isChildActive ? "text-[var(--cs-aria-gold)]" : "text-white/30",
+                          isChildActive ? "text-[var(--cs-teal)]" : "text-white/30",
                         )} />
                         <span className="flex-1 truncate">{child.label}</span>
                         {badgeCount > 0 && (
@@ -398,7 +398,7 @@ export function Sidebar() {
               className={cn(
                 "flex h-10 w-10 mx-auto items-center justify-center rounded-xl transition-all",
                 pathname.startsWith("/settings")
-                  ? "bg-[var(--cs-aria-gold)]/15 text-[var(--cs-aria-gold)]"
+                  ? "bg-[var(--cs-teal)]/15 text-[var(--cs-teal)]"
                   : "text-white/40 hover:bg-white/10 hover:text-white/70",
               )}
             >
@@ -416,7 +416,7 @@ export function Sidebar() {
             >
               <Settings className={cn(
                 "h-[18px] w-[18px] shrink-0 transition-colors",
-                pathname.startsWith("/settings") ? "text-[var(--cs-aria-gold)]" : "text-white/30",
+                pathname.startsWith("/settings") ? "text-[var(--cs-teal)]" : "text-white/30",
               )} />
               <span className="flex-1 text-left truncate">Settings</span>
             </Link>
