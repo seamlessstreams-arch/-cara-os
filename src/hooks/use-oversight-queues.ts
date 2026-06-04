@@ -29,7 +29,7 @@ export function useManagementOversight(params?: { status?: string; priority?: st
     queryKey: ["management-oversight", params],
     queryFn: () =>
       api.get<{ data: OversightTask[]; meta: OversightMeta }>(
-        `management-oversight${qs ? `?${qs}` : ""}`
+        `/management-oversight${qs ? `?${qs}` : ""}`
       ),
   });
 }
@@ -38,7 +38,7 @@ export function useCompleteOversightTask() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: { task_id: string; completed_by: string; evidence_note?: string }) =>
-      api.patch<{ data: Task }>("management-oversight", { ...payload, action: "complete" }),
+      api.patch<{ data: Task }>("/management-oversight", { ...payload, action: "complete" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["management-oversight"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
@@ -79,7 +79,7 @@ export function useReg40Triage(params?: { status?: string; child_id?: string }) 
     queryKey: ["reg40-triage", params],
     queryFn: () =>
       api.get<{ data: Reg40Task[]; meta: Reg40Meta }>(
-        `reg40-triage${qs ? `?${qs}` : ""}`
+        `/reg40-triage${qs ? `?${qs}` : ""}`
       ),
   });
 }
@@ -92,10 +92,13 @@ export function useTriageReg40Task() {
       action: "complete" | "notify_ofsted" | "no_notification_required";
       completed_by: string;
       evidence_note?: string;
-    }) => api.patch<{ data: Task }>("reg40-triage", payload),
+    }) => api.patch<{ data: Task }>("/reg40-triage", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reg40-triage"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      // a notify_ofsted triage queues a pending notifiable event
+      queryClient.invalidateQueries({ queryKey: ["notifiable-events"] });
+      queryClient.invalidateQueries({ queryKey: ["notifiable-events-intelligence"] });
     },
   });
 }

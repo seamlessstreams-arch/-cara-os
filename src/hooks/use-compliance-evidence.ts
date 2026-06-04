@@ -41,7 +41,7 @@ export function useReg45Evidence(params?: Reg45EvidenceParams) {
     queryKey: ["reg45-evidence", params],
     queryFn: () =>
       api.get<{ data: Reg45EvidenceEnriched[]; meta: Reg45EvidenceMeta }>(
-        `reg45-evidence${qs ? `?${qs}` : ""}`
+        `/reg45-evidence${qs ? `?${qs}` : ""}`
       ),
   });
 }
@@ -55,7 +55,7 @@ export function useDecideReg45Evidence() {
       manager_approved_text?: string;
       review_notes?: string;
       reviewed_by: string;
-    }) => api.patch<{ data: Reg45EvidenceItem }>("reg45-evidence", payload),
+    }) => api.patch<{ data: Reg45EvidenceItem }>("/reg45-evidence", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["reg45-evidence"] });
     },
@@ -105,7 +105,7 @@ export function useAnnexAReadiness(params?: { section?: string; decision?: Manag
     queryKey: ["annex-a-readiness", params],
     queryFn: () =>
       api.get<{ data: AnnexAEvidenceEnriched[]; meta: AnnexAMeta }>(
-        `annex-a-readiness${qs ? `?${qs}` : ""}`
+        `/annex-a-readiness${qs ? `?${qs}` : ""}`
       ),
   });
 }
@@ -118,7 +118,7 @@ export function useDecideAnnexAEvidence() {
       manager_decision: ManagerDecision;
       manager_approved_text?: string;
       reviewed_by: string;
-    }) => api.patch<{ data: AnnexAEvidenceItem }>("annex-a-readiness", payload),
+    }) => api.patch<{ data: AnnexAEvidenceItem }>("/annex-a-readiness", payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["annex-a-readiness"] });
     },
