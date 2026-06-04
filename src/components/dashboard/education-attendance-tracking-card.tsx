@@ -159,10 +159,10 @@ export function EducationAttendanceTrackingCard() {
                 </Badge>
               </div>
 
-              {attendance.below_90_children.length > 0 && (
+              {(attendance?.below_90_children?.length ?? 0) > 0 && (
                 <div className="rounded border p-2 text-xs space-y-1">
                   <p className="text-muted-foreground font-medium">Children below 90%:</p>
-                  {attendance.below_90_children.map((child: string, i: number) => (
+                  {(attendance?.below_90_children ?? []).map((child: string, i: number) => (
                     <div key={i} className="flex items-center gap-2 text-red-700">
                       <AlertTriangle className="h-3 w-3 shrink-0" />
                       <span>{child}</span>
@@ -171,10 +171,10 @@ export function EducationAttendanceTrackingCard() {
                 </div>
               )}
 
-              {attendance.term_comparison.length > 0 && (
+              {(attendance?.term_comparison?.length ?? 0) > 0 && (
                 <div className="rounded border p-2 text-xs space-y-1">
                   <p className="text-muted-foreground font-medium">Term comparison:</p>
-                  {attendance.term_comparison.map((term: { term: string; pct: number }, i: number) => (
+                  {(attendance?.term_comparison ?? []).map((term: { term: string; pct: number }, i: number) => (
                     <div key={i} className="flex items-center justify-between">
                       <span>{term.term}</span>
                       <span className="font-medium tabular-nums">{term.pct}%</span>
