@@ -67,14 +67,6 @@ export default function HomeworkSupportLogPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  if (isLoading) {
-    return (
-      <PageShell title="Homework Support Log" subtitle="Loading…">
-        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-      </PageShell>
-    );
-  }
-
   const filtered = useMemo(() => {
     let items = [...data];
     if (filterYP !== "all") items = items.filter((h) => h.child_id === filterYP);
@@ -98,6 +90,14 @@ export default function HomeworkSupportLogPage() {
   const totalMinutes = data.reduce((sum, h) => sum + h.duration_minutes, 0);
 
   const subjects = Array.from(new Set(data.map((h) => h.subject)));
+
+  if (isLoading) {
+    return (
+      <PageShell title="Homework Support Log" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell

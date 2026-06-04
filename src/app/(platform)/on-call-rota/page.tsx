@@ -29,8 +29,6 @@ export default function OnCallRotaPage() {
   const [sortBy, setSortBy] = useState("newest");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  if (isLoading) return <PageShell title="On-Call Rota" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
-
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
   const staffIds = [...new Set(data.map(r => r.on_call_staff))];
@@ -67,6 +65,8 @@ export default function OnCallRotaPage() {
     { header: "Feedback", accessor: (r: OnCallShift) => r.feedback_on_arrangements },
     { header: "Review Notes", accessor: (r: OnCallShift) => r.review_notes },
   ], []);
+
+  if (isLoading) return <PageShell title="On-Call Rota" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
     <PageShell

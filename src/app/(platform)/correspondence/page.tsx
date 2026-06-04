@@ -97,8 +97,6 @@ export default function CorrespondencePage() {
 
   const childIds = ["yp_alex", "yp_jordan", "yp_casey"];
 
-  if (isLoading) return <PageShell title="Correspondence Log" subtitle="Professional communications and formal correspondence"><div /></PageShell>;
-
   /* ── filtering ──────────────────────────────────────────────────────────── */
   const filtered = useMemo(() => {
     let list = [...entries];
@@ -139,6 +137,8 @@ export default function CorrespondencePage() {
     incoming: entries.filter(e => e.direction === "incoming").length,
     outgoing: entries.filter(e => e.direction === "outgoing").length,
   }), [entries]);
+
+  if (isLoading) return <PageShell title="Correspondence Log" subtitle="Professional communications and formal correspondence"><div /></PageShell>;
 
   /* ── export ─────────────────────────────────────────────────────────────── */
   const exportCols: ExportColumn<CorrespondenceEntry>[] = [

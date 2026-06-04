@@ -102,9 +102,9 @@ function AriaStudioPageInner() {
   const preChildId = searchParams.get("child_id");
 
   // ── Filters ──────────────────────────────────────────────────────────────
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [typeFilter, setTypeFilter] = useState<string>("");
-  const [childFilter, setChildFilter] = useState<string>("");
+  const [childFilter, setChildFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
 
   // ── Create dialog ────────────────────────────────────────────────────────
@@ -112,7 +112,7 @@ function AriaStudioPageInner() {
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedType, setSelectedType] = useState<AriaArtifactType | null>(preArtifactType);
   const [formData, setFormData] = useState({
-    child_id: preChildId ?? "",
+    child_id: preChildId ?? "__home",
     framework: "none" as AriaFramework,
     tone: "professional" as AriaTone,
     creative_mode: "balanced" as AriaCreativeMode,
@@ -130,9 +130,9 @@ function AriaStudioPageInner() {
 
   // ── Data ─────────────────────────────────────────────────────────────────
   const { data: artifactsData, isLoading } = useAriaArtifacts({
-    status: statusFilter || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
     artifact_type: typeFilter || undefined,
-    child_id: childFilter || undefined,
+    child_id: childFilter === "all" ? undefined : childFilter,
   });
   const { data: gapsData } = useAriaGaps({ status: "open" });
   const { data: youngPeopleData } = useYoungPeople();
@@ -172,7 +172,7 @@ function AriaStudioPageInner() {
     const request: AriaGenerationRequest = {
       artifact_type: selectedType,
       title: formData.title || ARIA_ARTIFACT_TYPE_LABELS[selectedType],
-      child_id: formData.child_id || null,
+      child_id: formData.child_id && formData.child_id !== "__home" ? formData.child_id : null,
       home_id: "home_oak",
       staff_id: "staff_anna",
       incident_id: null,
@@ -274,7 +274,7 @@ function AriaStudioPageInner() {
             <SelectValue placeholder="All statuses" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All statuses</SelectItem>
+            <SelectItem value="all">All statuses</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
             <SelectItem value="in_review">In review</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
@@ -287,7 +287,7 @@ function AriaStudioPageInner() {
             <SelectValue placeholder="All children" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All children</SelectItem>
+            <SelectItem value="all">All children</SelectItem>
             {youngPeople.map((yp) => (
               <SelectItem key={yp.id} value={yp.id}>
                 {yp.first_name} {yp.last_name}
@@ -427,7 +427,7 @@ function AriaStudioPageInner() {
                         <SelectValue placeholder="All / home-level" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Home-level</SelectItem>
+                        <SelectItem value="__home">Home-level</SelectItem>
                         {youngPeople.map((yp) => (
                           <SelectItem key={yp.id} value={yp.id}>
                             {yp.first_name} {yp.last_name}

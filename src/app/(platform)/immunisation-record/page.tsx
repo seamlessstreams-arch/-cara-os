@@ -39,14 +39,6 @@ export default function ImmunisationRecordPage() {
   const [sortBy, setSortBy] = useState("name");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
-  if (isLoading) {
-    return (
-      <PageShell title="Immunisation Record" subtitle="Loading…">
-        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-      </PageShell>
-    );
-  }
-
   const filtered = useMemo(() => {
     let list = [...records];
     if (ypFilter !== "all") list = list.filter(r => r.child_id === ypFilter);
@@ -120,6 +112,14 @@ export default function ImmunisationRecordPage() {
     { header: "Review Date",                 accessor: (r) => r.review_date },
     { header: "Last Update",                 accessor: (r) => r.last_update },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Immunisation Record" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell

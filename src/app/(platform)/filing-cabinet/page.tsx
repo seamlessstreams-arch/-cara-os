@@ -285,8 +285,8 @@ export default function FilingCabinetPage() {
             }`}
           >
             {tab.label}
-            {tab.value !== "all" && meta?.category_counts[tab.value] ? (
-              <span className="ml-1 opacity-70">({meta.category_counts[tab.value]})</span>
+            {tab.value !== "all" && meta?.category_counts?.[tab.value] ? (
+              <span className="ml-1 opacity-70">({meta.category_counts?.[tab.value]})</span>
             ) : null}
           </button>
         ))}

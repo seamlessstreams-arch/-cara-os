@@ -66,14 +66,6 @@ export default function ImpactAssessmentsPage() {
   const [sortBy, setSortBy] = useState("date");
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  if (isLoading) {
-    return (
-      <PageShell title="Impact Assessments" subtitle="Loading…">
-        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-      </PageShell>
-    );
-  }
-
   const filtered = useMemo(() => {
     let list = [...assessments];
     if (search) {
@@ -119,6 +111,14 @@ export default function ImpactAssessmentsPage() {
     { header: "Panel Outcome", accessor: (r) => r.panel_outcome ?? "N/A" },
     { header: "Notes", accessor: (r) => r.notes },
   ];
+
+  if (isLoading) {
+    return (
+      <PageShell title="Impact Assessments" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   return (
     <PageShell
