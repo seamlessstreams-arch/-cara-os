@@ -7,7 +7,7 @@ export function useReg46Reviews() {
     queryFn: async () => {
       const res = await fetch("/api/v1/reg46-reviews");
       if (!res.ok) throw new Error("Failed to fetch Reg 46 reviews");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

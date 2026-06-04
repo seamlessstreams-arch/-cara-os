@@ -10,7 +10,7 @@ export function useProfessionalConsultations(childId?: string) {
         : "/api/v1/professional-consultations";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch professional consultations");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

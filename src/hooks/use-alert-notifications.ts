@@ -7,7 +7,7 @@ export function useAlertNotifications() {
     queryFn: async () => {
       const res = await fetch("/api/v1/alert-notifications");
       if (!res.ok) throw new Error("Failed to fetch alert notifications");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

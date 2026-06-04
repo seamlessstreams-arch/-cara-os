@@ -7,7 +7,7 @@ export function useQualityOfCareReviews() {
     queryFn: async () => {
       const res = await fetch("/api/v1/quality-of-care-reviews");
       if (!res.ok) throw new Error("Failed to fetch quality of care reviews");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

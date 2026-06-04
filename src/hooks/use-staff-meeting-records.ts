@@ -7,7 +7,7 @@ export function useStaffMeetingRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/staff-meeting-records");
       if (!res.ok) throw new Error("Failed to fetch staff meeting records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

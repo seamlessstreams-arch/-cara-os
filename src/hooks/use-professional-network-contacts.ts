@@ -10,7 +10,7 @@ export function useProfessionalNetworkContacts(childId?: string) {
         : "/api/v1/professional-network-contacts";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch professional network contacts");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

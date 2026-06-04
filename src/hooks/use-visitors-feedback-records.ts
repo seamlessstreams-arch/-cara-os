@@ -7,7 +7,7 @@ export function useVisitorsFeedbackRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/visitors-feedback-records");
       if (!res.ok) throw new Error("Failed to fetch visitors feedback records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

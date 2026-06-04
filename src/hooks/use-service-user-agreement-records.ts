@@ -10,7 +10,7 @@ export function useServiceUserAgreementRecords(childId?: string) {
         : "/api/v1/service-user-agreement-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch service user agreement records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

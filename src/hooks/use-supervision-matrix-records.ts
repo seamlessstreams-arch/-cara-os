@@ -7,7 +7,7 @@ export function useSupervisionMatrixRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/supervision-matrix-records");
       if (!res.ok) throw new Error("Failed to fetch supervision matrix records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

@@ -10,7 +10,7 @@ export function useRiskManagementPlanRecords(childId?: string) {
         : "/api/v1/risk-management-plan-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch risk management plan records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

@@ -11,7 +11,7 @@ export function useNotifications(params?: { recipientId?: string; unreadOnly?: b
     queryFn: async () => {
       const res = await fetch(`/api/v1/notifications?${query.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch notifications");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
     refetchInterval: 30_000, // poll every 30 s for near-real-time
   });

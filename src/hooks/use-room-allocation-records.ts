@@ -10,7 +10,7 @@ export function useRoomAllocationRecords(childId?: string) {
         : "/api/v1/room-allocation-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch room allocation records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

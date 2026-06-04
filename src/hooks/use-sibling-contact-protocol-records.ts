@@ -10,7 +10,7 @@ export function useSiblingContactProtocolRecords(childId?: string) {
         : "/api/v1/sibling-contact-protocol-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch sibling contact protocol records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

@@ -10,7 +10,7 @@ export function useProfessionalFeeRecords(childId?: string) {
         : "/api/v1/professional-fee-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch professional fee records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

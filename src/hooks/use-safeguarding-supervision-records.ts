@@ -7,7 +7,7 @@ export function useSafeguardingSupervisionRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/safeguarding-supervision-records");
       if (!res.ok) throw new Error("Failed to fetch safeguarding supervision records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

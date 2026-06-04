@@ -8,7 +8,7 @@ export function usePositiveAchievements(childId?: string) {
       const params = childId ? `?child_id=${childId}` : "";
       const res = await fetch(`/api/v1/positive-achievements${params}`);
       if (!res.ok) throw new Error("Failed to fetch positive achievements");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

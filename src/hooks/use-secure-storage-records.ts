@@ -7,7 +7,7 @@ export function useSecureStorageRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/secure-storage-records");
       if (!res.ok) throw new Error("Failed to fetch secure storage records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

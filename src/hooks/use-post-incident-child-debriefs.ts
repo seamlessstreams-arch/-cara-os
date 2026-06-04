@@ -8,7 +8,7 @@ export function usePostIncidentChildDebriefs(childId?: string) {
       const params = childId ? `?child_id=${childId}` : "";
       const res = await fetch(`/api/v1/post-incident-child-debriefs${params}`);
       if (!res.ok) throw new Error("Failed to fetch post-incident child debriefs");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

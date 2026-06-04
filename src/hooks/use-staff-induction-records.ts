@@ -7,7 +7,7 @@ export function useStaffInductionRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/staff-induction-records");
       if (!res.ok) throw new Error("Failed to fetch staff induction records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

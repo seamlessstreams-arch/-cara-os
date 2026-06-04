@@ -7,7 +7,7 @@ export function useUnannouncedVisitRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/unannounced-visit-records");
       if (!res.ok) throw new Error("Failed to fetch unannounced visit records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

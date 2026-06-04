@@ -10,7 +10,7 @@ export function useSafeTouchProtocolRecords(childId?: string) {
         : "/api/v1/safe-touch-protocol-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch safe touch protocol records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

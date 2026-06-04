@@ -10,7 +10,7 @@ export function useWellbeingPulseSurveyRecords(childId?: string) {
         : "/api/v1/wellbeing-pulse-survey-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch wellbeing pulse survey records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

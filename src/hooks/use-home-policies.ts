@@ -7,7 +7,7 @@ export function useHomePolicies() {
     queryFn: async () => {
       const res = await fetch("/api/v1/home-policies");
       if (!res.ok) throw new Error("Failed to fetch");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

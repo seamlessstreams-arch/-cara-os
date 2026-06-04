@@ -7,7 +7,7 @@ export function useCuriosityLogEntries() {
     queryFn: async () => {
       const res = await fetch("/api/v1/curiosity-log-entries");
       if (!res.ok) throw new Error("Failed to fetch curiosity log entries");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

@@ -7,7 +7,7 @@ export function usePolicyReviewRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/policy-review-records");
       if (!res.ok) throw new Error("Failed to fetch");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

@@ -7,7 +7,7 @@ export function useLocationAssessmentAreas() {
     queryFn: async () => {
       const res = await fetch("/api/v1/location-assessment-areas");
       if (!res.ok) throw new Error("Failed to fetch location assessment areas");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

@@ -8,7 +8,7 @@ export function useStatutoryVisitRecords(childId?: string) {
       const params = childId ? `?child_id=${childId}` : "";
       const res = await fetch(`/api/v1/statutory-visit-records${params}`);
       if (!res.ok) throw new Error("Failed to fetch statutory visit records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

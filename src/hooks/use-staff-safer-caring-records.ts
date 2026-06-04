@@ -7,7 +7,7 @@ export function useStaffSaferCaringRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/staff-safer-caring-records");
       if (!res.ok) throw new Error("Failed to fetch staff safer caring records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

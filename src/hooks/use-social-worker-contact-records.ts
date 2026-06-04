@@ -10,7 +10,7 @@ export function useSocialWorkerContactRecords(childId?: string) {
         : "/api/v1/social-worker-contact-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch social worker contact records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

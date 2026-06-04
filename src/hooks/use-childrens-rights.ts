@@ -7,7 +7,7 @@ export function useChildrensRights() {
     queryFn: async () => {
       const res = await fetch("/api/v1/childrens-rights");
       if (!res.ok) throw new Error("Failed to fetch children's rights");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

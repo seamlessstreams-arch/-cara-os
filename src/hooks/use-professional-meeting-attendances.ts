@@ -10,7 +10,7 @@ export function useProfessionalMeetingAttendances(childId?: string) {
         : "/api/v1/professional-meeting-attendances";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch professional meeting attendances");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

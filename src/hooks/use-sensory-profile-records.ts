@@ -10,7 +10,7 @@ export function useSensoryProfileRecords(childId?: string) {
         : "/api/v1/sensory-profile-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch sensory profile records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

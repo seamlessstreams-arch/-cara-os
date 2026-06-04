@@ -10,7 +10,7 @@ export function useTherapeuticInputRecords(childId?: string) {
         : "/api/v1/therapeutic-input-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch therapeutic input records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

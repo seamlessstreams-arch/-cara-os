@@ -10,7 +10,7 @@ export function useSensoryRoomUsageRecords(childId?: string) {
         : "/api/v1/sensory-room-usage-records";
       const res = await fetch(url);
       if (!res.ok) throw new Error("Failed to fetch sensory room usage records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

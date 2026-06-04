@@ -7,7 +7,7 @@ export function usePropertyDamageRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/property-damage-records");
       if (!res.ok) throw new Error("Failed to fetch property damage records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

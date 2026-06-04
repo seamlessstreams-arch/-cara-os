@@ -7,7 +7,7 @@ export function useWhistleblowingRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/whistleblowing-records");
       if (!res.ok) throw new Error("Failed to fetch whistleblowing records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

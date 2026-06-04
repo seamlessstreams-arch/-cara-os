@@ -7,7 +7,7 @@ export function useStatutoryCheckRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/statutory-check-records");
       if (!res.ok) throw new Error("Failed to fetch statutory check records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

@@ -7,7 +7,7 @@ export function useQaAuditRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/qa-audit-records");
       if (!res.ok) throw new Error("Failed to fetch QA audit records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }

@@ -7,7 +7,7 @@ export function useStaffExitInterviewRecords() {
     queryFn: async () => {
       const res = await fetch("/api/v1/staff-exit-interview-records");
       if (!res.ok) throw new Error("Failed to fetch staff exit interview records");
-      return res.json();
+      const json = await res.json(); return Array.isArray(json) ? json : (json?.data ?? []);
     },
   });
 }
