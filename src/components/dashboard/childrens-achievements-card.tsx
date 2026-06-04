@@ -52,7 +52,7 @@ export function ChildrensAchievementsCard() {
             <Trophy className="h-4 w-4 text-brand" />
             Children&apos;s Achievements
           </CardTitle>
-          <Link href="/childrens-achievements" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/positive-achievements" className="text-xs text-brand hover:underline flex items-center gap-1">
             Achievements <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

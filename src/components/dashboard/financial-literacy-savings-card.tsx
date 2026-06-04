@@ -52,7 +52,7 @@ export function FinancialLiteracySavingsCard() {
             <PiggyBank className="h-4 w-4 text-slate-600" />
             <span className="text-slate-900">Financial Literacy & Savings</span>
           </CardTitle>
-          <Link href="/leaving-care" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
+          <Link href="/pathway-plan-16plus" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
             View <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

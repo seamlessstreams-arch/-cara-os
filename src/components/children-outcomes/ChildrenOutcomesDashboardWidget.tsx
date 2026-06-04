@@ -192,7 +192,7 @@ export function ChildrenOutcomesDashboardWidget({ homeId = "home-oak" }: Props) 
 
       {/* Footer */}
       <div className="p-3 text-center">
-        <a href="/children-outcomes" className="text-xs text-primary font-medium hover:underline">
+        <a href="/outcomes" className="text-xs text-primary font-medium hover:underline">
           View progress dashboard →
         </a>
       </div>

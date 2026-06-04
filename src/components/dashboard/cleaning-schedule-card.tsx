@@ -52,7 +52,7 @@ export function CleaningScheduleCard() {
             <Sparkles className="h-4 w-4 text-slate-600" />
             <span className="text-slate-900">Cleaning Schedule</span>
           </CardTitle>
-          <Link href="/premises" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
+          <Link href="/buildings" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
             View <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

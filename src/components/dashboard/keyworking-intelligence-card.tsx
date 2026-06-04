@@ -73,7 +73,7 @@ export function KeyworkingIntelligenceCard() {
             <HeartHandshake className="h-4 w-4 text-brand" />
             Keyworking Intelligence
           </CardTitle>
-          <Link href="/keyworking" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/key-working" className="text-xs text-brand hover:underline flex items-center gap-1">
             Sessions <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

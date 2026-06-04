@@ -365,7 +365,7 @@ export function OutcomesMeasurementDashboardWidget({ homeId = "home-oak" }: Prop
 
       {/* Footer */}
       <div className="p-3 border-t border-border text-center">
-        <a href="/outcomes-measurement" className="text-xs text-primary font-medium hover:underline">
+        <a href="/outcomes" className="text-xs text-primary font-medium hover:underline">
           View outcomes measurement details &rarr;
         </a>
       </div>

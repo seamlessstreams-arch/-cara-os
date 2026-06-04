@@ -80,7 +80,7 @@ export function SCCIFEvaluationCard() {
             <ClipboardList className="h-4 w-4 text-brand" />
             SCCIF Self-Evaluation
           </CardTitle>
-          <Link href="/sccif" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/inspection-readiness" className="text-xs text-brand hover:underline flex items-center gap-1">
             SCCIF <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

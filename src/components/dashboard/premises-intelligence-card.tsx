@@ -70,7 +70,7 @@ export function PremisesIntelligenceCard() {
             <Building className="h-4 w-4 text-brand" />
             Premises & Safety
           </CardTitle>
-          <Link href="/premises" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/buildings" className="text-xs text-brand hover:underline flex items-center gap-1">
             Full View <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

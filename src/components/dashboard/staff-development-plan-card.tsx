@@ -79,7 +79,7 @@ export function StaffDevelopmentPlanCard() {
             <span className="text-purple-900">Staff Development</span>
           </CardTitle>
           <Link
-            href="/staff-development-plan"
+            href="/staff-development"
             className="text-xs text-purple-600 hover:underline flex items-center gap-1"
           >
             Full View <ChevronRight className="h-3 w-3" />

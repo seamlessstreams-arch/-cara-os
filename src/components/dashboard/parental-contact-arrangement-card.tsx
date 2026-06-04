@@ -67,7 +67,7 @@ export function ParentalContactArrangementCard() {
             <Users2 className="h-4 w-4 text-brand" />
             Parental Contact
           </CardTitle>
-          <Link href="/contact" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/contact-directory" className="text-xs text-brand hover:underline flex items-center gap-1">
             Contact <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

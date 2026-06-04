@@ -321,7 +321,7 @@ export function MentalHealthWellbeingDashboardWidget({ homeId = "home-oak" }: Pr
 
       {/* Footer */}
       <div className="p-3 text-center">
-        <a href="/mental-health-wellbeing" className="text-xs text-primary font-medium hover:underline">
+        <a href="/child-mental-health-daily-check" className="text-xs text-primary font-medium hover:underline">
           View mental health dashboard &rarr;
         </a>
       </div>

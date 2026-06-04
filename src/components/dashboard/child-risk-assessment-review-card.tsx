@@ -72,7 +72,7 @@ export function ChildRiskAssessmentReviewCard() {
             <ShieldAlert className="h-4 w-4 text-brand" />
             Risk Assessment Reviews
           </CardTitle>
-          <Link href="/child-risk-assessment-reviews" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/risk-assessments" className="text-xs text-brand hover:underline flex items-center gap-1">
             Reviews <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

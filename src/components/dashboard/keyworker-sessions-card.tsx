@@ -66,7 +66,7 @@ export function KeyworkerSessionsCard() {
             <Heart className="h-4 w-4 text-brand" />
             Keyworker Sessions
           </CardTitle>
-          <Link href="/keyworking" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/key-working" className="text-xs text-brand hover:underline flex items-center gap-1">
             Keyworking <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

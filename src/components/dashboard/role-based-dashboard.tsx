@@ -792,7 +792,7 @@ function SupportWorkerDashboard({ data }: { data: RoleDashboardData }) {
               label="Building checks overdue"
               value={data.buildingChecksOverdue}
               status="overdue"
-              href="/building?filter=overdue"
+              href="/buildings?filter=overdue"
             />
           )}
           {data.missedMedsToday === 0 &&
@@ -1199,7 +1199,7 @@ function RegisteredManagerDashboard({
             label="Building checks overdue"
             value={data.buildingChecksOverdue}
             status={data.buildingChecksOverdue > 0 ? "overdue" : "complete"}
-            href="/building?filter=overdue"
+            href="/buildings?filter=overdue"
           />
         </div>
       </CalmCard>
@@ -1297,7 +1297,7 @@ function RegisteredManagerDashboard({
         />
         <div className="space-y-2">
           <Link
-            href="/reports/reg44"
+            href="/ri/reg44"
             className="flex items-center gap-3 rounded-xl bg-[var(--cs-surface)] px-3 py-3 hover:bg-[var(--cs-surface)]/80 transition-colors"
           >
             <FileText className="h-4 w-4 text-[var(--cs-text-muted)]" />
@@ -1307,7 +1307,7 @@ function RegisteredManagerDashboard({
             <ChevronRight className="h-3.5 w-3.5 text-[var(--cs-text-gentle)]" />
           </Link>
           <Link
-            href="/reports/reg45"
+            href="/ri/reg45"
             className="flex items-center gap-3 rounded-xl bg-[var(--cs-surface)] px-3 py-3 hover:bg-[var(--cs-surface)]/80 transition-colors"
           >
             <FileText className="h-4 w-4 text-[var(--cs-text-muted)]" />
@@ -1317,7 +1317,7 @@ function RegisteredManagerDashboard({
             <ChevronRight className="h-3.5 w-3.5 text-[var(--cs-text-gentle)]" />
           </Link>
           <Link
-            href="/reports/evidence"
+            href="/quality/ofsted-evidence-room"
             className="flex items-center gap-3 rounded-xl bg-[var(--cs-surface)] px-3 py-3 hover:bg-[var(--cs-surface)]/80 transition-colors"
           >
             <ClipboardCheck className="h-4 w-4 text-[var(--cs-text-muted)]" />
@@ -1523,7 +1523,7 @@ function ResponsibleIndividualDashboard({
             href="/handover"
           />
           <Link
-            href="/reports/oversight"
+            href="/management-oversight"
             className="flex items-center justify-center gap-1.5 pt-3 text-xs font-medium text-[var(--cs-navy)] hover:underline"
           >
             View oversight reports
@@ -1711,7 +1711,7 @@ function AdminDashboard({ data }: { data: RoleDashboardData }) {
         />
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <Link
-            href="/settings/users"
+            href="/staff"
             className="flex flex-col items-center gap-2 rounded-2xl border border-[var(--cs-border)] bg-white p-4 hover:bg-[var(--cs-surface)] transition-colors text-center"
           >
             <Users className="h-5 w-5 text-[var(--cs-navy)]" />
@@ -1720,7 +1720,7 @@ function AdminDashboard({ data }: { data: RoleDashboardData }) {
             </span>
           </Link>
           <Link
-            href="/settings/roles"
+            href="/staff"
             className="flex flex-col items-center gap-2 rounded-2xl border border-[var(--cs-border)] bg-white p-4 hover:bg-[var(--cs-surface)] transition-colors text-center"
           >
             <Shield className="h-5 w-5 text-[var(--cs-navy)]" />
@@ -1729,7 +1729,7 @@ function AdminDashboard({ data }: { data: RoleDashboardData }) {
             </span>
           </Link>
           <Link
-            href="/settings/forms"
+            href="/forms"
             className="flex flex-col items-center gap-2 rounded-2xl border border-[var(--cs-border)] bg-white p-4 hover:bg-[var(--cs-surface)] transition-colors text-center"
           >
             <FileText className="h-5 w-5 text-[var(--cs-navy)]" />
@@ -1738,7 +1738,7 @@ function AdminDashboard({ data }: { data: RoleDashboardData }) {
             </span>
           </Link>
           <Link
-            href="/settings/automation"
+            href="/workflow-orchestration"
             className="flex flex-col items-center gap-2 rounded-2xl border border-[var(--cs-border)] bg-white p-4 hover:bg-[var(--cs-surface)] transition-colors text-center"
           >
             <Zap className="h-5 w-5 text-[var(--cs-navy)]" />

@@ -66,7 +66,7 @@ export function BehaviourPatternAnalysisCard() {
             <Activity className="h-4 w-4 text-brand" />
             Behaviour Patterns
           </CardTitle>
-          <Link href="/behaviour-pattern-analysis" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/behaviour-mapping" className="text-xs text-brand hover:underline flex items-center gap-1">
             Analysis <ChevronRight className="h-3 w-3" />
           </Link>
         </div>

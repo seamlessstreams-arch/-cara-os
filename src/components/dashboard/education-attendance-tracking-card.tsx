@@ -50,7 +50,7 @@ export function EducationAttendanceTrackingCard() {
             Education Attendance
           </CardTitle>
           <Link
-            href="/education-attendance-tracking"
+            href="/education-attendance-tracker"
             className="text-xs text-brand hover:underline flex items-center gap-1"
           >
             Attendance <ChevronRight className="h-3 w-3" />

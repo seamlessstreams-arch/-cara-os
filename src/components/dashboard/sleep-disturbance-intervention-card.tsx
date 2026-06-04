@@ -62,7 +62,7 @@ export function SleepDisturbanceInterventionCard() {
             <Moon className="h-4 w-4 text-brand" />
             Sleep Disturbance
           </CardTitle>
-          <Link href="/night-monitoring" className="text-xs text-brand hover:underline flex items-center gap-1">
+          <Link href="/night-checks" className="text-xs text-brand hover:underline flex items-center gap-1">
             Nights <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
