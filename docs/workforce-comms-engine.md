@@ -145,6 +145,56 @@ columns). External notifications are still never auto-sent.
 5. As a manager, **Place under investigation hold** → the message shows a lock
    badge; edit/delete/convert are now blocked (423). **Release** to restore.
 
+## Phase 3 — Smart Sign-In (implemented)
+
+The missing **self-service clock-in / clock-out** write path. Inspection found the
+`Shift` model already carries `clock_in_at`/`clock_out_at`/`actual_start`/
+`actual_end`/`status`, and `isOnShift()` (Comms) already *reads* them — but nothing
+*wrote* them (timesheets/shift-mode only display). Smart Sign-In lets the signed-in
+staff member clock into/out of their own shift, making "on shift" a real, current
+fact. This is the data foundation **Phase 4** (shift-based access) consumes.
+
+### What it does
+- **One-tap clock in / out** for the current user. Clocking in sets
+  `clock_in_at`/`actual_start` + `status: in_progress`; clocking out sets
+  `clock_out_at`/`actual_end` + `status: completed` + computed `overtime_minutes`.
+- **Smart briefing** on the page: today's shift + scheduled times, **lateness** at
+  clock-in, **who else is on shift now** + staffing count, shift duration + overtime
+  on clock-out, and a nudge that **operational Comms channels are now unlocked**
+  (ties to Phase 1's shift-aware access) / a reminder to complete the end-of-shift
+  checklist on clock-out.
+- **Ad-hoc cover**: if no shift is scheduled, sign-in creates an ad-hoc shift so
+  unscheduled/cover work is still captured (never blocks signing in).
+- **Idempotent**: a second clock-in while already on shift is a no-op.
+
+### Explicitly NOT in scope (per the brief)
+- **No biometrics** (no facial recognition / fingerprint clock-in) — sign-in is an
+  authenticated action only (the nav icon is deliberately `UserCheck`, not
+  `Fingerprint`).
+- **No continuous location tracking** — discrete clock events only. Geofence / QR /
+  kiosk is the separate later phase.
+- Server-side: the subject is always the resolved user — you can only sign yourself
+  in/out. Every clock event is audited.
+
+### Files
+- Service (pure cores + store mutation): `src/lib/attendance/sign-in-service.ts` —
+  `clockIn`/`clockOut`/`buildSignInStatus`/`pickTodayShift` + pure
+  `computeLatenessMinutes`/`computeOvertimeMinutes`/`minutesBetween`/`inferShiftType`
+- API: `GET`/`POST /api/v1/sign-in` (status + clock_in/clock_out)
+- Hook: `src/hooks/use-sign-in.ts` (`useSignInStatus`, `useClockInOut` — invalidates
+  `comms/channels` + `shift-summary` + `rota` since on-shift changes access)
+- UI: `src/components/attendance/smart-sign-in.tsx`, page
+  `src/app/(platform)/sign-in/page.tsx`, nav entry "Shift Sign-In" → `/sign-in`
+- Reuse: existing `Shift` model + `db.shifts.update/create`; consistent with
+  `isOnShift()` (Comms reads the same fields)
+- Tests: `src/lib/attendance/__tests__/sign-in-service.test.ts` (12)
+
+### Relationship to existing rota/attendance (no duplication)
+`/rota`, `/timesheets`, `/shift-mode`, `/api/operations/staff-attendance` already
+exist but are **read/plan/analytics only** — none wrote `clock_in_at`. Smart Sign-In
+adds the write path they were missing; `isOnShift()` (and therefore Comms shift-aware
+access) now reflects real clock-ins automatically.
+
 ### Next phases
-Phase 3 (Smart Sign-In), Phase 4 (wire the access engine to real clock-in +
-`withPermission` rollout + off-shift portal).
+Phase 4 (wire the permission engine's `loadUserContext` to real on-shift state via
+`isOnShift`/sign-in + `withPermission` rollout + off-shift portal for managers).
