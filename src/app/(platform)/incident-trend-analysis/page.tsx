@@ -94,14 +94,6 @@ export default function IncidentTrendAnalysisPage() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("newest");
 
-  if (isLoading) {
-    return (
-      <PageShell title="Incident Trend Analysis" subtitle="Loading…">
-        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-      </PageShell>
-    );
-  }
-
   const effectiveExpandedId = expandedId ?? allData[0]?.id ?? null;
 
   const filtered = useMemo(() => {
@@ -122,6 +114,14 @@ export default function IncidentTrendAnalysisPage() {
     );
     return rows;
   }, [allData, search, sortBy]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Incident Trend Analysis" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   const current = allData[0];
   const previous = allData[1];

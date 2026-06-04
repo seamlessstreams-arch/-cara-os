@@ -6,7 +6,7 @@ const KEY = ["strategic-risk-records"];
 async function fetchAll(): Promise<StrategicRiskRecord[]> {
   const res = await fetch("/api/v1/strategic-risk-records");
   if (!res.ok) throw new Error("Failed to fetch strategic risk records");
-  return res.json();
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
 }
 
 export function useStrategicRiskRecords() {

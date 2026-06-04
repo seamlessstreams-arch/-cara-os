@@ -7,7 +7,7 @@ async function fetchAll(childId?: string): Promise<ReligiousFestivalRecord[]> {
     : "/api/v1/religious-festival-records";
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch religious festival records");
-  return res.json();
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
 }
 
 export function useReligiousFestivalRecords(childId?: string) {

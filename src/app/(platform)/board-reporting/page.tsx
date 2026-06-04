@@ -107,16 +107,6 @@ export default function BoardReportingPage() {
   const [filterType, setFilterType] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("date");
 
-  if (isLoading) {
-    return (
-      <PageShell title="Board Reporting" subtitle="Formal reports submitted to the Responsible Individual and Cornerstone Care Group Board — required by Quality Standard 13 and Regulation 45">
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      </PageShell>
-    );
-  }
-
   /* ─── filtered & sorted ─── */
   const filtered = (() => {
     let list = [...reports];
@@ -156,6 +146,16 @@ export default function BoardReportingPage() {
       .sort()[0] ?? "Not scheduled";
     return { reportsThisYear, feedbackReceived, openActions, upcoming };
   }, [reports]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="Board Reporting" subtitle="Formal reports submitted to the Responsible Individual and Cornerstone Care Group Board — required by Quality Standard 13 and Regulation 45">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      </PageShell>
+    );
+  }
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 

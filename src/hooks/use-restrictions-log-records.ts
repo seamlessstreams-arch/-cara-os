@@ -7,7 +7,7 @@ async function fetchAll(childId?: string): Promise<RestrictionsLogRecord[]> {
     : "/api/v1/restrictions-log-records";
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch restrictions log records");
-  return res.json();
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
 }
 
 export function useRestrictionsLogRecords(childId?: string) {

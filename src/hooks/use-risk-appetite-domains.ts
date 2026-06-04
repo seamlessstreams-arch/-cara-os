@@ -6,7 +6,7 @@ const KEY = ["risk-appetite-domains"];
 async function fetchAll(): Promise<RiskAppetiteDomain[]> {
   const res = await fetch("/api/v1/risk-appetite-domains");
   if (!res.ok) throw new Error("Failed to fetch risk appetite domains");
-  return res.json();
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
 }
 
 export function useRiskAppetiteDomains() {

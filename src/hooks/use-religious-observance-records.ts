@@ -7,7 +7,7 @@ async function fetchAll(childId?: string): Promise<ReligiousObservanceRecord[]> 
     : "/api/v1/religious-observance-records";
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch religious observance records");
-  return res.json();
+  const __j = await res.json(); return Array.isArray(__j) ? __j : (__j?.data ?? []);
 }
 
 export function useReligiousObservanceRecords(childId?: string) {
