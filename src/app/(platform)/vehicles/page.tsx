@@ -377,7 +377,7 @@ function FleetOverviewTab({
   meta: VehiclesMeta;
   onRunCheck: (vehicleId: string) => void;
 }) {
-  const { vehicles, alerts, defects } = data;
+  const { vehicles = [], alerts = [], defects = [] } = data;
 
   return (
     <div className="space-y-6">
