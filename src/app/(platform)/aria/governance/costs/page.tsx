@@ -72,7 +72,7 @@ export default function AriaCostsPage() {
 
       {loading ? (
         <div className="text-center py-12 text-muted-foreground">Loading cost data...</div>
-      ) : data ? (
+      ) : data?.limits && data?.summary ? (
         <>
           {/* Budget overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -92,19 +92,19 @@ export default function AriaCostsPage() {
               <div className="space-y-1 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Per request</span>
-                  <span className="font-medium">£{data.limits.perRequest.toFixed(2)}</span>
+                  <span className="font-medium">£{(data.limits.perRequest ?? 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Daily per user</span>
-                  <span className="font-medium">£{data.limits.dailyPerUser.toFixed(2)}</span>
+                  <span className="font-medium">£{(data.limits.dailyPerUser ?? 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Daily per home</span>
-                  <span className="font-medium">£{data.limits.dailyPerHome.toFixed(2)}</span>
+                  <span className="font-medium">£{(data.limits.dailyPerHome ?? 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Monthly per org</span>
-                  <span className="font-medium">£{data.limits.monthlyPerOrg.toFixed(2)}</span>
+                  <span className="font-medium">£{(data.limits.monthlyPerOrg ?? 0).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -118,7 +118,7 @@ export default function AriaCostsPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total cost</span>
-                  <span className="font-medium">£{data.summary.totalCost.toFixed(4)}</span>
+                  <span className="font-medium">£{(data.summary.totalCost ?? 0).toFixed(4)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Avg per request</span>
@@ -146,7 +146,7 @@ export default function AriaCostsPage() {
                       <span className="text-sm font-medium">{name.replace(/_/g, " ")}</span>
                       <span className="text-xs text-muted-foreground ml-2">({info.requests} requests)</span>
                     </div>
-                    <span className="text-sm font-medium">£{info.cost.toFixed(4)}</span>
+                    <span className="text-sm font-medium">£{(info.cost ?? 0).toFixed(4)}</span>
                   </div>
                 ))}
               </div>

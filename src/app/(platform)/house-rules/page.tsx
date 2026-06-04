@@ -63,14 +63,6 @@ export default function HouseRulesPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [sortBy, setSortBy] = useState("category");
 
-  if (isLoading) {
-    return (
-      <PageShell title="House Rules & Boundaries" subtitle="Loading…">
-        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
-      </PageShell>
-    );
-  }
-
   /* ─── computed ─── */
   const filtered = useMemo(() => {
     let list = [...rules];
@@ -98,6 +90,14 @@ export default function HouseRulesPage() {
     const totalAmendments = rules.reduce((sum, r) => sum + r.amendments.length, 0);
     return { active, underReview, amended, totalAmendments };
   }, [rules]);
+
+  if (isLoading) {
+    return (
+      <PageShell title="House Rules & Boundaries" subtitle="Loading…">
+        <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>
+      </PageShell>
+    );
+  }
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
