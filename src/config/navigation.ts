@@ -38,6 +38,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "My Day",          href: "/dashboard/my-day",icon: "Target",          module: "my-day"     },
       { label: "Staff Dashboard", href: "/dashboard/staff", icon: "User",            module: "dashboard"  },
       { label: "Handover",        href: "/handover",        icon: "ArrowRightLeft",  module: "handover"   },
+      { label: "Comms Centre",    href: "/comms",           icon: "MessageSquare",   module: "handover"   },
       { label: "My Tasks",        href: "/tasks",           icon: "CheckSquare",     module: "tasks",     badgeKey: "tasks" },
       { label: "Notifications",  href: "/notifications",   icon: "Bell",            module: "dashboard",   badgeKey: "notifications" },
       { label: "Shift Notes",    href: "/shift-notes",     icon: "FileText",        module: "dashboard"  },

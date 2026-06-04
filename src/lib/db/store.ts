@@ -20,6 +20,14 @@ import type {
 } from "@/types";
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type {
+  CommsChannel,
+  CommsChannelMember,
+  CommsMessage,
+  CommsMessageReceipt,
+  CommsMessageAction,
+  StaffTrustNoticeAck,
+} from "@/types/comms";
+import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
   Notification, TimeSavedEntry,
@@ -561,6 +569,13 @@ const store = {
   cornerstoneEvents: [] as CornerstoneEvent[],
   chronology: [] as ChronologyEntry[],
   handovers: [] as HandoverEntry[],
+  // ── Comms Centre (Phase 1) ────────────────────────────────────────────────
+  commsChannels: [] as CommsChannel[],
+  commsChannelMembers: [] as CommsChannelMember[],
+  commsMessages: [] as CommsMessage[],
+  commsMessageReceipts: [] as CommsMessageReceipt[],
+  commsMessageActions: [] as CommsMessageAction[],
+  staffTrustNoticeAcks: [] as StaffTrustNoticeAck[],
   buildings: [] as Building[],
   buildingChecks: [] as BuildingCheck[],
   vehicles: [] as Vehicle[],
@@ -6419,6 +6434,127 @@ export const db = {
       if (idx === -1) return null;
       store.notifications[idx] = { ...store.notifications[idx], ...updates };
       return store.notifications[idx];
+    },
+  },
+
+  // ── Comms Centre (Phase 1) ──────────────────────────────────────────────────
+  commsChannels: {
+    /** Lazily create the standard channel set for a home on first access (demo). */
+    seedDefaults: (homeId: string): void => {
+      if (store.commsChannels.some((c) => c.home_id === homeId)) return;
+      const now = new Date().toISOString();
+      const defs: Array<{ type: CommsChannel["type"]; name: string; access: CommsChannel["access"]; sensitivity: CommsChannel["sensitivity"]; allowed_roles?: string[] }> = [
+        { type: "home_announcements", name: "Whole Home Announcements", access: "all_staff", sensitivity: "internal" },
+        { type: "shift_handover", name: "Shift Handover", access: "on_shift", sensitivity: "internal" },
+        { type: "managers_seniors", name: "Managers & Seniors", access: "managers", sensitivity: "confidential" },
+        { type: "waking_night", name: "Waking Night Team", access: "role_restricted", sensitivity: "internal", allowed_roles: ["waking_night", "team_leader", "deputy_manager", "registered_manager"] },
+        { type: "medication_updates", name: "Medication Updates", access: "on_shift", sensitivity: "confidential" },
+        { type: "safeguarding_alerts", name: "Safeguarding Alerts", access: "safeguarding", sensitivity: "restricted" },
+        { type: "rota_cover", name: "Rota Cover Requests", access: "all_staff", sensitivity: "internal" },
+        { type: "health_safety", name: "Health & Safety", access: "all_staff", sensitivity: "internal" },
+        { type: "maintenance", name: "Maintenance", access: "all_staff", sensitivity: "internal" },
+        { type: "training_policy", name: "Training & Policy Updates", access: "all_staff", sensitivity: "internal" },
+        { type: "keywork_sessions", name: "Key Work & Sessions", access: "on_shift", sensitivity: "confidential" },
+        { type: "emergency_broadcast", name: "Emergency Broadcasts", access: "all_staff", sensitivity: "internal" },
+      ];
+      for (const d of defs) {
+        store.commsChannels.push({
+          id: generateId("ch"), home_id: homeId, type: d.type, name: d.name, description: null,
+          access: d.access, allowed_roles: d.allowed_roles ?? [], linked_child_id: null, linked_incident_id: null,
+          sensitivity: d.sensitivity, is_archived: false, created_by: "system", created_at: now, updated_at: now,
+        });
+      }
+    },
+    findForHome: (homeId: string): CommsChannel[] => {
+      db.commsChannels.seedDefaults(homeId);
+      return store.commsChannels.filter((c) => c.home_id === homeId && !c.is_archived);
+    },
+    findById: (id: string): CommsChannel | undefined => store.commsChannels.find((c) => c.id === id),
+    create: (data: Partial<CommsChannel>): CommsChannel => {
+      const now = new Date().toISOString();
+      const channel: CommsChannel = {
+        id: generateId("ch"), home_id: data.home_id ?? "home_oak", type: data.type ?? "home_announcements",
+        name: data.name ?? "Channel", description: data.description ?? null, access: data.access ?? "all_staff",
+        allowed_roles: data.allowed_roles ?? [], linked_child_id: data.linked_child_id ?? null,
+        linked_incident_id: data.linked_incident_id ?? null, sensitivity: data.sensitivity ?? "internal",
+        is_archived: false, created_by: data.created_by ?? "system", created_at: now, updated_at: now,
+      };
+      store.commsChannels.push(channel);
+      return channel;
+    },
+    patch: (id: string, updates: Partial<CommsChannel>): CommsChannel | null => {
+      const idx = store.commsChannels.findIndex((c) => c.id === id);
+      if (idx === -1) return null;
+      store.commsChannels[idx] = { ...store.commsChannels[idx], ...updates, updated_at: new Date().toISOString() };
+      return store.commsChannels[idx];
+    },
+  },
+  commsMessages: {
+    findByChannel: (channelId: string, includeDeleted = false): CommsMessage[] =>
+      store.commsMessages
+        .filter((m) => m.channel_id === channelId && (includeDeleted || !m.is_deleted))
+        .sort((a, b) => a.created_at.localeCompare(b.created_at)),
+    findById: (id: string): CommsMessage | undefined => store.commsMessages.find((m) => m.id === id),
+    create: (data: Partial<CommsMessage>): CommsMessage => {
+      const now = new Date().toISOString();
+      const msg: CommsMessage = {
+        id: generateId("msg"), channel_id: data.channel_id ?? "", home_id: data.home_id ?? "home_oak",
+        author_id: data.author_id ?? "system", body: data.body ?? "", priority: data.priority ?? "normal",
+        requires_acknowledgement: data.requires_acknowledgement ?? false, linked_child_id: data.linked_child_id ?? null,
+        linked_incident_id: data.linked_incident_id ?? null, linked_record_type: data.linked_record_type ?? null,
+        linked_record_id: data.linked_record_id ?? null, edited: false, edit_history: [], is_deleted: false,
+        deleted_at: null, deleted_by: null, retention_category: data.retention_category ?? "routine_messages",
+        investigation_hold: false, created_at: now, updated_at: now,
+      };
+      store.commsMessages.push(msg);
+      return msg;
+    },
+    patch: (id: string, updates: Partial<CommsMessage>): CommsMessage | null => {
+      const idx = store.commsMessages.findIndex((m) => m.id === id);
+      if (idx === -1) return null;
+      store.commsMessages[idx] = { ...store.commsMessages[idx], ...updates, updated_at: new Date().toISOString() };
+      return store.commsMessages[idx];
+    },
+  },
+  commsMessageReceipts: {
+    findByMessage: (messageId: string): CommsMessageReceipt[] => store.commsMessageReceipts.filter((r) => r.message_id === messageId),
+    findForUserInChannel: (userId: string, channelId: string): CommsMessageReceipt[] =>
+      store.commsMessageReceipts.filter((r) => r.user_id === userId && r.channel_id === channelId),
+    /** Mark read (and optionally acknowledge) — idempotent upsert per (message,user). */
+    mark: (messageId: string, channelId: string, userId: string, opts: { read?: boolean; acknowledge?: boolean }): CommsMessageReceipt => {
+      const now = new Date().toISOString();
+      let r = store.commsMessageReceipts.find((x) => x.message_id === messageId && x.user_id === userId);
+      if (!r) {
+        r = { id: generateId("rcpt"), message_id: messageId, channel_id: channelId, user_id: userId, read_at: null, acknowledged_at: null };
+        store.commsMessageReceipts.push(r);
+      }
+      if (opts.read && !r.read_at) r.read_at = now;
+      if (opts.acknowledge) { r.acknowledged_at = now; if (!r.read_at) r.read_at = now; }
+      return r;
+    },
+  },
+  commsMessageActions: {
+    findByMessage: (messageId: string): CommsMessageAction[] => store.commsMessageActions.filter((a) => a.message_id === messageId),
+    create: (data: Partial<CommsMessageAction>): CommsMessageAction => {
+      const action: CommsMessageAction = {
+        id: generateId("cact"), message_id: data.message_id ?? "", action_type: data.action_type ?? "task",
+        target_record_id: data.target_record_id ?? null, created_by: data.created_by ?? "system", created_at: new Date().toISOString(),
+      };
+      store.commsMessageActions.push(action);
+      return action;
+    },
+  },
+  staffTrustNoticeAcks: {
+    latestForUser: (userId: string): StaffTrustNoticeAck | undefined =>
+      store.staffTrustNoticeAcks.filter((a) => a.user_id === userId).sort((a, b) => b.acknowledged_at.localeCompare(a.acknowledged_at))[0],
+    create: (data: Partial<StaffTrustNoticeAck>): StaffTrustNoticeAck => {
+      const now = new Date().toISOString();
+      const ack: StaffTrustNoticeAck = {
+        id: generateId("tna"), organisation_id: data.organisation_id ?? "org_default", user_id: data.user_id ?? "",
+        notice_version: data.notice_version ?? "unknown", acknowledged_at: now, device_id: data.device_id ?? null, created_at: now,
+      };
+      store.staffTrustNoticeAcks.push(ack);
+      return ack;
     },
   },
 

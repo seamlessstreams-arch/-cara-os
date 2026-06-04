@@ -67,7 +67,9 @@ export type ResourceType =
   | "quality_assurance"
   | "approval_queue"
   | "rota"
-  | "finance";
+  | "finance"
+  | "comms_channel" // Comms Centre (Phase 1) — enforced via lib/comms/comms-access.ts
+  | "comms_message";
 
 // ── Actions ─────────────────────────────────────────────────────────────────
 

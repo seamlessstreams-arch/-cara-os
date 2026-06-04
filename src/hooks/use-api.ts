@@ -3,13 +3,21 @@
 // Base API client — all hooks use this
 const BASE = "/api/v1";
 
+/** Identity header from the demo session (localStorage). Server routes that need
+ *  the acting user (e.g. Comms Centre access control) read `x-user-id`. */
+function userHeader(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  const id = localStorage.getItem("cs_user_id");
+  return id ? { "x-user-id": id } : {};
+}
+
 export async function apiFetch<T = unknown>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
     ...options,
+    headers: { "Content-Type": "application/json", ...userHeader(), ...(options?.headers ?? {}) },
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: "Request failed" }));
