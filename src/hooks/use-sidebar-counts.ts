@@ -32,6 +32,8 @@ export interface SidebarCounts {
   notifications: number;
   /** Care events awaiting manager review */
   care_events_review: number;
+  /** Live action items needing the user (emergencies / acks / staffing / sign-offs) */
+  action_center: number;
 }
 
 export function useSidebarCounts(): SidebarCounts {
@@ -65,6 +67,12 @@ export function useSidebarCounts(): SidebarCounts {
     ...OPTS,
   });
 
+  const actionCenterQ = useQuery<{ data: { total: number } } | null>({
+    queryKey: ["sidebar", "action-center"],
+    queryFn: () => get("/api/v1/action-center"),
+    ...OPTS,
+  });
+
   // Show overdue + urgent for tasks — the most actionable number
   const taskOverdue = tasksQ.data?.meta?.overdue ?? 0;
   const taskUrgent  = tasksQ.data?.meta?.urgent  ?? 0;
@@ -75,5 +83,6 @@ export function useSidebarCounts(): SidebarCounts {
     forms:              formsQ.data?.meta?.pending_review    ?? 0,
     notifications:      Array.isArray(notifsQ.data) ? notifsQ.data.length : 0,
     care_events_review: careEventsReviewQ.data?.meta?.status_counts?.manager_review_required ?? 0,
+    action_center:      actionCenterQ.data?.data?.total ?? 0,
   };
 }
