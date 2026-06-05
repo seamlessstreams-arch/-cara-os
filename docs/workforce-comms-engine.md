@@ -388,5 +388,42 @@ lives in the permission-gated alert record, never the notification — honouring
 sensitive details in notifications". Additive; existing rota/staffing analytics
 unchanged.
 
-### Next phase
-Phase 8 (evidence / oversight).
+## Phase 8 — Evidence & Oversight (implemented — final phase)
+
+Closes the loop: a **read-only** management-oversight view + an **audit-ready
+evidence pack** that ASSEMBLE what the engine already captured (Phases 1-7) — it
+writes nothing. Complements (does not duplicate) the existing care-records evidence
+generator (`src/lib/evidence/`) — this is the WORKFORCE domain.
+
+### What it does
+- `buildWorkforceOversight()` (pure) aggregates, per home + period (default 7 days):
+  attendance (clock-ins today, on shift now, late today — Phases 3/5), presence
+  verification (verified / unverified / by method — Phase 5), message governance
+  (conversions by type, active investigation holds, non-routine retention — Phase 2),
+  emergencies (raised / active / resolved / responders — Phase 7), and current safe
+  staffing (Phase 7). Plus a worst-first **flags** list (active emergency →
+  understaffed → holds → unverified sign-ins → late).
+- `buildWorkforceEvidencePack()` builds an inspector-facing document: four sections
+  with **Reg alignment** (Reg 31 staffing / 36 records / 40 notifications / 45 RM
+  review), narratives, metrics, and the **guarantees** the engine upholds (no
+  location stored, no sensitive detail in notifications, no hidden second record,
+  server-side shift access, everything attributed + audited).
+- `WorkforceOversightView` (page `/workforce-oversight`, nav entry): the four section
+  cards + flags + an **Export** button that downloads the evidence pack as JSON.
+
+### Files
+- Pure: `src/lib/oversight/workforce-oversight.ts`, `workforce-evidence.ts`
+- Service: `workforce-oversight-service.ts` (reads the store + safe-staffing)
+- Store: added `findAll` to `db.commsMessages` + `db.commsMessageActions` (additive)
+- API: `GET /api/v1/workforce-oversight[?period]`, `.../workforce-oversight/evidence`
+- Hook: `use-workforce-oversight.ts` · UI: `workforce-oversight-view.tsx`, page +
+  nav "Workforce Oversight"
+- Tests: `workforce-oversight.test.ts` (8)
+
+### Safety
+Read-only; surfaces existing records only. The evidence pack restates the privacy /
+audit guarantees of the prior phases — it does not relax any of them.
+
+---
+
+**The Workforce, Comms, Safe Access & Governance Engine is complete (Phases 1-8).**

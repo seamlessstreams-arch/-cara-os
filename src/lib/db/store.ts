@@ -6494,6 +6494,7 @@ export const db = {
     },
   },
   commsMessages: {
+    findAll: (): CommsMessage[] => store.commsMessages,
     findByChannel: (channelId: string, includeDeleted = false): CommsMessage[] =>
       store.commsMessages
         .filter((m) => m.channel_id === channelId && (includeDeleted || !m.is_deleted))
@@ -6538,6 +6539,7 @@ export const db = {
     },
   },
   commsMessageActions: {
+    findAll: (): CommsMessageAction[] => store.commsMessageActions,
     findByMessage: (messageId: string): CommsMessageAction[] => store.commsMessageActions.filter((a) => a.message_id === messageId),
     create: (data: Partial<CommsMessageAction>): CommsMessageAction => {
       const action: CommsMessageAction = {
