@@ -33,23 +33,24 @@ describe("keepsOffShiftAccess / SHIFT_GATED_ROLES", () => {
   });
 });
 
-describe("computeShiftActive (flag default OFF)", () => {
-  it("returns true for everyone when enforcement is off and not previewing", () => {
+describe("computeShiftActive (enforcement ON by default; =false disables)", () => {
+  it("is enabled by default; the kill-switch makes everyone active again", () => {
+    expect(isShiftEnforcementEnabled()).toBe(true); // default ON
+    expect(computeShiftActive("rsw", "nobody")).toBe(false); // gated role off shift → blocked
+    process.env.SHIFT_BASED_ACCESS_ENFORCED = "false";
+    expect(isShiftEnforcementEnabled()).toBe(false);
     expect(computeShiftActive("rsw", "nobody")).toBe(true);
     expect(computeShiftActive("agency_staff", "nobody")).toBe(true);
   });
 
-  it("preview forces enforcement logic without the env flag", () => {
-    // gated role, no shift today → off shift → false
+  it("preview forces enforcement logic even when disabled", () => {
+    process.env.SHIFT_BASED_ACCESS_ENFORCED = "false";
     expect(computeShiftActive("rsw", "ghost_staff_x", { preview: true })).toBe(false);
-    // manager keeps access off shift → true
     expect(computeShiftActive("registered_manager", "ghost_staff_x", { preview: true })).toBe(true);
   });
 
-  it("respects the env flag", () => {
-    process.env.SHIFT_BASED_ACCESS_ENFORCED = "true";
-    expect(isShiftEnforcementEnabled()).toBe(true);
-    expect(computeShiftActive("rsw", "ghost_staff_x")).toBe(false); // off shift, gated
+  it("managers/senior leaders keep access even when enforced", () => {
+    expect(computeShiftActive("rsw", "ghost_staff_x")).toBe(false); // default ON, off shift
     expect(computeShiftActive("deputy_manager", "ghost_staff_x")).toBe(true); // senior leader
   });
 
@@ -99,7 +100,14 @@ describe("buildShiftAccessOverview", () => {
     expect(o.resources.some((r) => r.resourceType === "child_record" && !r.allowed)).toBe(true);
   });
 
-  it("with enforcement off and no preview, nothing is blocked", () => {
+  it("default ON: off-shift general staff are blocked without preview", () => {
+    const o = buildShiftAccessOverview("ghost_staff_offshift", { now: "2026-09-21T10:00:00.000Z" });
+    expect(o.enforcement_enabled).toBe(true);
+    expect(o.blocked_count).toBeGreaterThan(0);
+  });
+
+  it("kill-switch (=false): nothing is blocked", () => {
+    process.env.SHIFT_BASED_ACCESS_ENFORCED = "false";
     const o = buildShiftAccessOverview("ghost_staff_offshift", { now: "2026-09-21T10:00:00.000Z" });
     expect(o.enforcement_enabled).toBe(false);
     expect(o.blocked_count).toBe(0);

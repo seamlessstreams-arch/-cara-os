@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { todayStr } from "@/lib/utils";
+import { withShiftAccess } from "@/lib/permissions/with-shift-access";
+
+export const dynamic = "force-dynamic";
 
 function calcAge(dob: string): number {
   const today = new Date();
@@ -11,7 +14,9 @@ function calcAge(dob: string): number {
   return age;
 }
 
-export async function GET(
+// Child-record view — guarded by the real permission engine (shift-based access +
+// role rules). Managers keep access off shift; off-shift general staff get 403.
+async function getYoungPerson(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -65,3 +70,5 @@ export async function GET(
     },
   });
 }
+
+export const GET = withShiftAccess("child_record", "view", getYoungPerson);

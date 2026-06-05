@@ -203,11 +203,11 @@ child-facing records when **off shift**, while managers/senior leaders keep full
 access off shift (per the brief). **Reuses** the existing engine (`checkAccess` +
 role rules) — no parallel permission system.
 
-### Feature flag — nothing changes until you enable it
-- Master switch: server env **`SHIFT_BASED_ACCESS_ENFORCED`** (default unset = OFF).
-- `computeShiftActive(role, staffId)` returns `true` for everyone when the flag is
-  off → the engine's existing `requiresShift` gate never fires → **zero behaviour
-  change**. Set the env var to `"true"` to enforce.
+### Enforcement is ON by default (post-pilot — see "Production hardening" below)
+- Master switch: server env **`SHIFT_BASED_ACCESS_ENFORCED`** — **enabled by default**;
+  set to `"false"` as a kill-switch. (Was default-OFF during the pilot.)
+- `computeShiftActive(role, staffId)` returns the real on-shift state for gated roles
+  and `true` for managers/senior leaders; the kill-switch makes everyone `true` again.
 - A **preview** mode computes the result *as if* enforcement were on (display-only,
   never changes real access) so a manager can see exactly what would change first.
 
@@ -427,3 +427,16 @@ audit guarantees of the prior phases — it does not relax any of them.
 ---
 
 **The Workforce, Comms, Safe Access & Governance Engine is complete (Phases 1-8).**
+
+## Production hardening (post-engine)
+
+- **Shift enforcement enabled by default** — `isShiftEnforcementEnabled()` now returns
+  true unless `SHIFT_BASED_ACCESS_ENFORCED=false`. Off-shift general staff lose
+  operational access; managers/senior leaders keep it.
+- **Route guard** — `withShiftAccess(resourceType, action, handler)`
+  (`src/lib/permissions/with-shift-access.ts`): backend-agnostic, resolves the real
+  `x-user-id` user, runs the real `checkAccess`, returns audited **403** on denial,
+  passes route args through. Applied to `GET /api/v1/young-people/[id]` (child record)
+  as the verified reference; one-liner to roll onto other operational routes. (The
+  existing Supabase-auth `withPermission` no-ops in the demo backend — hence the new
+  guard.)

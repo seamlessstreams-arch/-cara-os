@@ -34,9 +34,13 @@ export function keepsOffShiftAccess(role: Role): boolean {
   return !SHIFT_GATED_ROLES.has(role);
 }
 
-/** Server-side master switch. Default OFF — nothing changes until explicitly enabled. */
+/**
+ * Server-side master switch. Now ENABLED by default (the pilot is over) — general
+ * staff lose operational access off shift, managers/senior leaders keep it. Set
+ * `SHIFT_BASED_ACCESS_ENFORCED=false` to disable (kill-switch for incident response).
+ */
 export function isShiftEnforcementEnabled(): boolean {
-  return process.env.SHIFT_BASED_ACCESS_ENFORCED === "true";
+  return process.env.SHIFT_BASED_ACCESS_ENFORCED !== "false";
 }
 
 export interface ShiftComputeOpts {
