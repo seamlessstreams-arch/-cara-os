@@ -22,7 +22,7 @@ export function GlobalEmergencyBanner() {
     <Link
       href="/safe-staffing"
       role="alert"
-      className="sticky top-0 z-40 flex items-center justify-center gap-2 bg-[var(--cs-avisaar-coral)] px-4 py-2 text-center text-sm font-semibold text-white hover:opacity-95"
+      className="flex items-center justify-center gap-2 bg-[var(--cs-avisaar-coral)] px-4 py-2 text-center text-sm font-semibold text-white hover:opacity-95"
     >
       <Siren className="h-4 w-4 shrink-0 animate-pulse" />
       <span>
