@@ -163,6 +163,9 @@ export const SHIFT_SENSITIVE_CHECKS: ShiftSensitiveCheck[] = [
   { label: "Add to a child's record", resourceType: "child_record", action: "create" },
   { label: "View safeguarding records", resourceType: "safeguarding", action: "view" },
   { label: "Raise a safeguarding concern", resourceType: "safeguarding", action: "create" },
+  { label: "Record medication", resourceType: "medication", action: "create" },
+  { label: "View incident records", resourceType: "incident", action: "view" },
+  { label: "View missing-from-care records", resourceType: "missing_episode", action: "view" },
 ];
 
 export interface ShiftAccessResourceResult extends ShiftSensitiveCheck {

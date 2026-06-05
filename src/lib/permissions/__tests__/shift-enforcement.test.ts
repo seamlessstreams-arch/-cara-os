@@ -107,6 +107,18 @@ describe("the real engine gate (checkAccess + requiresShift rules)", () => {
   });
 });
 
+describe("operational record rules (medication/incident/missing/physical/daily_log)", () => {
+  const RESOURCES = ["medication", "incident", "missing_episode", "physical_intervention", "daily_log"] as const;
+  for (const rt of RESOURCES) {
+    it(`${rt}: on-shift care staff allowed, off-shift denied, manager always allowed`, () => {
+      expect(checkAccess({ user: ctx("rsw", true), resourceType: rt, action: "view", resourceHomeId: "home_oak" }).allowed).toBe(true);
+      expect(checkAccess({ user: ctx("rsw", false), resourceType: rt, action: "view", resourceHomeId: "home_oak" }).allowed).toBe(false);
+      expect(checkAccess({ user: ctx("registered_manager", false), resourceType: rt, action: "view", resourceHomeId: "home_oak" }).allowed).toBe(true);
+      expect(checkAccess({ user: ctx("rsw", true), resourceType: rt, action: "create", resourceHomeId: "home_oak" }).allowed).toBe(true);
+    });
+  }
+});
+
 describe("buildShiftAccessOverview", () => {
   it("off-shift general staff (preview) shows blocked operational resources", () => {
     const o = buildShiftAccessOverview("ghost_staff_offshift", { preview: true, now: "2026-09-21T10:00:00.000Z" });
