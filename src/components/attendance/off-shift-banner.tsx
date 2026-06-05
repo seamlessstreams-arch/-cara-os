@@ -67,12 +67,17 @@ export function OffShiftBanner() {
         ))}
       </ul>
 
-      <Link
-        href="/sign-in"
-        className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-teal)] text-white text-xs font-semibold px-3 py-2 hover:opacity-90"
-      >
-        <LogIn className="h-3.5 w-3.5" />Clock in to restore access
-      </Link>
+      <div className="flex flex-wrap items-center gap-3">
+        <Link
+          href="/sign-in"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-teal)] text-white text-xs font-semibold px-3 py-2 hover:opacity-90"
+        >
+          <LogIn className="h-3.5 w-3.5" />Clock in to restore access
+        </Link>
+        <Link href="/off-shift" className="text-xs font-medium text-[var(--cs-teal)] hover:underline">
+          See what you can do off shift →
+        </Link>
+      </div>
     </div>
   );
 }
