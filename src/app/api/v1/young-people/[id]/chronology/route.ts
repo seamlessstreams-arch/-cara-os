@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,8 @@ function severityFromBehaviour(dir: string): "routine" | "significant" | "critic
   return dir === "negative" ? "significant" : "routine";
 }
 
-export async function GET(
+// Per-child chronology — child-record data, guarded by the permission engine.
+async function getChronology(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -253,3 +255,5 @@ export async function GET(
 
   return NextResponse.json({ data: paged, stats, total });
 }
+
+export const GET = withShiftAccess("child_record", "view", getChronology);
