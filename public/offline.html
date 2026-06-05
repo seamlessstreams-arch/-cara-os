@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f1e36" />
+  <title>Offline — Cornerstone</title>
+  <style>
+    :root { color-scheme: light; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f7f8fa; color: #0f1e36;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; -webkit-font-smoothing: antialiased;
+    }
+    .card {
+      max-width: 380px; width: 100%; text-align: center;
+      background: #fff; border: 1px solid #e6e9ef; border-radius: 24px;
+      padding: 36px 28px; box-shadow: 0 10px 40px rgba(15,30,54,.06);
+    }
+    .mark {
+      width: 72px; height: 72px; margin: 0 auto 20px; border-radius: 20px;
+      background: linear-gradient(160deg, #16a899, #0b6f66);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 40px; font-weight: 700; line-height: 1;
+      box-shadow: 0 6px 18px rgba(17,148,136,.3);
+    }
+    h1 { font-size: 20px; margin: 0 0 8px; letter-spacing: -.01em; }
+    p { font-size: 14px; line-height: 1.55; color: #56627a; margin: 0 0 22px; }
+    .safe { font-size: 12px; color: #8a93a6; margin-top: 18px; }
+    button {
+      appearance: none; border: 0; cursor: pointer;
+      background: #119488; color: #fff; font-size: 14px; font-weight: 600;
+      padding: 12px 22px; border-radius: 12px; width: 100%;
+    }
+    button:active { opacity: .9; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="mark">C</div>
+    <h1>You're offline</h1>
+    <p>
+      Cornerstone needs an internet connection to show <strong>live</strong> care
+      information safely. Reconnect, then try again to continue.
+    </p>
+    <button onclick="location.reload()">Try again</button>
+    <p class="safe">
+      For everyone's safety, Cornerstone never shows out-of-date safeguarding,
+      medication or staffing information while you're offline.
+    </p>
+  </div>
+  <script>
+    // Auto-reload as soon as the connection returns.
+    window.addEventListener("online", function () { location.reload(); });
+  </script>
+</body>
+</html>

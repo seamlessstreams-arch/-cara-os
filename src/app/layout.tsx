@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/toaster";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { OfflineBanner } from "@/components/pwa/offline-banner";
 import "./globals.css";
 
 // ── Cornerstone uses Avenir Next LT Pro (declared in globals.css via @font-face)
@@ -45,8 +47,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full antialiased" style={{ fontFamily: "var(--font-sans)" }}>
       <body className="min-h-full bg-[var(--cs-bg)] text-[var(--cs-text)] selection:bg-[var(--cs-aria-gold-soft)] selection:text-[var(--cs-navy)]">
+        <OfflineBanner />
         <QueryProvider>{children}</QueryProvider>
         <Toaster />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
