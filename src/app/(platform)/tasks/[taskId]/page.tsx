@@ -293,6 +293,8 @@ export default function TaskDetailPage() {
           : `${TASK_CATEGORY_LABELS[task.category] ?? task.category} · Created ${formatDate(task.created_at)}`
       }
       showQuickCreate={false}
+      recordAnything
+      recordChildId={task.linked_child_id ?? undefined}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Task Detail" subtitle={`Oak House — ${task.title}`} targetId="task-detail-content" />

@@ -175,6 +175,7 @@ export default function TasksPage() {
     <PageShell
       title="Tasks"
       subtitle={`${filtered.length} task${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
+      recordAnything
       ariaContext={{ pageTitle: "Tasks", sourceType: "general" }}
       quickCreateContext={TASKS_QUICK_CREATE_CONTEXT}
       actions={

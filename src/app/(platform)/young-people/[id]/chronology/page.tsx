@@ -369,6 +369,8 @@ export default function ChildChronologyPage({
     <PageShell
       title={`${childName} — Chronology`}
       subtitle={`Complete event timeline · ${stats?.total ?? 0} entries`}
+      recordAnything
+      recordChildId={id}
       ariaContext={{
         childId:    id,
         childName,

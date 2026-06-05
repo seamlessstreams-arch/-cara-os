@@ -3,6 +3,7 @@
 import React from "react";
 import { Header } from "./header";
 import { QuickCreateActions } from "@/components/common/quick-create-actions";
+import { RecordAnythingButton } from "@/components/forms/record-anything-button";
 import type { QuickCreateContext } from "@/components/common/quick-create-modal";
 import type { AriaDrawerContext } from "@/components/aria/aria-drawer";
 
@@ -19,6 +20,10 @@ export interface PageShellProps {
   quickCreateContext?: QuickCreateContext;
   /** Set to false to suppress the automatic QuickCreate buttons */
   showQuickCreate?:  boolean;
+  /** Show the universal "Record anything" capture button in the header */
+  recordAnything?:   boolean;
+  /** Pre-fill the captured record against this child (young-person pages) */
+  recordChildId?:    string;
   /** Aria context — passed to the ARIA drawer for contextual suggestions */
   ariaContext?:      AriaDrawerContext;
   children:          React.ReactNode;
@@ -33,6 +38,8 @@ export function PageShell({
   actions,
   quickCreateContext,
   showQuickCreate = true,
+  recordAnything = false,
+  recordChildId,
   ariaContext,
   children,
   fullWidth = false,
@@ -40,6 +47,7 @@ export function PageShell({
   const headerActions = (
     <>
       {actions}
+      {recordAnything && <RecordAnythingButton childId={recordChildId} />}
       {showQuickCreate && (
         <QuickCreateActions context={quickCreateContext} />
       )}

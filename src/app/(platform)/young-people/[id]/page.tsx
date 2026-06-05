@@ -409,6 +409,8 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
       title={`${displayName} ${yp.last_name}`}
       subtitle={`${yp.legal_status} · ${yp.local_authority} · Age ${yp.age}`}
       showQuickCreate={false}
+      recordAnything
+      recordChildId={id}
       ariaContext={{ sourceType: "child_record", sourceId: id, childId: id, childName: `${displayName} ${yp.last_name}` }}
       actions={
         <div className="flex items-center gap-2">

@@ -242,6 +242,8 @@ export default function FormDetailPage() {
       title={editing ? "Editing Form" : form.title}
       subtitle={editing ? "Make your changes and save below" : `${typeLabel} · ${stat.label}`}
       showQuickCreate={false}
+      recordAnything
+      recordChildId={form.linked_child_id ?? undefined}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title={form.title || "Care Form"} subtitle="Oak House — Care Form Record" targetId="form-detail-content" />

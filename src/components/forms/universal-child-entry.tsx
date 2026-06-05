@@ -23,6 +23,8 @@ import {
 
 interface UniversalChildEntryProps {
   childId: string;
+  /** Acting staff member the record is attributed to (defaults to the demo user). */
+  staffId?: string;
   onSuccess?: (result: any) => void;
   onCancel?: () => void;
   className?: string;
@@ -56,7 +58,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function UniversalChildEntry({ childId, onSuccess, onCancel, className }: UniversalChildEntryProps) {
+export function UniversalChildEntry({ childId, staffId = "staff_darren", onSuccess, onCancel, className }: UniversalChildEntryProps) {
   const store = getStore();
   const child = (store.youngPeople as any[] || []).find((yp: any) => yp.id === childId);
   const childName = child ? `${child.first_name} ${child.last_name ?? ""}`.trim() : "Child";
@@ -111,7 +113,7 @@ export function UniversalChildEntry({ childId, onSuccess, onCancel, className }:
         body: JSON.stringify({
           record_type: recordType,
           child_id: childId,
-          staff_id: "staff_darren",
+          staff_id: staffId,
           title: cls.suggested_title,
           description: text.trim(),
           severity: cls.severity,
@@ -138,7 +140,7 @@ export function UniversalChildEntry({ childId, onSuccess, onCancel, className }:
     } finally {
       setSubmitting(false);
     }
-  }, [text, classification, overrideType, childId, childName, submitting, onSuccess]);
+  }, [text, classification, overrideType, childId, staffId, childName, submitting, onSuccess]);
 
   // ── Success state ──────────────────────────────────────────────────────
   if (result) {

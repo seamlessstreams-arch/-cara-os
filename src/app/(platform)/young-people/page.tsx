@@ -793,6 +793,7 @@ export default function YoungPeoplePage() {
       }
       ariaContext={{ pageTitle: "Young People", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans", defaultFormType: "welfare_check", preferredTab: "form" }}
+      recordAnything
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredYP} columns={YP_EXPORT_COLS} filename="young-people" />

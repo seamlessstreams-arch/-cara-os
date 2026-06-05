@@ -351,6 +351,7 @@ export default function FormsPage() {
     <PageShell
       title="Care Forms"
       subtitle={`${filtered.length} form${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
+      recordAnything
       ariaContext={{ pageTitle: "Care Forms", sourceType: "document" }}
       quickCreateContext={FORMS_QUICK_CREATE_CONTEXT}
       actions={
