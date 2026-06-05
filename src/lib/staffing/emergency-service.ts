@@ -10,6 +10,7 @@
 import { db } from "@/lib/db/store";
 import { writeAuditLog } from "@/lib/supabase/audit";
 import { persistCommsMessage } from "@/lib/supabase/comms";
+import { persistEmergencyAlert } from "@/lib/supabase/workforce";
 import { EMERGENCY_TYPE_LABEL, type EmergencyAlert, type EmergencyType } from "./emergency-types";
 
 export interface TriggerEmergencyInput {
@@ -77,6 +78,7 @@ export function triggerEmergency(input: TriggerEmergencyInput, nowIso: string): 
     resolved_by: null,
   });
   audit("raised", input.homeId, input.raisedBy, alert.id, { type: input.type, broadcast: !!broadcastId });
+  void persistEmergencyAlert(alert); // durable persistence (no-op when Supabase off)
   return { alert, broadcast_message_id: broadcastId };
 }
 
@@ -93,6 +95,7 @@ export function acknowledgeEmergency(
     responders: [...alert.responders, { staff_id: staffId, name, at: nowIso }],
   });
   audit("acknowledged", alert.home_id, staffId, alertId, {});
+  if (updated) void persistEmergencyAlert(updated);
   return updated;
 }
 
@@ -105,5 +108,6 @@ export function resolveEmergency(alertId: string, staffId: string, nowIso: strin
     resolved_by: staffId,
   });
   audit("resolved", alert.home_id, staffId, alertId, {});
+  if (updated) void persistEmergencyAlert(updated);
   return updated;
 }

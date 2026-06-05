@@ -18,6 +18,7 @@
 import { db } from "@/lib/db/store";
 import { writeAuditLog } from "@/lib/supabase/audit";
 import { verifyPresence, type PresenceMethod, type PresenceResult, type PresenceBand } from "./presence-verification";
+import { persistSignInVerification } from "@/lib/supabase/workforce";
 import type { Shift } from "@/types";
 import type { ShiftType } from "@/lib/constants";
 
@@ -328,7 +329,7 @@ export function clockIn(
       coords: opts.verification.coords, // used for the check here, never persisted
       nowIso,
     });
-    db.signInVerifications.create({
+    const verifRec = db.signInVerifications.create({
       staff_id: staffId,
       shift_id: updated.id,
       home_id: staff.home_id,
@@ -336,6 +337,7 @@ export function clockIn(
       verified: presence.verified,
       band: presence.band,
     });
+    void persistSignInVerification(verifRec); // durable persistence (no-op when Supabase off)
   }
 
   audit("update", staff, updated.id, {
