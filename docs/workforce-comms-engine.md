@@ -340,5 +340,53 @@ assumes content was already permitted and simply governs whether it's visible on
 screen right now. `usePrivacy()` returns a safe no-op outside the provider so
 components never crash.
 
-### Next phases
-Phase 7 (safe staffing/emergency), Phase 8 (evidence/oversight).
+## Phase 7 — Safe Staffing & Emergency (implemented)
+
+Real-time safe-staffing from **who is actually clocked in now** (Phase 3 live data —
+distinct from the rota-service, which analyses the *planned* rota), plus a fast,
+**privacy-safe emergency broadcast**. Composes the shipped phases.
+
+### Real-time safe staffing
+- `buildSafeStaffingStatus(homeId, now)` reads live clock-ins (`db.shifts`,
+  in-progress / clocked-in-not-out) for the home and assesses against a minimum for
+  the current **day/night period**: understaffed, **lone working** (only one on
+  shift), and **no waking-night cover** alerts, with a severity (ok / high /
+  critical). Surfaces who's on shift + the active **on-call** contact (reuses
+  `OnCallShift`). Defaults: day ≥ 2, night ≥ 1 with waking-night required
+  (`getStaffingConfig`, per-home overridable).
+- `GET /api/v1/safe-staffing`; `SafeStaffingCard` (on `/safe-staffing` + the sign-in
+  page), auto-refreshes.
+
+### Emergency broadcast / panic
+- `triggerEmergency()` raises an `EmergencyAlert` and posts a **privacy-safe**
+  message into the Phase 1 `emergency_broadcast` Comms channel: operational category
+  (medical/fire/security/evacuation/missing/other) + optional location + who raised
+  it — **never** child / safeguarding / medical / placement detail (a test asserts
+  the broadcast body contains none of those). Priority `emergency`,
+  requires-acknowledgement.
+- Acknowledge ("I'm responding") + resolve, tracked with responders; every action
+  audited. `POST`/`GET /api/v1/emergency`, `PATCH /api/v1/emergency/[id]`.
+- `EmergencyButton` (two-step, to avoid accidental triggers) + `ActiveEmergencyBanner`
+  (respond/resolve), on `/safe-staffing` + the sign-in page.
+
+### Files
+- Pure: `src/lib/staffing/safe-staffing.ts` (`assessStaffing`, `currentPeriod`,
+  config), `emergency-types.ts`
+- Service: `safe-staffing-service.ts`, `emergency-service.ts`
+- Store: `db.emergencyAlerts`
+- API: `safe-staffing`, `emergency`, `emergency/[id]`
+- Hook: `use-safe-staffing.ts` · UI: `safe-staffing-card.tsx`,
+  `emergency-controls.tsx`, page `/safe-staffing` (+ nav "Safe Staffing"), wired into
+  `/sign-in`
+- Reuse: Phase 3 live clock-ins, Phase 1 `emergency_broadcast` channel +
+  `db.commsMessages` + `persistCommsMessage`, `OnCallShift`
+- Tests: `safe-staffing.test.ts` (8) + `emergency-service.test.ts` (4)
+
+### Safety
+The emergency broadcast is generic by construction (operational type only); detail
+lives in the permission-gated alert record, never the notification — honouring "no
+sensitive details in notifications". Additive; existing rota/staffing analytics
+unchanged.
+
+### Next phase
+Phase 8 (evidence / oversight).

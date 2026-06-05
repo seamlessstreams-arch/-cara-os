@@ -28,6 +28,7 @@ import type {
   StaffTrustNoticeAck,
 } from "@/types/comms";
 import type { SignInVerification } from "@/lib/attendance/presence-verification";
+import type { EmergencyAlert } from "@/lib/staffing/emergency-types";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -560,6 +561,7 @@ const store = {
   incidents: [...INCIDENTS] as Incident[],
   shifts: [...SHIFTS] as Shift[],
   signInVerifications: [] as SignInVerification[],
+  emergencyAlerts: [] as EmergencyAlert[],
   medications: [...MEDICATIONS] as Medication[],
   medicationAdministrations: [] as MedicationAdministration[],
   dailyLog: [...DAILY_LOG] as DailyLogEntry[],
@@ -6625,6 +6627,25 @@ export const db = {
       const rec: SignInVerification = { ...data, id: generateId("siv"), created_at: new Date().toISOString() };
       store.signInVerifications.push(rec);
       return rec;
+    },
+  },
+
+  // ── Emergency alerts (Phase 7) ──────────────────────────────────────────────
+  emergencyAlerts: {
+    findAll: (): EmergencyAlert[] => store.emergencyAlerts,
+    findById: (id: string): EmergencyAlert | undefined => store.emergencyAlerts.find((a) => a.id === id),
+    findActive: (homeId: string): EmergencyAlert[] =>
+      store.emergencyAlerts.filter((a) => a.home_id === homeId && a.status === "active"),
+    create: (data: Omit<EmergencyAlert, "id" | "created_at">): EmergencyAlert => {
+      const rec: EmergencyAlert = { ...data, id: generateId("emrg"), created_at: new Date().toISOString() };
+      store.emergencyAlerts.push(rec);
+      return rec;
+    },
+    patch: (id: string, updates: Partial<EmergencyAlert>): EmergencyAlert | null => {
+      const idx = store.emergencyAlerts.findIndex((a) => a.id === id);
+      if (idx === -1) return null;
+      store.emergencyAlerts[idx] = { ...store.emergencyAlerts[idx], ...updates };
+      return store.emergencyAlerts[idx];
     },
   },
 
