@@ -71,6 +71,7 @@ const RecruitmentPipelineCard = dynamic(() => import("@/components/dashboard/rec
 const YoungPeopleRiskCard = dynamic(() => import("@/components/dashboard/young-people-risk-card").then(m => m.YoungPeopleRiskCard ? { default: m.YoungPeopleRiskCard } : m), { ssr: false });
 const DailyLogSummaryCard = dynamic(() => import("@/components/dashboard/daily-log-summary-card").then(m => m.DailyLogSummaryCard ? { default: m.DailyLogSummaryCard } : m), { ssr: false });
 const StaffingCoverageCard = dynamic(() => import("@/components/dashboard/staffing-coverage-card").then(m => m.StaffingCoverageCard ? { default: m.StaffingCoverageCard } : m), { ssr: false });
+const WorkforceSummaryCard = dynamic(() => import("@/components/dashboard/workforce-summary-card").then(m => m.WorkforceSummaryCard ? { default: m.WorkforceSummaryCard } : m), { ssr: false });
 const IncidentTrendsCard = dynamic(() => import("@/components/dashboard/incident-trends-card").then(m => m.IncidentTrendsCard ? { default: m.IncidentTrendsCard } : m), { ssr: false });
 const EnvironmentStatusCard = dynamic(() => import("@/components/dashboard/environment-status-card").then(m => m.EnvironmentStatusCard ? { default: m.EnvironmentStatusCard } : m), { ssr: false });
 const TasksSummaryCard = dynamic(() => import("@/components/dashboard/tasks-summary-card").then(m => m.TasksSummaryCard ? { default: m.TasksSummaryCard } : m), { ssr: false });
@@ -2182,6 +2183,7 @@ export default function DashboardPage() {
                   <ComplaintsSummaryCard />
                   <FamilyContactCard />
                   <StaffingCoverageCard />
+                  <WorkforceSummaryCard />
                   <IncidentTrendsCard />
                   <EnvironmentStatusCard />
                   <RecruitmentPipelineCard />
