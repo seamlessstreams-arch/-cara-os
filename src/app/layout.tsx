@@ -20,6 +20,15 @@ export const metadata: Metadata = {
   title: "Cornerstone | Care OS for Children's Homes",
   description:
     "The operating system for children's residential care. Safeguarding, compliance, intelligence, and oversight — calm, clear, and always Ofsted-ready.",
+  applicationName: "Cornerstone",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
