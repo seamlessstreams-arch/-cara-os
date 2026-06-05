@@ -6,7 +6,28 @@
 // the final access decision.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { PermissionRule, Role, ApprovalLevel, EmploymentStatus } from "./types";
+import type { PermissionRule, Role, ResourceType, ApprovalLevel, EmploymentStatus } from "./types";
+
+// ── Operational child-facing records (Phase: route-enforcement extension) ─────
+// medication / incident / missing_episode / physical_intervention / daily_log had
+// no rules, so they couldn't be guarded (checkAccess → "no_rule" denies everyone).
+// These mirror the child_record tiers: general care staff get view/create and are
+// SHIFT-GATED (requiresShift); seniors/managers escalate; managers keep off-shift
+// access. Home-scoped; no requiresAssignment so any on-shift staff can record.
+function operationalRecordRules(resourceType: ResourceType): PermissionRule[] {
+  return [
+    { role: ["rsw", "senior_rsw", "waking_night"], resourceType, actions: ["view", "create"], requiresHomeMatch: true, requiresShift: true, sensitivityMax: "internal" },
+    { role: ["agency_staff"], resourceType, actions: ["view", "create"], requiresHomeMatch: true, requiresShift: true, sensitivityMax: "internal" },
+    { role: ["team_leader"], resourceType, actions: ["view", "create", "edit", "check"], requiresHomeMatch: true, sensitivityMax: "restricted" },
+    { role: ["deputy_manager"], resourceType, actions: ["view", "create", "edit", "check", "approve", "return_for_improvement"], requiresHomeMatch: true, sensitivityMax: "confidential" },
+    { role: ["registered_manager"], resourceType, actions: ["view", "create", "edit", "check", "approve", "return_for_improvement", "lock", "export"], requiresHomeMatch: true },
+    { role: ["responsible_individual", "operations_manager", "provider_owner", "super_admin"], resourceType, actions: ["view", "approve", "export"] },
+  ];
+}
+
+const OPERATIONAL_RECORD_RESOURCES: ResourceType[] = [
+  "medication", "incident", "missing_episode", "physical_intervention", "daily_log",
+];
 
 // ── Role Hierarchy (for "at least" checks) ─────────────────────────────────
 
@@ -483,6 +504,10 @@ export const PERMISSION_RULES: PermissionRule[] = [
     resourceType: "filing_cabinet",
     actions: ["view", "file", "export", "archive"],
   },
+
+  // ── Operational child-facing records (medication / incident / missing /
+  //    physical intervention / daily log) — generated, shift-gated for general staff.
+  ...OPERATIONAL_RECORD_RESOURCES.flatMap(operationalRecordRules),
 ];
 
 // ── Employment Status Restrictions ─────────────────────────────────────────

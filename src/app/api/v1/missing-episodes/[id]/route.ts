@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 
-// ── GET /api/v1/missing-episodes/[id] ────────────────────────────────────────
+export const dynamic = "force-dynamic";
 
-export async function GET(
+// ── GET /api/v1/missing-episodes/[id] ── (guarded: missing_episode / view) ────
+
+async function getEpisode(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -12,6 +15,8 @@ export async function GET(
   if (!episode) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ data: episode });
 }
+
+export const GET = withShiftAccess("missing_episode", "view", getEpisode);
 
 // ── PATCH /api/v1/missing-episodes/[id] ──────────────────────────────────────
 

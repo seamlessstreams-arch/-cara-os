@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { processMedicationException } from "@/lib/db/linked-updates";
+import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export const dynamic = "force-dynamic";
+
+// Administering medication is an operational write — guarded by medication / create.
+async function administerMedication(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const body = await req.json();
   const { status, administered_by, witnessed_by, dose_given, reason_not_given, notes, prn_reason, prn_effectiveness } = body;
@@ -28,3 +32,5 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   return NextResponse.json({ data: updated, linked_updates: status !== "given" ? ["daily_log", "notification"] : [] });
 }
+
+export const POST = withShiftAccess("medication", "create", administerMedication);

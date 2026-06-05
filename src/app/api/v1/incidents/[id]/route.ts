@@ -2,11 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
+import { requireOnShift } from "@/lib/permissions/require-on-shift";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const auth = requirePermission(req, PERMISSIONS.VIEW_INCIDENTS);
   if (auth instanceof NextResponse) return auth;
+  const shift = requireOnShift(req);
+  if (shift) return shift;
 
   const incident = db.incidents.findById(id);
   if (!incident) return NextResponse.json({ error: "Incident not found" }, { status: 404 });

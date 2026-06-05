@@ -57,6 +57,7 @@ export type ResourceType =
   | "incident"
   | "missing_episode"
   | "physical_intervention"
+  | "daily_log"
   | "safeguarding"
   | "complaint"
   | "supervision"
