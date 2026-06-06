@@ -20,6 +20,7 @@
 
 import { getStore } from "@/lib/db/store";
 import { db } from "@/lib/db/store";
+import { createTaskRecord } from "@/lib/supabase/care-records";
 import { generateId } from "@/lib/utils";
 import { recordEvent } from "@/lib/timeline/timeline-service";
 import { logInteraction } from "@/lib/aria/aria-config";
@@ -273,7 +274,7 @@ function createFollowUpTasks(
     assignedTo?: string | null,
   ): Task => {
     const dueDate = new Date(now.getTime() + dueHours * 60 * 60 * 1000);
-    return db.tasks.create({
+    return createTaskRecord({
       title,
       description,
       status: "pending",

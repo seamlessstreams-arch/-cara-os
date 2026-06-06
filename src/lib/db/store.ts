@@ -6299,6 +6299,12 @@ export const db = {
       store.tasks[idx] = { ...store.tasks[idx], status: "completed", completed_at: new Date().toISOString(), completed_by: by, evidence_note: note || store.tasks[idx].evidence_note };
       return store.tasks[idx];
     },
+    update: (id: string, data: Partial<Task>): Task | null => {
+      const idx = store.tasks.findIndex((t) => t.id === id);
+      if (idx === -1) return null;
+      store.tasks[idx] = { ...store.tasks[idx], ...data, updated_at: new Date().toISOString() };
+      return store.tasks[idx];
+    },
   },
 
   // ── Care Forms ────────────────────────────────────────────────────────────

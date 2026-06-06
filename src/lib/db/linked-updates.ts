@@ -17,7 +17,7 @@
 
 import { db } from "@/lib/db/store";
 import { todayStr, generateId } from "@/lib/utils";
-import { persistDailyLog } from "@/lib/supabase/care-records";
+import { persistDailyLog, createTaskRecord } from "@/lib/supabase/care-records";
 import type { Incident } from "@/types";
 import type { MissingEpisode } from "@/types/extended";
 
@@ -66,7 +66,7 @@ export function processIncidentCreated(incident: Incident, createdBy: string): v
 
   // 2. Manager oversight task (for incidents requiring oversight)
   if (incident.requires_oversight) {
-    db.tasks.create({
+    createTaskRecord({
       title: `Manager oversight required — ${incident.reference}`,
       description: `${label} for ${incident.child_id} requires RM oversight comment. ${incident.severity === "critical" ? "CRITICAL — complete today." : ""}`,
       category: incident.type.includes("safeguarding") ? "safeguarding" : "compliance",
@@ -166,7 +166,7 @@ export function processMissingEpisodeCreated(episode: MissingEpisode, createdBy:
 
   // 2. Return interview task
   if (!episode.return_interview_completed) {
-    db.tasks.create({
+    createTaskRecord({
       title: `Return to home interview — ${episode.reference}`,
       description: "Complete the return-to-home interview within 72 hours of return. Explore contacts, wellbeing, and any safeguarding concerns.",
       category: "safeguarding",
@@ -266,7 +266,7 @@ export function processBuildingCheckFail(
 ): void {
   // 1. Maintenance task
   if (riskLevel === "high" || riskLevel === "critical") {
-    db.tasks.create({
+    createTaskRecord({
       title: `URGENT: ${area} — ${checkType} failure`,
       description: actionRequired,
       category: "health_and_safety",
@@ -323,7 +323,7 @@ export function processVehicleDefect(
   severity: "advisory" | "fail", staffId: string, homeId: string
 ): void {
   // 1. Auto-task
-  db.tasks.create({
+  createTaskRecord({
     title: `Vehicle defect — ${registration}`,
     description: defects,
     category: "maintenance",
