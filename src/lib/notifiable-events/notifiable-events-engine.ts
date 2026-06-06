@@ -221,6 +221,8 @@ export function evaluateNotificationCompliance(
 
   // Check overdue notifications
   const overdueNotifications: { recipient: NotificationRecipient; deadline: string; hoursOverdue: number }[] = [];
+  // Notifications that WERE sent, but after their statutory deadline — a breach.
+  let lateSends = 0;
 
   for (const recipient of requiredRecipients) {
     const entry = event.notifications.find(n => n.recipient === recipient);
@@ -232,7 +234,7 @@ export function evaluateNotificationCompliance(
       const deadline = discoveredTime + deadlineHours * 60 * 60 * 1000;
 
       if (currentTime > deadline) {
-        const hoursOverdue = Math.round((currentTime - deadline) / (60 * 60 * 1000));
+        const hoursOverdue = Math.ceil((currentTime - deadline) / (60 * 60 * 1000));
         overdueNotifications.push({
           recipient,
           deadline: new Date(deadline).toISOString(),
@@ -244,7 +246,7 @@ export function evaluateNotificationCompliance(
       // Entry exists but not sent
       const deadlineTime = new Date(entry.deadline).getTime();
       if (currentTime > deadlineTime) {
-        const hoursOverdue = Math.round((currentTime - deadlineTime) / (60 * 60 * 1000));
+        const hoursOverdue = Math.ceil((currentTime - deadlineTime) / (60 * 60 * 1000));
         overdueNotifications.push({
           recipient,
           deadline: entry.deadline,
@@ -253,12 +255,15 @@ export function evaluateNotificationCompliance(
         issues.push(`${getRecipientLabel(recipient)} notification overdue by ${hoursOverdue}h`);
       }
     } else {
-      // Was sent — check if it was late
+      // Was sent — but a notification sent AFTER its statutory deadline is a
+      // regulatory breach, not merely a warning: it must make the event
+      // non-compliant and mark timeliness "late".
       const sentTime = new Date(entry.sentAt).getTime();
       const deadlineTime = new Date(entry.deadline).getTime();
       if (sentTime > deadlineTime) {
-        const hoursLate = Math.round((sentTime - deadlineTime) / (60 * 60 * 1000));
-        warnings.push(`${getRecipientLabel(recipient)} notified ${hoursLate}h late`);
+        const hoursLate = Math.ceil((sentTime - deadlineTime) / (60 * 60 * 1000));
+        lateSends++;
+        issues.push(`${getRecipientLabel(recipient)} notified ${hoursLate}h late — past the statutory deadline`);
       }
     }
   }
@@ -278,7 +283,7 @@ export function evaluateNotificationCompliance(
 
   // Determine timeliness
   let timeliness: "on_time" | "late" | "pending" = "on_time";
-  if (overdueNotifications.length > 0) {
+  if (overdueNotifications.length > 0 || lateSends > 0) {
     timeliness = "late";
   } else if (missingRecipients.length > 0) {
     timeliness = "pending";

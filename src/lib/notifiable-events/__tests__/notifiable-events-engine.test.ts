@@ -136,7 +136,7 @@ describe("evaluateNotificationCompliance", () => {
     expect(result.overdueNotifications.length).toBe(3);
   });
 
-  it("warns when notification sent late but still marks issues for late send", () => {
+  it("treats a notification sent past its deadline as a breach (issue, non-compliant, late)", () => {
     const event = makeEvent({
       discoveredAt: "2026-05-15T10:00:00Z",
       notifications: [
@@ -153,7 +153,11 @@ describe("evaluateNotificationCompliance", () => {
     });
 
     const result = evaluateNotificationCompliance(event, NOW);
-    expect(result.warnings.some(w => w.includes("Ofsted") && w.includes("late"))).toBe(true);
+    // A statutory notification sent after its deadline is a regulatory breach:
+    // it must surface as an issue, make the event non-compliant, and mark "late".
+    expect(result.issues.some(i => i.includes("Ofsted") && i.includes("late"))).toBe(true);
+    expect(result.isCompliant).toBe(false);
+    expect(result.timeliness).toBe("late");
   });
 
   it("identifies pending timeliness when within deadline", () => {
