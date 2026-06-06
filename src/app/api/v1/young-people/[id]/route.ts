@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 
@@ -22,22 +23,33 @@ async function getYoungPerson(
 ) {
   const { id } = await params;
 
-  const yp = db.youngPeople.findById(id);
+  // Dual-mode: the 6 converted core entities (young person, staff, incidents, tasks,
+  // medications, daily log, care forms) read from their real Supabase tables when
+  // enabled, the in-memory store otherwise. Chronology + missing-episodes stay on the
+  // store until their own batches (their writes aren't yet write-through to Supabase).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const yp = (await dal.youngPeople.findById(id)) as any;
   if (!yp) return NextResponse.json({ error: "Young person not found" }, { status: 404 });
 
-  const allStaff   = db.staff.findAll();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allStaff   = (await dal.staff.findAll()) as any[];
   const today      = todayStr();
 
   const keyWorker       = yp.key_worker_id ? (allStaff.find((s) => s.id === yp.key_worker_id) ?? null) : null;
   const secondaryWorker = yp.secondary_worker_id ? (allStaff.find((s) => s.id === yp.secondary_worker_id) ?? null) : null;
 
-  const incidents        = db.incidents.findAll().filter((i) => i.child_id === id);
-  const tasks            = db.tasks.findAll().filter((t) => t.linked_child_id === id);
-  const medications      = db.medications.findByChild(id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const incidents        = ((await dal.incidents.findAll()) as any[]).filter((i) => i.child_id === id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tasks            = ((await dal.tasks.findAll()) as any[]).filter((t) => t.linked_child_id === id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const medications      = (await dal.medications.findByChild(id)) as any[];
   const missingEpisodes  = db.missingEpisodes.findByChild(id);
   const chronology       = db.chronology.findByChild(id);
-  const careForms        = db.careForms.findByChild(id);
-  const dailyLog         = db.dailyLog.findByChild(id).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const careForms        = ((await dal.careForms.findAll()) as any[]).filter((f) => f.linked_child_id === id);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dailyLog         = ((await dal.dailyLog.findByChild(id)) as any[]).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
 
   return NextResponse.json({
     data: {
