@@ -11,17 +11,33 @@ import { generateRequestSchema } from "@/lib/aria-studio/schemas";
 import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeStudioAuditLog } from "@/lib/aria-studio/audit.service";
+import { TONES } from "@/lib/aria-studio/types";
 import type { GenerationRequest } from "@/lib/aria-studio/types";
 
 type SB = any;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.json();
     const userId = getUserIdFromRequest(req);
     const role = getUserRoleFromRequest(req);
+    void role;
     const organisationId = process.env.SUPABASE_ORG_ID ?? "org_default";
     const homeId = process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
+
+    // ── Normalise the Studio page's field names into the schema shape ─────────
+    // The page sends artifact_type / child_id / additional_context and omits
+    // title/brief; map them + coerce so generation isn't rejected with a 400.
+    const body = {
+      childId: rawBody.childId ?? rawBody.child_id,
+      generationType: String(rawBody.generationType ?? rawBody.artifact_type ?? "").toUpperCase(),
+      title: rawBody.title ?? (rawBody.artifact_type ? `${String(rawBody.artifact_type).replace(/_/g, " ")} draft` : undefined),
+      brief: rawBody.brief ?? rawBody.additional_context ?? rawBody.additionalContext
+        ?? "Generate this artifact using the child's profile and the context provided.",
+      tone: (TONES as readonly string[]).includes(rawBody.tone) ? rawBody.tone : "warm_professional",
+      audience: rawBody.audience ?? "staff",
+      additionalContext: rawBody.additionalContext ?? rawBody.additional_context,
+    };
 
     // ── Validate input ──────────────────────────────────────────────────────
     const parsed = generateRequestSchema.safeParse(body);
@@ -105,11 +121,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Compatibility shape for the standalone Studio page, which reads
+    // data.artifact.generated_content / data.quality_check / data.gaps_found.
+    const generatedContent = result.output
+      ? [
+          `# ${result.output.title}`,
+          result.output.summary,
+          ...result.output.sections.map((s) =>
+            `## ${s.heading}\n\n${s.content}` +
+            (s.items && s.items.length ? "\n\n" + s.items.map((i) => `- ${i}`).join("\n") : "")),
+        ].filter(Boolean).join("\n\n")
+      : "";
+
     return NextResponse.json(
       {
         success: true,
         generationId,
         output: result.output,
+        artifact: result.output
+          ? { id: generationId ?? null, generated_title: result.output.title, generated_content: generatedContent }
+          : undefined,
+        quality_check: result.safety,
+        gaps_found: [],
         safety: result.safety,
         profile: result.profile ? {
           childName: result.profile.preferredName ?? result.profile.childName,
