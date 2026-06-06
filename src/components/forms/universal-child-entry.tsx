@@ -28,6 +28,8 @@ interface UniversalChildEntryProps {
   staffId?: string;
   onSuccess?: (result: any) => void;
   onCancel?: () => void;
+  /** Reports whether there's unsaved text, so a host dialog can guard accidental close. */
+  onDirtyChange?: (dirty: boolean) => void;
   className?: string;
 }
 
@@ -59,7 +61,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function UniversalChildEntry({ childId, staffId = "staff_darren", onSuccess, onCancel, className }: UniversalChildEntryProps) {
+export function UniversalChildEntry({ childId, staffId = "staff_darren", onSuccess, onCancel, onDirtyChange, className }: UniversalChildEntryProps) {
   const store = getStore();
   const child = (store.youngPeople as any[] || []).find((yp: any) => yp.id === childId);
   const childName = child ? `${child.first_name} ${child.last_name ?? ""}`.trim() : "Child";
@@ -96,6 +98,12 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
       el.style.height = Math.max(120, Math.min(el.scrollHeight, 400)) + "px";
     }
   }, [text]);
+
+  // Report unsaved text so a host dialog can guard accidental close.
+  useEffect(() => {
+    onDirtyChange?.(text.trim().length > 0 && !result);
+    return () => onDirtyChange?.(false);
+  }, [text, result, onDirtyChange]);
 
   const effectiveType = overrideType ?? classification?.primary_type ?? "daily_log";
   const typeInfo = TYPE_ICONS[effectiveType] ?? TYPE_ICONS.daily_log;

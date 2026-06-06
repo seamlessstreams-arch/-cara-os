@@ -24,6 +24,8 @@ interface UniversalHomeEntryProps {
   staffId?: string;
   onSuccess?: (result: unknown) => void;
   onCancel?: () => void;
+  /** Reports whether there's unsaved text, so a host dialog can guard accidental close. */
+  onDirtyChange?: (dirty: boolean) => void;
   className?: string;
 }
 
@@ -36,7 +38,7 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: st
   observation: { icon: FileText, color: "text-slate-600", bg: "bg-slate-50", label: "Home Note" },
 };
 
-export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Oak House", staffId = "staff_darren", onSuccess, onCancel, className }: UniversalHomeEntryProps) {
+export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Oak House", staffId = "staff_darren", onSuccess, onCancel, onDirtyChange, className }: UniversalHomeEntryProps) {
   const [text, setText] = useState("");
   const [classification, setClassification] = useState<HomeClassificationResult | null>(null);
   const [overrideType, setOverrideType] = useState<string | null>(null);
@@ -58,6 +60,12 @@ export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Oak House"
     const el = textareaRef.current;
     if (el) { el.style.height = "auto"; el.style.height = Math.max(120, Math.min(el.scrollHeight, 400)) + "px"; }
   }, [text]);
+
+  // Report unsaved text so a host dialog can guard accidental close.
+  useEffect(() => {
+    onDirtyChange?.(text.trim().length > 0 && !result);
+    return () => onDirtyChange?.(false);
+  }, [text, result, onDirtyChange]);
 
   const effectiveType = overrideType ?? classification?.primary_type ?? "observation";
   const meta = TYPE_META[effectiveType] ?? TYPE_META.observation;

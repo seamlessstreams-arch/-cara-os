@@ -10,7 +10,7 @@
 // home note. Attribution uses the signed-in user, never a hardcoded staff id.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { Sparkles, Search, Home, User } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -42,6 +42,19 @@ const HOME = "__home__";
 
 export function RecordAnythingButton({ childId, variant = "soft", className, label = "Record anything" }: RecordAnythingButtonProps) {
   const [open, setOpen] = useState(false);
+  const dirtyRef = useRef(false);
+  const handleDirty = useCallback((d: boolean) => { dirtyRef.current = d; }, []);
+  // Explicit Cancel / save — close immediately, no prompt.
+  const closeNow = useCallback(() => { dirtyRef.current = false; setOpen(false); }, []);
+  // Guard accidental dismissal (overlay click / Escape / X) when there's unsaved text.
+  const handleOpenChange = useCallback((next: boolean) => {
+    if (!next && dirtyRef.current && typeof window !== "undefined"
+        && !window.confirm("Discard this note? Your text hasn't been saved yet.")) {
+      return; // keep the dialog open
+    }
+    dirtyRef.current = false;
+    setOpen(next);
+  }, []);
 
   return (
     <>
@@ -62,16 +75,16 @@ export function RecordAnythingButton({ childId, variant = "soft", className, lab
         <span className="sm:hidden">Record</span>
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
-          {open && <RecordAnythingBody childId={childId} onClose={() => setOpen(false)} />}
+          {open && <RecordAnythingBody childId={childId} onClose={closeNow} onDirty={handleDirty} />}
         </DialogContent>
       </Dialog>
     </>
   );
 }
 
-function RecordAnythingBody({ childId, onClose }: { childId?: string; onClose: () => void }) {
+function RecordAnythingBody({ childId, onClose, onDirty }: { childId?: string; onClose: () => void; onDirty: (dirty: boolean) => void }) {
   const { currentUser } = useAuthContext();
   const staffId = currentUser?.id ?? "staff_darren";
   const queryClient = useQueryClient();
@@ -93,6 +106,7 @@ function RecordAnythingBody({ childId, onClose }: { childId?: string; onClose: (
           staffId={staffId}
           onSuccess={refresh}
           onCancel={childId ? onClose : () => setPicked(null)}
+          onDirtyChange={onDirty}
         />
       </>
     );
@@ -110,6 +124,7 @@ function RecordAnythingBody({ childId, onClose }: { childId?: string; onClose: (
           staffId={staffId}
           onSuccess={refresh}
           onCancel={childId ? onClose : () => setPicked(null)}
+          onDirtyChange={onDirty}
         />
       </>
     );
