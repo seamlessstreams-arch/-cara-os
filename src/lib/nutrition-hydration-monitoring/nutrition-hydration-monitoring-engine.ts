@@ -17,6 +17,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type MealType =
@@ -909,10 +911,10 @@ export function generateNutritionHydrationMonitoringIntelligence(
 
   // Filter meals and hydration to period
   const periodMeals = meals.filter(
-    (m) => m.mealDate >= periodStart && m.mealDate <= periodEnd,
+    (m) => withinPeriod(m.mealDate, periodStart, periodEnd),
   );
   const periodHydration = hydrationRecords.filter(
-    (r) => r.recordDate >= periodStart && r.recordDate <= periodEnd,
+    (r) => withinPeriod(r.recordDate, periodStart, periodEnd),
   );
 
   // Evaluate each layer

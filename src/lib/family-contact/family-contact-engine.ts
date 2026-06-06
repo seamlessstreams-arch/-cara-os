@@ -16,6 +16,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ─�� Types ──────────────────────────────────────────────────────────────────
 
 export type ContactType =
@@ -215,7 +217,7 @@ export function evaluateContactCompliance(
   periodEnd: string,
 ): ContactComplianceResult {
   const periodSessions = sessions.filter(
-    (s) => s.scheduledDate >= periodStart && s.scheduledDate <= periodEnd,
+    (s) => withinPeriod(s.scheduledDate, periodStart, periodEnd),
   );
 
   const courtOrdered = arrangements.filter((a) => a.isCourtOrdered);
@@ -267,7 +269,7 @@ export function evaluateContactQuality(
   periodEnd: string,
 ): ContactQualityResult {
   const periodSessions = sessions.filter(
-    (s) => s.scheduledDate >= periodStart && s.scheduledDate <= periodEnd &&
+    (s) => withinPeriod(s.scheduledDate, periodStart, periodEnd) &&
       s.outcome !== "cancelled_by_family" && s.outcome !== "cancelled_by_home" &&
       s.outcome !== "cancelled_by_authority" && s.outcome !== "no_show",
   );
@@ -306,7 +308,7 @@ export function evaluateContactImpact(
   periodEnd: string,
 ): ContactImpactResult {
   const periodSessions = sessions.filter(
-    (s) => s.scheduledDate >= periodStart && s.scheduledDate <= periodEnd &&
+    (s) => withinPeriod(s.scheduledDate, periodStart, periodEnd) &&
       s.outcome !== "cancelled_by_family" && s.outcome !== "cancelled_by_home" &&
       s.outcome !== "cancelled_by_authority" && s.outcome !== "no_show",
   );
@@ -403,7 +405,7 @@ export function generateFamilyContactIntelligence(
     (a) => a.reviewDate && a.reviewDate <= currentDate,
   ).length;
   const completedReviews = reviews.filter(
-    (r) => r.reviewDate >= periodStart && r.reviewDate <= periodEnd,
+    (r) => withinPeriod(r.reviewDate, periodStart, periodEnd),
   );
   const reviewsOverdue = arrangements.filter(
     (a) => a.reviewDate && a.reviewDate < currentDate &&
@@ -415,7 +417,7 @@ export function generateFamilyContactIntelligence(
   const childSummaries = childIds.map((childId) => {
     const childArrangements = arrangements.filter((a) => a.childId === childId);
     const childSessions = sessions.filter(
-      (s) => s.childId === childId && s.scheduledDate >= periodStart && s.scheduledDate <= periodEnd,
+      (s) => s.childId === childId && withinPeriod(s.scheduledDate, periodStart, periodEnd),
     );
     const completed = childSessions.filter(
       (s) => s.outcome !== "cancelled_by_home" && s.outcome !== "no_show" &&

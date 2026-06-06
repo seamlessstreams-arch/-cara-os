@@ -17,6 +17,8 @@
    No AI. No external calls. Pure input → output.
    ────────────────────────────────────────────────────────────── */
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type MultiAgencyCategory =
@@ -385,7 +387,7 @@ export function generateMultiAgencyIntelligence(
 ): MultiAgencyIntelligence {
   const { homeId, periodStart, periodEnd, records, policy, staff } = input;
 
-  const periodRecords = records.filter((r) => r.date >= periodStart && r.date <= periodEnd);
+  const periodRecords = records.filter((r) => withinPeriod(r.date, periodStart, periodEnd));
 
   const qualityResult = evaluateMultiAgencyQuality(periodRecords);
   const complianceResult = evaluateMultiAgencyCompliance(periodRecords);

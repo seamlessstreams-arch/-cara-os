@@ -20,6 +20,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type PlacementStatus =
@@ -374,7 +376,7 @@ export function evaluateDisruptionManagement(
   periodEnd: string,
 ): DisruptionManagementResult {
   const periodDisruptions = disruptions.filter(
-    (d) => d.date >= periodStart && d.date <= periodEnd,
+    (d) => withinPeriod(d.date, periodStart, periodEnd),
   );
 
   const totalDisruptions = periodDisruptions.length;

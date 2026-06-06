@@ -19,6 +19,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type SleepType =
@@ -684,7 +686,7 @@ export function generateSleepHygieneQualityIntelligence(
 
   // Filter records to period
   const periodRecords = records.filter(
-    (r) => r.recordDate >= periodStart && r.recordDate <= periodEnd,
+    (r) => withinPeriod(r.recordDate, periodStart, periodEnd),
   );
 
   // Evaluate each layer

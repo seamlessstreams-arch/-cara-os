@@ -17,6 +17,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type AtmosphereIndicator =
@@ -739,16 +741,16 @@ export function generateHomeAtmosphereEthosIntelligence(
 ): HomeAtmosphereEthosIntelligence {
   // Filter data to period
   const periodObservations = observations.filter(
-    (o) => o.observationDate >= periodStart && o.observationDate <= periodEnd,
+    (o) => withinPeriod(o.observationDate, periodStart, periodEnd),
   );
   const periodFeedback = feedback.filter(
-    (f) => f.date >= periodStart && f.date <= periodEnd,
+    (f) => withinPeriod(f.date, periodStart, periodEnd),
   );
   const periodAudits = audits.filter(
-    (a) => a.auditDate >= periodStart && a.auditDate <= periodEnd,
+    (a) => withinPeriod(a.auditDate, periodStart, periodEnd),
   );
   const periodStaff = staffRecords.filter(
-    (r) => r.date >= periodStart && r.date <= periodEnd,
+    (r) => withinPeriod(r.date, periodStart, periodEnd),
   );
 
   // Run evaluations

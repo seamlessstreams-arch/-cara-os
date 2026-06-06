@@ -17,6 +17,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type BullyingType =
@@ -839,7 +841,7 @@ export function generateAntiBullyingEffectivenessIntelligence(
 
   // Filter incidents to period
   const periodIncidents = incidents.filter(
-    (i) => i.date >= periodStart && i.date <= periodEnd,
+    (i) => withinPeriod(i.date, periodStart, periodEnd),
   );
 
   // Evaluate each layer

@@ -16,6 +16,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type InteractionType =
@@ -222,7 +224,7 @@ export function analyseDyads(
   periodEnd: string,
 ): DyadAnalysis[] {
   const periodInteractions = interactions.filter(
-    (i) => i.date >= periodStart && i.date <= periodEnd,
+    (i) => withinPeriod(i.date, periodStart, periodEnd),
   );
 
   const childMap = new Map(children.filter((c) => c.currentPlacement).map((c) => [c.id, c]));
@@ -315,7 +317,7 @@ export function detectBullyingPatterns(
   periodEnd: string,
 ): BullyingPattern[] {
   const periodInteractions = interactions.filter(
-    (i) => i.date >= periodStart && i.date <= periodEnd,
+    (i) => withinPeriod(i.date, periodStart, periodEnd),
   );
   const childMap = new Map(children.map((c) => [c.id, c]));
 
@@ -374,7 +376,7 @@ export function buildChildGroupProfiles(
   periodEnd: string,
 ): ChildGroupProfile[] {
   const periodInteractions = interactions.filter(
-    (i) => i.date >= periodStart && i.date <= periodEnd,
+    (i) => withinPeriod(i.date, periodStart, periodEnd),
   );
   const activeChildren = children.filter((c) => c.currentPlacement);
   const childMap = new Map(activeChildren.map((c) => [c.id, c]));
@@ -561,7 +563,7 @@ export function generatePeerDynamicsIntelligence(
   const activeChildren = children.filter((c) => c.currentPlacement);
 
   const periodInteractions = interactions.filter(
-    (i) => i.date >= periodStart && i.date <= periodEnd,
+    (i) => withinPeriod(i.date, periodStart, periodEnd),
   );
 
   // Core analyses
@@ -580,7 +582,7 @@ export function generatePeerDynamicsIntelligence(
   ).length;
 
   const periodGroupAssessments = groupAssessments.filter(
-    (a) => a.assessmentDate >= periodStart && a.assessmentDate <= periodEnd,
+    (a) => withinPeriod(a.assessmentDate, periodStart, periodEnd),
   );
   const latestGroupStability = periodGroupAssessments.length > 0
     ? periodGroupAssessments.sort(

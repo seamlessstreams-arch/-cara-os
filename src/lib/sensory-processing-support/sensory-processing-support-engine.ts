@@ -18,6 +18,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type SensoryNeed =
@@ -569,10 +571,10 @@ export function generateSensoryProcessingSupportIntelligence(
 ): SensoryProcessingSupportIntelligence {
   // Filter assessments and interventions to period
   const periodAssessments = assessments.filter(
-    (a) => a.assessmentDate >= periodStart && a.assessmentDate <= periodEnd,
+    (a) => withinPeriod(a.assessmentDate, periodStart, periodEnd),
   );
   const periodInterventions = interventions.filter(
-    (i) => i.interventionDate >= periodStart && i.interventionDate <= periodEnd,
+    (i) => withinPeriod(i.interventionDate, periodStart, periodEnd),
   );
 
   // Run all evaluators

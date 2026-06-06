@@ -20,6 +20,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type VoiceDomain =
@@ -183,7 +185,7 @@ export function analyseDomainCapture(
   periodEnd: string,
 ): DomainCaptureResult[] {
   const periodEntries = entries.filter(
-    (e) => e.date >= periodStart && e.date <= periodEnd,
+    (e) => withinPeriod(e.date, periodStart, periodEnd),
   );
 
   const domainMap = new Map<VoiceDomain, VoiceEntry[]>();
@@ -223,10 +225,10 @@ export function buildChildVoiceResults(
   periodEnd: string,
 ): ChildVoiceResult[] {
   const periodEntries = entries.filter(
-    (e) => e.date >= periodStart && e.date <= periodEnd,
+    (e) => withinPeriod(e.date, periodStart, periodEnd),
   );
   const periodParticipation = participation.filter(
-    (p) => p.date >= periodStart && p.date <= periodEnd,
+    (p) => withinPeriod(p.date, periodStart, periodEnd),
   );
 
   return children.map((child) => {
@@ -329,7 +331,7 @@ export function generateVoiceOfChildIntelligence(
   const assessedAt = new Date().toISOString();
 
   const periodEntries = entries.filter(
-    (e) => e.date >= periodStart && e.date <= periodEnd,
+    (e) => withinPeriod(e.date, periodStart, periodEnd),
   );
 
   // Domain analysis

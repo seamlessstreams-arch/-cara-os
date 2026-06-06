@@ -16,6 +16,8 @@
 // No AI. No external calls. Pure input -> output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ConcernCategory =
@@ -747,7 +749,7 @@ export function generateWhistleblowingConcernsIntelligence(
 
   // Filter concerns to period
   const periodConcerns = concerns.filter(
-    (c) => c.reportDate >= periodStart && c.reportDate <= periodEnd,
+    (c) => withinPeriod(c.reportDate, periodStart, periodEnd),
   );
 
   // Filter protections to match period concerns

@@ -13,6 +13,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ContactType =
@@ -797,7 +799,7 @@ export function generateParentalEngagementIntelligence(
 
   // Filter contacts to period
   const periodContacts = contacts.filter(
-    (c) => c.contactDate >= periodStart && c.contactDate <= periodEnd,
+    (c) => withinPeriod(c.contactDate, periodStart, periodEnd),
   );
 
   // Evaluate all four domains

@@ -16,6 +16,8 @@
 // No AI. No external calls. Pure input -> output.
 // ==============================================================================
 
+import { withinPeriod } from "@/lib/date-period";
+
 // -- Types --------------------------------------------------------------------
 
 export type Reg44VisitCategory =
@@ -437,7 +439,7 @@ export function generateReg44VisitIntelligence(input: {
   const { homeId, periodStart, periodEnd, records, policy, staff } = input;
 
   // Filter records to period
-  const filtered = records.filter((r) => r.date >= periodStart && r.date <= periodEnd);
+  const filtered = records.filter((r) => withinPeriod(r.date, periodStart, periodEnd));
 
   const visitQuality = evaluateReg44VisitQuality(filtered);
   const visitCompliance = evaluateReg44VisitCompliance(filtered);

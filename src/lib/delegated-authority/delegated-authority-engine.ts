@@ -18,6 +18,8 @@
    No AI. No external calls. Pure input → output.
    ────────────────────────────────────────────────────────────── */
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type AuthorityCategory =
@@ -646,7 +648,7 @@ export function generateDelegatedAuthorityIntelligence(
 
   // Filter decisions to period
   const periodDecisions = decisions.filter(
-    (d) => d.decisionDate >= periodStart && d.decisionDate <= periodEnd,
+    (d) => withinPeriod(d.decisionDate, periodStart, periodEnd),
   );
 
   // Evaluate each layer

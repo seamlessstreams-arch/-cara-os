@@ -16,6 +16,8 @@
    No AI. No external calls. Pure input → output.
    ────────────────────────────────────────────────────────────── */
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type HrFilesCategory =
@@ -384,7 +386,7 @@ export function generateHrFilesIntelligence(
 ): HrFilesIntelligence {
   const { homeId, periodStart, periodEnd, records, policy, staff } = input;
 
-  const periodRecords = records.filter((r) => r.date >= periodStart && r.date <= periodEnd);
+  const periodRecords = records.filter((r) => withinPeriod(r.date, periodStart, periodEnd));
 
   const qualityResult = evaluateHrFilesQuality(periodRecords);
   const complianceResult = evaluateHrFilesCompliance(periodRecords);

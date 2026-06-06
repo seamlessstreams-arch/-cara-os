@@ -20,6 +20,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ConsentType =
@@ -833,7 +835,7 @@ export function generateSocialMediaDigitalFootprintIntelligence(
 
   // Filter incidents to period
   const periodIncidents = incidents.filter(
-    (i) => i.incidentDate >= periodStart && i.incidentDate <= periodEnd,
+    (i) => withinPeriod(i.incidentDate, periodStart, periodEnd),
   );
 
   // Evaluate each layer

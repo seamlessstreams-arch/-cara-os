@@ -16,6 +16,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ReferralStatus =
@@ -228,7 +230,7 @@ export function evaluateReferralProcessing(
   periodEnd: string,
 ): ReferralProcessingResult {
   const periodReferrals = referrals.filter(
-    (r) => r.referralDate >= periodStart && r.referralDate <= periodEnd,
+    (r) => withinPeriod(r.referralDate, periodStart, periodEnd),
   );
 
   const totalReferrals = periodReferrals.length;

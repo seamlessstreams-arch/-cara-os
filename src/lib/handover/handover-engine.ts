@@ -18,6 +18,8 @@
    No AI. No external calls. Pure input → output.
    ────────────────────────────────────────────────────────────── */
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type HandoverCategory =
@@ -644,7 +646,7 @@ export function generateHandoverIntelligence(
 
   // Filter records to period
   const periodRecords = records.filter(
-    (r) => r.date >= periodStart && r.date <= periodEnd,
+    (r) => withinPeriod(r.date, periodStart, periodEnd),
   );
 
   // Evaluate each layer

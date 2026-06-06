@@ -17,6 +17,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type VehicleType =
@@ -283,7 +285,7 @@ export function evaluateJourneyCompliance(
 
   // Filter to period
   const periodJourneys = journeys.filter(
-    (j) => j.date >= periodStart && j.date <= periodEnd,
+    (j) => withinPeriod(j.date, periodStart, periodEnd),
   );
   const total = periodJourneys.length;
 

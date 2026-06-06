@@ -19,6 +19,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ConcernCategory =
@@ -448,7 +450,7 @@ export function generateEscalationMetrics(
 
   // Filter to period
   const periodConcerns = concerns.filter(
-    (c) => c.date >= periodStart && c.date <= periodEnd,
+    (c) => withinPeriod(c.date, periodStart, periodEnd),
   );
 
   // Assess each concern

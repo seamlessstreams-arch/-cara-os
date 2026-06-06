@@ -1,6 +1,8 @@
 // Risk Assessment Quality Intelligence Engine
 // Pure deterministic — no AI, no external calls, no randomness, no Date.now()
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Type Unions ──────────────────────────────────────────────────────────
 
 export type RiskCategory =
@@ -448,7 +450,7 @@ export function generateRiskAssessmentQualityIntelligence(
 
   // Filter assessments to period
   const periodAssessments = assessments.filter(
-    (a) => a.assessmentDate >= periodStart && a.assessmentDate <= periodEnd,
+    (a) => withinPeriod(a.assessmentDate, periodStart, periodEnd),
   );
 
   // Evaluate each layer

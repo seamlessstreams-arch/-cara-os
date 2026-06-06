@@ -17,6 +17,8 @@
 // No AI. No external calls. Pure input -> output.
 // ==============================================================================
 
+import { withinPeriod } from "@/lib/date-period";
+
 // -- Types --------------------------------------------------------------------
 
 export type SubjectArea =
@@ -993,12 +995,12 @@ export function generateHomeworkAcademicSupportIntelligence(
 
   // Filter records to period
   const periodRecords = records.filter(
-    (r) => r.date >= periodStart && r.date <= periodEnd,
+    (r) => withinPeriod(r.date, periodStart, periodEnd),
   );
 
   // Filter interventions to period (by startDate)
   const periodInterventions = interventions.filter(
-    (i) => i.startDate >= periodStart && i.startDate <= periodEnd,
+    (i) => withinPeriod(i.startDate, periodStart, periodEnd),
   );
 
   // Evaluate each layer

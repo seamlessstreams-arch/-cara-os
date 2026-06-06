@@ -18,6 +18,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ReviewType =
@@ -808,7 +810,7 @@ export function generateAnnualDevelopmentReviewIntelligence(
 
   // Filter reviews to period
   const periodReviews = reviews.filter(
-    (r) => r.reviewDate >= periodStart && r.reviewDate <= periodEnd,
+    (r) => withinPeriod(r.reviewDate, periodStart, periodEnd),
   );
 
   // Filter goals to reviews in the period

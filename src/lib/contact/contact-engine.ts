@@ -20,6 +20,8 @@
    No AI. No external calls. Pure input → output.
    ────────────────────────────────────────────────────────────── */
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ContactCategory =
@@ -661,7 +663,7 @@ export function generateContactIntelligence(
 
   // Filter records to period
   const periodRecords = records.filter(
-    (r) => r.contactDate >= periodStart && r.contactDate <= periodEnd,
+    (r) => withinPeriod(r.contactDate, periodStart, periodEnd),
   );
 
   // Evaluate each layer

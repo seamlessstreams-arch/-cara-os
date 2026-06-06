@@ -17,6 +17,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type AdmissionType =
@@ -217,7 +219,7 @@ export function evaluateMatchingQuality(
   periodEnd: string,
 ): MatchingQualityResult {
   const periodAssessments = assessments.filter(
-    (a) => a.assessmentDate >= periodStart && a.assessmentDate <= periodEnd,
+    (a) => withinPeriod(a.assessmentDate, periodStart, periodEnd),
   );
 
   const totalAssessments = periodAssessments.length;
@@ -339,7 +341,7 @@ export function evaluateImpactMonitoring(
   periodEnd: string,
 ): ImpactMonitoringResult {
   const periodMonitoring = monitoring.filter(
-    (m) => m.monitoringDate >= periodStart && m.monitoringDate <= periodEnd,
+    (m) => withinPeriod(m.monitoringDate, periodStart, periodEnd),
   );
 
   const totalMonitoringRecords = periodMonitoring.length;
@@ -410,8 +412,7 @@ export function evaluateImpactMonitoring(
   // Average monitoring records per new child admitted in period
   const periodAssessments = assessments.filter(
     (a) =>
-      a.assessmentDate >= periodStart &&
-      a.assessmentDate <= periodEnd &&
+      withinPeriod(a.assessmentDate, periodStart, periodEnd) &&
       (a.decision === "proceed" || a.decision === "proceed_with_conditions"),
   );
   const uniqueNewChildren = new Set(periodAssessments.map((a) => a.childId));
@@ -447,7 +448,7 @@ export function evaluateResidentConsultation(
 ): ResidentConsultationResult {
   const periodConsultations = consultations.filter(
     (c) =>
-      c.consultationDate >= periodStart && c.consultationDate <= periodEnd,
+      withinPeriod(c.consultationDate, periodStart, periodEnd),
   );
 
   const totalConsultations = periodConsultations.length;
@@ -486,8 +487,7 @@ export function evaluateResidentConsultation(
   // Consultation completion rate: percentage of admissions with at least one consultation
   const periodAssessments = assessments.filter(
     (a) =>
-      a.assessmentDate >= periodStart &&
-      a.assessmentDate <= periodEnd &&
+      withinPeriod(a.assessmentDate, periodStart, periodEnd) &&
       (a.decision === "proceed" || a.decision === "proceed_with_conditions"),
   );
   const admittedChildIds = new Set(periodAssessments.map((a) => a.childId));
@@ -529,7 +529,7 @@ export function evaluateAdmissionOutcomes(
   periodEnd: string,
 ): AdmissionOutcomeResult {
   const periodOutcomes = outcomes.filter(
-    (o) => o.admissionDate >= periodStart && o.admissionDate <= periodEnd,
+    (o) => withinPeriod(o.admissionDate, periodStart, periodEnd),
   );
 
   const totalOutcomes = periodOutcomes.length;

@@ -16,6 +16,8 @@
 // No AI. No external calls. Pure input → output.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ReviewType =
@@ -182,7 +184,7 @@ export function evaluateReviewCompliance(
   periodEnd: string,
 ): ReviewComplianceResult {
   const periodReviews = reviews.filter(
-    (r) => r.dueDate >= periodStart && r.dueDate <= periodEnd,
+    (r) => withinPeriod(r.dueDate, periodStart, periodEnd),
   );
 
   const completedOnTime = periodReviews.filter((r) => r.status === "completed_on_time").length;
@@ -214,7 +216,7 @@ export function buildReviewTypeBreakdown(
   periodEnd: string,
 ): ReviewTypeBreakdown[] {
   const periodReviews = reviews.filter(
-    (r) => r.dueDate >= periodStart && r.dueDate <= periodEnd,
+    (r) => withinPeriod(r.dueDate, periodStart, periodEnd),
   );
 
   const typeMap = new Map<ReviewType, PlannedReview[]>();
@@ -248,7 +250,7 @@ export function evaluateActionCompliance(
   periodEnd: string,
 ): ActionComplianceResult {
   const periodActions = actions.filter(
-    (a) => a.dueDate >= periodStart && a.dueDate <= periodEnd,
+    (a) => withinPeriod(a.dueDate, periodStart, periodEnd),
   );
 
   const completed = periodActions.filter((a) => a.status === "completed").length;
@@ -283,10 +285,10 @@ export function buildChildPlanningProfiles(
 
   return activeChildren.map((child) => {
     const childReviews = reviews.filter(
-      (r) => r.childId === child.id && r.dueDate >= periodStart && r.dueDate <= periodEnd,
+      (r) => r.childId === child.id && withinPeriod(r.dueDate, periodStart, periodEnd),
     );
     const childActions = actions.filter(
-      (a) => a.childId === child.id && a.dueDate >= periodStart && a.dueDate <= periodEnd,
+      (a) => a.childId === child.id && withinPeriod(a.dueDate, periodStart, periodEnd),
     );
     const childDocs = documents.filter((d) => d.childId === child.id);
 
@@ -343,7 +345,7 @@ export function generateCarePlanningIntelligence(
   const assessedAt = new Date().toISOString();
 
   const periodReviews = reviews.filter(
-    (r) => r.dueDate >= periodStart && r.dueDate <= periodEnd,
+    (r) => withinPeriod(r.dueDate, periodStart, periodEnd),
   );
 
   const reviewCompliance = evaluateReviewCompliance(reviews, periodStart, periodEnd);

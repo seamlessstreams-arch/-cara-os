@@ -17,6 +17,8 @@
    No AI. No external calls. Pure input -> output.
    ────────────────────────────────────────────────────────────── */
 
+import { withinPeriod } from "@/lib/date-period";
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type DailyLogCategory =
@@ -659,7 +661,7 @@ export function generateDailyLogIntelligence(
 
   // Filter records to period
   const periodRecords = records.filter(
-    (r) => r.logDate >= periodStart && r.logDate <= periodEnd,
+    (r) => withinPeriod(r.logDate, periodStart, periodEnd),
   );
 
   // Evaluate each layer
