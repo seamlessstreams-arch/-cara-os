@@ -574,6 +574,15 @@ export interface AriaCachedResponse {
   last_used_at: string;
 }
 
+/** A device's Web Push subscription, keyed by endpoint, owned by a staff recipient. */
+export interface StoredPushSubscription {
+  id: string;
+  recipient_id: string;
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+  created_at: string;
+}
+
 // ── Mutable collections ───────────────────────────────────────────────────────
 
 const store = {
@@ -586,6 +595,7 @@ const store = {
   signInVerifications: [] as SignInVerification[],
   emergencyAlerts: [] as EmergencyAlert[],
   ariaResponseCache: [] as AriaCachedResponse[],
+  pushSubscriptions: [] as StoredPushSubscription[],
   medications: [...MEDICATIONS] as Medication[],
   medicationAdministrations: [] as MedicationAdministration[],
   dailyLog: [...DAILY_LOG] as DailyLogEntry[],
@@ -6695,6 +6705,28 @@ export const db = {
         rec.hit_count += 1;
         rec.last_used_at = new Date().toISOString();
       }
+    },
+  },
+
+  // ── Web Push subscriptions ──────────────────────────────────────────────────
+  pushSubscriptions: {
+    findAll: (): StoredPushSubscription[] => store.pushSubscriptions,
+    findByUser: (userId: string): StoredPushSubscription[] =>
+      store.pushSubscriptions.filter((s) => s.recipient_id === userId),
+    upsert: (data: Omit<StoredPushSubscription, "id" | "created_at">): StoredPushSubscription => {
+      const existing = store.pushSubscriptions.find((s) => s.endpoint === data.endpoint);
+      if (existing) {
+        existing.recipient_id = data.recipient_id;
+        existing.keys = data.keys;
+        return existing;
+      }
+      const rec: StoredPushSubscription = { ...data, id: generateId("push"), created_at: new Date().toISOString() };
+      store.pushSubscriptions.push(rec);
+      return rec;
+    },
+    removeByEndpoint: (endpoint: string): void => {
+      const idx = store.pushSubscriptions.findIndex((s) => s.endpoint === endpoint);
+      if (idx !== -1) store.pushSubscriptions.splice(idx, 1);
     },
   },
 

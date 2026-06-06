@@ -11,6 +11,7 @@ import { db } from "@/lib/db/store";
 import { writeAuditLog } from "@/lib/supabase/audit";
 import { persistCommsMessage } from "@/lib/supabase/comms";
 import { persistEmergencyAlert } from "@/lib/supabase/workforce";
+import { sendPushToAll } from "@/lib/push/web-push";
 import { EMERGENCY_TYPE_LABEL, type EmergencyAlert, type EmergencyType } from "./emergency-types";
 
 export interface TriggerEmergencyInput {
@@ -79,6 +80,14 @@ export function triggerEmergency(input: TriggerEmergencyInput, nowIso: string): 
   });
   audit("raised", input.homeId, input.raisedBy, alert.id, { type: input.type, broadcast: !!broadcastId });
   void persistEmergencyAlert(alert); // durable persistence (no-op when Supabase off)
+  // Ping every subscribed device — operational detail only (no child/medical specifics).
+  void sendPushToAll({
+    title: "🚨 Emergency",
+    body: `${EMERGENCY_TYPE_LABEL[input.type]} assistance needed${input.location ? ` at ${input.location}` : ""}. Raised by ${input.raisedByName}.`,
+    url: "/safe-staffing",
+    tag: "emergency",
+    priority: "critical",
+  });
   return { alert, broadcast_message_id: broadcastId };
 }
 

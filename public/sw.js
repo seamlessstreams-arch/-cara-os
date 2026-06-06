@@ -13,7 +13,7 @@
 // Bump VERSION to invalidate caches on a breaking change.
 // ══════════════════════════════════════════════════════════════════════════════
 
-const VERSION = "v1";
+const VERSION = "v2"; // bumped: added push + notificationclick handlers
 const SHELL_CACHE = `cs-shell-${VERSION}`;
 const STATIC_CACHE = `cs-static-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
@@ -90,4 +90,37 @@ self.addEventListener("fetch", (event) => {
       })(),
     );
   }
+});
+
+// ── Push notifications ──────────────────────────────────────────────────────────
+// Payloads are operational only (sent server-side) — title + a non-identifying body,
+// never child / medical / safeguarding detail (same rule as the emergency broadcast).
+self.addEventListener("push", (event) => {
+  let payload = {};
+  try { payload = event.data ? event.data.json() : {}; }
+  catch { payload = { body: event.data ? event.data.text() : "" }; }
+  const title = payload.title || "Cornerstone";
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: payload.body || "",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: payload.tag || undefined,
+      data: { url: payload.url || "/action-center" },
+      requireInteraction: payload.priority === "critical",
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || "/";
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      for (const client of clients) {
+        if ("focus" in client) { client.navigate(url).catch(() => {}); return client.focus(); }
+      }
+      return self.clients.openWindow ? self.clients.openWindow(url) : undefined;
+    }),
+  );
 });
