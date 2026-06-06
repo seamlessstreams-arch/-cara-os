@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { getStore } from "@/lib/db/store";
 import { classifyStaffRecord, type StaffClassificationResult } from "@/lib/record-classifier/staff-record-classifier";
 import { EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once-indicator";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import {
   Sparkles, AlertTriangle, Heart, GraduationCap, Eye, ClipboardList,
   Send, Loader2, ChevronDown, Check, Info, Clock,
@@ -132,6 +133,9 @@ export function UniversalStaffEntry({ staffId, onSuccess, onCancel, className }:
         />
         <div className="absolute bottom-3 right-3 text-[10px] text-[var(--cs-text-gentle)] tabular-nums">{text.length} chars</div>
       </div>
+
+      {/* Dictate + rewrite */}
+      <EntryAssist value={text} onChange={setText} sourceModule="universal_staff_entry" sourceField="content" />
 
       {/* Live classification */}
       {classification && text.length >= 15 && (

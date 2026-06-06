@@ -12,6 +12,7 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { classifyHomeRecord, type HomeClassificationResult } from "@/lib/record-classifier/home-record-classifier";
 import { EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once-indicator";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import {
   Flame, ShieldCheck, Wrench, Car, ClipboardCheck, FileText,
   AlertTriangle, Send, Loader2, ChevronDown, Check, Info, Clock,
@@ -128,6 +129,9 @@ export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Oak House"
         />
         <div className="absolute bottom-3 right-3 text-[10px] text-[var(--cs-text-gentle)] tabular-nums">{text.length} chars</div>
       </div>
+
+      {/* Dictate + rewrite */}
+      <EntryAssist value={text} onChange={setText} sourceModule="universal_home_entry" sourceField="content" />
 
       {classification && text.length >= 15 && (
         <div className="rounded-xl border border-[var(--cs-border)] bg-white p-3 space-y-3 animate-in fade-in duration-200">
