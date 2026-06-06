@@ -94,7 +94,6 @@ const SIZE_BTN: Record<string, string> = {
 export function DictationButton({
   onTranscript,
   onInterimTranscript,
-  mode = "append",
   className,
   size = "md",
   disabled = false,
@@ -102,8 +101,12 @@ export function DictationButton({
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [interim, setInterim] = useState("");
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
+  // True while the user wants to keep dictating — drives auto-restart so a long,
+  // continuous "record everything" entry survives the browser's pause/timeout cut-offs.
+  const wantListeningRef = useRef(false);
 
   // ── Support check (client-side only) ────────────────────────────────────────
   useEffect(() => {
@@ -116,21 +119,23 @@ export function DictationButton({
   // ── Cleanup on unmount ───────────────────────────────────────────────────────
   useEffect(() => {
     return () => {
+      wantListeningRef.current = false;
       if (recognitionRef.current) {
         recognitionRef.current.abort();
       }
     };
   }, []);
 
-  // ── Start listening ──────────────────────────────────────────────────────────
-  const startListening = () => {
-    if (!isSupported || disabled) return;
-
+  // ── Build + start a recognition session ──────────────────────────────────────
+  // Factored out so onend can auto-restart it: browsers end recognition after a
+  // pause or a ~60s cap, but for "record everything" we want continuous capture
+  // until the user actually presses Stop.
+  const beginRecognition = () => {
     const SpeechRecognitionCtor: SpeechRecognitionConstructor =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     const recognition: SpeechRecognitionInstance = new SpeechRecognitionCtor();
-    recognition.continuous = false;
+    recognition.continuous = true;       // keep listening for a whole entry, not one phrase
     recognition.interimResults = true;
     recognition.lang = "en-GB";
 
@@ -152,35 +157,72 @@ export function DictationButton({
         }
       }
 
-      if (interimTranscript && onInterimTranscript) {
-        onInterimTranscript(interimTranscript);
-      }
-
+      setInterim(interimTranscript);
+      if (interimTranscript && onInterimTranscript) onInterimTranscript(interimTranscript);
       if (finalTranscript) {
-        const text = mode === "replace" ? finalTranscript : finalTranscript;
-        onTranscript(text);
+        onTranscript(finalTranscript);
+        setInterim("");
       }
     };
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent): void => {
-      setError(event.error === "no-speech" ? "No speech detected" : "Voice input error");
-      setIsListening(false);
+      const code = event.error;
+      // Fatal errors: stop trying so we don't loop the permission prompt or spin offline.
+      if (code === "not-allowed" || code === "service-not-allowed") {
+        wantListeningRef.current = false;
+        setError("Microphone blocked — allow mic access in your browser, then try again");
+      } else if (code === "audio-capture") {
+        wantListeningRef.current = false;
+        setError("No microphone found");
+      } else if (code === "network") {
+        wantListeningRef.current = false;
+        setError("Voice input needs an internet connection");
+      } else if (code === "no-speech") {
+        setError("No speech detected — keep talking");   // non-fatal: onend auto-restarts
+      } else if (code !== "aborted") {
+        setError("Voice input error");
+      }
     };
 
     recognition.onend = () => {
+      // Auto-restart while the user still wants to dictate (continuous capture).
+      if (wantListeningRef.current) {
+        try {
+          recognition.start();
+          return;
+        } catch {
+          /* some engines refuse a same-instance restart — fall through to stop */
+        }
+      }
       setIsListening(false);
+      setInterim("");
     };
 
     recognitionRef.current = recognition;
-    recognition.start();
+    try {
+      recognition.start();
+    } catch {
+      /* start() throws if a session is somehow already active — ignore */
+    }
+  };
+
+  // ── Start listening ──────────────────────────────────────────────────────────
+  const startListening = () => {
+    if (!isSupported || disabled) return;
+    setError(null);
+    setInterim("");
+    wantListeningRef.current = true;
+    beginRecognition();
   };
 
   // ── Stop listening ───────────────────────────────────────────────────────────
   const stopListening = () => {
+    wantListeningRef.current = false;    // prevent auto-restart
     if (recognitionRef.current) {
-      recognitionRef.current.stop();
+      try { recognitionRef.current.stop(); } catch { /* no active session */ }
     }
     setIsListening(false);
+    setInterim("");
   };
 
   // ── Render: not supported ────────────────────────────────────────────────────
@@ -188,7 +230,7 @@ export function DictationButton({
     return (
       <div
         className={cn("relative group inline-flex", className)}
-        title="Voice input not supported in this browser"
+        title="Voice input isn't supported here — try Chrome, Edge or Safari"
       >
         <button
           disabled
@@ -202,7 +244,7 @@ export function DictationButton({
         </button>
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block z-50">
           <div className="whitespace-nowrap rounded-lg bg-[var(--cs-navy)] px-2.5 py-1.5 text-[11px] text-white shadow-[var(--cs-shadow-card)]">
-            Voice input not supported in this browser
+            Voice input isn't supported here — try Chrome, Edge or Safari
           </div>
         </div>
       </div>
@@ -231,7 +273,9 @@ export function DictationButton({
           <Square className="h-2.5 w-2.5 fill-red-600" />
           Stop
         </button>
-        <span className="text-[11px] text-[var(--cs-text-muted)] animate-pulse">Listening...</span>
+        <span className="max-w-[200px] truncate text-[11px] text-[var(--cs-text-muted)]" title={interim || "Listening…"}>
+          {interim ? interim : <span className="animate-pulse">Listening…</span>}
+        </span>
       </div>
     );
   }
