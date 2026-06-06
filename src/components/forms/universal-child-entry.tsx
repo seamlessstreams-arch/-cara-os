@@ -69,6 +69,7 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
   const [overrideType, setOverrideType] = useState<string | null>(null);
   const [showTypeSelector, setShowTypeSelector] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ reference: string; linked_updates: string[] } | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const classifyTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -103,6 +104,7 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
   const handleSubmit = useCallback(async () => {
     if (text.trim().length < 10 || submitting) return;
     setSubmitting(true);
+    setError(null);
 
     try {
       const cls = classification ?? classifyRecord(text, childName);
@@ -128,16 +130,19 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
         }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setResult({
           reference: data.data?.reference ?? "Record saved",
           linked_updates: data.linked_updates ?? [],
         });
         onSuccess?.(data);
+      } else {
+        setError((data as { error?: string })?.error || `Couldn't save (error ${res.status}). Your note is still here — please try again.`);
       }
     } catch (err) {
       console.error("Submit failed:", err);
+      setError("Couldn't save — check your connection. Your note is still here, so nothing's lost.");
     } finally {
       setSubmitting(false);
     }
@@ -280,6 +285,14 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
             severity={classification.severity ?? undefined}
             compact
           />
+        </div>
+      )}
+
+      {/* Save error — note is preserved, so reassure + invite retry */}
+      {error && (
+        <div className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-xs text-red-800" role="alert">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+          <span>{error}</span>
         </div>
       )}
 
