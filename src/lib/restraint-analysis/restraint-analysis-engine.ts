@@ -209,7 +209,7 @@ function ratingFromScore(score: number): Rating {
 }
 
 function isInPeriod(date: string, start: string, end: string): boolean {
-  return date >= start && date <= end;
+  return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
 
 // ── Label Functions ─────────────────────────────────────────────────────────

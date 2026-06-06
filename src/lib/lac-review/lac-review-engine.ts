@@ -224,7 +224,7 @@ function daysBetween(a: string, b: string): number {
 
 function isInPeriod(date: string | undefined, start: string, end: string): boolean {
   if (!date) return false;
-  return date >= start && date <= end;
+  return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
 
 function pct(num: number, den: number): number {
