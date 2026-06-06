@@ -59,3 +59,28 @@ export function createIncidentRecord(data: any) {
   void persistIncident(incident as unknown as Record<string, unknown>);
   return incident;
 }
+
+/** Best-effort write-through of a task created by a sync service / orchestrator. */
+export async function persistTask(task: Record<string, unknown>): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { id: _id, ...rest } = task as any;
+    await sq.createTask(c, { ...rest, home_id: homeId() });
+  } catch {
+    // best-effort — the in-memory write already succeeded; never block the caller
+  }
+}
+
+/**
+ * Create a task in the in-memory store AND best-effort persist it to Supabase. Used by
+ * the many sync services / orchestrators / routes that create tasks directly.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function createTaskRecord(data: any) {
+  const task = db.tasks.create(data);
+  void persistTask(task as unknown as Record<string, unknown>);
+  return task;
+}

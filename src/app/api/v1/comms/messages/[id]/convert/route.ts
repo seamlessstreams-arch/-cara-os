@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { createTaskRecord } from "@/lib/supabase/care-records";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 import { ACTION_EVENT_MAP } from "@/lib/comms/comms-governance";
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   if (eventType === null) {
     // ── Convert to a task ─────────────────────────────────────────────────────
-    const task = db.tasks.create({
+    const task = createTaskRecord({
       title: (body.task_title?.trim() || summary).slice(0, 120),
       description: `Created from a Comms Centre message.\n\n"${msg.body}"`,
       category: mapping.taskCategory,

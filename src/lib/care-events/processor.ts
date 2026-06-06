@@ -16,7 +16,7 @@
 import { db } from "@/lib/db/store";
 import { generateId, todayStr } from "@/lib/utils";
 import { captureDomainEvent, type CaptureDraft } from "@/lib/event-capture/capture-event-service";
-import { persistDailyLog, createIncidentRecord } from "@/lib/supabase/care-records";
+import { persistDailyLog, createIncidentRecord, createTaskRecord } from "@/lib/supabase/care-records";
 import { classifyCareEvent, buildRoutingSummary } from "./routing-engine";
 
 // ── Forms-as-views: spine write-through helpers ───────────────────────────────
@@ -154,7 +154,7 @@ function processChildDailySummary(event: CareEvent): void {
 }
 
 function processManagementOversight(event: CareEvent, route: CareEventRoute): void {
-  const task = db.tasks.create({
+  const task = createTaskRecord({
     home_id: HOME_ID,
     title: `Management oversight: ${event.title}`,
     description: `Care event requires manager review. Category: ${event.category}. Submitted by staff ${event.staff_id}.\n\n${event.content.slice(0, 500)}`,
@@ -241,7 +241,7 @@ function processReg44Evidence(event: CareEvent, route: CareEventRoute): void {
 }
 
 function processReg40Triage(event: CareEvent, route: CareEventRoute): void {
-  const task = db.tasks.create({
+  const task = createTaskRecord({
     home_id: HOME_ID,
     title: `Regulation 40 triage: ${event.title}`,
     description: `This care event may require a Regulation 40 notifiable event notification to Ofsted. ` +
@@ -1039,7 +1039,7 @@ function processTask(
     return;
   }
 
-  const task = db.tasks.create({
+  const task = createTaskRecord({
     title: taskTitle,
     description: `Auto-generated from Care Event: ${event.title}\n\n${event.content.slice(0, 200)}`,
     category: taskCategory as never,

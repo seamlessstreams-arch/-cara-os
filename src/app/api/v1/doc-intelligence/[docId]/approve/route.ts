@@ -2,6 +2,7 @@
 // Approve AI recommendations — optionally select which tasks to create
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { createTaskRecord } from "@/lib/supabase/care-records";
 import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ docId: string }> }) {
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ doc
         created_at: now,
         updated_at: now,
       };
-      db.tasks.create(task);
+      createTaskRecord(task);
       createdTaskIds.push(task.id);
 
       suggestion.approved = true;

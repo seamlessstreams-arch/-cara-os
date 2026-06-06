@@ -107,9 +107,9 @@ export const dal = {
     async update(id: string, data: any) {
       const c = sb();
       if (c) return sq.updateTask(c, id, data);
-      // In-memory fallback: complete if status is completed, otherwise return null (store has no generic update)
+      // In-memory fallback: status→completed uses the richer complete(); else generic update.
       if (data.status === "completed") return db.tasks.complete(id, data.completed_by ?? "system", data.evidence_note);
-      return null;
+      return db.tasks.update(id, data);
     },
   },
 

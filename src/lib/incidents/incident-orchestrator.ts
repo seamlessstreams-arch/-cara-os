@@ -13,7 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db, getStore } from "@/lib/db/store";
-import { createIncidentRecord } from "@/lib/supabase/care-records";
+import { createIncidentRecord, createTaskRecord } from "@/lib/supabase/care-records";
 import type { Incident, Task } from "@/types";
 import { recordEvent, type TimelineEvent } from "@/lib/timeline/timeline-service";
 import { evaluateRules, getApplicableRules } from "@/lib/automation/automation-engine";
@@ -115,7 +115,7 @@ function createFollowUpTasks(incident: Incident): Task[] {
   if (incident.severity === "critical" || incident.severity === "high") {
     const dueDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
     tasks.push(
-      db.tasks.create({
+      createTaskRecord({
         title: `Review incident ${incident.reference}: ${incident.type.replace(/_/g, " ")}`,
         description: `Manager review required for ${incident.severity} severity incident involving ${incident.child_id}. Review the incident record, assess immediate actions taken, determine if further safeguarding measures are needed, and add oversight notes.`,
         status: "pending",
@@ -137,7 +137,7 @@ function createFollowUpTasks(incident: Incident): Task[] {
   if (incident.severity === "critical" || incident.severity === "high") {
     const dueDate = new Date(now.getTime() + 48 * 60 * 60 * 1000); // 48 hours
     tasks.push(
-      db.tasks.create({
+      createTaskRecord({
         title: `Review risk assessment for ${incident.child_id} following incident ${incident.reference}`,
         description: `Incident ${incident.reference} (${incident.severity}) may require an update to the child's risk assessment. Review current controls and triggers.`,
         status: "pending",
@@ -157,7 +157,7 @@ function createFollowUpTasks(incident: Incident): Task[] {
   // 3. Body map task — if required
   if (incident.body_map_required) {
     tasks.push(
-      db.tasks.create({
+      createTaskRecord({
         title: `Complete body map for ${incident.child_id} — incident ${incident.reference}`,
         description: `A body map was flagged as required during incident recording. Complete and attach to the incident record.`,
         status: "pending",
@@ -178,7 +178,7 @@ function createFollowUpTasks(incident: Incident): Task[] {
   if (incident.type === "physical_intervention") {
     const dueDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
     tasks.push(
-      db.tasks.create({
+      createTaskRecord({
         title: `Conduct post-incident debrief — ${incident.reference}`,
         description: `Physical intervention recorded. A post-incident debrief must be conducted with the child and staff involved within 24 hours. Record the child's views and any lessons learned.`,
         status: "pending",
@@ -203,7 +203,7 @@ function createFollowUpTasks(incident: Incident): Task[] {
   ];
   if (notifiableTypes.includes(incident.type) || incident.severity === "critical") {
     tasks.push(
-      db.tasks.create({
+      createTaskRecord({
         title: `Assess Reg 40 notification requirement — ${incident.reference}`,
         description: `This incident type (${incident.type.replace(/_/g, " ")}) may require notification to Ofsted under Regulation 40. Assess within 24 hours and submit notification if required.`,
         status: "pending",
@@ -224,7 +224,7 @@ function createFollowUpTasks(incident: Incident): Task[] {
   if (incident.severity === "medium") {
     const dueDate = new Date(now.getTime() + 72 * 60 * 60 * 1000); // 72 hours
     tasks.push(
-      db.tasks.create({
+      createTaskRecord({
         title: `Follow-up check on ${incident.child_id} after incident ${incident.reference}`,
         description: `Medium severity incident recorded. Check in with the child within 3 days to assess wellbeing and any ongoing impact.`,
         status: "pending",
