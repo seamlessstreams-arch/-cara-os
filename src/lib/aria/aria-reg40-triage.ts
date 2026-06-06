@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { detectReg40Category } from "@/lib/care-events/reg40-keywords";
 import type { CareEvent, CareEventCategory } from "@/types/care-events";
 import type {
   AriaReg40Triage,
@@ -44,7 +45,9 @@ export function reg40Label(cat: Reg40SuggestedCategory): string {
 }
 
 function suggestCategory(event: CareEvent): Reg40SuggestedCategory {
-  return CATEGORY_TO_REG40[event.category] ?? "other";
+  // Prefer a high-precision text signal (death / serious illness-or-accident /
+  // allegation against staff / police) over the generic category mapping.
+  return detectReg40Category(event.title, event.content) ?? CATEGORY_TO_REG40[event.category] ?? "other";
 }
 
 function suggestReasoning(event: CareEvent, suggested: Reg40SuggestedCategory): string {
@@ -60,9 +63,17 @@ function suggestReasoning(event: CareEvent, suggested: Reg40SuggestedCategory): 
  * pending triage row for any that do not yet have one. Idempotent.
  */
 export function scanReg40Candidates(homeId: string): AriaReg40Triage[] {
+  // Fail-safe scan: surface events flagged for Reg 40 OR whose text matches a
+  // high-precision notifiable indicator (death / serious illness-or-accident /
+  // allegation against staff / police), even if they weren't flagged for triage
+  // at classification time.
   const events = db.careEvents
-    .findForReg40()
-    .filter((e) => e.home_id === homeId);
+    .findCurrent()
+    .filter(
+      (e) =>
+        e.home_id === homeId &&
+        (e.requires_reg40_triage || detectReg40Category(e.title, e.content) !== null),
+    );
 
   const created: AriaReg40Triage[] = [];
   for (const e of events) {

@@ -17,6 +17,7 @@
 import type {
   CareEvent, CareEventCategory, RouteType, EvidencePrompt, JobType, RoutingSummary,
 } from "@/types/care-events";
+import { requiresReg40FromText } from "./reg40-keywords";
 
 // ── Classification result ─────────────────────────────────────────────────────
 
@@ -186,7 +187,12 @@ export function classifyCareEvent(
   }
 
   const requiresManagerReview = REQUIRES_MANAGER_REVIEW.has(category) || event.is_significant;
-  const requiresReg40 = REQUIRES_REG40.has(category);
+  // Flag for Reg 40 triage by category OR by high-precision text indicators
+  // (death, serious illness/accident, allegation against staff, police), so
+  // notifiable events logged under other categories (e.g. health, behaviour)
+  // still surface for a human to triage.
+  const requiresReg40 =
+    REQUIRES_REG40.has(category) || requiresReg40FromText(event.title, event.content);
   const contributesToReg45 = CONTRIBUTES_TO_REG45.has(category) || event.is_significant;
   const contributesToAnnexA = CONTRIBUTES_TO_ANNEX_A.has(category);
   const isSafeguarding = SAFEGUARDING_CATEGORIES.has(category);
