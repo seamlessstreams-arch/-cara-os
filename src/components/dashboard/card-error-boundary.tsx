@@ -5,19 +5,23 @@ import React from "react";
 /**
  * Isolates a single dashboard card. If a card throws during render (e.g. an
  * intelligence payload is missing an expected array), only that card shows a
- * small fallback — the rest of the dashboard keeps working instead of the whole
- * page falling to the platform error boundary.
+ * small, calm fallback — the rest of the dashboard keeps working instead of the
+ * whole page falling to the platform error boundary.
+ *
+ * The fallback reads as a graceful "not available yet" empty state (not an alarming
+ * error), and offers a Retry that fully RE-MOUNTS the child — so a transient or
+ * now-resolved data issue recovers without a page reload.
  */
-export class CardErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
-  constructor(props: { children: React.ReactNode }) {
+interface Props { children: React.ReactNode; label?: string; }
+interface State { hasError: boolean; retryKey: number; }
+
+export class CardErrorBoundary extends React.Component<Props, State> {
+  constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, retryKey: 0 };
   }
 
-  static getDerivedStateFromError() {
+  static getDerivedStateFromError(): Partial<State> {
     return { hasError: true };
   }
 
@@ -28,15 +32,22 @@ export class CardErrorBoundary extends React.Component<
     }
   }
 
+  private retry = () => this.setState((s) => ({ hasError: false, retryKey: s.retryKey + 1 }));
+
   render() {
     if (this.state.hasError) {
       return (
-        <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 flex items-center gap-2 text-xs text-[var(--cs-text-muted)]">
-          <span className="inline-block h-2 w-2 rounded-full bg-[var(--cs-avisaar-amber)]" />
-          This section couldn’t load right now.
+        <div className="rounded-2xl border border-dashed border-[var(--cs-border)] bg-[var(--cs-surface)] p-4 min-h-[88px] flex flex-col items-center justify-center gap-1.5 text-center">
+          <p className="text-xs font-medium text-[var(--cs-text-muted)]">
+            {this.props.label ? `${this.props.label} — not available yet` : "Not available yet"}
+          </p>
+          <button type="button" onClick={this.retry} className="text-[11px] text-[var(--cs-teal)] hover:underline">
+            Retry
+          </button>
         </div>
       );
     }
-    return this.props.children;
+    // Bump the key on retry so the child fully re-mounts (re-runs its hooks + render).
+    return <React.Fragment key={this.state.retryKey}>{this.props.children}</React.Fragment>;
   }
 }
