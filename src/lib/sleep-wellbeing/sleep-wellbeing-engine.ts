@@ -271,7 +271,7 @@ function pct(n: number, d: number): number {
 }
 
 function inPeriod(date: string, start: string, end: string): boolean {
-  return date >= start && date <= end;
+  return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
 
 function daysBetween(earlier: string, later: string): number {

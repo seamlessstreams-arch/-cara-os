@@ -270,7 +270,7 @@ function daysBetween(d1: string, d2: string): number {
 }
 
 function isDateInRange(date: string, start: string, end: string): boolean {
-  return date >= start && date <= end;
+  return date.slice(0, 10) >= start.slice(0, 10) && date.slice(0, 10) <= end.slice(0, 10);
 }
 
 function safePercent(numerator: number, denominator: number): number {
