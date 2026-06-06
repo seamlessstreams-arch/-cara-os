@@ -15,6 +15,7 @@ import {
   X, CheckSquare, FileText, Loader2, AlertCircle, Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { useStaff } from "@/hooks/use-staff";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTask } from "@/hooks/use-tasks";
@@ -309,6 +310,9 @@ export function QuickCreateModal({
                       placeholder="Optional details…"
                       className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
                     />
+                    <div className="mt-1.5">
+                      <EntryAssist value={taskForm.description} onChange={(v) => setTaskForm((f) => ({ ...f, description: v }))} sourceModule="task" sourceField="description" />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -457,6 +461,9 @@ export function QuickCreateModal({
                       placeholder="Context or instructions for this form…"
                       className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
                     />
+                    <div className="mt-1.5">
+                      <EntryAssist value={careForm.description} onChange={(v) => setCareForm((f) => ({ ...f, description: v }))} sourceModule="care_form" sourceField="description" />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

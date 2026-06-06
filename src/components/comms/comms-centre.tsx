@@ -16,6 +16,7 @@ import {
   useAnalyseLanguage, type MessageGovernanceAnalysis,
 } from "@/hooks/use-comms";
 import { LanguageNudge, MessageActionMenu } from "@/components/comms/message-governance";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { ProtectedContent } from "@/components/privacy/protected-content";
 import type { CommsChannelType, CommsChannelSummary, CommsMessageEnriched } from "@/types/comms";
 
@@ -207,6 +208,7 @@ export function CommsCentre() {
                 className="resize-none"
                 onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) onSend(); }}
               />
+              <EntryAssist value={draft} onChange={setDraft} sourceModule="comms" />
               <div className="flex items-center justify-between gap-2">
                 <select
                   value={priority}

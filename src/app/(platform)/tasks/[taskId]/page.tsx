@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -399,6 +400,9 @@ export default function TaskDetailPage() {
                   rows={3}
                   className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-slate-400 placeholder:text-[var(--cs-text-muted)]"
                 />
+                <div className="mt-1.5">
+                  <EntryAssist value={editForm.description ?? ""} onChange={(v) => setEditForm((f) => ({ ...f, description: v }))} sourceModule="task" sourceField="description" />
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
