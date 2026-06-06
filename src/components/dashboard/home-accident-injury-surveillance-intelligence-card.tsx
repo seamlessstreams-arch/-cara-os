@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Siren } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHomeAccidentInjurySurveillanceIntelligence } from "@/hooks/use-home-accident-injury-surveillance-intelligence";
@@ -38,6 +39,7 @@ export function HomeAccidentInjurySurveillanceIntelligenceCard() {
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.surveillance_rating === "insufficient_data" && <IntelligenceCardEmpty />}
         {d.surveillance_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             <div className="text-center rounded-lg bg-slate-50 p-1.5">

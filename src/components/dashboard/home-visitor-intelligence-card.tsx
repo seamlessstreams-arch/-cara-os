@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
   Sparkles, Brain, DoorOpen,
@@ -80,6 +81,7 @@ export function HomeVisitorIntelligenceCard() {
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.visitor_rating === "insufficient_data" && <IntelligenceCardEmpty />}
 
         {/* KPI Row */}
         {d.visitor_rating !== "insufficient_data" && (

@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHomeOutcomeStarNeedsIntelligence } from "@/hooks/use-home-outcome-star-needs-intelligence";
@@ -38,6 +39,7 @@ export function HomeOutcomeStarNeedsIntelligenceCard() {
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.outcome_rating === "insufficient_data" && <IntelligenceCardEmpty />}
         {d.outcome_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
             <div className={cn("text-center rounded-lg p-1.5", d.children_assessed > 0 ? "bg-green-50" : "bg-amber-50")}>

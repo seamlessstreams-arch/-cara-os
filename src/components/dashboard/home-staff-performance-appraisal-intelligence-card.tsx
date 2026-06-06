@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHomeStaffPerformanceAppraisalIntelligence } from "@/hooks/use-home-staff-performance-appraisal-intelligence";
@@ -38,6 +39,7 @@ export function HomeStaffPerformanceAppraisalIntelligenceCard() {
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.appraisal_rating === "insufficient_data" && <IntelligenceCardEmpty />}
         {d.appraisal_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
             <div className={cn("text-center rounded-lg p-1.5", d.appraisal_completion_rate >= 90 ? "bg-green-50" : d.appraisal_completion_rate >= 70 ? "bg-amber-50" : "bg-red-50")}>

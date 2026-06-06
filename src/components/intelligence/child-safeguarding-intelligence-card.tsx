@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   AlertTriangle, Brain, Loader2, ShieldAlert, AlertCircle,
   Sparkles, Quote, MapPin, Eye, Siren, ArrowDown, ArrowUp,
@@ -113,6 +114,7 @@ export function ChildSafeguardingIntelligenceCard({ childId }: { childId: string
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.safeguarding_status === "insufficient_data" && <IntelligenceCardEmpty />}
 
         {/* Risk Domain Bars */}
         {d.risk_domains.length > 0 && (

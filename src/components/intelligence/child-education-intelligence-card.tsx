@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   AlertTriangle, Brain, Loader2, GraduationCap, BookOpen,
   AlertCircle, Sparkles, Calendar, TrendingUp, TrendingDown,
@@ -98,6 +99,7 @@ export function ChildEducationIntelligenceCard({ childId }: { childId: string })
         )}
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.education_health === "insufficient_data" && <IntelligenceCardEmpty />}
 
         {/* Attendance & Exclusion KPIs */}
         <div className="grid grid-cols-4 gap-2">
