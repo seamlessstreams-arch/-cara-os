@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { todayStr } from "@/lib/utils";
 
 function daysBetween(dateStr: string | null): number | null {
@@ -14,7 +15,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const staff = db.staff.findById(id);
+  const staff = await dal.staff.findById(id);
   if (!staff) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -34,7 +35,7 @@ export async function GET(
     .findByStaff(id)
     .sort((a, b) => b.scheduled_date.localeCompare(a.scheduled_date));
 
-  const allTasks = db.tasks.findAll();
+  const allTasks = await dal.tasks.findAll();
   const tasks = allTasks
     .filter((t) => t.assigned_to === id)
     .sort((a, b) => (a.due_date ?? "").localeCompare(b.due_date ?? ""));

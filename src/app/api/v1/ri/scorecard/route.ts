@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { computeRiScores } from "@/lib/ri/compute-scores";
 
@@ -10,11 +11,11 @@ export async function GET(req: NextRequest) {
   const alerts = intelligenceDb.riAlerts.findAll(homeId);
   const reg45Items = intelligenceDb.riReg45Evidence.findAll(homeId);
   const challenges = intelligenceDb.riChallengeLogs.findAll(homeId);
-  const incidents = db.incidents.findAll();
+  const incidents = await dal.incidents.findAll();
   const trainingRecords = db.training.findAll();
   const audits = db.audits.findAll();
-  const dailyLogs = db.dailyLog.findAll();
-  const careForms = db.careForms.findAll();
+  const dailyLogs = await dal.dailyLog.findAll();
+  const careForms = await dal.careForms.findAll();
 
   const scores = computeRiScores({
     trainingNeeds: [],

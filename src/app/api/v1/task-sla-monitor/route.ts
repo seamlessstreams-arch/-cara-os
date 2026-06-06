@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { monitorTaskSla, type SlaTask } from "@/lib/escalation/task-sla-monitor";
 import type { Task } from "@/types";
 
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   const severity = searchParams.get("severity");
   const statutoryOnly = searchParams.get("statutory") === "true";
 
-  const tasks = db.tasks.findAll() as (Task & {
+  const tasks = (await dal.tasks.findAll()) as (Task & {
     linked_record_type?: string | null;
     linked_record_id?: string | null;
     child_id?: string | null;

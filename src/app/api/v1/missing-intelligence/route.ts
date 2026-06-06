@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 import { computeMissingIntelligence } from "@/lib/engines/missing-from-care-engine";
 
 export const dynamic = "force-dynamic";
@@ -16,8 +17,8 @@ export const dynamic = "force-dynamic";
 export async function GET(_req: NextRequest) {
   const episodes = db.missingEpisodes.findAll();
 
-  // Build name lookup from young people
-  const yps = db.youngPeople.findAll();
+  // Build name lookup from young people (dual-mode: real table when Supabase is on)
+  const yps = await dal.youngPeople.findAll();
   const ypMap = new Map(yps.map((yp) => [yp.id, yp.preferred_name ?? yp.first_name]));
 
   const result = computeMissingIntelligence({

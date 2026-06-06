@@ -10,6 +10,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { dal } from "@/lib/db/dal";
 
 export const dynamic = "force-dynamic";
 
@@ -32,7 +33,7 @@ export async function GET(req: NextRequest) {
   const filterType = searchParams.get("employment_type");
 
   // ── Base staff list ────────────────────────────────────────────────────────
-  let staffList = db.staff.findAll();
+  let staffList = await dal.staff.findAll();
 
   if (filterStatus) {
     staffList = staffList.filter((s) => s.employment_status === filterStatus);
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
   const todayShifts = db.shifts.findToday();
   const onLeaveToday = db.leave.findOnLeaveToday();
   const allTraining = db.training.findAll();
-  const allTasks = db.tasks.findAll();
+  const allTasks = await dal.tasks.findAll();
 
   // Index by staff_id for O(1) lookups
   const trainingByStaff = new Map<string, typeof allTraining>();
