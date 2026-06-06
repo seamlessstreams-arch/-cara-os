@@ -242,7 +242,8 @@ describe("evaluateMedicationQuality", () => {
   });
 
   it("applies correct weight of 7 to administeredCorrectlyRate", () => {
-    // 1 record with only administeredCorrectly = true, everything else false
+    // Only administeredCorrectly = true. The record has no error (outcome defaults
+    // to administered_correctly), so errorReportedRate = 100 contributes its full 6.
     const recs = [
       makeRecord({
         administeredCorrectly: true,
@@ -252,7 +253,7 @@ describe("evaluateMedicationQuality", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.overallScore).toBe(7);
+    expect(result.overallScore).toBe(13); // 7 (admin) + 6 (error-free reporting baseline)
   });
 
   it("applies correct weight of 6 to signedByTwoStaffRate", () => {
@@ -265,7 +266,7 @@ describe("evaluateMedicationQuality", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.overallScore).toBe(6);
+    expect(result.overallScore).toBe(12); // 6 (signed) + 6 (error-free reporting baseline)
   });
 
   it("applies correct weight of 6 to consentOnFileRate", () => {
@@ -278,20 +279,52 @@ describe("evaluateMedicationQuality", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.overallScore).toBe(6);
+    expect(result.overallScore).toBe(12); // 6 (consent) + 6 (error-free reporting baseline)
   });
 
-  it("applies correct weight of 6 to errorReportedRate", () => {
+  it("applies correct weight of 6 to errorReportedRate (a reported error)", () => {
+    // An error that WAS reported: errorReportedRate = 100 (1/1) -> full 6; others 0.
     const recs = [
       makeRecord({
         administeredCorrectly: false,
         signedByTwoStaff: false,
         consentOnFile: false,
+        outcome: "error_identified",
         errorReported: true,
       }),
     ];
     const result = evaluateMedicationQuality(recs);
     expect(result.overallScore).toBe(6);
+  });
+
+  it("scores errorReportedRate 0 for an UNREPORTED error", () => {
+    // An error that was NOT reported: errorReportedRate = 0 (0/1); all else 0 -> 0.
+    const recs = [
+      makeRecord({
+        administeredCorrectly: false,
+        signedByTwoStaff: false,
+        consentOnFile: false,
+        outcome: "error_identified",
+        errorReported: false,
+      }),
+    ];
+    const result = evaluateMedicationQuality(recs);
+    expect(result.errorReportedRate).toBe(0);
+    expect(result.overallScore).toBe(0);
+  });
+
+  it("scores errorReportedRate 100 when there are NO errors (not penalised)", () => {
+    // Error-free administrations have nothing to report -> full marks, not 0.
+    const recs = [
+      makeRecord({
+        administeredCorrectly: true,
+        signedByTwoStaff: false,
+        consentOnFile: false,
+        errorReported: false,
+      }),
+    ];
+    const result = evaluateMedicationQuality(recs);
+    expect(result.errorReportedRate).toBe(100);
   });
 
   it("clamps score to 0-25 range", () => {
@@ -321,7 +354,7 @@ describe("evaluateMedicationQuality", () => {
     expect(result.administeredCorrectlyRate).toBe(70);
     expect(result.signedByTwoStaffRate).toBe(50);
     expect(result.consentOnFileRate).toBe(80);
-    expect(result.errorReportedRate).toBe(60);
+    expect(result.errorReportedRate).toBe(100); // no error records (all administered_correctly) -> full marks
   });
 });
 
@@ -1128,7 +1161,9 @@ describe("generateMedicationIntelligence", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("Edge Cases", () => {
-  it("single record with all false booleans scores 0 for quality", () => {
+  it("single error-free record with all-false booleans still earns the reporting baseline", () => {
+    // outcome defaults to administered_correctly (no error) -> errorReportedRate 100 -> 6;
+    // every other flag false -> 0. Score = 6, not 0 (an error-free home isn't penalised).
     const recs = [
       makeRecord({
         administeredCorrectly: false,
@@ -1138,7 +1173,7 @@ describe("Edge Cases", () => {
       }),
     ];
     const result = evaluateMedicationQuality(recs);
-    expect(result.overallScore).toBe(0);
+    expect(result.overallScore).toBe(6);
   });
 
   it("single staff with all false skills scores 0", () => {
@@ -1218,7 +1253,8 @@ describe("Edge Cases", () => {
     );
     const result = evaluateMedicationQuality(recs);
     expect(result.administeredCorrectlyRate).toBe(75);
-    // 0.75*7 + 0.75*6 + 0.75*6 + 0.75*6 = 5.25+4.5+4.5+4.5 = 18.75 -> round = 19
-    expect(result.overallScore).toBe(19);
+    // 0.75*7 + 0.75*6 + 0.75*6 + 1.0*6 (no errors -> errorReported 100)
+    //   = 5.25 + 4.5 + 4.5 + 6 = 20.25 -> round = 20
+    expect(result.overallScore).toBe(20);
   });
 });

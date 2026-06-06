@@ -380,8 +380,13 @@ export function evaluateErrorManagement(
 
   const total = errors.length;
 
-  const noHarmCount = errors.filter((e) => e.severity === "no_harm").length;
-  const noHarmRate = pct(noHarmCount, total);
+  // "Of the errors that actually reached a child, how many caused no harm?"
+  // Near-misses were caught before reaching the child, so they're tracked
+  // separately (nearMissCount) and excluded here — otherwise they inflate the
+  // no-harm rate and can mask a serious-harm error in the same period.
+  const actualErrors = errors.filter((e) => e.errorType !== "near_miss");
+  const noHarmCount = actualErrors.filter((e) => e.severity === "no_harm").length;
+  const noHarmRate = actualErrors.length > 0 ? pct(noHarmCount, actualErrors.length) : 100;
 
   const reportedCount = errors.filter((e) => e.reportedImmediately).length;
   const reportedImmediatelyRate = pct(reportedCount, total);
@@ -621,12 +626,21 @@ export function generateMedicationErrorPreventionIntelligence(
   const trainingCompliance = evaluateTrainingCompliance(training);
   const childProfiles = buildChildMedicationProfiles(administrations, errors);
 
-  const overallScore = Math.round(
-    (administrationQuality.overallScore +
-      errorManagement.overallScore +
-      storageSafety.overallScore +
-      trainingCompliance.overallScore) * 10,
-  ) / 10;
+  // Score only the pillars that were actually assessed (have data). Previously an
+  // empty pillar scored 0 (admin / storage / training) while the error pillar scored
+  // 25 for "no errors" — so a home with administrations but, say, no training records
+  // loaded was structurally capped at 50/100. Rescale over the assessed pillars to a
+  // /100 figure instead. When all four are assessed this is identical to the old sum.
+  const pillars = [
+    { score: administrationQuality.overallScore, assessed: administrationQuality.totalAdministrations > 0 },
+    { score: errorManagement.overallScore, assessed: administrationQuality.totalAdministrations > 0 || errorManagement.totalErrors > 0 },
+    { score: storageSafety.overallScore, assessed: storageSafety.totalAudits > 0 },
+    { score: trainingCompliance.overallScore, assessed: trainingCompliance.totalStaff > 0 },
+  ];
+  const assessed = pillars.filter((p) => p.assessed);
+  const overallScore = assessed.length > 0
+    ? Math.round((assessed.reduce((s, p) => s + p.score, 0) / (assessed.length * 25)) * 1000) / 10
+    : 0;
   const rating = ratingFromScore(overallScore);
 
   // ── Strengths ──

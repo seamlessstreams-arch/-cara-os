@@ -372,9 +372,7 @@ export function evaluateMedicationErrors(
   periodStart: string,
   periodEnd: string,
 ): MedicationErrorResult {
-  const periodErrors = errors.filter(
-    e => e.errorDate >= periodStart && e.errorDate <= periodEnd,
-  );
+  const periodErrors = errors.filter((e) => inPeriod(e.errorDate, periodStart, periodEnd));
 
   if (periodErrors.length === 0) {
     return {
@@ -968,6 +966,14 @@ function generateRegulatoryLinks(
   return links;
 }
 
+// Date-only "is this date within [start, end]?" — tolerates ISO timestamps on
+// either side (compares the YYYY-MM-DD prefix) so a same-day timestamped record at
+// the end of the period isn't dropped by a naive lexicographic string comparison.
+function inPeriod(dateStr: string, start: string, end: string): boolean {
+  const d = (dateStr ?? "").slice(0, 10);
+  return d >= start.slice(0, 10) && d <= end.slice(0, 10);
+}
+
 // ── Core Function 6: Generate Full Intelligence ──────────────────────────
 
 export function generateMedicationManagementIntelligence(
@@ -983,8 +989,12 @@ export function generateMedicationManagementIntelligence(
 ): MedicationManagementIntelligenceResult {
   const assessedAt = referenceDate;
 
-  // Run all evaluations
-  const administrationAccuracy = evaluateAdministrationAccuracy(records);
+  // Run all evaluations. Scope administration records to the reporting period so the
+  // accuracy metrics — and the error-rate denominator (administrationAccuracy.totalRecords
+  // below) — are period-consistent with the period-filtered error analysis, rather than
+  // computed over an unscoped record set.
+  const periodRecords = records.filter((r) => inPeriod(r.administeredDate, periodStart, periodEnd));
+  const administrationAccuracy = evaluateAdministrationAccuracy(periodRecords);
   const errorAnalysis = evaluateMedicationErrors(errors, periodStart, periodEnd);
   const stockManagement = evaluateStockManagement(stockChecks);
   const selfAdministration = evaluateSelfAdministration(selfAdminAssessments);

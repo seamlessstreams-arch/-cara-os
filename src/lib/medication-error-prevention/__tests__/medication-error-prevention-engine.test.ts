@@ -358,9 +358,11 @@ describe("evaluateErrorManagement", () => {
   });
 
   it("handles mixed error management quality", () => {
+    // Two ACTUAL errors (not near-misses) so the no-harm rate reflects errors that
+    // reached a child: 1 of 2 caused no harm -> 50%.
     const errors = [
-      makeError({ id: "e1", severity: "no_harm", reportedImmediately: true, rootCauseIdentified: true }),
-      makeError({ id: "e2", severity: "minor_harm", reportedImmediately: false, rootCauseIdentified: false, preventiveActionTaken: false }),
+      makeError({ id: "e1", errorType: "wrong_dose", severity: "no_harm", reportedImmediately: true, rootCauseIdentified: true }),
+      makeError({ id: "e2", errorType: "wrong_time", severity: "minor_harm", reportedImmediately: false, rootCauseIdentified: false, preventiveActionTaken: false }),
     ];
     const result = evaluateErrorManagement(errors);
     expect(result.totalErrors).toBe(2);
@@ -890,8 +892,9 @@ describe("generateMedicationErrorPreventionIntelligence", () => {
       [], [], [], [], HOME_ID, PERIOD_START, PERIOD_END,
     );
 
-    // No admins = 0, no errors = 25, no audits = 0, no training = 0
-    expect(result.overallScore).toBe(25);
+    // No data in ANY pillar → nothing assessed → overall 0. (Previously a misleading
+    // 25, because the "no errors = perfect" pillar masked the three empty pillars.)
+    expect(result.overallScore).toBe(0);
     expect(result.childProfiles.length).toBe(0);
     expect(result.errorManagement.overallScore).toBe(25);
     expect(result.administrationQuality.overallScore).toBe(0);

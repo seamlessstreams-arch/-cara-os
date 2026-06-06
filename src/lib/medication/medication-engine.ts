@@ -235,7 +235,13 @@ export function evaluateMedicationQuality(records: MedicationRecord[]): Medicati
   const administeredCorrectlyRate = pct(records.filter((r) => r.administeredCorrectly).length, total);
   const signedByTwoStaffRate = pct(records.filter((r) => r.signedByTwoStaff).length, total);
   const consentOnFileRate = pct(records.filter((r) => r.consentOnFile).length, total);
-  const errorReportedRate = pct(records.filter((r) => r.errorReported).length, total);
+  // "Of the administrations where an error occurred, how many were reported?"
+  // A home with NO errors has nothing to report and scores full marks (100) —
+  // rather than being penalised for a 0% rate computed over error-free records.
+  const errorRecords = records.filter((r) => r.outcome === "error_identified");
+  const errorReportedRate = errorRecords.length > 0
+    ? pct(errorRecords.filter((r) => r.errorReported).length, errorRecords.length)
+    : 100;
 
   // Weighted: administeredCorrectlyRate 7 + signedByTwoStaffRate 6 + consentOnFileRate 6 + errorReportedRate 6 = 25
   const raw =
