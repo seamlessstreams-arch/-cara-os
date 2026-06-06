@@ -5,7 +5,7 @@
 // View, edit, submit, and approve a single care form.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
@@ -162,20 +162,25 @@ export default function FormDetailPage() {
   const { data: form, isLoading, isError } = useForm(formId ?? "");
   const updateForm = useUpdateForm();
 
-  // Seed edit draft when form loads or we enter edit mode
+  // Seed the edit draft ONCE per edit session — when entering edit mode (and once the
+  // form has loaded). Critically NOT on every background refetch of `form` (queries
+  // refetch every 60s): re-seeding mid-edit would clobber whatever the user has typed,
+  // which is the "data entered not saving / old data remains" bug. Resets on edit exit.
+  const seededRef = useRef(false);
   useEffect(() => {
-    if (form && editing) {
-      setEditDraft({
-        title: form.title,
-        description: form.description ?? "",
-        priority: form.priority,
-        form_type: form.form_type,
-        due_date: form.due_date ?? "",
-        linked_child_id: form.linked_child_id ?? "",
-        linked_staff_id: form.linked_staff_id ?? "",
-        tags: form.tags,
-      });
-    }
+    if (!editing) { seededRef.current = false; return; }
+    if (seededRef.current || !form) return;
+    seededRef.current = true;
+    setEditDraft({
+      title: form.title,
+      description: form.description ?? "",
+      priority: form.priority,
+      form_type: form.form_type,
+      due_date: form.due_date ?? "",
+      linked_child_id: form.linked_child_id ?? "",
+      linked_staff_id: form.linked_staff_id ?? "",
+      tags: form.tags,
+    });
   }, [form, editing]);
 
   const canEdit    = can(PERMISSIONS.EDIT_FORMS);

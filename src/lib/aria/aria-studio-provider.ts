@@ -45,13 +45,15 @@ export function getAriaStudioProviderConfig(): AriaStudioProviderConfig {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
   const enableStubFallback = process.env.AI_ENABLE_STUB_FALLBACK !== "false";
-  const defaultModel = process.env.AI_DEFAULT_MODEL;
+  // Fall back to the configured ARIA_MODEL (a real, valid Claude id) — NOT an invented
+  // "claude-opus-4-5", which the API rejects and silently drops generation to the stub.
+  const defaultModel = process.env.AI_DEFAULT_MODEL ?? process.env.ARIA_MODEL;
 
   // If provider explicitly set, honour that
   if (explicit === "anthropic" && anthropicKey) {
     return {
       provider: "anthropic",
-      model: defaultModel ?? "claude-opus-4-5",
+      model: defaultModel ?? "claude-sonnet-4-20250514",
       configured: true,
       maxTokens: 4096,
       temperature: 0.4,
@@ -83,7 +85,7 @@ export function getAriaStudioProviderConfig(): AriaStudioProviderConfig {
   if (anthropicKey) {
     return {
       provider: "anthropic",
-      model: defaultModel ?? "claude-opus-4-5",
+      model: defaultModel ?? "claude-sonnet-4-20250514",
       configured: true,
       maxTokens: 4096,
       temperature: 0.4,

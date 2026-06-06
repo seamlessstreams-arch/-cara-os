@@ -10,7 +10,8 @@ import { GENERATION_TYPES, TONES, AUDIENCES, STATUSES } from "./types";
 // ── Generate Request ─────────────────────────────────────────────────────────
 
 export const generateRequestSchema = z.object({
-  childId: z.string().uuid().optional(),
+  // NOT .uuid() — the app uses ids like "yp_alex"; uuid() rejected every real request.
+  childId: z.string().optional(),
   generationType: z.enum(GENERATION_TYPES),
   title: z.string().min(3).max(200),
   brief: z.string().min(10).max(2000),

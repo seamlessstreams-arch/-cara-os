@@ -27,9 +27,10 @@ import type {
 
 // ── Configuration ────────────────────────────────────────────────────────────
 
-const LLM_API_URL = process.env.ARIA_STUDIO_LLM_URL ?? process.env.OPENAI_API_URL ?? "https://api.openai.com/v1/chat/completions";
-const LLM_API_KEY = process.env.ARIA_STUDIO_LLM_KEY ?? process.env.OPENAI_API_KEY ?? "";
-const LLM_MODEL = process.env.ARIA_STUDIO_MODEL ?? "gpt-4o";
+// Claude (Anthropic) only — OpenAI was removed platform-wide.
+const LLM_API_URL = process.env.ARIA_STUDIO_LLM_URL ?? "https://api.anthropic.com/v1/messages";
+const LLM_API_KEY = process.env.ARIA_STUDIO_LLM_KEY ?? process.env.ANTHROPIC_API_KEY ?? "";
+const LLM_MODEL = process.env.ARIA_STUDIO_MODEL ?? process.env.ARIA_MODEL ?? "claude-sonnet-4-20250514";
 
 // ── Result Type ──────────────────────────────────────────────────────────────
 
@@ -154,17 +155,16 @@ async function callLLM(systemPrompt: string, userPrompt: string): Promise<string
   const response = await fetch(LLM_API_URL, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${LLM_API_KEY}`,
+      "content-type": "application/json",
+      "x-api-key": LLM_API_KEY,
+      "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
       model: LLM_MODEL,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt },
-      ],
-      temperature: 0.7,
       max_tokens: 4000,
+      temperature: 0.7,
+      system: systemPrompt,
+      messages: [{ role: "user", content: userPrompt }],
     }),
   });
 
@@ -174,7 +174,7 @@ async function callLLM(systemPrompt: string, userPrompt: string): Promise<string
   }
 
   const json = await response.json();
-  const content = json.choices?.[0]?.message?.content;
+  const content = json.content?.[0]?.text;
 
   if (!content) {
     throw new Error("LLM returned empty response");
