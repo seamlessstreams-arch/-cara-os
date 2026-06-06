@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { getStore } from "@/lib/db/store";
 import { classifyRecord, type ClassificationResult } from "@/lib/record-classifier/record-classifier";
 import { EnterOnceIndicator, EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once-indicator";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import {
   Sparkles, AlertTriangle, Shield, Clock, Heart, FileText,
   Send, Loader2, ChevronDown, Check, Info,
@@ -183,6 +184,9 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
           {text.length} chars
         </div>
       </div>
+
+      {/* Dictate + rewrite — available on every entry point */}
+      <EntryAssist value={text} onChange={setText} sourceModule="universal_child_entry" sourceField="content" childId={childId} />
 
       {/* Live classification indicator */}
       {classification && text.length >= 15 && (
