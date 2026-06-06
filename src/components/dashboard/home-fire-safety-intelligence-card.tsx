@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import {
   Loader2, AlertCircle, AlertTriangle,
   Sparkles, Brain, Flame,
@@ -78,6 +79,7 @@ export function HomeFireSafetyIntelligenceCard() {
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.fire_safety_rating === "insufficient_data" && <IntelligenceCardEmpty />}
 
         {/* KPI Row */}
         {d.fire_safety_rating !== "insufficient_data" && (

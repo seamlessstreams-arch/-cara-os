@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, Scale } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHomeConsentRightsLiteracyIntelligence } from "@/hooks/use-home-consent-rights-literacy-intelligence";
@@ -38,6 +39,7 @@ export function HomeConsentRightsLiteracyIntelligenceCard() {
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.consent_rights_rating === "insufficient_data" && <IntelligenceCardEmpty />}
         {d.consent_rights_rating !== "insufficient_data" && (
           <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
             <div className={cn("text-center rounded-lg p-1.5", d.active_consents > 0 ? "bg-green-50" : "bg-amber-50")}>

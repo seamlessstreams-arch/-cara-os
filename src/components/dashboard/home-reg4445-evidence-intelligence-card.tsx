@@ -1,6 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { IntelligenceCardEmpty } from "@/components/dashboard/intelligence-card-empty";
 import { Loader2, AlertCircle, AlertTriangle, Sparkles, Brain, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useHomeReg4445EvidenceIntelligence } from "@/hooks/use-home-reg4445-evidence-intelligence";
@@ -38,6 +39,7 @@ export function HomeReg4445EvidenceIntelligenceCard() {
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {d.reg4445_rating === "insufficient_data" && <IntelligenceCardEmpty />}
         {d.reg4445_rating !== "insufficient_data" && (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div className="text-center rounded-lg bg-slate-50 p-2">
