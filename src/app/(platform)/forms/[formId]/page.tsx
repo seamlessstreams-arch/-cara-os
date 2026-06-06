@@ -9,6 +9,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -356,6 +357,9 @@ export default function FormDetailPage() {
                 placeholder="Optional description or notes…"
                 className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-slate-400 placeholder:text-[var(--cs-text-muted)]"
               />
+              <div className="mt-1.5">
+                <EntryAssist value={(editDraft.description as string) ?? ""} onChange={(v) => setEditDraft((d) => ({ ...d, description: v }))} sourceModule="care_form" sourceField="description" childId={form?.linked_child_id ?? undefined} />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
