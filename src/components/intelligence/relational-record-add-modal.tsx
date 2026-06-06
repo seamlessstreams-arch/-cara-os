@@ -11,6 +11,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Heart, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { useCreateRelationalRecord } from "@/hooks/use-intelligence";
 import { cn } from "@/lib/utils";
 import type { RelationalRecordType } from "@/types/extended";
@@ -235,6 +236,7 @@ export function RelationalRecordAddModal({
                         }
                       />
                     </div>
+                    <EntryAssist hideMic value={description} onChange={setDescription} sourceModule="relational_record" sourceField="description" className="mt-1.5" />
                   </div>
                 </div>
 

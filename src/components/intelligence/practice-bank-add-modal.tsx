@@ -98,6 +98,7 @@ function DictationTextarea({
           onTranscript={(text) => onChange(value ? `${value} ${text}` : text)}
         />
       </div>
+      <EntryAssist hideMic value={value} onChange={onChange} sourceModule="practice_bank" className="mt-1.5" />
     </div>
   );
 }

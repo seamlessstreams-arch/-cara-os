@@ -10,6 +10,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, X, Loader2, CheckCircle2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { useCreateIntervention } from "@/hooks/use-intelligence";
 import { cn } from "@/lib/utils";
 
@@ -104,6 +105,7 @@ function DictationTextarea({
           onTranscript={(text) => onChange(value ? `${value} ${text}` : text)}
         />
       </div>
+      <EntryAssist hideMic value={value} onChange={onChange} sourceModule="intervention" className="mt-1.5" />
     </div>
   );
 }

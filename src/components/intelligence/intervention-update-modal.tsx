@@ -10,6 +10,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { Pencil, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { useUpdateIntervention } from "@/hooks/use-intelligence";
 import { cn } from "@/lib/utils";
 import type { Intervention, InterventionStatus, InterventionOutcome } from "@/types/extended";
@@ -209,6 +210,7 @@ export function InterventionUpdateModal({
                       }
                     />
                   </div>
+                  <EntryAssist hideMic value={outcomeNotes} onChange={setOutcomeNotes} sourceModule="intervention" sourceField="outcome_notes" className="mt-1.5" />
                 </div>
               </div>
 

@@ -9,7 +9,7 @@ import React, { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Plus, X, Loader2, CheckCircle2, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DictationButton } from "@/components/common/dictation-button";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { useCreateActionOutcome } from "@/hooks/use-intelligence";
 import { cn } from "@/lib/utils";
 
@@ -243,11 +243,11 @@ export function ActionOutcomeAddModal({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <FieldLabel htmlFor="ao-agreed" required>What was agreed</FieldLabel>
-                    <DictationButton
-                      onTranscript={(text) =>
-                        setWhatWasAgreed((prev) => prev ? `${prev} ${text}` : text)
-                      }
-                      size="sm"
+                    <EntryAssist
+                      value={whatWasAgreed}
+                      onChange={setWhatWasAgreed}
+                      sourceModule="action_outcome"
+                      sourceField="what_agreed"
                     />
                   </div>
                   <textarea
@@ -271,11 +271,11 @@ export function ActionOutcomeAddModal({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <FieldLabel htmlFor="ao-why" required>Why it matters</FieldLabel>
-                    <DictationButton
-                      onTranscript={(text) =>
-                        setWhyItMatters((prev) => prev ? `${prev} ${text}` : text)
-                      }
-                      size="sm"
+                    <EntryAssist
+                      value={whyItMatters}
+                      onChange={setWhyItMatters}
+                      sourceModule="action_outcome"
+                      sourceField="why_matters"
                     />
                   </div>
                   <textarea

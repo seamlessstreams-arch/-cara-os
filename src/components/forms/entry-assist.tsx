@@ -40,9 +40,11 @@ export interface EntryAssistProps {
   childId?: string;
   className?: string;
   disabled?: boolean;
+  /** Rewrite-only: hide the mic (for surfaces that already have their own dictation). */
+  hideMic?: boolean;
 }
 
-export function EntryAssist({ value, onChange, sourceModule, sourceField, childId, className, disabled }: EntryAssistProps) {
+export function EntryAssist({ value, onChange, sourceModule, sourceField, childId, className, disabled, hideMic }: EntryAssistProps) {
   const aria = useAriaCommand();
   const [open, setOpen] = useState(false);
   const [prev, setPrev] = useState<string | null>(null);
@@ -61,12 +63,14 @@ export function EntryAssist({ value, onChange, sourceModule, sourceField, childI
 
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <DictationButton
-        size="sm"
-        mode="append"
-        disabled={disabled}
-        onTranscript={(t) => onChange(value.trim() ? `${value.replace(/\s+$/, "")} ${t}` : t)}
-      />
+      {!hideMic && (
+        <DictationButton
+          size="sm"
+          mode="append"
+          disabled={disabled}
+          onTranscript={(t) => onChange(value.trim() ? `${value.replace(/\s+$/, "")} ${t}` : t)}
+        />
+      )}
 
       <div className="relative">
         <button
