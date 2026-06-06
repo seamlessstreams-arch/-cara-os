@@ -17,6 +17,7 @@
 
 import { db } from "@/lib/db/store";
 import { todayStr, generateId } from "@/lib/utils";
+import { persistDailyLog } from "@/lib/supabase/care-records";
 import type { Incident } from "@/types";
 import type { MissingEpisode } from "@/types/extended";
 
@@ -100,7 +101,7 @@ export function processIncidentCreated(incident: Incident, createdBy: string): v
   }
 
   // 3. Daily log entry (mark incident on daily record)
-  db.dailyLog.create({
+  const incidentDailyLog = db.dailyLog.create({
     child_id: incident.child_id,
     date: incident.date,
     time: incident.time,
@@ -114,6 +115,7 @@ export function processIncidentCreated(incident: Incident, createdBy: string): v
     is_significant: incident.severity === "critical" || incident.severity === "high",
     home_id: incident.home_id,
   });
+  void persistDailyLog(incidentDailyLog); // best-effort Supabase write-through (no-op when off)
 
   // 4. Handover flag
   const todayHandover = db.handovers.findByDate(todayStr())[0];
@@ -224,7 +226,7 @@ export function processMedicationException(
   exceptionType: "refused" | "late" | "missed", notes: string
 ): void {
   // 1. Daily log
-  db.dailyLog.create({
+  const medExceptionLog = db.dailyLog.create({
     child_id: childId,
     date: todayStr(),
     time: new Date().toTimeString().slice(0, 5),
@@ -236,6 +238,7 @@ export function processMedicationException(
     is_significant: exceptionType === "missed" || exceptionType === "refused",
     home_id: homeId,
   });
+  void persistDailyLog(medExceptionLog); // best-effort Supabase write-through (no-op when off)
 
   // 2. Manager notification
   db.notifications.create({

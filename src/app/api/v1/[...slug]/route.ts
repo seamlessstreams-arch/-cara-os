@@ -494,15 +494,17 @@ const CORE_COLLECTIONS = new Set<string>([
   "commsMessageActions", "commsMessageReceipts", "cornerstoneEvents", "careEvents",
 ]);
 
-// Core entities with a real Supabase table + dal coverage AND no app-level writers
-// (read-only / seed data) → route READS through the dual-mode dal so they come from
-// the real table when Supabase is on, and the in-memory store when off. Writes (rare/
-// none for these) stay on the store. Entities are added here as their writers are
-// converted, taking precedence over CORE_COLLECTIONS.
+// Core entities routed through the dual-mode dal: reads come from the real Supabase
+// table when on (in-memory store when off); writes use the dal where it provides them,
+// else fall back to the store. Takes precedence over CORE_COLLECTIONS; entities are
+// added as their writers are converted. youngPeople/medications = read-only (no
+// writers); dailyLog's sync-service creates are persisted via best-effort write-through
+// (supabase/care-records.ts), and its catch-all create goes straight through dal.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const DAL_READ_MAP: Record<string, any> = {
+const DAL_MAP: Record<string, any> = {
   youngPeople: dal.youngPeople,
   medications: dal.medications,
+  dailyLog: dal.dailyLog,
 };
 
 interface AsyncCollection {
@@ -526,10 +528,10 @@ function resolveAccessor(slug: string): AsyncCollection | null {
   const mem = (db as Record<string, any>)[collectionName] as Record<string, (...args: unknown[]) => unknown> | undefined;
   if (!mem || typeof mem !== "object") return null;
 
-  // Dal-routed core entities: reads go through the dual-mode dal (real table when on,
-  // store when off); writes stay on the store (these entities have no app writers).
+  // Dal-routed core entities: reads via the dual-mode dal (real table on, store off);
+  // writes via dal where available, else the store.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const dalCol = DAL_READ_MAP[collectionName] as any;
+  const dalCol = DAL_MAP[collectionName] as any;
   if (dalCol) {
     return {
       findAll: async () => asList(await dalCol.findAll()),
@@ -541,10 +543,16 @@ function resolveAccessor(slug: string): AsyncCollection | null {
         typeof dalCol.findById === "function" ? async (id: string) => (await dalCol.findById(id)) ?? null
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         : async (id: string) => asList(await dalCol.findAll()).find((x: any) => x?.id === id) ?? null,
-      create: typeof mem.create === "function" ? async (d: Record<string, unknown>) => mem.create!(d) : null,
-      update: typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null : null,
+      create:
+        typeof dalCol.create === "function" ? async (d: Record<string, unknown>) => dalCol.create(d)
+        : typeof mem.create === "function" ? async (d: Record<string, unknown>) => mem.create!(d) : null,
+      update:
+        typeof dalCol.update === "function" ? async (id: string, d: Record<string, unknown>) => (await dalCol.update(id, d)) ?? null
+        : typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null : null,
       patch:
-        typeof mem.patch === "function" ? async (id: string, d: Record<string, unknown>) => mem.patch!(id, d) ?? null
+        typeof dalCol.patch === "function" ? async (id: string, d: Record<string, unknown>) => (await dalCol.patch(id, d)) ?? null
+        : typeof dalCol.update === "function" ? async (id: string, d: Record<string, unknown>) => (await dalCol.update(id, d)) ?? null
+        : typeof mem.patch === "function" ? async (id: string, d: Record<string, unknown>) => mem.patch!(id, d) ?? null
         : typeof mem.update === "function" ? async (id: string, d: Record<string, unknown>) => mem.update!(id, d) ?? null
         : null,
     };

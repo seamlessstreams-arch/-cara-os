@@ -16,6 +16,7 @@
 import { db } from "@/lib/db/store";
 import { generateId, todayStr } from "@/lib/utils";
 import { captureDomainEvent, type CaptureDraft } from "@/lib/event-capture/capture-event-service";
+import { persistDailyLog } from "@/lib/supabase/care-records";
 import { classifyCareEvent, buildRoutingSummary } from "./routing-engine";
 
 // ── Forms-as-views: spine write-through helpers ───────────────────────────────
@@ -84,6 +85,7 @@ function processDailyLog(event: CareEvent, route: CareEventRoute): void {
     created_by: event.staff_id,
     updated_by: event.staff_id,
   } as never);
+  void persistDailyLog(entry); // best-effort Supabase write-through (no-op when off)
   {
     const e = entry as any;
     const significant = !!e.is_significant;
