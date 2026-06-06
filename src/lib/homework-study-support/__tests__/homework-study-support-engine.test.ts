@@ -642,6 +642,17 @@ describe("generateHomeworkStudySupportIntelligence", () => {
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
+  it("flags 0% documented / staff-supported (worst case must not be hidden by a >0 guard)", () => {
+    // Every session undocumented + unsupported — the worst case. The improvement
+    // areas must surface; previously a `rate > 0` guard suppressed the 0% case.
+    const sessions = OAK_HOUSE_SESSIONS.map((s) => ({ ...s, documentedInPlan: false, staffSupported: false }));
+    const result = generateHomeworkStudySupportIntelligence(
+      sessions, OAK_HOUSE_POLICY, OAK_HOUSE_TRAINING, "oak-house", "2026-04-01", "2026-05-19",
+    );
+    expect(result.areasForImprovement.some((a) => a.toLowerCase().includes("documentation"))).toBe(true);
+    expect(result.areasForImprovement.some((a) => a.toLowerCase().includes("staff support"))).toBe(true);
+  });
+
   it("produces a valid rating", () => {
     const result = generateHomeworkStudySupportIntelligence(
       OAK_HOUSE_SESSIONS, OAK_HOUSE_POLICY, OAK_HOUSE_TRAINING,

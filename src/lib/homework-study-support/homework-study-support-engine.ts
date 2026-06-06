@@ -640,11 +640,11 @@ function deriveAreasForImprovement(
     areas.push("Confidence growth observed in only " + quality.confidenceRate + "% of sessions — strategies to build confidence needed");
   }
 
-  if (compliance.documentedRate > 0 && compliance.documentedRate < 60) {
+  if (quality.totalSessions > 0 && compliance.documentedRate < 60) {
     areas.push("Documentation rate at " + compliance.documentedRate + "% — sessions should be recorded in education plans");
   }
 
-  if (compliance.staffSupportedRate > 0 && compliance.staffSupportedRate < 60) {
+  if (quality.totalSessions > 0 && compliance.staffSupportedRate < 60) {
     areas.push("Staff support rate at " + compliance.staffSupportedRate + "% — children need more consistent staff presence during study");
   }
 
@@ -682,11 +682,11 @@ function deriveActions(
     actions.push("Implement consistent progress tracking across all study sessions");
   }
 
-  if (compliance.documentedRate > 0 && compliance.documentedRate < 60) {
+  if (quality.totalSessions > 0 && compliance.documentedRate < 60) {
     actions.push("Ensure all study sessions are documented in education plans (" + compliance.documentedRate + "% currently documented)");
   }
 
-  if (compliance.staffSupportedRate > 0 && compliance.staffSupportedRate < 60) {
+  if (quality.totalSessions > 0 && compliance.staffSupportedRate < 60) {
     actions.push("Increase staff presence during study sessions from " + compliance.staffSupportedRate + "%");
   }
 
