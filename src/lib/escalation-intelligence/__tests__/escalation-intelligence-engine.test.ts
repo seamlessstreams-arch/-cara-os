@@ -202,6 +202,21 @@ describe("assessConcern", () => {
     expect(result.outcome).toBe("not_escalated");
   });
 
+  it("does NOT mark a serious concern compliant just because no threshold rule matched", () => {
+    // property_damage has no escalation rule, but at severity 3 with immediate risk
+    // it resolves to a child-protection-level concern. With nothing escalated it must
+    // surface as not_escalated — never appropriate_and_timely (the previous bug).
+    const concern = makeConcern({ category: "property_damage", severity: 3, immediateRiskPresent: true });
+    const result = assessConcern(concern, [], "2026-05-11T16:00:00");
+    expect(result.outcome).toBe("not_escalated");
+  });
+
+  it("still passes a genuinely low-level concern that has no rule and needs no escalation", () => {
+    const concern = makeConcern({ category: "property_damage", severity: 1, immediateRiskPresent: false, previousOccurrences: 0 });
+    const result = assessConcern(concern, [], "2026-05-11T16:00:00");
+    expect(result.outcome).toBe("appropriate_and_timely");
+  });
+
   it("returns appropriate_but_delayed when all made but late", () => {
     const concern = makeConcern({ category: "safeguarding", severity: 3 });
     // Required: immediate (within 1 hour), but escalated 3 hours later

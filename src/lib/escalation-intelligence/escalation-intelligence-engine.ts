@@ -382,13 +382,24 @@ export function assessConcern(
   // Determine outcome
   let outcome: EscalationOutcome;
   if (requiredEscalations.length === 0) {
-    outcome = "appropriate_and_timely";
+    // No threshold rule matched this category/severity. Don't blanket-pass it: a
+    // serious concern (child-in-need / child-protection level, or with immediate
+    // risk present) that has no rule AND nothing escalated must still be surfaced,
+    // not silently scored as compliant.
+    const serious =
+      determinedLevel === "level_3_child_in_need" ||
+      determinedLevel === "level_4_child_protection" ||
+      concern.immediateRiskPresent;
+    outcome = serious && concernEscalations.length === 0 ? "not_escalated" : "appropriate_and_timely";
   } else if (allCompleted && allTimely) {
     outcome = "appropriate_and_timely";
   } else if (allCompleted && !allTimely) {
     outcome = "appropriate_but_delayed";
   } else if (missingEscalations.some((m) => m.isOverdue)) {
-    outcome = missingEscalations.length === requiredEscalations.length ? "not_escalated" : "under_escalated";
+    // "Not escalated" only when ALL required targets are actually overdue; targets
+    // still within their window are not failures, just not-yet-due.
+    const overdueCount = missingEscalations.filter((m) => m.isOverdue).length;
+    outcome = overdueCount === requiredEscalations.length ? "not_escalated" : "under_escalated";
   } else {
     outcome = "pending";
   }
