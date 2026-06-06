@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { classifyHomeRecord, type HomeClassificationResult } from "@/lib/record-classifier/home-record-classifier";
 import { EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once-indicator";
 import { EntryAssist } from "@/components/forms/entry-assist";
+import { useUnsavedGuard } from "@/hooks/use-unsaved-guard";
 import {
   Flame, ShieldCheck, Wrench, Car, ClipboardCheck, FileText,
   AlertTriangle, Send, Loader2, ChevronDown, Check, Info, Clock,
@@ -66,6 +67,9 @@ export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Oak House"
     onDirtyChange?.(text.trim().length > 0 && !result);
     return () => onDirtyChange?.(false);
   }, [text, result, onDirtyChange]);
+
+  // Warn on tab close / refresh while there's unsaved text.
+  useUnsavedGuard(text.trim().length > 0 && !result);
 
   const effectiveType = overrideType ?? classification?.primary_type ?? "observation";
   const meta = TYPE_META[effectiveType] ?? TYPE_META.observation;

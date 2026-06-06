@@ -15,6 +15,7 @@ import { getStore } from "@/lib/db/store";
 import { classifyRecord, type ClassificationResult } from "@/lib/record-classifier/record-classifier";
 import { EnterOnceIndicator, EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once-indicator";
 import { EntryAssist } from "@/components/forms/entry-assist";
+import { useUnsavedGuard } from "@/hooks/use-unsaved-guard";
 import {
   Sparkles, AlertTriangle, Shield, Clock, Heart, FileText,
   Send, Loader2, ChevronDown, Check, Info,
@@ -104,6 +105,9 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
     onDirtyChange?.(text.trim().length > 0 && !result);
     return () => onDirtyChange?.(false);
   }, [text, result, onDirtyChange]);
+
+  // Warn on tab close / refresh while there's unsaved text.
+  useUnsavedGuard(text.trim().length > 0 && !result);
 
   const effectiveType = overrideType ?? classification?.primary_type ?? "daily_log";
   const typeInfo = TYPE_ICONS[effectiveType] ?? TYPE_ICONS.daily_log;

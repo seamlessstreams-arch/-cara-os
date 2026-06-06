@@ -14,6 +14,7 @@ import { getStore } from "@/lib/db/store";
 import { classifyStaffRecord, type StaffClassificationResult } from "@/lib/record-classifier/staff-record-classifier";
 import { EnterOnceSuccess, type RecordType } from "@/components/forms/enter-once-indicator";
 import { EntryAssist } from "@/components/forms/entry-assist";
+import { useUnsavedGuard } from "@/hooks/use-unsaved-guard";
 import {
   Sparkles, AlertTriangle, Heart, GraduationCap, Eye, ClipboardList,
   Send, Loader2, ChevronDown, Check, Info, Clock,
@@ -62,6 +63,9 @@ export function UniversalStaffEntry({ staffId, onSuccess, onCancel, className }:
     const el = textareaRef.current;
     if (el) { el.style.height = "auto"; el.style.height = Math.max(120, Math.min(el.scrollHeight, 400)) + "px"; }
   }, [text]);
+
+  // Warn on tab close / refresh while there's unsaved text.
+  useUnsavedGuard(text.trim().length > 0 && !result);
 
   const effectiveType = overrideType ?? classification?.primary_type ?? "supervision";
   const meta = TYPE_META[effectiveType] ?? TYPE_META.supervision;
