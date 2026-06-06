@@ -59,7 +59,11 @@ const SLUG_MAP: Record<string, string> = {
   "card-records": "cardRecords",
   "care-anniversary-records": "careAnniversaryRecords",
   "care-event-audit": "careEvents",
-  "care-events": "staff",
+  // Base care-events CRUD is served by the dedicated route at
+  // src/app/api/v1/care-events/route.ts (which classifies on create). This map
+  // entry is a defensive fallback only — it must resolve to the careEvents
+  // collection, never to staff (a prior copy/paste pointed it at "staff").
+  "care-events": "careEvents",
   "case-file-audits": "caseFileAudits",
   "cctv-accesses": "cctvAccesses",
   "charity-grant-records": "charityGrantRecords",
