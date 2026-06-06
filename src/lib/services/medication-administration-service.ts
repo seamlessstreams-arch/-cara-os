@@ -256,9 +256,16 @@ export function identifyAdministrationAlerts(
     id: string;
   }[] = [];
 
-  // Controlled drug not witnessed
+  // Controlled drug not witnessed — fires whenever the CD was actually TAKEN
+  // (staff-administered OR self-administered) without the required witness.
+  // Outcomes where the drug was NOT given (refused / not_available / withheld /
+  // not_required) correctly do not fire.
   for (const r of records) {
-    if (r.controlled_drug && r.witness_status === "yes_not_witnessed" && r.administration_outcome === "administered") {
+    if (
+      r.controlled_drug &&
+      r.witness_status === "yes_not_witnessed" &&
+      (r.administration_outcome === "administered" || r.administration_outcome === "self_administered")
+    ) {
       alerts.push({
         type: "cd_not_witnessed",
         severity: "critical",

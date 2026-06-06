@@ -1315,6 +1315,20 @@ describe("identifyAdministrationAlerts", () => {
       expect(alerts.find((a) => a.type === "cd_not_witnessed")).toBeUndefined();
     });
 
+    it("fires when outcome is self_administered (controlled drug taken without witness)", () => {
+      const records = [
+        makeRecord({
+          id: "r-1",
+          controlled_drug: true,
+          witness_status: "yes_not_witnessed",
+          administration_outcome: "self_administered",
+          mar_chart_updated: true,
+        }),
+      ];
+      const alerts = identifyAdministrationAlerts(records);
+      expect(alerts.find((a) => a.type === "cd_not_witnessed")).toBeTruthy();
+    });
+
     it("fires per record for multiple unwitnessed controlled drugs", () => {
       const records = [
         makeRecord({
