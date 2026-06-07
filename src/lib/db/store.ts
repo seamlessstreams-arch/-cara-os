@@ -391,6 +391,16 @@ import type {
 } from "@/types/care-events";
 import type { InspectionRecord } from "@/types/extended";
 import type {
+  AriaPracticeAssessment,
+  AriaDevelopmentalGapRecord,
+  AriaProtectiveFactorReview,
+  AriaRelationshipDepthReview,
+  AriaThresholdConsultation,
+  AriaStaffWellbeingSignal,
+  AriaPracticeFlag,
+  AriaGuidanceRule,
+} from "@/lib/aria-practice/types";
+import type {
   WakeUpRoutine,
   OutcomeMeasure,
   WelfareProtocol,
@@ -2726,6 +2736,16 @@ const store = {
   ariaSuggestedRecords: [] as AriaSuggestedRecord[],
   ariaCommittedRecords: [] as AriaCommittedRecord[],
   ariaReg40Triages: [] as AriaReg40Triage[],
+
+  // ARIA Practice Intelligence
+  ariaPracticeAssessments: [] as AriaPracticeAssessment[],
+  ariaDevelopmentalGaps: [] as AriaDevelopmentalGapRecord[],
+  ariaProtectiveFactorReviews: [] as AriaProtectiveFactorReview[],
+  ariaRelationshipDepthReviews: [] as AriaRelationshipDepthReview[],
+  ariaThresholdConsultations: [] as AriaThresholdConsultation[],
+  ariaStaffWellbeingSignals: [] as AriaStaffWellbeingSignal[],
+  ariaPracticeFlags: [] as AriaPracticeFlag[],
+  ariaGuidanceRules: [] as AriaGuidanceRule[],
 
   // Shift Swap Requests
   shiftSwaps: [
@@ -14182,6 +14202,142 @@ export const db = {
       if (idx === -1) return null;
       store.ariaEarlyWarnings[idx] = { ...store.ariaEarlyWarnings[idx], ...data };
       return store.ariaEarlyWarnings[idx];
+    },
+  },
+  // ── ARIA Practice Intelligence ─────────────────────────────────────────────
+  ariaPracticeAssessments: {
+    findAll: (homeId?: string) =>
+      homeId ? store.ariaPracticeAssessments.filter((r) => r.home_id === homeId) : store.ariaPracticeAssessments,
+    findById: (id: string) => store.ariaPracticeAssessments.find((r) => r.id === id),
+    findByChild: (childId: string) => store.ariaPracticeAssessments.filter((r) => r.child_id === childId),
+    create: (data: Omit<AriaPracticeAssessment, "id" | "created_at" | "updated_at">): AriaPracticeAssessment => {
+      const now = new Date().toISOString();
+      const rec: AriaPracticeAssessment = { ...data, id: generateId("apa"), created_at: now, updated_at: now };
+      store.ariaPracticeAssessments.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaPracticeAssessment>): AriaPracticeAssessment | null => {
+      const idx = store.ariaPracticeAssessments.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaPracticeAssessments[idx] = { ...store.ariaPracticeAssessments[idx], ...data, updated_at: new Date().toISOString() };
+      return store.ariaPracticeAssessments[idx];
+    },
+  },
+  ariaDevelopmentalGaps: {
+    findAll: () => store.ariaDevelopmentalGaps,
+    findById: (id: string) => store.ariaDevelopmentalGaps.find((r) => r.id === id),
+    findByChild: (childId: string) => store.ariaDevelopmentalGaps.filter((r) => r.child_id === childId),
+    create: (data: Omit<AriaDevelopmentalGapRecord, "id" | "created_at" | "updated_at">): AriaDevelopmentalGapRecord => {
+      const now = new Date().toISOString();
+      const rec: AriaDevelopmentalGapRecord = { ...data, id: generateId("adg"), created_at: now, updated_at: now };
+      store.ariaDevelopmentalGaps.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaDevelopmentalGapRecord>): AriaDevelopmentalGapRecord | null => {
+      const idx = store.ariaDevelopmentalGaps.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaDevelopmentalGaps[idx] = { ...store.ariaDevelopmentalGaps[idx], ...data, updated_at: new Date().toISOString() };
+      return store.ariaDevelopmentalGaps[idx];
+    },
+  },
+  ariaProtectiveFactorReviews: {
+    findAll: () => store.ariaProtectiveFactorReviews,
+    findById: (id: string) => store.ariaProtectiveFactorReviews.find((r) => r.id === id),
+    findByChild: (childId: string) => store.ariaProtectiveFactorReviews.filter((r) => r.child_id === childId),
+    create: (data: Omit<AriaProtectiveFactorReview, "id" | "created_at">): AriaProtectiveFactorReview => {
+      const rec: AriaProtectiveFactorReview = { ...data, id: generateId("apf"), created_at: new Date().toISOString() };
+      store.ariaProtectiveFactorReviews.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaProtectiveFactorReview>): AriaProtectiveFactorReview | null => {
+      const idx = store.ariaProtectiveFactorReviews.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaProtectiveFactorReviews[idx] = { ...store.ariaProtectiveFactorReviews[idx], ...data };
+      return store.ariaProtectiveFactorReviews[idx];
+    },
+  },
+  ariaRelationshipDepthReviews: {
+    findAll: () => store.ariaRelationshipDepthReviews,
+    findById: (id: string) => store.ariaRelationshipDepthReviews.find((r) => r.id === id),
+    findByChild: (childId: string) => store.ariaRelationshipDepthReviews.filter((r) => r.child_id === childId),
+    create: (data: Omit<AriaRelationshipDepthReview, "id" | "created_at">): AriaRelationshipDepthReview => {
+      const rec: AriaRelationshipDepthReview = { ...data, id: generateId("ard"), created_at: new Date().toISOString() };
+      store.ariaRelationshipDepthReviews.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaRelationshipDepthReview>): AriaRelationshipDepthReview | null => {
+      const idx = store.ariaRelationshipDepthReviews.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaRelationshipDepthReviews[idx] = { ...store.ariaRelationshipDepthReviews[idx], ...data };
+      return store.ariaRelationshipDepthReviews[idx];
+    },
+  },
+  ariaThresholdConsultations: {
+    findAll: () => store.ariaThresholdConsultations,
+    findById: (id: string) => store.ariaThresholdConsultations.find((r) => r.id === id),
+    findByChild: (childId: string) => store.ariaThresholdConsultations.filter((r) => r.child_id === childId),
+    create: (data: Omit<AriaThresholdConsultation, "id" | "created_at">): AriaThresholdConsultation => {
+      const rec: AriaThresholdConsultation = { ...data, id: generateId("atc"), created_at: new Date().toISOString() };
+      store.ariaThresholdConsultations.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaThresholdConsultation>): AriaThresholdConsultation | null => {
+      const idx = store.ariaThresholdConsultations.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaThresholdConsultations[idx] = { ...store.ariaThresholdConsultations[idx], ...data };
+      return store.ariaThresholdConsultations[idx];
+    },
+  },
+  ariaStaffWellbeingSignals: {
+    findAll: (homeId?: string) =>
+      homeId ? store.ariaStaffWellbeingSignals.filter((r) => r.home_id === homeId) : store.ariaStaffWellbeingSignals,
+    findById: (id: string) => store.ariaStaffWellbeingSignals.find((r) => r.id === id),
+    findByStaff: (staffId: string) => store.ariaStaffWellbeingSignals.filter((r) => r.staff_id === staffId),
+    create: (data: Omit<AriaStaffWellbeingSignal, "id" | "created_at">): AriaStaffWellbeingSignal => {
+      const rec: AriaStaffWellbeingSignal = { ...data, id: generateId("aws"), created_at: new Date().toISOString() };
+      store.ariaStaffWellbeingSignals.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaStaffWellbeingSignal>): AriaStaffWellbeingSignal | null => {
+      const idx = store.ariaStaffWellbeingSignals.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaStaffWellbeingSignals[idx] = { ...store.ariaStaffWellbeingSignals[idx], ...data };
+      return store.ariaStaffWellbeingSignals[idx];
+    },
+  },
+  ariaPracticeFlags: {
+    findAll: (homeId?: string) =>
+      homeId ? store.ariaPracticeFlags.filter((r) => r.home_id === homeId) : store.ariaPracticeFlags,
+    findById: (id: string) => store.ariaPracticeFlags.find((r) => r.id === id),
+    findByChild: (childId: string) => store.ariaPracticeFlags.filter((r) => r.child_id === childId),
+    findOpen: (homeId?: string) =>
+      store.ariaPracticeFlags.filter((r) => !r.resolved && (!homeId || r.home_id === homeId)),
+    create: (data: Omit<AriaPracticeFlag, "id" | "created_at">): AriaPracticeFlag => {
+      const rec: AriaPracticeFlag = { ...data, id: generateId("apf_flag"), created_at: new Date().toISOString() };
+      store.ariaPracticeFlags.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaPracticeFlag>): AriaPracticeFlag | null => {
+      const idx = store.ariaPracticeFlags.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaPracticeFlags[idx] = { ...store.ariaPracticeFlags[idx], ...data };
+      return store.ariaPracticeFlags[idx];
+    },
+  },
+  ariaGuidanceRules: {
+    findAll: () => store.ariaGuidanceRules,
+    findById: (id: string) => store.ariaGuidanceRules.find((r) => r.id === id),
+    findByKey: (key: string) => store.ariaGuidanceRules.find((r) => r.rule_key === key),
+    create: (data: Omit<AriaGuidanceRule, "id" | "created_at">): AriaGuidanceRule => {
+      const rec: AriaGuidanceRule = { ...data, id: generateId("agr"), created_at: new Date().toISOString() };
+      store.ariaGuidanceRules.push(rec);
+      return rec;
+    },
+    patch: (id: string, data: Partial<AriaGuidanceRule>): AriaGuidanceRule | null => {
+      const idx = store.ariaGuidanceRules.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.ariaGuidanceRules[idx] = { ...store.ariaGuidanceRules[idx], ...data };
+      return store.ariaGuidanceRules[idx];
     },
   },
   ariaCareGraphNodes: {
