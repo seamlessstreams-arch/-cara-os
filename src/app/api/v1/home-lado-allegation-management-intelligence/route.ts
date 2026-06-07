@@ -35,9 +35,12 @@ export async function GET() {
       dbs_referral: !!(r.dbs_referral),
       police_involved: !!(r.police_involved),
       strategy_meeting_held: !!(r.strategy_meeting_date),
-      has_support_for_child: !!(r.support_for_child),
-      has_support_for_staff: !!(r.support_for_staff),
-      has_lesson_learned: !!(r.lesson_learned),
+      // These are free-text string fields — only count them as present when there
+      // is real content. !! treats whitespace (" ") as truthy, so a blank entry
+      // would otherwise inflate the lessons-learned / support compliance rates.
+      has_support_for_child: typeof r.support_for_child === "string" && r.support_for_child.trim().length > 0,
+      has_support_for_staff: typeof r.support_for_staff === "string" && r.support_for_staff.trim().length > 0,
+      has_lesson_learned: typeof r.lesson_learned === "string" && r.lesson_learned.trim().length > 0,
       days_to_close: daysToClose,
     };
   });

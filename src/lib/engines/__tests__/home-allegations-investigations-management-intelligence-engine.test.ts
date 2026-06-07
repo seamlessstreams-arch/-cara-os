@@ -3366,4 +3366,20 @@ describe("computeAllegationsInvestigationsManagement", () => {
       expect(r.strengths.some((s) => s.includes("80% strategy meeting rate"))).toBe(true);
     });
   });
+
+  describe("substantiated allegations + overdue-with-missing-date", () => {
+    it("surfaces a DBS-duty concern when there is a substantiated allegation", () => {
+      const r = computeAllegationsInvestigationsManagement(baseInput({
+        outcome_records: [makeOutcome({ outcome_type: "substantiated" })],
+      }));
+      expect(r.concerns.some((c) => c.includes("substantiated allegation") && c.includes("DBS"))).toBe(true);
+    });
+
+    it("counts an open investigation with no date_opened as overdue (NaN must not evade the check)", () => {
+      const r = computeAllegationsInvestigationsManagement(baseInput({
+        investigation_records: [makeInvestigation({ id: "inv_x", is_open: true, date_opened: "" })],
+      }));
+      expect(r.concerns.some((c) => c.toLowerCase().includes("overdue"))).toBe(true);
+    });
+  });
 });

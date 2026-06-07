@@ -559,11 +559,13 @@ export function computeAllegationsInvestigationsManagement(
         )
       : 0;
 
-  // Overdue open investigations (open longer than target)
+  // Overdue open investigations (open longer than target). An open investigation
+  // with a missing/invalid date_opened yields NaN — treat that as overdue too,
+  // since NaN > target is false and would otherwise hide an un-dated open case.
   const overdueInvestigations = investigation_records.filter((i) => {
     if (!i.is_open) return false;
     const daysOpen = daysBetween(i.date_opened, today);
-    return daysOpen > i.target_completion_days;
+    return Number.isNaN(daysOpen) || daysOpen > i.target_completion_days;
   }).length;
 
   // --- Outcome documentation metrics ---
@@ -1226,6 +1228,19 @@ export function computeAllegationsInvestigationsManagement(
   if (qualityAssuredRate < 60 && totalInvestigations > 0) {
     concerns.push(
       `Only ${qualityAssuredRate}% quality assurance rate — investigation findings are not being consistently quality assured, raising questions about the reliability and robustness of conclusions.`,
+    );
+  }
+
+  // Substantiated allegations trigger the statutory DBS-referral duty (SVGA 2006):
+  // where a person is dismissed (or would have been) for harming a child, the home
+  // MUST refer them to the DBS. A substantiated outcome was previously computed but
+  // never surfaced, so a missed referral was invisible.
+  if (substantiatedOutcomes > 0) {
+    const dbsGap = totalLadoReferrals > 0 && dbsReferralRate < 100
+      ? ` and only ${dbsReferralRate}% of LADO referrals record a DBS referral`
+      : "";
+    concerns.push(
+      `${substantiatedOutcomes} substantiated allegation${substantiatedOutcomes !== 1 ? "s" : ""} against staff${dbsGap} — confirm a DBS referral has been made and recorded for each (statutory duty under the Safeguarding Vulnerable Groups Act 2006).`,
     );
   }
 
