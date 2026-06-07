@@ -170,10 +170,10 @@ describe("computeHomeDailyLog", () => {
   describe("frequency profile", () => {
     it("counts entries within 14-day window", () => {
       const entries = [
-        makeEntry({ id: "l1", date: "2026-05-27" }),
-        makeEntry({ id: "l2", date: "2026-05-20" }),
-        makeEntry({ id: "l3", date: "2026-05-13" }), // exactly 14 days
-        makeEntry({ id: "l4", date: "2026-05-12" }), // 15 days → excluded
+        makeEntry({ id: "l1", date: "2026-05-27" }), // today (d0)
+        makeEntry({ id: "l2", date: "2026-05-20" }), // 7 days ago
+        makeEntry({ id: "l3", date: "2026-05-14" }), // 13 days ago → included
+        makeEntry({ id: "l4", date: "2026-05-13" }), // 14 days ago → excluded (window is 14 days)
       ];
       const r = computeHomeDailyLog(baseInput({ daily_logs: entries }));
       expect(r.frequency.total_entries_14d).toBe(3);
@@ -188,7 +188,20 @@ describe("computeHomeDailyLog", () => {
       ];
       const r = computeHomeDailyLog(baseInput({ daily_logs: entries }));
       expect(r.frequency.days_with_entries_14d).toBe(3);
+      // 14-day window, 3 days recorded → 11 with none.
       expect(r.frequency.days_with_no_entries).toBe(11);
+    });
+
+    it("never reports a negative days_with_no_entries for a fully-recorded home", () => {
+      // One entry on every day of the 14-day window (today … 13 days ago).
+      const entries = Array.from({ length: 14 }, (_, d) => {
+        const dt = new Date("2026-05-27T00:00:00Z");
+        dt.setUTCDate(dt.getUTCDate() - d);
+        return makeEntry({ id: `f${d}`, date: dt.toISOString().slice(0, 10) });
+      });
+      const r = computeHomeDailyLog(baseInput({ daily_logs: entries }));
+      expect(r.frequency.days_with_entries_14d).toBe(14);
+      expect(r.frequency.days_with_no_entries).toBe(0); // not -1
     });
 
     it("calculates entries per child per day", () => {
