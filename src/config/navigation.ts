@@ -75,6 +75,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Complaints",       href: "/complaints",                icon: "MessageCircle",  module: "incidents"     },
       { label: "Missing from Care",href: "/missing-from-care",         icon: "MapPin",         module: "safeguarding"  },
       { label: "Safeguarding",     href: "/safeguarding",              icon: "Shield",         module: "safeguarding"  },
+      { label: "ARIA Practice",    href: "/aria-practice",             icon: "Sparkles",       module: "safeguarding"  },
       { label: "Risk Register",   href: "/risk-register",             icon: "ShieldAlert",    module: "safeguarding"  },
       { label: "Welfare Checks",  href: "/welfare-checks",            icon: "Moon",           module: "safeguarding"  },
       { label: "Night Checks",   href: "/night-checks",              icon: "CloudMoon",      module: "safeguarding"  },
