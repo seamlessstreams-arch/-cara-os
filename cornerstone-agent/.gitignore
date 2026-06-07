@@ -1,0 +1,4 @@
+node_modules/
+.env
+# Re-include the template (root .gitignore excludes all .env* — this opts the example back in).
+!.env.example

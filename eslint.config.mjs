@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone sub-package with its own deps/tsconfig — not part of the app build.
+    "cornerstone-agent/**",
   ]),
 ]);
 
