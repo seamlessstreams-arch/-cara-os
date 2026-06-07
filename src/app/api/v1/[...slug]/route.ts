@@ -325,7 +325,11 @@ const SLUG_MAP: Record<string, string> = {
   "qa-audit-records": "qaAuditRecords",
   "quality-of-care-reviews": "qualityOfCareReviews",
   "readiness-items": "readinessItems",
-  "recruitment": "conditionalOffers",
+  // Base recruitment is served by the dedicated route at
+  // src/app/api/v1/recruitment/route.ts (the overview). This catch-all entry is a
+  // defensive fallback only — point it at the candidate collection, not
+  // conditionalOffers (which is just one part of a candidate's record).
+  "recruitment": "candidateProfiles",
   "referral-tracker-records": "referralTrackerRecords",
   "reg22-records": "reg22Records",
   "reg35-notifications": "reg35Notifications",
