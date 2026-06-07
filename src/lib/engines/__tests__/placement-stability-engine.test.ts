@@ -383,6 +383,24 @@ describe("computePlacementStability — single stable child", () => {
     expect(result.children[0].missing_count_30d).toBe(0);
   });
 
+  it("excludes future-dated incidents from the 30-day window", () => {
+    const r = computePlacementStability(makeInput({
+      children: [makeChild({ id: "child_1" })],
+      incidents: [
+        makeIncident({ id: "past", child_id: "child_1", date: "2026-05-20" }),   // within 30d
+        makeIncident({ id: "future", child_id: "child_1", date: "2026-06-30" }), // future → excluded
+      ],
+    }));
+    expect(r.children[0].incident_count_30d).toBe(1);
+  });
+
+  it("clamps placement_days to 0 for a future placement_start", () => {
+    const r = computePlacementStability(makeInput({
+      children: [makeChild({ id: "child_1", placement_start: "2099-01-01" })],
+    }));
+    expect(r.children[0].placement_days).toBe(0);
+  });
+
   it("counts keywork sessions in 30 day window", () => {
     expect(result.children[0].keywork_count_30d).toBe(4);
   });

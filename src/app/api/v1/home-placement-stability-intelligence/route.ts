@@ -31,8 +31,15 @@ export async function GET() {
       risk_flag_count: Array.isArray(yp.risk_flags) ? yp.risk_flags.length : 0,
     }));
 
+  // Only count events for the CURRENT cohort. Incidents/missing episodes from
+  // discharged children remain in the store; counting them against children.length
+  // (which is current-only) inflated incident_rate / episodes_per_child and fired
+  // false instability concerns against settled children.
+  const currentIds = new Set(children.map((c) => c.child_id));
+
   // ── Incidents ───────────────────────────────────────────────────
   const incidents: PlacementIncidentInput[] = ((store.incidents ?? []) as any[])
+    .filter((inc: any) => currentIds.has(inc.child_id))
     .map((inc: any) => ({
       child_id: inc.child_id ?? "",
       date: (inc.date ?? "").toString().slice(0, 10),
@@ -41,6 +48,7 @@ export async function GET() {
 
   // ── Missing Episodes ────────────────────────────────────────────
   const missing_episodes: PlacementMissingInput[] = ((store.missingEpisodes ?? []) as any[])
+    .filter((ep: any) => currentIds.has(ep.child_id))
     .map((ep: any) => ({
       child_id: ep.child_id ?? "",
       date: (ep.date_missing ?? "").toString().slice(0, 10),

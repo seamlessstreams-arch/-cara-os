@@ -278,7 +278,7 @@ export function computePlacementStability(input: PlacementStabilityInput): Place
   for (const child of currentChildren) {
     const childName = child.preferred_name ?? child.first_name;
     const age = computeAge(child.date_of_birth, today);
-    const placementDays = daysBetween(child.placement_start, today);
+    const placementDays = Math.max(0, daysBetween(child.placement_start, today));
 
     // Daily logs for this child
     const childLogs = dailyLogs.filter((l) => l.child_id === child.id);
@@ -293,19 +293,20 @@ export function computePlacementStability(input: PlacementStabilityInput): Place
 
     const moodTrend = computeMoodTrend(recentMoods, olderMoods);
 
-    // Incidents (last 30 days)
+    // Incidents (last 30 days). Bound both ends — an unbounded `>= thirtyDaysAgo`
+    // counts future-dated records (data-entry typos, sessions logged ahead).
     const childIncidents30d = incidents.filter(
-      (i) => i.child_id === child.id && i.date >= thirtyDaysAgo
+      (i) => i.child_id === child.id && i.date >= thirtyDaysAgo && i.date <= today
     ).length;
 
     // Missing episodes (last 30 days)
     const childMissing30d = missingEpisodes.filter(
-      (m) => m.child_id === child.id && m.date_missing >= thirtyDaysAgo
+      (m) => m.child_id === child.id && m.date_missing >= thirtyDaysAgo && m.date_missing <= today
     ).length;
 
     // Keywork sessions (last 30 days)
     const childKeywork30d = keyworkSessions.filter(
-      (k) => k.child_id === child.id && k.date >= thirtyDaysAgo
+      (k) => k.child_id === child.id && k.date >= thirtyDaysAgo && k.date <= today
     ).length;
 
     // Outcome targets progress
