@@ -112,6 +112,15 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((b.getTime() - a.getTime()) / 86_400_000);
 }
 
+// An action counts as overdue when it is explicitly marked "overdue" OR it is
+// still open (not completed/cancelled) and its deadline has passed. Gating on
+// status === "overdue" alone hid in_progress/pending actions that were past due.
+export function isActionOverdue(action: QAAuditActionInput, today: string): boolean {
+  if (action.status === "completed" || action.status === "cancelled") return false;
+  if (action.status === "overdue") return true;
+  return !!action.deadline && daysBetween(action.deadline, today) > 0;
+}
+
 // ── Main Compute Function ───────────────────────────────────────────────────
 
 export function computeQualityAssuranceIntelligence(input: {
@@ -135,7 +144,7 @@ export function computeQualityAssuranceIntelligence(input: {
   const allActions = audits.flatMap((a) => a.actions);
   const total_actions = allActions.length;
   const actions_completed = allActions.filter((a) => a.status === "completed").length;
-  const actions_overdue = allActions.filter((a) => a.status === "overdue").length;
+  const actions_overdue = allActions.filter((a) => isActionOverdue(a, today)).length;
   const recommendation_completion_rate =
     total_actions > 0 ? Math.round((actions_completed / total_actions) * 100) : 100;
 
@@ -195,7 +204,7 @@ export function computeQualityAssuranceIntelligence(input: {
 
   for (const audit of audits) {
     for (const action of audit.actions) {
-      if (action.status === "overdue") {
+      if (isActionOverdue(action, today)) {
         const days = daysBetween(action.deadline, today);
         overdue_actions.push({
           action: action.action,

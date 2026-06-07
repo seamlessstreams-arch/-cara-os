@@ -247,8 +247,9 @@ describe("overview", () => {
 
   it("counts overdue actions", () => {
     const r = run(oakHouseAudits());
-    // qa_002: 1 overdue, qa_003: 1 overdue = 2
-    expect(r.overview.actions_overdue).toBe(2);
+    // qa_002: 1 (explicit "overdue"). qa_003: 3 — "Peer review" (overdue) plus
+    // "Implement recording templates" & "Monthly recording audits" (in_progress, past deadline) = 4.
+    expect(r.overview.actions_overdue).toBe(4);
   });
 
   it("calculates recommendation_completion_rate", () => {
@@ -383,7 +384,8 @@ describe("audit areas", () => {
 describe("overdue actions", () => {
   it("identifies overdue actions in Oak House data", () => {
     const r = run(oakHouseAudits());
-    expect(r.overdue_actions.length).toBe(2);
+    // 4 = 2 explicit "overdue" + 2 in_progress actions past their deadline.
+    expect(r.overdue_actions.length).toBe(4);
   });
 
   it("calculates days_overdue correctly", () => {
@@ -438,9 +440,9 @@ describe("overdue actions", () => {
     const audits = [
       makeAudit({
         actions: [
-          makeAction({ status: "completed" }),
-          makeAction({ status: "in_progress" }),
-          makeAction({ status: "pending" }),
+          makeAction({ status: "completed", deadline: daysAgo(10) }),   // completed is never overdue
+          makeAction({ status: "in_progress", deadline: daysAgo(-5) }), // future deadline → not overdue
+          makeAction({ status: "pending", deadline: daysAgo(-5) }),     // future deadline → not overdue
         ],
       }),
     ];
@@ -807,5 +809,45 @@ describe("edge cases", () => {
     // (4+1)/2 = 2.5 => Good
     expect(r.overview.avg_rating_score).toBe(2.5);
     expect(r.overview.avg_rating_label).toBe("Good");
+  });
+});
+
+// ── Overdue detection is deadline-based, not status-only (regression) ─────────
+// Previously the engine counted overdue actions solely via status === "overdue",
+// so an in_progress/pending action whose deadline had passed was invisible.
+describe("overdue detection — deadline-based", () => {
+  it("counts an in_progress action past its deadline as overdue", () => {
+    const result = run([
+      makeAudit({
+        id: "qa_dl",
+        title: "Recording Audit",
+        actions: [
+          makeAction({ action: "Done item", deadline: daysAgo(5), status: "completed" }),
+          makeAction({ action: "Late in-progress item", deadline: daysAgo(5), status: "in_progress" }),
+          makeAction({ action: "Explicitly overdue item", deadline: daysAgo(7), status: "overdue" }),
+          makeAction({ action: "Future pending item", deadline: daysAgo(-10), status: "pending" }),
+        ],
+      }),
+    ]);
+    // Two are genuinely overdue: the past-deadline in_progress item + the explicit overdue item.
+    expect(result.overview.actions_overdue).toBe(2);
+    const titles = result.overdue_actions.map((a) => a.action);
+    expect(titles).toContain("Late in-progress item");
+    expect(titles).toContain("Explicitly overdue item");
+    expect(titles).not.toContain("Done item");
+    expect(titles).not.toContain("Future pending item");
+  });
+
+  it("treats completed and future-dated open actions as not overdue", () => {
+    const result = run([
+      makeAudit({
+        actions: [
+          makeAction({ deadline: daysAgo(30), status: "completed" }),
+          makeAction({ deadline: daysAgo(-5), status: "in_progress" }),
+          makeAction({ deadline: daysAgo(-5), status: "pending" }),
+        ],
+      }),
+    ]);
+    expect(result.overview.actions_overdue).toBe(0);
   });
 });
