@@ -1156,6 +1156,16 @@ export function generatePositiveBehaviourIntelligence(
     );
   }
 
+  // Critical-severity behaviour incidents (e.g. serious injury, self-harm) must
+  // surface as a home-level action — otherwise good aggregate trend/debrief/PI
+  // rates let them pass with no prioritised follow-up named to the manager.
+  if (incidentPatterns.severityBreakdown.critical > 0) {
+    const n = incidentPatterns.severityBreakdown.critical;
+    actions.push(
+      `URGENT: ${n} critical behaviour incident(s) in the period — confirm each has a post-incident review, the required notifications, and a BSP update`,
+    );
+  }
+
   if (actions.length === 0) {
     actions.push(
       "Continue embedding positive behaviour support practice across the home",

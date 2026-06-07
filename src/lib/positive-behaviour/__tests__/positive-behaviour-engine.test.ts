@@ -1166,6 +1166,12 @@ describe("generatePositiveBehaviourIntelligence", () => {
     expect(fullResult.actions.length).toBeGreaterThan(0);
   });
 
+  it("surfaces a critical behaviour incident as a home-level action", () => {
+    // demoIncidents includes inc-012 (Morgan, self-harm attempt, severityLevel "critical").
+    expect(fullResult.incidentPatterns.severityBreakdown.critical).toBeGreaterThan(0);
+    expect(fullResult.actions.some((a) => a.includes("critical behaviour incident"))).toBe(true);
+  });
+
   it("generates regulatory links", () => {
     expect(fullResult.regulatoryLinks.length).toBe(5);
     expect(fullResult.regulatoryLinks[0]).toContain("Reg 35");
