@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const store = getStore();
-  const children = store.children ?? [];
+  const children = (store.youngPeople ?? []).filter((c: any) => c.status === "current");
   const today = new Date().toISOString().slice(0, 10);
 
   // Fire drills → FireDrillRecordInput[]

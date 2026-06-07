@@ -53,7 +53,7 @@ export async function GET() {
   const result = computeHomeReg4445Evidence({
     today, reg44_packs, reg44_visit_reports, reg44_actions,
     reg45_evidence, reg46_reviews, annex_a_evidence,
-    total_children: store.children?.length ?? 0,
+    total_children: (store.youngPeople ?? []).filter((c: any) => c.status === "current").length,
   });
 
   return NextResponse.json({ data: result });

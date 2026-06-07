@@ -82,7 +82,7 @@ export async function GET() {
     positive_achievements,
     club_records,
     sanction_rewards,
-    total_children: store.children?.length ?? 0,
+    total_children: (store.youngPeople ?? []).filter((c: any) => c.status === "current").length,
   });
 
   return NextResponse.json({ data: result });
