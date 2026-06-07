@@ -19,7 +19,7 @@ export interface MedicationAdministrationRecordInput {
   child_id: string;
   medication_id: string;
   scheduled_date: string;                // ISO date
-  status: string;                        // "given"|"late"|"refused"|"withheld"|"scheduled"|"omitted"
+  status: string;                        // AdministrationStatus: given|late|refused|withheld|not_available|self_administered|missed|scheduled
   is_prn: boolean;
   has_witness: boolean;
   has_reason_not_given: boolean;         // for refused/withheld
@@ -199,22 +199,30 @@ export function computeMedicationAdministration(
   const late = records.filter(r => r.status === "late");
   const refused = records.filter(r => r.status === "refused");
   const withheld = records.filter(r => r.status === "withheld");
-  const omitted = records.filter(r => r.status === "omitted");
+  // "missed" (dose not given at all) and "not_available" (stock-out) are canonical
+  // AdministrationStatus values that staff can record on the MAR; the engine
+  // previously checked a non-existent "omitted" and so never surfaced them.
+  const missed = records.filter(r => r.status === "missed");
+  const notAvailable = records.filter(r => r.status === "not_available");
+  const selfAdministered = records.filter(r => r.status === "self_administered");
 
   const totalNonScheduled = records.length;
-  const administered = given.length + late.length;
+  // A self-administered dose IS a dose taken — count it as administered, not a failure.
+  const staffGivenLate = given.length + late.length;
+  const administered = staffGivenLate + selfAdministered.length;
 
-  // administration_rate: given+late / given+late+refused+withheld+omitted * 100
+  // administration_rate: doses actually taken / all non-scheduled doses * 100
   const adminRate = pct(administered, totalNonScheduled);
 
-  // on_time_rate: given / given+late * 100
-  const onTimeRate = pct(given.length, administered);
+  // on_time_rate: given / given+late * 100 (among staff-administered doses)
+  const onTimeRate = pct(given.length, staffGivenLate);
 
   // refusal_rate: refused / total non-scheduled * 100
   const refusalRate = pct(refused.length, totalNonScheduled);
 
-  // witness_rate: has_witness among given+late
-  const administeredRecords = records.filter(r => r.status === "given" || r.status === "late");
+  // witness_rate: has_witness among doses actually administered (incl. self-administered —
+  // a self-administered controlled drug still requires witnessing)
+  const administeredRecords = records.filter(r => r.status === "given" || r.status === "late" || r.status === "self_administered");
   const witnessed = administeredRecords.filter(r => r.has_witness);
   const witnessRate = pct(witnessed.length, administeredRecords.length);
 
@@ -352,6 +360,17 @@ export function computeMedicationAdministration(
     concerns.push(`Only ${adminRate}% of medications were administered — children may not be receiving their prescribed treatment. This is a serious medicines management failure requiring immediate review.`);
   } else if (adminRate < 90) {
     concerns.push(`${adminRate}% administration rate is below expected standards — ${totalNonScheduled - administered} administrations were missed, refused, or withheld.`);
+  }
+
+  // Missed doses — a prescribed dose not given at all (distinct from a refusal,
+  // where the child declined). Each is a medication error and a potential
+  // Regulation 31 notifiable event; surface it explicitly rather than letting it
+  // disappear into the aggregate administration rate.
+  if (missed.length > 0) {
+    concerns.push(`${missed.length} prescribed medication dose${missed.length !== 1 ? "s were" : " was"} MISSED entirely (not given) — each missed dose is a medication error requiring investigation and may be a Regulation 31 notifiable event.`);
+  }
+  if (notAvailable.length > 0) {
+    concerns.push(`${notAvailable.length} dose${notAvailable.length !== 1 ? "s" : ""} could not be given because the medication was not available (stock-out) — review ordering and stock control to prevent gaps in treatment.`);
   }
 
   if (onTimeRate < 60 && administered > 0) {

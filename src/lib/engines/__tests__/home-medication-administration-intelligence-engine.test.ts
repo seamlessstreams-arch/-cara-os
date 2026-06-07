@@ -3295,4 +3295,33 @@ describe("computeMedicationAdministration", () => {
       expect(input).toEqual(inputCopy);
     });
   });
+
+  describe("canonical administration statuses (missed / self_administered / not_available)", () => {
+    it("surfaces missed doses as a distinct concern, not just the aggregate rate", () => {
+      const result = computeMedicationAdministration(baseInput({
+        administrations: mixedRecords(8, 2, "missed"),
+      }));
+      expect(result.concerns.some((c) => c.includes("MISSED entirely"))).toBe(true);
+    });
+
+    it("surfaces a stock-out (not_available) concern", () => {
+      const result = computeMedicationAdministration(baseInput({
+        administrations: mixedRecords(8, 2, "not_available"),
+      }));
+      expect(result.concerns.some((c) => c.toLowerCase().includes("not available") || c.toLowerCase().includes("stock-out"))).toBe(true);
+    });
+
+    it("counts self-administered doses as administered, not failures", () => {
+      // 5 given + 5 self-administered → all 10 count as administered = 100%
+      const selfAdmin = computeMedicationAdministration(baseInput({
+        administrations: mixedRecords(5, 5, "self_administered"),
+      }));
+      expect(selfAdmin.administration_rate).toBe(100);
+      // contrast: 5 given + 5 missed → only 5/10 administered = 50%
+      const withMissed = computeMedicationAdministration(baseInput({
+        administrations: mixedRecords(5, 5, "missed"),
+      }));
+      expect(withMissed.administration_rate).toBe(50);
+    });
+  });
 });
