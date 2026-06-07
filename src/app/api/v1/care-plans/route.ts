@@ -13,11 +13,18 @@ export async function GET(req: NextRequest) {
 
   const plans = intelligenceDb.carePlans.findAll(homeId);
 
-  const attentionCount = plans.reduce(
+  // Headline counts must reflect LIVE plans only. An archived plan (child
+  // discharged, or a superseded version) keeps its old next_lac_review date —
+  // by definition in the past — so counting it produced a phantom statutory
+  // breach that could never be cleared. Mirrors the service-layer convention
+  // (care-planning-service.ts excludes "archived").
+  const livePlans = plans.filter((p) => p.status !== "archived");
+
+  const attentionCount = livePlans.reduce(
     (n, p) => n + p.goals.filter((g) => g.status === "attention_needed").length,
     0,
   );
-  const lacOverdue = plans.filter((p) => {
+  const lacOverdue = livePlans.filter((p) => {
     if (!p.next_lac_review) return false;
     return new Date(p.next_lac_review) < new Date();
   }).length;

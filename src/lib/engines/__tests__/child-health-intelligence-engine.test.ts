@@ -225,6 +225,52 @@ describe("computeChildHealthIntelligence", () => {
     expect(result.strengths.some((s) => s.includes("compliance"))).toBe(true);
   });
 
+  it("does NOT report 100% compliance for an active med with zero administrations", () => {
+    // pct(0,0) returns 100 — an active med with no logged administrations must
+    // not surface as a compliance strength or boost the score (false reassurance).
+    const withMedNoAdmins = computeChildHealthIntelligence(baseInput({
+      medications: [makeMed()],
+      medication_administrations: [],
+      health_assessments: [makeAssessment()],
+    }));
+    expect(withMedNoAdmins.medication_compliance.total_administrations_30d).toBe(0);
+    expect(withMedNoAdmins.strengths.some((s) => s.includes("compliance"))).toBe(false);
+    expect(withMedNoAdmins.strengths.some((s) => s.includes("witnessed"))).toBe(false);
+    expect(withMedNoAdmins.headline).not.toContain("compliance");
+
+    // Same child WITH real administrations does earn the strength + a higher score.
+    const withAdmins = computeChildHealthIntelligence(baseInput({
+      medications: [makeMed()],
+      medication_administrations: Array.from({ length: 10 }, (_, i) =>
+        makeAdmin({ id: `a_${i}`, date: `2026-05-${String(10 + i).padStart(2, "0")}` })),
+      health_assessments: [makeAssessment()],
+    }));
+    expect(withAdmins.strengths.some((s) => s.includes("compliance"))).toBe(true);
+    expect(withAdmins.health_score).toBeGreaterThan(withMedNoAdmins.health_score);
+  });
+
+  it("does NOT report immunisations up to date when any are due or declined", () => {
+    // Previously only `overdue === 0` was checked, so a "due" (needed now) or
+    // "declined" immunisation was falsely reported as up to date.
+    const due = computeChildHealthIntelligence(baseInput({
+      immunisations: [makeImmunisation({ status: "due" })],
+    }));
+    expect(due.health_compliance.immunisations_up_to_date).toBe(false);
+    expect(due.strengths.some((s) => s.includes("Immunisations up to date"))).toBe(false);
+
+    const declined = computeChildHealthIntelligence(baseInput({
+      immunisations: [makeImmunisation({ status: "declined" })],
+    }));
+    expect(declined.health_compliance.immunisations_up_to_date).toBe(false);
+
+    // All completed => genuinely up to date.
+    const completed = computeChildHealthIntelligence(baseInput({
+      immunisations: [makeImmunisation({ status: "completed" })],
+    }));
+    expect(completed.health_compliance.immunisations_up_to_date).toBe(true);
+    expect(completed.strengths.some((s) => s.includes("Immunisations up to date"))).toBe(true);
+  });
+
   it("flags low medication compliance", () => {
     const meds = [makeMed()];
     const admins = [

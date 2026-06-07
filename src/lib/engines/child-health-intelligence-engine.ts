@@ -277,7 +277,11 @@ export function computeChildHealthIntelligence(
 
   const overdueImmunisations = immunisations.filter((i) => i.status === "overdue").length;
   const declinedImmunisations = immunisations.filter((i) => i.status === "declined").length;
-  const immunisationsUpToDate = overdueImmunisations === 0 && immunisations.length > 0;
+  // Up to date ONLY when every record is completed. Previously this checked only
+  // `overdue === 0`, so a child whose immunisations are "due" (needed now) or
+  // "declined" was falsely reported up to date — false reassurance that a child
+  // who is NOT protected appears protected. "due"/"declined" now surface for review.
+  const immunisationsUpToDate = immunisations.length > 0 && immunisations.every((i) => i.status === "completed");
 
   const health_compliance: HealthComplianceStatus = {
     health_assessment_current: assessmentCurrent,
@@ -347,8 +351,10 @@ export function computeChildHealthIntelligence(
   // ── Health Score (0-100) ──────────────────────────────────────────────
   let score = 50;
 
-  // Medication compliance
-  if (activeMeds.length > 0) {
+  // Medication compliance. Only score when administrations were actually recorded
+  // in the window — pct() returns 100 for 0/0, so an active med with zero logged
+  // administrations would otherwise score as 100% compliant (false reassurance).
+  if (activeMeds.length > 0 && medication_compliance.total_administrations_30d > 0) {
     if (medication_compliance.given_rate >= 95) score += 10;
     else if (medication_compliance.given_rate >= 80) score += 5;
     else if (medication_compliance.given_rate < 70) score -= 10;
@@ -409,7 +415,10 @@ export function computeChildHealthIntelligence(
   const headlineParts: string[] = [];
   headlineParts.push(`${child_name}'s health status is ${health_status}`);
   if (activeMeds.length > 0) {
-    headlineParts.push(`${activeMeds.length} active medication${activeMeds.length !== 1 ? "s" : ""} (${medication_compliance.given_rate}% compliance)`);
+    const complianceNote = medication_compliance.total_administrations_30d > 0
+      ? ` (${medication_compliance.given_rate}% compliance)`
+      : "";
+    headlineParts.push(`${activeMeds.length} active medication${activeMeds.length !== 1 ? "s" : ""}${complianceNote}`);
   }
   if (!assessmentCurrent) headlineParts.push("health assessment overdue");
   if (camhsStatus.waiting) headlineParts.push("CAMHS waiting list");
@@ -418,11 +427,11 @@ export function computeChildHealthIntelligence(
   // ── Strengths ─────────────────────────────────────────────────────────
   const strengths: string[] = [];
 
-  if (activeMeds.length > 0 && medication_compliance.given_rate >= 95) {
+  if (activeMeds.length > 0 && medication_compliance.total_administrations_30d > 0 && medication_compliance.given_rate >= 95) {
     strengths.push(`Medication compliance at ${medication_compliance.given_rate}% — consistent administration supporting ${child_name}'s health needs.`);
   }
 
-  if (activeMeds.length > 0 && medication_compliance.witnessed_rate === 100) {
+  if (activeMeds.length > 0 && medication_compliance.total_administrations_30d > 0 && medication_compliance.witnessed_rate === 100) {
     strengths.push("All medication administrations witnessed — meeting dual-signature best practice.");
   }
 
