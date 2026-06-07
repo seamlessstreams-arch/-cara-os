@@ -26,7 +26,7 @@ export interface RestraintRecordInput {
   child_debriefed: boolean;
   staff_debriefed: boolean;
   has_witness: boolean;
-  review_status: string;                        // "reviewed" | "pending"
+  review_status: string;                        // RestraintReviewStatus: "pending_rm" | "pending_ri" | "reviewed" | "referred_lado"
   has_body_map: boolean;
   has_medical_check: boolean;
   notification_count: number;
@@ -235,10 +235,16 @@ export function computeRestraintPhysicalIntervention(
   const staffDebriefed = r90d.filter(r => r.staff_debriefed).length;
   const staffDebriefRate = pct(staffDebriefed, total);
 
-  // Review completion rate
-  const reviewed = r90d.filter(r => r.review_status === "reviewed").length;
+  // Review completion rate. review_status is the canonical RestraintReviewStatus
+  // ("pending_rm" | "pending_ri" | "reviewed" | "referred_lado"). Previously this
+  // matched the literal "pending"/"reviewed" — values real data never uses — so
+  // pendingReviews was ALWAYS 0 (the entire use-of-force review backlog was
+  // hidden, with no concern/recommendation/critical insight) and a restraint
+  // escalated to the LADO was miscounted as not reviewed. Mirrors the sibling
+  // child-restrictive-practice engine.
+  const reviewed = r90d.filter(r => r.review_status === "reviewed" || r.review_status === "referred_lado").length;
   const reviewCompletionRate = pct(reviewed, total);
-  const pendingReviews = r90d.filter(r => r.review_status === "pending").length;
+  const pendingReviews = r90d.filter(r => r.review_status !== "reviewed" && r.review_status !== "referred_lado").length;
 
   // Body map rate
   const bodyMapDone = r90d.filter(r => r.has_body_map).length;

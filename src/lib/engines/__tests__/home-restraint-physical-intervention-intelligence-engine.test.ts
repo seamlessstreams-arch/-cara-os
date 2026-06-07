@@ -280,6 +280,26 @@ describe("Home Restraint Physical Intervention Intelligence Engine", () => {
       expect(result.review_completion_rate).toBe(100);
     });
 
+    it("surfaces real-vocab pending reviews (pending_rm / pending_ri), not just literal 'pending'", () => {
+      // Real data uses RestraintReviewStatus pending_rm/pending_ri — the engine
+      // previously matched only "pending", so the whole backlog read as 0.
+      const r = computeRestraintPhysicalIntervention(baseInput({
+        restraints: [
+          baseRecord({ id: "a", review_status: "pending_rm" }),
+          baseRecord({ id: "b", review_status: "pending_ri" }),
+        ],
+      }));
+      expect(r.review_completion_rate).toBe(0);
+      expect(r.concerns.some((c) => c.toLowerCase().includes("pending review"))).toBe(true);
+    });
+
+    it("counts a restraint referred to the LADO as a completed review", () => {
+      const r = computeRestraintPhysicalIntervention(baseInput({
+        restraints: [baseRecord({ id: "a", review_status: "referred_lado" })],
+      }));
+      expect(r.review_completion_rate).toBe(100);
+    });
+
     it("body_map_rate is 100", () => {
       expect(result.body_map_rate).toBe(100);
     });
