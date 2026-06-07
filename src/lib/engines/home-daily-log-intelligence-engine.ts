@@ -141,15 +141,22 @@ export function computeHomeDailyLog(
   }
 
   // ── Filter to last 14 days ────────────────────────────────────────────
+  // A true 14-day window: today and the 13 preceding days (d = 0..13). The window
+  // size MUST match the divisor used for no-entry/frequency counts. Previously the
+  // filter admitted d <= 14 (15 distinct days) while dividing by 14, so a
+  // fully-recorded home produced a NEGATIVE days_with_no_entries and the
+  // recording-gap / safeguarding alerts (>=5, >=3, >=7 no-entry days) fired one
+  // day late.
+  const WINDOW_DAYS = 14;
   const logs14d = daily_logs.filter(l => {
     const d = daysBetween(l.date, today);
-    return d >= 0 && d <= 14;
+    return d >= 0 && d < WINDOW_DAYS;
   });
 
   // ── Recording Frequency ───────────────────────────────────────────────
   const daysSet = new Set(logs14d.map(l => l.date));
   const daysWithEntries = daysSet.size;
-  const daysWithNoEntries = 14 - daysWithEntries;
+  const daysWithNoEntries = Math.max(0, WINDOW_DAYS - daysWithEntries);
   const entriesPerDay = logs14d.length > 0 ? Math.round((logs14d.length / Math.max(daysWithEntries, 1)) * 10) / 10 : 0;
   const entriesPerChildPerDay = total_children > 0 && daysWithEntries > 0
     ? Math.round((logs14d.length / (total_children * daysWithEntries)) * 10) / 10
@@ -249,7 +256,7 @@ export function computeHomeDailyLog(
   let score = 52;
 
   // mod1: Recording frequency (±5) — days with entries out of 14
-  const frequencyRate = pct(daysWithEntries, 14);
+  const frequencyRate = pct(daysWithEntries, WINDOW_DAYS);
   if (frequencyRate >= 90) score += 5;
   else if (frequencyRate >= 75) score += 3;
   else if (frequencyRate >= 50) score += 0;
