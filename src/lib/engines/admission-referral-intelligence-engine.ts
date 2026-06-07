@@ -14,7 +14,7 @@
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export type ReferralSource = "local_authority" | "agency" | "emergency" | "internal_transfer";
-export type ReferralStatus = "new" | "under_assessment" | "impact_assessment" | "panel" | "accepted" | "declined" | "withdrawn";
+export type ReferralStatus = "new" | "under_assessment" | "impact_assessment" | "panel" | "accepted" | "placed" | "declined" | "withdrawn";
 
 export interface ReferralInput {
   id: string;
@@ -128,7 +128,7 @@ export function average(arr: number[]): number {
 }
 
 const ACTIVE_STATUSES: ReferralStatus[] = ["new", "under_assessment", "impact_assessment", "panel", "accepted"];
-const DECIDED_STATUSES: ReferralStatus[] = ["accepted", "declined"];
+const DECIDED_STATUSES: ReferralStatus[] = ["accepted", "placed", "declined"];
 
 // ── Main Computation ────────────────────────────────────────────────────────
 
@@ -144,7 +144,7 @@ export function computeAdmissionReferralIntelligence(
   const underAssessment = referrals.filter((r) => r.status === "under_assessment").length;
   const impactAssessment = referrals.filter((r) => r.status === "impact_assessment").length;
   const panel = referrals.filter((r) => r.status === "panel").length;
-  const accepted = referrals.filter((r) => r.status === "accepted").length;
+  const accepted = referrals.filter((r) => r.status === "accepted" || r.status === "placed").length;
   const declined = referrals.filter((r) => r.status === "declined").length;
   const withdrawn = referrals.filter((r) => r.status === "withdrawn").length;
 
@@ -213,7 +213,7 @@ export function computeAdmissionReferralIntelligence(
   }
 
   const source_analysis: SourceAnalysis[] = [...sourceMap.entries()].map(([source, items]) => {
-    const sourceAccepted = items.filter((r) => r.status === "accepted").length;
+    const sourceAccepted = items.filter((r) => r.status === "accepted" || r.status === "placed").length;
     const sourceDeclined = items.filter((r) => r.status === "declined").length;
     const sourceDecided = items.filter((r) => DECIDED_STATUSES.includes(r.status) && r.decision_date);
     const sourceDays = sourceDecided.map((r) => daysBetween(r.referral_date, r.decision_date!));

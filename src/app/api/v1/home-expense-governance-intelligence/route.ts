@@ -38,7 +38,7 @@ export async function GET() {
 
   // ── Total staff ───────────────────────────────────────────────────────
   const totalStaff = (store.staff ?? []).filter(
-    (s: any) => s.status === "active",
+    (s: any) => s.is_active,
   ).length;
 
   const result = computeHomeExpenseGovernance({

@@ -40,7 +40,7 @@ export async function GET() {
 
   // ── Occupancy ───────────────────────────────────────────────────────────────
   const currentOccupancy = store.youngPeople.length;
-  const maxOccupancy = 5; // Oak House registered for 5
+  const maxOccupancy = (store.home as any)?.max_beds ?? 3; // registered capacity (from the home record)
 
   // ── Run engine ──────────────────────────────────────────────────────────────
   const result = computeAdmissionReferralIntelligence({

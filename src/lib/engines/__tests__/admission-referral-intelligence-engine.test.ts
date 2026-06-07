@@ -641,3 +641,21 @@ describe("Admission Referral Engine — Oak House Integration", () => {
     expect(positive.length).toBeGreaterThanOrEqual(1);
   });
 });
+
+describe("Admission Referral Engine — 'placed' status (regression)", () => {
+  it("counts a 'placed' referral as accepted + decided (not dropped)", () => {
+    const result = computeAdmissionReferralIntelligence({
+      referrals: [
+        makeReferral({ id: "p1", status: "placed", referral_date: "2026-05-10", decision_date: "2026-05-20", impact_assessment_complete: true }), // 10 days
+        makeReferral({ id: "d1", status: "declined", referral_date: "2026-05-01", decision_date: "2026-05-21", impact_assessment_complete: true }), // 20 days
+      ],
+      current_occupancy: 3,
+      max_occupancy: 3,
+      today: TODAY,
+    });
+    // 'placed' is a successful terminal status — it must count as accepted and decided.
+    expect(result.overview.accepted_count).toBe(1);
+    expect(result.decision_analysis.acceptance_rate).toBe(50); // 1 placed of 2 decided
+    expect(result.overview.avg_days_to_decision).toBe(15); // placed included in decision timing (10+20)/2
+  });
+});
