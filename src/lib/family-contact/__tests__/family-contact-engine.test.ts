@@ -100,6 +100,17 @@ describe("evaluateContactCompliance", () => {
     expect(result.cancellationsByHome).toBe(3);
   });
 
+  it("does not count authority-cancelled sessions as honoured court-ordered contact", () => {
+    const arrangements = [makeArrangement({ isCourtOrdered: true })];
+    const sessions = [
+      makeSession({ id: "s1", scheduledDate: "2026-05-05", outcome: "cancelled_by_authority" }),
+      makeSession({ id: "s2", scheduledDate: "2026-05-12", outcome: "cancelled_by_authority" }),
+    ];
+    // These sessions did not happen — the court order was NOT honoured.
+    const result = evaluateContactCompliance(arrangements, sessions, "2026-05-01", "2026-05-18");
+    expect(result.courtOrderedComplianceRate).toBe(0);
+  });
+
   it("tracks all cancellation types", () => {
     const sessions = [
       makeSession({ id: "s1", scheduledDate: "2026-05-05", outcome: "cancelled_by_family" }),

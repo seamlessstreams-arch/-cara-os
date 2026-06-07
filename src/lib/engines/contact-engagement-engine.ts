@@ -427,6 +427,20 @@ export function computeContactEngagement(
     }
   }
 
+  // Unsafe sessions — a contact flagged not safe (e.g. parent intoxicated or
+  // aggressive) must surface, not just be averaged into safe_sessions_pct.
+  for (const profile of childProfiles) {
+    const unsafe = (sessionsByChild.get(profile.child_id) ?? []).filter((s) => !s.was_safe).length;
+    if (unsafe > 0) {
+      alerts.push({
+        severity: "critical",
+        type: "unsafe_session",
+        child_name: profile.child_name,
+        message: `${profile.child_name} had ${unsafe} family time session${unsafe !== 1 ? "s" : ""} flagged as unsafe in 90 days. Review the contact risk assessment and supervision level immediately.`,
+      });
+    }
+  }
+
   // Safety concerns
   for (const profile of childProfiles) {
     if (profile.concern_sessions_90d >= 2) {

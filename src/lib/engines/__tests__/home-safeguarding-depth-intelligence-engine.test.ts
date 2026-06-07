@@ -225,6 +225,42 @@ describe("computeHomeSafeguardingDepth", () => {
     });
   });
 
+  describe("review-date overdue + escalation surfacing", () => {
+    function ctx(): Parameters<typeof computeHomeSafeguardingDepth>[0] {
+      return {
+        today: TODAY, body_maps: [], disclosures: [], escalations: [],
+        lado_referrals: [], safeguarding_supervisions: [], safe_touch_protocols: [],
+        substance_screenings: [], total_children: 3, total_staff: 5,
+      };
+    }
+
+    it("counts a LADO referral with NO review date as overdue (not silently skipped)", () => {
+      const r = computeHomeSafeguardingDepth({ ...ctx(), lado_referrals: [makeLADOReferral({ review_date: "" })] });
+      expect(r.lado.overdue_reviews).toBe(1);
+    });
+
+    it("does not count a LADO referral with a future review date as overdue", () => {
+      const r = computeHomeSafeguardingDepth({ ...ctx(), lado_referrals: [makeLADOReferral({ review_date: futureDate(30) })] });
+      expect(r.lado.overdue_reviews).toBe(0);
+    });
+
+    it("counts a safe-touch protocol with NO review date as overdue", () => {
+      const r = computeHomeSafeguardingDepth({ ...ctx(), safe_touch_protocols: [makeSafeTouch({ review_date: "" })] });
+      expect(r.safe_touch.overdue_reviews).toBe(1);
+    });
+
+    it("surfaces a concern when disclosures are not appropriately escalated", () => {
+      const r = computeHomeSafeguardingDepth({
+        ...ctx(),
+        disclosures: [
+          makeDisclosure({ escalated_appropriately: false }),
+          makeDisclosure({ escalated_appropriately: false }),
+        ],
+      });
+      expect(r.concerns.some((c) => c.toLowerCase().includes("escalated"))).toBe(true);
+    });
+  });
+
   // ── Base score / outstanding ──────────────────────────────────────
   describe("base score and outstanding rating", () => {
     it("baseInput scores 80 — outstanding", () => {

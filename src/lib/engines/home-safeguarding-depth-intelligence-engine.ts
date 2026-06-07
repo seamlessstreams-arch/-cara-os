@@ -182,6 +182,15 @@ function daysBetween(a: string, b: string): number {
   );
 }
 
+// A review is overdue if its date has passed OR if no review date is set at all.
+// daysBetween("", today) is NaN and NaN > 0 is false, so a missing review date
+// would otherwise silently NOT count as overdue — hiding a LADO referral or
+// safe-touch protocol that has no review scheduled (worse than merely overdue).
+function reviewOverdue(reviewDate: string, today: string): boolean {
+  const n = daysBetween(reviewDate, today);
+  return Number.isNaN(n) || n > 0;
+}
+
 // ── Engine ──────────────────────────────────────────────────────────────────
 
 export function computeHomeSafeguardingDepth(
@@ -286,7 +295,7 @@ export function computeHomeSafeguardingDepth(
   const lOutcomeRate = pct(lOutcome, lado_referrals.length);
   const lLearning = lado_referrals.filter(l => l.learning_shared).length;
   const lLearningRate = pct(lLearning, lado_referrals.length);
-  const lOverdue = lado_referrals.filter(l => daysBetween(l.review_date, today) > 0).length;
+  const lOverdue = lado_referrals.filter(l => reviewOverdue(l.review_date, today)).length;
 
   const lado_summary: LADOSummary = {
     total: lado_referrals.length,
@@ -322,7 +331,7 @@ export function computeHomeSafeguardingDepth(
   const stConsentRate = pct(stConsent, safe_touch_protocols.length);
   const stVoice = safe_touch_protocols.filter(p => p.child_voice_captured).length;
   const stVoiceRate = pct(stVoice, safe_touch_protocols.length);
-  const stOverdue = safe_touch_protocols.filter(p => daysBetween(p.review_date, today) > 0).length;
+  const stOverdue = safe_touch_protocols.filter(p => reviewOverdue(p.review_date, today)).length;
 
   const safe_touch_summary: SafeTouchSummary = {
     total: safe_touch_protocols.length,
@@ -500,6 +509,10 @@ export function computeHomeSafeguardingDepth(
   if (disclosures.length > 0 && dRespRate < 50) {
     concerns.push(`Poor disclosure response time — only ${dRespRate}% responded within 1 hour. Immediate response is critical.`);
     recommendations.push({ rank: ++rank, recommendation: "Reinforce disclosure response procedures — all disclosures must be acted on within 1 hour.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
+  }
+  if (disclosures.length > 0 && dEscalRate < 50) {
+    concerns.push(`Only ${dEscalRate}% of disclosures appropriately escalated — disclosures indicating harm must be escalated to the DSL/MASH.`);
+    recommendations.push({ rank: ++rank, recommendation: "Reinforce escalation thresholds — every disclosure indicating risk must be escalated to the designated safeguarding lead and, where appropriate, MASH/LADO.", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 12" });
   }
 
   // Escalation strengths/concerns

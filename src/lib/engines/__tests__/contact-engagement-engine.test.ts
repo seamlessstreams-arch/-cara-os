@@ -146,6 +146,17 @@ describe("Contact Engagement Engine — Empty Input", () => {
     expect(result.alerts).toHaveLength(0);
     expect(result.insights.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("raises a critical unsafe_session alert when a contact is flagged unsafe", () => {
+    const result = computeContactEngagement(makeInput({
+      children: [makeChild({ id: "child_1", name: "Alex" })],
+      familyTimeSessions: [makeSession({ child_id: "child_1", was_safe: false })],
+    }));
+    const unsafe = result.alerts.find((a) => a.type === "unsafe_session");
+    expect(unsafe).toBeTruthy();
+    expect(unsafe?.severity).toBe("critical");
+    expect(unsafe?.child_name).toBe("Alex");
+  });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════

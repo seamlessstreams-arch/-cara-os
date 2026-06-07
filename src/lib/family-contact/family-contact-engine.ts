@@ -227,9 +227,11 @@ export function evaluateContactCompliance(
   for (const arrangement of courtOrdered) {
     const arrangementSessions = periodSessions.filter((s) => s.arrangementId === arrangement.id);
     const completed = arrangementSessions.filter((s) =>
-      s.outcome !== "cancelled_by_home" && s.outcome !== "no_show",
+      s.outcome !== "cancelled_by_home" && s.outcome !== "cancelled_by_authority" && s.outcome !== "no_show",
     );
-    // Consider compliant if at least 75% of sessions not cancelled by home
+    // Consider compliant if at least 75% of sessions actually went ahead.
+    // A session cancelled by the authority did NOT happen, so it must not count
+    // as the court order being honoured (matches sessionsCompleted below).
     if (arrangementSessions.length === 0 || completed.length / arrangementSessions.length >= 0.75) {
       courtOrderedCompliant++;
     }
