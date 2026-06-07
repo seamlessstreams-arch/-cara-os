@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useRef } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -559,6 +560,7 @@ export default function KeyWorkingPage() {
         days={28}
         defaultCollapsed
       />
+      <AriaPracticePanel sourceType="key_work" homeId="home_oak" title="Run ARIA on this session" />
     </PageShell>
   );
 }

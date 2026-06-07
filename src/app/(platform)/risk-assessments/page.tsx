@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -382,6 +383,7 @@ export default function RiskAssessmentsPage() {
         days={28}
         defaultCollapsed
       />
+      <AriaPracticePanel sourceType="risk_assessment" homeId="home_oak" title="Run ARIA on this assessment" />
     </PageShell>
   );
 }

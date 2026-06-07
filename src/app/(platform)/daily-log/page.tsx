@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
 import { AriaPanel } from "@/components/aria/aria-panel";
 import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -800,6 +801,7 @@ export default function DailyLogPage() {
           className="mt-2"
         />
       </div>
+      <AriaPracticePanel sourceType="daily_record" homeId="home_oak" title="Run ARIA on this log" />
     </PageShell>
   );
 }

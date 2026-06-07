@@ -4,6 +4,7 @@ import React, { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1317,6 +1318,7 @@ export default function IncidentsPage() {
           defaultCollapsed
         />
       </div>
+      <AriaPracticePanel sourceType="incident" homeId="home_oak" title="Run ARIA on this incident" />
     </PageShell>
   );
 }
