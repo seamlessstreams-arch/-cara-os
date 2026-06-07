@@ -97,7 +97,7 @@ function toRating(score: number): BehaviourSupportPlanRating {
 export function computeBehaviourSupportPlan(
   input: BehaviourSupportPlanInput,
 ): BehaviourSupportPlanResult {
-  const { plans, total_children } = input;
+  const { plans, total_children, today } = input;
 
   // Insufficient data guard
   if (total_children === 0) {
@@ -126,6 +126,13 @@ export function computeBehaviourSupportPlan(
 
   const activePlans = plans.filter(p => p.status === "active" || p.status === "under_review");
   const activePlanRate = pct(activePlans.length, total);
+
+  // Review currency: an active plan whose next review_date has passed — or which
+  // has no review scheduled — is overdue for review, so staff may be relying on
+  // out-of-date guidance. (review_date is the NEXT-due date; date-only compare.)
+  const overdueReviewPlans = activePlans.filter(
+    p => !p.has_review_date || p.review_date.slice(0, 10) < today.slice(0, 10),
+  );
 
   // Trigger analysis: plans with triggers AND early warnings
   const withTriggerAnalysis = plans.filter(p => p.known_trigger_count > 0 && p.early_warning_count > 0);
@@ -250,6 +257,8 @@ export function computeBehaviourSupportPlan(
     concerns.push("No behaviour support plans — the home cannot demonstrate structured, therapeutic responses to challenging behaviour");
   if (activePlanRate < 40 && total > 0)
     concerns.push("Most plans are not active — staff may be working without current behaviour support guidance");
+  if (overdueReviewPlans.length > 0)
+    concerns.push(`${overdueReviewPlans.length} active behaviour support plan${overdueReviewPlans.length > 1 ? "s are" : " is"} overdue for review — strategies may no longer match the child's evolving needs`);
   if (triggerAnalysisRate < 25 && total > 0)
     concerns.push("Triggers and early warnings are poorly identified — staff cannot anticipate or prevent behavioural escalation");
   if (deEscalationRate < 20 && total > 0)
@@ -269,6 +278,8 @@ export function computeBehaviourSupportPlan(
     recommendations.push({ rank: ++rank, recommendation: "Create behaviour support plans for all children with identified behavioural needs", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 13" });
   if (triggerAnalysisRate < 50 && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Conduct thorough trigger analyses for all BSPs — identify triggers, early warnings and patterns", urgency: "immediate", regulatory_ref: "CHR 2015 Reg 35" });
+  if (overdueReviewPlans.length > 0)
+    recommendations.push({ rank: ++rank, recommendation: `Review the ${overdueReviewPlans.length} overdue behaviour support plan${overdueReviewPlans.length > 1 ? "s" : ""} — BSPs must be kept current to remain effective`, urgency: "soon", regulatory_ref: "CHR 2015 Reg 13" });
   if (deEscalationRate < 40 && total > 0)
     recommendations.push({ rank: ++rank, recommendation: "Complete de-escalation pathways with green/amber/red stages and specific strategies for each level", urgency: "soon", regulatory_ref: "CHR 2015 Reg 13" });
   if (childVoiceRate < 50 && total > 0)

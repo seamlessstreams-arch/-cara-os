@@ -139,6 +139,28 @@ describe("no plans with children", () => {
     expect(r.recommendations[0].regulatory_ref).toBe("CHR 2015 Reg 13");
   });
 
+  it("flags active behaviour support plans overdue for review", () => {
+    // review_date is the next-due date; 2025-01-01 < today (2025-06-15) => overdue.
+    const r = computeBehaviourSupportPlan(
+      baseInput({
+        total_children: 3,
+        plans: [makePlan({ id: "p1", status: "active", has_review_date: true, review_date: "2025-01-01" })],
+      }),
+    );
+    expect(r.concerns.some((c) => c.includes("overdue for review"))).toBe(true);
+    expect(r.recommendations.some((rec) => rec.recommendation.includes("overdue behaviour support plan"))).toBe(true);
+  });
+
+  it("does not flag a behaviour support plan with a future review date", () => {
+    const r = computeBehaviourSupportPlan(
+      baseInput({
+        total_children: 3,
+        plans: [makePlan({ id: "p1", status: "active", has_review_date: true, review_date: "2025-08-01" })],
+      }),
+    );
+    expect(r.concerns.some((c) => c.includes("overdue for review"))).toBe(false);
+  });
+
   it("generates critical insight about no BSPs", () => {
     const r = computeBehaviourSupportPlan(
       baseInput({ total_children: 3, plans: [] }),
