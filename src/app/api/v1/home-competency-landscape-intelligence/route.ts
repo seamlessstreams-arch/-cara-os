@@ -64,7 +64,7 @@ export async function GET() {
 
   // ── Total staff ────────────────────────────────────────────────────────
   const totalStaff = (store.staff ?? []).filter(
-    (s: any) => s.status === "active",
+    (s: any) => s.is_active !== false,
   ).length;
 
   const result = computeHomeCompetencyLandscape({
