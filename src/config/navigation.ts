@@ -201,6 +201,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Bank Account",     href: "/child-bank-account",        icon: "Wallet",         module: "young-people"  },
       { label: "Emergency Meds",   href: "/emergency-medication-protocols",icon: "AlertOctagon",module: "young-people"  },
       { label: "LAC Review Prep",  href: "/lac-review-prep",           icon: "Calendar",       module: "young-people"  },
+      { label: "Child Review Pack",href: "/child-review-pack",         icon: "FileText",       module: "young-people"  },
       { label: "Family Tree",      href: "/family-tree-genogram",      icon: "Users",          module: "young-people"  },
       { label: "Substance Screening",href: "/drug-and-alcohol-screening",icon: "Shield",       module: "safeguarding"  },
       { label: "Bullying Log",     href: "/bullying-incident-log",     icon: "ShieldAlert",    module: "safeguarding"  },
