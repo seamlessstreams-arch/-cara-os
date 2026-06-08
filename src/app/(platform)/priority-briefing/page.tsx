@@ -4,10 +4,12 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { engineHref } from "@/config/intelligence-links";
 import {
   AlertOctagon, AlertTriangle, Eye, CheckCircle2, Loader2, ShieldAlert,
-  ThumbsUp, Activity, RefreshCw, FileQuestion,
+  ThumbsUp, Activity, RefreshCw, FileQuestion, ChevronRight,
 } from "lucide-react";
 import { useManagerPriorityBriefing } from "@/hooks/use-manager-priority-briefing";
 import type {
@@ -144,14 +146,18 @@ export default function PriorityBriefingPage() {
             {b?.priority_signals.map((s: PrioritySignal) => {
               const meta = SEVERITY_META[s.severity];
               return (
-                <div key={s.rank} className={cn("flex items-start gap-3 rounded-lg border border-l-4 bg-white px-3 py-2.5", meta.border)}>
+                <Link
+                  key={s.rank}
+                  href={engineHref(s.source_key, s.domain)}
+                  className={cn("group flex items-start gap-3 rounded-lg border border-l-4 bg-white px-3 py-2.5 transition-colors hover:bg-slate-50", meta.border)}
+                >
                   <meta.Icon className={cn("mt-0.5 h-4 w-4 shrink-0",
                     s.severity === "critical" ? "text-red-500" : s.severity === "high" ? "text-orange-500" : s.severity === "warning" ? "text-amber-500" : "text-slate-400")} />
                   <div className="min-w-0 flex-1">
                     <p className="text-sm text-slate-800">{s.message}</p>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500">
                       <Badge variant="outline" className={cn("px-1.5 py-0 text-[10px]", meta.badge)}>{meta.label}</Badge>
-                      <span className="font-medium text-slate-600">{s.source_engine}</span>
+                      <span className="font-medium text-slate-600 group-hover:text-indigo-600 group-hover:underline">{s.source_engine}</span>
                       <span>·</span>
                       <span>{DOMAIN_LABEL[s.domain] ?? s.domain}</span>
                       <span>·</span>
@@ -159,7 +165,8 @@ export default function PriorityBriefingPage() {
                       {s.regulatory_ref && <><span>·</span><span className="text-slate-600">{s.regulatory_ref}</span></>}
                     </div>
                   </div>
-                </div>
+                  <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-indigo-500" />
+                </Link>
               );
             })}
           </CardContent>
@@ -176,11 +183,16 @@ export default function PriorityBriefingPage() {
             </CardHeader>
             <CardContent className="flex flex-wrap gap-1.5">
               {b.recording_gaps.map((g, i) => (
-                <div key={i} className="inline-flex items-center gap-1.5 rounded-md border border-violet-100 bg-violet-50/60 px-2 py-1 text-[11px] text-slate-600" title={g.message}>
+                <Link
+                  key={i}
+                  href={engineHref(g.engine_key, g.domain)}
+                  className="inline-flex items-center gap-1.5 rounded-md border border-violet-100 bg-violet-50/60 px-2 py-1 text-[11px] text-slate-600 transition-colors hover:border-violet-300 hover:bg-violet-100"
+                  title={`${g.message} — go to record`}
+                >
                   <span className="font-medium text-slate-700">{g.label}</span>
                   <span className="text-violet-300">·</span>
                   <span>{DOMAIN_LABEL[g.domain] ?? g.domain}</span>
-                </div>
+                </Link>
               ))}
             </CardContent>
           </Card>

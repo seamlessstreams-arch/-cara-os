@@ -68,6 +68,7 @@ export interface DomainRollup {
 
 /** An engine that self-reported it has no data to assess (rating === insufficient_data). */
 export interface RecordingGap {
+  engine_key: string;
   label: string;
   domain: string;
   message: string;
@@ -164,6 +165,7 @@ export function computeManagerPriorityBriefing(
     if ((s.rating || "").toLowerCase().trim() === "insufficient_data") {
       const firstCritical = (s.insights ?? []).find((i) => normaliseInsightSeverity(i.severity) != null)?.text?.trim();
       recordingGaps.push({
+        engine_key: s.engine_key,
         label: s.label,
         domain: s.domain,
         message: s.headline?.trim() || firstCritical || "No data recorded yet.",

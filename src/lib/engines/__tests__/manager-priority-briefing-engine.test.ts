@@ -210,7 +210,7 @@ describe("computeManagerPriorityBriefing", () => {
     });
     // the insufficient_data engine becomes a recording gap, NOT a critical signal
     expect(r.total_recording_gaps).toBe(1);
-    expect(r.recording_gaps[0]).toMatchObject({ label: "Activity Enrichment", domain: "experiences", message: "No activities recorded in 30 days" });
+    expect(r.recording_gaps[0]).toMatchObject({ engine_key: "act", label: "Activity Enrichment", domain: "experiences", message: "No activities recorded in 30 days" });
     // only the inadequate engine is an active critical in the feed
     expect(r.total_critical).toBe(1);
     expect(r.priority_signals).toHaveLength(1);
