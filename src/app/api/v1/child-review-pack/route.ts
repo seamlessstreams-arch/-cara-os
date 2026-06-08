@@ -82,7 +82,9 @@ export async function GET(request: Request) {
           domain_scores,
 
           voice_captured: !!d.emotional_wellbeing?.voice_captured,
-          recent_themes: Array.isArray(d.emotional_wellbeing?.recent_themes) ? d.emotional_wellbeing.recent_themes : [],
+          recent_themes: Array.isArray(d.emotional_wellbeing?.recent_themes)
+            ? d.emotional_wellbeing.recent_themes.filter((t: any) => typeof t === "string" && t.trim())
+            : [],
           mood_trend: String(d.emotional_wellbeing?.mood_trend ?? "stable"),
 
           risk_level: String(d.safety_profile?.risk_level ?? ""),
