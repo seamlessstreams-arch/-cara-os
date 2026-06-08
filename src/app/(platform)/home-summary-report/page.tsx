@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   Loader2, RefreshCw, FileText, ShieldCheck, AlertTriangle, AlertOctagon,
-  CheckCircle2, MinusCircle, ThumbsUp,
+  CheckCircle2, MinusCircle, ThumbsUp, Sparkles,
 } from "lucide-react";
 import { useHomeSummaryReport } from "@/hooks/use-home-summary-report";
 import type {
@@ -135,8 +135,15 @@ export default function HomeSummaryReportPage() {
             </div>
           </div>
           <div className="mt-4 rounded-lg bg-slate-50 p-4">
-            <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Executive summary</p>
-            <p className="text-sm leading-relaxed text-slate-700">{r?.executive_summary}</p>
+            <p className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+              Executive summary
+              {r?.ai_narrative && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700">
+                  <Sparkles className="h-2.5 w-2.5" /> ARIA
+                </span>
+              )}
+            </p>
+            <p className="text-sm leading-relaxed text-slate-700">{r?.ai_narrative || r?.executive_summary}</p>
           </div>
           <p className="mt-3 text-[11px] text-slate-400">
             Generated {r?.generated_for} · compiled from {r?.engines_responded ?? 0} of {r?.engines_queried ?? 0} intelligence sources across six domains.

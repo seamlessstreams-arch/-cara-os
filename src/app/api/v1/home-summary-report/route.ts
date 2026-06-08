@@ -16,6 +16,7 @@ import {
   computeHomeSummaryReport,
   type ReportSignalInput,
 } from "@/lib/engines/home-summary-report-engine";
+import { generateReportNarrative } from "@/lib/aria/report-narrative";
 
 export const dynamic = "force-dynamic";
 
@@ -129,7 +130,18 @@ export async function GET(request: Request) {
       today,
     });
 
-    return NextResponse.json({ data: result });
+    const facts = [
+      `Home: ${home_name}; ${total_children} children; ${total_staff} staff.`,
+      `Overall status: ${result.overall_status}.`,
+      ...result.sections.map(
+        (s) =>
+          `${s.title}: ${s.status}${s.avg_score != null ? ` (avg score ${s.avg_score})` : ""} — ${s.summary}` +
+          (s.highlights.length ? ` Priorities: ${s.highlights.join("; ")}.` : ""),
+      ),
+    ].join("\n");
+    const ai_narrative = await generateReportNarrative({ kind: "home summary report", subject: home_name, facts });
+
+    return NextResponse.json({ data: { ...result, ai_narrative } });
   } catch (err: any) {
     return NextResponse.json({ error: err?.message ?? "Internal server error" }, { status: 500 });
   }
