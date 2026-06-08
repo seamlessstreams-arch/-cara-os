@@ -85,7 +85,7 @@ export default function ChildReviewPackPage() {
       title="Child Review Pack"
       subtitle="Print-ready LAC review pack — wishes, progress, safety, health, education & recommendations in one document"
       ariaContext={{ pageTitle: "Child Review Pack", sourceType: "general" }}
-      actions={<PrintButton />}
+      actions={<PrintButton title="Child Review Pack" />}
     >
       <div className="cs-print-color mx-auto max-w-4xl space-y-5">
         {/* Child selector */}
