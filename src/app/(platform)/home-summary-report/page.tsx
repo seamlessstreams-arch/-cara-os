@@ -13,18 +13,18 @@ import type {
   HomeSummaryReportResult, ReportSection, SectionStatus, OverallStatus,
 } from "@/lib/engines/home-summary-report-engine";
 
-const OVERALL_META: Record<OverallStatus, { label: string; tone: string; Icon: typeof FileText }> = {
-  good: { label: "Good", tone: "bg-green-50 text-green-800 ring-green-200", Icon: ShieldCheck },
-  stable: { label: "Stable", tone: "bg-slate-50 text-slate-700 ring-slate-200", Icon: MinusCircle },
-  needs_attention: { label: "Needs attention", tone: "bg-amber-50 text-amber-800 ring-amber-200", Icon: AlertTriangle },
-  serious_concern: { label: "Serious concern", tone: "bg-red-50 text-red-800 ring-red-200", Icon: AlertOctagon },
+const OVERALL_META: Record<OverallStatus, { label: string; tone: string; print: string; Icon: typeof FileText }> = {
+  good: { label: "Good", tone: "bg-green-50 text-green-800 ring-green-200", print: "cs-tone-green", Icon: ShieldCheck },
+  stable: { label: "Stable", tone: "bg-slate-50 text-slate-700 ring-slate-200", print: "cs-tone-slate", Icon: MinusCircle },
+  needs_attention: { label: "Needs attention", tone: "bg-amber-50 text-amber-800 ring-amber-200", print: "cs-tone-amber", Icon: AlertTriangle },
+  serious_concern: { label: "Serious concern", tone: "bg-red-50 text-red-800 ring-red-200", print: "cs-tone-red", Icon: AlertOctagon },
 };
 
-const SECTION_META: Record<SectionStatus, { label: string; badge: string; dot: string }> = {
-  green: { label: "Good", badge: "bg-green-100 text-green-800 border-green-200", dot: "bg-green-500" },
-  amber: { label: "Needs attention", badge: "bg-amber-100 text-amber-800 border-amber-200", dot: "bg-amber-400" },
-  red: { label: "Serious concern", badge: "bg-red-100 text-red-800 border-red-200", dot: "bg-red-500" },
-  no_data: { label: "No data", badge: "bg-slate-100 text-slate-600 border-slate-200", dot: "bg-slate-300" },
+const SECTION_META: Record<SectionStatus, { label: string; badge: string; dot: string; rag: string; pdot: string }> = {
+  green: { label: "Good", badge: "bg-green-100 text-green-800 border-green-200", dot: "bg-green-500", rag: "cs-rag-green", pdot: "cs-dot-green" },
+  amber: { label: "Needs attention", badge: "bg-amber-100 text-amber-800 border-amber-200", dot: "bg-amber-400", rag: "cs-rag-amber", pdot: "cs-dot-amber" },
+  red: { label: "Serious concern", badge: "bg-red-100 text-red-800 border-red-200", dot: "bg-red-500", rag: "cs-rag-red", pdot: "cs-dot-red" },
+  no_data: { label: "No data", badge: "bg-slate-100 text-slate-600 border-slate-200", dot: "bg-slate-300", rag: "cs-rag-slate", pdot: "cs-dot-slate" },
 };
 
 function SectionBlock({ s }: { s: ReportSection }) {
@@ -34,12 +34,12 @@ function SectionBlock({ s }: { s: ReportSection }) {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-sm">
           <span className="flex items-center gap-2 font-bold text-slate-900">
-            <span className={cn("h-2.5 w-2.5 rounded-full", meta.dot)} />
+            <span className={cn("h-2.5 w-2.5 rounded-full", meta.dot, meta.pdot)} />
             {s.title}
           </span>
           <span className="flex items-center gap-2">
             {s.avg_score != null && <span className="text-xs font-semibold tabular-nums text-slate-500">{s.avg_score}%</span>}
-            <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide", meta.badge)}>{meta.label}</span>
+            <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide", meta.badge, meta.rag)}>{meta.label}</span>
           </span>
         </CardTitle>
         <p className="text-xs text-muted-foreground">{s.summary}</p>
@@ -114,7 +114,7 @@ export default function HomeSummaryReportPage() {
         </div>
       }
     >
-      <div className="mx-auto max-w-4xl space-y-5">
+      <div className="cs-print-color mx-auto max-w-4xl space-y-5">
         {/* Document header */}
         <div className="rounded-xl border bg-white p-6">
           <div className="flex items-start justify-between gap-4">
@@ -126,7 +126,7 @@ export default function HomeSummaryReportPage() {
               <h1 className="mt-1 text-2xl font-bold text-slate-900">{r?.home_name}</h1>
               <p className="text-sm text-slate-500">{r?.period_label}</p>
             </div>
-            <div className={cn("flex items-center gap-2 rounded-lg px-3 py-2 ring-1", om.tone)}>
+            <div className={cn("flex items-center gap-2 rounded-lg px-3 py-2 ring-1", om.tone, om.print)}>
               <om.Icon className="h-5 w-5" />
               <div>
                 <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">Overall</div>

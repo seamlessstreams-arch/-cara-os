@@ -11,26 +11,26 @@ import {
 import { useChildReviewPack } from "@/hooks/use-child-review-pack";
 import type { PackRag, ReviewSection, ReviewDomainScore } from "@/lib/engines/child-review-pack-engine";
 
-const RAG: Record<PackRag, { dot: string; badge: string; label: string }> = {
-  green: { dot: "bg-green-500", badge: "bg-green-100 text-green-800 border-green-200", label: "Good" },
-  amber: { dot: "bg-amber-400", badge: "bg-amber-100 text-amber-800 border-amber-200", label: "Attention" },
-  red: { dot: "bg-red-500", badge: "bg-red-100 text-red-800 border-red-200", label: "Concern" },
-  no_data: { dot: "bg-slate-300", badge: "bg-slate-100 text-slate-600 border-slate-200", label: "No data" },
+const RAG: Record<PackRag, { dot: string; badge: string; label: string; rag: string; pdot: string }> = {
+  green: { dot: "bg-green-500", badge: "bg-green-100 text-green-800 border-green-200", label: "Good", rag: "cs-rag-green", pdot: "cs-dot-green" },
+  amber: { dot: "bg-amber-400", badge: "bg-amber-100 text-amber-800 border-amber-200", label: "Attention", rag: "cs-rag-amber", pdot: "cs-dot-amber" },
+  red: { dot: "bg-red-500", badge: "bg-red-100 text-red-800 border-red-200", label: "Concern", rag: "cs-rag-red", pdot: "cs-dot-red" },
+  no_data: { dot: "bg-slate-300", badge: "bg-slate-100 text-slate-600 border-slate-200", label: "No data", rag: "cs-rag-slate", pdot: "cs-dot-slate" },
 };
 
-const WELLBEING_TONE: Record<string, string> = {
-  Thriving: "bg-green-50 text-green-800 ring-green-200",
-  Stable: "bg-blue-50 text-blue-800 ring-blue-200",
-  "Needs attention": "bg-amber-50 text-amber-800 ring-amber-200",
-  Concerning: "bg-orange-50 text-orange-800 ring-orange-200",
-  Critical: "bg-red-50 text-red-800 ring-red-200",
+const WELLBEING_TONE: Record<string, { tone: string; print: string }> = {
+  Thriving: { tone: "bg-green-50 text-green-800 ring-green-200", print: "cs-tone-green" },
+  Stable: { tone: "bg-blue-50 text-blue-800 ring-blue-200", print: "cs-tone-blue" },
+  "Needs attention": { tone: "bg-amber-50 text-amber-800 ring-amber-200", print: "cs-tone-amber" },
+  Concerning: { tone: "bg-orange-50 text-orange-800 ring-orange-200", print: "cs-tone-amber" },
+  Critical: { tone: "bg-red-50 text-red-800 ring-red-200", print: "cs-tone-red" },
 };
 
 function DomainChip({ d }: { d: ReviewDomainScore }) {
   const rag = RAG[(["green", "amber", "red"].includes(d.rag) ? d.rag : "no_data") as PackRag];
   return (
     <div className="flex items-center gap-2 rounded-lg border bg-white px-3 py-2">
-      <span className={cn("h-2.5 w-2.5 rounded-full", rag.dot)} />
+      <span className={cn("h-2.5 w-2.5 rounded-full", rag.dot, rag.pdot)} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-xs font-semibold text-slate-700">{d.domain_label}</span>
@@ -49,9 +49,9 @@ function SectionCard({ s }: { s: ReviewSection }) {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center justify-between text-sm">
           <span className="flex items-center gap-2 font-bold text-slate-900">
-            <span className={cn("h-2.5 w-2.5 rounded-full", rag.dot)} />{s.title}
+            <span className={cn("h-2.5 w-2.5 rounded-full", rag.dot, rag.pdot)} />{s.title}
           </span>
-          <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide", rag.badge)}>{rag.label}</span>
+          <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide", rag.badge, rag.rag)}>{rag.label}</span>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
@@ -87,7 +87,7 @@ export default function ChildReviewPackPage() {
       ariaContext={{ pageTitle: "Child Review Pack", sourceType: "general" }}
       actions={<PrintButton />}
     >
-      <div className="mx-auto max-w-4xl space-y-5">
+      <div className="cs-print-color mx-auto max-w-4xl space-y-5">
         {/* Child selector */}
         <div className="flex flex-wrap items-center gap-2 print:hidden">
           <span className="text-xs font-medium text-slate-500">Child:</span>
@@ -129,7 +129,7 @@ export default function ChildReviewPackPage() {
                   <h1 className="mt-1 text-2xl font-bold text-slate-900">{pack.child_name}</h1>
                   <p className="text-sm text-slate-500">Age {pack.age_years} · generated {pack.generated_for}</p>
                 </div>
-                <div className={cn("rounded-lg px-3 py-2 text-center ring-1", WELLBEING_TONE[pack.overall_wellbeing] ?? "bg-slate-50 text-slate-700 ring-slate-200")}>
+                <div className={cn("rounded-lg px-3 py-2 text-center ring-1", WELLBEING_TONE[pack.overall_wellbeing]?.tone ?? "bg-slate-50 text-slate-700 ring-slate-200", WELLBEING_TONE[pack.overall_wellbeing]?.print ?? "cs-tone-slate")}>
                   <div className="text-[10px] font-semibold uppercase tracking-wide opacity-70">Wellbeing</div>
                   <div className="text-sm font-bold">{pack.overall_wellbeing}</div>
                 </div>

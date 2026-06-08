@@ -739,4 +739,22 @@ body::before {
   nav, .cs-sidebar-gradient, [class*="bottom-nav"], [class*="QuickCreateFab"] { display: none !important; }
   .cs-card-float:hover { transform: none; box-shadow: none; }
   * { color: #000 !important; background: #fff !important; }
+
+  /* Shareable report packs keep their RAG status colours when printed. These
+     selectors are more specific than the `*` reset above, so they win, and
+     print-color-adjust:exact forces the backgrounds to actually render. */
+  .cs-print-color, .cs-print-color * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+  .cs-print-color .cs-dot-red { background: #ef4444 !important; }
+  .cs-print-color .cs-dot-amber { background: #f59e0b !important; }
+  .cs-print-color .cs-dot-green { background: #22c55e !important; }
+  .cs-print-color .cs-dot-slate { background: #cbd5e1 !important; }
+  .cs-print-color .cs-rag-red { background: #fee2e2 !important; color: #991b1b !important; border-color: #fecaca !important; }
+  .cs-print-color .cs-rag-amber { background: #fef3c7 !important; color: #92400e !important; border-color: #fde68a !important; }
+  .cs-print-color .cs-rag-green { background: #dcfce7 !important; color: #166534 !important; border-color: #bbf7d0 !important; }
+  .cs-print-color .cs-rag-slate { background: #f1f5f9 !important; color: #334155 !important; border-color: #e2e8f0 !important; }
+  .cs-print-color .cs-tone-red { background: #fef2f2 !important; color: #991b1b !important; }
+  .cs-print-color .cs-tone-amber { background: #fffbeb !important; color: #92400e !important; }
+  .cs-print-color .cs-tone-green { background: #f0fdf4 !important; color: #166534 !important; }
+  .cs-print-color .cs-tone-blue { background: #eff6ff !important; color: #1e40af !important; }
+  .cs-print-color .cs-tone-slate { background: #f8fafc !important; color: #334155 !important; }
 }
