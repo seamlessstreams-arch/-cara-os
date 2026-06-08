@@ -39,7 +39,7 @@ describe("computeManagerPriorityBriefing", () => {
       today: TODAY,
     });
     expect(r.overall_status).toBe("stable");
-    expect(r.headline).toMatch(/no notable signals/i);
+    expect(r.headline).toMatch(/no active concerns/i);
     expect(r.positives).toContain("X: All fine");
   });
 
@@ -196,5 +196,41 @@ describe("computeManagerPriorityBriefing", () => {
     });
     expect(r.total_signals).toBe(0);
     expect(r.overall_status).toBe("stable");
+  });
+
+  it("diverts insufficient_data engines to recording_gaps, not the active feed", () => {
+    const r = computeManagerPriorityBriefing({
+      signals: [
+        sig({ engine_key: "act", label: "Activity Enrichment", domain: "experiences", rating: "insufficient_data", headline: "No activities recorded in 30 days", insights: [{ text: "No activities recorded", severity: "critical" }] }),
+        sig({ engine_key: "hm", label: "Health Monitoring", domain: "experiences", rating: "inadequate", headline: "Health monitoring inadequate" }),
+      ],
+      engines_queried: 2,
+      engines_responded: 2,
+      today: TODAY,
+    });
+    // the insufficient_data engine becomes a recording gap, NOT a critical signal
+    expect(r.total_recording_gaps).toBe(1);
+    expect(r.recording_gaps[0]).toMatchObject({ label: "Activity Enrichment", domain: "experiences", message: "No activities recorded in 30 days" });
+    // only the inadequate engine is an active critical in the feed
+    expect(r.total_critical).toBe(1);
+    expect(r.priority_signals).toHaveLength(1);
+    expect(r.priority_signals[0].source_engine).toBe("Health Monitoring");
+    expect(r.overall_status).toBe("critical");
+  });
+
+  it("recording gaps alone keep overall_status stable but are surfaced + noted in headline", () => {
+    const r = computeManagerPriorityBriefing({
+      signals: [
+        sig({ engine_key: "a", rating: "insufficient_data", headline: "No data" }),
+        sig({ engine_key: "b", rating: "insufficient_data", headline: "No data either" }),
+      ],
+      engines_queried: 2,
+      engines_responded: 2,
+      today: TODAY,
+    });
+    expect(r.overall_status).toBe("stable");
+    expect(r.total_signals).toBe(0);
+    expect(r.total_recording_gaps).toBe(2);
+    expect(r.headline).toMatch(/2 engines have no data/i);
   });
 });

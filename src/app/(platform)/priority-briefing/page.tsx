@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   AlertOctagon, AlertTriangle, Eye, CheckCircle2, Loader2, ShieldAlert,
-  ThumbsUp, Activity, RefreshCw,
+  ThumbsUp, Activity, RefreshCw, FileQuestion,
 } from "lucide-react";
 import { useManagerPriorityBriefing } from "@/hooks/use-manager-priority-briefing";
 import type {
@@ -95,12 +95,13 @@ export default function PriorityBriefingPage() {
               <p className="mt-0.5 text-base font-medium">{b?.headline}</p>
             </div>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-6">
             <StatCell n={b?.total_critical ?? 0} label="Critical" tone="text-red-600" />
             <StatCell n={b?.total_high ?? 0} label="High" tone="text-orange-600" />
             <StatCell n={b?.total_warning ?? 0} label="Warning" tone="text-amber-600" />
             <StatCell n={b?.total_watch ?? 0} label="Watch" tone="text-slate-600" />
             <StatCell n={b?.domains_at_risk?.length ?? 0} label="Domains at risk" tone="text-slate-700" />
+            <StatCell n={b?.total_recording_gaps ?? 0} label="Recording gaps" tone="text-violet-600" />
           </div>
         </div>
 
@@ -163,6 +164,27 @@ export default function PriorityBriefingPage() {
             })}
           </CardContent>
         </Card>
+
+        {/* Recording gaps — engines with no data to assess (a "fill this in" list, not active concerns) */}
+        {b && b.recording_gaps.length > 0 && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-semibold text-violet-700">
+                <FileQuestion className="h-4 w-4" /> Recording gaps
+                <span className="font-normal text-slate-400">— {b.total_recording_gaps} engine{b.total_recording_gaps === 1 ? "" : "s"} have no data to assess yet</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-1.5">
+              {b.recording_gaps.map((g, i) => (
+                <div key={i} className="inline-flex items-center gap-1.5 rounded-md border border-violet-100 bg-violet-50/60 px-2 py-1 text-[11px] text-slate-600" title={g.message}>
+                  <span className="font-medium text-slate-700">{g.label}</span>
+                  <span className="text-violet-300">·</span>
+                  <span>{DOMAIN_LABEL[g.domain] ?? g.domain}</span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Positives */}
         {b && b.positives.length > 0 && (

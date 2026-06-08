@@ -66,6 +66,13 @@ export interface DomainRollup {
   engines_flagging: number;
 }
 
+/** An engine that self-reported it has no data to assess (rating === insufficient_data). */
+export interface RecordingGap {
+  label: string;
+  domain: string;
+  message: string;
+}
+
 export interface PriorityBriefingResult {
   generated_for: string;
   overall_status: OverallStatus;
@@ -81,6 +88,10 @@ export interface PriorityBriefingResult {
   priority_signals: PrioritySignal[];
   domain_rollup: DomainRollup[];
   positives: string[];
+  // Engines with no data to assess — surfaced separately so "fill this in" never
+  // drowns out genuine active concerns in the priority feed.
+  recording_gaps: RecordingGap[];
+  total_recording_gaps: number;
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -88,6 +99,7 @@ export interface PriorityBriefingResult {
 /** Cap the rendered feed so it stays digestible; counts still reflect the full set. */
 const MAX_SIGNALS = 60;
 const MAX_POSITIVES = 8;
+const MAX_RECORDING_GAPS = 24;
 
 const SEVERITY_ORDER: Record<SignalSeverity, number> = {
   critical: 0,
@@ -143,8 +155,22 @@ export function computeManagerPriorityBriefing(
   // 1. Flatten every engine's payload into atomic, severity-tagged signals.
   const collected: Omit<PrioritySignal, "rank">[] = [];
   const positives: string[] = [];
+  const recordingGaps: RecordingGap[] = [];
 
   for (const s of signals) {
+    // 0) Recording gap: the engine self-reports it has no data to assess. Its
+    //    "no data" insights are a "fill this in" task, not an active concern —
+    //    divert it so it never drowns out genuine signals in the priority feed.
+    if ((s.rating || "").toLowerCase().trim() === "insufficient_data") {
+      const firstCritical = (s.insights ?? []).find((i) => normaliseInsightSeverity(i.severity) != null)?.text?.trim();
+      recordingGaps.push({
+        label: s.label,
+        domain: s.domain,
+        message: s.headline?.trim() || firstCritical || "No data recorded yet.",
+      });
+      continue;
+    }
+
     // a) Rating-derived signal (one per engine, if poor)
     const ratingSev = ratingToSeverity(s.rating);
     if (ratingSev) {
@@ -272,11 +298,15 @@ export function computeManagerPriorityBriefing(
           ? "watch"
           : "stable";
 
+  const gapTail = recordingGaps.length > 0
+    ? ` ${recordingGaps.length} engine${recordingGaps.length === 1 ? "" : "s"} have no data to assess yet.`
+    : "";
+
   let headline: string;
   if (overall_status === "stable") {
     headline = input.engines_responded === 0
       ? "No intelligence available yet — engines returned no data."
-      : `No notable signals across ${input.engines_responded} engines. Routine monitoring only.`;
+      : `No active concerns across ${input.engines_responded} engines. Routine monitoring only.${gapTail}`;
   } else {
     const parts: string[] = [];
     if (total_critical > 0) parts.push(`${total_critical} critical`);
@@ -285,9 +315,9 @@ export function computeManagerPriorityBriefing(
     if (total_watch > 0) parts.push(`${total_watch} to watch`);
     const actionable = total_critical + total_high + total_warning;
     if (domains_at_risk.length > 0) {
-      headline = `${parts.join(", ")} signal${actionable === 1 ? "" : "s"} across ${domains_at_risk.length} domain${domains_at_risk.length === 1 ? "" : "s"} need your attention.`;
+      headline = `${parts.join(", ")} signal${actionable === 1 ? "" : "s"} across ${domains_at_risk.length} domain${domains_at_risk.length === 1 ? "" : "s"} need your attention.${gapTail}`;
     } else {
-      headline = `${parts.join(", ")} low-level item${total_watch === 1 ? "" : "s"} to keep an eye on; nothing critical or high-priority.`;
+      headline = `${parts.join(", ")} low-level item${total_watch === 1 ? "" : "s"} to keep an eye on; nothing critical or high-priority.${gapTail}`;
     }
   }
 
@@ -306,5 +336,7 @@ export function computeManagerPriorityBriefing(
     priority_signals,
     domain_rollup,
     positives: positives.slice(0, MAX_POSITIVES),
+    recording_gaps: recordingGaps.slice(0, MAX_RECORDING_GAPS),
+    total_recording_gaps: recordingGaps.length,
   };
 }
