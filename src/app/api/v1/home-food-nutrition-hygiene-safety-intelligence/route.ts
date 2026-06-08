@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const store = getStore();
-  const children = store.children ?? [];
+  const children = store.youngPeople ?? [];
   const today = new Date().toISOString().slice(0, 10);
 
   // Food budget week records → FoodBudgetInput[]

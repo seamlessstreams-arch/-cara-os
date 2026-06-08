@@ -65,7 +65,7 @@ export async function GET() {
   const result = computeHomeStrategicRisk({
     today, daily_risk_briefings, risk_register_entries, strategic_risks,
     risk_management_plans, risk_appetite_domains,
-    total_children: store.children?.length ?? 0,
+    total_children: store.youngPeople?.length ?? 0,
     total_staff: store.staff?.length ?? 0,
   });
 
