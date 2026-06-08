@@ -7918,6 +7918,947 @@ store.postIncidentChildDebriefs = [
   },
 ];
 
+// ── Social worker contact records (seed) ──────────────────────────────────────
+// Statutory visits / calls. Mixed: Alex timely visit seen-alone + an urgent
+// missing follow-up with an OVERDUE action; Jordan timely LAC review; Casey
+// not-seen-alone with no key decisions + overdue follow-up.
+store.socialWorkerContactRecords = [
+  {
+    id: "swc_alex_1",
+    child_id: "yp_alex",
+    social_worker_name: "Karen Holding",
+    social_worker_team: "Derby City Council — Children Looked After Team",
+    social_worker_email: "karen.holding@derby.gov.uk",
+    social_worker_phone: "01332 640123",
+    date: daysFromNow(-9),
+    time: "14:30",
+    contact_type: "statutory_visit" as const,
+    direction: "incoming" as const,
+    initiated_by: "social_worker" as const,
+    staff_member: "staff_edward",
+    purpose: "Six-weekly statutory visit under Care Planning Regulations — review of placement, safety and missing/exploitation risk.",
+    summary: "Karen visited and saw Alex alone in his bedroom for 40 minutes. Discussed his progress at college, his safety plan and the reduction in missing episodes since the return-home interview work. Reviewed his wishes about contact with his mother. Placement plan and risk assessment confirmed as up to date.",
+    key_decisions: [
+      "Maintain current placement at Oak House; no change to S20 arrangements",
+      "Continue weekly return-home interview follow-up with keyworker staff_edward",
+      "Refer to CSE/exploitation MACE panel for ongoing multi-agency oversight",
+    ],
+    action_items: [
+      { action: "Share updated risk assessment and missing-episode log with social worker", owner: "staff_edward", due_date: daysFromNow(-3), status: "completed" as const },
+      { action: "Send MACE referral form to placing authority", owner: "staff_darren", due_date: daysFromNow(-2), status: "completed" as const },
+    ],
+    child_aware: true,
+    child_views: "Alex said he feels safer at Oak House than at his last placement and wants to keep going to college. He asked whether he could see his mum more often.",
+    follow_up_required: true,
+    follow_up_date: daysFromNow(33),
+    documents_shared: ["Placement plan", "Risk assessment", "Missing-episode log"],
+    urgency: "routine" as const,
+    outcome: "Statutory visit completed; child seen alone; placement confirmed as meeting needs. Next visit scheduled.",
+    next_scheduled_contact: daysFromNow(33),
+  },
+  {
+    id: "swc_alex_2",
+    child_id: "yp_alex",
+    social_worker_name: "Karen Holding",
+    social_worker_team: "Derby City Council — Children Looked After Team",
+    social_worker_email: "karen.holding@derby.gov.uk",
+    social_worker_phone: "01332 640123",
+    date: daysFromNow(-2),
+    time: "09:15",
+    contact_type: "phone_call" as const,
+    direction: "outgoing" as const,
+    initiated_by: "home" as const,
+    staff_member: "staff_darren",
+    purpose: "Notify placing authority of missing-from-care episode and agree follow-up actions.",
+    summary: "Home called Karen to report that Alex went missing overnight on the evening of the previous day and returned at 07:40. Police were notified and a Philomena protocol form completed. Agreed a strategy discussion and an independent return-home interview. Karen to confirm a date for a multi-agency strategy meeting.",
+    key_decisions: [
+      "Convene multi-agency strategy discussion within 5 working days",
+      "Commission independent return-home interview",
+    ],
+    action_items: [
+      { action: "Complete and submit independent return-home interview report to social worker", owner: "staff_edward", due_date: daysFromNow(-1), status: "overdue" as const },
+      { action: "Send Philomena protocol form and missing log to placing authority", owner: "staff_darren", due_date: daysFromNow(1), status: "pending" as const },
+    ],
+    child_aware: true,
+    child_views: "Alex said he left to meet an older friend in town and did not think about the risk; he agreed to talk to the return-home interviewer.",
+    follow_up_required: true,
+    follow_up_date: null,
+    documents_shared: ["Missing-episode log"],
+    urgency: "urgent" as const,
+    outcome: "Episode reported to placing authority; strategy discussion to be scheduled by social worker — date not yet confirmed.",
+    next_scheduled_contact: null,
+  },
+  {
+    id: "swc_jordan_1",
+    child_id: "yp_jordan",
+    social_worker_name: "Michael Osei",
+    social_worker_team: "Nottinghamshire County Council — Children in Care Team",
+    social_worker_email: "michael.osei@nottscc.gov.uk",
+    social_worker_phone: "0115 977 4400",
+    date: daysFromNow(-13),
+    time: "11:00",
+    contact_type: "lac_review" as const,
+    direction: "incoming" as const,
+    initiated_by: "social_worker" as const,
+    staff_member: "staff_anna",
+    purpose: "Statutory Looked After Child review chaired by the IRO — review of care plan and progress.",
+    summary: "LAC review held at Oak House with the IRO, Michael, keyworker staff_anna and Jordan. Jordan presented as settled and engaged. Education attendance strong. Care plan reviewed and remains appropriate under his full care order. Jordan was seen alone by the IRO before the meeting.",
+    key_decisions: [
+      "Care plan endorsed by IRO; no changes required",
+      "Continue current education placement and therapeutic support",
+      "Next LAC review scheduled in line with statutory timescales",
+    ],
+    action_items: [
+      { action: "Circulate IRO review minutes to all attendees", owner: "staff_anna", due_date: daysFromNow(-6), status: "completed" as const },
+    ],
+    child_aware: true,
+    child_views: "Jordan said he is happy at Oak House, likes his school and his keyworker, and does not want anything to change.",
+    follow_up_required: false,
+    follow_up_date: null,
+    documents_shared: ["Care plan", "IRO review minutes", "Education report"],
+    urgency: "routine" as const,
+    outcome: "Statutory LAC review completed; care plan endorsed; child settled and seen alone.",
+    next_scheduled_contact: daysFromNow(75),
+  },
+  {
+    id: "swc_jordan_2",
+    child_id: "yp_jordan",
+    social_worker_name: "Michael Osei",
+    social_worker_team: "Nottinghamshire County Council — Children in Care Team",
+    social_worker_email: "michael.osei@nottscc.gov.uk",
+    social_worker_phone: "0115 977 4400",
+    date: daysFromNow(-4),
+    time: "16:20",
+    contact_type: "phone_call" as const,
+    direction: "incoming" as const,
+    initiated_by: "social_worker" as const,
+    staff_member: "staff_anna",
+    purpose: "Routine check-in between statutory visits.",
+    summary: "Michael called to check in on Jordan ahead of the next statutory visit. Confirmed Jordan remains settled, attendance is consistent and there are no safeguarding concerns. Agreed the next visit date.",
+    key_decisions: [],
+    action_items: [],
+    child_aware: true,
+    child_views: "Jordan asked staff to tell Michael that football training is going well.",
+    follow_up_required: false,
+    follow_up_date: null,
+    documents_shared: [],
+    urgency: "routine" as const,
+    outcome: "Routine check-in; no concerns; next statutory visit confirmed.",
+    next_scheduled_contact: daysFromNow(24),
+  },
+  {
+    id: "swc_casey_1",
+    child_id: "yp_casey",
+    social_worker_name: "Fiona Brennan",
+    social_worker_team: "Derbyshire County Council — Children in Care Team",
+    social_worker_email: "fiona.brennan@derbyshire.gov.uk",
+    social_worker_phone: "01629 533190",
+    date: daysFromNow(-21),
+    time: "13:45",
+    contact_type: "visit" as const,
+    direction: "incoming" as const,
+    initiated_by: "social_worker" as const,
+    staff_member: "staff_chervelle",
+    purpose: "Visit to discuss Casey's mental health presentation and medication review.",
+    summary: "Fiona visited to discuss recent low mood and the CAMHS medication review. Casey declined to be seen alone and asked staff_chervelle to remain present throughout. Discussed adherence to prescribed medication and the plan for the next CAMHS appointment. No formal decisions were minuted during the visit and these remain to be confirmed with CAMHS.",
+    key_decisions: [],
+    action_items: [
+      { action: "Confirm next CAMHS appointment date and share with social worker", owner: "staff_chervelle", due_date: daysFromNow(-7), status: "overdue" as const },
+      { action: "Provide medication adherence summary to placing authority", owner: "staff_diane", due_date: daysFromNow(5), status: "pending" as const },
+    ],
+    child_aware: true,
+    child_views: "Casey said she did not want to talk about her mood that day but agreed to keep taking her medication.",
+    follow_up_required: true,
+    follow_up_date: null,
+    documents_shared: ["Medication record"],
+    urgency: "urgent" as const,
+    outcome: "Visit completed but child declined to be seen alone; key decisions and follow-up date still outstanding pending CAMHS.",
+    next_scheduled_contact: null,
+  },
+];
+
+// ── Sibling contact protocols (seed) ──────────────────────────────────────────
+// Mixed: Jordan strong/regular contact with his older brother (current review,
+// court order with terms); Alex strained/infrequent with younger sister (a gap,
+// no agreed plan, review ageing). Casey has no siblings in care (omitted).
+store.siblingContactProtocolRecords = [
+  {
+    id: "scp_jordan_1",
+    child_id: "yp_jordan",
+    sibling_name: "Liam M",
+    sibling_placement: "Foster placement (separate)",
+    sibling_location: "Greenfield Fostering, approx. 18 miles from Oak House",
+    relationship_pre_oak_house: "Jordan and his older brother Liam lived together until Jordan's admission. Liam was a consistent protective figure throughout childhood, often shielding Jordan during periods of family disruption.",
+    current_relationship_quality: "strong" as const,
+    contact_frequency: "fortnightly" as const,
+    contact_types: ["face_to_face_supervised", "phone", "video_call"],
+    agreed_contact_plan: "Fortnightly supervised face-to-face contact at a neutral community venue, alternating with a midweek video call. Plan agreed at the LAC review and signed off by Jordan's social worker.",
+    child_preferences: "Jordan has said he wants to keep seeing Liam 'as much as possible' and prefers visits where they can do an activity together rather than just sitting and talking. He asked that staff he knows, ideally Anna, support the visits.",
+    sibling_preferences: "Liam has expressed a strong wish to remain a positive presence in Jordan's life and is happy with the fortnightly rhythm. He has asked to be kept informed of any changes to Jordan's circumstances.",
+    risk_factors_to_contact: [],
+    protective_factors_to_contact: [
+      "Long-standing protective bond predating care",
+      "Both boys consistently regulate well during and after contact",
+      "Liam's foster carers actively support and facilitate the arrangement",
+    ],
+    supervision_required: true,
+    supervision_level: "Light-touch supervision by a familiar key worker; staff remain present but step back to allow natural interaction.",
+    transport_arrangements: "Oak House staff transport Jordan to and from the contact venue by car; journey time approx. 30 minutes each way.",
+    contact_costs_budget: "Covered within the placement contact budget; approx. £25 per session for venue and activity costs.",
+    locations_for_contact: ["Riverside Community Centre", "Local leisure centre", "Oak House (occasional)"],
+    favourite_sibling_activities: ["Five-a-side football", "Bowling", "Cooking a meal together"],
+    birthday_celebration_plan: "Both boys' birthdays fall in the summer. Plan agreed for Liam to attend a small celebration at Oak House for Jordan's birthday, and for Jordan to be supported to choose and send a gift for Liam's.",
+    christmas_arrangements: "A pre-Christmas joint visit is planned with a shared meal and present exchange, agreed in advance with both placements and the local authority.",
+    court_ordered_contact: true,
+    court_order_terms: "Contact order specifies a minimum of monthly direct contact between Jordan and Liam, to be supervised and reviewed at each LAC review. Current arrangements exceed the ordered minimum.",
+    recent_contacts: [
+      {
+        date: daysFromNow(-6),
+        type: "face_to_face_supervised",
+        observations: "Relaxed, warm visit at the community centre. The boys played football and chatted easily. Liam asked thoughtful questions about how Jordan is settling at school.",
+        child_mood_after: "Settled and upbeat; talked positively about the visit for the rest of the evening.",
+      },
+      {
+        date: daysFromNow(-13),
+        type: "video_call",
+        observations: "Brief midweek video call. Good humoured; they made plans for the next face-to-face session.",
+        child_mood_after: "Content and looking forward to seeing Liam in person.",
+      },
+      {
+        date: daysFromNow(-20),
+        type: "face_to_face_supervised",
+        observations: "Bowling session. Some natural competitiveness but managed well. Liam was encouraging and Jordan responded warmly.",
+        child_mood_after: "Calm and cheerful; no concerns.",
+      },
+    ],
+    ongoing_sibling_themes: [
+      "Maintaining the protective bond as both boys move through adolescence",
+      "Supporting Jordan to manage occasional sadness between visits",
+    ],
+    review_date: daysFromNow(-18),
+    reviewed_by: "staff_anna",
+  },
+  {
+    id: "scp_alex_1",
+    child_id: "yp_alex",
+    sibling_name: "Mia W",
+    sibling_placement: "Living with maternal grandmother (kinship arrangement)",
+    sibling_location: "Maternal grandmother's home, approx. 40 miles away",
+    relationship_pre_oak_house: "Alex and his younger sister Mia were separated when Alex came into care. They had a close relationship in early childhood, though contact has been intermittent over the past two years.",
+    current_relationship_quality: "strained" as const,
+    contact_frequency: "less_than_monthly" as const,
+    contact_types: ["phone"],
+    agreed_contact_plan: "",
+    child_preferences: "Alex says he values his relationship with Mia and would like to see her more, but feels let down when planned calls don't happen. He has been reluctant to commit to fixed arrangements as a result.",
+    sibling_preferences: "",
+    risk_factors_to_contact: [
+      "Logistics complicated by distance and grandmother's limited availability",
+      "Previous cancellations have eroded Alex's trust in the arrangement",
+    ],
+    protective_factors_to_contact: [
+      "Alex remains motivated to maintain the relationship",
+    ],
+    supervision_required: false,
+    supervision_level: "Unsupervised phone contact appropriate to Alex's age (16); staff support to set up and follow up.",
+    transport_arrangements: "",
+    contact_costs_budget: "",
+    locations_for_contact: [],
+    favourite_sibling_activities: ["Gaming online together", "Going to the cinema"],
+    birthday_celebration_plan: "",
+    christmas_arrangements: "",
+    court_ordered_contact: false,
+    court_order_terms: "",
+    recent_contacts: [
+      {
+        date: daysFromNow(-41),
+        type: "phone",
+        observations: "Short phone call arranged through the grandmother. Alex and Mia talked about school and gaming. Warm but brief; Alex mentioned afterwards he wished it had been longer.",
+        child_mood_after: "Pleased to have spoken to Mia but a little flat that contact is so infrequent.",
+      },
+    ],
+    ongoing_sibling_themes: [
+      "Rebuilding consistency and trust in the contact arrangement",
+      "Exploring whether face-to-face contact can be re-established",
+      "Capturing Mia's wishes and feelings directly",
+    ],
+    review_date: daysFromNow(-86),
+    reviewed_by: "staff_edward",
+  },
+];
+
+// ── Placement impact assessments (seed) ───────────────────────────────────────
+// Impact of each placement on the existing group. Mixed: Alex high-risk
+// approved-with-conditions (review OVERDUE); Jordan low/positive; Casey medium
+// with monitoring (early review approaching).
+store.placementImpactAssessments = [
+  {
+    id: "pia_alex_1",
+    referral_name: "Alex",
+    referral_age: 16,
+    referral_gender: "Male",
+    referral_la: "Derby City Council",
+    assessed_by: "staff_darren",
+    assessment_date: "2026-05-20",
+    status: "approved_with_conditions" as const,
+    overall_risk: "high" as const,
+    decision: "Admit with enhanced supervision and a staged introduction plan.",
+    decision_rationale:
+      "Alex (S20, history of child exploitation, missing-from-home episodes and self-harm) presents a higher-risk profile than the existing group. Admission is supported because the home can provide the targeted CSE and self-harm support Alex needs, but only on the condition that group dynamics are actively managed and a robust missing/CSE response is in place. The benefits to Alex of a settled, therapeutic placement are judged to outweigh the manageable risks to the existing children, provided the conditions below are met.",
+    impact_on_existing: [
+      {
+        child_id: "yp_jordan",
+        risk_level: "medium" as const,
+        considerations: [
+          "Jordan (14, settled under S31) is younger and at a different developmental stage; exposure to older peer with exploitation history requires care.",
+          "Risk of Jordan being drawn into missing episodes or unsafe peer association if relationship forms.",
+        ],
+        mitigations: [
+          "Stagger free-association time and supervise shared communal periods during the first six weeks.",
+          "Keep-safe and healthy-relationships work refreshed with Jordan by key worker.",
+          "Staff to monitor and record any attempts at boundary-testing or recruitment behaviour.",
+        ],
+        child_view:
+          "Jordan said he 'doesn't mind someone new' but wants to keep his routine and his room as his own space.",
+      },
+      {
+        child_id: "yp_casey",
+        risk_level: "high" as const,
+        considerations: [
+          "Casey (16, presenting with low mood) may be negatively affected by exposure to Alex's self-harm presentation.",
+          "Two 16-year-olds with overlapping emotional vulnerability could reinforce each other's low mood or risk behaviours.",
+        ],
+        mitigations: [
+          "Separate emotional-wellbeing support sessions so the two are not co-regulating risk.",
+          "CAMHS/clinical consultation requested re: contagion risk around self-harm.",
+          "Daily mood check-ins for Casey for first month, escalation threshold agreed with team.",
+        ],
+        child_view:
+          "Casey was quiet when asked but said she 'would give it a go' and trusts staff to keep things calm.",
+      },
+    ],
+    compatibility_factors: [
+      { factor: "Age alignment with Casey (both 16) supports peer companionship", rating: "positive" as const },
+      { factor: "Shared interest in football and gaming with Jordan", rating: "positive" as const },
+      { factor: "Exploitation/missing history vs settled group raises group-safety concern", rating: "concern" as const },
+      { factor: "Self-harm presentation alongside Casey's low mood raises contagion concern", rating: "concern" as const },
+      { factor: "Gender mix in home remains balanced", rating: "neutral" as const },
+    ],
+    staffing_implications: [
+      "Enhanced 2:1 supervision required during community access for first four weeks.",
+      "Additional waking-night cover requested to manage missing/return risk overnight.",
+      "Key-worker capacity reviewed; staff_edward allocated as Alex's key worker.",
+    ],
+    environmental_considerations: [
+      "Bedroom allocated furthest from Casey to reduce night-time risk interaction.",
+      "Ligature audit of allocated room completed prior to admission.",
+    ],
+    safeguarding_considerations: [
+      "Active CSE risk: missing-from-home protocol and Philomena trigger plan in place.",
+      "Self-harm risk: individual risk-management plan and means-reduction measures agreed.",
+      "Information-sharing agreement with police CSE team and placing LA confirmed.",
+    ],
+    conditions: [
+      "Staged introduction over two weeks with daily group-dynamics review.",
+      "Missing-from-home and CSE response plan signed off before first community access.",
+      "Clinical consultation on self-harm contagion completed within 14 days of admission.",
+      "Impact assessment reviewed at four weeks post-admission.",
+    ],
+    review_date: daysFromNow(-3),
+    notes:
+      "Review is now overdue — four-week post-admission review should have taken place on 2026-06-05. RM to schedule urgently and confirm conditions remain met.",
+    created_at: "2026-05-20T09:30:00.000Z",
+  },
+  {
+    id: "pia_jordan_1",
+    referral_name: "Jordan",
+    referral_age: 14,
+    referral_gender: "Male",
+    referral_la: "Nottinghamshire County Council",
+    assessed_by: "staff_ryan",
+    assessment_date: "2026-04-12",
+    status: "approved" as const,
+    overall_risk: "low" as const,
+    decision: "Admit. No conditions required.",
+    decision_rationale:
+      "Jordan (S31, settled and well-regulated) presents a low-impact, positive addition to the group. There are no identified safeguarding flags that would destabilise the existing children, and Jordan's calm presentation is expected to have a steadying influence. Placement supported without conditions.",
+    impact_on_existing: [
+      {
+        child_id: "yp_alex",
+        risk_level: "low" as const,
+        considerations: [
+          "Alex is older and higher-risk; need to ensure Jordan is not exposed to unsafe peer influence.",
+        ],
+        mitigations: [
+          "Age-appropriate boundaries and supervised shared time maintained.",
+          "Key worker to check in with Jordan weekly on peer relationships.",
+        ],
+        child_view:
+          "Jordan said he gets on okay with Alex and they 'play FIFA sometimes'.",
+      },
+      {
+        child_id: "yp_casey",
+        risk_level: "low" as const,
+        considerations: [
+          "Casey's low mood could occasionally affect the communal atmosphere; Jordan is resilient and unlikely to be destabilised.",
+        ],
+        mitigations: [
+          "Staff to model supportive peer interaction and reassure Jordan if needed.",
+        ],
+        child_view:
+          "Jordan said Casey is 'alright' and he likes that the house is quiet.",
+      },
+    ],
+    compatibility_factors: [
+      { factor: "Calm, settled presentation has a stabilising effect on the group", rating: "positive" as const },
+      { factor: "Shared gaming and football interests with both peers", rating: "positive" as const },
+      { factor: "Engages well with structure and routine", rating: "positive" as const },
+      { factor: "Youngest in the group — developmental gap to monitor", rating: "neutral" as const },
+    ],
+    staffing_implications: [
+      "No additional staffing required beyond standard ratios.",
+    ],
+    environmental_considerations: [
+      "Standard bedroom allocation; no specific adaptations required.",
+    ],
+    safeguarding_considerations: [
+      "No active safeguarding flags; routine LAC safeguarding monitoring applies.",
+    ],
+    conditions: [],
+    review_date: daysFromNow(45),
+    notes:
+      "Settled placement, no concerns at last check. Routine six-monthly review scheduled.",
+    created_at: "2026-04-12T11:00:00.000Z",
+  },
+  {
+    id: "pia_casey_1",
+    referral_name: "Casey",
+    referral_age: 16,
+    referral_gender: "Female",
+    referral_la: "Derbyshire County Council",
+    assessed_by: "staff_darren",
+    assessment_date: "2026-05-02",
+    status: "approved" as const,
+    overall_risk: "medium" as const,
+    decision: "Admit with monitoring plan.",
+    decision_rationale:
+      "Casey (S31, presenting with persistent low mood) is assessed as a medium-impact placement. The home can meet Casey's emotional-wellbeing needs and the existing group is broadly compatible, but the interaction between Casey's low mood and Alex's self-harm presentation requires ongoing monitoring rather than formal conditions. Placement supported with a defined monitoring plan and an early review.",
+    impact_on_existing: [
+      {
+        child_id: "yp_alex",
+        risk_level: "medium" as const,
+        considerations: [
+          "Casey's low mood and Alex's self-harm history could interact; risk of mutual emotional escalation.",
+        ],
+        mitigations: [
+          "Separate one-to-one emotional support sessions for each young person.",
+          "Staff alert to any shared rumination or risk-reinforcing conversations and to redirect.",
+        ],
+        child_view:
+          "Casey said she finds Alex 'easy to talk to' but sometimes their chats 'get a bit heavy'.",
+      },
+      {
+        child_id: "yp_jordan",
+        risk_level: "low" as const,
+        considerations: [
+          "Jordan is younger and settled; minimal expected impact from Casey's presentation.",
+        ],
+        mitigations: [
+          "Maintain Jordan's routine; reassure if communal atmosphere is low.",
+        ],
+        child_view:
+          "Casey said Jordan is 'fine, a bit younger' and they 'don't really clash'.",
+      },
+    ],
+    compatibility_factors: [
+      { factor: "Age alignment with Alex (both 16) supports peer companionship", rating: "positive" as const },
+      { factor: "Engages well with female staff and key-work sessions", rating: "positive" as const },
+      { factor: "Low mood interacting with Alex's self-harm presentation", rating: "concern" as const },
+      { factor: "Gender balance in the home maintained", rating: "neutral" as const },
+    ],
+    staffing_implications: [
+      "Allocate a consistent key worker (staff_chervelle) for emotional-wellbeing continuity.",
+      "Daily mood check-ins built into shift handover for the first month.",
+    ],
+    environmental_considerations: [
+      "Bedroom located away from Alex's room to provide a calm personal space.",
+      "Quiet communal area made available for low-stimulation downtime.",
+    ],
+    safeguarding_considerations: [
+      "Low mood with no current self-harm but monitor for emergence given peer context.",
+      "Clear escalation threshold agreed with team and CAMHS referral pathway confirmed.",
+    ],
+    conditions: [],
+    review_date: daysFromNow(6),
+    notes:
+      "Monitoring plan active. Early review approaching this week to check mood trajectory and peer-interaction risk with Alex.",
+    created_at: "2026-05-02T14:15:00.000Z",
+  },
+];
+
+// ── Contextual safeguarding risks (seed) ──────────────────────────────────────
+// Mixed: Alex very-high CCE (escalated, full multi-agency, review going overdue)
+// + high peer/community; Casey medium online; Jordan low online-safety (no
+// multi-agency — a deliberate coverage contrast).
+store.contextualSafeguardingRisks = [
+  {
+    id: "csr_alex_1",
+    date_identified: "2026-03-12",
+    last_reviewed: daysFromNow(-9),
+    identified_by: "staff_edward",
+    context_type: "online_space" as const,
+    risk_level: "very_high" as const,
+    status: "escalated" as const,
+    location_or_context: "County-lines criminal exploitation — local park, train line to coastal town, encrypted messaging apps",
+    description:
+      "Alex (yp_alex, 16, S20) is being criminally exploited through a county-lines drug network. Recruited via an older peer met online, now coerced into carrying packages on the rail route to the coast. Two missing-from-care episodes linked to drug-running trips. Recovered with a second mobile phone and cash he cannot account for. NRM referral submitted; matter discussed at MACE/exploitation panel.",
+    children_affected: ["yp_alex"],
+    risk_factors: [
+      "Recruited online by older peer posing as a friend",
+      "Going missing from care to run drugs on the coastal rail line",
+      "Found with an unexplained second phone and large amounts of cash",
+      "Coercion and threats of violence used to maintain control",
+      "Debt bondage — told he 'owes' money for lost stock",
+    ],
+    protective_actions: [
+      "NRM (National Referral Mechanism) referral submitted as a potential child victim of modern slavery",
+      "Return-from-missing interviews completed by independent worker after every episode",
+      "Trusted-relationships key-work sessions with staff_edward focused on exploitation awareness",
+      "Rail-network safeguarding alert and ticket-office flag for the coastal route",
+      "Phone and finances monitored with Alex's knowledge as part of his safety plan",
+    ],
+    multi_agency_actions: [
+      "MACE / multi-agency child exploitation panel — Alex is a standing agenda item",
+      "Police county-lines unit holding active intelligence and a named officer",
+      "Children's social care (S20) strategy discussion held under child-exploitation procedures",
+      "British Transport Police notified of rail-route exploitation pattern",
+    ],
+    police_intelligence:
+      "County-lines unit confirms the line Alex is linked to is under active disruption; two associated adults are persons of interest. BTP holds CCTV placing Alex at the coastal interchange on both missing episodes.",
+    community_mapping:
+      "Hotspots mapped: the park bandstand (recruitment/handover), the station forecourt and the 17:40 coastal service. Known associate addresses near the coast flagged. Map shared with police and updated after each missing episode.",
+    review_date: daysFromNow(4),
+    created_at: "2026-03-12",
+  },
+  {
+    id: "csr_alex_2",
+    date_identified: "2026-04-02",
+    last_reviewed: daysFromNow(-16),
+    identified_by: "staff_darren",
+    context_type: "peer_group" as const,
+    risk_level: "high" as const,
+    status: "active" as const,
+    location_or_context: "Peer/community risk — town-centre group congregating around the shopping precinct and bus interchange",
+    description:
+      "Alongside the exploitation concern, Alex associates with an older peer group in the town centre that normalises offending and substance use. The group acts as a pull factor during missing episodes and reinforces the exploitative relationships. Community-based, not online-driven, so managed as a distinct contextual risk.",
+    children_affected: ["yp_alex"],
+    risk_factors: [
+      "Older peers with known offending histories acting as a pull factor",
+      "Town centre used as a congregation point during missing-from-care episodes",
+      "Group normalises cannabis use and low-level offending",
+      "Reduced school attendance correlating with time spent with the group",
+    ],
+    protective_actions: [
+      "Positive-activities plan offering alternatives during high-risk evenings and weekends",
+      "Staggered, staffed return-to-education plan with the virtual school",
+      "Curfew and whereabouts agreement built with Alex rather than imposed",
+    ],
+    multi_agency_actions: [
+      "Detached youth-work team engaging the town-centre group",
+      "Neighbourhood policing team aware and conducting reassurance patrols",
+    ],
+    police_intelligence:
+      "Neighbourhood team confirms the precinct group is on their radar for anti-social behaviour; no current charges against Alex but several associates are known.",
+    community_mapping:
+      "Precinct, bus interchange and adjacent fast-food outlet mapped as the group's core footprint, with peak congregation Friday/Saturday evenings.",
+    review_date: daysFromNow(-3),
+    created_at: "2026-04-02",
+  },
+  {
+    id: "csr_casey_1",
+    date_identified: "2026-04-21",
+    last_reviewed: daysFromNow(-12),
+    identified_by: "staff_chervelle",
+    context_type: "online_space" as const,
+    risk_level: "medium" as const,
+    status: "monitoring" as const,
+    location_or_context: "Social media and an older peer group that gathers to drink",
+    description:
+      "Casey (yp_casey, 16, S31) spends significant time on social media and has begun socialising with an older peer group that drinks alcohol in the local rec ground. No exploitation indicators, but the age gap, alcohol exposure and contact from unknown online accounts warrant active monitoring and CSE awareness work.",
+    children_affected: ["yp_casey"],
+    risk_factors: [
+      "Friendship group includes peers 2–3 years older who drink alcohol",
+      "Unsolicited contact and friend requests from unknown adult-presenting accounts",
+      "Sharing of location-tagged content on public social-media profiles",
+    ],
+    protective_actions: [
+      "Online-safety and healthy-relationships key-work sessions with staff_chervelle",
+      "CSE awareness work covering grooming indicators and exit routes",
+      "Agreed privacy-settings review and check-ins on who she is meeting",
+    ],
+    multi_agency_actions: [
+      "School pastoral lead briefed and reinforcing online-safety messaging",
+    ],
+    police_intelligence: "",
+    community_mapping:
+      "Recreation ground pavilion identified as the group's usual meeting point; informal mapping of social-media accounts making contact.",
+    review_date: daysFromNow(21),
+    created_at: "2026-04-21",
+  },
+  {
+    id: "csr_jordan_1",
+    date_identified: "2026-05-15",
+    last_reviewed: daysFromNow(-7),
+    identified_by: "staff_anna",
+    context_type: "online_space" as const,
+    risk_level: "low" as const,
+    status: "monitoring" as const,
+    location_or_context: "Online gaming and messaging — age-appropriate, low-level monitoring only",
+    description:
+      "Jordan (yp_jordan, 14, S31) uses online gaming platforms and chats with peers from school. No exploitation or grooming indicators. Routine online-safety education and light peer monitoring in place as good practice rather than in response to a specific threat.",
+    children_affected: ["yp_jordan"],
+    risk_factors: [
+      "Voice chat with players outside his known friendship circle",
+      "Age-typical curiosity about social-media platforms with minimum-age limits",
+    ],
+    protective_actions: [
+      "Age-appropriate online-safety education delivered by staff_anna",
+      "Parental-control and screen-time agreement reviewed with Jordan",
+    ],
+    multi_agency_actions: [],
+    police_intelligence: "",
+    community_mapping: "",
+    review_date: daysFromNow(35),
+    created_at: "2026-05-15",
+  },
+];
+
+// ── Staff recognition & morale (seed, staff-denominated) ──────────────────────
+// Mixed recognition types/sources: above-and-beyond, quiet excellence,
+// innovation, peer nomination, and a child-nominated quiet thank-you.
+store.staffRecognitionRecords = [
+  {
+    id: "rec_edward_1",
+    date: daysFromNow(-9),
+    staff_member: "staff_edward",
+    recognition_type: "above_and_beyond" as const,
+    recognised_by: "registered_manager" as const,
+    recognised_by_name: "Darren Laville",
+    what_happened:
+      "During a period of heightened distress, Edward stayed calm and used trauma-informed de-escalation with Alex, naming the feeling, offering choice, and giving space without withdrawing connection. He stayed past the end of his shift to make sure Alex felt safe before handover.",
+    impact_description:
+      "Alex moved from crisis to settled within the hour without any physical intervention, and later told staff he 'felt heard for once'. The approach modelled exactly the relational practice the home is working towards.",
+    child_impact:
+      "Alex avoided a likely restraint and went to bed settled. He has since sought Edward out as a trusted adult on three separate occasions.",
+    organisational_impact:
+      "Demonstrates trauma-informed practice in line with the home's behaviour support ethos; used as a worked example in the following team meeting.",
+    way_marked: ["verbal_recognition", "team_meeting_share", "wall_of_awesome"] as const,
+    monetary_value: 0,
+    public_celebration: true,
+    child_contributed_nomination: false,
+    staff_response:
+      "Thanked the team and said it 'means a lot to know the slower, relational approach is valued — it's why I came into this work'.",
+    reflection_from_manager:
+      "Edward consistently models the regulated, curious adult our young people need. A genuine strength to build the wider team's practice around.",
+  },
+  {
+    id: "rec_anna_1",
+    date: daysFromNow(-6),
+    staff_member: "staff_anna",
+    recognition_type: "quiet_excellence" as const,
+    recognised_by: "deputy" as const,
+    recognised_by_name: "Ryan Forsythe",
+    what_happened:
+      "Anna quietly and consistently supported Jordan through a difficult first fortnight in placement — building a predictable morning routine, sitting with him at mealtimes, and noticing the small things that helped him settle, without ever making it a fuss.",
+    impact_description:
+      "Jordan's transition into the home was markedly smoother than expected. Anna's steady, low-key consistency was the single biggest factor staff identified in him settling.",
+    child_impact:
+      "Jordan went from refusing breakfast and isolating in his room to joining the household for meals and engaging in education planning within two weeks.",
+    organisational_impact:
+      "A model of the unglamorous, reliable keywork that underpins successful admissions.",
+    way_marked: ["verbal_recognition", "card_handwritten_note"] as const,
+    monetary_value: 0,
+    public_celebration: false,
+    child_contributed_nomination: false,
+    staff_response:
+      "Was surprised to be recognised, saying she 'was just doing the job' — appreciated that the quiet work had been noticed.",
+    reflection_from_manager:
+      "The kind of dependable, attuned practice that rarely makes a headline but makes placements work. Important that we name and value it.",
+  },
+  {
+    id: "rec_chervelle_1",
+    date: daysFromNow(-4),
+    staff_member: "staff_chervelle",
+    recognition_type: "innovation" as const,
+    recognised_by: "registered_manager" as const,
+    recognised_by_name: "Darren Laville",
+    what_happened:
+      "Chervelle designed and led a personalised sleep plan for Casey, drawing on what she had noticed about Casey's bedtime triggers — adjusting lighting, introducing a wind-down routine and a consistent check-in, and coordinating it across the staff team so it was applied the same way every night.",
+    impact_description:
+      "A creative, child-led intervention that the whole team could follow consistently. Casey's recorded night-time disturbances dropped from most nights to occasional within three weeks.",
+    child_impact:
+      "Casey is sleeping through far more often, is less dysregulated in the mornings, and her engagement in education has visibly improved.",
+    organisational_impact:
+      "The sleep plan template has been adopted as a reusable approach for other young people with disrupted sleep.",
+    way_marked: ["verbal_recognition", "team_meeting_share", "voucher_token"] as const,
+    monetary_value: 25,
+    public_celebration: true,
+    child_contributed_nomination: false,
+    staff_response:
+      "Pleased the plan was being shared more widely and offered to coach colleagues through adapting it for other young people.",
+    reflection_from_manager:
+      "Chervelle turned close observation into a practical, replicable intervention. Exactly the kind of initiative we want to grow.",
+  },
+  {
+    id: "rec_lackson_1",
+    date: daysFromNow(-3),
+    staff_member: "staff_lackson",
+    recognition_type: "team_contribution" as const,
+    recognised_by: "peer" as const,
+    recognised_by_name: "Diane",
+    what_happened:
+      "Peer nomination: Lackson covered two short-notice shifts during a staffing gap and stayed back to support a colleague through a difficult incident debrief, all without being asked and without complaint.",
+    impact_description:
+      "Kept the home safely staffed during a pressured week and made sure a colleague didn't carry a hard shift alone. Lifted morale across the team at exactly the right moment.",
+    child_impact:
+      "Young people experienced consistent, familiar staffing rather than agency cover during an unsettled period.",
+    organisational_impact:
+      "Protected safe staffing levels and reinforced a culture of looking out for one another.",
+    way_marked: ["verbal_recognition", "newsletter_mention"] as const,
+    monetary_value: 0,
+    public_celebration: true,
+    child_contributed_nomination: false,
+    staff_response:
+      "Said the team 'are like family' and that he was glad to help out when it was needed.",
+    reflection_from_manager:
+      "A peer nomination like this speaks volumes. Lackson is the colleague everyone is quietly grateful for.",
+  },
+  {
+    id: "rec_diane_1",
+    date: daysFromNow(-2),
+    staff_member: "staff_diane",
+    recognition_type: "child_recognised" as const,
+    recognised_by: "child" as const,
+    recognised_by_name: "Young person (Casey)",
+    what_happened:
+      "Casey asked a member of staff to pass on a quiet thank-you to Diane for 'always listening and never making a big deal of it' when she was having a hard time, and for helping her feel okay about going to her football trial.",
+    impact_description:
+      "A child-led recognition of the trusting, dependable relationship Diane has built. The kind of feedback that matters most because it comes directly from a young person.",
+    child_impact:
+      "Casey attended her football trial and has been more willing to talk to staff when things are difficult, citing Diane as someone she trusts.",
+    organisational_impact:
+      "Evidence of relationship-based practice landing where it counts — in how safe a young person feels.",
+    way_marked: ["card_handwritten_note"] as const,
+    monetary_value: 0,
+    public_celebration: false,
+    child_contributed_nomination: true,
+    staff_response:
+      "Was visibly moved and asked that her thanks be passed back to Casey for trusting her.",
+    reflection_from_manager:
+      "Recognition from a young person is the highest form there is. Diane has quietly earned Casey's trust, and that is everything in this work.",
+  },
+];
+
+// ── Management walkrounds & oversight (seed, staff-denominated) ────────────────
+// RM/Deputy walkrounds over recent weeks: day/evening/unannounced-night/weekly/
+// post-incident. Mixed observations + a couple of outstanding follow-up actions.
+store.managementWalkrounds = [
+  {
+    id: "walk_1",
+    date: daysFromNow(-2),
+    time: "10:15",
+    manager: "staff_darren",
+    walkround_type: "daily" as const,
+    duration_minutes: 35,
+    areas_visited: ["Lounge", "Kitchen", "Hallway", "Garden", "Bedrooms (communal landing)"],
+    observations_positive: [
+      { area: "Kitchen", observation: "Breakfast running calmly; staff sat with young people rather than supervising from the doorway.", staff_or_child_or_thing: "staff_edward" },
+      { area: "Lounge", observation: "Young person's artwork displayed on the wall — home feels personalised and cared for.", staff_or_child_or_thing: "Environment" },
+      { area: "Garden", observation: "Edward had set up a football activity that two young people were genuinely enjoying.", staff_or_child_or_thing: "staff_edward" },
+    ],
+    observations_for_improvement: [
+      { area: "Hallway", observation: "Fire exit signage by the back door partially obscured by a coat rack.", action_agreed: "Coat rack relocated and signage line-of-sight checked." },
+    ],
+    child_interactions: [
+      { child_initial: "J", observation: "Chatted with J over breakfast — said he was looking forward to his contact call this afternoon." },
+      { child_initial: "C", observation: "C showed me a drawing; relaxed and happy to talk." },
+    ],
+    staff_interactions: [
+      { staff_member: "staff_edward", observation: "Warm, attuned interactions with the young people; modelled good boundaries calmly." },
+      { staff_member: "staff_anna", observation: "Handover notes thorough; Anna flagged a low mood for one young person proactively." },
+    ],
+    environmental_checks: [
+      { area: "Kitchen", status: "good" as const },
+      { area: "Lounge", status: "good" as const },
+      { area: "Hallway", status: "action_taken_in_moment" as const },
+      { area: "Garden", status: "good" as const },
+    ],
+    book_or_record_reviews: ["Daily log", "Medication administration record", "Communication book"],
+    immediate_actions_taken: ["Relocated coat rack obscuring fire exit signage."],
+    follow_up_actions_logged: [
+      { action: "Confirm fire signage sight-lines on next health & safety walk.", owner: "staff_ryan", deadline: daysFromNow(-1) },
+    ],
+    themes_emerging: ["Warm staff-child relationships", "Home environment well personalised"],
+    positive_staff_practice_noted: ["Edward's attuned engagement during the football activity"],
+    follow_up_date: daysFromNow(5),
+    created_at: daysFromNow(-2),
+  },
+  {
+    id: "walk_2",
+    date: daysFromNow(-6),
+    time: "19:40",
+    manager: "staff_ryan",
+    walkround_type: "daily" as const,
+    duration_minutes: 30,
+    areas_visited: ["Lounge", "Kitchen", "Dining area", "Bedrooms (landing)", "Bathroom"],
+    observations_positive: [
+      { area: "Dining area", observation: "Evening meal eaten together at the table; relaxed conversation, no devices out.", staff_or_child_or_thing: "staff_chervelle" },
+      { area: "Lounge", observation: "Chervelle supporting a young person with homework patiently after dinner.", staff_or_child_or_thing: "staff_chervelle" },
+    ],
+    observations_for_improvement: [
+      { area: "Bathroom", observation: "Shared bathroom low on hand towels and toiletries running down.", action_agreed: "Restock from store cupboard tonight; add to weekly order." },
+      { area: "Bedrooms (landing)", observation: "Landing light flickering — could be unsettling at night.", action_agreed: "Maintenance to replace fitting; logged on the maintenance tracker." },
+    ],
+    child_interactions: [
+      { child_initial: "C", observation: "Asked C how her day at school went — opened up about a friendship worry; reassured and logged for key worker." },
+    ],
+    staff_interactions: [
+      { staff_member: "staff_chervelle", observation: "Calm, nurturing approach over the evening routine; good use of praise." },
+      { staff_member: "staff_diane", observation: "Diane managing the kitchen well but seemed stretched covering two tasks at once." },
+    ],
+    environmental_checks: [
+      { area: "Kitchen", status: "good" as const },
+      { area: "Dining area", status: "good" as const },
+      { area: "Bathroom", status: "needs_attention" as const },
+      { area: "Bedrooms (landing)", status: "needs_attention" as const },
+    ],
+    book_or_record_reviews: ["Daily log", "Maintenance tracker"],
+    immediate_actions_taken: ["Bathroom toiletries and hand towels restocked during the round."],
+    follow_up_actions_logged: [
+      { action: "Maintenance to replace flickering landing light fitting.", owner: "staff_ryan", deadline: daysFromNow(-1) },
+      { action: "Add bathroom toiletries to the standing weekly order.", owner: "staff_diane", deadline: daysFromNow(-3) },
+    ],
+    themes_emerging: ["Evening routines settled and homely", "Minor environment/maintenance items recurring"],
+    positive_staff_practice_noted: ["Chervelle's patient homework support after a busy shift"],
+    follow_up_date: daysFromNow(1),
+    created_at: daysFromNow(-6),
+  },
+  {
+    id: "walk_3",
+    date: daysFromNow(-11),
+    time: "23:30",
+    manager: "staff_darren",
+    walkround_type: "unannounced" as const,
+    duration_minutes: 25,
+    areas_visited: ["Staff office", "Lounge", "Kitchen", "Bedrooms (landing)", "Sleep-in room"],
+    observations_positive: [
+      { area: "Staff office", observation: "Night staff alert, awake and recording observations contemporaneously — not asleep or distracted.", staff_or_child_or_thing: "staff_anna" },
+      { area: "Bedrooms (landing)", observation: "Night checks being completed on time and discreetly; landing calm and quiet.", staff_or_child_or_thing: "staff_anna" },
+    ],
+    observations_for_improvement: [
+      { area: "Kitchen", observation: "Back door secured but the key was left in the lock rather than stored in the key safe.", action_agreed: "Key returned to safe; reminded staff of overnight key protocol." },
+    ],
+    child_interactions: [],
+    staff_interactions: [
+      { staff_member: "staff_anna", observation: "Professional and composed on the unannounced visit; gave a clear, accurate verbal handover of the night so far." },
+    ],
+    environmental_checks: [
+      { area: "Lounge", status: "good" as const },
+      { area: "Kitchen", status: "action_taken_in_moment" as const },
+      { area: "Bedrooms (landing)", status: "good" as const },
+      { area: "Sleep-in room", status: "good" as const },
+    ],
+    book_or_record_reviews: ["Night check log", "Daily log", "Key register"],
+    immediate_actions_taken: ["Returned back-door key to the key safe and reinforced overnight key protocol with night staff."],
+    follow_up_actions_logged: [
+      { action: "Re-brief whole team on overnight key-safe protocol at next team meeting.", owner: "staff_darren", deadline: daysFromNow(-2) },
+    ],
+    themes_emerging: ["Strong night-time oversight culture", "Occasional security-routine slips"],
+    positive_staff_practice_noted: ["Anna's vigilance and accurate overnight recording during an unannounced check"],
+    follow_up_date: daysFromNow(-2),
+    created_at: daysFromNow(-11),
+  },
+  {
+    id: "walk_4",
+    date: daysFromNow(-16),
+    time: "14:20",
+    manager: "staff_ryan",
+    walkround_type: "weekly_themed" as const,
+    duration_minutes: 45,
+    areas_visited: ["Whole home", "Bedrooms", "Bathrooms", "Kitchen", "Communal areas", "Garden"],
+    observations_positive: [
+      { area: "Bedrooms", observation: "Young people's bedrooms personalised, clean and homely; one had chosen new bedding she was proud of.", staff_or_child_or_thing: "Environment" },
+      { area: "Communal areas", observation: "House feels warm and lived-in — children's achievements displayed.", staff_or_child_or_thing: "Environment" },
+    ],
+    observations_for_improvement: [
+      { area: "Kitchen", observation: "Cleaning rota on the fridge two weeks out of date.", action_agreed: "Refreshed rota printed and signed; Diane to own weekly update." },
+    ],
+    child_interactions: [
+      { child_initial: "J", observation: "J walked me round his room and talked about wanting to redecorate; agreed to raise at his next key-work session." },
+      { child_initial: "C", observation: "C asked about her pocket money plan for the weekend; explained clearly and she was satisfied." },
+    ],
+    staff_interactions: [
+      { staff_member: "staff_diane", observation: "Diane took feedback on the cleaning rota positively and actioned it immediately." },
+      { staff_member: "staff_edward", observation: "Edward proactively decluttered the activity cupboard during the themed walk." },
+    ],
+    environmental_checks: [
+      { area: "Bedrooms", status: "good" as const },
+      { area: "Bathrooms", status: "good" as const },
+      { area: "Kitchen", status: "good" as const },
+      { area: "Communal areas", status: "good" as const },
+      { area: "Garden", status: "good" as const },
+    ],
+    book_or_record_reviews: ["Cleaning rota", "Health & safety folder", "Fire log"],
+    immediate_actions_taken: ["Printed and displayed an up-to-date cleaning rota."],
+    follow_up_actions_logged: [
+      { action: "Diane to take ownership of weekly cleaning-rota updates.", owner: "staff_diane", deadline: daysFromNow(-9) },
+      { action: "Add J's redecoration request to his key-work session agenda.", owner: "staff_edward", deadline: daysFromNow(-5) },
+    ],
+    themes_emerging: ["High standard of physical environment", "Children proud of their personalised spaces"],
+    positive_staff_practice_noted: ["Responsive, non-defensive reaction to walkround feedback (Diane, Edward)"],
+    follow_up_date: daysFromNow(-9),
+    created_at: daysFromNow(-16),
+  },
+  {
+    id: "walk_5",
+    date: daysFromNow(-22),
+    time: "11:00",
+    manager: "staff_darren",
+    walkround_type: "post_incident_review" as const,
+    duration_minutes: 50,
+    areas_visited: ["Lounge", "Staff office", "Young person's bedroom", "Kitchen"],
+    observations_positive: [
+      { area: "Staff office", observation: "Incident from the previous evening recorded thoroughly and reflectively; debrief already started by the team.", staff_or_child_or_thing: "staff_chervelle" },
+      { area: "Lounge", observation: "Atmosphere recovered well — young person settled and re-engaged in normal routine.", staff_or_child_or_thing: "Environment" },
+    ],
+    observations_for_improvement: [
+      { area: "Lounge", observation: "A protective floor mark from the incident still present; minor but should be made good.", action_agreed: "Maintenance to make good the floor surface." },
+      { area: "Staff office", observation: "Physical intervention recording form complete but body-map section left blank.", action_agreed: "Body map completed retrospectively with staff and quality-checked." },
+    ],
+    child_interactions: [
+      { child_initial: "J", observation: "Spent time with J reflecting on the incident; he felt listened to and apologised in his own words." },
+    ],
+    staff_interactions: [
+      { staff_member: "staff_chervelle", observation: "Reflective and emotionally honest in debrief; identified her own learning without prompting." },
+      { staff_member: "staff_anna", observation: "Supported a colleague well after a difficult shift; good team cohesion." },
+    ],
+    environmental_checks: [
+      { area: "Lounge", status: "needs_attention" as const },
+      { area: "Young person's bedroom", status: "good" as const },
+      { area: "Kitchen", status: "good" as const },
+    ],
+    book_or_record_reviews: ["Incident report", "Physical intervention record", "Daily log", "Body map"],
+    immediate_actions_taken: ["Completed the missing body-map section with staff and quality-checked the intervention record."],
+    follow_up_actions_logged: [
+      { action: "Maintenance to make good the lounge floor surface marked during the incident.", owner: "staff_ryan", deadline: daysFromNow(7) },
+      { action: "Reflective supervision booked with staff involved in the incident.", owner: "staff_darren", deadline: daysFromNow(-14) },
+    ],
+    themes_emerging: ["Strong post-incident reflection culture", "Recording detail (body maps) occasionally incomplete"],
+    positive_staff_practice_noted: ["Chervelle's openness in debrief and Anna's peer support after a difficult shift"],
+    follow_up_date: daysFromNow(7),
+    created_at: daysFromNow(-22),
+  },
+];
+
 // ── CRUD helpers ──────────────────────────────────────────────────────────────
 
 export function getStore() { return store; }
