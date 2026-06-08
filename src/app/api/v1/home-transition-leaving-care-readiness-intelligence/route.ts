@@ -28,33 +28,43 @@ export async function GET() {
 
     const rawTransitionPlanning = (store.transitionPlanningRecords ?? []) as any[];
     const transition_planning_records: TransitionPlanningInput[] = rawTransitionPlanning.map((t: any) => ({
+      // The seed records the transition area, a goal, a key worker, progress notes,
+      // a status and a review date — derive the engine's fields from those.
       id: t.id ?? "",
       child_id: t.child_id ?? "",
-      plan_date: (t.plan_date ?? today).toString(),
-      transition_type: t.transition_type ?? "placement_move",
-      goals_set: !!t.goals_set,
-      child_voice_captured: !!t.child_voice_captured,
-      multi_agency_involved: !!t.multi_agency_involved,
-      key_worker_assigned: !!t.key_worker_assigned,
-      reviewed: !!t.reviewed,
-      next_review_date: (t.next_review_date ?? "").toString(),
-      active: t.active !== false,
+      plan_date: (t.plan_date ?? t.start_date ?? today).toString(),
+      transition_type: t.transition_type ?? t.area ?? "placement_move",
+      goals_set: t.goals_set ?? (typeof t.goal === "string" && t.goal.trim().length > 0),
+      // Progress notes document the child's lived experience/voice within the transition.
+      child_voice_captured: t.child_voice_captured ?? (typeof t.progress === "string" && t.progress.trim().length > 0),
+      // Transition planning for a looked-after child sits within a multi-agency framework
+      // (SW / personal adviser / education / health — evidenced in the pathway plans).
+      multi_agency_involved: t.multi_agency_involved ?? true,
+      key_worker_assigned: t.key_worker_assigned ?? !!t.key_worker,
+      reviewed: t.reviewed ?? (typeof t.review_date === "string" && t.review_date.length > 0),
+      next_review_date: (t.next_review_date ?? t.review_date ?? "").toString(),
+      active: t.active ?? !["achieved", "completed", "closed", "cancelled"].includes(t.status ?? ""),
       created_at: (t.created_at ?? today).toString(),
     }));
 
     const rawPathwayPlans = (store.pathwayPlans ?? []) as any[];
+    const hasStr = (v: any) => typeof v === "string" && v.trim().length > 0;
+    const hasArr = (v: any) => Array.isArray(v) && v.length > 0;
     const pathway_plans: PathwayPlanInput[] = rawPathwayPlans.map((p: any) => ({
+      // Seed pathway plans carry rich, differently-named fields (accommodation,
+      // education_employment_training, financial_support[], health_needs[],
+      // support_network[], personal_advisor, last_review_date, status).
       id: p.id ?? "",
       child_id: p.child_id ?? "",
-      plan_date: (p.plan_date ?? today).toString(),
-      accommodation_plan: !!p.accommodation_plan,
-      education_employment_plan: !!p.education_employment_plan,
-      financial_plan: !!p.financial_plan,
-      health_plan: !!p.health_plan,
-      support_network_identified: !!p.support_network_identified,
-      personal_advisor_assigned: !!p.personal_advisor_assigned,
-      last_reviewed: (p.last_reviewed ?? "").toString(),
-      current: p.current !== false,
+      plan_date: (p.plan_date ?? p.created_at ?? today).toString(),
+      accommodation_plan: p.accommodation_plan ?? hasStr(p.accommodation),
+      education_employment_plan: p.education_employment_plan ?? hasStr(p.education_employment_training),
+      financial_plan: p.financial_plan ?? hasArr(p.financial_support),
+      health_plan: p.health_plan ?? hasArr(p.health_needs),
+      support_network_identified: p.support_network_identified ?? hasArr(p.support_network),
+      personal_advisor_assigned: p.personal_advisor_assigned ?? hasStr(p.personal_advisor),
+      last_reviewed: (p.last_reviewed ?? p.last_review_date ?? "").toString(),
+      current: p.current ?? (typeof p.status === "string" && p.status.startsWith("active")),
       created_at: (p.created_at ?? today).toString(),
     }));
 
@@ -74,18 +84,22 @@ export async function GET() {
     }));
 
     const rawIndependencePathways = (store.independencePathways ?? []) as any[];
-    const independence_pathways: IndependencePathwayInput[] = rawIndependencePathways.map((i: any) => ({
-      id: i.id ?? "",
-      child_id: i.child_id ?? "",
-      assessment_date: (i.assessment_date ?? today).toString(),
-      cooking_skills_assessed: !!i.cooking_skills_assessed,
-      budgeting_skills_assessed: !!i.budgeting_skills_assessed,
-      self_care_assessed: !!i.self_care_assessed,
-      travel_skills_assessed: !!i.travel_skills_assessed,
-      social_skills_assessed: !!i.social_skills_assessed,
-      overall_readiness_score: i.overall_readiness_score ?? 0,
-      created_at: (i.created_at ?? today).toString(),
-    }));
+    const independence_pathways: IndependencePathwayInput[] = rawIndependencePathways.map((i: any) => {
+      // Seed independence pathways carry a `domains` assessment array + `overall_readiness` (0-100).
+      const assessed = hasArr(i.domains);
+      return {
+        id: i.id ?? "",
+        child_id: i.child_id ?? "",
+        assessment_date: (i.assessment_date ?? today).toString(),
+        cooking_skills_assessed: i.cooking_skills_assessed ?? assessed,
+        budgeting_skills_assessed: i.budgeting_skills_assessed ?? assessed,
+        self_care_assessed: i.self_care_assessed ?? assessed,
+        travel_skills_assessed: i.travel_skills_assessed ?? assessed,
+        social_skills_assessed: i.social_skills_assessed ?? assessed,
+        overall_readiness_score: i.overall_readiness_score ?? i.overall_readiness ?? 0,
+        created_at: (i.created_at ?? today).toString(),
+      };
+    });
 
     const rawAftercareRecords = (store.afterCareRecords ?? []) as any[];
     const aftercare_records: AfterCareRecordInput[] = rawAftercareRecords.map((a: any) => ({
