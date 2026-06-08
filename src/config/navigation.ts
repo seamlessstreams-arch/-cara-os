@@ -551,6 +551,7 @@ export const NAV_GROUPS: NavGroup[] = [
     module: "reports",
     children: [
       { label: "Reports Hub",       href: "/reports",                        icon: "BarChart3",  module: "reports"   },
+      { label: "Home Summary Report", href: "/home-summary-report",          icon: "FileText",   module: "reports"   },
       { label: "Weekly Overview",   href: "/intelligence/weekly-overview",   icon: "BarChart2",  module: "dashboard" },
       { label: "Document Intel",    href: "/documents/intelligence",         icon: "Sparkles",   module: "documents" },
       { label: "KPI Dashboard",    href: "/kpi-dashboard",                  icon: "Target",     module: "reports"   },
