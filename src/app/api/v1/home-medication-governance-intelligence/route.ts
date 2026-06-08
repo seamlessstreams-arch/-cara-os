@@ -32,7 +32,14 @@ export async function GET() {
     id: (x.id ?? "").toString(),
     date: (x.date ?? "").toString().slice(0, 10),
     audit_type: (x.audit_type ?? "").toString(),
-    result: (x.result ?? "pass") as "pass" | "fail" | "action_required",
+    // Translate the store's MedAuditResult enum to the engine's vocabulary.
+    result: (x.result === "satisfactory" || x.result === "completed"
+      ? "pass"
+      : x.result === "discrepancy_found"
+        ? "fail"
+        : x.result === "action_required"
+          ? "action_required"
+          : (x.result ?? "pass")) as "pass" | "fail" | "action_required",
     discrepancy: typeof x.discrepancy === "number" ? x.discrepancy : 0,
     storage_correct: !!(x.storage_correct),
     temperature_ok: !!(x.temperature_ok),

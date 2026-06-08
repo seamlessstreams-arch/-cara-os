@@ -10459,6 +10459,50 @@ store.preventRecords = [
   },
 ];
 
+// ── Medication audits (seed) ──────────────────────────────────────────────────
+// Completes home-medication-governance with the audit metric (route now
+// translates MedAuditResult -> engine pass/fail/action_required). Mostly
+// satisfactory; one expiry action-required (links to the PRN near-miss).
+store.medicationAuditRecords = [
+  {
+    id: "maudit_seed_1", date: daysFromNow(-21), time: "10:30", audited_by: "staff_chervelle", witnessed_by: "staff_ryan",
+    audit_type: "stock_check" as const, result: "satisfactory" as const, child_id: "yp_casey",
+    medication_name: "Melatonin", medication_type: "regular" as const, strength: "3mg",
+    expected_count: 24, actual_count: 24, discrepancy: 0, expiry_date: daysFromNow(180), batch_number: "MEL-2026-0114",
+    storage_correct: true, temperature_ok: true, labelling_correct: true, destruction_method: "", destruction_witness: "",
+    pharmacy_name: "Boots Derby", notes: "Stock balanced; MAR cross-checked.", action_taken: "",
+    follow_up_required: false, follow_up_date: null, signed_off_by: "staff_darren", created_at: daysFromNow(-21),
+  },
+  {
+    id: "maudit_seed_2", date: daysFromNow(-14), time: "11:00", audited_by: "staff_ryan", witnessed_by: "staff_chervelle",
+    audit_type: "reconciliation" as const, result: "satisfactory" as const, child_id: "yp_casey",
+    medication_name: "Fluoxetine", medication_type: "regular" as const, strength: "10mg",
+    expected_count: 21, actual_count: 21, discrepancy: 0, expiry_date: daysFromNow(200), batch_number: "FLX-2026-0098",
+    storage_correct: true, temperature_ok: true, labelling_correct: true, destruction_method: "", destruction_witness: "",
+    pharmacy_name: "Boots Derby", notes: "Monthly reconciliation complete; administration tallies with MAR.", action_taken: "",
+    follow_up_required: false, follow_up_date: null, signed_off_by: "staff_darren", created_at: daysFromNow(-14),
+  },
+  {
+    id: "maudit_seed_3", date: daysFromNow(-7), time: "09:45", audited_by: "staff_chervelle", witnessed_by: "staff_diane",
+    audit_type: "expiry_review" as const, result: "action_required" as const, child_id: "yp_alex",
+    medication_name: "Ibuprofen 200mg PRN", medication_type: "prn" as const, strength: "200mg",
+    expected_count: 30, actual_count: 30, discrepancy: 0, expiry_date: daysFromNow(20), batch_number: "IBU-2025-7741",
+    storage_correct: true, temperature_ok: true, labelling_correct: true, destruction_method: "", destruction_witness: "",
+    pharmacy_name: "Boots Derby", notes: "PRN Ibuprofen approaching expiry; quarantined pending replacement (links to near-miss mednm_seed_1).",
+    action_taken: "Moved to near-expiry tray; replacement ordered.", follow_up_required: true, follow_up_date: daysFromNow(7),
+    signed_off_by: "staff_darren", created_at: daysFromNow(-7),
+  },
+  {
+    id: "maudit_seed_4", date: daysFromNow(-3), time: "08:50", audited_by: "staff_ryan", witnessed_by: "staff_anna",
+    audit_type: "storage_check" as const, result: "satisfactory" as const, child_id: "yp_jordan",
+    medication_name: "Piriton PRN", medication_type: "prn" as const, strength: "4mg",
+    expected_count: 17, actual_count: 17, discrepancy: 0, expiry_date: daysFromNow(140), batch_number: "PIR-2026-0220",
+    storage_correct: true, temperature_ok: true, labelling_correct: true, destruction_method: "", destruction_witness: "",
+    pharmacy_name: "Boots Derby", notes: "Storage and temperature compliant; balance correct after MAR correction.", action_taken: "",
+    follow_up_required: false, follow_up_date: null, signed_off_by: "staff_darren", created_at: daysFromNow(-3),
+  },
+];
+
 // ── CRUD helpers ──────────────────────────────────────────────────────────────
 
 export function getStore() { return store; }
