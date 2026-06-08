@@ -12,7 +12,9 @@ import {
   ShieldCheck, ClipboardCheck, Radar, LineChart, FileText, Users, Sparkles,
   HeartHandshake, Pill, ArrowRight, CheckCircle2, Eye, Lock, GitMerge,
   Mic, Brain, Bell, TrendingUp, TrendingDown, Minus, Quote,
+  Home, Building2, ChevronDown,
 } from "lucide-react";
+import { MobileMenu } from "@/components/marketing/mobile-menu";
 
 export const metadata: Metadata = {
   title: "Cornerstone Care OS | The operating system for children's homes",
@@ -84,12 +86,15 @@ export default function HomePage() {
           <nav className="hidden items-center gap-7 text-sm font-medium text-[var(--cs-text-secondary)] md:flex">
             <a href="#how" className="hover:text-[var(--cs-navy)]">How it works</a>
             <a href="#features" className="hover:text-[var(--cs-navy)]">Features</a>
+            <a href="#pricing" className="hover:text-[var(--cs-navy)]">Pricing</a>
             <a href="#why" className="hover:text-[var(--cs-navy)]">Why Cornerstone</a>
+            <a href="#faq" className="hover:text-[var(--cs-navy)]">FAQ</a>
             <a href="#compliance" className="hover:text-[var(--cs-navy)]">Compliance</a>
           </nav>
           <div className="flex items-center gap-2.5">
             <Link href="/dashboard" className="hidden text-sm font-semibold text-[var(--cs-navy)] hover:text-[var(--cs-teal-strong)] sm:inline">Sign in</Link>
-            <PrimaryButton href="#contact">Book a demo</PrimaryButton>
+            <span className="hidden sm:inline-flex"><PrimaryButton href="#contact">Book a demo</PrimaryButton></span>
+            <MobileMenu />
           </div>
         </div>
       </header>
@@ -255,6 +260,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── Pricing ──────────────────────────────────────────────────────────── */}
+      <section id="pricing" className="border-y border-[var(--cs-border)] bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-20">
+          <div className="mx-auto max-w-2xl text-center">
+            <SectionEyebrow>Pricing</SectionEyebrow>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Pricing that scales with your homes.</h2>
+            <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">Every plan includes the full platform, onboarding and support. Book a walkthrough for a quote tailored to your service.</p>
+          </div>
+          <div className="mt-12 grid gap-6 lg:grid-cols-3">
+            {[
+              { Icon: Home, name: "Single home", who: "For one registered children's home.", featured: false,
+                points: ["Full practice intelligence & RAG ratings", "Ofsted readiness & self-evaluation", "Priority briefing, trends & reports", "Workforce, comms & safe access", "ARIA assistant (human-in-the-loop)", "Mobile, installable & offline-ready"], cta: "Book a demo" },
+              { Icon: Building2, name: "Group", who: "For providers running several homes.", featured: true,
+                points: ["Everything in Single home", "Responsible-Individual oversight", "Cross-home readiness & direction of travel", "Per-home priority briefings", "Group-level reporting", "Priority onboarding & support"], cta: "Book a demo" },
+              { Icon: Sparkles, name: "Enterprise", who: "For large or complex providers.", featured: false,
+                points: ["Everything in Group", "SSO & advanced access controls", "Custom integrations & data migration", "Dedicated onboarding & success manager", "Service-level agreement", "Roadmap input"], cta: "Talk to us" },
+            ].map((t, i) => (
+              <div key={i} className={`relative flex flex-col rounded-3xl border p-7 shadow-[var(--cs-shadow-card)] ${t.featured ? "border-[var(--cs-teal)] bg-[var(--cs-teal-bg)]/40 ring-1 ring-[var(--cs-teal)]" : "border-[var(--cs-border)] bg-white"}`}>
+                {t.featured && <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[var(--cs-teal)] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">Most popular</span>}
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--cs-navy)] text-white"><t.Icon className="h-6 w-6" /></div>
+                <h3 className="mt-4 text-xl font-bold text-[var(--cs-navy)]">{t.name}</h3>
+                <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">{t.who}</p>
+                <p className="mt-4 text-3xl font-extrabold text-[var(--cs-navy)]">Custom <span className="text-sm font-semibold text-[var(--cs-text-muted)]">/ book a quote</span></p>
+                <ul className="mt-5 flex-1 space-y-2.5">
+                  {t.points.map((p, j) => (
+                    <li key={j} className="flex items-start gap-2.5 text-sm text-[var(--cs-text-secondary)]">
+                      <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-teal)]" /> {p}
+                    </li>
+                  ))}
+                </ul>
+                <Link href="#contact" className={`mt-7 inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-colors ${t.featured ? "bg-[var(--cs-navy)] text-white hover:bg-[var(--cs-navy-soft)]" : "border border-[var(--cs-border)] bg-white text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]"}`}>
+                  {t.cta} <ArrowRight className="h-4 w-4" />
+                </Link>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-center text-sm text-[var(--cs-text-muted)]">All plans include data security, audit trails and role-based access as standard.</p>
+        </div>
+      </section>
+
       {/* ── Why Cornerstone ──────────────────────────────────────────────────── */}
       <section id="why" className="relative overflow-hidden bg-[var(--cs-navy)] text-white">
         <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background: "radial-gradient(50% 60% at 100% 0%, var(--cs-teal-glow) 0%, transparent 55%), radial-gradient(40% 50% at 0% 100%, var(--cs-aria-glow) 0%, transparent 50%)" }} />
@@ -330,6 +375,33 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── FAQ ──────────────────────────────────────────────────────────────── */}
+      <section id="faq" className="mx-auto max-w-3xl px-5 py-20">
+        <div className="text-center">
+          <SectionEyebrow>FAQ</SectionEyebrow>
+          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Questions, answered.</h2>
+        </div>
+        <div className="mt-10 space-y-3">
+          {[
+            { q: "Is our data secure?", a: "Yes. Access is role-based, every change is audit-logged, and sensitive screens are protected. Permissions, audit trails and human review are built into the core — not bolted on." },
+            { q: "How does the AI (ARIA) work — and is it safe?", a: "Your RAG ratings come from deterministic, explainable engines — not a language model guessing. ARIA assists with drafting, summarising and spotting patterns, but it never auto-decides statutory thresholds: anything safeguarding-critical forces human review, and high or critical flags are never deleted." },
+            { q: "Is it really Ofsted-ready?", a: "Every engine is mapped to the Children's Homes Regulations 2015 and the Quality Standards, and framed around Ofsted's SCCIF — so your evidence is already organised the way an inspector reads it, with the records behind every rating one click away." },
+            { q: "Will my team actually use it?", a: "Recording is fast and natural — type, talk, or tap “Record anything”. Support workers capture in seconds and get back to the young people; managers get the intelligence without chasing." },
+            { q: "Does it work on mobile and offline?", a: "Yes. Cornerstone installs to the home screen as an app, works on phones and tablets, and keeps working when the connection drops." },
+            { q: "Who is it for?", a: "From a single registered home to multi-home providers and Responsible Individuals who need oversight across a group — one platform, every role, on the same page." },
+          ].map((f, i) => (
+            <details key={i} className="group rounded-2xl border border-[var(--cs-border)] bg-white px-5 py-4 shadow-[var(--cs-shadow-card)] [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-[var(--cs-navy)]">
+                {f.q}
+                <ChevronDown className="h-5 w-5 shrink-0 text-[var(--cs-teal)] transition-transform group-open:rotate-180" />
+              </summary>
+              <p className="mt-3 text-sm leading-relaxed text-[var(--cs-text-secondary)]">{f.a}</p>
+            </details>
+          ))}
+        </div>
+        <p className="mt-8 text-center text-sm text-[var(--cs-text-muted)]">Still have questions? <a href="#contact" className="font-semibold text-[var(--cs-teal-strong)] hover:underline">Book a demo</a> and we&rsquo;ll walk you through it.</p>
+      </section>
+
       {/* ── Final CTA ────────────────────────────────────────────────────────── */}
       <section id="contact" className="mx-auto max-w-7xl px-5 py-20">
         <div className="relative overflow-hidden rounded-3xl bg-[var(--cs-navy)] px-6 py-16 text-center text-white shadow-[var(--cs-shadow-card)]">
@@ -369,6 +441,7 @@ export default function HomePage() {
                 <ul className="mt-3 space-y-2 text-sm text-[var(--cs-text-secondary)]">
                   <li><a href="#how" className="hover:text-[var(--cs-navy)]">How it works</a></li>
                   <li><a href="#features" className="hover:text-[var(--cs-navy)]">Features</a></li>
+                  <li><a href="#pricing" className="hover:text-[var(--cs-navy)]">Pricing</a></li>
                   <li><Link href="/dashboard" className="hover:text-[var(--cs-navy)]">Platform</Link></li>
                 </ul>
               </div>
@@ -377,6 +450,7 @@ export default function HomePage() {
                 <ul className="mt-3 space-y-2 text-sm text-[var(--cs-text-secondary)]">
                   <li><a href="#why" className="hover:text-[var(--cs-navy)]">Why Cornerstone</a></li>
                   <li><a href="#compliance" className="hover:text-[var(--cs-navy)]">Compliance</a></li>
+                  <li><a href="#faq" className="hover:text-[var(--cs-navy)]">FAQ</a></li>
                 </ul>
               </div>
               <div>
