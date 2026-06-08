@@ -25,7 +25,7 @@ export async function GET() {
 
   // ── Children ────────────────────────────────────────────────────────
   const childIds = new Set<string>();
-  for (const c of (store.children ?? []) as any[]) {
+  for (const c of ((store.youngPeople ?? []) as any[]).filter((c: any) => c.status === "current")) {
     if (c.id) childIds.add(c.id.toString());
   }
   const total_children = childIds.size;

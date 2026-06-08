@@ -24,7 +24,7 @@ export async function GET() {
 
   // -- Children ---------------------------------------------------------------
   const childIds = new Set<string>();
-  for (const c of (store.children ?? []) as any[]) {
+  for (const c of (store.youngPeople ?? []) as any[]) {
     if (c.id) childIds.add(c.id.toString());
   }
   const total_children = childIds.size;
@@ -40,7 +40,13 @@ export async function GET() {
     police_notified: !!(b.police_notified),
     restorative_attempted: !!(b.restorative_approach_attempted && b.restorative_approach_attempted !== ""),
     support_provided_count: Array.isArray(b.support_provided) ? b.support_provided.length : 0,
-    status: (b.status ?? "open").toString() as any,
+    // Translate the store's BullyingStatus enum to the values this engine scores
+    // against ("resolved"/"open"/"investigating"/"monitoring").
+    status: (b.status === "closed_resolved"
+      ? "resolved"
+      : b.status === "open_investigating" || b.status === "escalated"
+        ? "open"
+        : (b.status ?? "open")).toString() as any,
     follow_up_date: (b.follow_up_date ?? "").toString().slice(0, 10),
   }));
 
