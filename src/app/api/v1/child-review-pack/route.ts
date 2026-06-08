@@ -17,6 +17,7 @@ import {
   type ChildReviewPackInput,
   type ReviewDomainScore,
 } from "@/lib/engines/child-review-pack-engine";
+import { generateReportNarrative } from "@/lib/aria/report-narrative";
 
 export const dynamic = "force-dynamic";
 
@@ -119,7 +120,17 @@ export async function GET(request: Request) {
           today,
         };
 
-        pack = buildChildReviewPack(input);
+        const built = buildChildReviewPack(input);
+        const facts = [
+          `Child: ${built.child_name}, age ${built.age_years}. Overall wellbeing: ${built.overall_wellbeing}.`,
+          ...built.sections.map((s) => `${s.title}: ${s.rag} — ${s.narrative}`),
+          `Wishes & feelings: ${built.wishes_and_feelings.narrative}`,
+          built.recommendations.length ? `Recommendations: ${built.recommendations.join("; ")}.` : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+        const ai_narrative = await generateReportNarrative({ kind: "LAC review pack", subject: built.child_name, facts });
+        pack = { ...built, ai_narrative };
       }
     }
 

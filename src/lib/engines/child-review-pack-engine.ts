@@ -98,6 +98,8 @@ export interface ChildReviewPackResult {
   strengths: string[];
   recommendations: string[];
   key_dates: { label: string; date: string }[];
+  // Optional AI-written narrative (route-attached); null when no LLM configured.
+  ai_narrative?: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

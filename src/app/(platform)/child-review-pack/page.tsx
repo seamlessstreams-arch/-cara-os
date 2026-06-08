@@ -6,7 +6,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  Loader2, FileText, Quote, CheckCircle2, ListChecks, CalendarDays, UserSquare2,
+  Loader2, FileText, Quote, CheckCircle2, ListChecks, CalendarDays, UserSquare2, Sparkles,
 } from "lucide-react";
 import { useChildReviewPack } from "@/hooks/use-child-review-pack";
 import type { PackRag, ReviewSection, ReviewDomainScore } from "@/lib/engines/child-review-pack-engine";
@@ -147,8 +147,15 @@ export default function ChildReviewPackPage() {
 
               {/* Review summary */}
               <div className="mt-4 rounded-lg bg-slate-50 p-4">
-                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Summary for this review</p>
-                <p className="text-sm leading-relaxed text-slate-700">{pack.review_summary}</p>
+                <p className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                  Summary for this review
+                  {pack.ai_narrative && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-1.5 py-0.5 text-[9px] font-semibold text-indigo-700">
+                      <Sparkles className="h-2.5 w-2.5" /> ARIA
+                    </span>
+                  )}
+                </p>
+                <p className="text-sm leading-relaxed text-slate-700">{pack.ai_narrative || pack.review_summary}</p>
               </div>
             </div>
 
