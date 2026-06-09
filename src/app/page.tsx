@@ -470,6 +470,9 @@ export default function HomePage() {
             ))}
           </div>
           <p className="mt-6 text-center text-sm text-[var(--cs-text-muted)]">All plans include data security, audit trails and role-based access as standard.</p>
+          <div className="mt-5 text-center">
+            <Link href="/pricing" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--cs-navy)] hover:text-[var(--cs-teal-strong)]">Compare all plans &amp; pricing FAQ <ArrowRight className="h-4 w-4" /></Link>
+          </div>
         </div>
       </section>
 

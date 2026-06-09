@@ -28,7 +28,7 @@ export function MarketingFooter() {
                 <li><a href="/#features" className="hover:text-[var(--cs-navy)]">Features</a></li>
                 <li><Link href="/product/workforce" className="hover:text-[var(--cs-navy)]">Workforce</Link></li>
                 <li><Link href="/product/tour" className="hover:text-[var(--cs-navy)]">Product tour</Link></li>
-                <li><a href="/#pricing" className="hover:text-[var(--cs-navy)]">Pricing</a></li>
+                <li><Link href="/pricing" className="hover:text-[var(--cs-navy)]">Pricing</Link></li>
                 <li><Link href="/dashboard" className="hover:text-[var(--cs-navy)]">Platform</Link></li>
               </ul>
             </div>

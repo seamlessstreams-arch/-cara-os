@@ -11,7 +11,7 @@ const LINKS = [
   { href: "/product/workforce", label: "Workforce" },
   { href: "/product/tour", label: "Product tour" },
   { href: "/#platform", label: "Platform" },
-  { href: "/#pricing", label: "Pricing" },
+  { href: "/pricing", label: "Pricing" },
   { href: "/security", label: "Security & trust" },
   { href: "/about", label: "About" },
   { href: "/#faq", label: "FAQ" },
