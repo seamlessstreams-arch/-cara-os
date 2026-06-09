@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/product/intelligence", label: "ARIA Intelligence" },
   { href: "/#features", label: "Features" },
   { href: "/product/workforce", label: "Workforce" },
+  { href: "/product/tour", label: "Product tour" },
   { href: "/#platform", label: "Platform" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/security", label: "Security & trust" },
