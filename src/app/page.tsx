@@ -22,7 +22,7 @@ import { SectionEyebrow, PrimaryButton, GhostButton } from "@/components/marketi
 export const metadata: Metadata = {
   title: "Cornerstone Care OS | Care quality starts with workforce quality",
   description:
-    "Cornerstone Care OS helps children's home providers recruit, onboard, supervise and develop values-led teams while strengthening Ofsted readiness, safer recruitment and practice quality. The workforce layer for children's homes — it sits alongside your care-recording system.",
+    "Cornerstone Care OS is one complete system to run your children's home — recording, safeguarding, medication, care planning, workforce, practice intelligence and Ofsted evidence in one place. Care quality starts with workforce quality.",
 };
 
 const PROBLEMS = [
@@ -64,8 +64,8 @@ const MODULES = [
   { Icon: Sparkles, t: "AI Assistant for Managers", href: "/product/intelligence", d: "A draft-first co-pilot for RMs.", pts: ["Adverts, questions & summaries", "Supervision & action-plan prompts", "Human approval on everything"] },
 ];
 
-const RECORDING = ["Daily logs", "Incidents", "Young person records", "Medication", "Reports", "Compliance records"];
-const CORNERSTONE = ["Recruitment quality", "Values matching", "Safer recruitment evidence", "Onboarding pathways", "Reflective supervision", "Workforce development", "Retention risk indicators", "Practice quality intelligence", "Ofsted workforce evidence"];
+const OLD_WAY = ["A separate recording system", "Spreadsheets for recruitment & training", "Supervision in Word documents", "Evidence scattered across folders", "No single view of your home", "Manual, last-minute Ofsted prep"];
+const ALL_IN_ONE = ["Daily recording, incidents & safeguarding", "Medication, health & care planning", "Young person records, wishes & feelings", "Values-led recruitment & matching", "Reflective supervision & training", "Retention & support indicators", "Live practice intelligence", "Ofsted evidence — always ready"];
 
 const SAFEGUARDING = [
   { Icon: Fingerprint, t: "Safer recruitment" }, { Icon: ScrollText, t: "Audit trails" },
@@ -83,7 +83,7 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(60% 50% at 75% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(50% 45% at 0% 25%, var(--cs-aria-glow) 0%, transparent 55%)" }} />
         <div className="relative mx-auto max-w-4xl px-5 py-16 text-center lg:py-24">
-          <SectionEyebrow>The workforce layer for children&rsquo;s homes</SectionEyebrow>
+          <SectionEyebrow>The complete operating system for children&rsquo;s homes</SectionEyebrow>
           <h1 className="mt-5 text-4xl font-extrabold leading-[1.07] tracking-tight text-[var(--cs-navy)] sm:text-5xl lg:text-6xl">
             Build safer, stronger children&rsquo;s homes from the people up.
           </h1>
@@ -108,7 +108,7 @@ export default function HomePage() {
       <section className="border-y border-[var(--cs-border)] bg-white/60">
         <div className="mx-auto max-w-4xl px-5 py-6 text-center">
           <p className="text-base font-bold text-[var(--cs-navy)]">Care quality starts with workforce quality.</p>
-          <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">The missing layer between recruitment, safer recruitment, staff development, supervision, practice quality and Ofsted evidence.</p>
+          <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">One total system to run your whole home — recruitment, recording, safeguarding, supervision, practice intelligence and Ofsted evidence, together.</p>
         </div>
       </section>
 
@@ -134,9 +134,9 @@ export default function HomePage() {
       <section id="solution" className="border-y border-[var(--cs-border)] bg-white">
         <div className="mx-auto max-w-7xl px-5 py-20">
           <div className="mx-auto max-w-2xl text-center">
-            <SectionEyebrow>The missing layer</SectionEyebrow>
-            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">A workforce, practice &amp; compliance intelligence layer.</h2>
-            <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">Cornerstone Care OS brings the whole people-side of running a home into one place — from the first advert to the evidence an inspector reads.</p>
+            <SectionEyebrow>One complete system</SectionEyebrow>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Everything your home needs, working together.</h2>
+            <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">Cornerstone Care OS brings the whole home into one place — the children, the records, the workforce and the evidence — from the first advert to the moment an inspector reads it.</p>
           </div>
           <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {PILLARS.map((p) => (
@@ -202,36 +202,35 @@ export default function HomePage() {
       {/* ── Comparison ───────────────────────────────────────────────────────── */}
       <section id="comparison" className="mx-auto max-w-7xl px-5 py-20">
         <div className="mx-auto max-w-3xl text-center">
-          <SectionEyebrow>Where we fit</SectionEyebrow>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">We complement your care-recording system — we don&rsquo;t replace it.</h2>
+          <SectionEyebrow>One system, the whole home</SectionEyebrow>
+          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Everything your home needs — in one system.</h2>
           <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">
-            Care-recording systems help homes record what happened. Cornerstone Care OS helps leaders understand who is caring,
-            how staff are being supported, and whether the workforce culture is strong enough to meet children&rsquo;s needs.
+            No more juggling a recording tool here, spreadsheets there, and separate documents for recruitment, training and supervision.
+            Cornerstone Care OS runs your whole home — the children, the records, the workforce and the evidence — in one place.
           </p>
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-2">
           <div className="rounded-3xl border border-[var(--cs-border)] bg-white p-7 shadow-[var(--cs-shadow-card)]">
-            <h3 className="text-lg font-bold text-[var(--cs-navy)]">Care-recording systems</h3>
-            <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Record what happened</p>
+            <h3 className="text-lg font-bold text-[var(--cs-navy)]">The old way</h3>
+            <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Disconnected tools &amp; spreadsheets</p>
             <ul className="mt-4 space-y-2.5">
-              {RECORDING.map((r) => (
+              {OLD_WAY.map((r) => (
                 <li key={r} className="flex items-center gap-2.5 text-sm text-[var(--cs-text-secondary)]"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-slate-100 text-slate-400"><X className="h-3 w-3" /></span> {r}</li>
               ))}
             </ul>
           </div>
           <div className="rounded-3xl border-2 border-[var(--cs-teal)] bg-[var(--cs-teal-bg)]/30 p-7 shadow-[var(--cs-shadow-card)]">
             <h3 className="text-lg font-bold text-[var(--cs-navy)]">Cornerstone Care OS</h3>
-            <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--cs-teal-strong)]">Builds the conditions for good care</p>
+            <p className="mt-0.5 text-xs font-semibold uppercase tracking-wide text-[var(--cs-teal-strong)]">One total system for everything</p>
             <ul className="mt-4 space-y-2.5">
-              {CORNERSTONE.map((c) => (
+              {ALL_IN_ONE.map((c) => (
                 <li key={c} className="flex items-center gap-2.5 text-sm font-medium text-[var(--cs-navy)]"><span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[var(--cs-teal)] text-white"><Check className="h-3 w-3" /></span> {c}</li>
               ))}
             </ul>
           </div>
         </div>
         <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-[var(--cs-text-muted)]">
-          Cornerstone Care OS is designed to sit alongside systems such as Lief, ClearCare and other electronic recording platforms —
-          adding the workforce, culture and practice-intelligence layer they don&rsquo;t cover.
+          One login. One source of truth. One system for the whole home — so the people, the practice and the records all work together.
         </p>
       </section>
 

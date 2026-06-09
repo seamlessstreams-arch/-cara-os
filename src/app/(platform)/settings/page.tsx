@@ -71,12 +71,12 @@ function IntegrationsTab() {
     { name: "Supabase",      desc: "Database & authentication backend",        icon: Database },
     { name: "BrightHR",      desc: "Legacy HR data sync via Chrome extension", icon: Zap      },
     { name: "Sage Payroll",  desc: "Payroll export integration",               icon: FileText },
-    { name: "ClearCare",     desc: "Care management data sync",                icon: Globe    },
+    { name: "DBS Update Service", desc: "Online DBS status checks",            icon: Globe    },
     { name: "Ofsted Portal", desc: "Inspection reporting and notifications",   icon: Shield   },
   ];
   const [statuses, setStatuses] = React.useState<Record<string, "connected" | "not_connected">>({
     Supabase: "connected", BrightHR: "connected",
-    "Sage Payroll": "not_connected", ClearCare: "not_connected", "Ofsted Portal": "not_connected",
+    "Sage Payroll": "not_connected", "DBS Update Service": "not_connected", "Ofsted Portal": "not_connected",
   });
   const [modal, setModal] = React.useState<string | null>(null);
   const [cfg, setCfg] = React.useState("");
