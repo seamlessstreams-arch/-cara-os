@@ -66,6 +66,7 @@ export const NAV_GROUPS: NavGroup[] = [
     children: [
       { label: "Child Profiles",   href: "/young-people",              icon: "Heart",          module: "young-people"  },
       { label: "Care Plans",       href: "/care-plans",                icon: "ClipboardList",  module: "young-people"  },
+      { label: "Plan Currency",    href: "/plan-currency",             icon: "CalendarCheck",  module: "young-people"  },
       { label: "Daily Records",    href: "/daily-log",                 icon: "BookOpen",       module: "daily-log"     },
       { label: "Care Events",      href: "/care-events",               icon: "Zap",            module: "care-events",   badgeKey: "care_events_review" },
       { label: "Child Daily Summaries",href: "/child-daily-summaries",    icon: "BookOpen",       module: "care-events"   },
