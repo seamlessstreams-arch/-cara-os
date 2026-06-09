@@ -3,7 +3,7 @@
 //
 // Transition Readiness Intelligence
 //
-// GET  — Returns transition readiness assessment with Oak House demo data
+// GET  — Returns transition readiness assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   PostTransitionSupport,
 } from "@/lib/transition-readiness";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PLANS: TransitionPlan[] = [
   {

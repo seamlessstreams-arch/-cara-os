@@ -8,7 +8,7 @@ import type {
   StaffEnvironmentTraining,
 } from "@/lib/environment";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: EnvironmentRecord[];

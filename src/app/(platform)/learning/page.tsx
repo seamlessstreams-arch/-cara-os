@@ -144,7 +144,7 @@ export default function LearningHubPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Learning Hub" subtitle="Oak House — Staff Learning & Development" targetId="learning-content" />
+          <PrintButton title="Learning Hub" subtitle="Chamberlain House — Staff Learning & Development" targetId="learning-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning Studio — training resource or certificate upload" />
           <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

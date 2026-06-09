@@ -3,7 +3,7 @@
 //
 // Community Integration Intelligence
 //
-// GET  — Returns community integration assessment with Oak House demo data
+// GET  — Returns community integration assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   InclusionAssessment,
 } from "@/lib/community-integration";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_ACTIVITIES: CommunityActivity[] = [
   { id: "ca-a1", childId: "child-alex", childName: "Alex", activityCategory: "sport", activityName: "Oakwood Football Club", participationLevel: "regular", frequency: "weekly", startDate: "2025-09-01", childEnjoys: true, staffSupported: false, independentAttendance: true, communityBased: true },

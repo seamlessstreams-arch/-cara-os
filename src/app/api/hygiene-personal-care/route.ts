@@ -3,7 +3,7 @@
 //
 // Hygiene & Personal Care Intelligence
 //
-// GET  — Returns hygiene assessment with Oak House demo data
+// GET  — Returns hygiene assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffHygieneTraining,
 } from "@/lib/hygiene-personal-care";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_SESSIONS: HygieneSession[] = [
   { id: "hs-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-10", hygieneArea: "oral_care", competencyLevel: "independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },

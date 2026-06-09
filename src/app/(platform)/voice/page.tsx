@@ -454,7 +454,7 @@ export default function VoiceOfTheChildPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={VOICE_EXPORT_COLS} filename="voice-of-the-child" />
-          <PrintButton title="Voice of the Child" subtitle="Oak House — Voice Records" targetId="voice-content" />
+          <PrintButton title="Voice of the Child" subtitle="Chamberlain House — Voice Records" targetId="voice-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Voice of the Child — young person's written view or drawing" />
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-teal-600 hover:bg-teal-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Capture Voice

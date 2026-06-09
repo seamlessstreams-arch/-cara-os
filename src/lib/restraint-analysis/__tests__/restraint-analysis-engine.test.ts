@@ -531,7 +531,7 @@ describe("buildChildRestraintProfiles", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("generateRestraintAnalysisIntelligence", () => {
-  // ── Oak House Demo Scenario ──────────────────────────────────────────────
+  // ── Chamberlain House Demo Scenario ──────────────────────────────────────────────
 
   const demoRecords: RestraintRecord[] = [
     // Alex — 2 restraints, well managed

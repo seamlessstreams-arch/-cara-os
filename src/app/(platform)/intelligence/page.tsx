@@ -161,7 +161,7 @@ function HomeClimateSection() {
 
       const now        = new Date();
       const lines: string[] = [
-        `## Oak House Home Climate Context`,
+        `## Chamberlain House Home Climate Context`,
         `Assessment date: ${now.toISOString()}`,
         `Children: Casey (yp_casey), Alex (yp_alex), Jordan (yp_jordan)`,
         "",
@@ -217,7 +217,7 @@ function HomeClimateSection() {
           mode: "compute_home_climate",
           stream: false,
           source_content: context,
-          prompt: "Compute the current home climate scores for Oak House based on the provided intelligence data.",
+          prompt: "Compute the current home climate scores for Chamberlain House based on the provided intelligence data.",
         }),
       });
 
@@ -958,9 +958,9 @@ function AriaPatternScanSection() {
 
       const now = new Date();
       const lines: string[] = [
-        `## Oak House Intelligence Context`,
+        `## Chamberlain House Intelligence Context`,
         `Scan date: ${now.toISOString()}`,
-        `Home: Oak House (home_oak)`,
+        `Home: Chamberlain House (home_oak)`,
         `Children: Casey (yp_casey), Alex (yp_alex), Jordan (yp_jordan)`,
         "",
       ];

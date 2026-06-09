@@ -105,7 +105,7 @@ const RecordOnceContext = createContext<RecordOnceData>({
 
 /** Home name is hard-coded to match seed data until a homes API exists. */
 function resolveHomeName(homeId: string): string {
-  const MAP: Record<string, string> = { home_oak: "Oak House" };
+  const MAP: Record<string, string> = { home_oak: "Chamberlain House" };
   return MAP[homeId] ?? homeId;
 }
 

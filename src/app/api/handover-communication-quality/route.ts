@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Handover & Communication Quality Intelligence API Route
 //
-// GET  → returns Oak House demo handover & communication quality intelligence
+// GET  → returns Chamberlain House demo handover & communication quality intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   InformationGovernance,
 } from "@/lib/handover-communication-quality/handover-communication-quality-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 const STAFF_IDS = ["darren", "sarah", "tom", "lisa"];
 const STAFF_NAMES: Record<string, string> = {

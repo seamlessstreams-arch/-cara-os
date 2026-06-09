@@ -3,7 +3,7 @@
 //
 // Multi-Agency Effectiveness Intelligence
 //
-// GET  — Returns Oak House demo data with full effectiveness analysis
+// GET  — Returns Chamberlain House demo data with full effectiveness analysis
 // POST — Accepts custom data with validation and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -18,7 +18,7 @@ import type {
   Escalation,
 } from "@/lib/multi-agency-effectiveness";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   meetings: MultiAgencyMeeting[];

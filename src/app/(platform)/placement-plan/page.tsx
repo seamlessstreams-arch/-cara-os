@@ -193,7 +193,7 @@ export default function PlacementPlanPage() {
       ariaContext={{ pageTitle: "Placement Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Placement Plans" subtitle="Oak House — Care Planning" />
+          <PrintButton title="Placement Plans" subtitle="Chamberlain House — Care Planning" />
           <ExportButton data={filtered} columns={exportCols} filename="placement-plans" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Objective

@@ -238,7 +238,7 @@ export function Sidebar() {
               <p className="text-sm font-bold text-[var(--cs-navy)] leading-tight tracking-tight">
                 Cornerstone
               </p>
-              <p className="text-[11px] text-[var(--cs-text-secondary)] truncate">Oak House</p>
+              <p className="text-[11px] text-[var(--cs-text-secondary)] truncate">Chamberlain House</p>
             </div>
           )}
         </Link>

@@ -3,7 +3,7 @@
 //
 // Peer Mentoring Effectiveness Intelligence
 //
-// GET  — Returns peer mentoring assessment with Oak House demo data
+// GET  — Returns peer mentoring assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffMentoringTraining,
 } from "@/lib/peer-mentoring-effectiveness";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PAIRINGS: PeerPairing[] = [
   // Morgan (15, mentor) paired with Jordan (13, mentee) — active, consented, risk assessed

@@ -179,7 +179,7 @@ export default function FireDrillsPage() {
       ariaContext={{ pageTitle: "Fire Drills & Emergency Procedures", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Fire Drills" subtitle="Oak House — Health & Safety" />
+          <PrintButton title="Fire Drills" subtitle="Chamberlain House — Health & Safety" />
           <ExportButton data={filtered} columns={exportCols} filename="fire-drills" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Record Drill

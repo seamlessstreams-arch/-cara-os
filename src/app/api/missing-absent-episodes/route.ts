@@ -3,7 +3,7 @@
 //
 // Missing & Absent Episodes Intelligence
 //
-// GET  — Returns missing/absent episodes metrics with demo data (Oak House)
+// GET  — Returns missing/absent episodes metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   StaffMissingTraining,
 } from "@/lib/missing-absent-episodes";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   episodes: MissingEpisode[];

@@ -53,7 +53,7 @@ export default function AriaDevPlannerPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="ARIA Development Planner" subtitle="Oak House — Staff Development Plans" targetId="aria-planner-content" />
+          <PrintButton title="ARIA Development Planner" subtitle="Chamberlain House — Staff Development Plans" targetId="aria-planner-content" />
           <SmartUploadButton variant="inline" label="Upload Development Plan" uploadContext="Workforce Intelligence — staff development plan or evidence document upload" />
           <Button
             size="sm"

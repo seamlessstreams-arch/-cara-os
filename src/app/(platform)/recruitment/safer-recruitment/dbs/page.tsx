@@ -162,7 +162,7 @@ export default function DBSTrackerPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="DBS Tracker" subtitle="Oak House — DBS Certificate Management" targetId="dbs-content" />
+          <PrintButton title="DBS Tracker" subtitle="Chamberlain House — DBS Certificate Management" targetId="dbs-content" />
           <SmartUploadButton variant="inline" label="Upload DBS Certificate" uploadContext="Safer Recruitment — DBS certificate upload" />
         </div>
       }

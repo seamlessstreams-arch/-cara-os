@@ -137,7 +137,7 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title={member.full_name} subtitle={`Oak House — ${member.job_title} Staff Profile`} targetId="staff-profile-content" />
+          <PrintButton title={member.full_name} subtitle={`Chamberlain House — ${member.job_title} Staff Profile`} targetId="staff-profile-content" />
           <SmartUploadButton
             variant="icon"
             linkedStaffId={id}

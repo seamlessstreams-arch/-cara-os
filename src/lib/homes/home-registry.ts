@@ -37,7 +37,7 @@ export interface CornerstoneHome {
 export const HOMES: CornerstoneHome[] = [
   {
     id: "home_oak",
-    name: "Oak House",
+    name: "Chamberlain House",
     ofsted_urn: "SC480123",
     address: "12 Oakfield Road, Salford",
     postcode: "M6 8QP",

@@ -139,7 +139,7 @@ export default function PolicyReviewTrackerPage() {
       ariaContext={{ pageTitle: "Policy Review Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Policy Review Tracker" subtitle="Oak House — Policy Management" />
+          <PrintButton title="Policy Review Tracker" subtitle="Chamberlain House — Policy Management" />
           <ExportButton data={filtered} columns={exportCols} filename="policy-review-tracker" />
           <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

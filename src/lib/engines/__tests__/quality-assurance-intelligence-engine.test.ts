@@ -71,7 +71,7 @@ function run(
   return computeQualityAssuranceIntelligence({ audits, staff, today });
 }
 
-// ── Oak House Test Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Test Data ─────────────────────────────────────────────────────
 
 function oakHouseAudits(): QAAuditInput[] {
   return [
@@ -228,7 +228,7 @@ describe("overview", () => {
     expect(r.overview.avg_rating_score).toBeCloseTo(3.17, 1);
   });
 
-  it("assigns avg_rating_label Good for Oak House avg", () => {
+  it("assigns avg_rating_label Good for Chamberlain House avg", () => {
     const r = run(oakHouseAudits());
     expect(r.overview.avg_rating_label).toBe("Good");
   });
@@ -382,7 +382,7 @@ describe("audit areas", () => {
 // ── Overdue Actions ─────────────────────────────────────────────────────────
 
 describe("overdue actions", () => {
-  it("identifies overdue actions in Oak House data", () => {
+  it("identifies overdue actions in Chamberlain House data", () => {
     const r = run(oakHouseAudits());
     // 4 = 2 explicit "overdue" + 2 in_progress actions past their deadline.
     expect(r.overdue_actions.length).toBe(4);
@@ -564,13 +564,13 @@ describe("alerts", () => {
     }
   });
 
-  it("Oak House generates medium alert for 67% completion rate", () => {
+  it("Chamberlain House generates medium alert for 67% completion rate", () => {
     const r = run(oakHouseAudits());
     const medium = r.alerts.filter((a) => a.severity === "medium");
     expect(medium.some((a) => a.message.includes("below 70%"))).toBe(true);
   });
 
-  it("Oak House does not generate critical alerts", () => {
+  it("Chamberlain House does not generate critical alerts", () => {
     const r = run(oakHouseAudits());
     const critical = r.alerts.filter((a) => a.severity === "critical");
     expect(critical.length).toBe(0);
@@ -686,19 +686,19 @@ describe("insights", () => {
     expect(positives.some((i) => i.text.includes("strong quality assurance posture"))).toBe(false);
   });
 
-  it("Oak House generates warning insights for overdue actions", () => {
+  it("Chamberlain House generates warning insights for overdue actions", () => {
     const r = run(oakHouseAudits());
     const warnings = r.insights.filter((i) => i.severity === "warning");
     expect(warnings.some((i) => i.text.includes("overdue"))).toBe(true);
   });
 
-  it("Oak House generates positive insight for avg rating >= 3", () => {
+  it("Chamberlain House generates positive insight for avg rating >= 3", () => {
     const r = run(oakHouseAudits());
     const positives = r.insights.filter((i) => i.severity === "positive");
     expect(positives.some((i) => i.text.includes("strong quality assurance posture"))).toBe(true);
   });
 
-  it("Oak House generates positive insight for strengths > improvements", () => {
+  it("Chamberlain House generates positive insight for strengths > improvements", () => {
     const r = run(oakHouseAudits());
     const positives = r.insights.filter((i) => i.severity === "positive");
     expect(positives.some((i) => i.text.includes("positive quality trajectory"))).toBe(true);

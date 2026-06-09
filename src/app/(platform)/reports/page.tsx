@@ -131,7 +131,7 @@ export default function ReportsPage() {
       quickCreateContext={{ module: "reports", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Reports" subtitle="Oak House — Management Reports" targetId="reports-content" />
+          <PrintButton title="Reports" subtitle="Chamberlain House — Management Reports" targetId="reports-content" />
           <SmartUploadButton variant="inline" label="Upload Report" uploadContext="Reports — report or evidence upload" />
           <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
             {(["week", "month", "quarter", "year"] as const).map((p) => (

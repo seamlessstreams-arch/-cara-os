@@ -78,7 +78,7 @@ function contentOf(wordTarget: number, prefix: string = ""): string {
   return prefix ? `${prefix} ${words(remaining)}` : words(wordTarget);
 }
 
-// ── Oak House realistic dataset: 25 entries across 7 days ──────────────────
+// ── Chamberlain House realistic dataset: 25 entries across 7 days ──────────────────
 // Darren: 8 entries, avg 80+ words, all mood, improving
 // Ryan: 6 entries, avg 60+ words, most mood, stable
 // Anna: 5 entries, avg 40+ words, some mood, stable
@@ -883,9 +883,9 @@ describe("Recording Quality Intelligence Engine", () => {
     });
   });
 
-  // ── Oak House full dataset ────────────────────────────────────────────
+  // ── Chamberlain House full dataset ────────────────────────────────────────────
 
-  describe("Oak House full dataset", () => {
+  describe("Chamberlain House full dataset", () => {
     const oakData = buildOakHouseData();
     const result = run(oakData);
 

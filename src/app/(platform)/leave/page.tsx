@@ -249,7 +249,7 @@ export default function LeavePage() {
       quickCreateContext={{ module: "leave", defaultTaskCategory: "staffing" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Leave Management" subtitle="Oak House — Staff Leave Records" targetId="leave-content" />
+          <PrintButton title="Leave Management" subtitle="Chamberlain House — Staff Leave Records" targetId="leave-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Leave — supporting document upload" />
           <ExportButton<LeaveRequest> filename="leave-export" data={filteredRequests} columns={LEAVE_EXPORT_COLS} label="Export" />
           <Button size="sm" disabled title="Leave requests are submitted directly by staff. Approve requests from the Leave Requests tab.">

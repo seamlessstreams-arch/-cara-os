@@ -1092,7 +1092,7 @@ describe("generateIncidentPatternAnalysisIntelligence", () => {
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
-  describe("demo scenario — Oak House", () => {
+  describe("demo scenario — Chamberlain House", () => {
     // Simulates the API demo data scenario
     const demoIncidents: IncidentRecord[] = [
       makeIncident({
@@ -1195,7 +1195,7 @@ describe("generateIncidentPatternAnalysisIntelligence", () => {
       makeStaffResponse({ id: "sr-4", incidentId: "inc-jordan-003", staffName: "Sarah Johnson", responseTimeMins: 1 }),
     ];
 
-    it("should produce a realistic score for Oak House demo data", () => {
+    it("should produce a realistic score for Chamberlain House demo data", () => {
       const result = generateIncidentPatternAnalysisIntelligence(
         demoIncidents,
         demoTrends,

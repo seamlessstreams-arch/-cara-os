@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Medication Error Prevention Intelligence API Route
 //
-// GET  → returns Oak House demo medication error prevention intelligence
+// GET  → returns Chamberlain House demo medication error prevention intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   StaffMedicationTraining,
 } from "@/lib/medication-error-prevention/medication-error-prevention-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const administrations: MedicationAdministration[] = [

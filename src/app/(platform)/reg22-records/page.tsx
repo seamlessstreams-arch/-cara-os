@@ -87,7 +87,7 @@ export default function Reg22RecordsPage() {
       ariaContext={{ pageTitle: "Regulation 22 Records", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Regulation 22 Records" subtitle="Oak House — Schedule 3 Compliance" />
+          <PrintButton title="Regulation 22 Records" subtitle="Chamberlain House — Schedule 3 Compliance" />
           <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

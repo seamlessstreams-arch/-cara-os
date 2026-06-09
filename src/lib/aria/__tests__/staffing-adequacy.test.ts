@@ -15,7 +15,7 @@ function makeDate(daysAhead: number): string {
 
 const defaultConfig: HomeConfig = {
   homeId: "home_oak",
-  homeName: "Oak House",
+  homeName: "Chamberlain House",
   registeredBeds: 4,
   currentOccupancy: 3,
   minimumDayStaff: 2,

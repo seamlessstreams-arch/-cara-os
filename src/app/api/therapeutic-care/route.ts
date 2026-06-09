@@ -3,7 +3,7 @@
 //
 // Therapeutic Care Intelligence
 //
-// GET  — Returns therapeutic care assessment with Oak House demo data
+// GET  — Returns therapeutic care assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -23,7 +23,7 @@ import type {
   TherapeuticEnvironment,
 } from "@/lib/therapeutic-care";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 // Alex: weekly CBT sessions (mostly positive)
 const DEMO_SESSIONS: TherapySession[] = [

@@ -891,9 +891,9 @@ describe("generateLanguageCommunicationSupportIntelligence", () => {
     expect(result.regulatoryLinks.some((l) => l.includes("UNCRC Article 13"))).toBe(true);
   });
 
-  // -- Integration / Oak House demo --
+  // -- Integration / Chamberlain House demo --
 
-  it("handles realistic Oak House scenario", () => {
+  it("handles realistic Chamberlain House scenario", () => {
     const profiles = [
       mkProfile({ id: "cp-1", childId: "child-alex", childName: "Alex", communicationNeed: "none", communicationPlanExists: false, planReviewStatus: "not_applicable", augmentativeDeviceNeeded: false, augmentativeDeviceProvided: false }),
       mkProfile({ id: "cp-2", childId: "child-jordan", childName: "Jordan", communicationNeed: "english_additional_language", communicationPlanExists: true, planReviewStatus: "current", interpreterRequired: true, interpreterAvailable: true, augmentativeDeviceNeeded: false, augmentativeDeviceProvided: false }),

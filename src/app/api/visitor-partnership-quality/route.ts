@@ -3,7 +3,7 @@
 //
 // Visitor & Partnership Quality Intelligence
 //
-// GET  — Returns visitor/partnership assessment with Oak House demo data
+// GET  — Returns visitor/partnership assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   VisitorAction,
 } from "@/lib/visitor-partnership-quality";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_VISITS: VisitRecord[] = [
   // Alex — regular SW and therapy visits

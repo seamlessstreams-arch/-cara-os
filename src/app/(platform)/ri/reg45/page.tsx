@@ -467,7 +467,7 @@ function GenerateForm({
         {
           mode: "ri_reg45_generate",
           style: "reg_45_narrative",
-          source_content: evidenceNotes || `Regulation 45 report for ${period}. Period: ${periodStart} to ${periodEnd}. Home: Oak House.`,
+          source_content: evidenceNotes || `Regulation 45 report for ${period}. Period: ${periodStart} to ${periodEnd}. Home: Chamberlain House.`,
           page_context: "Regulation 45 Engine",
           record_type: "reg_45",
           user_role: "responsible_individual",
@@ -612,7 +612,7 @@ export default function Reg45Page() {
         <div className="flex items-center gap-2">
           <PrintButton
             title="Reg 45 Reports"
-            subtitle="Oak House — Independent Person Reports"
+            subtitle="Chamberlain House — Independent Person Reports"
             targetId="reg45-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI — Regulation 45 evidence upload" />

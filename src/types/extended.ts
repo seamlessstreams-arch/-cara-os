@@ -8757,7 +8757,7 @@ export type FamilyTimeLocation =
   | "public_venue";
 
 export const FAMILY_TIME_LOCATION_LABEL: Record<FamilyTimeLocation, string> = {
-  oak_house: "Oak House",
+  oak_house: "Chamberlain House",
   family_home: "Family Home",
   contact_centre: "Contact Centre",
   public_venue: "Public Venue",

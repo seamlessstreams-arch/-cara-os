@@ -1702,7 +1702,7 @@ const store = {
       venue: "Virtual — Teams", chaired_by: "S. Williams (IRO)",
       home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Oak House", attended: true },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: true },
         { name: "S. Williams", role: "IRO", organisation: "Local Authority", attended: true },
         { name: "J. Cooper", role: "Social Worker", organisation: "Local Authority", attended: true },
         { name: "Alex", role: "Young Person", organisation: "", attended: true },
@@ -1722,10 +1722,10 @@ const store = {
     {
       id: "mam_002", child_id: "yp_jordan", meeting_type: "lac_review" as const,
       meeting_status: "scheduled" as const, date: daysFromNow(5), time: "14:00",
-      venue: "Oak House", chaired_by: "M. Khan (IRO)",
+      venue: "Chamberlain House", chaired_by: "M. Khan (IRO)",
       home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Oak House", attended: false },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: false },
         { name: "M. Khan", role: "IRO", organisation: "Local Authority", attended: false },
         { name: "L. Patel", role: "Social Worker", organisation: "Local Authority", attended: false },
         { name: "Jordan", role: "Young Person", organisation: "", attended: false },
@@ -1741,7 +1741,7 @@ const store = {
       venue: "School", chaired_by: "Designated Teacher",
       home_representative: "Priya Mitchell",
       attendees: [
-        { name: "Priya Mitchell", role: "Key Worker", organisation: "Oak House", attended: true },
+        { name: "Priya Mitchell", role: "Key Worker", organisation: "Chamberlain House", attended: true },
         { name: "H. Brooks", role: "Designated Teacher", organisation: "Academy School", attended: true },
         { name: "Casey", role: "Young Person", organisation: "", attended: true },
         { name: "T. Evans", role: "Virtual School Head", organisation: "Local Authority", attended: true },
@@ -1762,7 +1762,7 @@ const store = {
       venue: "Virtual — Teams", chaired_by: "J. Cooper (SW)",
       home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Oak House", attended: true },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: true },
         { name: "J. Cooper", role: "Social Worker", organisation: "Local Authority", attended: true },
         { name: "DC Watkins", role: "Police", organisation: "Police", attended: true },
         { name: "MACE Coordinator", role: "MACE", organisation: "Local Authority", attended: true },
@@ -1781,13 +1781,13 @@ const store = {
     {
       id: "mam_005", child_id: "yp_jordan", meeting_type: "professionals" as const,
       meeting_status: "completed" as const, date: daysFromNow(-35), time: "15:00",
-      venue: "Oak House", chaired_by: "Olivia Hayes",
+      venue: "Chamberlain House", chaired_by: "Olivia Hayes",
       home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Oak House", attended: true },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: true },
         { name: "L. Patel", role: "Social Worker", organisation: "Local Authority", attended: true },
         { name: "Dr. Singh", role: "CAMHS Therapist", organisation: "NHS", attended: false },
-        { name: "Priya Mitchell", role: "Key Worker", organisation: "Oak House", attended: true },
+        { name: "Priya Mitchell", role: "Key Worker", organisation: "Chamberlain House", attended: true },
       ],
       key_discussion_points: ["CAMHS engagement", "Emotional wellbeing", "Pathway planning"],
       decisions_reached: ["Alternative CAMHS offer to be explored", "Wellbeing check-ins increased"],
@@ -1805,7 +1805,7 @@ const store = {
       venue: "Local Authority offices", chaired_by: "M. Khan (IRO)",
       home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Oak House", attended: true },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: true },
         { name: "M. Khan", role: "IRO", organisation: "Local Authority", attended: true },
         { name: "R. Hughes", role: "Social Worker", organisation: "Local Authority", attended: true },
         { name: "Casey", role: "Young Person", organisation: "", attended: true },
@@ -2544,7 +2544,7 @@ const store = {
       id: "obr_default",
       organisation_id: "org_oak",
       company_name: "Seamless Streams Care Ltd",
-      trading_name: "Oak House Residential Care",
+      trading_name: "Chamberlain House Residential Care",
       registered_provider_name: "Seamless Streams Care Ltd",
       company_registration_number: "12345678",
       ofsted_provider_reference: "SC123456",
@@ -2572,7 +2572,7 @@ const store = {
       id: "hbr_oak",
       home_id: "home_oak",
       organisation_id: "org_oak",
-      home_name: "Oak House",
+      home_name: "Chamberlain House",
       home_address: "1 Care Lane, Oak Town, OA1 2BC",
       ofsted_urn: "SC123456",
       registered_manager_name: "Olivia Cartwright",
@@ -2913,7 +2913,7 @@ store.missingEpisodes = [
     date_missing: "2026-01-15", time_missing: "21:30",
     date_returned: "2026-01-15", time_returned: "23:25",
     duration_hours: 1.9, risk_level: "medium",
-    location_last_seen: "Outside Oak House — said going to shop",
+    location_last_seen: "Outside Chamberlain House — said going to shop",
     return_location: "Local park, returned voluntarily",
     reported_to_police: false, police_reference: null,
     reported_to_la: true, la_notified_at: "2026-01-16T09:00:00Z",
@@ -2967,7 +2967,7 @@ store.missingEpisodes = [
 // Seed chronology
 store.chronology = [
   // Alex chronology
-  { id: "chr_001", child_id: "yp_alex", date: "2025-09-01", time: "14:00", category: "placement", title: "Placement commenced at Oak House", description: "Alex admitted to Oak House under S20. Initial placement meeting held with LA, IRO, and social worker. Risk assessment reviewed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-09-01T14:00:00Z" },
+  { id: "chr_001", child_id: "yp_alex", date: "2025-09-01", time: "14:00", category: "placement", title: "Placement commenced at Chamberlain House", description: "Alex admitted to Chamberlain House under S20. Initial placement meeting held with LA, IRO, and social worker. Risk assessment reviewed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-09-01T14:00:00Z" },
   { id: "chr_002", child_id: "yp_alex", date: "2025-10-01", time: null, category: "education", title: "School placement arranged — Derby Alternative Provision", description: "Education arranged with Derby AP following exclusion from previous school. Alex settled well in first week.", significance: "significant", recorded_by: "staff_ryan", linked_incident_id: null, home_id: "home_oak", created_at: "2025-10-01T10:00:00Z" },
   { id: "chr_003", child_id: "yp_alex", date: "2026-01-15", time: "21:30", category: "missing", title: "First missing from care episode (MFC-2026-001)", description: "Alex absent 1h 55m. Returned voluntarily. Low-risk return interview completed.", significance: "significant", recorded_by: "staff_edward", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-15T23:30:00Z" },
   { id: "chr_004", child_id: "yp_alex", date: "2026-02-05", time: null, category: "review", title: "LAC Review — Alex W", description: "Looked After Child review held at Derby City Council. Placement stable. Education engagement improved. No change to Care Order.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-02-05T11:00:00Z" },
@@ -2975,11 +2975,11 @@ store.chronology = [
   { id: "chr_006", child_id: "yp_alex", date: "2026-04-01", time: "20:45", category: "missing", title: "Third missing from care episode (MFC-2026-003) — pattern escalated", description: "Alex absent 1h 35m. Police informed. Contextual safeguarding escalation — MASH referral made. Unknown peer group suspected.", significance: "critical", recorded_by: "staff_edward", linked_incident_id: "inc_001", home_id: "home_oak", created_at: "2026-04-01T20:55:00Z" },
   { id: "chr_007", child_id: "yp_alex", date: "2026-04-14", time: "19:10", category: "safeguarding", title: "Safeguarding disclosure — criminal exploitation risk", description: "Alex disclosed older peer asking him to carry items. Immediate safeguarding response. Social worker, police, and RM notified. Strategy discussion arranged.", significance: "critical", recorded_by: "staff_edward", linked_incident_id: "inc_004", home_id: "home_oak", created_at: "2026-04-14T19:15:00Z" },
   // Jordan chronology
-  { id: "chr_010", child_id: "yp_jordan", date: "2025-11-15", time: null, category: "placement", title: "Placement commenced at Oak House", description: "Jordan admitted under Full Care Order (S31). Placement plan agreed with Nottinghamshire CC. Halal food and dietary requirements confirmed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-11-15T12:00:00Z" },
+  { id: "chr_010", child_id: "yp_jordan", date: "2025-11-15", time: null, category: "placement", title: "Placement commenced at Chamberlain House", description: "Jordan admitted under Full Care Order (S31). Placement plan agreed with Nottinghamshire CC. Halal food and dietary requirements confirmed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-11-15T12:00:00Z" },
   { id: "chr_011", child_id: "yp_jordan", date: "2025-12-01", time: null, category: "education", title: "School placement — Highfields Academy", description: "Jordan started at Highfields Academy. Initial settling in period. Positive engagement with PE.", significance: "significant", recorded_by: "staff_ryan", linked_incident_id: null, home_id: "home_oak", created_at: "2025-12-01T09:00:00Z" },
   { id: "chr_012", child_id: "yp_jordan", date: "2026-04-14", time: "14:30", category: "behaviour", title: "Complaint raised — noise during study time (INC-2026-0042)", description: "Jordan raised formal complaint about noise levels. Complaint logged and investigation commenced.", significance: "significant", recorded_by: "staff_chervelle", linked_incident_id: "inc_003", home_id: "home_oak", created_at: "2026-04-14T14:35:00Z" },
   // Casey chronology
-  { id: "chr_020", child_id: "yp_casey", date: "2026-01-10", time: null, category: "placement", title: "Placement commenced at Oak House", description: "Casey admitted under Full Care Order. From previous placement that broke down. Settling-in plan agreed. CAMHS referral in place.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-10T13:00:00Z" },
+  { id: "chr_020", child_id: "yp_casey", date: "2026-01-10", time: null, category: "placement", title: "Placement commenced at Chamberlain House", description: "Casey admitted under Full Care Order. From previous placement that broke down. Settling-in plan agreed. CAMHS referral in place.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-10T13:00:00Z" },
   { id: "chr_021", child_id: "yp_casey", date: "2026-01-15", time: null, category: "health", title: "Melatonin prescribed — sleep support", description: "Dr Chen prescribed Melatonin 3mg for sleep difficulties. MAR commenced.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-15T10:00:00Z" },
   { id: "chr_022", child_id: "yp_casey", date: "2026-02-01", time: null, category: "health", title: "Fluoxetine prescribed — mood support", description: "Dr Chen prescribed Fluoxetine 10mg for low mood. Risk assessment updated. CAMHS oversight confirmed.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-02-01T11:00:00Z" },
   { id: "chr_023", child_id: "yp_casey", date: "2026-04-13", time: "08:15", category: "health", title: "Medication late administration — refusal episode (INC-2026-0040)", description: "Casey refused morning Fluoxetine. Incident logged. Late administration at 08:45 following second attempt.", significance: "significant", recorded_by: "staff_anna", linked_incident_id: "inc_002", home_id: "home_oak", created_at: "2026-04-13T08:20:00Z" },
@@ -3013,8 +3013,8 @@ store.medicationAdministrations = [
 // Seed buildings and H&S
 store.buildings = [
   {
-    id: "bld_001", home_id: "home_oak", name: "Oak House — Main Building",
-    type: "residential", address: "Oak House, Derby, DE1 3AA",
+    id: "bld_001", home_id: "home_oak", name: "Chamberlain House — Main Building",
+    type: "residential", address: "Chamberlain House, Derby, DE1 3AA",
     areas: ["bedroom_alex", "bedroom_jordan", "bedroom_casey", "lounge", "kitchen", "bathroom_main", "bathroom_staff", "office", "medication_room", "garden"],
     gas_cert_expiry: "2026-12-01", electrical_cert_expiry: "2027-03-01",
     fire_risk_assessment_date: "2026-01-15", epc_rating: "C",
@@ -3072,7 +3072,7 @@ store.handovers = [
     created_by: "staff_darren", signed_off_by: null, sign_offs: [],
     child_updates: [
       { child_id: "yp_alex", mood_score: 6, key_notes: "Alex had a settled day overall. Engaged with education in the morning. Some low mood around 4pm — disclosed worrying about court proceedings. Supported with 1:1 time.", alerts: ["Phone usage overnight — third time this week", "Court proceedings anxiety"] },
-      { child_id: "yp_jordan", mood_score: 9, key_notes: "Jordan had an excellent day. Went to football training with Samuel. Made positive comments about feeling settled at Oak House.", alerts: [] },
+      { child_id: "yp_jordan", mood_score: 9, key_notes: "Jordan had an excellent day. Went to football training with Samuel. Made positive comments about feeling settled at Chamberlain House.", alerts: [] },
       { child_id: "yp_casey", mood_score: 4, key_notes: "Casey struggled this afternoon. Became distressed about a phone call from her mother. Supported to regulate. Refused evening medication initially — accepted 30 minutes later.", alerts: ["Contact distress", "Medication delay — administered 30 mins late"] },
     ],
     general_notes: "Rear gate latch needs fixing urgently — flagged to Marcus. CCTV camera still not installed. Strategy discussion tomorrow re: Alex safeguarding.",
@@ -3117,7 +3117,7 @@ store.vacancies = [
     hours: 40,
     shift_pattern: "Rotating days, evenings and sleep-ins across a 4-week rota",
     reports_to: "staff_darren",
-    safeguarding_statement: "Oak House is committed to safeguarding and promoting the welfare of children and young people. All posts are subject to an enhanced DBS check, barred list check, and satisfactory references.",
+    safeguarding_statement: "Chamberlain House is committed to safeguarding and promoting the welfare of children and young people. All posts are subject to an enhanced DBS check, barred list check, and satisfactory references.",
     status: "open",
     approval_status: "approved",
     created_by: "staff_darren",
@@ -3138,7 +3138,7 @@ store.vacancies = [
     hours: 40,
     shift_pattern: "Supernumerary management shifts plus on-call cover",
     reports_to: "staff_darren",
-    safeguarding_statement: "Oak House is committed to safeguarding and promoting the welfare of children and young people. All posts are subject to an enhanced DBS check, barred list check, and satisfactory references.",
+    safeguarding_statement: "Chamberlain House is committed to safeguarding and promoting the welfare of children and young people. All posts are subject to an enhanced DBS check, barred list check, and satisfactory references.",
     status: "open",
     approval_status: "approved",
     created_by: "staff_darren",
@@ -3637,7 +3637,7 @@ store.careForms = [
   },
   {
     id: "form_004", home_id: "home_oak",
-    title: "Oak House — Monthly Health & Safety Check", form_type: "health_safety_check",
+    title: "Chamberlain House — Monthly Health & Safety Check", form_type: "health_safety_check",
     status: "pending_review", priority: "medium",
     linked_child_id: null, linked_staff_id: "staff_chervelle",
     linked_incident_id: null, linked_shift_id: null, linked_task_id: null,
@@ -3798,7 +3798,7 @@ store.documents = [
     created_by: "staff_darren", updated_by: "staff_darren",
   },
   {
-    id: "doc_3", title: "Oak House — Child Protection Policy",
+    id: "doc_3", title: "Chamberlain House — Child Protection Policy",
     category: "policy", description: "Whole-home child protection and safeguarding policy",
     file_url: "#", file_name: "CP_Policy_2026.pdf", file_size: 320000, mime_type: "application/pdf",
     version: 4, previous_version_id: "doc_3_v3", requires_read_sign: true,
@@ -4147,7 +4147,7 @@ store.developmentPlans = [
       { id: "dpa_e1", title: "Complete Level 3 Diploma Unit 2 — Safeguarding", description: "Submit Level 3 Diploma Unit 2 assessment by June 2026.", domain: "safeguarding_and_child_protection", target_date: "2026-06-30", completed: false },
       { id: "dpa_e2", title: "Complete 3 written risk assessments with supervision review", description: "Write 3 risk assessments for young people's plans under Olivia's supervision. Each to be reviewed and scored.", domain: "risk_management", target_date: "2026-07-01", completed: false },
       { id: "dpa_e3", title: "Lead one team handover briefing per month", description: "Chair the evening handover briefing monthly — develop confidence in leading practice discussions.", domain: "leadership_and_supervision", target_date: "2026-09-01", completed: false },
-      { id: "dpa_e4", title: "Attend trauma-informed practice refresher workshop", description: "Complete Acacia Therapy Homes TIP refresher (online, 4 hours). Produce a reflective account.", domain: "trauma_informed_practice", target_date: "2026-05-31", completed: true, completed_at: "2026-04-10T11:00:00Z", evidence_notes: "Workshop completed. Reflective account submitted and approved by Marcus." },
+      { id: "dpa_e4", title: "Attend trauma-informed practice refresher workshop", description: "Complete Avisaar Childrens Care Ltd TIP refresher (online, 4 hours). Produce a reflective account.", domain: "trauma_informed_practice", target_date: "2026-05-31", completed: true, completed_at: "2026-04-10T11:00:00Z", evidence_notes: "Workshop completed. Reflective account submitted and approved by Marcus." },
     ],
     created_by: "staff_darren", created_at: NOW, updated_at: NOW,
   },
@@ -4357,7 +4357,7 @@ store.successionPlans = [
     candidates: [
       { staff_id: "staff_ryan", readiness_score: 74, ready_now: false, estimated_ready_date: "2027-03-01", development_plan_id: "devplan_ryan_rm", notes: "Primary succession candidate. On track with RM readiness plan." },
     ],
-    aria_narrative: "Oak House has one clear succession candidate for the Registered Manager role: Marcus Bell. His current readiness score of 74/100 reflects strong operational performance with a Level 5 qualification gap as the primary blocking factor. ARIA projects RM readiness by Q1 2027 subject to development plan milestones being met. No immediate risk to regulatory continuity — recommend activating succession plan review at 6-month mark.",
+    aria_narrative: "Chamberlain House has one clear succession candidate for the Registered Manager role: Marcus Bell. His current readiness score of 74/100 reflects strong operational performance with a Level 5 qualification gap as the primary blocking factor. ARIA projects RM readiness by Q1 2027 subject to development plan milestones being met. No immediate risk to regulatory continuity — recommend activating succession plan review at 6-month mark.",
     review_date: "2026-10-01",
     created_by: "staff_darren", created_at: NOW, updated_at: NOW,
   },
@@ -4474,7 +4474,7 @@ store.outcomeTargets = [
   // Jordan — 5 targets
   { ...outBase, id: "ot_007", child_id: "yp_jordan", domain: "education", target_description: "Achieve expected progress in English and Maths at Highfields Academy", success_criteria: "End of year report shows at least 'expected progress' in both subjects", baseline_rating: 3 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(30), set_by: "staff_anna", set_date: daysFromNow(-80), yp_voice: "I'm doing well in maths. English is harder but I'm trying.", notes: "PEP meeting confirmed good progress. Reading age up 6 months.", evidence_notes: "PEP report on file", created_at: outNow, updated_at: outNow },
   { ...outBase, id: "ot_008", child_id: "yp_jordan", domain: "health", target_description: "Maintain healthy eating and physical activity routine", success_criteria: "Participation in 3+ physical activities per week and balanced diet", baseline_rating: 4 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "stable" as const, status: "active" as const, review_date: daysFromNow(30), set_by: "staff_anna", set_date: daysFromNow(-60), yp_voice: "I love football. Can we get more sessions?", notes: "Football Mon/Wed, swimming Saturdays. Eating well.", evidence_notes: null, created_at: outNow, updated_at: outNow },
-  { ...outBase, id: "ot_009", child_id: "yp_jordan", domain: "emotional_wellbeing", target_description: "Feel settled and safe at Oak House", success_criteria: "Express feeling safe and happy in keywork sessions consistently", baseline_rating: 3 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(21), set_by: "staff_anna", set_date: daysFromNow(-45), yp_voice: "I like it here. The staff are nice. I feel safe.", notes: "Very settled. No incidents this month. Positive keywork engagement.", evidence_notes: null, created_at: outNow, updated_at: outNow },
+  { ...outBase, id: "ot_009", child_id: "yp_jordan", domain: "emotional_wellbeing", target_description: "Feel settled and safe at Chamberlain House", success_criteria: "Express feeling safe and happy in keywork sessions consistently", baseline_rating: 3 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(21), set_by: "staff_anna", set_date: daysFromNow(-45), yp_voice: "I like it here. The staff are nice. I feel safe.", notes: "Very settled. No incidents this month. Positive keywork engagement.", evidence_notes: null, created_at: outNow, updated_at: outNow },
   { ...outBase, id: "ot_010", child_id: "yp_jordan", domain: "independence", target_description: "Develop age-appropriate independence skills — cooking and laundry", success_criteria: "Prepare a simple meal independently and manage own laundry weekly", baseline_rating: 2 as const, current_rating: 3 as const, target_rating: 4 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(14), set_by: "staff_anna", set_date: daysFromNow(-40), yp_voice: "I made pasta last week! It was actually good.", notes: "Can make 3 simple meals. Does own laundry with prompting.", evidence_notes: null, created_at: outNow, updated_at: outNow },
   { ...outBase, id: "ot_011", child_id: "yp_jordan", domain: "family_social", target_description: "Maintain positive contact with family and develop peer friendships", success_criteria: "Regular family contact without distress; at least 2 peer social activities per month", baseline_rating: 3 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(21), set_by: "staff_anna", set_date: daysFromNow(-45), yp_voice: "I like seeing mum at the weekend. I've made friends at football.", notes: "Family contact consistently positive. 2 friends from football team.", evidence_notes: null, created_at: outNow, updated_at: outNow },
   // Casey — 5 targets
@@ -4921,7 +4921,7 @@ store.riskAssessments = [
 store.lacReviews = [
   {
     id: "lac_001", child_id: "yp_alex", date: daysFromNow(-30), review_type: "subsequent",
-    iro: "Sarah Mitchell", venue: "Oak House — Quiet Room",
+    iro: "Sarah Mitchell", venue: "Chamberlain House — Quiet Room",
     attendees: [
       { name: "Sarah Mitchell", role: "IRO" }, { name: "Olivia Hayes", role: "Registered Manager" },
       { name: "Lisa Chen", role: "Social Worker" }, { name: "Alex", role: "Young Person" },
@@ -4929,7 +4929,7 @@ store.lacReviews = [
     child_participation: "attended",
     child_views: "I like it here. I want to stay. I'm doing better at school and I want to go to college next year.",
     key_discussions: ["Education progress and college plans", "Contact with birth family", "Anger management progress", "Pathway planning"],
-    recommendations: ["Continue placement at Oak House", "Support college application", "Maintain CAMHS sessions"],
+    recommendations: ["Continue placement at Chamberlain House", "Support college application", "Maintain CAMHS sessions"],
     outcome: "placement_continues",
     actions_agreed: [
       { action: "Support Alex with college application", owner: "Key worker", due_date: daysFromNow(30), completed: false },
@@ -4942,7 +4942,7 @@ store.lacReviews = [
   },
   {
     id: "lac_002", child_id: "yp_jordan", date: daysFromNow(-45), review_type: "subsequent",
-    iro: "David Wright", venue: "Oak House — Office",
+    iro: "David Wright", venue: "Chamberlain House — Office",
     attendees: [
       { name: "David Wright", role: "IRO" }, { name: "Olivia Hayes", role: "Registered Manager" },
       { name: "Mark Evans", role: "Social Worker" }, { name: "Priya Kovacs", role: "Key Worker" },
@@ -4963,7 +4963,7 @@ store.lacReviews = [
   },
   {
     id: "lac_003", child_id: "yp_casey", date: daysFromNow(-60), review_type: "first_review",
-    iro: "Sarah Mitchell", venue: "Oak House — Living Room",
+    iro: "Sarah Mitchell", venue: "Chamberlain House — Living Room",
     attendees: [
       { name: "Sarah Mitchell", role: "IRO" }, { name: "Olivia Hayes", role: "Registered Manager" },
       { name: "Priya Sharma", role: "Social Worker" }, { name: "Casey", role: "Young Person" },
@@ -4971,7 +4971,7 @@ store.lacReviews = [
     ],
     child_participation: "attended",
     child_views: "I feel safe here. The staff listen to me. I want to keep going to the same school. I like my key worker.",
-    key_discussions: ["Settling in at Oak House", "School attendance", "Identity and wellbeing", "CAMHS referral", "Life story work"],
+    key_discussions: ["Settling in at Chamberlain House", "School attendance", "Identity and wellbeing", "CAMHS referral", "Life story work"],
     recommendations: ["Maintain current school placement", "Prioritise CAMHS referral", "Begin life story work when ready", "Explore cultural identity support"],
     outcome: "placement_continues",
     actions_agreed: [
@@ -7037,7 +7037,7 @@ store.attachmentProfiles = [
     early_history:
       "Significant early relational trauma. Exposed to domestic abuse and parental substance misuse from infancy; multiple unplanned separations from primary carer before age 5. No consistent attachment figure in early years.",
     placement_history:
-      "Three previous placements before Oak House (one foster, two residential), all ending in placement breakdown linked to escalation and going missing. Current placement under Section 20 since admission, now 17 weeks.",
+      "Three previous placements before Chamberlain House (one foster, two residential), all ending in placement breakdown linked to escalation and going missing. Current placement under Section 20 since admission, now 17 weeks.",
     behaviours: [
       {
         context: "When asked direct questions about his day or his family",
@@ -7135,7 +7135,7 @@ store.attachmentProfiles = [
     early_history:
       "Experienced neglect and inconsistent care, but had one warm, fairly reliable relationship with an older sibling who often took a caregiving role. Some early protective relational experience despite adversity.",
     placement_history:
-      "One previous short-term foster placement that ended due to carer ill-health, not breakdown. Placed at Oak House under Section 31; settling well over the first 6 weeks.",
+      "One previous short-term foster placement that ended due to carer ill-health, not breakdown. Placed at Chamberlain House under Section 31; settling well over the first 6 weeks.",
     behaviours: [
       {
         context: "On days when contact with his sibling is due or has just happened",
@@ -7224,7 +7224,7 @@ store.attachmentProfiles = [
     early_history:
       "Emotional neglect and unpredictable parental availability; learned early that expressing need rarely brought comfort, so became highly self-reliant and emotionally contained.",
     placement_history:
-      "Two previous placements; the most recent residential placement was reasonably stable but ended on a planned basis to move closer to her home area. Placed at Oak House under Section 31.",
+      "Two previous placements; the most recent residential placement was reasonably stable but ended on a planned basis to move closer to her home area. Placed at Chamberlain House under Section 31.",
     behaviours: [
       {
         context: "When she has had a low day or poor night's sleep",
@@ -7939,7 +7939,7 @@ store.socialWorkerContactRecords = [
     purpose: "Six-weekly statutory visit under Care Planning Regulations — review of placement, safety and missing/exploitation risk.",
     summary: "Karen visited and saw Alex alone in his bedroom for 40 minutes. Discussed his progress at college, his safety plan and the reduction in missing episodes since the return-home interview work. Reviewed his wishes about contact with his mother. Placement plan and risk assessment confirmed as up to date.",
     key_decisions: [
-      "Maintain current placement at Oak House; no change to S20 arrangements",
+      "Maintain current placement at Chamberlain House; no change to S20 arrangements",
       "Continue weekly return-home interview follow-up with keyworker staff_edward",
       "Refer to CSE/exploitation MACE panel for ongoing multi-agency oversight",
     ],
@@ -7948,7 +7948,7 @@ store.socialWorkerContactRecords = [
       { action: "Send MACE referral form to placing authority", owner: "staff_darren", due_date: daysFromNow(-2), status: "completed" as const },
     ],
     child_aware: true,
-    child_views: "Alex said he feels safer at Oak House than at his last placement and wants to keep going to college. He asked whether he could see his mum more often.",
+    child_views: "Alex said he feels safer at Chamberlain House than at his last placement and wants to keep going to college. He asked whether he could see his mum more often.",
     follow_up_required: true,
     follow_up_date: daysFromNow(33),
     documents_shared: ["Placement plan", "Risk assessment", "Missing-episode log"],
@@ -8002,7 +8002,7 @@ store.socialWorkerContactRecords = [
     initiated_by: "social_worker" as const,
     staff_member: "staff_anna",
     purpose: "Statutory Looked After Child review chaired by the IRO — review of care plan and progress.",
-    summary: "LAC review held at Oak House with the IRO, Michael, keyworker staff_anna and Jordan. Jordan presented as settled and engaged. Education attendance strong. Care plan reviewed and remains appropriate under his full care order. Jordan was seen alone by the IRO before the meeting.",
+    summary: "LAC review held at Chamberlain House with the IRO, Michael, keyworker staff_anna and Jordan. Jordan presented as settled and engaged. Education attendance strong. Care plan reviewed and remains appropriate under his full care order. Jordan was seen alone by the IRO before the meeting.",
     key_decisions: [
       "Care plan endorsed by IRO; no changes required",
       "Continue current education placement and therapeutic support",
@@ -8012,7 +8012,7 @@ store.socialWorkerContactRecords = [
       { action: "Circulate IRO review minutes to all attendees", owner: "staff_anna", due_date: daysFromNow(-6), status: "completed" as const },
     ],
     child_aware: true,
-    child_views: "Jordan said he is happy at Oak House, likes his school and his keyworker, and does not want anything to change.",
+    child_views: "Jordan said he is happy at Chamberlain House, likes his school and his keyworker, and does not want anything to change.",
     follow_up_required: false,
     follow_up_date: null,
     documents_shared: ["Care plan", "IRO review minutes", "Education report"],
@@ -8087,7 +8087,7 @@ store.siblingContactProtocolRecords = [
     child_id: "yp_jordan",
     sibling_name: "Liam M",
     sibling_placement: "Foster placement (separate)",
-    sibling_location: "Greenfield Fostering, approx. 18 miles from Oak House",
+    sibling_location: "Greenfield Fostering, approx. 18 miles from Chamberlain House",
     relationship_pre_oak_house: "Jordan and his older brother Liam lived together until Jordan's admission. Liam was a consistent protective figure throughout childhood, often shielding Jordan during periods of family disruption.",
     current_relationship_quality: "strong" as const,
     contact_frequency: "fortnightly" as const,
@@ -8103,11 +8103,11 @@ store.siblingContactProtocolRecords = [
     ],
     supervision_required: true,
     supervision_level: "Light-touch supervision by a familiar key worker; staff remain present but step back to allow natural interaction.",
-    transport_arrangements: "Oak House staff transport Jordan to and from the contact venue by car; journey time approx. 30 minutes each way.",
+    transport_arrangements: "Chamberlain House staff transport Jordan to and from the contact venue by car; journey time approx. 30 minutes each way.",
     contact_costs_budget: "Covered within the placement contact budget; approx. £25 per session for venue and activity costs.",
-    locations_for_contact: ["Riverside Community Centre", "Local leisure centre", "Oak House (occasional)"],
+    locations_for_contact: ["Riverside Community Centre", "Local leisure centre", "Chamberlain House (occasional)"],
     favourite_sibling_activities: ["Five-a-side football", "Bowling", "Cooking a meal together"],
-    birthday_celebration_plan: "Both boys' birthdays fall in the summer. Plan agreed for Liam to attend a small celebration at Oak House for Jordan's birthday, and for Jordan to be supported to choose and send a gift for Liam's.",
+    birthday_celebration_plan: "Both boys' birthdays fall in the summer. Plan agreed for Liam to attend a small celebration at Chamberlain House for Jordan's birthday, and for Jordan to be supported to choose and send a gift for Liam's.",
     christmas_arrangements: "A pre-Christmas joint visit is planned with a shared meal and present exchange, agreed in advance with both placements and the local authority.",
     court_ordered_contact: true,
     court_order_terms: "Contact order specifies a minimum of monthly direct contact between Jordan and Liam, to be supervised and reviewed at each LAC review. Current arrangements exceed the ordered minimum.",
@@ -8936,12 +8936,12 @@ store.familyTimeSessions = [
     boundary_issues: "None.",
     concerns_raised: [],
     positive_observations: ["Jordan proud to show Liam his room", "Relaxed home-based contact worked well"],
-    child_voice_after: "Jordan asked if Liam could visit Oak House again soon.",
+    child_voice_after: "Jordan asked if Liam could visit Chamberlain House again soon.",
     parent_engagement: "N/A — sibling contact.",
     gifts_exchanged: "None.",
     food_shared_who: "Cooked and ate together.",
     was_it_safe: true, incidents_during: "None.",
-    recommendations_for_next: ["Alternate venue between community and Oak House"],
+    recommendations_for_next: ["Alternate venue between community and Chamberlain House"],
     report_sent_to_sw: true, report_sent_date: daysFromNow(-5), created_at: daysFromNow(-6),
   },
   {
@@ -9015,7 +9015,7 @@ store.activities = [
     id: "act_seed_3", date: daysFromNow(-13), child_id: "yp_alex",
     category: "life_skills" as const, title: "Gym induction and first session",
     description: "Alex completed a supervised gym induction and first workout as part of his identity/health outcome.",
-    location: "Oak House — local gym", duration_minutes: 75, staff_id: "staff_darren",
+    location: "Chamberlain House — local gym", duration_minutes: 75, staff_id: "staff_darren",
     engagement: "suggested_by_yp" as const,
     yp_feedback: "I asked to join the gym. Makes me feel good about myself.",
     outcome_notes: "Self-initiated. Booked 3x/week routine. Links to OT_003 identity goal.",
@@ -9035,7 +9035,7 @@ store.activities = [
     id: "act_seed_5", date: daysFromNow(-8), child_id: "yp_jordan",
     category: "life_skills" as const, title: "Cooking a meal independently",
     description: "Jordan planned, shopped for and cooked pasta for the house with light staff support.",
-    location: "Oak House kitchen", duration_minutes: 60, staff_id: "staff_anna",
+    location: "Chamberlain House kitchen", duration_minutes: 60, staff_id: "staff_anna",
     engagement: "willing" as const,
     yp_feedback: "I made pasta and everyone ate it! It was actually good.",
     outcome_notes: "Independence skills progressing. Links to OT_010.",
@@ -9055,7 +9055,7 @@ store.activities = [
     id: "act_seed_7", date: daysFromNow(-3), child_id: "yp_casey",
     category: "creative" as const, title: "Acrylic painting workshop",
     description: "Casey attended a guided acrylic painting workshop and completed a canvas for her bedroom.",
-    location: "Oak House — art room", duration_minutes: 90, staff_id: "staff_chervelle",
+    location: "Chamberlain House — art room", duration_minutes: 90, staff_id: "staff_chervelle",
     engagement: "enthusiastic" as const,
     yp_feedback: "I love art. Can I do another one next week?",
     outcome_notes: "Growing confidence and self-expression. Displayed with permission.",
@@ -9065,7 +9065,7 @@ store.activities = [
     id: "act_seed_8", date: daysFromNow(-10), child_id: "yp_casey",
     category: "life_skills" as const, title: "Baking — first attempt at a Victoria sponge",
     description: "Casey baked a Victoria sponge from scratch with staff. Followed the recipe carefully and shared it with the house.",
-    location: "Oak House kitchen", duration_minutes: 75, staff_id: "staff_diane",
+    location: "Chamberlain House kitchen", duration_minutes: 75, staff_id: "staff_diane",
     engagement: "willing" as const,
     yp_feedback: "It rose properly! I was proud of it.",
     outcome_notes: "Calming, regulating activity. Good for self-esteem.",

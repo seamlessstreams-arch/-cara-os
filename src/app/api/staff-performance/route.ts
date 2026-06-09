@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Staff Performance Intelligence API Route
 //
-// GET  → returns Oak House demo staff performance intelligence
+// GET  → returns Chamberlain House demo staff performance intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -15,7 +15,7 @@ import type {
   CompetencyAssessment,
 } from "@/lib/staff-performance/staff-performance-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const staff: StaffMember[] = [

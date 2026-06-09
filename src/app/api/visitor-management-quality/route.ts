@@ -3,7 +3,7 @@
 //
 // Visitor Management Quality Intelligence
 //
-// GET  — Returns visitor management quality metrics with Oak House demo data
+// GET  — Returns visitor management quality metrics with Chamberlain House demo data
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffVisitorTraining,
 } from "@/lib/visitor-management-quality";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_VISITS: VisitorRecord[] = [
   // Alex — family member visit (excellent)

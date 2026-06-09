@@ -720,7 +720,7 @@ export default function TemplatesPage() {
       ariaContext={{ pageTitle: "Communication Templates", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Communication Templates" subtitle="Oak House — Safer Recruitment Templates" targetId="templates-content" />
+          <PrintButton title="Communication Templates" subtitle="Chamberlain House — Safer Recruitment Templates" targetId="templates-content" />
           <SmartUploadButton variant="inline" label="Upload Template Document" uploadContext="Safer Recruitment — communication template or correspondence document upload" />
           <Button size="sm" variant="outline" onClick={() => setShowAria((v) => !v)}>
             <Sparkles className="h-3.5 w-3.5 mr-1" />

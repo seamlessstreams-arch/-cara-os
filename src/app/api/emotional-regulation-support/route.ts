@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Emotional Regulation Support API Route
 //
-// GET  → returns Oak House demo emotional regulation support intelligence
+// GET  → returns Chamberlain House demo emotional regulation support intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -18,7 +18,7 @@ import type {
   StaffRegulationTraining,
 } from "@/lib/emotional-regulation-support";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const sessions: RegulationSession[] = [

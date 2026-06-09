@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Court Order Compliance Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex 14, Jordan 13, Morgan 15),
+// Demo: Chamberlain House, 3 children (Alex 14, Jordan 13, Morgan 15),
 // 3 court orders, 3 condition reviews, 5 legal meetings, 4 staff trained
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -102,7 +102,7 @@ const makeTraining = (overrides: Partial<LegalTraining> = {}): LegalTraining => 
   ...overrides,
 });
 
-// Oak House demo dataset
+// Chamberlain House demo dataset
 const { orders: OAK_ORDERS, reviews: OAK_REVIEWS, meetings: OAK_MEETINGS, training: OAK_TRAINING } = generateDemoData();
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -826,7 +826,7 @@ describe("generateCourtOrderComplianceIntelligence()", () => {
       OAK_ORDERS, OAK_REVIEWS, OAK_MEETINGS, OAK_TRAINING,
       "oak-house", "2026-01-01", "2026-05-18",
     );
-    // Oak House demo data is highly compliant, may not trigger urgent actions
+    // Chamberlain House demo data is highly compliant, may not trigger urgent actions
     expect(result.actions.length).toBeGreaterThan(0);
   });
 

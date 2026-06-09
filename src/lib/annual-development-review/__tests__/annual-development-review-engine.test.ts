@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Annual Development Review Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex 14, Jordan 13, Morgan 15),
+// Demo: Chamberlain House, 3 children (Alex 14, Jordan 13, Morgan 15),
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -26,7 +26,7 @@ import type {
   StaffReviewTraining,
 } from "../annual-development-review-engine";
 
-// ── Test Fixtures: Oak House Demo Data ────────────────────────────────────
+// ── Test Fixtures: Chamberlain House Demo Data ────────────────────────────────────
 
 const makeReview = (overrides: Partial<ReviewRecord> = {}): ReviewRecord => ({
   id: "rev-001",
@@ -85,7 +85,7 @@ const makeTraining = (overrides: Partial<StaffReviewTraining> = {}): StaffReview
   ...overrides,
 });
 
-// Oak House demo reviews
+// Chamberlain House demo reviews
 const OAK_HOUSE_REVIEWS: ReviewRecord[] = [
   makeReview({
     id: "rev-001",
@@ -287,7 +287,7 @@ describe("evaluateReviewTimeliness", () => {
     expect(result.reviewTypeBreakdown.pre_discharge).toBe(0);
   });
 
-  it("Oak House demo scores between 0-25", () => {
+  it("Chamberlain House demo scores between 0-25", () => {
     const result = evaluateReviewTimeliness(OAK_HOUSE_REVIEWS);
     expect(result.score).toBeGreaterThan(0);
     expect(result.score).toBeLessThanOrEqual(25);
@@ -462,7 +462,7 @@ describe("evaluateChildParticipation", () => {
     expect(result.concerns.some((c) => c.includes("Multi-agency") || c.includes("collaborative"))).toBe(true);
   });
 
-  it("Oak House demo scores between 0-25", () => {
+  it("Chamberlain House demo scores between 0-25", () => {
     const result = evaluateChildParticipation(OAK_HOUSE_REVIEWS);
     expect(result.score).toBeGreaterThan(0);
     expect(result.score).toBeLessThanOrEqual(25);
@@ -619,7 +619,7 @@ describe("evaluateGoalAchievement", () => {
     expect(result.concerns.some((c) => c.includes("goals per child"))).toBe(true);
   });
 
-  it("Oak House demo scores between 0-25", () => {
+  it("Chamberlain House demo scores between 0-25", () => {
     const result = evaluateGoalAchievement(OAK_HOUSE_GOALS);
     expect(result.score).toBeGreaterThan(0);
     expect(result.score).toBeLessThanOrEqual(25);
@@ -762,7 +762,7 @@ describe("evaluateStaffReviewReadiness", () => {
     expect(result.concerns.some((c) => c.includes("Review process") || c.includes("review process"))).toBe(true);
   });
 
-  it("Oak House demo scores between 0-25", () => {
+  it("Chamberlain House demo scores between 0-25", () => {
     const result = evaluateStaffReviewReadiness(OAK_HOUSE_TRAINING);
     expect(result.score).toBeGreaterThan(0);
     expect(result.score).toBeLessThanOrEqual(25);
@@ -926,7 +926,7 @@ describe("buildChildReviewProfiles", () => {
     expect(alex.score).toBeLessThanOrEqual(10);
   });
 
-  it("Oak House demo builds 3 child profiles", () => {
+  it("Chamberlain House demo builds 3 child profiles", () => {
     const result = buildChildReviewProfiles(OAK_HOUSE_REVIEWS, OAK_HOUSE_GOALS);
     expect(result.length).toBe(3);
     const names = result.map((p) => p.childName).sort();

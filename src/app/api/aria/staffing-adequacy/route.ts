@@ -20,7 +20,7 @@ function getDemoData(homeId: string) {
 
   const config: HomeConfig = {
     homeId,
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     registeredBeds: 4,
     currentOccupancy: 3,
     minimumDayStaff: 2,

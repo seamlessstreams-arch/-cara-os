@@ -165,7 +165,7 @@ export default function ReligiousObservanceLogPage() {
           <div>
             <p className="text-sm font-medium text-emerald-900">Respect for Every Belief — and the Right to None</p>
             <p className="text-xs text-emerald-800 mt-1">
-              Oak House supports each child&apos;s religion, spirituality or belief — including the right to no religion at all — without pressure, judgement or assumption. We follow the child&apos;s lead, draw on family and cultural knowledge with consent, and never treat any tradition as more or less valid than another. A child&apos;s spiritual life is theirs to shape; our job is to make space for it.
+              Chamberlain House supports each child&apos;s religion, spirituality or belief — including the right to no religion at all — without pressure, judgement or assumption. We follow the child&apos;s lead, draw on family and cultural knowledge with consent, and never treat any tradition as more or less valid than another. A child&apos;s spiritual life is theirs to shape; our job is to make space for it.
             </p>
           </div>
         </div>

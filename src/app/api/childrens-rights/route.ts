@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Children's Rights & Advocacy Intelligence API Route
 //
-// GET  → returns Oak House demo children's rights intelligence
+// GET  → returns Chamberlain House demo children's rights intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -16,7 +16,7 @@ import type {
   FeedbackRecord,
 } from "@/lib/childrens-rights/childrens-rights-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 const CHILD_IDS = ["alex", "jordan", "morgan"];
 const CHILD_NAMES: Record<string, string> = {

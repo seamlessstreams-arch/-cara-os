@@ -202,7 +202,7 @@ export default function CorrespondencePage() {
       ariaContext={{ pageTitle: "Correspondence Log", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Correspondence Log" subtitle="Oak House — Professional Communications" />
+          <PrintButton title="Correspondence Log" subtitle="Chamberlain House — Professional Communications" />
           <ExportButton data={filtered} columns={exportCols} filename="correspondence-log" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Log Correspondence

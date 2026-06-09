@@ -3,7 +3,7 @@
 //
 // Aftercare Outcomes Tracking Intelligence
 //
-// GET  — Returns aftercare outcomes assessment with Oak House demo data
+// GET  — Returns aftercare outcomes assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -26,7 +26,7 @@ import type {
   SupportService,
 } from "@/lib/aftercare-outcomes-tracking";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_LEAVERS: CareLeaverProfile[] = [
   {

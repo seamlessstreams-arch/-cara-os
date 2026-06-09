@@ -8,7 +8,7 @@ import type {
   FireSafetyStaffTraining,
 } from "@/lib/fire-safety";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: FireSafetyRecord[];

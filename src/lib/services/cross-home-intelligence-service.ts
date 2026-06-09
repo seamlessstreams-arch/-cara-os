@@ -124,7 +124,7 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
     organisation_id: "org-demo-1",
     snapshot_date: "2026-05-16",
     home_id: "home-oak",
-    home_name: "Oak House",
+    home_name: "Chamberlain House",
     total_children: 3,
     total_incidents_7d: 1,
     total_incidents_30d: 4,
@@ -144,7 +144,7 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
       { factor: "Night staff supervision gap", severity: "low", trend: "improving" },
     ],
     aria_recommendations: [
-      { recommendation: "Complete night worker supervision by end of week", priority: "this_week", home_id: "home-oak", home_name: "Oak House" },
+      { recommendation: "Complete night worker supervision by end of week", priority: "this_week", home_id: "home-oak", home_name: "Chamberlain House" },
     ],
     created_at: "2026-05-16T08:00:00Z",
   },

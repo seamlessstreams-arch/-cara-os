@@ -3,7 +3,7 @@
 //
 // Education Achievement Intelligence
 //
-// GET  — Returns education assessment with Oak House demo data
+// GET  — Returns education assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -26,7 +26,7 @@ import type {
   ExclusionRecord,
 } from "@/lib/education-achievement";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 // Alex: mainstream school, 95% attendance, good PEP, expected progress
 const ALEX_ATTENDANCE: AttendanceRecord[] = [

@@ -1262,7 +1262,7 @@ export default function DashboardPage() {
   return (
     <PageShell
       title={`${getGreeting()}, ${currentUser?.first_name ?? "Darren"}`}
-      subtitle={`${formatLiveDate()} · Oak House · ${d ? d.young_people.current.length : 3} young people in placement`}
+      subtitle={`${formatLiveDate()} · Chamberlain House · ${d ? d.young_people.current.length : 3} young people in placement`}
       quickCreateContext={{ module: "dashboard" }}
       actions={pageActions}
       ariaContext={{ sourceType: "general", pageTitle: "Command Centre" }}
@@ -1403,7 +1403,7 @@ export default function DashboardPage() {
               <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
               <div>
                 <p className="text-sm font-semibold text-emerald-800">All clear — no immediate attention items</p>
-                <p className="text-xs text-emerald-600 mt-0.5">Oak House is running smoothly. Keep it up.</p>
+                <p className="text-xs text-emerald-600 mt-0.5">Chamberlain House is running smoothly. Keep it up.</p>
               </div>
             </div>
           )}

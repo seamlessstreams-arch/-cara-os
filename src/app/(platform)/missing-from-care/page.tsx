@@ -429,7 +429,7 @@ function ReportMissingDialog({
           </div>
           <div>
             <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Last seen location</label>
-            <Input className="mt-1" placeholder="e.g. Outside Oak House — said going to shop" value={locationLastSeen} onChange={(e) => setLocationLastSeen(e.target.value)} />
+            <Input className="mt-1" placeholder="e.g. Outside Chamberlain House — said going to shop" value={locationLastSeen} onChange={(e) => setLocationLastSeen(e.target.value)} />
           </div>
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -863,7 +863,7 @@ export default function MissingFromCarePage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Missing from Care Log" subtitle="Oak House — Missing Episodes & Return Interviews" targetId="mfc-content" />
+          <PrintButton title="Missing from Care Log" subtitle="Chamberlain House — Missing Episodes & Return Interviews" targetId="mfc-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Missing From Care — return interview or episode upload" />
           <AriaStudioQuickActionButton context={{ record_type: "missing_from_care", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

@@ -118,7 +118,7 @@ export default function LeadershipReadinessPage() {
             data={leadershipProfiles}
             label="Export"
           />
-          <PrintButton title="Leadership Readiness" subtitle="Oak House — Succession Planning" targetId="leadership-content" />
+          <PrintButton title="Leadership Readiness" subtitle="Chamberlain House — Succession Planning" targetId="leadership-content" />
           <SmartUploadButton variant="inline" label="Upload Leadership Evidence" uploadContext="Workforce Intelligence — leadership readiness evidence or qualification upload" />
           <Button
             size="sm"

@@ -224,7 +224,7 @@ export default function ProviderOversightPage() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Homes</SelectItem>
-              <SelectItem value="oak-house">Oak House</SelectItem>
+              <SelectItem value="oak-house">Chamberlain House</SelectItem>
               <SelectItem value="birch-lodge">Birch Lodge</SelectItem>
               <SelectItem value="willow-place">Willow Place</SelectItem>
             </SelectContent>

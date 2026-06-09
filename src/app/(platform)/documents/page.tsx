@@ -269,7 +269,7 @@ export default function DocumentsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton<Document> filename="documents-export" data={filteredDocs} columns={DOCUMENT_EXPORT_COLS} label="Export" />
-          <PrintButton title="Documents" subtitle="Oak House — Document Repository" targetId="documents-content" />
+          <PrintButton title="Documents" subtitle="Chamberlain House — Document Repository" targetId="documents-content" />
           <Button variant="outline" size="sm" onClick={() => setTab("read_sign")}>
             <FileCheck className="h-3.5 w-3.5 mr-1" />Read & Sign
           </Button>

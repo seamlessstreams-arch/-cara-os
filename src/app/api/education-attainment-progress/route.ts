@@ -3,7 +3,7 @@
 //
 // Education Attainment & Progress Intelligence
 //
-// GET  — Returns education attainment metrics with demo data (Oak House)
+// GET  — Returns education attainment metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffEducationTraining,
 } from "@/lib/education-attainment-progress";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: EducationRecord[];

@@ -3,7 +3,7 @@
 //
 // Physical Health & Wellbeing Intelligence
 //
-// GET  — Returns physical health assessment with Oak House demo data
+// GET  — Returns physical health assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffHealthTraining,
 } from "@/lib/physical-health-wellbeing";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_RECORDS: HealthRecord[] = [
   { id: "hr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-02-10", healthArea: "medical_appointment", healthOutcome: "excellent", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },

@@ -3,7 +3,7 @@
 //
 // Homework & Academic Support Intelligence
 //
-// GET  -- Returns homework/academic support metrics with demo data (Oak House)
+// GET  -- Returns homework/academic support metrics with demo data (Chamberlain House)
 // POST -- Accepts custom data and returns analysis
 // ==============================================================================
 
@@ -22,7 +22,7 @@ import type {
   StaffEducationTraining,
 } from "@/lib/homework-academic-support";
 
-// -- Demo Data: Oak House -----------------------------------------------------
+// -- Demo Data: Chamberlain House -----------------------------------------------------
 
 function generateDemoData(): {
   records: HomeworkRecord[];

@@ -22,7 +22,7 @@ function baseInput(overrides?: Partial<ManagementOversightInput>): ManagementOve
     recordId: "rec-001",
     recordType: "daily_log",
     childName: "Alex",
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     createdByName: "Tom Richards",
     recordDate: "2025-06-10",
     recordText:
@@ -52,7 +52,7 @@ function criticalIncidentInput(): ManagementOversightInput {
     recordId: "rec-003",
     recordType: "incident",
     childName: "Morgan",
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     createdByName: "Lisa Williams",
     recordDate: "2025-06-12",
     recordText:

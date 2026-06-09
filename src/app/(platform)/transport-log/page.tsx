@@ -643,7 +643,7 @@ export default function TransportLogPage() {
             </div>
             <div>
               <Label className="text-sm font-medium mb-1 block">Route Taken</Label>
-              <Input placeholder="e.g. Oak House > A52 > School" value={nRoute} onChange={e => setNRoute(e.target.value)} />
+              <Input placeholder="e.g. Chamberlain House > A52 > School" value={nRoute} onChange={e => setNRoute(e.target.value)} />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

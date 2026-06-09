@@ -201,7 +201,7 @@ export default function EducationPage() {
       ariaContext={{ pageTitle: "Education Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Education Tracker" subtitle="Oak House — Education Records" />
+          <PrintButton title="Education Tracker" subtitle="Chamberlain House — Education Records" />
           <ExportButton data={filtered} columns={exportCols} filename="education-tracker" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Entry

@@ -103,7 +103,7 @@ function makeTraining(
   };
 }
 
-// -- Oak House Demo Data ------------------------------------------------------
+// -- Chamberlain House Demo Data ------------------------------------------------------
 
 const DEMO_ASSESSMENTS: CulturalNeedsAssessment[] = [
   // Alex — White British, Church of England
@@ -1112,7 +1112,7 @@ describe("generateCulturalIdentitySupportIntelligence", () => {
     expect(result.regulatoryLinks.length).toBeGreaterThan(0);
   });
 
-  it("generates correct intelligence for Oak House demo data", () => {
+  it("generates correct intelligence for Chamberlain House demo data", () => {
     const result = generateCulturalIdentitySupportIntelligence(
       DEMO_ASSESSMENTS, DEMO_ACTIVITIES, DEMO_PLANS, DEMO_TRAINING, TOTAL_CHILDREN,
       "oak-house", PERIOD_START, PERIOD_END,

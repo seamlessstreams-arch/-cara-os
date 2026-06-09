@@ -531,8 +531,8 @@ describe("Admission Referral Engine — ARIA Insights", () => {
 // FULL OAK HOUSE INTEGRATION
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Admission Referral Engine — Oak House Integration", () => {
-  it("produces comprehensive output for realistic Oak House data", () => {
+describe("Admission Referral Engine — Chamberlain House Integration", () => {
+  it("produces comprehensive output for realistic Chamberlain House data", () => {
     const referrals: ReferralInput[] = [
       {
         id: "ref_001",

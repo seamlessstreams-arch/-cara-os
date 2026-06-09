@@ -966,7 +966,7 @@ describe("generateTherapeuticInterventionQualityIntelligence", () => {
 
   // -- Integration --
 
-  it("handles realistic Oak House scenario", () => {
+  it("handles realistic Chamberlain House scenario", () => {
     const sessions: TherapySession[] = [
       makeSession({
         id: "ses-alex-1",

@@ -123,7 +123,7 @@ export function PrintButton({
             ${subtitle ? `<p style="font-size:10pt;color:#666;margin:4px 0 0;">${subtitle}</p>` : ""}
           </div>
           <div style="text-align:right;font-size:9pt;color:#666;">
-            <div>Oak House — Cornerstone</div>
+            <div>Chamberlain House — Cornerstone</div>
             <div>${dateStr}</div>
             <div>Printed at ${timeStr}</div>
           </div>
@@ -138,7 +138,7 @@ export function PrintButton({
       const footer = document.createElement("div");
       footer.className = "print-footer";
       footer.style.cssText = "position:fixed;bottom:0;left:0;right:0;border-top:1px solid #ccc;padding-top:4px;font-size:8pt;color:#999;display:flex;justify-content:space-between;";
-      footer.innerHTML = `<span>Cornerstone — Oak House</span><span>Printed ${dateStr} ${timeStr}</span>`;
+      footer.innerHTML = `<span>Cornerstone — Chamberlain House</span><span>Printed ${dateStr} ${timeStr}</span>`;
       wrapper.appendChild(footer);
 
       // Add to DOM

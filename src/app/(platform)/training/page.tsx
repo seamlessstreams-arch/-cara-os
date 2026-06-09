@@ -224,7 +224,7 @@ function ComplianceReportPanel({
           mode: "training_needs_analysis",
           style: "provider_summary",
           source_content: [
-            `Training compliance report for Oak House.`,
+            `Training compliance report for Chamberlain House.`,
             `Overall compliance rate: ${rate}%.`,
             `Total records: ${total}. Expired: ${expired}. Expiring soon: ${expiring}.`,
             `${expired > 0 ? `${expired} mandatory training records have expired — staff should not work unsupervised until recertified.` : "No expired records."}`,
@@ -450,7 +450,7 @@ export default function TrainingPage() {
       actions={
         <div className="flex gap-2">
           <ExportButton<TrainingRecord> filename="training-export" data={filtered} columns={TRAINING_EXPORT_COLS} label="Export" />
-          <PrintButton title="Training Records" subtitle="Oak House — Staff Training & Compliance" targetId="training-content" />
+          <PrintButton title="Training Records" subtitle="Chamberlain House — Staff Training & Compliance" targetId="training-content" />
           <SmartUploadButton variant="inline" label="Upload Certificate" uploadContext="Training — certificate upload" />
           <Button size="sm" className="gap-1.5" onClick={() => setShowAdd(true)}>
             <Plus className="h-3.5 w-3.5" />

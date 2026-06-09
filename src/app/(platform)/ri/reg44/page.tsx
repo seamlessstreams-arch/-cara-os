@@ -533,7 +533,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
           <ExportButton data={filteredVisits} columns={REG44_EXPORT_COLS} filename="reg44-visits" />
           <PrintButton
             title="Reg 44 Visits"
-            subtitle="Oak House — Independent Visitor Reports"
+            subtitle="Chamberlain House — Independent Visitor Reports"
             targetId="reg44-content"
           />
           <SmartUploadButton

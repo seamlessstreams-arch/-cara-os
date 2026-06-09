@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Bereavement, Loss & Support API Route
 //
-// GET  → returns Oak House demo bereavement/loss/support intelligence
+// GET  → returns Chamberlain House demo bereavement/loss/support intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   StaffBereavementTraining,
 } from "@/lib/bereavement-loss-support";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const events: LossEvent[] = [

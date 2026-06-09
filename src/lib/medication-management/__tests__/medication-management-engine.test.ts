@@ -2,7 +2,7 @@
 // MEDICATION MANAGEMENT INTELLIGENCE — TEST SUITE
 //
 // Tests all 6 core functions, scoring, rating, edge cases, and demo data.
-// Demo context: Oak House children's home with Alex (14), Jordan (13),
+// Demo context: Chamberlain House children's home with Alex (14), Jordan (13),
 // Morgan (15) and staff Sarah Johnson (RM), Tom Richards (RSW),
 // Lisa Williams (Senior RSW), Darren Laville (RM).
 // ══════════════════════════════════════════════════════════════════════════════

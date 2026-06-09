@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/key-worker — Key Worker Relationship Quality Intelligence
 //
-// GET  — returns Oak House demo data with full intelligence report
+// GET  — returns Chamberlain House demo data with full intelligence report
 // POST — analyse custom key worker data with validation
 //
 // CHR 2015 Reg 10 — Positive relationships

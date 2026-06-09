@@ -186,7 +186,7 @@ export default function ContactDirectoryPage() {
       ariaContext={{ pageTitle: "Contact Directory", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Contact Directory" subtitle="Oak House — Professional Contacts" />
+          <PrintButton title="Contact Directory" subtitle="Chamberlain House — Professional Contacts" />
           <ExportButton data={filtered} columns={exportCols} filename="contact-directory" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Contact

@@ -1,7 +1,7 @@
 // ==============================================================================
 // TESTS -- Key Working Effectiveness Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex, Jordan, Morgan), 3 key workers
+// Demo: Chamberlain House, 3 children (Alex, Jordan, Morgan), 3 key workers
 // (Sarah Johnson, Tom Richards, Lisa Williams)
 // ==============================================================================
 

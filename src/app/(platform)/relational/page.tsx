@@ -372,7 +372,7 @@ export default function RelationalPracticePage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={RELATIONAL_EXPORT_COLS} filename="relational-practice" />
-          <PrintButton title="Relational Practice" subtitle="Oak House — Relational Records" targetId="relational-content" />
+          <PrintButton title="Relational Practice" subtitle="Chamberlain House — Relational Records" targetId="relational-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Relational Practice — observation or evidence upload" />
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Record Observation

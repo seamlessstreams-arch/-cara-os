@@ -132,7 +132,7 @@ export default function PracticeObservationsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={OBS_EXPORT_COLS} filename="practice-observations" />
-          <PrintButton title="Practice Observations" subtitle="Oak House — Staff Practice Evidence" targetId="observations-content" />
+          <PrintButton title="Practice Observations" subtitle="Chamberlain House — Staff Practice Evidence" targetId="observations-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Practice Observations — observation notes or evidence upload" />
           <Button
             size="sm"

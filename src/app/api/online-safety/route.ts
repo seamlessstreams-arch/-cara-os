@@ -3,7 +3,7 @@
 //
 // Online Safety & Digital Wellbeing Intelligence
 //
-// GET  — Returns online safety assessment with realistic Oak House demo data
+// GET  — Returns online safety assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -22,7 +22,7 @@ import type {
   OnlineSafetyPolicy,
 } from "@/lib/online-safety";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILDREN: OnlineSafetyChild[] = [
   { id: "child-alex", name: "Alex", dateOfBirth: "2012-03-15", currentPlacement: true },

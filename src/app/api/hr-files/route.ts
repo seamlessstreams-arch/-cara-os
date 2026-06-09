@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone -- HR Files & Workforce Compliance API Route
 //
-// GET  -> returns Oak House demo workforce data
+// GET  -> returns Chamberlain House demo workforce data
 // POST -> accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -24,7 +24,7 @@ import type {
   TrainingGap,
 } from "@/lib/hr-files/workforce-engine";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 const NOW = "2025-06-15T12:00:00Z";
 

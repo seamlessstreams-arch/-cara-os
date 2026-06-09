@@ -3,7 +3,7 @@
 //
 // Visitor Engagement Monitoring Intelligence
 //
-// GET  — Returns visitor engagement monitoring metrics with Oak House demo data
+// GET  — Returns visitor engagement monitoring metrics with Chamberlain House demo data
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffVisitorTraining,
 } from "@/lib/visitor-engagement-monitoring";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: VisitorRecord[];

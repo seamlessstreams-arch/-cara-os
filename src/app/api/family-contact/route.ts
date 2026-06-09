@@ -3,7 +3,7 @@
 //
 // Family Contact & Communication Intelligence
 //
-// GET  — Returns family contact assessment with realistic Oak House demo data
+// GET  — Returns family contact assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   ContactReview,
 } from "@/lib/family-contact";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_ARRANGEMENTS: ContactArrangement[] = [
   // Alex – Mother (court-ordered weekly supervised)

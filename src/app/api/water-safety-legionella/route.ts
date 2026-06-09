@@ -3,7 +3,7 @@
 //
 // Water Safety & Legionella Intelligence
 //
-// GET  — Returns water safety metrics with Oak House demo data
+// GET  — Returns water safety metrics with Chamberlain House demo data
 // POST — Accepts custom data and returns analysis
 // ==============================================================================
 

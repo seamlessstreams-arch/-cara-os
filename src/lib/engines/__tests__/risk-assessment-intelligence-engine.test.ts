@@ -656,8 +656,8 @@ describe("Risk Assessment Engine — ARIA Insights", () => {
 // FULL OAK HOUSE INTEGRATION
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Risk Assessment Engine — Oak House Integration", () => {
-  it("produces comprehensive output for realistic Oak House data", () => {
+describe("Risk Assessment Engine — Chamberlain House Integration", () => {
+  it("produces comprehensive output for realistic Chamberlain House data", () => {
     const children: ChildInput[] = [
       { id: "yp_alex", name: "Alex W" },
       { id: "yp_jordan", name: "Jordan K" },

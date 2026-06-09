@@ -344,7 +344,7 @@ export default function PracticeBankPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Practice Bank" subtitle="Oak House — Relational Practice Strategies" targetId="practice-bank-content" />
+          <PrintButton title="Practice Bank" subtitle="Chamberlain House — Relational Practice Strategies" targetId="practice-bank-content" />
           <SmartUploadButton variant="inline" label="Upload Practice Resource" uploadContext="Intelligence — practice resource or evidence-base document upload" />
         </div>
       }

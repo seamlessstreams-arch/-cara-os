@@ -51,7 +51,7 @@ function run(reports: WhistleblowingInput[], opts?: { staff?: StaffRef[] }) {
   });
 }
 
-// -- Oak House Dataset --------------------------------------------------------
+// -- Chamberlain House Dataset --------------------------------------------------------
 
 function oakHouseReports(): WhistleblowingInput[] {
   return [
@@ -259,7 +259,7 @@ describe("Whistleblowing Intelligence Engine", () => {
       expect(result.category_breakdown[0].category_label).toBe("Custom Concern");
     });
 
-    it("includes all unique categories from Oak House data", () => {
+    it("includes all unique categories from Chamberlain House data", () => {
       const result = run(oakHouseReports());
       const categories = result.category_breakdown.map((c) => c.category);
       expect(categories).toContain("safeguarding");
@@ -630,8 +630,8 @@ describe("Whistleblowing Intelligence Engine", () => {
     });
   });
 
-  describe("Oak House integration", () => {
-    it("produces correct overview for full Oak House dataset", () => {
+  describe("Chamberlain House integration", () => {
+    it("produces correct overview for full Chamberlain House dataset", () => {
       const result = run(oakHouseReports());
       expect(result.overview.total_reports).toBe(4);
       expect(result.overview.open_reports).toBe(1);
@@ -660,7 +660,7 @@ describe("Whistleblowing Intelligence Engine", () => {
       expect(result.open_cases[0].days_open).toBe(15);
     });
 
-    it("generates alerts for Oak House data", () => {
+    it("generates alerts for Chamberlain House data", () => {
       const result = run(oakHouseReports());
       // wb_002 is investigating 15 days -> medium alert (> 14 days)
       // protection_measures_rate = 75% < 80% -> medium alert
@@ -672,7 +672,7 @@ describe("Whistleblowing Intelligence Engine", () => {
       expect(medium.some((a) => a.message.includes("Protection measures") && a.message.includes("75%"))).toBe(true);
     });
 
-    it("generates insights for Oak House data", () => {
+    it("generates insights for Chamberlain House data", () => {
       const result = run(oakHouseReports());
       expect(result.insights.length).toBeGreaterThan(0);
       // Should have warning for protection < 80% and warning for high-severity without referral (wb_001 has LADO but severity high)

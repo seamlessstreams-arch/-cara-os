@@ -42,7 +42,7 @@ function makeRow(overrides?: Partial<StaffSecondmentManagementRow>): StaffSecond
     staff_name: "staff_name" in (overrides ?? {}) ? overrides!.staff_name! : "Jane Smith",
     secondment_type: "secondment_type" in (overrides ?? {}) ? overrides!.secondment_type! : "Incoming",
     sending_organisation: "sending_organisation" in (overrides ?? {}) ? overrides!.sending_organisation! : "Council A",
-    receiving_organisation: "receiving_organisation" in (overrides ?? {}) ? overrides!.receiving_organisation! : "Oak House",
+    receiving_organisation: "receiving_organisation" in (overrides ?? {}) ? overrides!.receiving_organisation! : "Chamberlain House",
     start_date: "start_date" in (overrides ?? {}) ? overrides!.start_date! : now.toISOString().split("T")[0],
     end_date: "end_date" in (overrides ?? {}) ? (overrides!.end_date ?? null) : null,
     status: "status" in (overrides ?? {}) ? overrides!.status! : "Active",
@@ -910,7 +910,7 @@ describe("CRUD when Supabase disabled", () => {
       staffName: "Jane Smith",
       secondmentType: "Incoming",
       sendingOrganisation: "Council A",
-      receivingOrganisation: "Oak House",
+      receivingOrganisation: "Chamberlain House",
       startDate: "2026-05-15",
       status: "Active",
     });

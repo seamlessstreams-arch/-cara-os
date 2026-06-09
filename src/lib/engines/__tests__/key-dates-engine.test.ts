@@ -624,7 +624,7 @@ describe("computeKeyDates — sorting and stats", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("computeKeyDates — full integration", () => {
-  it("aggregates all date types from a realistic Oak House dataset", () => {
+  it("aggregates all date types from a realistic Chamberlain House dataset", () => {
     const result = computeKeyDates(baseInput({
       youngPeople: [
         makeYP({ id: "yp_alex", first_name: "Alex", date_of_birth: "2010-06-15", placement_start: "2025-09-01" }),

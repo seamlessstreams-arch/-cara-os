@@ -232,7 +232,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Safeguarding Referral" subtitle="Oak House — Safeguarding Record" targetId="safeguarding-detail-content" />
+          <PrintButton title="Safeguarding Referral" subtitle="Chamberlain House — Safeguarding Record" targetId="safeguarding-detail-content" />
           <SmartUploadButton
             variant="icon"
             linkedIncidentId={id}

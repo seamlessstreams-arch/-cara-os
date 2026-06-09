@@ -3,7 +3,7 @@
 //
 // Leaving Care Preparation Intelligence
 //
-// GET  — Returns leaving care assessment with realistic Oak House demo data
+// GET  — Returns leaving care assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -25,7 +25,7 @@ import type {
   SupportArrangement,
 } from "@/lib/leaving-care";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILDREN: LeavingCareChild[] = [
   {
@@ -124,7 +124,7 @@ const DEMO_ACCOMMODATION_PLANS: AccommodationPlan[] = [
     stayingCloseAvailable: true,
     transitionPlanInPlace: false,
     trialStayCompleted: false,
-    localAreaPreference: "Within 5 miles of Oak House",
+    localAreaPreference: "Within 5 miles of Chamberlain House",
   },
 ];
 

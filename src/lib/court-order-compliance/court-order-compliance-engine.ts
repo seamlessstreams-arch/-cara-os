@@ -990,7 +990,7 @@ export function generateCourtOrderComplianceIntelligence(
   };
 }
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 export function generateDemoData(): {
   orders: CourtOrder[];
@@ -1082,7 +1082,7 @@ export function generateDemoData(): {
       conditions: [
         {
           conditionType: "living_arrangements",
-          description: "Stable placement at Oak House with named keyworker",
+          description: "Stable placement at Chamberlain House with named keyworker",
           complianceStatus: "fully_compliant",
           lastEvidenced: "2026-05-15",
         },

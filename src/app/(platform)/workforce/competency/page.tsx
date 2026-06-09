@@ -217,7 +217,7 @@ export default function CompetencyFrameworkPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredProfiles.map((fp) => fp.profile)} columns={COMPETENCY_EXPORT_COLS} filename="competency-profiles" />
-          <PrintButton title="Competency Framework" subtitle="Oak House — Staff Competency Matrix" targetId="competency-content" />
+          <PrintButton title="Competency Framework" subtitle="Chamberlain House — Staff Competency Matrix" targetId="competency-content" />
           <SmartUploadButton variant="inline" label="Upload Competency Evidence" uploadContext="Workforce Intelligence — competency evidence or assessment document upload" />
           <Link href="/workforce">
             <button className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors">

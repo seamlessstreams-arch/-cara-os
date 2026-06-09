@@ -806,7 +806,7 @@ describe("Education Intelligence Engine — ARIA Insights", () => {
 // FULL INTEGRATION TEST — OAK HOUSE SCENARIO
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Education Intelligence Engine — Oak House Integration", () => {
+describe("Education Intelligence Engine — Chamberlain House Integration", () => {
   it("produces comprehensive analysis for multi-child home", () => {
     const children: ChildInput[] = [
       { id: "yp_alex", name: "Alex" },

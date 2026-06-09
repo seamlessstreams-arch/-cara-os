@@ -3,7 +3,7 @@
 //
 // Independent Visitor & Advocacy Intelligence
 //
-// GET  — Returns advocacy assessment with Oak House demo data
+// GET  — Returns advocacy assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffAdvocacyTraining,
 } from "@/lib/independent-visitor-advocacy";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_VISITS: IndependentVisit[] = [
   { id: "iv-1", childId: "child-alex", childName: "Alex", visitDate: "2026-02-05", visitorName: "Margaret Clarke", visitOutcome: "very_positive", durationMinutes: 90, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },

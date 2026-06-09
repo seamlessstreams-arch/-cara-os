@@ -470,7 +470,7 @@ export default function DocumentIntelligencePage() {
         showQuickCreate={false}
         actions={
           <div className="flex items-center gap-2">
-            <PrintButton title="Document Intelligence" subtitle="Oak House — AI Document Processing" targetId="doc-intelligence-content" />
+            <PrintButton title="Document Intelligence" subtitle="Chamberlain House — AI Document Processing" targetId="doc-intelligence-content" />
             <SmartUploadButton label="Upload Document" />
           </div>
         }

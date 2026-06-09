@@ -1,7 +1,7 @@
 // ==============================================================================
 // Cornerstone -- Statement of Purpose Alignment Intelligence API Route
 //
-// GET  -> returns Oak House demo SoP alignment intelligence
+// GET  -> returns Chamberlain House demo SoP alignment intelligence
 // POST -> accepts custom data for any home
 // ==============================================================================
 
@@ -18,7 +18,7 @@ import type {
   StakeholderType,
 } from "@/lib/statement-of-purpose-alignment/statement-of-purpose-alignment-engine";
 
-// -- Oak House Demo Data ------------------------------------------------------
+// -- Chamberlain House Demo Data ------------------------------------------------------
 
 function getDemoData() {
   const sections: SoPSection[] = [

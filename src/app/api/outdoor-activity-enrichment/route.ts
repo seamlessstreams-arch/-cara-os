@@ -3,7 +3,7 @@
 //
 // Outdoor Activity & Enrichment Intelligence
 //
-// GET  — Returns outdoor activity enrichment assessment with Oak House demo data
+// GET  — Returns outdoor activity enrichment assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffActivityTraining,
 } from "@/lib/outdoor-activity-enrichment";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 // Alex (14) — adventure-loving, high participation, enthusiastic
 // Jordan (13) — more reluctant, some refusals, limited engagement
@@ -36,7 +36,7 @@ const DEMO_ACTIVITIES: ActivityRecord[] = [
   { id: "act-a3", childId: "child-alex", childName: "Alex", category: "outdoor_adventure", date: "2026-02-15", description: "Kayaking on the canal", duration: 120, location: "Bridgewater Canal", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "excellent", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: true, peersInvolved: true },
   { id: "act-a4", childId: "child-alex", childName: "Alex", category: "nature_environment", date: "2026-03-10", description: "Bird watching and nature journaling", duration: 90, location: "Mere Sands Wood", staffLed: true, childChose: false, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "willing", outdoors: true, communityBased: true, newExperience: true, peersInvolved: false },
   { id: "act-a5", childId: "child-alex", childName: "Alex", category: "sports", date: "2026-03-22", description: "Saturday football league match", duration: 90, location: "Community Playing Fields", staffLed: false, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: false, peersInvolved: true },
-  { id: "act-a6", childId: "child-alex", childName: "Alex", category: "life_skill_practice", date: "2026-04-05", description: "Cooking a meal for the house", duration: 60, location: "Oak House Kitchen", staffLed: true, childChose: true, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "willing", outdoors: false, communityBased: false, newExperience: false, peersInvolved: true },
+  { id: "act-a6", childId: "child-alex", childName: "Alex", category: "life_skill_practice", date: "2026-04-05", description: "Cooking a meal for the house", duration: 60, location: "Chamberlain House Kitchen", staffLed: true, childChose: true, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "willing", outdoors: false, communityBased: false, newExperience: false, peersInvolved: true },
   { id: "act-a7", childId: "child-alex", childName: "Alex", category: "educational_trip", date: "2026-04-18", description: "Science museum trip", duration: 240, location: "Museum of Science & Industry", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: true, peersInvolved: true },
 
   // Jordan — more reluctant, some refusals
@@ -44,13 +44,13 @@ const DEMO_ACTIVITIES: ActivityRecord[] = [
   { id: "act-j2", childId: "child-jordan", childName: "Jordan", category: "social_event", date: "2026-02-14", description: "Youth club games night", duration: 120, location: "Community Youth Centre", staffLed: false, childChose: false, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "willing", outdoors: false, communityBased: true, newExperience: false, peersInvolved: true },
   { id: "act-j3", childId: "child-jordan", childName: "Jordan", category: "outdoor_adventure", date: "2026-03-01", description: "Nature walk in the park", duration: 45, location: "Town Park", staffLed: true, childChose: false, riskBenefitAssessed: true, riskBenefitOutcome: "adequate", childEngagement: "reluctant", outdoors: true, communityBased: true, newExperience: false, peersInvolved: false },
   { id: "act-j4", childId: "child-jordan", childName: "Jordan", category: "creative_arts", date: "2026-03-20", description: "Pottery workshop", duration: 90, location: "Community Arts Centre", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: true, peersInvolved: true },
-  { id: "act-j5", childId: "child-jordan", childName: "Jordan", category: "sports", date: "2026-04-10", description: "Football in the garden", duration: 30, location: "Oak House Garden", staffLed: false, childChose: false, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "refused", outdoors: true, communityBased: false, newExperience: false, peersInvolved: true },
+  { id: "act-j5", childId: "child-jordan", childName: "Jordan", category: "sports", date: "2026-04-10", description: "Football in the garden", duration: 30, location: "Chamberlain House Garden", staffLed: false, childChose: false, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "refused", outdoors: true, communityBased: false, newExperience: false, peersInvolved: true },
 
   // Morgan — creative/cultural focus
   { id: "act-m1", childId: "child-morgan", childName: "Morgan", category: "creative_arts", date: "2026-01-18", description: "Drama club rehearsal and performance", duration: 150, location: "Town Theatre", staffLed: false, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "excellent", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: false, peersInvolved: true },
   { id: "act-m2", childId: "child-morgan", childName: "Morgan", category: "cultural_visit", date: "2026-02-08", description: "Art gallery visit and sketch workshop", duration: 180, location: "Tate Liverpool", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: true, peersInvolved: true },
   { id: "act-m3", childId: "child-morgan", childName: "Morgan", category: "community_service", date: "2026-02-22", description: "Volunteering at the food bank", duration: 120, location: "Town Food Bank", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "willing", outdoors: false, communityBased: true, newExperience: true, peersInvolved: false },
-  { id: "act-m4", childId: "child-morgan", childName: "Morgan", category: "therapeutic_activity", date: "2026-03-12", description: "Art therapy session", duration: 60, location: "Oak House Therapy Room", staffLed: true, childChose: false, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "willing", outdoors: false, communityBased: false, newExperience: false, peersInvolved: false },
+  { id: "act-m4", childId: "child-morgan", childName: "Morgan", category: "therapeutic_activity", date: "2026-03-12", description: "Art therapy session", duration: 60, location: "Chamberlain House Therapy Room", staffLed: true, childChose: false, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "willing", outdoors: false, communityBased: false, newExperience: false, peersInvolved: false },
   { id: "act-m5", childId: "child-morgan", childName: "Morgan", category: "nature_environment", date: "2026-04-05", description: "Community garden planting day", duration: 90, location: "Oakwood Community Garden", staffLed: false, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: true, peersInvolved: true },
   { id: "act-m6", childId: "child-morgan", childName: "Morgan", category: "creative_arts", date: "2026-04-20", description: "Photography walk along the canal", duration: 120, location: "Canal Towpath", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: false, peersInvolved: true },
 ];

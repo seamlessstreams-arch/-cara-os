@@ -121,7 +121,7 @@ function makeMenu(overrides: Partial<MenuPlan> = {}): MenuPlan {
   };
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 const DEMO_PROFILES: ChildDietaryProfile[] = [
   makeProfile({ id: "prof-alex", childId: "child-alex", childName: "Alex", dietaryRequirements: ["none"], allergies: [], preferences: ["pasta", "pizza"] }),
@@ -586,7 +586,7 @@ describe("Nutrition & Healthy Living Intelligence Engine", () => {
   // ── Full Integration ───────────────────────────────────────────────────
 
   describe("generateNutritionHealthyLivingIntelligence", () => {
-    it("produces valid output for Oak House demo", () => {
+    it("produces valid output for Chamberlain House demo", () => {
       const result = generateNutritionHealthyLivingIntelligence(
         DEMO_MEALS, DEMO_PROFILES, DEMO_ACTIVITIES, DEMO_HEALTH, DEMO_MENUS,
         "oak-house", PERIOD_START, PERIOD_END,

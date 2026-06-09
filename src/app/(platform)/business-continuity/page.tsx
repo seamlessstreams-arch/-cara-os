@@ -124,7 +124,7 @@ export default function BusinessContinuityPage() {
                 { role: "Emergency On-Call", name: getStaffName("staff_darren"), detail: "07XXX XXXXXX (24/7)", tag: "Primary" },
                 { role: "Deputy On-Call", name: getStaffName("staff_ryan"), detail: "07XXX XXXXXX (backup)", tag: "Secondary" },
                 { role: "Responsible Individual", name: getStaffName("staff_alicia"), detail: "07XXX XXXXXX", tag: "Escalation" },
-                { role: "Head Office", name: "Acacia Therapy Homes", detail: "01332 XXX XXXX", tag: "Corporate" },
+                { role: "Head Office", name: "Avisaar Childrens Care Ltd", detail: "01332 XXX XXXX", tag: "Corporate" },
                 { role: "LA Emergency Duty (Derby)", name: "Derby City Council", detail: "0300 XXX XXXX", tag: "External" },
                 { role: "LA Emergency Duty (Notts)", name: "Nottinghamshire CC", detail: "0300 XXX XXXX", tag: "External" },
                 { role: "Emergency Maintenance", name: "HomeFix 24/7", detail: "0800 XXX XXXX (ref: OAK-001)", tag: "Utilities" },
@@ -309,7 +309,7 @@ export default function BusinessContinuityPage() {
               { title: "Phase 1: Immediate Stabilisation (0–24 hours)", items: ["Ensure all young people and staff are safe and accounted for.", "Secure temporary accommodation if home is uninhabitable.", "Ensure medication continuity — contact pharmacy if needed.", "Complete all regulatory notifications (Ofsted, LA, social workers).", "Brief all staff — verbal and written communication."] },
               { title: "Phase 2: Short-Term Recovery (24 hours – 1 week)", items: ["Assess building safety and begin remediation if applicable.", "Restore IT systems and transfer any paper records to digital.", "Arrange therapeutic support for affected young people and staff.", "Review and adjust rotas to manage staff wellbeing.", "Insurance claim initiated and loss assessment completed."] },
               { title: "Phase 3: Return to Normal Operations (1–4 weeks)", items: ["Full return to home (if evacuated) — safety sign-off by RM and RI.", "Resume all normal routines, activities, and education.", "Post-incident review meeting with all staff.", "Update this Business Continuity Plan with lessons learned.", "Reg 45 report to include details of incident and response."] },
-              { title: "Phase 4: Review and Learning (4+ weeks)", items: ["Formal debrief and lessons-learned report produced.", "Training needs identified and scheduled.", "Policy and procedure updates implemented.", "Share learning with Acacia Therapy Homes group (if applicable).", "RI to confirm sign-off that recovery is complete."] },
+              { title: "Phase 4: Review and Learning (4+ weeks)", items: ["Formal debrief and lessons-learned report produced.", "Training needs identified and scheduled.", "Policy and procedure updates implemented.", "Share learning with Avisaar Childrens Care Ltd group (if applicable).", "RI to confirm sign-off that recovery is complete."] },
             ].map((phase, idx) => (
               <div key={idx}>
                 <p className="font-semibold mb-1">{phase.title}</p>

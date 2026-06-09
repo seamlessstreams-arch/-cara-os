@@ -26,7 +26,7 @@ export async function GET() {
   const input: EvidencePackInput = {
     today,
     home_id: (store.home as any)?.id ?? "home_oak",
-    home_name: (store.home as any)?.name ?? "Oak House",
+    home_name: (store.home as any)?.name ?? "Chamberlain House",
     period_from: periodFrom,
     period_to: periodTo,
     generated_by: "system",

@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Premises & Physical Environment Intelligence API Route
 //
-// GET  → returns Oak House demo premises intelligence
+// GET  → returns Chamberlain House demo premises intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   EnvironmentalRisk,
 } from "@/lib/premises/premises-engine";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 function getDemoData(): {
   checks: PremisesCheck[];

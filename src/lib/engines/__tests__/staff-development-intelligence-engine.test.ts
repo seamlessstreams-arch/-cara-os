@@ -2,7 +2,7 @@
 // CORNERSTONE — STAFF DEVELOPMENT INTELLIGENCE ENGINE · TEST SUITE
 //
 // 50+ tests covering overview calculations, staff profiles, competency domain
-// analysis, alert generation, ARIA insights, and Oak House integration.
+// analysis, alert generation, ARIA insights, and Chamberlain House integration.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
@@ -752,11 +752,11 @@ describe("ARIA insights", () => {
   });
 });
 
-// ── Oak House Integration ────────────────────────────────────────────────
+// ── Chamberlain House Integration ────────────────────────────────────────────────
 
-describe("Oak House integration scenario", () => {
-  it("processes a realistic Oak House workforce dataset correctly", () => {
-    // Staff members at Oak House
+describe("Chamberlain House integration scenario", () => {
+  it("processes a realistic Chamberlain House workforce dataset correctly", () => {
+    // Staff members at Chamberlain House
     const darren = makeStaff({ id: "darren", name: "Darren Laville", role: "Registered Manager", start_date: "2024-01-15" });
     const ryan = makeStaff({ id: "ryan", name: "Ryan Thompson", role: "Deputy Manager", start_date: "2024-06-01" });
     const edward = makeStaff({ id: "edward", name: "Edward Brown", role: "Residential Support Worker", start_date: "2025-01-10" });

@@ -233,7 +233,7 @@ export default function AriaHubPage() {
               </span>
             ))}
             <span className="rounded-full bg-[var(--cs-navy)]/40 px-3 py-1 text-xs font-medium text-[var(--cs-aria-gold-soft)]">
-              Oak House
+              Chamberlain House
             </span>
           </div>
         </div>

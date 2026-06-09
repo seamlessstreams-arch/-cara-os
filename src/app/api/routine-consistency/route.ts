@@ -3,7 +3,7 @@
 //
 // Routine & Consistency Intelligence
 //
-// GET  — Returns routine consistency assessment with realistic Oak House data
+// GET  — Returns routine consistency assessment with realistic Chamberlain House data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   RoutinePreferenceRecord,
 } from "@/lib/routine-consistency";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILDREN: RoutineChild[] = [
   {

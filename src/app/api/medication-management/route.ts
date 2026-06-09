@@ -3,7 +3,7 @@
 //
 // Medication Management Intelligence
 //
-// GET  — Returns medication management assessment with Oak House demo data
+// GET  — Returns medication management assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -17,7 +17,7 @@ import type {
   ControlledDrugRecord,
 } from "@/lib/medication-management";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_RECORDS: MedicationRecord[] = [
   // Alex — Methylphenidate (regular ADHD) morning doses

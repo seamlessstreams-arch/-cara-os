@@ -3,7 +3,7 @@
 //
 // Pet Therapy & Animal Interaction Intelligence
 //
-// GET  — Returns pet therapy assessment with Oak House demo data
+// GET  — Returns pet therapy assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffAnimalTraining,
 } from "@/lib/pet-therapy-animal-interaction";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_SESSIONS: AnimalSession[] = [
   { id: "as-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-01", animalType: "dog", sessionType: "structured_therapy", facilitatedBy: "Sarah Johnson", therapeuticBenefit: "significant", childEngaged: true, riskAssessmentCompleted: true, supervisedThroughout: true, hygieneProtocolFollowed: true },

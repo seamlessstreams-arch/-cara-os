@@ -1025,9 +1025,9 @@ describe("generateSiblingContactManagementIntelligence", () => {
     expect(result.regulatoryLinks).toContain("UNCRC Article 8 — Right to preserve family relations");
   });
 
-  // -- Full Oak House demo scenario -------------------------------------------
+  // -- Full Chamberlain House demo scenario -------------------------------------------
 
-  it("scores Oak House demo data correctly", () => {
+  it("scores Chamberlain House demo data correctly", () => {
     const contacts: SiblingContact[] = [
       makeContact({ id: "sc-1", childId: "child-alex", childName: "Alex", siblingId: "sib-1", siblingName: "Sam" }),
       makeContact({ id: "sc-2", childId: "child-alex", childName: "Alex", siblingId: "sib-1", siblingName: "Sam", contactType: "video_call", contactOutcome: "positive" }),

@@ -3,7 +3,7 @@
 //
 // Social Media & Digital Footprint Intelligence
 //
-// GET  — Returns digital footprint metrics with demo data (Oak House)
+// GET  — Returns digital footprint metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -23,7 +23,7 @@ import type {
   StaffDigitalTraining,
 } from "@/lib/social-media-digital-footprint";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   consents: ImageConsentRecord[];

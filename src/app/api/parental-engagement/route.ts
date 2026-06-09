@@ -3,7 +3,7 @@
 //
 // Parental Engagement Intelligence
 //
-// GET  — Returns parental engagement assessment with realistic Oak House demo data
+// GET  — Returns parental engagement assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -24,7 +24,7 @@ import type {
   ParentalFeedbackRecord,
 } from "@/lib/parental-engagement";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const HOME_ID = "oak-house";
 const PERIOD_START = "2026-05-01";
@@ -39,7 +39,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-001", homeId: HOME_ID, childId: "child-alex", childName: "Alex",
     parentId: "parent-michelle", parentName: "Michelle", relationship: "mother",
     contactDate: "2026-05-03", contactType: "face_to_face", duration: 60,
-    location: "Oak House lounge", outcome: "positive", childMoodBefore: 5, childMoodAfter: 8,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 5, childMoodAfter: 8,
     parentEngagement: 9, staffObservations: "Michelle and Alex played cards. Warm interaction throughout.",
     issuesRaised: [], positiveInteractions: ["Card game", "Shared snacks"], followUpNeeded: false,
   },
@@ -47,7 +47,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-002", homeId: HOME_ID, childId: "child-alex", childName: "Alex",
     parentId: "parent-michelle", parentName: "Michelle", relationship: "mother",
     contactDate: "2026-05-10", contactType: "phone", duration: 25,
-    location: "Phone (Oak House office)", outcome: "positive", childMoodBefore: 6, childMoodAfter: 7,
+    location: "Phone (Chamberlain House office)", outcome: "positive", childMoodBefore: 6, childMoodAfter: 7,
     parentEngagement: 8, staffObservations: "Good-natured call. Discussed school project.",
     issuesRaised: [], positiveInteractions: ["School discussion"], followUpNeeded: false,
   },
@@ -64,7 +64,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-004", homeId: HOME_ID, childId: "child-alex", childName: "Alex",
     parentId: "parent-michelle", parentName: "Michelle", relationship: "mother",
     contactDate: "2026-05-24", contactType: "video_call", duration: 30,
-    location: "Video call (Oak House)", outcome: "positive", childMoodBefore: 7, childMoodAfter: 8,
+    location: "Video call (Chamberlain House)", outcome: "positive", childMoodBefore: 7, childMoodAfter: 8,
     parentEngagement: 8, staffObservations: "Alex showed Michelle his room tidy-up.",
     issuesRaised: [], positiveInteractions: ["Room tour", "Planned next visit"],
     followUpNeeded: true, followUpCompleted: true,
@@ -75,7 +75,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-005", homeId: HOME_ID, childId: "child-jordan", childName: "Jordan",
     parentId: "parent-steve", parentName: "Steve", relationship: "father",
     contactDate: "2026-05-04", contactType: "face_to_face", duration: 45,
-    location: "Oak House garden", outcome: "neutral", childMoodBefore: 5, childMoodAfter: 5,
+    location: "Chamberlain House garden", outcome: "neutral", childMoodBefore: 5, childMoodAfter: 5,
     parentEngagement: 4, staffObservations: "Steve seemed distracted, checked phone frequently.",
     issuesRaised: ["Steve late by 20 mins"], positiveInteractions: ["Kicked football briefly"],
     followUpNeeded: true, followUpCompleted: false,
@@ -84,7 +84,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-006", homeId: HOME_ID, childId: "child-jordan", childName: "Jordan",
     parentId: "parent-steve", parentName: "Steve", relationship: "father",
     contactDate: "2026-05-11", contactType: "phone", duration: 10,
-    location: "Phone (Oak House)", outcome: "parent_no_show", childMoodBefore: 6, childMoodAfter: 4,
+    location: "Phone (Chamberlain House)", outcome: "parent_no_show", childMoodBefore: 6, childMoodAfter: 4,
     parentEngagement: 0, staffObservations: "Steve did not answer. Jordan visibly upset.",
     issuesRaised: ["Parent no-show", "Jordan became withdrawn"],
     positiveInteractions: [], followUpNeeded: true, followUpCompleted: true,
@@ -93,7 +93,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-007", homeId: HOME_ID, childId: "child-jordan", childName: "Jordan",
     parentId: "parent-steve", parentName: "Steve", relationship: "father",
     contactDate: "2026-05-18", contactType: "face_to_face", duration: 60,
-    location: "Oak House lounge", outcome: "positive", childMoodBefore: 4, childMoodAfter: 7,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 4, childMoodAfter: 7,
     parentEngagement: 7, staffObservations: "Better session. Steve more present, played PS5 with Jordan.",
     issuesRaised: [], positiveInteractions: ["Gaming together", "Steve apologised for missing call"],
     followUpNeeded: false,
@@ -104,7 +104,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-008", homeId: HOME_ID, childId: "child-morgan", childName: "Morgan",
     parentId: "parent-karen", parentName: "Karen", relationship: "mother",
     contactDate: "2026-05-02", contactType: "face_to_face", duration: 90,
-    location: "Oak House lounge", outcome: "positive", childMoodBefore: 7, childMoodAfter: 9,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 7, childMoodAfter: 9,
     parentEngagement: 10, staffObservations: "Karen brought home-cooked meal. Morgan thrilled.",
     issuesRaised: [], positiveInteractions: ["Shared meal", "Discussed college plans"],
     followUpNeeded: false,
@@ -131,7 +131,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-011", homeId: HOME_ID, childId: "child-morgan", childName: "Morgan",
     parentId: "parent-karen", parentName: "Karen", relationship: "mother",
     contactDate: "2026-05-23", contactType: "face_to_face", duration: 120,
-    location: "Oak House and garden", outcome: "positive", childMoodBefore: 6, childMoodAfter: 9,
+    location: "Chamberlain House and garden", outcome: "positive", childMoodBefore: 6, childMoodAfter: 9,
     parentEngagement: 10, staffObservations: "Karen helped Morgan with revision. Very engaged.",
     issuesRaised: [], positiveInteractions: ["Revision help", "Garden walk", "Plan for half-term"],
     followUpNeeded: false,
@@ -142,7 +142,7 @@ const DEMO_CONTACTS: ContactRecord[] = [
     id: "c-012", homeId: HOME_ID, childId: "child-morgan", childName: "Morgan",
     parentId: "parent-dave", parentName: "Dave", relationship: "father",
     contactDate: "2026-05-08", contactType: "phone", duration: 5,
-    location: "Phone (Oak House)", outcome: "parent_no_show", childMoodBefore: 5, childMoodAfter: 3,
+    location: "Phone (Chamberlain House)", outcome: "parent_no_show", childMoodBefore: 5, childMoodAfter: 3,
     parentEngagement: 0, staffObservations: "Dave did not answer scheduled call. Morgan said 'typical'.",
     issuesRaised: ["Father consistently unavailable"], positiveInteractions: [],
     followUpNeeded: true, followUpCompleted: false,

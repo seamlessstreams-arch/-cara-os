@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Sleep & Wellbeing Monitoring Intelligence API Route
 //
-// GET  → returns Oak House demo intelligence (~15 records)
+// GET  → returns Chamberlain House demo intelligence (~15 records)
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { generateSleepWellbeingIntelligence } from "@/lib/sleep-wellbeing/sleep-wellbeing-engine";
 import type { NightRecord, SleepPlan } from "@/lib/sleep-wellbeing/sleep-wellbeing-engine";
 
-// ── Oak House Demo Data (simplified ~15 records) ────────────────────────────
+// ── Chamberlain House Demo Data (simplified ~15 records) ────────────────────────────
 
 function getDemoData(): {
   records: NightRecord[];

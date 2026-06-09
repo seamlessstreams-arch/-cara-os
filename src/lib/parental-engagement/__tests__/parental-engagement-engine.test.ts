@@ -54,7 +54,7 @@ const makeContact = (overrides: Partial<ContactRecord> = {}): ContactRecord => (
   contactDate: "2026-05-05",
   contactType: "face_to_face",
   duration: 60,
-  location: "Oak House lounge",
+  location: "Chamberlain House lounge",
   outcome: "positive",
   childMoodBefore: 5,
   childMoodAfter: 8,
@@ -117,21 +117,21 @@ const makeFeedback = (overrides: Partial<ParentalFeedbackRecord> = {}): Parental
   ...overrides,
 });
 
-// ── Oak House Demo Data ───────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ───────────────────────────────────────────────────
 
 const OAK_HOUSE_CONTACTS: ContactRecord[] = [
   // Alex + Michelle (mother, engaged) — 4 contacts
   makeContact({
     id: "c-001", childId: ALEX_ID, childName: "Alex", parentId: MICHELLE_ID, parentName: "Michelle",
     relationship: "mother", contactDate: "2026-05-03", contactType: "face_to_face", duration: 60,
-    location: "Oak House lounge", outcome: "positive", childMoodBefore: 5, childMoodAfter: 8,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 5, childMoodAfter: 8,
     parentEngagement: 9, staffObservations: "Michelle and Alex played cards, laughed together",
     positiveInteractions: ["Card game", "Shared snacks"], followUpNeeded: false,
   }),
   makeContact({
     id: "c-002", childId: ALEX_ID, childName: "Alex", parentId: MICHELLE_ID, parentName: "Michelle",
     relationship: "mother", contactDate: "2026-05-10", contactType: "phone", duration: 25,
-    location: "Phone (Oak House office)", outcome: "positive", childMoodBefore: 6, childMoodAfter: 7,
+    location: "Phone (Chamberlain House office)", outcome: "positive", childMoodBefore: 6, childMoodAfter: 7,
     parentEngagement: 8, staffObservations: "Good-natured call discussing school",
     positiveInteractions: ["Discussed school project"], followUpNeeded: false,
   }),
@@ -146,7 +146,7 @@ const OAK_HOUSE_CONTACTS: ContactRecord[] = [
   makeContact({
     id: "c-004", childId: ALEX_ID, childName: "Alex", parentId: MICHELLE_ID, parentName: "Michelle",
     relationship: "mother", contactDate: "2026-05-24", contactType: "video_call", duration: 30,
-    location: "Video call (Oak House)", outcome: "positive", childMoodBefore: 7, childMoodAfter: 8,
+    location: "Video call (Chamberlain House)", outcome: "positive", childMoodBefore: 7, childMoodAfter: 8,
     parentEngagement: 8, staffObservations: "Alex showed Michelle his room tidy-up",
     positiveInteractions: ["Room tour", "Planned next visit"], followUpNeeded: true, followUpCompleted: true,
   }),
@@ -155,7 +155,7 @@ const OAK_HOUSE_CONTACTS: ContactRecord[] = [
   makeContact({
     id: "c-005", childId: JORDAN_ID, childName: "Jordan", parentId: STEVE_ID, parentName: "Steve",
     relationship: "father", contactDate: "2026-05-04", contactType: "face_to_face", duration: 45,
-    location: "Oak House garden", outcome: "neutral", childMoodBefore: 5, childMoodAfter: 5,
+    location: "Chamberlain House garden", outcome: "neutral", childMoodBefore: 5, childMoodAfter: 5,
     parentEngagement: 4, staffObservations: "Steve seemed distracted, checked phone frequently",
     issuesRaised: ["Steve late by 20 mins"], positiveInteractions: ["Kicked football briefly"],
     followUpNeeded: true, followUpCompleted: false,
@@ -163,14 +163,14 @@ const OAK_HOUSE_CONTACTS: ContactRecord[] = [
   makeContact({
     id: "c-006", childId: JORDAN_ID, childName: "Jordan", parentId: STEVE_ID, parentName: "Steve",
     relationship: "father", contactDate: "2026-05-11", contactType: "phone", duration: 10,
-    location: "Phone (Oak House)", outcome: "parent_no_show", childMoodBefore: 6, childMoodAfter: 4,
+    location: "Phone (Chamberlain House)", outcome: "parent_no_show", childMoodBefore: 6, childMoodAfter: 4,
     parentEngagement: 0, staffObservations: "Steve did not answer. Jordan visibly upset.",
     issuesRaised: ["Parent no-show", "Jordan became withdrawn"], followUpNeeded: true, followUpCompleted: true,
   }),
   makeContact({
     id: "c-007", childId: JORDAN_ID, childName: "Jordan", parentId: STEVE_ID, parentName: "Steve",
     relationship: "father", contactDate: "2026-05-18", contactType: "face_to_face", duration: 60,
-    location: "Oak House lounge", outcome: "positive", childMoodBefore: 4, childMoodAfter: 7,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 4, childMoodAfter: 7,
     parentEngagement: 7, staffObservations: "Better session. Steve more present, played PS5 with Jordan.",
     positiveInteractions: ["Gaming together", "Steve apologised for missing call"],
     followUpNeeded: false,
@@ -180,7 +180,7 @@ const OAK_HOUSE_CONTACTS: ContactRecord[] = [
   makeContact({
     id: "c-008", childId: MORGAN_ID, childName: "Morgan", parentId: KAREN_ID, parentName: "Karen",
     relationship: "mother", contactDate: "2026-05-02", contactType: "face_to_face", duration: 90,
-    location: "Oak House lounge", outcome: "positive", childMoodBefore: 7, childMoodAfter: 9,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 7, childMoodAfter: 9,
     parentEngagement: 10, staffObservations: "Karen brought home-cooked meal. Morgan thrilled.",
     positiveInteractions: ["Shared meal", "Discussed college plans"], followUpNeeded: false,
   }),
@@ -201,7 +201,7 @@ const OAK_HOUSE_CONTACTS: ContactRecord[] = [
   makeContact({
     id: "c-011", childId: MORGAN_ID, childName: "Morgan", parentId: KAREN_ID, parentName: "Karen",
     relationship: "mother", contactDate: "2026-05-23", contactType: "face_to_face", duration: 120,
-    location: "Oak House and garden", outcome: "positive", childMoodBefore: 6, childMoodAfter: 9,
+    location: "Chamberlain House and garden", outcome: "positive", childMoodBefore: 6, childMoodAfter: 9,
     parentEngagement: 10, staffObservations: "Karen helped Morgan with revision. Very engaged.",
     positiveInteractions: ["Revision help", "Garden walk", "Plan for half-term"],
     followUpNeeded: false,
@@ -211,7 +211,7 @@ const OAK_HOUSE_CONTACTS: ContactRecord[] = [
   makeContact({
     id: "c-012", childId: MORGAN_ID, childName: "Morgan", parentId: DAVE_ID, parentName: "Dave",
     relationship: "father", contactDate: "2026-05-08", contactType: "phone", duration: 5,
-    location: "Phone (Oak House)", outcome: "parent_no_show", childMoodBefore: 5, childMoodAfter: 3,
+    location: "Phone (Chamberlain House)", outcome: "parent_no_show", childMoodBefore: 5, childMoodAfter: 3,
     parentEngagement: 0, staffObservations: "Dave did not answer scheduled call. Morgan said 'typical'.",
     issuesRaised: ["Father consistently unavailable"], followUpNeeded: true, followUpCompleted: false,
   }),

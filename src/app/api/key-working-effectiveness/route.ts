@@ -3,7 +3,7 @@
 //
 // Key Working Effectiveness Intelligence
 //
-// GET  -- Returns key working effectiveness metrics with demo data (Oak House)
+// GET  -- Returns key working effectiveness metrics with demo data (Chamberlain House)
 // POST -- Accepts custom data and returns analysis
 // ==============================================================================
 
@@ -25,7 +25,7 @@ import type {
   KeyWorkerDevelopment,
 } from "@/lib/key-working-effectiveness";
 
-// -- Demo Data: Oak House ----------------------------------------------------
+// -- Demo Data: Chamberlain House ----------------------------------------------------
 
 function generateDemoData(): {
   sessions: KeyWorkSession[];

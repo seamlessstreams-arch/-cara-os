@@ -3,7 +3,7 @@
 //
 // Peer Dynamics & Group Compatibility Intelligence
 //
-// GET  — Returns peer dynamics assessment with realistic Oak House demo data
+// GET  — Returns peer dynamics assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   GroupAssessment,
 } from "@/lib/peer-dynamics";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILDREN: ChildProfile[] = [
   {

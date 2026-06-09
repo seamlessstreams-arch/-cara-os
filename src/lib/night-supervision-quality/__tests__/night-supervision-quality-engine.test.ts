@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Night Supervision Quality Intelligence Engine
 //
-// Demo: Oak House — Staff: Sarah Johnson, Tom Richards, Lisa Williams,
+// Demo: Chamberlain House — Staff: Sarah Johnson, Tom Richards, Lisa Williams,
 //       Darren Laville. Covers all 8 check types, policy, and training.
 // ══════════════════════════════════════════════════════════════════════════════
 

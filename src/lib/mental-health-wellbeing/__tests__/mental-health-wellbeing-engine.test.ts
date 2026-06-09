@@ -26,7 +26,7 @@ const PERIOD_START = "2026-01-01T00:00:00Z";
 const PERIOD_END = "2026-05-18T23:59:59Z";
 const HOME_ID = "home-oak";
 
-// Oak House children
+// Chamberlain House children
 const ALEX_ID = "child-alex";
 const JORDAN_ID = "child-jordan";
 const MORGAN_ID = "child-morgan";
@@ -144,7 +144,7 @@ function makeSafetyPlan(overrides: Partial<WellbeingSafetyPlan> = {}): Wellbeing
   };
 }
 
-// ── Oak House demo data ────────────────────────────────────────────────────
+// ── Chamberlain House demo data ────────────────────────────────────────────────────
 
 function getAlexAssessment(): WellbeingAssessment {
   return makeAssessment({
@@ -1444,11 +1444,11 @@ describe("generateMentalHealthIntelligence", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Oak House integration scenario
+// Chamberlain House integration scenario
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Oak House integration scenario", () => {
-  it("produces coherent intelligence report for Oak House demo data", () => {
+describe("Chamberlain House integration scenario", () => {
+  it("produces coherent intelligence report for Chamberlain House demo data", () => {
     const result = generateMentalHealthIntelligence(
       getAllAssessments(), getAllInterventions(), getAllIncidents(), getAllSafetyPlans(),
       ALL_CHILD_IDS, HOME_ID, PERIOD_START, PERIOD_END, NOW,

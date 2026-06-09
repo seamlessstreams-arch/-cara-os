@@ -187,7 +187,7 @@ export default function PlacementSuccessFactorsPage() {
               Systematic learning across all placements
             </p>
             <p className="mt-1 text-xs text-[var(--cs-navy)]">
-              This analysis brings together what we have learned from every placement Oak House has
+              This analysis brings together what we have learned from every placement Chamberlain House has
               held — those that thrived, those that disrupted, and those still in progress. Each
               factor is triangulated against supporting cases, counter-cases, child voice, staff
               reflection, and external evidence. The aim is not to produce a list of good ideas, but

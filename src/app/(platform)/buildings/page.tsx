@@ -979,7 +979,7 @@ function HazardsTab({ data }: { data: BuildingsData }) {
         pageContext="Buildings & Premises — property maintenance, hazards, COSHH, asbestos, pest control, fire safety, Reg 44 evidence, health and safety compliance"
         recordType="contractor_communication"
         sourceContent={ariaSrc || "No open hazards to communicate."}
-        linkedRecords={`${hazards.length} open hazard(s) — Oak House`}
+        linkedRecords={`${hazards.length} open hazard(s) — Chamberlain House`}
         defaultStyle="professional_formal"
       />
     </div>
@@ -1053,7 +1053,7 @@ export default function BuildingsPage() {
   return (
     <PageShell
       title="Building & H&S Compliance"
-      subtitle="Oak House — safety checks, certificates, and hazard management"
+      subtitle="Chamberlain House — safety checks, certificates, and hazard management"
       ariaContext={{ pageTitle: "Building & H&S Compliance", sourceType: "home_check" }}
       quickCreateContext={{ module: "buildings", defaultTaskCategory: "health_and_safety", defaultFormType: "health_safety_check" }}
       actions={
@@ -1064,7 +1064,7 @@ export default function BuildingsPage() {
             data={raw?.checks ?? []}
             label="Export"
           />
-          <PrintButton title="Buildings & Safety" subtitle="Oak House — Building Safety & Compliance" targetId="buildings-content" />
+          <PrintButton title="Buildings & Safety" subtitle="Chamberlain House — Building Safety & Compliance" targetId="buildings-content" />
           <SmartUploadButton variant="inline" label="Upload Certificate" uploadContext="Buildings — safety certificate/inspection report upload" />
           <Button size="sm" onClick={() => setShowAddCheck(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Record Check

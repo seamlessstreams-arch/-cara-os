@@ -645,7 +645,7 @@ ${complaint.lessons_learned ? `Learning: ${complaint.lessons_learned}` : ""}`;
       actions={
         <div className="flex items-center gap-2">
           <ExportButton<Complaint> filename="complaints-export" data={filtered} columns={COMPLAINT_EXPORT_COLS} label="Export" />
-          <PrintButton title="Complaints & Representations" subtitle="Oak House — Complaints Register" targetId="complaints-content" />
+          <PrintButton title="Complaints & Representations" subtitle="Chamberlain House — Complaints Register" targetId="complaints-content" />
           <SmartUploadButton
             variant="inline"
             label="Upload Complaint Document"

@@ -2,7 +2,7 @@
 // CORNERSTONE — APPRAISAL INTELLIGENCE ENGINE — TEST SUITE
 // 50+ deterministic tests covering helpers, overview, rating breakdown,
 // competency analysis, staff profiles, risk flags, alerts, ARIA insights,
-// and an Oak House integration scenario.
+// and an Chamberlain House integration scenario.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
@@ -587,9 +587,9 @@ describe("ARIA insights", () => {
   });
 });
 
-// ── Oak House Integration ───────────────────────────────────────────────────
+// ── Chamberlain House Integration ───────────────────────────────────────────────────
 
-describe("Oak House integration", () => {
+describe("Chamberlain House integration", () => {
   // Mirrors the actual store data from store.ts
   const OAK_HOUSE_APPRAISALS: AppraisalInput[] = [
     {

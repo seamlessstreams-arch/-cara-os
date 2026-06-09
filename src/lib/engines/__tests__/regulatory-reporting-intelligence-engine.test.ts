@@ -1040,9 +1040,9 @@ describe("computeRegulatoryReportingIntelligence", () => {
     });
   });
 
-  // ── Oak House Scenario ──────────────────────────────────────────────────────
+  // ── Chamberlain House Scenario ──────────────────────────────────────────────────────
 
-  describe("Oak House test data scenario", () => {
+  describe("Chamberlain House test data scenario", () => {
     function buildOakHouseInput(): RegulatoryReportingIntelligenceInput {
       // 11 completed reports (1 per month for the last 11 months) + 1 in_progress
       const completedReports: Reg44ReportInput[] = [];

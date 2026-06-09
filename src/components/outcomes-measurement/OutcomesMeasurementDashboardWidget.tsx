@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // OutcomesMeasurementDashboardWidget — Outcomes progress & measurement overview
 //
-// "Is Oak House making a measurable positive difference for children?"
+// "Is Chamberlain House making a measurable positive difference for children?"
 // SCCIF overall effectiveness, CHR 2015 Reg 6 / Reg 9.
 // ══════════════════════════════════════════════════════════════════════════════
 

@@ -3,7 +3,7 @@
 //
 // Cultural Identity Celebration Intelligence
 //
-// GET  — Returns assessment with Oak House demo data
+// GET  — Returns assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffCulturalTraining,
 } from "@/lib/cultural-identity-celebration";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_ACTIVITIES: CulturalActivity[] = [
   { id: "act-1", childId: "child-alex", childName: "Alex", activityDate: "2026-02-10", culturalArea: "heritage_exploration", engagementLevel: "enthusiastic", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: true, reflectionCompleted: true },

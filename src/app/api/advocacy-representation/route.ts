@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Advocacy & Representation Intelligence API Route
 //
-// GET  → returns Oak House demo advocacy & representation intelligence
+// GET  → returns Chamberlain House demo advocacy & representation intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -15,7 +15,7 @@ import type {
   ChildParentalContact,
 } from "@/lib/advocacy-representation/advocacy-representation-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 const CHILD_IDS = ["alex", "jordan", "morgan"];
 const CHILD_NAMES: Record<string, string> = {

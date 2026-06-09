@@ -8,7 +8,7 @@ import type {
   StaffContactTraining,
 } from "@/lib/contact";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: ContactRecord[];

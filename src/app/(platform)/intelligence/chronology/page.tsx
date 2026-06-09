@@ -229,7 +229,7 @@ export default function ChronologyIntelligencePage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Chronology Intelligence" subtitle="Oak House — ARIA Chronology Analysis" targetId="chronology-content" />
+          <PrintButton title="Chronology Intelligence" subtitle="Chamberlain House — ARIA Chronology Analysis" targetId="chronology-content" />
           <SmartUploadButton variant="inline" label="Upload Chronology Document" uploadContext="Intelligence — chronology or historical record document upload" />
         </div>
       }

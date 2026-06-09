@@ -2,7 +2,7 @@
 // Cornerstone Attachment & Relationships Intelligence — Engine Tests
 //
 // Covers all 7 core functions, scoring logic, and edge cases.
-// Demo data: Oak House — Alex (14), Jordan (13), Morgan (15)
+// Demo data: Chamberlain House — Alex (14), Jordan (13), Morgan (15)
 // Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (Senior RSW),
 //        Darren Laville (RM)
 // ══════════════════════════════════════════════════════════════════════════════

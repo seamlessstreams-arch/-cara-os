@@ -322,7 +322,7 @@ export default function WorkshopPlannerPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Workshop Planner" subtitle="Oak House — Learning Workshops" targetId="workshops-content" />
+          <PrintButton title="Workshop Planner" subtitle="Chamberlain House — Learning Workshops" targetId="workshops-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Workshop Planner upload" />
           <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

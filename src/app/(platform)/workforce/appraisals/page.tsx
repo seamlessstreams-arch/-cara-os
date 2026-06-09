@@ -519,7 +519,7 @@ export default function AppraisalsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={displayed} columns={APPRAISAL_EXPORT_COLS} filename="appraisals" />
-          <PrintButton title="Appraisals Report" subtitle="Oak House Staff Development" targetId="appraisals-content" />
+          <PrintButton title="Appraisals Report" subtitle="Chamberlain House Staff Development" targetId="appraisals-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Appraisals — appraisal document or evidence upload" />
           <Button size="sm" className="gap-1.5">
             <Plus className="h-3.5 w-3.5" />

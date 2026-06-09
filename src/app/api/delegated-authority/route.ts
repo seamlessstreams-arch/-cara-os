@@ -11,7 +11,7 @@ import type {
   StaffAuthorityTraining,
 } from "@/lib/delegated-authority";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   decisions: AuthorityDecision[];

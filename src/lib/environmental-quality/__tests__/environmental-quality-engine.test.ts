@@ -32,7 +32,7 @@ const PERIOD_END = "2026-01-31";
 const REFERENCE_DATE = "2026-02-01";
 const HOME_ID = "oak-house";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Alex (14), Jordan (13), Morgan (15)
 
 const DEMO_INSPECTIONS: EnvironmentalInspection[] = [
@@ -239,7 +239,7 @@ describe("evaluateInspectionQuality", () => {
     expect(result.inspectionCount).toBe(0);
   });
 
-  it("calculates correct count for Oak House demo", () => {
+  it("calculates correct count for Chamberlain House demo", () => {
     const result = evaluateInspectionQuality(DEMO_INSPECTIONS, PERIOD_START, PERIOD_END);
     expect(result.inspectionCount).toBe(16);
   });
@@ -367,7 +367,7 @@ describe("evaluateMaintenanceResponsiveness", () => {
     expect(result.totalRequests).toBe(0);
   });
 
-  it("calculates correct totals for Oak House demo", () => {
+  it("calculates correct totals for Chamberlain House demo", () => {
     const result = evaluateMaintenanceResponsiveness(DEMO_MAINTENANCE, PERIOD_START, PERIOD_END);
     expect(result.totalRequests).toBe(11);
     expect(result.completedCount).toBe(8);
@@ -575,7 +575,7 @@ describe("evaluateChildSatisfaction", () => {
     expect(result.totalViews).toBe(0);
   });
 
-  it("calculates correct averages for Oak House demo", () => {
+  it("calculates correct averages for Chamberlain House demo", () => {
     const result = evaluateChildSatisfaction(DEMO_CHILD_VIEWS, PERIOD_START, PERIOD_END);
     // (8+9+8)/3 = 8.333... -> 8.3
     expect(result.averageSatisfaction).toBe(8.3);
@@ -664,7 +664,7 @@ describe("evaluateChildSatisfaction", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 6. generateEnvironmentalQualityIntelligence — Oak House Integration
+// 6. generateEnvironmentalQualityIntelligence — Chamberlain House Integration
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("generateEnvironmentalQualityIntelligence", () => {
@@ -698,7 +698,7 @@ describe("generateEnvironmentalQualityIntelligence", () => {
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
-  it("Oak House demo gets a good or outstanding rating", () => {
+  it("Chamberlain House demo gets a good or outstanding rating", () => {
     const result = generate();
     expect(["outstanding", "good"]).toContain(result.rating);
   });
@@ -727,14 +727,14 @@ describe("generateEnvironmentalQualityIntelligence", () => {
     expect(result.childSatisfaction.feelsSafeRate).toBe(100);
   });
 
-  it("generates at least one strength for Oak House", () => {
+  it("generates at least one strength for Chamberlain House", () => {
     const result = generate();
     expect(result.strengths.length).toBeGreaterThan(0);
   });
 
-  it("generates at least one action for Oak House", () => {
+  it("generates at least one action for Chamberlain House", () => {
     const result = generate();
-    // Oak House has 1 overdue repair and suggestions, so there should be actions
+    // Chamberlain House has 1 overdue repair and suggestions, so there should be actions
     expect(result.actions.length).toBeGreaterThan(0);
   });
 

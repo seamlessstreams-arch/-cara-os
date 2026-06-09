@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/education — Education Intelligence
 //
-// GET — Returns Oak House demo intelligence data
+// GET — Returns Chamberlain House demo intelligence data
 //
 // CHR 2015 Reg 8 — The education standard
 // Virtual School Head statutory role (Children Act 2004)
@@ -24,7 +24,7 @@ import type {
   StaffEducationTraining,
 } from "@/lib/education";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_RECORDS: EducationRecord[] = [
   // Alex — mainstream school, strong performance

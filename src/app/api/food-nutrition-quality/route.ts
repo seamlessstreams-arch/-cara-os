@@ -3,7 +3,7 @@
 //
 // Food Nutrition Quality Intelligence
 //
-// GET  — Returns assessment with Oak House demo data
+// GET  — Returns assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffNutritionTraining,
 } from "@/lib/food-nutrition-quality";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_RECORDS: MealRecord[] = [
   { id: "rec-1", childId: "child-alex", childName: "Alex", mealDate: "2026-02-10", mealType: "breakfast", nutritionRating: "excellent", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },

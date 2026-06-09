@@ -235,7 +235,7 @@ export default function Reg40StaffingPlanPage() {
           <CardHeader className="py-3 px-4">
             <CardTitle className="text-sm flex items-center gap-2">
               <Users className="h-4 w-4 text-brand" />
-              Establishment — Oak House
+              Establishment — Chamberlain House
             </CardTitle>
           </CardHeader>
           <CardContent className="px-4 pb-4">

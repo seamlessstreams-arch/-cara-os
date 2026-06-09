@@ -85,7 +85,7 @@ function makeWellbeingCheck(overrides: Partial<WellbeingCheckInput> = {}): Wellb
 function baseInput(overrides: Partial<StaffWellbeingInput> = {}): StaffWellbeingInput {
   return {
     today: "2026-05-26",
-    home_name: "Oak House",
+    home_name: "Chamberlain House",
     staff: [
       makeStaff({ id: "s1", name: "Jane Smith" }),
       makeStaff({ id: "s2", name: "Tom Brown", start_date: "2024-01-15" }),
@@ -121,7 +121,7 @@ describe("Staff Wellbeing Intelligence Engine", () => {
   it("produces result with all required fields for healthy team", () => {
     const result = computeStaffWellbeing(baseInput());
     expect(result.generated_at).toBe("2026-05-26");
-    expect(result.home_name).toBe("Oak House");
+    expect(result.home_name).toBe("Chamberlain House");
     expect(result.staff_profiles).toHaveLength(3);
     expect(result.workforce_pulse.total_active_staff).toBe(3);
     expect(result.home_resilience).toBeDefined();
@@ -134,7 +134,7 @@ describe("Staff Wellbeing Intelligence Engine", () => {
     const result = computeStaffWellbeing(baseInput());
     expect(["strong", "adequate"]).toContain(result.home_resilience.level);
     expect(result.home_resilience.score).toBeGreaterThanOrEqual(55);
-    expect(result.home_resilience.headline).toContain("Oak House");
+    expect(result.home_resilience.headline).toContain("Chamberlain House");
   });
 
   it("computes low burnout for staff with good indicators", () => {
@@ -412,7 +412,7 @@ describe("Staff Wellbeing Intelligence Engine", () => {
   it("handles empty input gracefully", () => {
     const result = computeStaffWellbeing({
       today: "2026-05-26",
-      home_name: "Oak House",
+      home_name: "Chamberlain House",
       staff: [],
       shifts: [],
       leave_requests: [],

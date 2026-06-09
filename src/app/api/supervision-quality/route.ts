@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Supervision Quality Intelligence API Route
 //
-// GET  → returns Oak House demo supervision quality intelligence
+// GET  → returns Chamberlain House demo supervision quality intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   StaffDevelopmentOutcome,
 } from "@/lib/supervision-quality/supervision-quality-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const sessions: SupervisionSession[] = [

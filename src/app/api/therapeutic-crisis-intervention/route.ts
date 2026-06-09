@@ -3,7 +3,7 @@
 //
 // Therapeutic Crisis Intervention Intelligence
 //
-// GET  — Returns crisis intervention assessment with Oak House demo data
+// GET  — Returns crisis intervention assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -21,7 +21,7 @@ import type {
   StaffCrisisTraining,
 } from "@/lib/therapeutic-crisis-intervention";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_INCIDENTS: CrisisIncident[] = [
   // Alex — 1 low-level crisis, verbal de-escalation, successful, debriefed

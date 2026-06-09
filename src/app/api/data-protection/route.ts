@@ -3,7 +3,7 @@
 //
 // Data Protection & GDPR Intelligence
 //
-// GET  -- Returns data protection assessment with Oak House demo data
+// GET  -- Returns data protection assessment with Chamberlain House demo data
 // POST -- Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -68,7 +68,7 @@ const ratingLabels: Record<string, string> = {
   inadequate: "Inadequate",
 };
 
-// -- Demo Data: Oak House -----------------------------------------------------
+// -- Demo Data: Chamberlain House -----------------------------------------------------
 
 const DEMO_BREACHES: DataBreach[] = [
   {

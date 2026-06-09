@@ -15,7 +15,7 @@ import type {
   ExternalFeedback,
 } from "@/lib/regulatory-self-assessment/regulatory-self-assessment-engine";
 
-// ── Demo Data — Oak House ────────────────────────────────────────────────────
+// ── Demo Data — Chamberlain House ────────────────────────────────────────────────────
 
 const DEMO_ENTRIES: SelfAssessmentEntry[] = [
   {

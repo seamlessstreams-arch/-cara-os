@@ -26,7 +26,7 @@ const PERIOD_START = "2025-01-01";
 const PERIOD_END = "2025-06-30";
 const REFERENCE_DATE = "2025-06-15";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (Senior RSW), Darren Laville (RM)
 // Sarah and Darren as managers have more coaching/mentoring.
 // Tom has fewer activities (area for development).

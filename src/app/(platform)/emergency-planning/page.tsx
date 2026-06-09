@@ -56,7 +56,7 @@ export default function EmergencyPlanningPage() {
       ariaContext={{ pageTitle: "Emergency Planning", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Emergency Planning — Oak House" />
+          <PrintButton title="Emergency Planning — Chamberlain House" />
           <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

@@ -439,7 +439,7 @@ export default function ActivitiesPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={ACTIVITY_EXPORT_COLS} filename="activities" />
-          <PrintButton title="Activities & Enrichment" subtitle="Oak House — Activity Log" targetId="activities-content" />
+          <PrintButton title="Activities & Enrichment" subtitle="Chamberlain House — Activity Log" targetId="activities-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Activities — activity photos or evidence upload" />
           <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-violet-600 hover:bg-violet-700 text-white gap-1.5 h-8 text-xs">

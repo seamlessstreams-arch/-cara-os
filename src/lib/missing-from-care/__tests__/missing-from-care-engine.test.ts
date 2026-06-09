@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS -- Missing From Care Intelligence Engine (4-Evaluator Pattern)
 //
-// Demo: Oak House, 3 children (Alex, Jordan, Morgan),
+// Demo: Chamberlain House, 3 children (Alex, Jordan, Morgan),
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -25,7 +25,7 @@ import type {
   StaffMissingFromCareTraining,
 } from "../missing-from-care-engine";
 
-// -- Test Fixtures: Oak House Demo Data ----------------------------------------
+// -- Test Fixtures: Chamberlain House Demo Data ----------------------------------------
 
 const makeRecord = (overrides: Partial<MissingFromCareRecord> = {}): MissingFromCareRecord => ({
   id: "mfc-001",
@@ -66,7 +66,7 @@ const makeTraining = (overrides: Partial<StaffMissingFromCareTraining> = {}): St
   ...overrides,
 });
 
-// Oak House demo data: 12 records across Alex/Jordan/Morgan, all 8 categories
+// Chamberlain House demo data: 12 records across Alex/Jordan/Morgan, all 8 categories
 const OAK_HOUSE_RECORDS: MissingFromCareRecord[] = [
   makeRecord({ id: "mfc-001", childId: "child-alex", childName: "Alex", date: "2026-02-10", category: "missing_episode", outcome: "resolved_safely" }),
   makeRecord({ id: "mfc-002", childId: "child-alex", childName: "Alex", date: "2026-03-15", category: "return_interview", outcome: "resolved_safely" }),
@@ -286,17 +286,17 @@ describe("evaluateQuality", () => {
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo has 12 total records", () => {
+  it("Chamberlain House demo has 12 total records", () => {
     const result = evaluateQuality(OAK_HOUSE_RECORDS);
     expect(result.totalRecords).toBe(12);
   });
 
-  it("Oak House demo has 100% police notification rate", () => {
+  it("Chamberlain House demo has 100% police notification rate", () => {
     const result = evaluateQuality(OAK_HOUSE_RECORDS);
     expect(result.policeNotifiedTimelyRate).toBe(100);
   });
 
-  it("Oak House demo quality score is 25", () => {
+  it("Chamberlain House demo quality score is 25", () => {
     const result = evaluateQuality(OAK_HOUSE_RECORDS);
     expect(result.overallScore).toBe(25);
   });
@@ -388,22 +388,22 @@ describe("evaluateCompliance", () => {
     expect(result.categoryDiversityRatio).toBe(25);
   });
 
-  it("Oak House demo has 100% documentation rate", () => {
+  it("Chamberlain House demo has 100% documentation rate", () => {
     const result = evaluateCompliance(OAK_HOUSE_RECORDS);
     expect(result.documentationRate).toBe(100);
   });
 
-  it("Oak House demo has 100% timely recording rate", () => {
+  it("Chamberlain House demo has 100% timely recording rate", () => {
     const result = evaluateCompliance(OAK_HOUSE_RECORDS);
     expect(result.timelyRecordingRate).toBe(100);
   });
 
-  it("Oak House demo has 100% return interview rate", () => {
+  it("Chamberlain House demo has 100% return interview rate", () => {
     const result = evaluateCompliance(OAK_HOUSE_RECORDS);
     expect(result.returnInterviewCompletedRate).toBe(100);
   });
 
-  it("Oak House demo has 100% category diversity (8/8 categories)", () => {
+  it("Chamberlain House demo has 100% category diversity (8/8 categories)", () => {
     const result = evaluateCompliance(OAK_HOUSE_RECORDS);
     expect(result.categoryDiversityRatio).toBe(100);
   });
@@ -414,7 +414,7 @@ describe("evaluateCompliance", () => {
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo compliance score is 25", () => {
+  it("Chamberlain House demo compliance score is 25", () => {
     const result = evaluateCompliance(OAK_HOUSE_RECORDS);
     expect(result.overallScore).toBe(25);
   });
@@ -603,7 +603,7 @@ describe("evaluateStaffReadiness", () => {
     expect(result.preventionPlanningRate).toBe(100);
   });
 
-  it("Oak House demo has 100% across all training skills", () => {
+  it("Chamberlain House demo has 100% across all training skills", () => {
     const result = evaluateStaffReadiness(OAK_HOUSE_TRAINING);
     expect(result.missingPersonsResponseRate).toBe(100);
     expect(result.returnInterviewConductRate).toBe(100);
@@ -613,7 +613,7 @@ describe("evaluateStaffReadiness", () => {
     expect(result.preventionPlanningRate).toBe(100);
   });
 
-  it("Oak House demo staff readiness score is 25", () => {
+  it("Chamberlain House demo staff readiness score is 25", () => {
     const result = evaluateStaffReadiness(OAK_HOUSE_TRAINING);
     expect(result.overallScore).toBe(25);
   });
@@ -840,19 +840,19 @@ describe("buildChildProfiles", () => {
     }
   });
 
-  it("Oak House Alex has 100% return interview rate", () => {
+  it("Chamberlain House Alex has 100% return interview rate", () => {
     const result = buildChildProfiles(OAK_HOUSE_RECORDS);
     const alex = result.find((p) => p.childId === "child-alex");
     expect(alex!.returnInterviewCompletedRate).toBe(100);
   });
 
-  it("Oak House Alex has 100% risk assessment rate", () => {
+  it("Chamberlain House Alex has 100% risk assessment rate", () => {
     const result = buildChildProfiles(OAK_HOUSE_RECORDS);
     const alex = result.find((p) => p.childId === "child-alex");
     expect(alex!.riskAssessmentUpdatedRate).toBe(100);
   });
 
-  it("Oak House Alex has 4 categories covered", () => {
+  it("Chamberlain House Alex has 4 categories covered", () => {
     const result = buildChildProfiles(OAK_HOUSE_RECORDS);
     const alex = result.find((p) => p.childId === "child-alex");
     expect(alex!.categoriesCovered).toHaveLength(4);
@@ -925,7 +925,7 @@ describe("generateMissingFromCareIntelligence", () => {
     expect(result.childProfiles.length).toBeGreaterThan(0);
   });
 
-  it("includes 3 child profiles for Oak House demo", () => {
+  it("includes 3 child profiles for Chamberlain House demo", () => {
     const result = generateMissingFromCareIntelligence(
       OAK_HOUSE_RECORDS, OAK_HOUSE_POLICY, OAK_HOUSE_TRAINING,
       "home-oak", "2026-01-01", "2026-05-20",
@@ -1012,7 +1012,7 @@ describe("generateMissingFromCareIntelligence", () => {
     expect(result.periodEnd).toBe("2026-05-20");
   });
 
-  it("Oak House demo is rated outstanding (100/100)", () => {
+  it("Chamberlain House demo is rated outstanding (100/100)", () => {
     const result = generateMissingFromCareIntelligence(
       OAK_HOUSE_RECORDS, OAK_HOUSE_POLICY, OAK_HOUSE_TRAINING,
       "home-oak", "2026-01-01", "2026-05-20",

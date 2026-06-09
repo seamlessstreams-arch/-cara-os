@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS -- Homework & Study Support Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex, Jordan, Morgan),
+// Demo: Chamberlain House, 3 children (Alex, Jordan, Morgan),
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -25,7 +25,7 @@ import type {
   StaffStudySupportTraining,
 } from "../homework-study-support-engine";
 
-// -- Test Fixtures: Oak House Demo Data ---------------------------------------
+// -- Test Fixtures: Chamberlain House Demo Data ---------------------------------------
 
 const makeSession = (overrides: Partial<StudySession> = {}): StudySession => ({
   id: "ss-001",
@@ -68,7 +68,7 @@ const makeTraining = (overrides: Partial<StaffStudySupportTraining> = {}): Staff
   ...overrides,
 });
 
-// Oak House demo data: 8 sessions across Alex/Jordan/Morgan, all booleans true
+// Chamberlain House demo data: 8 sessions across Alex/Jordan/Morgan, all booleans true
 const OAK_HOUSE_SESSIONS: StudySession[] = [
   makeSession({ id: "ss-001", childId: "child-alex", childName: "Alex", sessionDate: "2026-05-05", activityType: "homework_help", engagementLevel: "highly_engaged" }),
   makeSession({ id: "ss-002", childId: "child-alex", childName: "Alex", sessionDate: "2026-05-07", activityType: "revision_session", engagementLevel: "engaged" }),
@@ -171,22 +171,22 @@ describe("evaluateQuality", () => {
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo has 8 total sessions", () => {
+  it("Chamberlain House demo has 8 total sessions", () => {
     const result = evaluateQuality(OAK_HOUSE_SESSIONS);
     expect(result.totalSessions).toBe(8);
   });
 
-  it("Oak House demo has 100% engagement rate", () => {
+  it("Chamberlain House demo has 100% engagement rate", () => {
     const result = evaluateQuality(OAK_HOUSE_SESSIONS);
     expect(result.engagementRate).toBe(100);
   });
 
-  it("Oak House demo has 100% progress rate", () => {
+  it("Chamberlain House demo has 100% progress rate", () => {
     const result = evaluateQuality(OAK_HOUSE_SESSIONS);
     expect(result.progressRate).toBe(100);
   });
 
-  it("Oak House demo quality score is 25", () => {
+  it("Chamberlain House demo quality score is 25", () => {
     const result = evaluateQuality(OAK_HOUSE_SESSIONS);
     expect(result.overallScore).toBe(25);
   });
@@ -250,22 +250,22 @@ describe("evaluateCompliance", () => {
     expect(result.activityDiversityRatio).toBe(25);
   });
 
-  it("Oak House demo has 100% documented rate", () => {
+  it("Chamberlain House demo has 100% documented rate", () => {
     const result = evaluateCompliance(OAK_HOUSE_SESSIONS);
     expect(result.documentedRate).toBe(100);
   });
 
-  it("Oak House demo has 100% staff supported rate", () => {
+  it("Chamberlain House demo has 100% staff supported rate", () => {
     const result = evaluateCompliance(OAK_HOUSE_SESSIONS);
     expect(result.staffSupportedRate).toBe(100);
   });
 
-  it("Oak House demo has 100% feedback rate", () => {
+  it("Chamberlain House demo has 100% feedback rate", () => {
     const result = evaluateCompliance(OAK_HOUSE_SESSIONS);
     expect(result.feedbackRate).toBe(100);
   });
 
-  it("Oak House demo has 100% activity diversity (8/8 types)", () => {
+  it("Chamberlain House demo has 100% activity diversity (8/8 types)", () => {
     const result = evaluateCompliance(OAK_HOUSE_SESSIONS);
     expect(result.activityDiversityRatio).toBe(100);
   });
@@ -276,7 +276,7 @@ describe("evaluateCompliance", () => {
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo compliance score is 25", () => {
+  it("Chamberlain House demo compliance score is 25", () => {
     const result = evaluateCompliance(OAK_HOUSE_SESSIONS);
     expect(result.overallScore).toBe(25);
   });
@@ -437,12 +437,12 @@ describe("evaluateStaffReadiness", () => {
     expect(result.resourceManagementRate).toBe(100);
   });
 
-  it("Oak House demo has 4 staff", () => {
+  it("Chamberlain House demo has 4 staff", () => {
     const result = evaluateStaffReadiness(OAK_HOUSE_TRAINING);
     expect(result.educationalSupportRate).toBe(100);
   });
 
-  it("Oak House demo has 100% across all training skills", () => {
+  it("Chamberlain House demo has 100% across all training skills", () => {
     const result = evaluateStaffReadiness(OAK_HOUSE_TRAINING);
     expect(result.educationalSupportRate).toBe(100);
     expect(result.studySkillsCoachingRate).toBe(100);
@@ -452,7 +452,7 @@ describe("evaluateStaffReadiness", () => {
     expect(result.resourceManagementRate).toBe(100);
   });
 
-  it("Oak House demo staff readiness score is 25", () => {
+  it("Chamberlain House demo staff readiness score is 25", () => {
     const result = evaluateStaffReadiness(OAK_HOUSE_TRAINING);
     expect(result.overallScore).toBe(25);
   });
@@ -615,13 +615,13 @@ describe("buildChildProfiles", () => {
     }
   });
 
-  it("Oak House Alex has 100% engagement rate", () => {
+  it("Chamberlain House Alex has 100% engagement rate", () => {
     const result = buildChildProfiles(OAK_HOUSE_SESSIONS);
     const alex = result.find((p) => p.childId === "child-alex");
     expect(alex!.engagementRate).toBe(100);
   });
 
-  it("Oak House Alex has 100% progress rate", () => {
+  it("Chamberlain House Alex has 100% progress rate", () => {
     const result = buildChildProfiles(OAK_HOUSE_SESSIONS);
     const alex = result.find((p) => p.childId === "child-alex");
     expect(alex!.progressRate).toBe(100);
@@ -694,7 +694,7 @@ describe("generateHomeworkStudySupportIntelligence", () => {
     expect(result.childProfiles.length).toBeGreaterThan(0);
   });
 
-  it("includes 3 child profiles for Oak House demo", () => {
+  it("includes 3 child profiles for Chamberlain House demo", () => {
     const result = generateHomeworkStudySupportIntelligence(
       OAK_HOUSE_SESSIONS, OAK_HOUSE_POLICY, OAK_HOUSE_TRAINING,
       "oak-house", "2026-04-01", "2026-05-19",
@@ -781,7 +781,7 @@ describe("generateHomeworkStudySupportIntelligence", () => {
     expect(result.periodEnd).toBe("2026-05-19");
   });
 
-  it("Oak House demo is rated outstanding (100/100)", () => {
+  it("Chamberlain House demo is rated outstanding (100/100)", () => {
     const result = generateHomeworkStudySupportIntelligence(
       OAK_HOUSE_SESSIONS, OAK_HOUSE_POLICY, OAK_HOUSE_TRAINING,
       "oak-house", "2026-04-01", "2026-05-19",

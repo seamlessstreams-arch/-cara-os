@@ -3,7 +3,7 @@
 //
 // Sexual Health & Relationships Education Intelligence
 //
-// GET  — Returns RSE metrics with demo data (Oak House)
+// GET  — Returns RSE metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -24,7 +24,7 @@ import type {
   StaffRSETraining,
 } from "@/lib/sexual-health-relationships-education";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   sessions: RSESession[];

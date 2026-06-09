@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Return Home Interview Quality Intelligence API Route
 //
-// GET  → returns Oak House demo RHI quality intelligence
+// GET  → returns Chamberlain House demo RHI quality intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   PreventionMeasure,
 } from "@/lib/return-home-interview-quality/return-home-interview-quality-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 const CHILD_IDS = ["jordan", "alex"];
 const CHILD_NAMES: Record<string, string> = {

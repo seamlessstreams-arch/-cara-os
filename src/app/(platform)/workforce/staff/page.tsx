@@ -171,7 +171,7 @@ export default function StaffProfilesPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={STAFF_PROFILE_EXPORT_COLS} filename="staff-profiles" />
-          <PrintButton title="Staff Competency Profiles" subtitle="Oak House — Competency Profiles" targetId="staff-profiles-content" />
+          <PrintButton title="Staff Competency Profiles" subtitle="Chamberlain House — Competency Profiles" targetId="staff-profiles-content" />
           <SmartUploadButton variant="inline" label="Upload Staff Document" uploadContext="Workforce Intelligence — staff profile or HR document upload" />
           <Link href="/workforce">
             <button className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors">

@@ -3,7 +3,7 @@
 //
 // Family Contact Quality Intelligence
 //
-// GET  — Returns family contact quality metrics with Oak House demo data
+// GET  — Returns family contact quality metrics with Chamberlain House demo data
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffFamilyContactTraining,
 } from "@/lib/family-contact-quality";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CONTACTS: FamilyContact[] = [
   // Alex — face-to-face visit (very positive)

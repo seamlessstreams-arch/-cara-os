@@ -79,7 +79,7 @@ function run(
   });
 }
 
-// ── Oak House Dataset ───────────────────────────────────────────────────────
+// ── Chamberlain House Dataset ───────────────────────────────────────────────────────
 
 function oakHouseScreenings(): ExploitationScreeningInput[] {
   return [
@@ -167,9 +167,9 @@ describe("empty inputs", () => {
   });
 });
 
-// ── Oak House Integration ───────────────────────────────────────────────────
+// ── Chamberlain House Integration ───────────────────────────────────────────────────
 
-describe("Oak House integration dataset", () => {
+describe("Chamberlain House integration dataset", () => {
   const screenings = oakHouseScreenings();
   const localities = oakHouseLocalityRisks();
   const result = run(screenings, localities);
@@ -326,7 +326,7 @@ describe("Oak House integration dataset", () => {
     });
 
     it("does not generate a medium alert at exactly 80% full screening coverage", () => {
-      // Oak House: 12 out of 15 possible screenings = 80%, threshold is < 80%
+      // Chamberlain House: 12 out of 15 possible screenings = 80%, threshold is < 80%
       const medAlerts = result.alerts.filter((a) => a.severity === "medium" && a.message.includes("coverage"));
       expect(medAlerts).toHaveLength(0);
     });

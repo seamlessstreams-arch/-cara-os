@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Room Standards & Personalisation Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex 14, Jordan 13, Morgan 15),
+// Demo: Chamberlain House, 3 children (Alex 14, Jordan 13, Morgan 15),
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -86,7 +86,7 @@ const makeTraining = (overrides: Partial<StaffRoomTraining> = {}): StaffRoomTrai
   ...overrides,
 });
 
-// ── Oak House Demo Data ────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ────────────────────────────────────────────────────
 
 const OAK_HOUSE_ROOMS: RoomRecord[] = [
   makeRoom({
@@ -390,7 +390,7 @@ describe("evaluateRoomConditions", () => {
     expect(result.concerns.some((c) => c.includes("UNCRC Article 16"))).toBe(true);
   });
 
-  it("handles Oak House demo rooms", () => {
+  it("handles Chamberlain House demo rooms", () => {
     const result = evaluateRoomConditions(OAK_HOUSE_ROOMS);
     expect(result.totalRooms).toBe(3);
     expect(result.score).toBeGreaterThan(0);
@@ -514,7 +514,7 @@ describe("evaluatePersonalisation", () => {
     expect(result.concerns.some((c) => c.includes("Child-chosen decor"))).toBe(true);
   });
 
-  it("handles Oak House demo rooms", () => {
+  it("handles Chamberlain House demo rooms", () => {
     const result = evaluatePersonalisation(OAK_HOUSE_ROOMS);
     expect(result.totalRooms).toBe(3);
     expect(result.score).toBeGreaterThan(0);
@@ -637,7 +637,7 @@ describe("evaluateInspectionCompliance", () => {
     expect(result.repairsCompletedRate).toBe(0);
   });
 
-  it("handles Oak House demo inspections", () => {
+  it("handles Chamberlain House demo inspections", () => {
     const result = evaluateInspectionCompliance(OAK_HOUSE_INSPECTIONS);
     expect(result.totalInspections).toBe(6);
     expect(result.score).toBeGreaterThan(0);
@@ -847,7 +847,7 @@ describe("evaluateStaffRoomReadiness", () => {
     expect(result.concerns.some((c) => c.includes("Privacy awareness"))).toBe(true);
   });
 
-  it("handles Oak House demo training", () => {
+  it("handles Chamberlain House demo training", () => {
     const result = evaluateStaffRoomReadiness(OAK_HOUSE_TRAINING);
     expect(result.totalStaff).toBe(4);
     expect(result.score).toBeGreaterThan(0);
@@ -1001,7 +1001,7 @@ describe("buildChildRoomProfiles", () => {
     expect(result[0].roomScore).toBeLessThanOrEqual(10);
   });
 
-  it("handles Oak House profiles", () => {
+  it("handles Chamberlain House profiles", () => {
     const result = buildChildRoomProfiles(OAK_HOUSE_ROOMS, OAK_HOUSE_INSPECTIONS);
     expect(result.length).toBe(3);
     result.forEach((p) => {

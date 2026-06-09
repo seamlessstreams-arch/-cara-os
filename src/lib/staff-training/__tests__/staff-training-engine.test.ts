@@ -27,7 +27,7 @@ const PERIOD_START = "2025-01-01";
 const PERIOD_END = "2025-12-31";
 const REFERENCE_DATE = "2025-06-15";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (RSW), Darren Laville (RM/RI)
 // Children: Alex (14), Jordan (13), Morgan (15)
 

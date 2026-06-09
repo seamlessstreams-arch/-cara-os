@@ -337,7 +337,7 @@ export default function TrainingMatrixPage() {
             data={matrixExportData}
             label="Export"
           />
-          <PrintButton title="Training Compliance Matrix" subtitle="Oak House Workforce" targetId="training-matrix-content" />
+          <PrintButton title="Training Compliance Matrix" subtitle="Chamberlain House Workforce" targetId="training-matrix-content" />
           <SmartUploadButton variant="inline" label="Upload Certificate" uploadContext="Workforce Intelligence — training certificate or compliance evidence upload" />
           <Link href="/workforce/qualifications">
             <button className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors">

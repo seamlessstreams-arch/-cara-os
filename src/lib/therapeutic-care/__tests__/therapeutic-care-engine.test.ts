@@ -1151,10 +1151,10 @@ describe("Actions generation", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Oak House Demo Data
+// Chamberlain House Demo Data
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Oak House demo data scenario", () => {
+describe("Chamberlain House demo data scenario", () => {
   // Alex: weekly CBT sessions (mostly positive)
   const alexSessions: TherapySession[] = [
     makeSession({ id: "s-alex-01", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", sessionDate: "2026-03-01", outcome: "positive" }),
@@ -1254,7 +1254,7 @@ describe("Oak House demo data scenario", () => {
     expect(result.therapyPlanning.coProducedRate).toBe(100);
   });
 
-  it("calculates goals achieved rate for Oak House", () => {
+  it("calculates goals achieved rate for Chamberlain House", () => {
     const result = generateTherapeuticCareIntelligence(
       allSessions, referrals, plans, environments, "oak-house", PERIOD_START, PERIOD_END,
     );
@@ -1277,7 +1277,7 @@ describe("Oak House demo data scenario", () => {
     expect(result.therapeuticEnvironment.outdoorTherapeuticSpace).toBe(false);
   });
 
-  it("generates appropriate strengths for Oak House", () => {
+  it("generates appropriate strengths for Chamberlain House", () => {
     const result = generateTherapeuticCareIntelligence(
       allSessions, referrals, plans, environments, "oak-house", PERIOD_START, PERIOD_END,
     );
@@ -1287,14 +1287,14 @@ describe("Oak House demo data scenario", () => {
     expect(result.strengths.some((s) => s.includes("consent"))).toBe(true);
   });
 
-  it("generates regulatory links for Oak House", () => {
+  it("generates regulatory links for Chamberlain House", () => {
     const result = generateTherapeuticCareIntelligence(
       allSessions, referrals, plans, environments, "oak-house", PERIOD_START, PERIOD_END,
     );
     expect(result.regulatoryLinks.length).toBe(8);
   });
 
-  it("achieves good or outstanding rating for Oak House", () => {
+  it("achieves good or outstanding rating for Chamberlain House", () => {
     const result = generateTherapeuticCareIntelligence(
       allSessions, referrals, plans, environments, "oak-house", PERIOD_START, PERIOD_END,
     );

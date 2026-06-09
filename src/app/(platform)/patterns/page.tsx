@@ -460,7 +460,7 @@ export default function PatternAlertsPage() {
             Refresh
           </Button>
           <ExportButton data={filtered} columns={PATTERN_EXPORT_COLS} filename="pattern-alerts" />
-          <PrintButton title="Pattern Alerts" subtitle="Oak House — ARIA Pattern Detection" />
+          <PrintButton title="Pattern Alerts" subtitle="Chamberlain House — ARIA Pattern Detection" />
           <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

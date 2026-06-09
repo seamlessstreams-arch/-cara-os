@@ -163,7 +163,7 @@ function makeSupport(
   };
 }
 
-// Full Oak House demo data for integration tests
+// Full Chamberlain House demo data for integration tests
 function makeOakHousePathwayPlans(): PathwayPlan[] {
   return [
     {
@@ -229,7 +229,7 @@ function makeOakHouseAccommodationPlans(): AccommodationPlan[] {
       stayingCloseAvailable: true,
       transitionPlanInPlace: false,
       trialStayCompleted: false,
-      localAreaPreference: "Within 5 miles of Oak House",
+      localAreaPreference: "Within 5 miles of Chamberlain House",
     },
   ];
 }
@@ -1360,10 +1360,10 @@ describe("generateLeavingCareIntelligence", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 10. Oak House Integration Tests
+// 10. Chamberlain House Integration Tests
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Oak House demo scenario", () => {
+describe("Chamberlain House demo scenario", () => {
   const children = makeOakHouseChildren();
   const plans = makeOakHousePathwayPlans();
   const assessments = makeOakHouseAssessments();
@@ -1502,7 +1502,7 @@ describe("Oak House demo scenario", () => {
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
-  it("generates meaningful strengths for Oak House", () => {
+  it("generates meaningful strengths for Chamberlain House", () => {
     const result = generateLeavingCareIntelligence(
       children, plans, assessments, accomPlans, support,
       "oak-house", "2026-01-01", "2026-05-18",

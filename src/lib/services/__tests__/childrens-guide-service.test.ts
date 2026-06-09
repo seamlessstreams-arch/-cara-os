@@ -61,7 +61,7 @@ function makeGuide(overrides: Partial<ChildrensGuide> = {}): ChildrensGuide {
     id: "guide-1",
     home_id: "home-1",
     version: "1.0",
-    title: "Welcome to Oak House",
+    title: "Welcome to Chamberlain House",
     effective_date: daysAgo(30),
     review_date: daysFromNow(335),
     last_reviewed_date: daysAgo(30),

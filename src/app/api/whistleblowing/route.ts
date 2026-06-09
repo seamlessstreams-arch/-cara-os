@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Whistleblowing & Professional Courage API Route
 //
-// GET  → returns Oak House demo whistleblowing intelligence
+// GET  → returns Chamberlain House demo whistleblowing intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -15,7 +15,7 @@ import type {
   CultureIndicator,
 } from "@/lib/whistleblowing/whistleblowing-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const concerns: WhistleblowingConcern[] = [

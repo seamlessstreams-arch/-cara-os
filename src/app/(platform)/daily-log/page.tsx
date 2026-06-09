@@ -573,7 +573,7 @@ export default function DailyLogPage() {
       }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Daily Log" subtitle="Oak House — Daily Observations" targetId="daily-log-content" />
+          <PrintButton title="Daily Log" subtitle="Chamberlain House — Daily Observations" targetId="daily-log-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Daily Log — supporting document upload" />
           <Button size="sm" onClick={() => setShowForm((v) => !v)}>
             <Plus className="h-3.5 w-3.5 mr-1" />

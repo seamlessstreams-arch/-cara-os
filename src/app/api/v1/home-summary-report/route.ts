@@ -112,7 +112,7 @@ export async function GET(request: Request) {
     const youngPeople = (store.youngPeople ?? []) as any[];
     const total_children = youngPeople.filter((c) => c.status === "current").length || youngPeople.length;
     const total_staff = ((store.staff ?? []) as any[]).length;
-    const home_name = (store.home as any)?.name ?? "Oak House";
+    const home_name = (store.home as any)?.name ?? "Chamberlain House";
 
     const results = await Promise.allSettled(SECTION_ENGINES.map(([route, section]) => fetchSignal(baseUrl, route, section)));
     const signals = results

@@ -3,7 +3,7 @@
 //
 // Recreational & Leisure Access Intelligence
 //
-// GET  — Returns recreational leisure access metrics with demo data (Oak House)
+// GET  — Returns recreational leisure access metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffLeisureTraining,
 } from "@/lib/recreational-leisure-access";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   activities: LeisureActivity[];

@@ -3,7 +3,7 @@
 //
 // Room Standards & Personalisation Intelligence
 //
-// GET  — Returns room standards metrics with demo data (Oak House)
+// GET  — Returns room standards metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -23,7 +23,7 @@ import type {
   StaffRoomTraining,
 } from "@/lib/room-standards-personalisation";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   rooms: RoomRecord[];

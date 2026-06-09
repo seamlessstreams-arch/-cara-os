@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Nutrition & Hydration Monitoring Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex, Jordan, Morgan),
+// Demo: Chamberlain House, 3 children (Alex, Jordan, Morgan),
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -81,7 +81,7 @@ const makeTraining = (overrides: Partial<StaffNutritionTraining> = {}): StaffNut
   ...overrides,
 });
 
-// Oak House demo data
+// Chamberlain House demo data
 const OAK_HOUSE_MEALS: MealRecord[] = [
   makeMeal({ id: "meal-001", childId: "child-alex", childName: "Alex", mealDate: "2026-03-10", mealType: "breakfast", nutritionQuality: "excellent", portionConsumed: "full" }),
   makeMeal({ id: "meal-002", childId: "child-alex", childName: "Alex", mealDate: "2026-03-10", mealType: "lunch", nutritionQuality: "good", portionConsumed: "most" }),
@@ -422,7 +422,7 @@ describe("evaluateMealQuality", () => {
     expect(result.concerns.some((s) => s.includes("Dietary requirements met in only"))).toBe(true);
   });
 
-  it("handles Oak House demo meals", () => {
+  it("handles Chamberlain House demo meals", () => {
     const result = evaluateMealQuality(OAK_HOUSE_MEALS);
     expect(result.totalMeals).toBe(9);
     expect(result.score).toBeGreaterThan(0);
@@ -567,7 +567,7 @@ describe("evaluateHydrationStandards", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("handles Oak House demo hydration", () => {
+  it("handles Chamberlain House demo hydration", () => {
     const result = evaluateHydrationStandards(OAK_HOUSE_HYDRATION);
     expect(result.totalRecords).toBe(3);
     expect(result.score).toBeGreaterThan(0);
@@ -726,7 +726,7 @@ describe("evaluateNutritionPolicy", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("handles Oak House demo policy", () => {
+  it("handles Chamberlain House demo policy", () => {
     const result = evaluateNutritionPolicy(OAK_HOUSE_POLICY);
     expect(result.score).toBe(25);
     expect(result.hasPolicy).toBe(true);
@@ -861,7 +861,7 @@ describe("evaluateStaffNutritionReadiness", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("handles Oak House demo training", () => {
+  it("handles Chamberlain House demo training", () => {
     const result = evaluateStaffNutritionReadiness(OAK_HOUSE_TRAINING);
     expect(result.totalStaff).toBe(4);
     expect(result.score).toBeGreaterThan(0);
@@ -972,7 +972,7 @@ describe("buildChildNutritionProfiles", () => {
     expect(goodResult[0].overallScore).toBeGreaterThan(poorResult[0].overallScore);
   });
 
-  it("handles Oak House demo data", () => {
+  it("handles Chamberlain House demo data", () => {
     const result = buildChildNutritionProfiles(OAK_HOUSE_MEALS, OAK_HOUSE_HYDRATION);
     expect(result).toHaveLength(3);
     const names = result.map((p) => p.childName).sort();
@@ -1202,7 +1202,7 @@ describe("generateNutritionHydrationMonitoringIntelligence", () => {
     expect(result.assessedAt.length).toBeGreaterThan(0);
   });
 
-  it("handles Oak House demo data end-to-end", () => {
+  it("handles Chamberlain House demo data end-to-end", () => {
     const result = generateNutritionHydrationMonitoringIntelligence(
       OAK_HOUSE_MEALS,
       OAK_HOUSE_HYDRATION,

@@ -3,7 +3,7 @@
 //
 // Allergen & Dietary Management Intelligence
 //
-// GET  — Returns allergen/dietary assessment with Oak House demo data
+// GET  — Returns allergen/dietary assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -25,7 +25,7 @@ import type {
   StaffAllergenTraining,
 } from "@/lib/allergen-dietary-management";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PROFILES: ChildAllergenProfile[] = [
   {

@@ -3,7 +3,7 @@
 //
 // Notification Timeliness Intelligence
 //
-// GET  — Returns notification timeliness assessment with realistic Oak House demo data
+// GET  — Returns notification timeliness assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   NotificationAudit,
 } from "@/lib/notification-timeliness";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function n(overrides: Partial<NotificationRecord> = {}): NotificationRecord {
   return {
@@ -160,7 +160,7 @@ const DEMO_EVENTS: NotifiableEvent[] = [
 
 const DEMO_POLICY: NotificationPolicy = {
   homeId: "oak-house",
-  policyDocumentTitle: "Oak House Notification & Reporting Policy v3.1",
+  policyDocumentTitle: "Chamberlain House Notification & Reporting Policy v3.1",
   lastReviewedAt: "2026-03-01",
   nextReviewDue: "2026-09-01",
   approvedBy: "Darren Laville",

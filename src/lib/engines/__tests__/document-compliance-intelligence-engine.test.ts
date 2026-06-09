@@ -2,7 +2,7 @@
 // CORNERSTONE — DOCUMENT COMPLIANCE INTELLIGENCE ENGINE · TEST SUITE
 //
 // 55+ tests covering overview, document profiles, category analysis, alerts,
-// ARIA insights, and Oak House integration.
+// ARIA insights, and Chamberlain House integration.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
@@ -488,10 +488,10 @@ describe("ARIA insights", () => {
   });
 });
 
-// ── Oak House Integration ────────────────────────────────────────────────
+// ── Chamberlain House Integration ────────────────────────────────────────────────
 
-describe("Oak House integration scenario", () => {
-  it("processes a realistic Oak House document set correctly", () => {
+describe("Chamberlain House integration scenario", () => {
+  it("processes a realistic Chamberlain House document set correctly", () => {
     const oakStaff = [
       makeStaff("staff_darren", "Darren Laville"),
       makeStaff("staff_ryan", "Ryan Thompson"),
@@ -516,7 +516,7 @@ describe("Oak House integration scenario", () => {
         tags: ["safeguarding", "mandatory"],
       }),
       makeDoc({
-        id: "doc_3", title: "Oak House — Child Protection Policy",
+        id: "doc_3", title: "Chamberlain House — Child Protection Policy",
         category: "policy", version: 4,
         requires_read_sign: true, expiry_date: "2026-08-23", // ~90d
         tags: ["policy", "safeguarding", "mandatory"],

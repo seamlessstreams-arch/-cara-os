@@ -537,7 +537,7 @@ describe("evaluateTrendAnalysis", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("generateCriticalIncidentReviewIntelligence", () => {
-  // ── Oak House Demo Scenario ──────────────────────────────────────────────
+  // ── Chamberlain House Demo Scenario ──────────────────────────────────────────────
 
   const demoIncidents: CriticalIncident[] = [
     // Alex — restraint, well-managed

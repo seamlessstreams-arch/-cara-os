@@ -111,7 +111,7 @@ function makeLegalCompliance(
   };
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 // Morgan (15) — court-authorised continuous supervision due to self-harm risk
 // Alex (14) — technology monitoring (lower-level, LA authorised)
@@ -892,7 +892,7 @@ describe("Deprivation of Liberty Intelligence Engine", () => {
   // ── Full Integration ───────────────────────────────────────────────────
 
   describe("generateDeprivationOfLibertyIntelligence", () => {
-    it("produces valid output for Oak House demo data", () => {
+    it("produces valid output for Chamberlain House demo data", () => {
       const result = generateDeprivationOfLibertyIntelligence(
         DEMO_RESTRICTIONS,
         DEMO_REVIEWS,

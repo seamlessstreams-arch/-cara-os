@@ -2,7 +2,7 @@
 // CORNERSTONE — INTELLIGENCE LAYER IN-MEMORY STORE
 //
 // Mutable in-memory collections for all intelligence entities.
-// Seeded with realistic Oak House demo data.
+// Seeded with realistic Chamberlain House demo data.
 //
 // TO CONNECT SUPABASE: replace each collection's read/write methods with
 // Supabase queries. The API route signatures stay identical.
@@ -123,7 +123,7 @@ intelligenceStore.childExperience = [
     overall_score: 65,
     score_delta: null,
     narrative:
-      "Casey's first full week at Oak House. She settled cautiously — engaging with staff on her own terms and showing early signs of trust with her key worker. Education attendance was 3 out of 5 days, with one refusal linked to anxiety about peers. Health is stable. No major regulation difficulties, though she required two co-regulation episodes. Overall a cautious but positive start.",
+      "Casey's first full week at Chamberlain House. She settled cautiously — engaging with staff on her own terms and showing early signs of trust with her key worker. Education attendance was 3 out of 5 days, with one refusal linked to anxiety about peers. Health is stable. No major regulation difficulties, though she required two co-regulation episodes. Overall a cautious but positive start.",
     evidence_refs: [
       { type: "daily_log", id: "log_jas_001", date: "2026-04-01", excerpt: "Joined staff in the kitchen unprompted to help with dinner", significance: "belonging indicator" },
       { type: "incident", id: "inc_jas_001", date: "2026-04-03", excerpt: "Distressed by phone call from mother — co-regulation successful", significance: "regulation capacity noted" },
@@ -240,7 +240,7 @@ intelligenceStore.childExperience = [
     narrative:
       "Jordan continues to thrive in placement. Full education attendance with a commendation from her teacher for her GCSE coursework. She is engaged with her key worker and has self-reported feeling settled and safe. One moment of anxiety around an upcoming LAC review — supported well by her key worker through preparation conversations. Jordan is a strong advocate for herself and her voice is consistently heard.",
     evidence_refs: [
-      { type: "voice_record", id: "vrc_len_001", date: "2026-04-08", excerpt: "Said she wants to stay at Oak House until she moves into supported living at 18", significance: "stability and future planning" },
+      { type: "voice_record", id: "vrc_len_001", date: "2026-04-08", excerpt: "Said she wants to stay at Chamberlain House until she moves into supported living at 18", significance: "stability and future planning" },
       { type: "daily_log", id: "log_len_008", date: "2026-04-10", excerpt: "Received GCSE commendation letter from school — shared it with the team at dinner", significance: "achievement and belonging" },
     ],
     computed_by: "aria",
@@ -311,7 +311,7 @@ intelligenceStore.patternAlerts = [
     alert_type: "staffing_continuity_risk",
     title: "Home-wide staffing continuity gap — peak evenings",
     description:
-      "ARIA has identified that Oak House has had 6 agency staff shifts in the past 14 days, predominantly evening shifts. Three of the four dysregulation episodes in this period occurred during agency-covered shifts. Unfamiliar staff during vulnerable evening hours is a consistent risk factor for the current resident group.",
+      "ARIA has identified that Chamberlain House has had 6 agency staff shifts in the past 14 days, predominantly evening shifts. Three of the four dysregulation episodes in this period occurred during agency-covered shifts. Unfamiliar staff during vulnerable evening hours is a consistent risk factor for the current resident group.",
     severity: "high",
     status: "active",
     evidence_refs: [
@@ -522,7 +522,7 @@ intelligenceStore.relationalRecords = [
     record_type: "preferred_adult",
     title: "Ryan — key worker and primary trusted adult",
     description:
-      "Jordan has a strong, established relationship with Ryan. She has explicitly named him as the adult she feels most comfortable with at Oak House. This relationship should be protected and prioritised, including in rota planning.",
+      "Jordan has a strong, established relationship with Ryan. She has explicitly named him as the adult she feels most comfortable with at Chamberlain House. This relationship should be protected and prioritised, including in rota planning.",
     staff_id: "staff_ryan",
     is_positive: true,
     confidence: "high",
@@ -770,7 +770,7 @@ intelligenceStore.homeClimate = [
     overall_climate_score: 77,
     climate_delta: null,
     narrative:
-      "A broadly stable week at Oak House. Staffing consistency is the principal risk factor — two agency shifts in the week. Incident frequency is within expected range for a home with a newly placed young person. No complaints. Training compliance remains strong.",
+      "A broadly stable week at Chamberlain House. Staffing consistency is the principal risk factor — two agency shifts in the week. Incident frequency is within expected range for a home with a newly placed young person. No complaints. Training compliance remains strong.",
     hotspot_times: ["Tuesday 17:00–19:00", "Thursday 21:00–22:30"],
     risk_flags: [],
     computed_by: "aria",
@@ -1006,7 +1006,7 @@ intelligenceStore.actionOutcomes = [
     title: "Confirm placement stability at LAC review",
     what_was_agreed: "Advocate at the LAC review for Jordan's placement to be confirmed stable through to age 18 as per her explicit wishes.",
     why_it_matters:
-      "Jordan has experienced multiple placement breakdowns. Her voice is clear: she wants to stay at Oak House until 18. Placement stability is a fundamental protective factor for her wellbeing, education, and future.",
+      "Jordan has experienced multiple placement breakdowns. Her voice is clear: she wants to stay at Chamberlain House until 18. Placement stability is a fundamental protective factor for her wellbeing, education, and future.",
     owner_id: "staff_ryan",
     due_date: "2026-04-20",
     completed_at: "2026-04-20T15:00:00Z",
@@ -1016,7 +1016,7 @@ intelligenceStore.actionOutcomes = [
     effectiveness_notes: "Jordan's direct participation in the review and hearing the commitment made was powerful. She appeared much less anxious in the days following the review.",
     status: "completed",
     linked_evidence: [
-      { type: "voice_record", id: "vrc_len_001", description: "Jordan's expressed wish to remain at Oak House until 18" },
+      { type: "voice_record", id: "vrc_len_001", description: "Jordan's expressed wish to remain at Chamberlain House until 18" },
     ],
     should_continue: false,
     created_by: "staff_ryan",
@@ -2004,7 +2004,7 @@ intelligenceStore.carePlans = [
         id: "cpg_012",
         domain: "education",
         title: "Reintegrate into mainstream school or appropriate provision",
-        description: "Casey is currently not in any school placement following move to Oak House. She was excluded from her previous school. A new placement at Allestree Woodlands has been identified but not yet started.",
+        description: "Casey is currently not in any school placement following move to Chamberlain House. She was excluded from her previous school. A new placement at Allestree Woodlands has been identified but not yet started.",
         desired_outcome: "Casey starts at Allestree Woodlands by May 2026. Casey has a positive transition with a named mentor. PEP meeting held within 20 days of joining.",
         actions: [
           "Confirm start date at Allestree Woodlands with LA",
@@ -2480,7 +2480,7 @@ intelligenceStore.contactArrangements = [
     frequency: "Monthly",
     frequency_detail: "First Saturday of each month, 13:00–16:00",
     supervision_level: "supervised",
-    location: "Oak House — family room",
+    location: "Chamberlain House — family room",
     court_ordered: false,
     court_order_reference: null,
     la_requirement: true,
@@ -2689,7 +2689,7 @@ intelligenceStore.contactLogs = [
     start_time: "13:00",
     end_time: "16:00",
     duration_minutes: 180,
-    location: "Oak House — family room",
+    location: "Chamberlain House — family room",
     supervision_level: "supervised",
     supervised_by: "staff_ryan",
     outcome: "mixed",
@@ -2726,7 +2726,7 @@ intelligenceStore.contactLogs = [
     start_time: "13:00",
     end_time: "16:00",
     duration_minutes: 180,
-    location: "Oak House — family room",
+    location: "Chamberlain House — family room",
     supervision_level: "supervised",
     supervised_by: "staff_jasmine",
     outcome: "difficult",
@@ -2763,7 +2763,7 @@ intelligenceStore.contactLogs = [
     start_time: null,
     end_time: null,
     duration_minutes: null,
-    location: "Oak House — family room",
+    location: "Chamberlain House — family room",
     supervision_level: "supervised",
     supervised_by: null,
     outcome: "cancelled_by_yp",

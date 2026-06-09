@@ -103,7 +103,7 @@ function makeTraining(
   };
 }
 
-// -- Oak House Demo Data ------------------------------------------------------
+// -- Chamberlain House Demo Data ------------------------------------------------------
 
 const DEMO_ASSESSMENTS: ReligiousSpiritualAssessment[] = [
   // Alex — Christian (Church of England)
@@ -1172,7 +1172,7 @@ describe("generateReligiousSpiritualNeedsIntelligence", () => {
     expect(result.regulatoryLinks.length).toBeGreaterThan(0);
   });
 
-  it("generates correct intelligence for Oak House demo data", () => {
+  it("generates correct intelligence for Chamberlain House demo data", () => {
     const result = generateReligiousSpiritualNeedsIntelligence(
       DEMO_ASSESSMENTS, DEMO_RECORDS, DEMO_POLICIES, DEMO_TRAINING,
       "oak-house", PERIOD_START, PERIOD_END,

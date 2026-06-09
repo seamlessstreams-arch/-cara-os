@@ -705,7 +705,7 @@ export async function GET() {
     children_attention: childrenAttention,
     total_children: store.youngPeople.length,
     total_staff: store.staff.filter((s) => s.is_active).length,
-    home_name: store.home?.name ?? "Oak House",
+    home_name: store.home?.name ?? "Chamberlain House",
     today,
   });
 

@@ -754,9 +754,9 @@ describe("computeWorkforceIntelligence — ARIA insights", () => {
   });
 });
 
-// ── Full Integration Test — Oak House ───────────────────────────────────────
+// ── Full Integration Test — Chamberlain House ───────────────────────────────────────
 
-describe("computeWorkforceIntelligence — Oak House integration", () => {
+describe("computeWorkforceIntelligence — Chamberlain House integration", () => {
   const today = "2026-05-23";
 
   const oakHouseInput: WorkforceEngineInput = {
@@ -809,7 +809,7 @@ describe("computeWorkforceIntelligence — Oak House integration", () => {
     today,
   };
 
-  it("produces correct profile for Oak House", () => {
+  it("produces correct profile for Chamberlain House", () => {
     const result = computeWorkforceIntelligence(oakHouseInput);
 
     expect(result.profile.total_staff).toBe(9);

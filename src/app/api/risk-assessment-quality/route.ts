@@ -3,7 +3,7 @@
 //
 // Risk Assessment Quality Intelligence
 //
-// GET  — Returns risk assessment quality metrics with demo data (Oak House)
+// GET  — Returns risk assessment quality metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffRiskAssessmentTraining,
 } from "@/lib/risk-assessment-quality";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   assessments: RiskAssessment[];

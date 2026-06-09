@@ -3,7 +3,7 @@
 //
 // Transport Safety Compliance Intelligence
 //
-// GET  — Returns transport safety metrics with Oak House demo data
+// GET  — Returns transport safety metrics with Chamberlain House demo data
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 

@@ -210,7 +210,7 @@ export default function StaffSaferCaringPage() {
             Plans are reviewed at least annually, or sooner if: a new child is admitted; a concern or allegation arises; the staff member&apos;s role changes; or following a significant incident. All staff must sign their plan and have it witnessed by a senior colleague.
           </p>
           <p>
-            Oak House operates a whistleblowing culture where any staff member can raise concerns about the conduct of a colleague without fear of reprisal. Concerns about professional boundaries, physical contact, or inappropriate relationships must be reported to the Registered Manager or, if the concern involves the RM, directly to the Responsible Individual or Ofsted.
+            Chamberlain House operates a whistleblowing culture where any staff member can raise concerns about the conduct of a colleague without fear of reprisal. Concerns about professional boundaries, physical contact, or inappropriate relationships must be reported to the Registered Manager or, if the concern involves the RM, directly to the Responsible Individual or Ofsted.
           </p>
         </div>
       </div>

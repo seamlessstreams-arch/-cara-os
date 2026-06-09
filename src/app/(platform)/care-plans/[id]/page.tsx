@@ -428,7 +428,7 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
       ariaContext={{ pageTitle: `Care Plan — ${ypName}`, sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Care Plan" subtitle="Oak House — Care Plan Detail" targetId="care-plan-detail-content" />
+          <PrintButton title="Care Plan" subtitle="Chamberlain House — Care Plan Detail" targetId="care-plan-detail-content" />
           <Link href="/care-plans">
             <Button variant="outline" size="sm" className="gap-1.5">
               <ArrowLeft className="h-3.5 w-3.5" />Back

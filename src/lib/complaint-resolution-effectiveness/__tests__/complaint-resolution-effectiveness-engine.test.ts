@@ -1,7 +1,7 @@
 // ==============================================================================
 // TESTS -- Complaint Resolution Effectiveness Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex, Jordan, Morgan),
+// Demo: Chamberlain House, 3 children (Alex, Jordan, Morgan),
 // Staff: Sarah Johnson (Senior RSW), Tom Richards (RSW),
 //        Lisa Williams (Senior RSW), Darren Laville (RM/DSL)
 // ==============================================================================
@@ -829,7 +829,7 @@ describe("generateComplaintResolutionEffectivenessIntelligence", () => {
     expect(result.actions.length).toBeGreaterThan(0);
   });
 
-  it("generates full Oak House demo scenario", () => {
+  it("generates full Chamberlain House demo scenario", () => {
     const records: ComplaintRecord[] = [
       makeRecord({ childId: "child-alex", childName: "Alex", complaintSource: "child", resolutionOutcome: "fully_resolved" }),
       makeRecord({ childId: "child-alex", childName: "Alex", complaintSource: "parent_carer", resolutionOutcome: "fully_resolved" }),

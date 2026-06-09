@@ -3,7 +3,7 @@
 //
 // Visitor Management Safety Intelligence
 //
-// GET  — Returns visitor management safety metrics with Oak House demo data
+// GET  — Returns visitor management safety metrics with Chamberlain House demo data
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -24,7 +24,7 @@ import type {
   StaffVisitorTraining,
 } from "@/lib/visitor-management-safety";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: VisitorRecord[];

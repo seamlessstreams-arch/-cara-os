@@ -24,7 +24,7 @@ function sig(p: Partial<ReportSignalInput>): ReportSignalInput {
 function base(signals: ReportSignalInput[]) {
   return computeHomeSummaryReport({
     period_label: "Week of 2 Jun 2026",
-    home_name: "Oak House",
+    home_name: "Chamberlain House",
     total_children: 3,
     total_staff: 12,
     signals,
@@ -38,7 +38,7 @@ describe("computeHomeSummaryReport", () => {
   it("always returns the six canonical sections in order", () => {
     const r = base([]);
     expect(r.sections.map((s) => s.key)).toEqual(REPORT_SECTIONS.map((s) => s.key));
-    expect(r.title).toBe("Home Summary Report — Oak House");
+    expect(r.title).toBe("Home Summary Report — Chamberlain House");
     expect(r.generated_for).toBe(TODAY);
   });
 

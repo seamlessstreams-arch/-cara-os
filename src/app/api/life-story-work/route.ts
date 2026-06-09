@@ -3,7 +3,7 @@
 //
 // Life Story Work Intelligence
 //
-// GET  — Returns life story work assessment with Oak House demo data
+// GET  — Returns life story work assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -22,7 +22,7 @@ import type {
   StaffLifeStoryTraining,
 } from "@/lib/life-story-work";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_SESSIONS: LifeStorySession[] = [
   { id: "ls-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-01-15", sessionType: "life_story_book", facilitator: "Sarah Johnson", durationMinutes: 45, engagementLevel: "highly_engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },

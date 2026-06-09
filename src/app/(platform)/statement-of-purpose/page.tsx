@@ -33,9 +33,9 @@ const SECTIONS: SoPSection[] = [
     id: "range", title: "Range of Children", icon: Users, colour: "text-blue-600",
     lastUpdated: "2026-01-15", requiresReview: false,
     content: [
-      "Oak House provides care for up to 4 children aged 10-17 years, of any gender.",
+      "Chamberlain House provides care for up to 4 children aged 10-17 years, of any gender.",
       "The home specialises in caring for children who have experienced trauma, attachment difficulties, and adverse childhood experiences.",
-      "Children placed at Oak House may have experienced previous placement breakdowns and require a therapeutic, stable environment.",
+      "Children placed at Chamberlain House may have experienced previous placement breakdowns and require a therapeutic, stable environment.",
       "The home does not accept young people who present an active risk of sexual harm to others, or whose primary needs are related to disability requiring specialist physical adaptations.",
     ],
   },
@@ -43,7 +43,7 @@ const SECTIONS: SoPSection[] = [
     id: "ethos", title: "Ethos & Approach", icon: Heart, colour: "text-pink-600",
     lastUpdated: "2026-01-15", requiresReview: false,
     content: [
-      "Oak House operates within a therapeutic care framework, informed by attachment theory and trauma-informed practice.",
+      "Chamberlain House operates within a therapeutic care framework, informed by attachment theory and trauma-informed practice.",
       "We believe every child deserves to feel safe, valued, and heard. Our approach centres on building trusting relationships as the foundation for healing and growth.",
       "We use the PACE model (Playfulness, Acceptance, Curiosity, Empathy) as our primary relational approach.",
       "We work restoratively — focusing on repair rather than punishment, and understanding behaviour as communication.",
@@ -66,7 +66,7 @@ const SECTIONS: SoPSection[] = [
     id: "education", title: "Education", icon: GraduationCap, colour: "text-purple-600",
     lastUpdated: "2026-01-15", requiresReview: true,
     content: [
-      "Oak House is committed to promoting educational achievement for all children in our care.",
+      "Chamberlain House is committed to promoting educational achievement for all children in our care.",
       "Every child has a Personal Education Plan (PEP) that is reviewed termly.",
       "We work in close partnership with schools, colleges, and alternative provision to ensure continuity of education.",
       "Staff support homework, reading, and learning through a positive approach to education within the home.",
@@ -90,7 +90,7 @@ const SECTIONS: SoPSection[] = [
     id: "premises", title: "Premises & Location", icon: Home, colour: "text-amber-600",
     lastUpdated: "2026-01-15", requiresReview: false,
     content: [
-      "Oak House is a 4-bedroom detached property located in a residential area with good transport links.",
+      "Chamberlain House is a 4-bedroom detached property located in a residential area with good transport links.",
       "Each child has their own bedroom which they are encouraged to personalise.",
       "Communal areas include a lounge, dining room, kitchen, and garden.",
       "The property meets all health and safety requirements and is maintained to a high standard.",
@@ -139,7 +139,7 @@ export default function StatementOfPurposePage() {
       ariaContext={{ pageTitle: "Statement of Purpose", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Statement of Purpose — Oak House" />
+          <PrintButton title="Statement of Purpose — Chamberlain House" />
           <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
@@ -150,7 +150,7 @@ export default function StatementOfPurposePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground text-xs">Home Name</p>
-              <p className="font-bold text-lg">Oak House</p>
+              <p className="font-bold text-lg">Chamberlain House</p>
             </div>
             <div>
               <p className="text-muted-foreground text-xs">Registered Manager</p>

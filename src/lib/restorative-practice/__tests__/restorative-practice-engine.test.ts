@@ -25,7 +25,7 @@ import type {
 const PERIOD_START = "2025-01-01";
 const PERIOD_END = "2025-06-30";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Children: Alex (14), Jordan (13), Morgan (15)
 // Staff facilitators: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 

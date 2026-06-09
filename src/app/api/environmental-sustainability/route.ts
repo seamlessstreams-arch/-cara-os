@@ -3,7 +3,7 @@
 //
 // Environmental Sustainability Intelligence
 //
-// GET  — Returns environmental sustainability assessment with Oak House demo data
+// GET  — Returns environmental sustainability assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffSustainabilityTraining,
 } from "@/lib/environmental-sustainability";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 // Alex (14) — environmentally enthusiastic, high participation, child-initiated
 // Jordan (13) — more reluctant, limited engagement, needs encouragement

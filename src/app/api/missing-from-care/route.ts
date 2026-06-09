@@ -3,7 +3,7 @@
 //
 // Missing From Care Intelligence (4-Evaluator Pattern)
 //
-// GET — Returns missing from care metrics with Oak House demo data
+// GET — Returns missing from care metrics with Chamberlain House demo data
 //       12 records across Alex/Jordan/Morgan, all 8 categories.
 //       Returns: { data: { ...result, meta: { generatedAt, engine, version } } }
 // ══════════════════════════════════════════════════════════════════════════════
@@ -18,7 +18,7 @@ import type {
   StaffMissingFromCareTraining,
 } from "@/lib/missing-from-care";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: MissingFromCareRecord[];

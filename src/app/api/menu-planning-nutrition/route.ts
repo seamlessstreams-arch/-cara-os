@@ -3,7 +3,7 @@
 //
 // Menu Planning & Nutrition Intelligence
 //
-// GET  — Returns menu planning assessment with Oak House demo data
+// GET  — Returns menu planning assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -24,7 +24,7 @@ import type {
   NutritionAudit,
 } from "@/lib/menu-planning-nutrition";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
 const CHILD_NAMES: Record<string, string> = {

@@ -624,7 +624,7 @@ describe("buildDomainSummaries", () => {
 describe("generateHomeIntelligenceSummary", () => {
   const baseInput = {
     homeId: "home-oak-house",
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     periodStart: "2025-01-01",
     periodEnd: "2025-12-31",
   };
@@ -636,7 +636,7 @@ describe("generateHomeIntelligenceSummary", () => {
     });
 
     expect(result.homeId).toBe("home-oak-house");
-    expect(result.homeName).toBe("Oak House");
+    expect(result.homeName).toBe("Chamberlain House");
     expect(result.periodStart).toBe("2025-01-01");
     expect(result.periodEnd).toBe("2025-12-31");
     expect(result.overallScore).toBeGreaterThan(0);

@@ -109,7 +109,7 @@ function makeExclusion(overrides: Partial<ExclusionRecord> = {}): ExclusionRecor
   };
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 // Alex: mainstream school, 95% attendance, good PEP, expected progress
 function makeAlexAttendance(): AttendanceRecord[] {
@@ -1061,7 +1061,7 @@ describe("Education Achievement Intelligence Engine", () => {
   // ── Full Integration ──────────────────────────────────────────────────
 
   describe("generateEducationAchievementIntelligence", () => {
-    it("produces valid output for Oak House demo", () => {
+    it("produces valid output for Chamberlain House demo", () => {
       const result = generateEducationAchievementIntelligence(
         DEMO_ATTENDANCE, DEMO_PEPS, DEMO_OUTCOMES, DEMO_STABILITY, DEMO_EXCLUSIONS,
         "oak-house", PERIOD_START, PERIOD_END,

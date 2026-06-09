@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Anti-Bullying Effectiveness Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex 14, Jordan 13, Morgan 15),
+// Demo: Chamberlain House, 3 children (Alex 14, Jordan 13, Morgan 15),
 // Staff: Sarah Johnson (Senior RSW), Tom Richards (RSW),
 //        Lisa Williams (Senior RSW), Darren Laville (RM/DSL)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -27,7 +27,7 @@ import type {
   StaffAntiBullyingTraining,
 } from "../anti-bullying-effectiveness-engine";
 
-// ── Test Fixtures: Oak House Demo Data ────────────────────────────────────
+// ── Test Fixtures: Chamberlain House Demo Data ────────────────────────────────────
 
 const makeIncident = (overrides: Partial<BullyingIncident> = {}): BullyingIncident => ({
   id: "bul-001",
@@ -84,7 +84,7 @@ const makeTraining = (overrides: Partial<StaffAntiBullyingTraining> = {}): Staff
   ...overrides,
 });
 
-// Oak House demo incidents
+// Chamberlain House demo incidents
 const OAK_HOUSE_INCIDENTS: BullyingIncident[] = [
   makeIncident({
     id: "bul-001",
@@ -321,22 +321,22 @@ describe("evaluateIncidentManagement", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo data produces expected incident count", () => {
+  it("Chamberlain House demo data produces expected incident count", () => {
     const result = evaluateIncidentManagement(OAK_HOUSE_INCIDENTS);
     expect(result.totalIncidents).toBe(2);
   });
 
-  it("Oak House demo data has 100% timely response", () => {
+  it("Chamberlain House demo data has 100% timely response", () => {
     const result = evaluateIncidentManagement(OAK_HOUSE_INCIDENTS);
     expect(result.timelyResponseRate).toBe(100);
   });
 
-  it("Oak House demo data has 100% follow-up", () => {
+  it("Chamberlain House demo data has 100% follow-up", () => {
     const result = evaluateIncidentManagement(OAK_HOUSE_INCIDENTS);
     expect(result.followUpCompletedRate).toBe(100);
   });
 
-  it("Oak House demo data has 100% child view sought", () => {
+  it("Chamberlain House demo data has 100% child view sought", () => {
     const result = evaluateIncidentManagement(OAK_HOUSE_INCIDENTS);
     expect(result.childViewSoughtRate).toBe(100);
   });
@@ -474,12 +474,12 @@ describe("evaluatePreventionCulture", () => {
     expect(result.concerns.some((c) => c.includes("No anti-bullying policy provided"))).toBe(true);
   });
 
-  it("Oak House demo produces expected feels safe rate", () => {
+  it("Chamberlain House demo produces expected feels safe rate", () => {
     const result = evaluatePreventionCulture(OAK_HOUSE_SURVEYS, OAK_HOUSE_POLICY);
     expect(result.feelsSafeRate).toBe(100);
   });
 
-  it("Oak House demo has 1 child bullied recently", () => {
+  it("Chamberlain House demo has 1 child bullied recently", () => {
     const result = evaluatePreventionCulture(OAK_HOUSE_SURVEYS, OAK_HOUSE_POLICY);
     expect(result.bulliedRecentlyCount).toBe(1);
     expect(result.bulliedRecentlyRate).toBe(33);
@@ -618,7 +618,7 @@ describe("evaluateInterventionQuality", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo has 2 intervention types", () => {
+  it("Chamberlain House demo has 2 intervention types", () => {
     const result = evaluateInterventionQuality(OAK_HOUSE_INCIDENTS);
     expect(result.diverseInterventions).toBe(2);
   });
@@ -713,17 +713,17 @@ describe("evaluateStaffReadiness", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo has 4 staff trained", () => {
+  it("Chamberlain House demo has 4 staff trained", () => {
     const result = evaluateStaffReadiness(OAK_HOUSE_TRAINING);
     expect(result.totalStaff).toBe(4);
   });
 
-  it("Oak House demo has 100% recognition skills", () => {
+  it("Chamberlain House demo has 100% recognition skills", () => {
     const result = evaluateStaffReadiness(OAK_HOUSE_TRAINING);
     expect(result.recognitionSkillsRate).toBe(100);
   });
 
-  it("Oak House demo has 75% restorative practice (3 of 4)", () => {
+  it("Chamberlain House demo has 75% restorative practice (3 of 4)", () => {
     const result = evaluateStaffReadiness(OAK_HOUSE_TRAINING);
     expect(result.restorativePracticeRate).toBe(75);
   });

@@ -3,7 +3,7 @@
 //
 // Therapeutic Intervention Quality Intelligence
 //
-// GET  — Returns therapeutic intervention assessment with Oak House demo data
+// GET  — Returns therapeutic intervention assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffTherapeuticTraining,
 } from "@/lib/therapeutic-intervention-quality";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_SESSIONS: TherapySession[] = [
   // Alex — 3 sessions

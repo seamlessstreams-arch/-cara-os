@@ -56,7 +56,7 @@ function run(possessions: PossessionInput[], opts?: { children?: ChildRef[]; sta
   });
 }
 
-// ── Oak House Full Dataset ────────────────────────────────────────────────────
+// ── Chamberlain House Full Dataset ────────────────────────────────────────────────────
 
 function oakHousePossessions(): PossessionInput[] {
   return [
@@ -664,8 +664,8 @@ describe("Possessions Intelligence Engine", () => {
     });
   });
 
-  // ── Oak House Full Dataset ──────────────────────────────────────────────────
-  describe("Oak House full dataset", () => {
+  // ── Chamberlain House Full Dataset ──────────────────────────────────────────────────
+  describe("Chamberlain House full dataset", () => {
     it("calculates correct total items", () => {
       const result = run(oakHousePossessions());
       expect(result.overview.total_items).toBe(15);

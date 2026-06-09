@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/staff-deployment — Staff Deployment Intelligence
 //
-// GET  — returns Oak House demo deployment intelligence
+// GET  — returns Chamberlain House demo deployment intelligence
 // POST — accepts custom data with validation
 //
 // CHR 2015 Reg 32 — Organisation of children's home (sufficient staff)
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(result);
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────
 
 function getOakHouseDemoData() {
   const staffMembers: StaffMember[] = [

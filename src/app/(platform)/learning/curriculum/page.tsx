@@ -185,7 +185,7 @@ export default function CurriculumBuilderPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Curriculum Builder" subtitle="Oak House — Learning Curriculum" targetId="curriculum-content" />
+          <PrintButton title="Curriculum Builder" subtitle="Chamberlain House — Learning Curriculum" targetId="curriculum-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Curriculum Builder upload" />
           <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

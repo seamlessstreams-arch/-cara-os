@@ -348,7 +348,7 @@ export default function KnowledgeGapsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={GAP_EXPORT_COLS} filename="knowledge-gaps" />
-          <PrintButton title="Knowledge Gaps" subtitle="Oak House — Knowledge Gap Analysis" targetId="knowledge-gaps-content" />
+          <PrintButton title="Knowledge Gaps" subtitle="Chamberlain House — Knowledge Gap Analysis" targetId="knowledge-gaps-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Learning — Knowledge Gaps evidence upload" />
           <Button size="sm" className="gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />

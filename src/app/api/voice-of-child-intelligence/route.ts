@@ -6,7 +6,7 @@ import {
   type StaffVoiceOfChildTraining,
 } from "@/lib/voice-of-child/voice-of-child-intelligence-engine";
 
-// ── Oak House demo data ───────────────────────────────────────────────────
+// ── Chamberlain House demo data ───────────────────────────────────────────────────
 
 const DEMO_RECORDS: VoiceOfChildRecord[] = [
   { id: "voc-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "wishes_feelings_capture", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
