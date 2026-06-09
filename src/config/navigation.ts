@@ -347,6 +347,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Training",             href: "/training",                    icon: "GraduationCap", module: "training"     },
       { label: "Safer Recruitment",    href: "/recruitment",                 icon: "UserCheck",     module: "recruitment"  },
       { label: "DBS & Checks",         href: "/recruitment/safer-recruitment/dbs", icon: "Fingerprint", module: "recruitment" },
+      { label: "Employer Values",      href: "/employer-values",             icon: "Heart",         module: "recruitment"  },
+      { label: "Values Match",         href: "/values-match",                icon: "Sparkles",      module: "recruitment"  },
       { label: "Development Hub",      href: "/staff-development",           icon: "TrendingUp",    module: "staff"        },
       { label: "Workforce Intel",      href: "/workforce",                   icon: "Network",       module: "staff"        },
       { label: "Career Pathways",      href: "/workforce/pathway",           icon: "Milestone",     module: "staff"        },

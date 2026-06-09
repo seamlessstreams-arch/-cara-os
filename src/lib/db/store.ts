@@ -29,6 +29,7 @@ import type {
 } from "@/types/comms";
 import type { SignInVerification } from "@/lib/attendance/presence-verification";
 import type { EmergencyAlert } from "@/lib/staffing/emergency-types";
+import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -740,6 +741,8 @@ const store = {
   supervisions: [] as Supervision[],
   vacancies: [] as Vacancy[],
   candidateProfiles: [] as CandidateProfile[],
+  employerValuesProfiles: [] as EmployerValuesProfile[],
+  candidateValuesProfiles: [] as CandidateValuesProfile[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],
@@ -3238,6 +3241,90 @@ store.candidateProfiles = [
     created_at: "2026-03-18T09:00:00Z",
     updated_at: "2026-04-14T10:00:00Z",
     created_by: "staff_darren",
+  },
+];
+
+// ── Employer values profile (for values-based matching) ──────────────────────
+store.employerValuesProfiles = [
+  {
+    id: "evp_oak",
+    home_id: "home_oak",
+    organisation_name: "Avisaar Children's Care Ltd",
+    home_name: "Chamberlain House",
+    core_values: ["child-centred", "warmth", "resilience", "honesty", "consistency", "respect"],
+    care_approach: "Relational, trauma-informed care that treats every behaviour as communication. We build safety through predictable, warm relationships and high expectations held with kindness.",
+    leadership_style: "Visible, supportive leadership. Managers are on the floor, model the practice they expect, and make time for reflective supervision.",
+    therapeutic_model: "Attachment-informed practice underpinned by PACE and co-regulation, with input from our therapeutic team.",
+    pace_commitment: "We expect PACE — Playfulness, Acceptance, Curiosity and Empathy — to show up in everyday interactions, not just formal sessions.",
+    trauma_informed_expectations: "Staff understand the impact of developmental trauma, stay curious about what behaviour communicates, and never take dysregulation personally.",
+    safeguarding_culture: "Speak up, always. Concerns are recorded and escalated without hesitation; nobody is ever in trouble for raising a worry about a child.",
+    expected_behaviours: ["curiosity over judgement", "reliability and consistency", "emotional regulation", "team-first attitude", "honesty"],
+    non_negotiables: ["No physical punishment, ever", "Always record and escalate safeguarding concerns", "No shaming or sarcasm towards children", "Confidentiality respected"],
+    what_makes_us_different: "A small, nurturing home where relationships come first and staff are supported to do reflective, therapeutic work — not just manage behaviour.",
+    relational_practice_priority: "high",
+    updated_at: "2026-02-01T09:00:00Z",
+    updated_by: "staff_darren",
+  },
+];
+
+// ── Candidate values profiles (overlay the recruitment candidate records) ────
+store.candidateValuesProfiles = [
+  {
+    id: "cvp_amara",
+    candidate_id: CAND_AMARA,
+    candidate_name: "Amara Osei",
+    values: ["child-centred", "warmth", "resilience", "honesty", "respect"],
+    what_matters_in_employer: "A team that genuinely puts children first and supports staff to reflect, not just react. Good supervision and a learning culture.",
+    childrens_home_experience_years: 4,
+    preferred_role: "residential_care_worker",
+    availability: "Full-time, flexible including some sleep-ins",
+    qualifications: ["Level 3 Diploma in Residential Childcare", "Team Teach", "Safeguarding Level 2"],
+    confidence_areas: ["building relationships with hard-to-reach young people", "key-working", "de-escalation"],
+    development_areas: ["report writing", "chairing meetings"],
+    safeguarding_mindset: "If a child made a disclosure I would stay calm, listen without leading, reassure them they did the right thing, record it accurately in their words and escalate to the designated safeguarding lead straight away. Safeguarding is everyone's job.",
+    relational_indicators: ["PACE", "co-regulation", "attunement", "reflective practice"],
+    scenario_answers: [
+      { prompt: "A young person refuses to go to school and becomes aggressive.", answer: "I'd stay regulated, give space, get curious about what's really going on rather than enforce, and co-regulate before problem-solving with them later." },
+    ],
+    updated_at: "2026-03-20T10:30:00Z",
+  },
+  {
+    id: "cvp_daniel",
+    candidate_id: CAND_DANIEL,
+    candidate_name: "Daniel Wright",
+    values: ["resilience", "consistency", "honesty"],
+    what_matters_in_employer: "Clear structure, a supportive manager, and the chance to develop my qualifications.",
+    childrens_home_experience_years: 2,
+    preferred_role: "residential_care_worker",
+    availability: "Full-time",
+    qualifications: ["Level 3 Diploma in Residential Childcare (in progress)", "First Aid"],
+    confidence_areas: ["routines and boundaries", "activities and engagement"],
+    development_areas: ["de-escalation under pressure", "trauma-informed responses"],
+    safeguarding_mindset: "I'd report any concern to my manager and make sure it's written down. I know there's a safeguarding policy to follow.",
+    relational_indicators: ["empathy", "reflective"],
+    scenario_answers: [
+      { prompt: "A young person refuses to go to school and becomes aggressive.", answer: "I'd try to keep things calm and remind them of the routine and expectations, and let a senior know if it escalated." },
+    ],
+    updated_at: "2026-03-18T14:00:00Z",
+  },
+  {
+    id: "cvp_priscilla",
+    candidate_id: CAND_PRISCILLA,
+    candidate_name: "Priscilla Mensah",
+    values: ["warmth", "child-centred", "respect"],
+    what_matters_in_employer: "A caring home where I can make a real difference to children's lives and grow into the role.",
+    childrens_home_experience_years: 1,
+    preferred_role: "residential_care_worker",
+    availability: "Full-time, flexible",
+    qualifications: ["Level 2 Health & Social Care", "NVQ working towards Level 3"],
+    confidence_areas: ["warmth and nurture", "daily care and routines"],
+    development_areas: ["recording and report writing", "managing challenging behaviour", "safeguarding thresholds"],
+    safeguarding_mindset: "I would always protect the child and tell my manager if I was worried about something.",
+    relational_indicators: ["empathy", "nurture"],
+    scenario_answers: [
+      { prompt: "A young person refuses to go to school and becomes aggressive.", answer: "I'd stay kind and patient, try to understand why they're upset and reassure them." },
+    ],
+    updated_at: "2026-03-15T11:00:00Z",
   },
 ];
 
