@@ -360,6 +360,39 @@ export function buildDeterministicDraft(input: {
   return lines.join("\n");
 }
 
+// ── Prompt bank (practice library; custom prompts merge into live mode) ────────
+export interface PromptBankEntry {
+  id: string;
+  category: string;            // co_regulation | deescalation | child_voice | ...
+  title: string | null;
+  prompt_text: string;
+  incident_type: string | null;
+  risk_level: string | null;
+  is_active: boolean;
+  custom: boolean;             // false = versioned in code (shown read-only)
+  created_at: string;
+  updated_at: string;
+}
+
+const BANK_SEEDED_AT = "2026-01-01T00:00:00Z";
+
+export function defaultPromptBank(): PromptBankEntry[] {
+  const rows: PromptBankEntry[] = [];
+  const add = (id: string, category: string, prompt_text: string, opts: Partial<PromptBankEntry> = {}) =>
+    rows.push({ id, category, title: null, prompt_text, incident_type: null, risk_level: null, is_active: true, custom: false, created_at: BANK_SEEDED_AT, updated_at: BANK_SEEDED_AT, ...opts });
+
+  CO_REGULATION_PROMPTS.forEach((p, i) => add(`pb_coreg_${i + 1}`, "co_regulation", p));
+  for (const [type, prompts] of Object.entries(TYPE_PROMPTS)) {
+    prompts.forEach((p, i) => add(`pb_${type}_${i + 1}`, "deescalation", p, { incident_type: type }));
+  }
+  for (const [type, phrase] of Object.entries(SUGGESTED_PHRASES)) {
+    add(`pb_phrase_${type}`, "deescalation", phrase, { title: "Suggested phrase", incident_type: type === "default" ? null : type });
+  }
+  CHILD_VOICE_PROMPTS.forEach((p, i) => add(`pb_voice_${i + 1}`, "child_voice", p));
+  CHILD_DECLINED_PROMPTS.forEach((p, i) => add(`pb_declined_${i + 1}`, "child_voice", p, { title: "If the child declines" }));
+  return rows;
+}
+
 // ── Central ARIA system prompt (server-side LLM rewrite) ────────────────────────
 export const ARIA_INCIDENT_SYSTEM_PROMPT = `You are ARIA, the AI practice assistant inside Cornerstone Care OS, supporting residential childcare staff with therapeutic, restorative, trauma-informed, safeguarding-aware and professionally written recording.
 You must: use factual language; avoid judgemental language and labels; support co-regulation; help staff consider the child's lived experience; prompt for the child's voice; preserve the meaning of the staff member's original notes; NEVER invent facts; NEVER diagnose children; NEVER make safeguarding decisions; NEVER state that a Regulation 40 notification is definitely required — instead say "the manager should consider whether notification is required"; always recommend manager review where risk is present; always separate fact, interpretation and suggested action.

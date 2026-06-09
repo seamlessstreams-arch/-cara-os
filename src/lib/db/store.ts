@@ -31,7 +31,8 @@ import type { SignInVerification } from "@/lib/attendance/presence-verification"
 import type { EmergencyAlert } from "@/lib/staffing/emergency-types";
 import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
 import type { ReflectiveSupervisionRecord } from "@/lib/engines/supervision-engine";
-import type { IncidentSession, IncidentTimelineEntry, AriaRecordingReview } from "@/lib/aria-incident/aria-incident-engine";
+import type { IncidentSession, IncidentTimelineEntry, AriaRecordingReview, PromptBankEntry } from "@/lib/aria-incident/aria-incident-engine";
+import { defaultPromptBank } from "@/lib/aria-incident/aria-incident-engine";
 import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from "@/lib/aria-incident/post-incident-engine";
 import type { AlertStateRecord } from "@/lib/aria-incident/manager-oversight-engine";
 import type {
@@ -754,6 +755,7 @@ const store = {
   ariaRestorativeConversations: [] as RestorativeConversationRecord[],
   ariaPostIncidentReflections: [] as PostIncidentReflectionRecord[],
   ariaManagerAlertStates: [] as AlertStateRecord[],
+  ariaPromptBank: defaultPromptBank() as PromptBankEntry[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],

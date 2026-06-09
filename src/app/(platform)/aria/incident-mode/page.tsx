@@ -14,6 +14,7 @@ import {
 } from "@/hooks/use-aria-incident";
 import { RestorativeConversationForm } from "@/components/aria/RestorativeConversationForm";
 import { PostIncidentReflectionForm } from "@/components/aria/PostIncidentReflectionForm";
+import { EntryAssist } from "@/components/forms/entry-assist";
 
 const RISK_META: Record<string, { label: string; on: string; off: string }> = {
   low: { label: "Low", on: "bg-green-600 text-white", off: "bg-green-50 text-green-700 border-green-200" },
@@ -271,8 +272,9 @@ function SessionView({ sessionId, bundle, onBack }: { sessionId: string; bundle:
                   </button>
                 ))}
               </div>
+              <EntryAssist value={note} onChange={setNote} sourceModule="aria_incident_mode" sourceField="timeline_note" childId={session.child_id} className="justify-end" />
               <div className="flex gap-2">
-                <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Brief note — what just happened?"
+                <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Brief note — speak it or type it…"
                   className="min-h-[52px] flex-1 rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:border-[var(--cs-teal)] focus:outline-none focus:ring-1 focus:ring-[var(--cs-teal)]" />
                 <button onClick={submitNote} disabled={addEntry.isPending || !note.trim()}
                   className="flex items-center gap-1.5 self-stretch rounded-xl bg-[var(--cs-teal-strong)] px-4 text-sm font-bold text-white hover:opacity-90 disabled:opacity-40">

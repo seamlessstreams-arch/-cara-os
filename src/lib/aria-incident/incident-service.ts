@@ -124,13 +124,20 @@ export function addTimelineEntry(opts: { session: IncidentSession; entry_type: s
 export function buildSessionBundle(session: IncidentSession) {
   const entries = sessionEntries(session.id);
   const steps = buildWorkflowChecklist(session.incident_type);
+  const prompts = pickLivePrompts(session.incident_type, session.immediate_risk_level);
+  // merge the home's ACTIVE custom co-regulation prompts (practice library) into live mode
+  const store = getStore() as any;
+  const custom = ((store.ariaPromptBank ?? []) as any[])
+    .filter((p) => p.custom && p.is_active && p.category === "co_regulation" && (!p.incident_type || p.incident_type === session.incident_type))
+    .map((p) => String(p.prompt_text));
+  prompts.immediate = [...new Set([...prompts.immediate, ...custom])].slice(0, 8);
   return {
     session,
     child_name: childName(session.child_id),
     started_by_name: staffNameOf(session.started_by_user_id),
     timeline: entries,
     checklist: steps.map((s) => ({ ...s, completed: !!session.workflow_progress[s.key] })),
-    prompts: pickLivePrompts(session.incident_type, session.immediate_risk_level),
+    prompts,
     gate: computeIncidentQualityGate({ session, entries }),
     child_voice_prompts: CHILD_VOICE_PROMPTS,
     child_declined_prompts: CHILD_DECLINED_PROMPTS,
