@@ -45,7 +45,7 @@ import {
   // Other
   Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
   // Domain nav icons
-  Zap,
+  Zap, CalendarCheck,
 } from "lucide-react";
 
 // ── Icon lookup ───────────────────────────────────────────────────────────────
@@ -62,7 +62,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity,
   Wand2,
   Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
-  Zap,
+  Zap, CalendarCheck,
 };
 
 // ── Primary section icons ─────────────────────────────────────────────────────
