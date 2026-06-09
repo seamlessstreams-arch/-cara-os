@@ -123,6 +123,7 @@ describe("computeShiftBriefing", () => {
     }));
     // high-severity open incident → critical; overdue review → high; overdue task (<7d) → medium
     expect(r.attention.map((a) => a.severity)).toEqual(["critical", "high", "medium"]);
+    expect(r.attention.map((a) => a.kind)).toEqual(["incident", "review", "task"]);
     expect(r.attention[0].label).toMatch(/Open incident/);
     expect(r.summary.open_incidents).toBe(1);
   });

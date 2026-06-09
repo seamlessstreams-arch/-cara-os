@@ -3,11 +3,13 @@
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   Loader2, RefreshCw, CalendarCheck, AlertOctagon, Clock, CheckCircle2, FileWarning,
 } from "lucide-react";
 import { usePlanCurrency } from "@/hooks/use-plan-currency";
+import { planTypeHref } from "@/config/entity-links";
 import type { CellStatus, PlanCurrencyResult } from "@/lib/engines/plan-currency-engine";
 
 const CELL_META: Record<CellStatus, { bg: string; text: string; rag: string; label: string }> = {
@@ -30,18 +32,21 @@ function Stat({ value, label, tone, Icon }: { value: number | string; label: str
   );
 }
 
-function Cell({ status, days }: { status: CellStatus; days: number | null }) {
+function Cell({ status, days, href }: { status: CellStatus; days: number | null; href: string }) {
   const m = CELL_META[status];
   let content: React.ReactNode = "—";
   if (status === "current") content = "✓";
   else if (status === "no_date") content = "?";
   else if (status === "overdue") content = `${Math.abs(days ?? 0)}d`;
   else if (status === "due_soon") content = `${days ?? 0}d`;
+  const badge = (
+    <span className={cn("inline-flex min-w-[2.4rem] items-center justify-center rounded-md px-2 py-1 text-xs font-bold tabular-nums", m.bg, m.text, m.rag)} title={m.label}>
+      {content}
+    </span>
+  );
   return (
     <td className="px-1.5 py-1 text-center">
-      <span className={cn("inline-flex min-w-[2.4rem] items-center justify-center rounded-md px-2 py-1 text-xs font-bold tabular-nums", m.bg, m.text, m.rag)} title={m.label}>
-        {content}
-      </span>
+      {status === "none" ? badge : <Link href={href} className="inline-block transition-opacity hover:opacity-75">{badge}</Link>}
     </td>
   );
 }
@@ -67,7 +72,7 @@ function Matrix({ data }: { data: PlanCurrencyResult }) {
               <td className="sticky left-0 z-10 bg-white px-3 py-1.5 text-xs font-medium text-[var(--cs-text)]">{pt.label}</td>
               {cols.map((c) => {
                 const cell = lookup(c.child_id, pt.key);
-                return <Cell key={c.child_id} status={cell?.status ?? "none"} days={cell?.days_to_review ?? null} />;
+                return <Cell key={c.child_id} status={cell?.status ?? "none"} days={cell?.days_to_review ?? null} href={planTypeHref(pt.key)} />;
               })}
             </tr>
           ))}
@@ -120,10 +125,10 @@ export default function PlanCurrencyPage() {
                   <p className="mb-2 flex items-center gap-2 text-sm font-bold text-red-700"><AlertOctagon className="h-4 w-4" /> Overdue for review — action now</p>
                   <div className="space-y-1.5">
                     {data.overdue.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50/50 px-3 py-2 text-sm">
+                      <Link key={p.id} href={planTypeHref(p.plan_type_key)} className="flex items-center justify-between gap-3 rounded-lg border border-red-100 bg-red-50/50 px-3 py-2 text-sm transition-opacity hover:opacity-80">
                         <span className="min-w-0"><span className="font-semibold text-[var(--cs-navy)]">{p.plan_type}</span> <span className="text-[var(--cs-text-muted)]">· {p.child_name}</span></span>
                         <span className="shrink-0 font-bold tabular-nums text-red-700">{Math.abs(p.days_to_review ?? 0)}d overdue</span>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </CardContent>

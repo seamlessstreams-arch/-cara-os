@@ -134,6 +134,7 @@ export interface EventItem {
 
 export interface AttentionItem {
   severity: "critical" | "high" | "medium";
+  kind: "incident" | "review" | "task";
   label: string;
   detail: string;
   child_name: string | null;
@@ -312,6 +313,7 @@ export function computeShiftBriefing(input: ShiftBriefingInput): ShiftBriefingRe
       const sev = String(e.severity).toLowerCase() === "high" ? "critical" : "high";
       attention.push({
         severity: sev as AttentionItem["severity"],
+        kind: "incident",
         label: `Open incident: ${titleCase(e.category ?? "incident")}`,
         detail: e.summary,
         child_name: e.child_name,
@@ -321,6 +323,7 @@ export function computeShiftBriefing(input: ShiftBriefingInput): ShiftBriefingRe
   for (const r of overdueReviews) {
     attention.push({
       severity: "high",
+      kind: "review",
       label: `${r.plan_type} review overdue`,
       detail: `${Math.abs(r.days_to_review)} day${Math.abs(r.days_to_review) === 1 ? "" : "s"} overdue`,
       child_name: r.child_name,
@@ -329,6 +332,7 @@ export function computeShiftBriefing(input: ShiftBriefingInput): ShiftBriefingRe
   for (const t of overdueTasks) {
     attention.push({
       severity: t.days_overdue >= 7 ? "high" : "medium",
+      kind: "task",
       label: `Task overdue: ${t.title}`,
       detail: `${t.days_overdue} day${t.days_overdue === 1 ? "" : "s"} overdue`,
       child_name: t.child_name,

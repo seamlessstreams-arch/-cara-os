@@ -1,14 +1,16 @@
 "use client";
 
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
   Loader2, RefreshCw, Users, ClipboardList, CalendarClock, Pill, Moon, AlertTriangle,
-  AlertOctagon, CheckCircle2, UserCheck, Clock,
+  AlertOctagon, CheckCircle2, UserCheck, Clock, ChevronRight,
 } from "lucide-react";
 import { useShiftBriefing } from "@/hooks/use-shift-briefing";
+import { ENTITY_HREF, attentionHref } from "@/config/entity-links";
 import type { ShiftBriefingResult, AttentionItem } from "@/lib/engines/shift-briefing-engine";
 
 function StatChip({ value, label, Icon, tone }: { value: number | string; label: string; Icon: typeof Users; tone: string }) {
@@ -33,6 +35,15 @@ function SectionHeader({ Icon, title, count }: { Icon: typeof Users; title: stri
   );
 }
 
+/** A clickable row that deep-links to the page where you act on the item. */
+function RowLink({ href, className, children }: { href: string; className?: string; children: React.ReactNode }) {
+  return (
+    <Link href={href} className={cn("group block transition-opacity hover:opacity-90", className)}>
+      {children}
+    </Link>
+  );
+}
+
 const ATT_TONE: Record<AttentionItem["severity"], string> = {
   critical: "border-l-red-500 bg-red-50/60",
   high: "border-l-amber-500 bg-amber-50/60",
@@ -47,14 +58,14 @@ function Attention({ items }: { items: AttentionItem[] }) {
         <SectionHeader Icon={AlertTriangle} title="Needs attention this shift" count={items.length} />
         <div className="space-y-1.5">
           {items.map((a, i) => (
-            <div key={i} className={cn("flex items-start justify-between gap-3 rounded-lg border-l-4 px-3 py-2", ATT_TONE[a.severity])}>
+            <RowLink key={i} href={attentionHref(a.kind)} className={cn("flex items-start justify-between gap-3 rounded-lg border-l-4 px-3 py-2", ATT_TONE[a.severity])}>
               <div className="min-w-0">
                 <div className="text-sm font-semibold text-[var(--cs-navy)]">{a.label}{a.child_name ? <span className="font-normal text-[var(--cs-text-muted)]"> · {a.child_name}</span> : null}</div>
                 <div className="text-xs text-[var(--cs-text-secondary)]">{a.detail}</div>
               </div>
               <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase",
                 a.severity === "critical" ? "bg-red-100 text-red-700" : a.severity === "high" ? "bg-amber-100 text-amber-700" : "bg-slate-200 text-slate-600")}>{a.severity}</span>
-            </div>
+            </RowLink>
           ))}
         </div>
       </CardContent>
@@ -111,38 +122,38 @@ function DueThisShift({ data }: { data: ShiftBriefingResult }) {
         <div className="grid gap-4 md:grid-cols-2">
           {(tasks.count > 0) && (
             <div>
-              <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)]"><ClipboardList className="h-3.5 w-3.5" /> Tasks</div>
+              <Link href={ENTITY_HREF.task} className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)] hover:text-[var(--cs-teal-strong)]"><ClipboardList className="h-3.5 w-3.5" /> Tasks <ChevronRight className="h-3 w-3" /></Link>
               <div className="space-y-1.5">
                 {tasks.overdue.map((t) => (
-                  <div key={t.id} className="rounded-lg border-l-4 border-l-red-500 bg-red-50/50 px-3 py-1.5">
+                  <RowLink key={t.id} href={ENTITY_HREF.task} className="rounded-lg border-l-4 border-l-red-500 bg-red-50/50 px-3 py-1.5">
                     <div className="text-sm font-medium text-[var(--cs-navy)]">{t.title}</div>
                     <div className="text-[11px] text-red-700">{t.days_overdue}d overdue{t.assigned_name ? ` · ${t.assigned_name}` : ""}{t.child_name ? ` · ${t.child_name}` : ""}</div>
-                  </div>
+                  </RowLink>
                 ))}
                 {tasks.due_today.map((t) => (
-                  <div key={t.id} className="rounded-lg border-l-4 border-l-amber-400 bg-amber-50/40 px-3 py-1.5">
+                  <RowLink key={t.id} href={ENTITY_HREF.task} className="rounded-lg border-l-4 border-l-amber-400 bg-amber-50/40 px-3 py-1.5">
                     <div className="text-sm font-medium text-[var(--cs-navy)]">{t.title}</div>
                     <div className="text-[11px] text-amber-700">Due today{t.assigned_name ? ` · ${t.assigned_name}` : ""}{t.child_name ? ` · ${t.child_name}` : ""}</div>
-                  </div>
+                  </RowLink>
                 ))}
               </div>
             </div>
           )}
           {(reviews.count > 0) && (
             <div>
-              <div className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)]"><CalendarClock className="h-3.5 w-3.5" /> Plan reviews</div>
+              <Link href={ENTITY_HREF.planCurrency} className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-[var(--cs-text-muted)] hover:text-[var(--cs-teal-strong)]"><CalendarClock className="h-3.5 w-3.5" /> Plan reviews <ChevronRight className="h-3 w-3" /></Link>
               <div className="space-y-1.5">
                 {reviews.overdue.map((r) => (
-                  <div key={r.id} className="rounded-lg border-l-4 border-l-red-500 bg-red-50/50 px-3 py-1.5">
+                  <RowLink key={r.id} href={ENTITY_HREF.planCurrency} className="rounded-lg border-l-4 border-l-red-500 bg-red-50/50 px-3 py-1.5">
                     <div className="text-sm font-medium text-[var(--cs-navy)]">{r.plan_type}{r.child_name ? <span className="font-normal text-[var(--cs-text-muted)]"> · {r.child_name}</span> : null}</div>
                     <div className="text-[11px] text-red-700">{Math.abs(r.days_to_review)}d overdue</div>
-                  </div>
+                  </RowLink>
                 ))}
                 {reviews.due_soon.map((r) => (
-                  <div key={r.id} className="rounded-lg border-l-4 border-l-amber-400 bg-amber-50/40 px-3 py-1.5">
+                  <RowLink key={r.id} href={ENTITY_HREF.planCurrency} className="rounded-lg border-l-4 border-l-amber-400 bg-amber-50/40 px-3 py-1.5">
                     <div className="text-sm font-medium text-[var(--cs-navy)]">{r.plan_type}{r.child_name ? <span className="font-normal text-[var(--cs-text-muted)]"> · {r.child_name}</span> : null}</div>
                     <div className="text-[11px] text-amber-700">Due in {r.days_to_review}d</div>
-                  </div>
+                  </RowLink>
                 ))}
               </div>
             </div>
@@ -163,13 +174,13 @@ function Medications({ data }: { data: ShiftBriefingResult }) {
         <p className="mb-2 text-[11px] text-[var(--cs-text-muted)]">{regular_count} regular · {prn_count} PRN (as required). Administer per MAR and record each dose.</p>
         <div className="grid gap-1.5 sm:grid-cols-2">
           {items.map((m) => (
-            <div key={m.id} className="flex items-center gap-2 rounded-lg border border-[var(--cs-border)] px-3 py-1.5">
+            <RowLink key={m.id} href={ENTITY_HREF.medication} className="flex items-center gap-2 rounded-lg border border-[var(--cs-border)] px-3 py-1.5">
               <span className={cn("shrink-0 rounded px-1.5 py-0.5 text-[9px] font-bold", m.prn ? "bg-purple-100 text-purple-700" : "bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]")}>{m.prn ? "PRN" : "REG"}</span>
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium text-[var(--cs-navy)]">{m.name} <span className="text-[var(--cs-text-muted)]">{m.dosage}</span></div>
                 <div className="truncate text-[11px] text-[var(--cs-text-muted)]">{m.child_name} · {m.frequency}</div>
               </div>
-            </div>
+            </RowLink>
           ))}
         </div>
       </CardContent>
@@ -187,7 +198,7 @@ function Overnight({ data }: { data: ShiftBriefingResult }) {
         {incidents.length > 0 && (
           <div className="mb-3 space-y-1.5">
             {incidents.map((e) => (
-              <div key={e.id} className={cn("rounded-lg border-l-4 px-3 py-2", e.status?.toLowerCase() === "open" ? "border-l-red-500 bg-red-50/50" : "border-l-slate-300 bg-slate-50/50")}>
+              <RowLink key={e.id} href={ENTITY_HREF.incident} className={cn("rounded-lg border-l-4 px-3 py-2", e.status?.toLowerCase() === "open" ? "border-l-red-500 bg-red-50/50" : "border-l-slate-300 bg-slate-50/50")}>
                 <div className="flex items-center gap-2">
                   <AlertOctagon className={cn("h-3.5 w-3.5 shrink-0", e.status?.toLowerCase() === "open" ? "text-red-600" : "text-slate-400")} />
                   <span className="text-sm font-semibold text-[var(--cs-navy)]">{(e.category ?? "Incident").replace(/_/g, " ")}</span>
@@ -196,21 +207,21 @@ function Overnight({ data }: { data: ShiftBriefingResult }) {
                 </div>
                 <p className="mt-0.5 line-clamp-2 text-xs text-[var(--cs-text-secondary)]">{e.summary}</p>
                 {e.status?.toLowerCase() === "open" && <span className="mt-1 inline-block rounded-full bg-red-100 px-2 py-0.5 text-[9px] font-bold text-red-700">OPEN{e.severity ? ` · ${String(e.severity).toUpperCase()}` : ""}</span>}
-              </div>
+              </RowLink>
             ))}
           </div>
         )}
         {recent_log.length > 0 && (
           <div className="space-y-1">
             {recent_log.map((e) => (
-              <div key={e.id} className="flex items-start gap-2 rounded-lg px-2 py-1 text-xs">
+              <RowLink key={e.id} href={ENTITY_HREF.log} className="flex items-start gap-2 rounded-lg px-2 py-1 text-xs">
                 {e.is_significant ? <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" /> : <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-[var(--cs-text-gentle)]" />}
                 <div className="min-w-0">
                   <span className="font-medium text-[var(--cs-navy)]">{e.child_name ?? "Home"}</span>
                   <span className="text-[var(--cs-text-muted)]"> · {(e.category ?? "note").replace(/_/g, " ")} · {e.date}{e.time ? ` ${e.time}` : ""}</span>
                   <p className="line-clamp-1 text-[var(--cs-text-secondary)]">{e.summary}</p>
                 </div>
-              </div>
+              </RowLink>
             ))}
           </div>
         )}
@@ -225,7 +236,7 @@ export default function ShiftBriefingPage() {
   return (
     <PageShell
       title="Shift Briefing"
-      subtitle="What must happen this shift — an auto-generated operational snapshot for staff coming on duty. Who's on, tasks and plan reviews due, active medications, and overnight events. Complements the written Handover and the Priority Briefing."
+      subtitle="What must happen this shift — an auto-generated operational snapshot for staff coming on duty. Who's on, tasks and plan reviews due, active medications, and overnight events. Every item links through to where you act on it."
       ariaContext={{ pageTitle: "Shift Briefing", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
