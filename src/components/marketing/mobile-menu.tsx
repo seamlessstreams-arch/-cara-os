@@ -5,15 +5,15 @@ import Link from "next/link";
 import { Menu, X, ArrowRight } from "lucide-react";
 
 const LINKS = [
-  { href: "#how", label: "How it works" },
-  { href: "#intelligence", label: "ARIA Intelligence" },
-  { href: "#features", label: "Features" },
-  { href: "#workforce", label: "Workforce" },
-  { href: "#platform", label: "Platform" },
-  { href: "#pricing", label: "Pricing" },
-  { href: "#why", label: "Why Cornerstone" },
-  { href: "#compliance", label: "Compliance" },
-  { href: "#faq", label: "FAQ" },
+  { href: "/#how", label: "How it works" },
+  { href: "/#intelligence", label: "ARIA Intelligence" },
+  { href: "/#features", label: "Features" },
+  { href: "/#workforce", label: "Workforce" },
+  { href: "/#platform", label: "Platform" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/security", label: "Security & trust" },
+  { href: "/about", label: "About" },
+  { href: "/#faq", label: "FAQ" },
 ];
 
 /** Mobile-only hamburger that opens a full-screen nav overlay. */

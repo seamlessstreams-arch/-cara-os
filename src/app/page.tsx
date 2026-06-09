@@ -17,7 +17,8 @@ import {
   GraduationCap, UserCheck, MessageSquare, ShieldAlert, BookOpen, Award,
   PenLine, Scale, Stethoscope, Sunrise,
 } from "lucide-react";
-import { MobileMenu } from "@/components/marketing/mobile-menu";
+import { MarketingHeader } from "@/components/marketing/marketing-header";
+import { MarketingFooter } from "@/components/marketing/marketing-footer";
 
 export const metadata: Metadata = {
   title: "Cornerstone Care OS | The operating system for children's homes",
@@ -76,32 +77,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[var(--cs-bg)] text-[var(--cs-text)]">
       {/* ── Header ───────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b border-[var(--cs-border)]/70 bg-[var(--cs-bg)]/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-3.5">
-          <Link href="/" className="flex items-center gap-2.5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon-192.png" alt="Cornerstone" className="h-9 w-9 rounded-xl" />
-            <span className="flex items-baseline gap-1.5">
-              <span className="text-lg font-extrabold tracking-tight text-[var(--cs-navy)]">Cornerstone</span>
-              <span className="rounded-md bg-[var(--cs-navy)]/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--cs-teal-strong)]">Care OS</span>
-            </span>
-          </Link>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-[var(--cs-text-secondary)] lg:flex">
-            <a href="#how" className="hover:text-[var(--cs-navy)]">How it works</a>
-            <a href="#intelligence" className="hover:text-[var(--cs-navy)]">Intelligence</a>
-            <a href="#features" className="hover:text-[var(--cs-navy)]">Features</a>
-            <a href="#workforce" className="hover:text-[var(--cs-navy)]">Workforce</a>
-            <a href="#pricing" className="hover:text-[var(--cs-navy)]">Pricing</a>
-            <a href="#why" className="hover:text-[var(--cs-navy)]">Why</a>
-            <a href="#faq" className="hover:text-[var(--cs-navy)]">FAQ</a>
-          </nav>
-          <div className="flex items-center gap-2.5">
-            <Link href="/dashboard" className="hidden text-sm font-semibold text-[var(--cs-navy)] hover:text-[var(--cs-teal-strong)] sm:inline">Sign in</Link>
-            <span className="hidden sm:inline-flex"><PrimaryButton href="#contact">Book a demo</PrimaryButton></span>
-            <MobileMenu />
-          </div>
-        </div>
-      </header>
+      <MarketingHeader />
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
@@ -615,50 +591,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Footer ───────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-[var(--cs-border)] bg-white">
-        <div className="mx-auto max-w-7xl px-5 py-12">
-          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-            <div className="max-w-xs">
-              <Link href="/" className="flex items-center gap-2.5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/icon-192.png" alt="Cornerstone" className="h-9 w-9 rounded-xl" />
-                <span className="text-lg font-extrabold tracking-tight text-[var(--cs-navy)]">Cornerstone <span className="text-[var(--cs-teal-strong)]">Care OS</span></span>
-              </Link>
-              <p className="mt-3 text-sm leading-relaxed text-[var(--cs-text-muted)]">The operating system for children&rsquo;s residential care. Capture once. Surface everywhere.</p>
-            </div>
-            <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[var(--cs-text-gentle)]">Product</p>
-                <ul className="mt-3 space-y-2 text-sm text-[var(--cs-text-secondary)]">
-                  <li><a href="#how" className="hover:text-[var(--cs-navy)]">How it works</a></li>
-                  <li><a href="#features" className="hover:text-[var(--cs-navy)]">Features</a></li>
-                  <li><a href="#pricing" className="hover:text-[var(--cs-navy)]">Pricing</a></li>
-                  <li><Link href="/dashboard" className="hover:text-[var(--cs-navy)]">Platform</Link></li>
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[var(--cs-text-gentle)]">Trust</p>
-                <ul className="mt-3 space-y-2 text-sm text-[var(--cs-text-secondary)]">
-                  <li><a href="#why" className="hover:text-[var(--cs-navy)]">Why Cornerstone</a></li>
-                  <li><a href="#compliance" className="hover:text-[var(--cs-navy)]">Compliance</a></li>
-                  <li><a href="#faq" className="hover:text-[var(--cs-navy)]">FAQ</a></li>
-                </ul>
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-[var(--cs-text-gentle)]">Get started</p>
-                <ul className="mt-3 space-y-2 text-sm text-[var(--cs-text-secondary)]">
-                  <li><a href="#contact" className="hover:text-[var(--cs-navy)]">Book a demo</a></li>
-                  <li><Link href="/dashboard" className="hover:text-[var(--cs-navy)]">Sign in</Link></li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-[var(--cs-border)] pt-6 text-xs text-[var(--cs-text-muted)] sm:flex-row">
-            <p>© 2026 Cornerstone Care OS. All rights reserved.</p>
-            <p className="flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-[var(--cs-teal)]" /> Safeguarding-first. Human-in-the-loop. Always.</p>
-          </div>
-        </div>
-      </footer>
+      <MarketingFooter />
     </div>
   );
 }
