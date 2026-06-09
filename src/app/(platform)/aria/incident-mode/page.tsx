@@ -12,6 +12,8 @@ import {
   useAriaIncidentList, useAriaIncidentSession, useStartIncident, usePatchIncident,
   useAddTimelineEntry, useGenerateDraft, useAcceptDraft, type DraftResponse,
 } from "@/hooks/use-aria-incident";
+import { RestorativeConversationForm } from "@/components/aria/RestorativeConversationForm";
+import { PostIncidentReflectionForm } from "@/components/aria/PostIncidentReflectionForm";
 
 const RISK_META: Record<string, { label: string; on: string; off: string }> = {
   low: { label: "Low", on: "bg-green-600 text-white", off: "bg-green-50 text-green-700 border-green-200" },
@@ -350,6 +352,10 @@ function PostIncidentPanel({ sessionId, bundle }: { sessionId: string; bundle: N
           <p className="mt-2 rounded-lg bg-[var(--cs-bg)] px-3 py-2 text-xs text-[var(--cs-text-muted)]">If the child declines: {bundle.child_declined_prompts.join(" ")}</p>
         </CardContent>
       </Card>
+
+      {/* restorative conversation + reflection (slice B) */}
+      <RestorativeConversationForm sessionId={sessionId} childName={bundle.child_name} />
+      <PostIncidentReflectionForm sessionId={sessionId} />
 
       {/* draft record */}
       <Card className="border-l-4 border-l-[var(--cs-aria-gold)]">

@@ -32,6 +32,7 @@ import type { EmergencyAlert } from "@/lib/staffing/emergency-types";
 import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
 import type { ReflectiveSupervisionRecord } from "@/lib/engines/supervision-engine";
 import type { IncidentSession, IncidentTimelineEntry, AriaRecordingReview } from "@/lib/aria-incident/aria-incident-engine";
+import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from "@/lib/aria-incident/post-incident-engine";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -749,6 +750,8 @@ const store = {
   ariaIncidentSessions: [] as IncidentSession[],
   ariaIncidentTimeline: [] as IncidentTimelineEntry[],
   ariaRecordingReviews: [] as AriaRecordingReview[],
+  ariaRestorativeConversations: [] as RestorativeConversationRecord[],
+  ariaPostIncidentReflections: [] as PostIncidentReflectionRecord[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],
@@ -3356,6 +3359,25 @@ store.ariaIncidentTimeline = [
   { id: "ait_d5", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "deescalation_attempt", raw_text: "Staff offered a drink and reassurance.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:52:00Z", created_at: ariaIncDay + "T19:52:00Z" },
   { id: "ait_d6", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "child_voice", raw_text: "Alex said the call made him miss home and he didn't want to talk yet.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T20:05:00Z", created_at: ariaIncDay + "T20:05:00Z" },
   { id: "ait_d7", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "restorative_action", raw_text: "Restorative conversation planned with trusted staff member once settled.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T20:20:00Z", created_at: ariaIncDay + "T20:20:00Z" },
+];
+
+// ── Restorative conversation completed for the demo incident session ──────────
+store.ariaRestorativeConversations = [
+  {
+    id: "arc_demo_1", home_id: "home_oak", child_id: "yp_alex", incident_session_id: "ais_demo_1",
+    completed_by_user_id: "staff_edward", conversation_date: daysFromNow(-1),
+    child_ready_to_engage: true,
+    child_voice: "Alex said the call made him miss home, and that he hates feeling like he can't do anything about it.",
+    what_happened: "Alex became distressed and raised his voice after the family phone call ended early.",
+    who_was_affected: "Alex, and briefly the other young people in the communal area.",
+    what_helped: "Space, a drink, and Daniel sitting nearby without asking questions.",
+    what_made_it_worse: "",
+    repair_actions: "Alex will help plan the next call with his key worker so it doesn't end abruptly; staff will check in before and after calls.",
+    follow_up_required: true,
+    ai_summary: null,
+    manager_review_required: true,
+    created_at: daysFromNow(-1) + "T17:30:00Z", updated_at: daysFromNow(-1) + "T17:30:00Z",
+  },
 ];
 
 store.reflectiveSupervisions = [

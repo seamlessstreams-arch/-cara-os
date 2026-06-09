@@ -101,6 +101,39 @@ export function useGenerateDraft(sessionId: string | null) {
   });
 }
 
+export interface PostIncidentData {
+  restorative: any[];
+  reflections: any[];
+  templates: {
+    restorative_questions: { key: string; label: string }[];
+    readiness_checks: string[];
+    reflection_questions: { key: string; label: string }[];
+    reflection_factors: { key: string; label: string; suggestion: string }[];
+    reflection_outcomes: { key: string; label: string; suggestion: string }[];
+  };
+  disclaimers: { restorative: string; reflection: string };
+}
+
+export function usePostIncident(sessionId: string | null) {
+  return useQuery<PostIncidentData>({
+    queryKey: ["aria-post-incident", sessionId ?? ""],
+    queryFn: () => fetch(`/api/v1/aria-incident/${sessionId}/post-incident`).then(json),
+    enabled: !!sessionId,
+  });
+}
+
+export function useSavePostIncident(sessionId: string | null) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: Record<string, unknown>) =>
+      fetch(`/api/v1/aria-incident/${sessionId}/post-incident`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(json),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["aria-post-incident", sessionId ?? ""] });
+      qc.invalidateQueries({ queryKey: ["aria-incident", sessionId ?? ""] }); // timeline + gate refresh
+    },
+  });
+}
+
 export function useAcceptDraft(sessionId: string | null) {
   const invalidate = useInvalidate();
   return useMutation({
