@@ -805,7 +805,7 @@ export interface InteractiveSession {
   completed_at?: string;
 }
 
-export type AuditActionType = "aria_assessment_created" | "aria_assessment_reviewed" | "aria_assessment_approved" | "aria_oversight_generated" | "aria_oversight_approved" | "keywork_session_created" | "keywork_session_completed" | "keywork_session_reviewed" | "child_resource_created" | "child_resource_approved" | "interactive_session_completed" | "safeguarding_flag_raised" | "safeguarding_flag_reviewed" | "recommendation_created" | "recommendation_actioned" | "ai_prompt_sent" | "ai_response_received" | "human_edit_made" | "record_approved";
+export type AuditActionType = "aria_assessment_created" | "aria_assessment_reviewed" | "aria_assessment_approved" | "aria_oversight_generated" | "aria_oversight_approved" | "keywork_session_created" | "keywork_session_completed" | "keywork_session_reviewed" | "child_resource_created" | "child_resource_approved" | "interactive_session_completed" | "safeguarding_flag_raised" | "safeguarding_flag_reviewed" | "recommendation_created" | "recommendation_actioned" | "ai_prompt_sent" | "ai_response_received" | "human_edit_made" | "record_approved" | "incident_started" | "incident_ended" | "timeline_entry_added" | "manager_notified" | "ai_record_rewrite_generated" | "ai_suggestion_accepted" | "ai_suggestion_rejected";
 
 export interface AriaAuditEntry {
   id: string;

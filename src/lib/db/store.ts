@@ -31,6 +31,7 @@ import type { SignInVerification } from "@/lib/attendance/presence-verification"
 import type { EmergencyAlert } from "@/lib/staffing/emergency-types";
 import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
 import type { ReflectiveSupervisionRecord } from "@/lib/engines/supervision-engine";
+import type { IncidentSession, IncidentTimelineEntry, AriaRecordingReview } from "@/lib/aria-incident/aria-incident-engine";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -745,6 +746,9 @@ const store = {
   employerValuesProfiles: [] as EmployerValuesProfile[],
   candidateValuesProfiles: [] as CandidateValuesProfile[],
   reflectiveSupervisions: [] as ReflectiveSupervisionRecord[],
+  ariaIncidentSessions: [] as IncidentSession[],
+  ariaIncidentTimeline: [] as IncidentTimelineEntry[],
+  ariaRecordingReviews: [] as AriaRecordingReview[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],
@@ -3331,6 +3335,29 @@ store.candidateValuesProfiles = [
 ];
 
 // ── Reflective supervision records (more than tick-box; slice 3) ─────────────
+// ── ARIA Incident Mode demo session (ended; record not yet finalised) ─────────
+const ariaIncDay = daysFromNow(-2);
+store.ariaIncidentSessions = [
+  {
+    id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", started_by_user_id: "staff_edward",
+    started_at: ariaIncDay + "T19:42:00Z", ended_at: ariaIncDay + "T20:20:00Z",
+    incident_type: "family_contact_distress", incident_status: "ended", immediate_risk_level: "medium",
+    manager_notified: true, manager_notified_at: ariaIncDay + "T19:50:00Z",
+    ai_support_used: true, final_record_created: false,
+    workflow_progress: { reassure: true, space: true, trigger: true, staff_response: true },
+    created_at: ariaIncDay + "T19:42:00Z", updated_at: ariaIncDay + "T20:20:00Z",
+  },
+];
+store.ariaIncidentTimeline = [
+  { id: "ait_d1", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "observation", raw_text: "Young person became distressed after family phone contact.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:42:00Z", created_at: ariaIncDay + "T19:42:00Z" },
+  { id: "ait_d2", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "staff_action", raw_text: "Staff reduced demands and offered space.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:44:00Z", created_at: ariaIncDay + "T19:44:00Z" },
+  { id: "ait_d3", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "observation", raw_text: "Young person declined support but remained in the communal area.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:47:00Z", created_at: ariaIncDay + "T19:47:00Z" },
+  { id: "ait_d4", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "manager_notification", raw_text: "Duty manager made aware by phone.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:50:00Z", created_at: ariaIncDay + "T19:50:00Z" },
+  { id: "ait_d5", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "deescalation_attempt", raw_text: "Staff offered a drink and reassurance.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:52:00Z", created_at: ariaIncDay + "T19:52:00Z" },
+  { id: "ait_d6", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "child_voice", raw_text: "Alex said the call made him miss home and he didn't want to talk yet.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T20:05:00Z", created_at: ariaIncDay + "T20:05:00Z" },
+  { id: "ait_d7", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "restorative_action", raw_text: "Restorative conversation planned with trusted staff member once settled.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T20:20:00Z", created_at: ariaIncDay + "T20:20:00Z" },
+];
+
 store.reflectiveSupervisions = [
   {
     id: "rsup_001", staff_id: "staff_edward", staff_name: "Daniel Frost", supervisor_id: "staff_darren", supervisor_name: "Olivia Hayes",
