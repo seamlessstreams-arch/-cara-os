@@ -209,8 +209,8 @@ describe("redactSensitiveData", () => {
   });
 
   it("redacts placement home names", () => {
-    const result = redactSensitiveData("Placed at Willow House since September");
-    expect(result.redactedText).not.toContain("Willow House");
+    const result = redactSensitiveData("Placed at Chamberlain House since September");
+    expect(result.redactedText).not.toContain("Chamberlain House");
     expect(result.redactedText).toContain("[HOME_1]");
   });
 
