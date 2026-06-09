@@ -30,6 +30,7 @@ import type {
 import type { SignInVerification } from "@/lib/attendance/presence-verification";
 import type { EmergencyAlert } from "@/lib/staffing/emergency-types";
 import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
+import type { ReflectiveSupervisionRecord } from "@/lib/engines/supervision-engine";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -743,6 +744,7 @@ const store = {
   candidateProfiles: [] as CandidateProfile[],
   employerValuesProfiles: [] as EmployerValuesProfile[],
   candidateValuesProfiles: [] as CandidateValuesProfile[],
+  reflectiveSupervisions: [] as ReflectiveSupervisionRecord[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],
@@ -3327,6 +3329,85 @@ store.candidateValuesProfiles = [
     updated_at: "2026-03-15T11:00:00Z",
   },
 ];
+
+// ── Reflective supervision records (more than tick-box; slice 3) ─────────────
+store.reflectiveSupervisions = [
+  {
+    id: "rsup_001", staff_id: "staff_edward", staff_name: "Daniel Frost", supervisor_id: "staff_darren", supervisor_name: "Olivia Hayes",
+    date: daysFromNow(-21), type: "1:1", wellbeing_score: 4, confidence_level: 4,
+    emotional_wellbeing: "Settled and positive. Feels part of the team and is sleeping/eating well. Named some stress around a recent missing-from-care episode but felt well supported afterwards.",
+    workload: "Manageable. Happy with shift balance; would like a few more day shifts where possible.",
+    safeguarding_concerns: "No new concerns. Confident about reporting routes; we revisited the disclosure flow together as good practice.",
+    relationships_with_children: "Building a strong key-working relationship with Alex — Alex sought him out after a difficult day, which is real progress.",
+    reflective_practice: "Reflected on a moment he stayed regulated when Alex was shouting; recognised that giving space rather than enforcing helped de-escalate.",
+    pace_examples: "Used playfulness to re-engage Alex over breakfast after a tense morning. Showed acceptance of Alex's feelings without accepting the behaviour.",
+    professional_boundaries: "Clear and appropriate. Discussed managing social-media boundaries with older young people.",
+    training_needs: ["Report writing"],
+    manager_feedback: "Daniel is doing relationally skilled work and modelling calm. Encouraged him to keep capturing these moments in the daily log so the practice is evidenced.",
+    actions: [{ action: "Book report-writing refresher", owner: "staff_darren", due: daysFromNow(21), done: false }],
+    follow_up_date: daysFromNow(21), created_at: daysFromNow(-21),
+  },
+  {
+    id: "rsup_002", staff_id: "staff_lackson", staff_name: "Samuel Boateng", supervisor_id: "staff_ryan", supervisor_name: "Marcus Bell",
+    date: daysFromNow(-37), type: "1:1", wellbeing_score: 3, confidence_level: 3,
+    emotional_wellbeing: "Generally okay but tired after a run of sleep-ins. We agreed to review the rota balance.",
+    workload: "Feels stretched on busy evenings. Would value clearer handover at shift change.",
+    safeguarding_concerns: "Raised a low-level concern about a young person's online contact — recorded and being monitored. Knew to escalate.",
+    relationships_with_children: "Good rapport with Jordan; less sure how to respond when Jordan withdraws.",
+    reflective_practice: "Reflected that he sometimes reaches for boundaries first when anxious; wants to pause and get curious instead.",
+    pace_examples: "Working on curiosity — asked Jordan what was behind a refusal rather than insisting.",
+    professional_boundaries: "Appropriate. Discussed not over-promising to young people.",
+    training_needs: ["De-escalation refresher", "Trauma-informed practice"],
+    manager_feedback: "Samuel is reflective and honest about what he finds hard — a real strength. Pairing him with an experienced colleague on busy evenings.",
+    actions: [{ action: "Review sleep-in balance on rota", owner: "staff_ryan", due: daysFromNow(-9), done: false }, { action: "Book de-escalation refresher", owner: "staff_ryan", due: daysFromNow(7), done: false }],
+    follow_up_date: daysFromNow(5), created_at: daysFromNow(-37),
+  },
+  {
+    id: "rsup_003", staff_id: "staff_anna", staff_name: "Priya Sharma", supervisor_id: "staff_darren", supervisor_name: "Olivia Hayes",
+    date: daysFromNow(-58), type: "1:1", wellbeing_score: 2, confidence_level: 3,
+    emotional_wellbeing: "Lower than usual — feeling the emotional weight of a recent incident and some life stress outside work. We talked about support options including the EAP.",
+    workload: "Heavy stretch recently; agreed to protect some non-contact time.",
+    safeguarding_concerns: "No new safeguarding concerns about children. Focus this session was staff wellbeing.",
+    relationships_with_children: "Still warm and attuned with the children; worried she has less to give right now.",
+    reflective_practice: "Reflected on compassion fatigue and the importance of her own regulation and rest.",
+    pace_examples: "Continues to show empathy and acceptance even when depleted.",
+    professional_boundaries: "Strong. We discussed protecting her own boundaries to avoid burnout.",
+    training_needs: ["Trauma-informed practice"],
+    manager_feedback: "Priya is a valued, skilled practitioner showing early signs of strain. Priority is support and workload relief, with a follow-up wellbeing check — a RETENTION/SUPPORT indicator, not a performance concern.",
+    actions: [{ action: "Wellbeing follow-up check-in", owner: "staff_darren", due: daysFromNow(-30), done: false }, { action: "Protect non-contact time on rota", owner: "staff_darren", due: daysFromNow(-44), done: true }],
+    follow_up_date: daysFromNow(-16), created_at: daysFromNow(-58),
+  },
+  {
+    id: "rsup_004", staff_id: "staff_chervelle", staff_name: "Naomi Reid", supervisor_id: "staff_ryan", supervisor_name: "Marcus Bell",
+    date: daysFromNow(-14), type: "1:1", wellbeing_score: 4, confidence_level: 2,
+    emotional_wellbeing: "Positive and motivated, enjoying the role.",
+    workload: "Comfortable. Keen to take on more key-working responsibility.",
+    safeguarding_concerns: "Newer to the role — we revisited safeguarding thresholds and when to escalate, which she found helpful.",
+    relationships_with_children: "Warm and nurturing; building trust well with Casey.",
+    reflective_practice: "Reflected that she sometimes second-guesses her judgement and defers to others — building confidence to trust her instincts.",
+    pace_examples: "Naturally warm and accepting; good use of empathy with Casey at bedtime.",
+    professional_boundaries: "Appropriate; discussed confidence in holding boundaries kindly.",
+    training_needs: ["Safeguarding thresholds", "Recording & report writing"],
+    manager_feedback: "Naomi has lovely relational instincts; the focus is building her professional confidence through shadowing and reflective supervision. Low confidence is developmental, not a concern about competence.",
+    actions: [{ action: "Shadow a safeguarding referral with the DSL", owner: "staff_ryan", due: daysFromNow(14), done: false }],
+    follow_up_date: daysFromNow(28), created_at: daysFromNow(-14),
+  },
+  {
+    id: "rsup_005", staff_id: "staff_diane", staff_name: "Maria Okafor", supervisor_id: "staff_darren", supervisor_name: "Olivia Hayes",
+    date: daysFromNow(-30), type: "1:1", wellbeing_score: 5, confidence_level: 5,
+    emotional_wellbeing: "Thriving. A steadying presence on the team.",
+    workload: "Well-balanced; mentoring newer staff informally.",
+    safeguarding_concerns: "No concerns. Strong, confident safeguarding practice.",
+    relationships_with_children: "Trusted by all three young people; excellent at co-regulation.",
+    reflective_practice: "Reflected on supporting a colleague after a hard shift — modelled debriefing well.",
+    pace_examples: "Consistently models PACE; used curiosity to unpick a conflict between two young people.",
+    professional_boundaries: "Exemplary.",
+    training_needs: [],
+    manager_feedback: "Maria is an anchor for the team. Explored a possible route into a senior/team-leader role and supporting reflective practice for others.",
+    actions: [{ action: "Discuss team-leader development pathway", owner: "staff_darren", due: daysFromNow(30), done: false }],
+    follow_up_date: daysFromNow(12), created_at: daysFromNow(-30),
+  },
+] as any;
 
 // Checks — Amara
 store.candidateChecks = [
