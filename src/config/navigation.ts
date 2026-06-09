@@ -404,6 +404,7 @@ export const NAV_GROUPS: NavGroup[] = [
     module: "buildings",
     children: [
       { label: "Buildings & H&S",  href: "/buildings",   icon: "Building2", module: "buildings"  },
+      { label: "Premises Compliance", href: "/premises-compliance", icon: "ShieldCheck", module: "buildings" },
       { label: "Vehicles",         href: "/vehicles",    icon: "Car",        module: "vehicles"   },
       { label: "Maintenance",      href: "/maintenance", icon: "Wrench",     module: "maintenance"},
       { label: "Expenses",         href: "/expenses",    icon: "Receipt",    module: "expenses"   },
