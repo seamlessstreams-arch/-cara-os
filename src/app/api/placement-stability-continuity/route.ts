@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Placement Stability & Continuity API Route
 //
-// GET  → returns Oak House demo placement stability intelligence
+// GET  → returns Chamberlain House demo placement stability intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   Rating,
 } from "@/lib/placement-stability-continuity/placement-stability-continuity-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const reviews: PlacementReview[] = [

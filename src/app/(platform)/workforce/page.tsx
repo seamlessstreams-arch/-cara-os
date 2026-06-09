@@ -105,7 +105,7 @@ export default function WorkforceHubPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Workforce Hub" subtitle="Oak House — Workforce Intelligence" targetId="workforce-content" />
+          <PrintButton title="Workforce Hub" subtitle="Chamberlain House — Workforce Intelligence" targetId="workforce-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Workforce Hub — staff evidence or qualification upload" />
           <Button
             size="sm"

@@ -3,7 +3,7 @@
 //
 // Young Person Employment Support Intelligence
 //
-// GET  — Returns employment support assessment with Oak House demo data
+// GET  — Returns employment support assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffEmploymentTraining,
 } from "@/lib/young-person-employment-support";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PROFILES: ChildEmploymentProfile[] = [
   {

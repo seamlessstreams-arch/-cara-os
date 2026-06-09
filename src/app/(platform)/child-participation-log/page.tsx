@@ -148,7 +148,7 @@ export default function ChildParticipationLogPage() {
           <div>
             <p className="text-sm font-medium text-emerald-800">Genuine Participation</p>
             <p className="text-xs text-emerald-700 mt-1">
-              This log evidences that children&apos;s voices genuinely influence decisions at Oak House.
+              This log evidences that children&apos;s voices genuinely influence decisions at Chamberlain House.
               Participation goes beyond &apos;being asked&apos; — children are shown how their views
               shaped outcomes. Where requests can&apos;t be met, honest explanations are given.
             </p>

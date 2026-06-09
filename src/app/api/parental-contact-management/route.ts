@@ -3,7 +3,7 @@
 //
 // Parental Contact Management Intelligence
 //
-// GET  — Returns parental contact assessment with Oak House demo data
+// GET  — Returns parental contact assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffContactTraining,
 } from "@/lib/parental-contact-management";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PLANS: ParentalContactPlan[] = [
   // Alex — mother: supervised face-to-face monthly, medium risk, court order

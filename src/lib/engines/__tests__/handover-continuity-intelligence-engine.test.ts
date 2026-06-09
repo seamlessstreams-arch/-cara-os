@@ -534,9 +534,9 @@ describe("ARIA insights", () => {
   });
 });
 
-// ── Oak House Integration ───────────────────────────────────────────────────
+// ── Chamberlain House Integration ───────────────────────────────────────────────────
 
-describe("Oak House integration", () => {
+describe("Chamberlain House integration", () => {
   const oakHandovers: HandoverInput[] = [
     {
       id: "hnd_001", shift_date: TODAY, shift_from: "day", shift_to: "sleep_in",
@@ -576,7 +576,7 @@ describe("Oak House integration", () => {
     },
   ];
 
-  it("produces correct overview for Oak House handover data", () => {
+  it("produces correct overview for Chamberlain House handover data", () => {
     const r = run(oakHandovers, STAFF, CHILDREN);
     const o = r.overview;
 
@@ -606,7 +606,7 @@ describe("Oak House integration", () => {
     expect(o.children_covered).toBe(3);
   });
 
-  it("produces correct child mood summary for Oak House", () => {
+  it("produces correct child mood summary for Chamberlain House", () => {
     const r = run(oakHandovers, STAFF, CHILDREN);
 
     // Sorted by lowest mood first → Casey (avg 4.5), Alex (avg 6), Jordan (avg 8.5)
@@ -621,7 +621,7 @@ describe("Oak House integration", () => {
     expect(r.child_mood_summary[2].avg_mood).toBe(8.5);
   });
 
-  it("fires expected alerts for Oak House data", () => {
+  it("fires expected alerts for Chamberlain House data", () => {
     const r = run(oakHandovers, STAFF, CHILDREN);
 
     // Critical: 1 incomplete handover
@@ -646,7 +646,7 @@ describe("Oak House integration", () => {
     expect(flagMed).toHaveLength(1);
   });
 
-  it("fires expected ARIA insights for Oak House data", () => {
+  it("fires expected ARIA insights for Chamberlain House data", () => {
     const r = run(oakHandovers, STAFF, CHILDREN);
 
     // Critical: incomplete

@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Safeguarding Effectiveness Intelligence Engine
 //
-// Demo: Oak House, 4 staff, 5 referrals, 8 training records, 4 audits,
+// Demo: Chamberlain House, 4 staff, 5 referrals, 8 training records, 4 audits,
 // 8 supervision records
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -26,7 +26,7 @@ import type {
   SafeguardingSupervision,
 } from "../safeguarding-effectiveness-engine";
 
-// ── Test Fixtures: Oak House Demo Data ────────────────────────────────────
+// ── Test Fixtures: Chamberlain House Demo Data ────────────────────────────────────
 
 const STAFF_IDS = ["staff-sarah", "staff-tom", "staff-lisa", "staff-mike"];
 
@@ -93,7 +93,7 @@ const makeSupervision = (overrides: Partial<SafeguardingSupervision> = {}): Safe
   ...overrides,
 });
 
-// Oak House demo dataset
+// Chamberlain House demo dataset
 const OAK_HOUSE_REFERRALS: SafeguardingReferral[] = [
   makeReferral({
     id: "ref-001", childId: "child-alex", childName: "Alex",

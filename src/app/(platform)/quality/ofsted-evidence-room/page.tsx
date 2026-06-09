@@ -340,7 +340,7 @@ export default function OfstedEvidenceRoomPage() {
 
     return {
       generatedAt: new Date().toISOString(),
-      homeName: "Oak House",
+      homeName: "Chamberlain House",
       totalItems: selected.length,
       totalConfidence,
       categoryCoverage,

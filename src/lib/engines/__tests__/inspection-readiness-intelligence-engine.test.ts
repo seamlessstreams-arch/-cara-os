@@ -7,7 +7,7 @@ import {
 function baseInput(overrides: Partial<InspectionReadinessInput> = {}): InspectionReadinessInput {
   return {
     today: "2026-05-26",
-    home_name: "Oak House",
+    home_name: "Chamberlain House",
     total_children: 4,
     total_staff: 12,
     domain_metrics: [
@@ -35,7 +35,7 @@ describe("Inspection Readiness Intelligence Engine", () => {
     const result = computeInspectionReadiness(baseInput());
     expect(["good", "outstanding"]).toContain(result.overall_grade);
     expect(result.overall_readiness_score).toBeGreaterThanOrEqual(65);
-    expect(result.home_name).toBe("Oak House");
+    expect(result.home_name).toBe("Chamberlain House");
     expect(result.generated_at).toBe("2026-05-26");
     expect(result.judgment_areas).toHaveLength(3);
   });
@@ -166,7 +166,7 @@ describe("Inspection Readiness Intelligence Engine", () => {
 
   it("generates headline mentioning home name and grade", () => {
     const result = computeInspectionReadiness(baseInput());
-    expect(result.headline).toContain("Oak House");
+    expect(result.headline).toContain("Chamberlain House");
     expect(result.headline).toContain("readiness");
   });
 

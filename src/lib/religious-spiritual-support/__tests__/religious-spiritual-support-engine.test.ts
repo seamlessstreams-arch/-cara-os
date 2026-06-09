@@ -1083,8 +1083,8 @@ describe("generateReligiousSpiritualSupportIntelligence", () => {
     expect(result.childProfiles[1].childName).toBe("Jordan");
   });
 
-  // Oak House demo test
-  it("produces correct results for Oak House demo data", () => {
+  // Chamberlain House demo test
+  it("produces correct results for Chamberlain House demo data", () => {
     const profiles: ChildFaithProfile[] = [
       {
         id: "fp-alex-01", childId: "child-alex", childName: "Alex",

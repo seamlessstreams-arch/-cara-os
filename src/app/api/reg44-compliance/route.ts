@@ -3,7 +3,7 @@
 //
 // Reg 44 Compliance Intelligence
 //
-// GET  — Returns Reg 44 compliance assessment with realistic Oak House demo data
+// GET  — Returns Reg 44 compliance assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   ManagementResponse,
 } from "@/lib/reg44-compliance";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const CHILD_IDS = ["child-morgan", "child-alex", "child-jayden"];
 

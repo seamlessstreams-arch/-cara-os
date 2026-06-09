@@ -3,7 +3,7 @@
 //
 // Independence Intelligence
 //
-// GET  — Returns assessment with Oak House demo data
+// GET  — Returns assessment with Chamberlain House demo data
 //
 // CHR 2015 Reg 5 — Quality and purpose of care (preparing for independence)
 // CHR 2015 Reg 9 — Promoting independence
@@ -19,7 +19,7 @@ import type {
   StaffIndependenceTraining,
 } from "@/lib/independence";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_RECORDS: IndependenceRecord[] = [
   { id: "rec-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-02-10", category: "cooking_nutrition", outcome: "progressing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },

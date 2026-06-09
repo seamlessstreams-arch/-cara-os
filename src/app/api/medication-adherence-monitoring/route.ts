@@ -3,7 +3,7 @@
 //
 // Medication Adherence Monitoring Intelligence
 //
-// GET  — Returns medication adherence assessment with Oak House demo data
+// GET  — Returns medication adherence assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffMedicationTraining,
 } from "@/lib/medication-adherence-monitoring";
 
-// -- Demo Data: Oak House -----------------------------------------------------
+// -- Demo Data: Chamberlain House -----------------------------------------------------
 
 const DEMO_RECORDS: MedicationRecord[] = [
   { id: "mr-1", childId: "child-alex", childName: "Alex", administrationDate: "2026-05-12", medicationType: "prescribed_regular", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-09-01" },

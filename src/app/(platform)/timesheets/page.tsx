@@ -312,7 +312,7 @@ export default function TimesheetsPage() {
       ariaContext={{ pageTitle: "Timesheets", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Timesheets" subtitle="Oak House — Staff Timesheets" targetId="timesheets-content" />
+          <PrintButton title="Timesheets" subtitle="Chamberlain House — Staff Timesheets" targetId="timesheets-content" />
           <SmartUploadButton variant="inline" label="Upload Timesheet" uploadContext="Timesheets — timesheet or payroll upload" />
           <Button variant="outline" size="sm" onClick={exportCSV} disabled={isLoading}>
             <Download className="h-3.5 w-3.5 mr-1" />Export CSV

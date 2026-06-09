@@ -3,7 +3,7 @@
 //
 // Voice of the Child Intelligence
 //
-// GET  — Returns voice capture assessment with realistic Oak House demo data
+// GET  — Returns voice capture assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   ParticipationRecord,
 } from "@/lib/voice-of-child";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILDREN: ChildVoiceProfile[] = [
   { childId: "child-alex", childName: "Alex" },

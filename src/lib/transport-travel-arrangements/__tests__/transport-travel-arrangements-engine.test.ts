@@ -46,7 +46,7 @@ const makeTravelRecord = (overrides: Partial<TravelRecord> = {}): TravelRecord =
 const makeVehicleCheck = (overrides: Partial<VehicleCheck> = {}): VehicleCheck => ({
   id: "vc-001",
   vehicleId: "veh-001",
-  vehicleName: "Oak House Minibus",
+  vehicleName: "Chamberlain House Minibus",
   checkDate: "2026-03-01",
   checkedBy: "Sarah Johnson",
   motCurrent: true,
@@ -1042,10 +1042,10 @@ describe("generateTransportTravelArrangementsIntelligence", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Oak House Demo Integration
+// Chamberlain House Demo Integration
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Oak House Demo Integration", () => {
+describe("Chamberlain House Demo Integration", () => {
   const demoRecords: TravelRecord[] = [
     makeTravelRecord({ id: "tr-001", childId: "child-alex", childName: "Alex", travelType: "school_run", transportMode: "staff_car", driverStaffId: "staff-sarah", driverStaffName: "Sarah Johnson" }),
     makeTravelRecord({ id: "tr-002", childId: "child-jordan", childName: "Jordan", travelType: "contact_visit", transportMode: "minibus", driverStaffId: "staff-tom", driverStaffName: "Tom Richards" }),
@@ -1058,7 +1058,7 @@ describe("Oak House Demo Integration", () => {
   ];
 
   const demoChecks: VehicleCheck[] = [
-    makeVehicleCheck({ id: "vc-001", vehicleId: "veh-001", vehicleName: "Oak House Minibus" }),
+    makeVehicleCheck({ id: "vc-001", vehicleId: "veh-001", vehicleName: "Chamberlain House Minibus" }),
     makeVehicleCheck({ id: "vc-002", vehicleId: "veh-002", vehicleName: "Staff Car — Sarah" }),
     makeVehicleCheck({ id: "vc-003", vehicleId: "veh-003", vehicleName: "Staff Car — Tom" }),
   ];
@@ -1074,7 +1074,7 @@ describe("Oak House Demo Integration", () => {
     makeStaffTraining({ id: "st-004", staffId: "staff-darren", staffName: "Darren Laville" }),
   ];
 
-  it("produces outstanding rating for Oak House demo data", () => {
+  it("produces outstanding rating for Chamberlain House demo data", () => {
     const result = generateTransportTravelArrangementsIntelligence(
       demoRecords, demoChecks, demoPolicies, demoStaff,
       "oak-house",
@@ -1085,7 +1085,7 @@ describe("Oak House Demo Integration", () => {
     expect(result.overallScore).toBe(100);
   });
 
-  it("builds 3 child profiles for Oak House demo", () => {
+  it("builds 3 child profiles for Chamberlain House demo", () => {
     const result = generateTransportTravelArrangementsIntelligence(
       demoRecords, demoChecks, demoPolicies, demoStaff,
       "oak-house",
@@ -1099,7 +1099,7 @@ describe("Oak House Demo Integration", () => {
     expect(childNames).toContain("Morgan");
   });
 
-  it("Oak House demo has no areas for improvement", () => {
+  it("Chamberlain House demo has no areas for improvement", () => {
     const result = generateTransportTravelArrangementsIntelligence(
       demoRecords, demoChecks, demoPolicies, demoStaff,
       "oak-house",
@@ -1109,7 +1109,7 @@ describe("Oak House Demo Integration", () => {
     expect(result.areasForImprovement).toEqual([]);
   });
 
-  it("Oak House demo has no actions", () => {
+  it("Chamberlain House demo has no actions", () => {
     const result = generateTransportTravelArrangementsIntelligence(
       demoRecords, demoChecks, demoPolicies, demoStaff,
       "oak-house",
@@ -1119,7 +1119,7 @@ describe("Oak House Demo Integration", () => {
     expect(result.actions).toEqual([]);
   });
 
-  it("Oak House demo has multiple strengths", () => {
+  it("Chamberlain House demo has multiple strengths", () => {
     const result = generateTransportTravelArrangementsIntelligence(
       demoRecords, demoChecks, demoPolicies, demoStaff,
       "oak-house",

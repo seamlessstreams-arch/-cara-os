@@ -47,7 +47,7 @@ function run(policies: PolicyInput[], opts?: { staff?: StaffRef[] }) {
   });
 }
 
-// ── Oak House Dataset ───────────────────────────────────────────────────────
+// ── Chamberlain House Dataset ───────────────────────────────────────────────────────
 
 function oakHousePolicies(): PolicyInput[] {
   return [
@@ -321,7 +321,7 @@ describe("Policies Intelligence Engine", () => {
       expect(safeguarding?.has_coverage).toBe(false);
     });
 
-    it("marks lone_working as no coverage in Oak House dataset", () => {
+    it("marks lone_working as no coverage in Chamberlain House dataset", () => {
       const result = run(oakHousePolicies());
       const loneWorking = result.category_breakdown.find((c) => c.category === "lone_working");
       expect(loneWorking?.has_coverage).toBe(false);
@@ -468,7 +468,7 @@ describe("Policies Intelligence Engine", () => {
       expect(lows.some((a) => a.message.includes("3 policy reviews due within 30 days"))).toBe(true);
     });
 
-    it("generates low alert when Oak House has 3 due within 30 days", () => {
+    it("generates low alert when Chamberlain House has 3 due within 30 days", () => {
       const result = run(oakHousePolicies());
       const lows = result.alerts.filter((a) => a.severity === "low");
       // pol_002 (+30d boundary), pol_008 (+15d), pol_009 (+20d) = 3, which is > 2

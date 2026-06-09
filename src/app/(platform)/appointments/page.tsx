@@ -225,7 +225,7 @@ export default function AppointmentsPage() {
       ariaContext={{ pageTitle: "Appointments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Appointments" subtitle="Oak House — Health & Welfare" />
+          <PrintButton title="Appointments" subtitle="Chamberlain House — Health & Welfare" />
           <ExportButton data={filtered} columns={exportCols} filename="appointments" />
           <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}>

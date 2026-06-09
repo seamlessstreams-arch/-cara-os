@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Spiritual Wellbeing Development API Route
 //
-// GET  → returns Oak House demo spiritual wellbeing intelligence
+// GET  → returns Chamberlain House demo spiritual wellbeing intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -18,7 +18,7 @@ import type {
   StaffSpiritualWellbeingTraining,
 } from "@/lib/spiritual-wellbeing-development";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const activities: SpiritualActivity[] = [

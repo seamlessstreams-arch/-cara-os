@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Home Matching Impact Intelligence Engine
 //
-// Demo data: Oak House
+// Demo data: Chamberlain House
 //   - Alex (child-001): planned admission, well-matched, compatibility 8/10
 //   - Jordan (child-002): existing resident consulted about Alex's admission
 //   - Morgan (child-003): emergency admission, some negative impact detected
@@ -103,7 +103,7 @@ function makeOutcome(overrides: Partial<AdmissionOutcome> = {}): AdmissionOutcom
 const PERIOD_START = "2026-04-01";
 const PERIOD_END = "2026-05-18";
 
-// ── Oak House Demo Data ────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ────────────────────────────────────────────────────
 
 function oakHouseAssessments(): MatchingAssessment[] {
   return [
@@ -468,7 +468,7 @@ describe("evaluateMatchingQuality", () => {
     expect(result.totalAssessments).toBe(0);
   });
 
-  it("produces Oak House demo data correctly", () => {
+  it("produces Chamberlain House demo data correctly", () => {
     const result = evaluateMatchingQuality(oakHouseAssessments(), PERIOD_START, PERIOD_END);
     expect(result.totalAssessments).toBe(3);
     expect(result.averageCompatibilityScore).toBe(5.3);
@@ -600,7 +600,7 @@ describe("evaluateImpactMonitoring", () => {
     expect(result.totalMonitoringRecords).toBe(1);
   });
 
-  it("handles Oak House demo monitoring data", () => {
+  it("handles Chamberlain House demo monitoring data", () => {
     const result = evaluateImpactMonitoring(oakHouseMonitoring(), oakHouseAssessments(), PERIOD_START, PERIOD_END);
     expect(result.totalMonitoringRecords).toBe(6);
     expect(result.positiveImpactRate).toBe(33);
@@ -704,7 +704,7 @@ describe("evaluateResidentConsultation", () => {
     expect(result.totalConsultations).toBe(1);
   });
 
-  it("handles Oak House demo consultation data", () => {
+  it("handles Chamberlain House demo consultation data", () => {
     const result = evaluateResidentConsultation(
       oakHouseConsultations(),
       oakHouseAssessments(),
@@ -825,7 +825,7 @@ describe("evaluateAdmissionOutcomes", () => {
     expect(result.totalOutcomes).toBe(1);
   });
 
-  it("handles Oak House demo outcome data", () => {
+  it("handles Chamberlain House demo outcome data", () => {
     const result = evaluateAdmissionOutcomes(oakHouseOutcomes(), PERIOD_START, PERIOD_END);
     expect(result.totalOutcomes).toBe(2);
     expect(result.placementStabilityRate).toBe(50);
@@ -853,7 +853,7 @@ describe("evaluateAdmissionOutcomes", () => {
 });
 
 describe("generateHomeMatchingImpactIntelligence", () => {
-  it("generates full intelligence for Oak House demo data", () => {
+  it("generates full intelligence for Chamberlain House demo data", () => {
     const result = generateHomeMatchingImpactIntelligence(
       oakHouseAssessments(),
       oakHouseMonitoring(),

@@ -3,7 +3,7 @@
 //
 // Culture, Identity & Diversity Intelligence
 //
-// GET  — Returns culture/identity assessment with realistic Oak House demo data
+// GET  — Returns culture/identity assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -23,7 +23,7 @@ import type {
   StaffDiversityTraining,
 } from "@/lib/culture-identity";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILDREN: CultureChild[] = [
   {

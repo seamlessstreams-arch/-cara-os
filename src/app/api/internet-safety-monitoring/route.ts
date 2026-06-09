@@ -3,7 +3,7 @@
 //
 // Internet Safety Monitoring Intelligence
 //
-// GET  — Returns Oak House demo with Alex, Jordan, Morgan
+// GET  — Returns Chamberlain House demo with Alex, Jordan, Morgan
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 

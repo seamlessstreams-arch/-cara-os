@@ -46,7 +46,7 @@ export default function NightStaffGuidancePage() {
   if (isLoading) return <PageShell title="Night Staff Guidance" subtitle="Loading…"><div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div></PageShell>;
 
   return (
-    <PageShell title="Night Staff Guidance" subtitle="Waking Night & Sleep-In Procedures — Oak House" 
+    <PageShell title="Night Staff Guidance" subtitle="Waking Night & Sleep-In Procedures — Chamberlain House" 
       ariaContext={{ pageTitle: "Night Staff Guidance", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">

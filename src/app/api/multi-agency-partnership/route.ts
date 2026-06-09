@@ -3,7 +3,7 @@
 //
 // Multi-Agency Partnership Intelligence
 //
-// GET  — Returns partnership assessment with demo Oak House data
+// GET  — Returns partnership assessment with demo Chamberlain House data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -22,7 +22,7 @@ import type {
   InformationSharingRecord,
 } from "@/lib/multi-agency-partnership";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_RELATIONSHIPS: AgencyRelationship[] = [
   {

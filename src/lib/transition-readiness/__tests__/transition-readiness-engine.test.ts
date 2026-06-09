@@ -21,7 +21,7 @@ import type {
   PostTransitionSupport,
 } from "../transition-readiness-engine";
 
-// ── Demo Data: Oak House ───────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ───────────────────────────────────────────────────
 
 const PLAN_MORGAN: TransitionPlan = {
   id: "tp-morgan",

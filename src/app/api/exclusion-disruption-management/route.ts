@@ -3,7 +3,7 @@
 //
 // Exclusion & Disruption Management Intelligence
 //
-// GET  — Returns exclusion/disruption assessment with Oak House demo data
+// GET  — Returns exclusion/disruption assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffExclusionTraining,
 } from "@/lib/exclusion-disruption-management";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_EXCLUSIONS: ExclusionRecord[] = [
   {

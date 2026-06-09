@@ -1053,7 +1053,7 @@ export type IntelligenceProviderOversightEntry = any;
 export const providerHomeSummaries: IntelligenceProviderHomeSummary[] = [
   {
     id: "oak-house",
-    name: "Oak House",
+    name: "Chamberlain House",
     manager: "Darren Laville",
     totalChildren: 3,
     capacity: 4,
@@ -1123,10 +1123,10 @@ export const providerHomeSummaries: IntelligenceProviderHomeSummary[] = [
 
 export const providerOversightLog: IntelligenceProviderOversightEntry[] = [
   { id: "ol-1", date: "2026-05-03", home: "Willow Place", type: "review", content: "Monthly quality review completed. All areas meeting or exceeding standards. Commend David and team for consistent excellence.", author: "Regional Inspector", status: "closed" },
-  { id: "ol-2", date: "2026-05-01", home: "Oak House", type: "comment", content: "Noted improvement in recording quality following last visit. Progress entries are now timely and outcome-focused. One night staff supervision gap to address.", author: "Regional Inspector", status: "open" },
+  { id: "ol-2", date: "2026-05-01", home: "Chamberlain House", type: "comment", content: "Noted improvement in recording quality following last visit. Progress entries are now timely and outcome-focused. One night staff supervision gap to address.", author: "Regional Inspector", status: "open" },
   { id: "ol-3", date: "2026-04-28", home: "Birch Lodge", type: "action_request", content: "Reg 44 visit now 12 days overdue. Manager to complete within 48 hours and submit report. Supervision compliance plan required by 5 May.", author: "Regional Inspector", status: "open" },
   { id: "ol-4", date: "2026-04-25", home: "Birch Lodge", type: "escalation", content: "Pattern of missing episodes identified - 4 in 30 days involving 2 different young people. Requesting immediate review of risk assessments and boundary agreements.", author: "Regional Inspector", status: "open" },
-  { id: "ol-5", date: "2026-04-20", home: "Oak House", type: "review", content: "Unannounced visit completed. Children appeared settled and engaged. Staff interactions observed as warm and appropriate. Minor recommendation around medication storage labelling.", author: "Regional Inspector", status: "closed" },
+  { id: "ol-5", date: "2026-04-20", home: "Chamberlain House", type: "review", content: "Unannounced visit completed. Children appeared settled and engaged. Staff interactions observed as warm and appropriate. Minor recommendation around medication storage labelling.", author: "Regional Inspector", status: "closed" },
 ];
 
 // ─── Manager attention items (Control Centre queue) ───────────────────────

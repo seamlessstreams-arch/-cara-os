@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Staff Wellbeing & Resilience Intelligence Engine
 //
-// Demo: Oak House
+// Demo: Chamberlain House
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 

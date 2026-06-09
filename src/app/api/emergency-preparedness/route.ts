@@ -8,7 +8,7 @@ import type {
   StaffEmergencyTraining,
 } from "@/lib/emergency-preparedness";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function buildDemoData(): {
   drills: EmergencyDrill[];

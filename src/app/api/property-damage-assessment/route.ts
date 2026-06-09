@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Property Damage Assessment Intelligence API Route
 //
-// GET  → returns Oak House demo property damage assessment intelligence
+// GET  → returns Chamberlain House demo property damage assessment intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   DamagePreventionMeasure,
 } from "@/lib/property-damage-assessment/property-damage-assessment-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const incidents: DamageIncident[] = [

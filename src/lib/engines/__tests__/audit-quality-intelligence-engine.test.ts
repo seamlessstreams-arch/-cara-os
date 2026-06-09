@@ -478,9 +478,9 @@ describe("ARIA insights", () => {
   });
 });
 
-// ── Oak House Integration ───────────────────────────────────────────────────
+// ── Chamberlain House Integration ───────────────────────────────────────────────────
 
-describe("Oak House integration", () => {
+describe("Chamberlain House integration", () => {
   // Mirrors the 5 seeded audits from store.ts
   const oakAudits: AuditInput[] = [
     {
@@ -510,7 +510,7 @@ describe("Oak House integration", () => {
     },
   ];
 
-  it("produces correct overview for Oak House audit data", () => {
+  it("produces correct overview for Chamberlain House audit data", () => {
     const r = run(oakAudits, STAFF);
     const o = r.overview;
 
@@ -537,7 +537,7 @@ describe("Oak House integration", () => {
     expect(o.categories_covered).toBe(5);
   });
 
-  it("produces correct audit profiles for Oak House", () => {
+  it("produces correct audit profiles for Chamberlain House", () => {
     const r = run(oakAudits, STAFF);
 
     const a1 = r.audit_profiles.find((p) => p.audit_id === "a1")!;
@@ -552,7 +552,7 @@ describe("Oak House integration", () => {
     expect(a4.risk_flags).toContain("unresolved_findings");
   });
 
-  it("produces correct category analysis for Oak House", () => {
+  it("produces correct category analysis for Chamberlain House", () => {
     const r = run(oakAudits, STAFF);
     expect(r.category_analysis).toHaveLength(5);
     // Weakest first: scheduled categories have avg 0, then finance 78, health_safety 87, medication 92
@@ -560,7 +560,7 @@ describe("Oak House integration", () => {
     expect(first.avg_compliance_score).toBe(0); // one of the scheduled categories
   });
 
-  it("fires expected alerts for Oak House data", () => {
+  it("fires expected alerts for Chamberlain House data", () => {
     const r = run(oakAudits, STAFF);
 
     // No overdue → no critical
@@ -580,7 +580,7 @@ describe("Oak House integration", () => {
     expect(upcoming).toHaveLength(1);
   });
 
-  it("fires expected ARIA insights for Oak House data", () => {
+  it("fires expected ARIA insights for Chamberlain House data", () => {
     const r = run(oakAudits, STAFF);
 
     // No overdue → no critical insight

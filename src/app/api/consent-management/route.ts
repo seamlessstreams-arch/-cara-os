@@ -8,7 +8,7 @@ import type {
   StaffConsentTraining,
 } from "@/lib/consent-management/consent-management-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoRecords(): ConsentRecord[] {
   return [

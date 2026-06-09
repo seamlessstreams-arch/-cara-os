@@ -3,7 +3,7 @@
 //
 // Self-Harm Prevention Protocol Intelligence
 //
-// GET  — Returns self-harm prevention assessment with Oak House demo data
+// GET  — Returns self-harm prevention assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffSelfHarmTraining,
 } from "@/lib/self-harm-prevention-protocol";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PROFILES: ChildRiskProfile[] = [
   {

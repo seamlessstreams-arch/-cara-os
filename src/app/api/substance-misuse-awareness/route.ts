@@ -3,7 +3,7 @@
 //
 // Substance Misuse Awareness Intelligence
 //
-// GET  — Returns substance misuse assessment with Oak House demo data
+// GET  — Returns substance misuse assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   StaffSubstanceTraining,
 } from "@/lib/substance-misuse-awareness";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PROFILES: ChildSubstanceProfile[] = [
   {

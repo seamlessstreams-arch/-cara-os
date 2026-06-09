@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/education-outcomes — Education Attendance & Achievement Intelligence
 //
-// GET  — Returns Oak House demo intelligence data
+// GET  — Returns Chamberlain House demo intelligence data
 // POST — Accepts custom data with validation
 //
 // CHR 2015 Reg 8 — The education standard

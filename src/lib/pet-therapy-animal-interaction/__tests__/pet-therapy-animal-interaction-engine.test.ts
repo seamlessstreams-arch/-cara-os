@@ -1554,9 +1554,9 @@ describe("generatePetTherapyAnimalInteractionIntelligence", () => {
     expect(result.regulatoryLinks).toContain("NICE CG170 — Autism spectrum disorder in children (animal-assisted therapy evidence)");
   });
 
-  // -- Full Oak House demo scenario -------------------------------------------
+  // -- Full Chamberlain House demo scenario -------------------------------------------
 
-  it("scores Oak House demo data correctly", () => {
+  it("scores Chamberlain House demo data correctly", () => {
     const sessions: AnimalSession[] = [
       makeSession({ id: "as-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-01", animalType: "dog", sessionType: "structured_therapy", facilitatedBy: "Sarah Johnson", therapeuticBenefit: "significant" }),
       makeSession({ id: "as-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-15", animalType: "dog", sessionType: "informal_interaction", facilitatedBy: "Tom Richards", therapeuticBenefit: "moderate" }),

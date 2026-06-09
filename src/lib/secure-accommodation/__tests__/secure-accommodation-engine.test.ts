@@ -119,7 +119,7 @@ function makeDischargeAssessment(
   };
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 // Morgan (15) — active s25 order (risk to self), 2 welfare reviews
 // Alex (14) — no orders
@@ -1294,7 +1294,7 @@ describe("Secure Accommodation Intelligence Engine", () => {
 
   // ── Demo Data Integration ────────────────────────────────────────────────
 
-  describe("Demo Data — Oak House", () => {
+  describe("Demo Data — Chamberlain House", () => {
     it("generates intelligence from demo data without errors", () => {
       const result = generateSecureAccommodationIntelligence(
         DEMO_ORDERS,
@@ -1309,7 +1309,7 @@ describe("Secure Accommodation Intelligence Engine", () => {
       expect(result.homeId).toBe("oak-house");
     });
 
-    it("scores Oak House demo data highly", () => {
+    it("scores Chamberlain House demo data highly", () => {
       const result = generateSecureAccommodationIntelligence(
         DEMO_ORDERS,
         DEMO_REVIEWS,

@@ -3,7 +3,7 @@
 //
 // Secure Accommodation Intelligence
 //
-// GET  — Returns assessment with realistic Oak House demo data
+// GET  — Returns assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -24,7 +24,7 @@ import type {
   DischargeAssessment,
 } from "@/lib/secure-accommodation";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 // Morgan (15) — active s25 order (risk to self), 2 welfare reviews
 // Alex (14) — no orders

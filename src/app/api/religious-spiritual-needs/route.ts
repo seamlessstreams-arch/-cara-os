@@ -1,7 +1,7 @@
 // ==============================================================================
 // Cornerstone — Religious & Spiritual Needs Intelligence API Route
 //
-// GET  -> returns Oak House demo intelligence (Alex, Jordan, Morgan, Sam)
+// GET  -> returns Chamberlain House demo intelligence (Alex, Jordan, Morgan, Sam)
 // POST -> accepts custom data for any home
 // ==============================================================================
 
@@ -14,7 +14,7 @@ import type {
   StaffReligiousTraining,
 } from "@/lib/religious-spiritual-needs/religious-spiritual-needs-engine";
 
-// -- Oak House Demo Data ------------------------------------------------------
+// -- Chamberlain House Demo Data ------------------------------------------------------
 
 function getDemoData(): {
   assessments: ReligiousSpiritualAssessment[];

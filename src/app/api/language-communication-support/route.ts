@@ -3,7 +3,7 @@
 //
 // Language, Communication & Support Intelligence
 //
-// GET  — Returns communication support assessment with Oak House demo data
+// GET  — Returns communication support assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffCommunicationTraining,
 } from "@/lib/language-communication-support";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PROFILES: ChildCommunicationProfile[] = [
   // Alex — no communication needs

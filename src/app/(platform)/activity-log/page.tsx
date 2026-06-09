@@ -231,7 +231,7 @@ export default function ActivityLogPage() {
             Refresh
           </Button>
           <ExportButton data={filtered} columns={FEED_EXPORT_COLS} filename="activity-log" />
-          <PrintButton title="Activity Log" subtitle="Oak House — Event Timeline" />
+          <PrintButton title="Activity Log" subtitle="Chamberlain House — Event Timeline" />
           <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

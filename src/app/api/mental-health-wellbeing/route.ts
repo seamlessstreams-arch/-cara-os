@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/mental-health-wellbeing — Mental Health & Wellbeing Intelligence
 //
-// GET  — returns demo intelligence report for Oak House
+// GET  — returns demo intelligence report for Chamberlain House
 // POST — accepts custom data and returns computed intelligence
 //
 // CHR 2015 Reg 10 — Health and wellbeing

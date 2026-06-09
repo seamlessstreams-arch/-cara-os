@@ -36,7 +36,7 @@ const HOME_ID = "oak-house";
 const CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
 const CHILD_NAMES = ["Alex", "Jordan", "Morgan"];
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Alex (14): noise sensitivity, calming input
 // Jordan (13): tactile sensitivity
 // Morgan (15): light sensitivity

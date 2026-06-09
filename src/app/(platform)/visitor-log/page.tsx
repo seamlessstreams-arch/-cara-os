@@ -316,7 +316,7 @@ export default function VisitorLogPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={VISITOR_EXPORT_COLS} filename="visitor-log" />
-          <PrintButton title="Visitor Log" subtitle="Oak House — Visitor Records" />
+          <PrintButton title="Visitor Log" subtitle="Chamberlain House — Visitor Records" />
           <Button size="sm" className="h-8 text-xs gap-1.5" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5" />
             Sign In Visitor

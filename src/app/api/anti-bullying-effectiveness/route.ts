@@ -3,7 +3,7 @@
 //
 // Anti-Bullying Effectiveness Intelligence
 //
-// GET  — Returns anti-bullying effectiveness metrics with demo data (Oak House)
+// GET  — Returns anti-bullying effectiveness metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -22,7 +22,7 @@ import type {
   StaffAntiBullyingTraining,
 } from "@/lib/anti-bullying-effectiveness";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   incidents: BullyingIncident[];

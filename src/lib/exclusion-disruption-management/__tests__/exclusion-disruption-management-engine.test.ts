@@ -851,7 +851,7 @@ describe("generateExclusionDisruptionManagementIntelligence", () => {
 
   // -- Integration --
 
-  it("handles Oak House demo scenario", () => {
+  it("handles Chamberlain House demo scenario", () => {
     const exclusions: ExclusionRecord[] = [
       mkExclusion({
         id: "exc-1",

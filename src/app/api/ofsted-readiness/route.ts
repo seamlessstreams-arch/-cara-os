@@ -13,7 +13,7 @@ import type {
   ActionPlanItem,
 } from "@/lib/ofsted-readiness/ofsted-readiness-engine";
 
-// ── Demo Data — Oak House ────────────────────────────────────────────────────
+// ── Demo Data — Chamberlain House ────────────────────────────────────────────────────
 
 const DEMO_AREA_SCORES: AreaScore[] = [
   {

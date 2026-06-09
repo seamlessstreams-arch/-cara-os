@@ -3,7 +3,7 @@
 //
 // Staff Wellbeing & Resilience Intelligence
 //
-// GET  — Returns staff wellbeing metrics with demo data (Oak House)
+// GET  — Returns staff wellbeing metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -43,7 +43,7 @@ const ALL_WELLBEING_SCORES: WellbeingScore[] = [
   "critical",
 ];
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   assessments: WellbeingAssessment[];

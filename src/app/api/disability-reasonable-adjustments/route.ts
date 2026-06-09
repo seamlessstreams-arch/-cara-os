@@ -1,7 +1,7 @@
 // ==============================================================================
 // Cornerstone -- Disability & Reasonable Adjustments Intelligence API Route
 //
-// GET  -> returns Oak House demo disability & reasonable adjustments intelligence
+// GET  -> returns Chamberlain House demo disability & reasonable adjustments intelligence
 // POST -> accepts custom data for any home
 // ==============================================================================
 
@@ -21,7 +21,7 @@ import type {
   StaffDisabilityTraining,
 } from "@/lib/disability-reasonable-adjustments/disability-reasonable-adjustments-engine";
 
-// -- Oak House Demo Data ------------------------------------------------------
+// -- Chamberlain House Demo Data ------------------------------------------------------
 
 function getDemoData() {
   const adjustments: AdjustmentRecord[] = [

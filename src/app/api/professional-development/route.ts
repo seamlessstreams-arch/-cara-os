@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Professional Development Intelligence API Route
 //
-// GET  → returns Oak House demo intelligence
+// GET  → returns Chamberlain House demo intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   LearningCulture,
 } from "@/lib/professional-development/professional-development-engine";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 function getDemoData(): {
   cpdRecords: CPDRecord[];

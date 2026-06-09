@@ -263,7 +263,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Incident Report" subtitle="Oak House — Incident Record" targetId="incident-detail-content" />
+          <PrintButton title="Incident Report" subtitle="Chamberlain House — Incident Record" targetId="incident-detail-content" />
           <SmartUploadButton
             variant="icon"
             linkedIncidentId={id}

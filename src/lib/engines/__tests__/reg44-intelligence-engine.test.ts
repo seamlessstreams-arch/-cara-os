@@ -404,7 +404,7 @@ describe("computeReg44Intelligence", () => {
     });
   });
 
-  describe("full Oak House integration", () => {
+  describe("full Chamberlain House integration", () => {
     it("processes realistic multi-visit data", () => {
       const visits: VisitInput[] = [
         {

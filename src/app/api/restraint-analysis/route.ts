@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Restraint Analysis Intelligence API Route
 //
-// GET  → returns Oak House demo restraint analysis intelligence
+// GET  → returns Chamberlain House demo restraint analysis intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -13,7 +13,7 @@ import type {
   RestraintTraining,
 } from "@/lib/restraint-analysis/restraint-analysis-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const records: RestraintRecord[] = [

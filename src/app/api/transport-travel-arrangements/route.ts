@@ -3,7 +3,7 @@
 //
 // Transport & Travel Arrangements Intelligence
 //
-// GET  — Returns transport/travel metrics with Oak House demo data
+// GET  — Returns transport/travel metrics with Chamberlain House demo data
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -176,7 +176,7 @@ function generateDemoData() {
     {
       id: "vc-001",
       vehicleId: "veh-001",
-      vehicleName: "Oak House Minibus",
+      vehicleName: "Chamberlain House Minibus",
       checkDate: "2026-04-01",
       checkedBy: "Sarah Johnson",
       motCurrent: true,

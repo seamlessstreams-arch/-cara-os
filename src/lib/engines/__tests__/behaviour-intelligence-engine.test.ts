@@ -839,9 +839,9 @@ describe("computeBehaviourIntelligence — ARIA insights", () => {
   });
 });
 
-// ── Full Integration Test — Oak House ───────────────────────────────────────
+// ── Full Integration Test — Chamberlain House ───────────────────────────────────────
 
-describe("computeBehaviourIntelligence — Oak House integration", () => {
+describe("computeBehaviourIntelligence — Chamberlain House integration", () => {
   const today = "2026-05-23";
   const childNameLookup = (id: string): string => {
     const names: Record<string, string> = {
@@ -852,7 +852,7 @@ describe("computeBehaviourIntelligence — Oak House integration", () => {
     return names[id] ?? "Unknown";
   };
 
-  // Realistic Oak House dataset
+  // Realistic Chamberlain House dataset
   const oakHouseInput: BehaviourEngineInput = {
     behaviourEntries: [
       // Alex — mix (high volatility)

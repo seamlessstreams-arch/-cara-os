@@ -498,7 +498,7 @@ describe("computeKeyworkingIntelligence", () => {
     });
   });
 
-  describe("full Oak House integration", () => {
+  describe("full Chamberlain House integration", () => {
     it("produces comprehensive output for 3 children with 8 sessions", () => {
       const children: ChildInput[] = [
         makeChild("yp_alex", "Alex"),

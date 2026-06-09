@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Staff Training & CPD Compliance Intelligence API Route
 //
-// GET  → returns Oak House demo intelligence
+// GET  → returns Chamberlain House demo intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { generateStaffTrainingIntelligence } from "@/lib/staff-training/staff-training-engine";
 import type { StaffMember, TrainingRecord, ChildNeed } from "@/lib/staff-training/staff-training-engine";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 function getDemoData(): {
   staff: StaffMember[];

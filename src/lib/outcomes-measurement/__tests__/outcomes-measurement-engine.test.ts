@@ -35,7 +35,7 @@ const REFERENCE_DATE = "2026-05-18";
 
 const CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 // Alex (14) — improving emotional wellbeing/education, regression in behaviour
 // Jordan (13) — good progress across all domains
 // Morgan (15) — some progress, at-risk targets for independence

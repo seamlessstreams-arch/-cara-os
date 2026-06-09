@@ -1266,11 +1266,11 @@ describe("suspensionDecision.ts", () => {
 describe("letterTemplates.ts", () => {
   const baseCtx: LetterContext = {
     recipientName: "James Walker",
-    homeName: "Oak House Children's Home",
+    homeName: "Chamberlain House Children's Home",
     caseRefDisplay: "HR-2024-0042",
     meetingDate: "22 August 2024",
     meetingTime: "10:00",
-    meetingLocation: "Meeting Room 2, Oak House",
+    meetingLocation: "Meeting Room 2, Chamberlain House",
     managerName: "Sarah Collins",
     managerRole: "Registered Manager",
     contactName: "Deputy Manager Lisa Brooks",
@@ -1377,6 +1377,6 @@ describe("letterTemplates.ts", () => {
     const output = renderLetterTemplate("no_further_action", baseCtx);
     expect(output).toContain("Sarah Collins");
     expect(output).toContain("Registered Manager");
-    expect(output).toContain("Oak House");
+    expect(output).toContain("Chamberlain House");
   });
 });

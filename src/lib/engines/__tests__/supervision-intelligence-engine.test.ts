@@ -612,7 +612,7 @@ describe("computeSupervisionIntelligence", () => {
     });
   });
 
-  describe("full Oak House integration", () => {
+  describe("full Chamberlain House integration", () => {
     it("processes realistic multi-staff data", () => {
       const staff: StaffInput[] = [
         { id: "staff_edward", name: "Edward", role: "Night RSW" },

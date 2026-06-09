@@ -105,7 +105,7 @@ function makeCompetencyAssessment(overrides: Partial<CompetencyAssessment> = {})
   };
 }
 
-// ── Oak House Demo Data ────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ────────────────────────────────────────────────────
 
 function getOakHouseStaff(): StaffMember[] {
   return [
@@ -903,10 +903,10 @@ describe("evaluateCompetencyDevelopment", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// Integration — Oak House Demo Data
+// Integration — Chamberlain House Demo Data
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateStaffPerformanceIntelligence — Oak House Integration", () => {
+describe("generateStaffPerformanceIntelligence — Chamberlain House Integration", () => {
   const staff = getOakHouseStaff();
   const qualifications = getOakHouseQualifications();
   const reviews = getOakHouseReviews();
@@ -1070,7 +1070,7 @@ describe("generateStaffPerformanceIntelligence — Oak House Integration", () =>
     expect(result.regulatoryLinks.some((l) => l.includes("Working Together 2023"))).toBe(true);
   });
 
-  it("PDP goals total is 12 for Oak House", () => {
+  it("PDP goals total is 12 for Chamberlain House", () => {
     expect(result.pdpProgress.totalGoals).toBe(12);
   });
 
@@ -1078,15 +1078,15 @@ describe("generateStaffPerformanceIntelligence — Oak House Integration", () =>
     expect(result.pdpProgress.staffWithMinGoals).toBe(true);
   });
 
-  it("Oak House has 27 competency assessments", () => {
+  it("Chamberlain House has 27 competency assessments", () => {
     expect(result.competencyDevelopment.totalAssessments).toBe(27);
   });
 
-  it("critical areas are covered for all Oak House staff", () => {
+  it("critical areas are covered for all Chamberlain House staff", () => {
     expect(result.competencyDevelopment.criticalAreasCovered).toBe(true);
   });
 
-  it("Oak House qualification compliance detects Tom missing Level 3", () => {
+  it("Chamberlain House qualification compliance detects Tom missing Level 3", () => {
     // Tom has level_3_diploma as in_progress, not achieved
     // So total required across 4 staff will not have 100% achieved
     expect(result.qualificationCompliance.achievedRate).toBeLessThan(100);

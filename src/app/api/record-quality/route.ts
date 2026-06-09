@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Record Quality & Timeliness Intelligence API Route
 //
-// GET  → returns Oak House demo intelligence
+// GET  → returns Chamberlain House demo intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   RecordExpectation,
 } from "@/lib/record-quality/record-quality-engine";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (RSW), Darren Laville (RM)
 // Children: Alex (14), Jordan (13), Morgan (15)
 //

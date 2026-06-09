@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Staff Resilience Intelligence Engine — Tests
 //
-// Oak House demo data:
+// Chamberlain House demo data:
 //   Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (Senior RSW),
 //          Darren Laville (RM)
 //   Children: Alex (14), Jordan (13), Morgan (15)

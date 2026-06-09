@@ -4,7 +4,7 @@ import {
   type ModuleIntelligenceScore,
 } from "@/lib/home-intelligence";
 
-// ── Oak House demo module scores ───────────────────────────────────────────
+// ── Chamberlain House demo module scores ───────────────────────────────────────────
 
 const DEMO_MODULE_SCORES: ModuleIntelligenceScore[] = [
   // ── Child Experiences Domain ──
@@ -36,7 +36,7 @@ const DEMO_MODULE_SCORES: ModuleIntelligenceScore[] = [
 export async function GET() {
   const result = generateHomeIntelligenceSummary({
     homeId: "home-oak-house",
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     periodStart: "2025-01-01",
     periodEnd: "2025-12-31",
     moduleScores: DEMO_MODULE_SCORES,

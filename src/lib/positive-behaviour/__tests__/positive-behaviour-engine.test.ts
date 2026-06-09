@@ -33,7 +33,7 @@ const PERIOD_START = "2025-01-01";
 const PERIOD_END = "2025-06-30";
 const REFERENCE_DATE = "2025-06-01";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Children: Alex (14, anxiety triggers), Jordan (13, peer conflict),
 //           Morgan (15, emotional dysregulation)
 // Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (Senior RSW),

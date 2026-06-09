@@ -63,7 +63,7 @@ function makeStatement(
     id: "stmt-1",
     home_id: "home-1",
     version: "1.0",
-    title: "Statement of Purpose — Oak House",
+    title: "Statement of Purpose — Chamberlain House",
     effective_date: daysAgo(90),
     review_date: daysFromNow(90),
     last_reviewed_date: daysAgo(30),

@@ -1,7 +1,7 @@
 // ==============================================================================
 // TESTS — Placement Matching Quality Intelligence Engine
 //
-// Demo data: Oak House with children Alex (excellent match), Jordan (good match,
+// Demo data: Chamberlain House with children Alex (excellent match), Jordan (good match,
 // settling), Morgan (good match, stable). 3 compatibility reviews,
 // 3 stability assessments, no disruptions.
 // ==============================================================================

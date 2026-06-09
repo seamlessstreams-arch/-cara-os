@@ -8,7 +8,7 @@ import type {
   StaffActivityTraining,
 } from "@/lib/activities";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: ActivityRecord[];

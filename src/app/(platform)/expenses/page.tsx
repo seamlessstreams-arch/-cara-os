@@ -245,7 +245,7 @@ export default function ExpensesPage() {
       quickCreateContext={{ module: "expenses", defaultTaskCategory: "finance" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Expenses" subtitle="Oak House — Expense Claims & Reporting" targetId="expenses-content" />
+          <PrintButton title="Expenses" subtitle="Chamberlain House — Expense Claims & Reporting" targetId="expenses-content" />
           <SmartUploadButton variant="inline" label="Upload Receipt" uploadContext="Expenses — receipt or invoice upload" />
           <ExportButton<Expense> filename="expenses-export" data={filtered} columns={EXPENSE_EXPORT_COLS} label="Export" />
           <Button size="sm" onClick={() => setShowNewForm(!showNewForm)}>

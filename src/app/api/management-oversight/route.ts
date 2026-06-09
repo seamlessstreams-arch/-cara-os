@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Management Oversight Intelligence API Route
 //
-// GET → returns Oak House demo management oversight intelligence
+// GET → returns Chamberlain House demo management oversight intelligence
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse } from "next/server";
@@ -12,7 +12,7 @@ import type {
   StaffOversightTraining,
 } from "@/lib/management-oversight/management-oversight-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 const DEMO_RECORDS: OversightRecord[] = [
   {

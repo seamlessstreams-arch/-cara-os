@@ -143,7 +143,7 @@ export async function GET() {
 
   const input: StaffWellbeingInput = {
     today,
-    home_name: store.home?.name ?? "Oak House",
+    home_name: store.home?.name ?? "Chamberlain House",
     staff: staffMembers,
     shifts,
     leave_requests: leaveRequests,

@@ -519,7 +519,7 @@ describe("Notifiable Events Intelligence Engine", () => {
     });
   });
 
-  describe("Oak House integration", () => {
+  describe("Chamberlain House integration", () => {
     function oakHouseEvents(): NotifiableEventInput[] {
       return [
         {
@@ -573,7 +573,7 @@ describe("Notifiable Events Intelligence Engine", () => {
       ];
     }
 
-    it("calculates correct overview for Oak House data", () => {
+    it("calculates correct overview for Chamberlain House data", () => {
       const result = run(oakHouseEvents());
       expect(result.overview.total_events).toBe(6);
       expect(result.overview.notified_within_24h).toBe(5);

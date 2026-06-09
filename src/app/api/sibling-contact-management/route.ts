@@ -3,7 +3,7 @@
 //
 // Sibling Contact Management Intelligence
 //
-// GET  — Returns sibling contact assessment with Oak House demo data
+// GET  — Returns sibling contact assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffSiblingTraining,
 } from "@/lib/sibling-contact-management";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_CONTACTS: SiblingContact[] = [
   { id: "sc-1", childId: "child-alex", childName: "Alex", siblingId: "sib-alex-1", siblingName: "Sam", contactDate: "2026-02-10", contactType: "face_to_face", contactOutcome: "very_positive", durationMinutes: 120, facilitatedBy: "Sarah Johnson", childSatisfied: true, recordedInCasefile: true },

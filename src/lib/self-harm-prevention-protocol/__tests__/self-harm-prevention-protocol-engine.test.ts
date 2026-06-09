@@ -925,9 +925,9 @@ describe("generateSelfHarmPreventionProtocolIntelligence", () => {
     expect(result.childProfiles).toHaveLength(0);
   });
 
-  // ── Integration: Oak House demo scenario ──
+  // ── Integration: Chamberlain House demo scenario ──
 
-  it("handles Oak House demo scenario", () => {
+  it("handles Chamberlain House demo scenario", () => {
     const profiles = [
       mkProfile({ id: "rp-1", childId: "child-alex", childName: "Alex", riskLevel: "low", safetyPlanStatus: "current", reviewCurrent: true, triggersIdentified: ["anxiety"], copingStrategiesDocumented: ["breathing"], professionalSupportInPlace: true }),
       mkProfile({ id: "rp-2", childId: "child-jordan", childName: "Jordan", riskLevel: "medium", safetyPlanStatus: "current", reviewCurrent: true, triggersIdentified: ["peer conflict", "homesickness"], copingStrategiesDocumented: ["talk to keyworker", "journaling"], professionalSupportInPlace: true }),

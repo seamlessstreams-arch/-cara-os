@@ -222,7 +222,7 @@ export default function OversightRadarPage() {
 
       const childLabel = youngPeople.find((y) => y.id === selectedChild)?.name ?? "Whole Home";
       const lines: string[] = [
-        `## Oak House Oversight Radar Scan`,
+        `## Chamberlain House Oversight Radar Scan`,
         `Scope: ${childLabel}`,
         `Date: ${new Date().toISOString()}`,
         "",

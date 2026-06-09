@@ -1,7 +1,7 @@
 // ==============================================================================
 // Cornerstone — Cultural Identity Support Intelligence API Route
 //
-// GET  -> returns Oak House demo intelligence (Alex, Jordan, Morgan)
+// GET  -> returns Chamberlain House demo intelligence (Alex, Jordan, Morgan)
 // POST -> accepts custom data for any home
 // ==============================================================================
 
@@ -14,7 +14,7 @@ import type {
   StaffCulturalTraining,
 } from "@/lib/cultural-identity-support/cultural-identity-support-engine";
 
-// -- Oak House Demo Data ------------------------------------------------------
+// -- Chamberlain House Demo Data ------------------------------------------------------
 
 function getDemoData(): {
   assessments: CulturalNeedsAssessment[];

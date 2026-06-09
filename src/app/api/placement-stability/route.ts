@@ -3,7 +3,7 @@
 //
 // Placement Stability Intelligence
 //
-// GET  — Returns Oak House demo data with full intelligence analysis
+// GET  — Returns Chamberlain House demo data with full intelligence analysis
 // POST — Accepts custom placement/disruption/support/matching/outcome data
 //        and returns analysis
 //
@@ -209,7 +209,7 @@ function generateDemoData(): {
       existingChildrenConsulted: true,
       childViewsRecorded: true,
       riskAssessmentCompleted: true,
-      notes: "Alex is a good match for Oak House. Emotional support needs align with the home's therapeutic approach.",
+      notes: "Alex is a good match for Chamberlain House. Emotional support needs align with the home's therapeutic approach.",
     },
     {
       id: "mr-002",

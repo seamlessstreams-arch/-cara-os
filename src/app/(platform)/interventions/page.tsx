@@ -675,7 +675,7 @@ export default function InterventionsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={INTERVENTION_EXPORT_COLS} filename="interventions" />
-          <PrintButton title="Interventions" subtitle="Oak House — Interventions Tracker" targetId="interventions-content" />
+          <PrintButton title="Interventions" subtitle="Chamberlain House — Interventions Tracker" targetId="interventions-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Interventions — evidence or supporting document upload" />
           <Button
             size="sm"

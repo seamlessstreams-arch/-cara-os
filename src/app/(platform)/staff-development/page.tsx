@@ -309,7 +309,7 @@ export default function StaffDevelopmentPage() {
     const atRisk = profiles.filter((p) => p.status === "at_risk");
     const attention = profiles.filter((p) => p.status === "attention");
     const lines = [
-      `Staff development overview for Oak House — ${profiles.length} active staff.`,
+      `Staff development overview for Chamberlain House — ${profiles.length} active staff.`,
       `On track: ${summary?.on_track ?? 0} | Needs attention: ${summary?.needs_attention ?? 0} | At risk: ${summary?.at_risk ?? 0}`,
       `Average training compliance: ${summary?.avg_training_compliance ?? 0}%`,
       summary?.supervision_overdue
@@ -337,7 +337,7 @@ export default function StaffDevelopmentPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={STAFF_DEV_EXPORT_COLS} filename="staff-development" />
-          <PrintButton title="Staff Development" subtitle="Oak House — Development & CPD" targetId="staff-dev-content" />
+          <PrintButton title="Staff Development" subtitle="Chamberlain House — Development & CPD" targetId="staff-dev-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Staff Development — training certificate or appraisal upload" />
           <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

@@ -35,7 +35,7 @@ describe("Home Registry", () => {
     expect(active.every((h) => h.status === "active")).toBe(true);
   });
 
-  it("getCurrentHome defaults to Oak House", () => {
+  it("getCurrentHome defaults to Chamberlain House", () => {
     expect(getCurrentHome().id).toBe("home_oak");
   });
 

@@ -82,7 +82,7 @@ const makeTraining = (overrides: Partial<StaffVisitorTraining> = {}): StaffVisit
   ...overrides,
 });
 
-// ── Oak House Demo Data ────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ────────────────────────────────────────────────────
 
 const oakHouseRecords: VisitorRecord[] = [
   makeRecord({
@@ -1053,7 +1053,7 @@ describe("generateVisitorManagementSafetyIntelligence", () => {
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
-  it("returns outstanding rating for Oak House demo data", () => {
+  it("returns outstanding rating for Chamberlain House demo data", () => {
     const result = generateVisitorManagementSafetyIntelligence(
       oakHouseRecords,
       oakHousePolicy,

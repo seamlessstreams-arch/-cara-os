@@ -610,7 +610,7 @@ describe("computeRestraintIntelligence", () => {
     });
   });
 
-  describe("full Oak House integration", () => {
+  describe("full Chamberlain House integration", () => {
     it("processes realistic multi-incident data", () => {
       const children: ChildInput[] = [
         { id: "yp_alex", name: "Alex" },

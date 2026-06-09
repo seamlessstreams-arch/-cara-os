@@ -3,7 +3,7 @@
 //
 // After Care Support Quality Intelligence
 //
-// GET  — Returns after care support quality metrics with Oak House demo data
+// GET  — Returns after care support quality metrics with Chamberlain House demo data
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffAfterCareTraining,
 } from "@/lib/after-care-support-quality";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_SESSIONS: AfterCareSession[] = [
   // Alex — housing support (highly engaged)

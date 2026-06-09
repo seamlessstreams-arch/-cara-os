@@ -3,7 +3,7 @@
 //
 // Placement Matching Quality Intelligence
 //
-// GET  — Returns Oak House demo data with full intelligence analysis
+// GET  — Returns Chamberlain House demo data with full intelligence analysis
 // POST — Accepts custom placement/review/stability/disruption data and returns analysis
 // ==============================================================================
 

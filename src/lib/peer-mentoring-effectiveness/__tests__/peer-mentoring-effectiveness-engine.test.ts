@@ -927,7 +927,7 @@ describe("generatePeerMentoringEffectivenessIntelligence", () => {
 
   // -- Integration --
 
-  it("handles Oak House realistic scenario", () => {
+  it("handles Chamberlain House realistic scenario", () => {
     const pairings: PeerPairing[] = [
       mkPairing({ id: "pp-1", mentorId: "child-morgan", mentorName: "Morgan", menteeId: "child-jordan", menteeName: "Jordan", status: "active", consentObtained: true, riskAssessed: true, matchCriteria: ["age_appropriate", "shared_interests", "personality_compatibility"] }),
       mkPairing({ id: "pp-2", mentorId: "child-alex", mentorName: "Alex", menteeId: "child-riley", menteeName: "Riley", status: "completed", consentObtained: true, riskAssessed: true, matchCriteria: ["welcome_buddy", "similar_age"] }),

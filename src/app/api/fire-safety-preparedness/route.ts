@@ -3,7 +3,7 @@
 //
 // Fire Safety Preparedness Intelligence
 //
-// GET  — Returns fire safety assessment with Oak House demo data
+// GET  — Returns fire safety assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   StaffFireTraining,
 } from "@/lib/fire-safety-preparedness";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_DRILLS: FireDrillRecord[] = [
   {

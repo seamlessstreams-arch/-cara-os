@@ -424,7 +424,7 @@ export default function StaffDashboardPage() {
                     {d.shift.today.start_time} — {d.shift.today.end_time}
                   </span>
                 </div>
-                <h2 className="text-lg font-bold">You&apos;re on shift at Oak House</h2>
+                <h2 className="text-lg font-bold">You&apos;re on shift at Chamberlain House</h2>
                 <p className="mt-0.5 text-sm text-slate-300">
                   {d.shift.on_shift_count} staff on shift today
                   {d.shift.co_workers.length > 0

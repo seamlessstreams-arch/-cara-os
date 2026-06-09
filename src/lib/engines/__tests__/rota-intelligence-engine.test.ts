@@ -574,9 +574,9 @@ describe("computeRotaIntelligence — edge cases", () => {
   });
 });
 
-// ── Full Scenario: Oak House typical day ────────────────────────────────────
+// ── Full Scenario: Chamberlain House typical day ────────────────────────────────────
 
-describe("computeRotaIntelligence — Oak House scenario", () => {
+describe("computeRotaIntelligence — Chamberlain House scenario", () => {
   const oakShifts: ShiftInput[] = [
     makeShift({ staff_id: "staff_darren", date: TODAY, shift_type: "day", start_time: "08:00", end_time: "17:00", break_minutes: 60, status: "in_progress" }),
     makeShift({ staff_id: "staff_ryan", date: TODAY, shift_type: "day", start_time: "08:00", end_time: "17:00", break_minutes: 60, status: "in_progress" }),
@@ -591,7 +591,7 @@ describe("computeRotaIntelligence — Oak House scenario", () => {
     makeShift({ staff_id: "staff_anna", date: "2026-05-24", shift_type: "day", start_time: "07:00", end_time: "22:00", break_minutes: 60, status: "completed" }),
   ];
 
-  it("overview reflects Oak House staffing", () => {
+  it("overview reflects Chamberlain House staffing", () => {
     const result = computeRotaIntelligence({ shifts: oakShifts, absences: [], staff: STAFF, today: TODAY });
     expect(result.overview.total_staff_today).toBe(6);
     expect(result.overview.shifts_today).toBe(6);

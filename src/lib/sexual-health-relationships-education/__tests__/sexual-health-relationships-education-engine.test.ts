@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Sexual Health & Relationships Education Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex 14, Jordan 13, Morgan 15),
+// Demo: Chamberlain House, 3 children (Alex 14, Jordan 13, Morgan 15),
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 

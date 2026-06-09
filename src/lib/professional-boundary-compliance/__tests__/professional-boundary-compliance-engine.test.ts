@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Professional Boundary Compliance Intelligence Engine
 //
-// Demo: Oak House, Staff: Sarah Johnson (Senior RSW), Tom Richards (RSW),
+// Demo: Chamberlain House, Staff: Sarah Johnson (Senior RSW), Tom Richards (RSW),
 //       Lisa Williams (Senior RSW), Darren Laville (RM/DSL)
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -1292,9 +1292,9 @@ describe("generateProfessionalBoundaryComplianceIntelligence", () => {
     expect(result.staffProfiles.length).toBe(0);
   });
 
-  // ── Full scenario: Oak House demo ─────────────────────────────────────
+  // ── Full scenario: Chamberlain House demo ─────────────────────────────────────
 
-  it("handles realistic Oak House data correctly", () => {
+  it("handles realistic Chamberlain House data correctly", () => {
     const audits: BoundaryAudit[] = [
       makeAudit({ id: "a1", staffId: "staff-sarah", staffName: "Sarah Johnson", boundaryArea: "physical_contact", complianceLevel: "fully_compliant" }),
       makeAudit({ id: "a2", staffId: "staff-sarah", staffName: "Sarah Johnson", boundaryArea: "gift_giving", complianceLevel: "fully_compliant" }),

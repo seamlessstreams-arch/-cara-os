@@ -278,7 +278,7 @@ export default function OffersPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Offers & Final Clearance" subtitle="Oak House — Pre-Start Clearance" targetId="offers-content" />
+          <PrintButton title="Offers & Final Clearance" subtitle="Chamberlain House — Pre-Start Clearance" targetId="offers-content" />
           <SmartUploadButton variant="inline" label="Upload Offer Letter" uploadContext="Safer Recruitment — offer letter or clearance document upload" />
         </div>
       }

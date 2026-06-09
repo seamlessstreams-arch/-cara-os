@@ -984,7 +984,7 @@ describe("Health & Wellbeing Engine — ARIA Insights", () => {
 // FULL INTEGRATION TEST — OAK HOUSE SCENARIO
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("Health & Wellbeing Engine — Oak House Integration", () => {
+describe("Health & Wellbeing Engine — Chamberlain House Integration", () => {
   it("produces comprehensive analysis for multi-child home", () => {
     const children: ChildInput[] = [
       { id: "yp_alex", name: "Alex", date_of_birth: "2010-06-15" },

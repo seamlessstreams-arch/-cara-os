@@ -55,7 +55,7 @@ function run(cases: DisciplinaryInput[], opts?: { staff?: StaffRef[] }) {
   });
 }
 
-// ── Oak House Dataset ───────────────────────────────────────────────────────
+// ── Chamberlain House Dataset ───────────────────────────────────────────────────────
 
 function oakHouseCases(): DisciplinaryInput[] {
   return [
@@ -787,9 +787,9 @@ describe("Staff Disciplinary Intelligence Engine", () => {
     });
   });
 
-  // ── Oak House Full Dataset ──────────────────────────────────────────────
+  // ── Chamberlain House Full Dataset ──────────────────────────────────────────────
 
-  describe("Oak House full dataset", () => {
+  describe("Chamberlain House full dataset", () => {
     it("produces correct overview totals", () => {
       const result = run(oakHouseCases());
       expect(result.overview.total_cases).toBe(5);

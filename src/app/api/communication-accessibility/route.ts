@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Communication & Accessibility Intelligence API Route
 //
-// GET  → returns Oak House demo communication & accessibility intelligence
+// GET  → returns Chamberlain House demo communication & accessibility intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   CommunicationTraining,
 } from "@/lib/communication-accessibility/communication-accessibility-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 const CHILD_IDS = ["alex", "jordan", "morgan"];
 const CHILD_NAMES: Record<string, string> = {

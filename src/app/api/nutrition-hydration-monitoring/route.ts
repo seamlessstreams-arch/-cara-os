@@ -3,7 +3,7 @@
 //
 // Nutrition & Hydration Monitoring Intelligence
 //
-// GET  — Returns nutrition/hydration metrics with demo data (Oak House)
+// GET  — Returns nutrition/hydration metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -22,7 +22,7 @@ import type {
   StaffNutritionTraining,
 } from "@/lib/nutrition-hydration-monitoring";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   meals: MealRecord[];

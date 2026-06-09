@@ -1,10 +1,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/outcomes-measurement — Outcomes Measurement Intelligence
 //
-// GET  → returns Oak House demo intelligence
+// GET  → returns Chamberlain House demo intelligence
 // POST → accepts custom data for any home
 //
-// "Is Oak House making a measurable positive difference for children?"
+// "Is Chamberlain House making a measurable positive difference for children?"
 //
 // SCCIF — Overall effectiveness: children making progress from starting points
 // CHR 2015 Reg 6  — Quality of care standard

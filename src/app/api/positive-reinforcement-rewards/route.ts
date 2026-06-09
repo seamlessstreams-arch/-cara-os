@@ -3,7 +3,7 @@
 //
 // Positive Reinforcement & Rewards Intelligence
 //
-// GET  — Returns positive reinforcement assessment with Oak House demo data
+// GET  — Returns positive reinforcement assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -23,7 +23,7 @@ import type {
   StaffReinforcementTraining,
 } from "@/lib/positive-reinforcement-rewards";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_PRAISE: PraiseRecord[] = [
   { id: "pr-1", childId: "child-alex", childName: "Alex", praiseDate: "2026-04-01", praiseType: "verbal", givenBy: "Sarah Johnson", reason: "Helped Jordan with homework without being asked", childResponse: "positive", specificAndDescriptive: true, linkedToValues: true },

@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Complaints & Feedback Quality Intelligence API Route
 //
-// GET  → returns Oak House demo complaints & feedback quality intelligence
+// GET  → returns Chamberlain House demo complaints & feedback quality intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   LessonLearned,
 } from "@/lib/complaints-feedback-quality/complaints-feedback-quality-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 const CHILD_IDS = ["alex", "jordan", "morgan"];
 const CHILD_NAMES: Record<string, string> = {

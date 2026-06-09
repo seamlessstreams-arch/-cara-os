@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/staff-resilience — Staff Resilience Intelligence
 //
-// GET  — returns Oak House demo resilience intelligence
+// GET  — returns Chamberlain House demo resilience intelligence
 // POST — accepts custom data with validation
 //
 // CHR 2015 Reg 32 — Fitness of workers
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(result);
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────
 
 function getOakHouseDemoData() {
   const staffIds = ["staff-sarah", "staff-tom", "staff-lisa", "staff-darren"];

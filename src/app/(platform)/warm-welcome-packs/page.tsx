@@ -165,7 +165,7 @@ export default function WarmWelcomePacksPage() {
           <div>
             <p className="text-sm font-medium text-pink-800">Our Welcome Philosophy</p>
             <p className="text-xs text-pink-700 mt-1">
-              Every child arriving at Oak House should feel expected, wanted, and thought about.
+              Every child arriving at Chamberlain House should feel expected, wanted, and thought about.
               Welcome packs are personalised using advance information — never generic.
               First impressions matter: a child who feels welcomed is more likely to settle,
               attach, and thrive. We ask: &quot;Would a good parent do this for their child?&quot;

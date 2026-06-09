@@ -2,7 +2,7 @@
 // CORNERSTONE — EMERGENCY PREPAREDNESS INTELLIGENCE ENGINE · TEST SUITE
 //
 // 50+ tests covering overview, drill type statuses, recent drills, plan
-// coverage, alerts, ARIA insights, and Oak House integration data.
+// coverage, alerts, ARIA insights, and Chamberlain House integration data.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
@@ -71,7 +71,7 @@ function daysFromToday(days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-// ── Oak House Test Data ───────────────────────────────────────────────────
+// ── Chamberlain House Test Data ───────────────────────────────────────────────────
 
 function getOakHouseDrills(): ProtocolDrillInput[] {
   return [
@@ -1026,10 +1026,10 @@ describe("Emergency Intelligence Engine", () => {
     });
   });
 
-  // ── Oak House Integration ─────────────────────────────────────────────────
+  // ── Chamberlain House Integration ─────────────────────────────────────────────────
 
-  describe("Oak House integration", () => {
-    it("computes overview correctly for Oak House data", () => {
+  describe("Chamberlain House integration", () => {
+    it("computes overview correctly for Chamberlain House data", () => {
       const drills = getOakHouseDrills();
       const plans = getOakHousePlans();
       const result = computeEmergencyIntelligence({
@@ -1046,7 +1046,7 @@ describe("Emergency Intelligence Engine", () => {
       expect(result.overview.total_actions_outstanding).toBe(3);
     });
 
-    it("identifies drills in last 90 days for Oak House", () => {
+    it("identifies drills in last 90 days for Chamberlain House", () => {
       const drills = getOakHouseDrills();
       const result = computeEmergencyIntelligence({
         drills,
@@ -1234,7 +1234,7 @@ describe("Emergency Intelligence Engine", () => {
       expect(result.recent_drills[0].drill_id).toBe("drill_008");
     });
 
-    it("avg response time is calculated across all Oak House drills", () => {
+    it("avg response time is calculated across all Chamberlain House drills", () => {
       const result = computeEmergencyIntelligence({
         drills: getOakHouseDrills(),
         plans: getOakHousePlans(),

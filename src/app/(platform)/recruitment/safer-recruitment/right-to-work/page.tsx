@@ -153,7 +153,7 @@ export default function RightToWorkPage() {
       ariaContext={{ pageTitle: "Right to Work Verification", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Right to Work" subtitle="Oak House — RTW Verification" targetId="rtw-content" />
+          <PrintButton title="Right to Work" subtitle="Chamberlain House — RTW Verification" targetId="rtw-content" />
           <SmartUploadButton variant="inline" label="Upload RTW Evidence" uploadContext="Safer Recruitment — right to work evidence document upload" />
           <Button size="sm" onClick={() => setShowModal(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />

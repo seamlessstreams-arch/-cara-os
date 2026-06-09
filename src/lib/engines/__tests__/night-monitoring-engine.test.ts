@@ -450,7 +450,7 @@ describe("computeNightMonitoring", () => {
     });
   });
 
-  describe("full Oak House integration", () => {
+  describe("full Chamberlain House integration", () => {
     it("produces comprehensive output for 3 children over 2 nights", () => {
       const children: ChildInput[] = [
         makeChild("yp_alex", "Alex"),

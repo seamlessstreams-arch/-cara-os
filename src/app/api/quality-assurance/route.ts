@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Quality Assurance & Continuous Improvement API Route
 //
-// GET  → returns Oak House demo QA intelligence
+// GET  → returns Chamberlain House demo QA intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -15,7 +15,7 @@ import type {
   QualityMonitoringRecord,
 } from "@/lib/quality-assurance/quality-assurance-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const audits: InternalAudit[] = [

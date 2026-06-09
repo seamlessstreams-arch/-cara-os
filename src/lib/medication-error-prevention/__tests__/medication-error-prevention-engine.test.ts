@@ -624,7 +624,7 @@ describe("buildChildMedicationProfiles", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("generateMedicationErrorPreventionIntelligence", () => {
-  // ── Oak House Demo Scenario ──────────────────────────────────────────────
+  // ── Chamberlain House Demo Scenario ──────────────────────────────────────────────
   // Alex: daily prescribed + PRN, all on time
   // Jordan: prescribed + controlled, 1 late, 1 near-miss error
   // Morgan: self-administering with oversight

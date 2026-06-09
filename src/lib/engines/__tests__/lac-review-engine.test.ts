@@ -474,7 +474,7 @@ describe("computeLACReviewIntelligence", () => {
     });
   });
 
-  describe("full Oak House integration", () => {
+  describe("full Chamberlain House integration", () => {
     it("produces comprehensive output for 3 children with 3 reviews", () => {
       const children: ChildInput[] = [
         makeChild("yp_alex", "Alex", "2025-03-01"),

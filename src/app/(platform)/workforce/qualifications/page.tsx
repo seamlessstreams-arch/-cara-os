@@ -465,7 +465,7 @@ export default function QualificationsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={QUAL_EXPORT_COLS} filename="qualifications" />
-          <PrintButton title="Qualifications Tracker" subtitle="Oak House" targetId="quals-content" />
+          <PrintButton title="Qualifications Tracker" subtitle="Chamberlain House" targetId="quals-content" />
           <SmartUploadButton variant="inline" label="Upload Certificate" uploadContext="Qualifications — qualification certificate or evidence upload" />
           <Button size="sm" className="gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />

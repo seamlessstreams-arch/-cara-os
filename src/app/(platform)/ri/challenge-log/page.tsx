@@ -473,7 +473,7 @@ export default function ChallengeLogPage() {
           <ExportButton data={filtered} columns={CHALLENGE_EXPORT_COLS} filename="challenge-log" />
           <PrintButton
             title="Challenge Log"
-            subtitle="Oak House — RI Challenge & Oversight Log"
+            subtitle="Chamberlain House — RI Challenge & Oversight Log"
             targetId="challenge-log-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI Challenge Log — supporting evidence upload" />

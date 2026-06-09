@@ -421,11 +421,11 @@ describe("computeMissingIntelligence — ARIA insights", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// INTEGRATION: Full Oak House dataset
+// INTEGRATION: Full Chamberlain House dataset
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("computeMissingIntelligence — Oak House integration", () => {
-  it("processes real Oak House episodes correctly", () => {
+describe("computeMissingIntelligence — Chamberlain House integration", () => {
+  it("processes real Chamberlain House episodes correctly", () => {
     const result = computeMissingIntelligence(baseInput({
       episodes: [
         makeEpisode({

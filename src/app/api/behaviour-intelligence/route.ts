@@ -6,7 +6,7 @@ import {
   type StaffBehaviourIntelligenceTraining,
 } from "@/lib/behaviour/behaviour-intelligence-engine";
 
-// ── Oak House demo data ───────────────────────────────────────────────────
+// ── Chamberlain House demo data ───────────────────────────────────────────────────
 
 const DEMO_RECORDS: BehaviourIntelligenceRecord[] = [
   { id: "bi-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "positive_reinforcement", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },

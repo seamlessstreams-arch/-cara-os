@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Physical Health Monitoring API Route
 //
-// GET  → returns Oak House demo physical health intelligence
+// GET  → returns Chamberlain House demo physical health intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -15,7 +15,7 @@ import type {
   ImmunisationRecord,
 } from "@/lib/physical-health-monitoring/physical-health-monitoring-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const appointments: HealthAppointment[] = [

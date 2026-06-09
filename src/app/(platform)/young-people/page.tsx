@@ -797,7 +797,7 @@ export default function YoungPeoplePage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredYP} columns={YP_EXPORT_COLS} filename="young-people" />
-          <PrintButton title="Young People" subtitle="Oak House — Children in Placement" targetId="young-people-content" />
+          <PrintButton title="Young People" subtitle="Chamberlain House — Children in Placement" targetId="young-people-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Young people — care document upload" />
           <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

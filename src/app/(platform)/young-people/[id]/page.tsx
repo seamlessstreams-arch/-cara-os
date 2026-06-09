@@ -414,7 +414,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
       ariaContext={{ sourceType: "child_record", sourceId: id, childId: id, childName: `${displayName} ${yp.last_name}` }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title={`${displayName} ${yp.last_name}`} subtitle="Oak House — Young Person Profile" targetId="yp-detail-content" />
+          <PrintButton title={`${displayName} ${yp.last_name}`} subtitle="Chamberlain House — Young Person Profile" targetId="yp-detail-content" />
           <SmartUploadButton variant="icon" linkedChildId={id} uploadContext={`Young person profile — ${yp.first_name} ${yp.last_name}`} />
           <AriaStudioQuickActionButton context={{ record_type: "keywork", record_id: id, child_id: id, home_id: "home_oak" }} />
           <Button variant="outline" size="sm" onClick={() => router.push("/young-people")}>

@@ -3,7 +3,7 @@
 //
 // Care Planning Compliance Intelligence
 //
-// GET  — Returns care planning assessment with realistic Oak House demo data
+// GET  — Returns care planning assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   CarePlanDocument,
 } from "@/lib/care-planning";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILDREN: CareChild[] = [
   { id: "child-alex", name: "Alex", dateOfBirth: "2012-03-15", placementStartDate: "2025-10-01", isEligibleChild: false, currentPlacement: true },

@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Attachment & Relationships API Route
 //
-// GET  → returns Oak House demo attachment/relationships intelligence
+// GET  → returns Chamberlain House demo attachment/relationships intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -15,7 +15,7 @@ import type {
   PeerRelationship,
 } from "@/lib/attachment-relationships/attachment-relationships-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const assessments: AttachmentAssessment[] = [

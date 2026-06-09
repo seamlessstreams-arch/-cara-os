@@ -1337,10 +1337,10 @@ describe("generateWaterSafetyLegionellaIntelligence", () => {
 });
 
 // ==============================================================================
-// Integration: Oak House Demo Scenario
+// Integration: Chamberlain House Demo Scenario
 // ==============================================================================
 
-describe("Oak House demo integration", () => {
+describe("Chamberlain House demo integration", () => {
   const demoChecks: TemperatureCheck[] = [
     makeCheck({
       id: "tc-001",
@@ -1436,7 +1436,7 @@ describe("Oak House demo integration", () => {
     );
   });
 
-  it("scores above 60 for the Oak House demo (good+)", () => {
+  it("scores above 60 for the Chamberlain House demo (good+)", () => {
     const result = generateWaterSafetyLegionellaIntelligence(
       demoChecks,
       demoAssessments,

@@ -1,7 +1,7 @@
 /* ──────────────────────────────────────────────────────────────
    API: /api/health — Health Intelligence
 
-   GET  — Returns health intelligence with Oak House demo data
+   GET  — Returns health intelligence with Chamberlain House demo data
    ────────────────────────────────────────────────────────────── */
 
 import { NextResponse } from "next/server";
@@ -17,7 +17,7 @@ import type {
   StaffHealthTraining,
 } from "@/lib/health";
 
-// ── Demo Data: Oak House ───────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ───────────────────────────────────────────────────
 
 const DEMO_RECORDS: HealthRecord[] = [
   // Alex — solid compliance, diverse assessments

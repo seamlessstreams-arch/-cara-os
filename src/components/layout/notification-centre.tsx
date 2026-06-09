@@ -277,7 +277,7 @@ export function NotificationCentre() {
         type: "success",
         icon: CheckCircle2,
         title: "All clear",
-        description: "No outstanding alerts. Oak House is running smoothly.",
+        description: "No outstanding alerts. Chamberlain House is running smoothly.",
         href: "/dashboard",
         category: "intelligence",
       });

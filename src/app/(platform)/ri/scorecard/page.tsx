@@ -161,7 +161,7 @@ export default function ScorecardPage() {
         {
           mode: "ri_strategic_analysis",
           style: "provider_summary",
-          source_content: `Oak House governance scorecard (live data). Overall: ${overallScore}/100. Risk level: ${riskLevel}. ${urgentNeeds} urgent training needs. Metrics: ${ALL_METRICS.map((m) => `${m.label}: ${(scores as unknown as Record<string, number>)[m.key]}`).join(", ")}.`,
+          source_content: `Chamberlain House governance scorecard (live data). Overall: ${overallScore}/100. Risk level: ${riskLevel}. ${urgentNeeds} urgent training needs. Metrics: ${ALL_METRICS.map((m) => `${m.label}: ${(scores as unknown as Record<string, number>)[m.key]}`).join(", ")}.`,
           page_context: "RI Governance Scorecard",
           record_type: "governance_analysis",
           user_role: "responsible_individual",
@@ -179,12 +179,12 @@ export default function ScorecardPage() {
   return (
     <PageShell
       title="Governance Scorecard"
-      subtitle="15 live governance metrics — Oak House"
+      subtitle="15 live governance metrics — Chamberlain House"
       ariaContext={{ pageTitle: "RI Governance Scorecard", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Governance Scorecard" subtitle="Oak House — RI Report" targetId="scorecard-content" />
+          <PrintButton title="Governance Scorecard" subtitle="Chamberlain House — RI Report" targetId="scorecard-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI Scorecard — governance evidence upload" />
           <Button size="sm" className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white" onClick={generateStrategic} disabled={loading}>
             <Sparkles className="h-3.5 w-3.5" />
@@ -204,7 +204,7 @@ export default function ScorecardPage() {
           <div className="flex-1 space-y-2">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-indigo-400 shrink-0" />
-              <span className="text-sm font-semibold text-white">Oak House Governance</span>
+              <span className="text-sm font-semibold text-white">Chamberlain House Governance</span>
               <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold ml-auto", riskColour)}>
                 {riskLevel.toUpperCase()} RISK
               </span>

@@ -39,7 +39,7 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: st
   observation: { icon: FileText, color: "text-slate-600", bg: "bg-slate-50", label: "Home Note" },
 };
 
-export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Oak House", staffId = "staff_darren", onSuccess, onCancel, onDirtyChange, className }: UniversalHomeEntryProps) {
+export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Chamberlain House", staffId = "staff_darren", onSuccess, onCancel, onDirtyChange, className }: UniversalHomeEntryProps) {
   const [text, setText] = useState("");
   const [classification, setClassification] = useState<HomeClassificationResult | null>(null);
   const [overrideType, setOverrideType] = useState<string | null>(null);

@@ -478,9 +478,9 @@ describe("computeIncidentAnalytics — insights", () => {
   });
 });
 
-// ── Integration: Full Oak House Scenario ────────────────────────────────────
+// ── Integration: Full Chamberlain House Scenario ────────────────────────────────────
 
-describe("computeIncidentAnalytics — Oak House integration", () => {
+describe("computeIncidentAnalytics — Chamberlain House integration", () => {
   const children: ChildRef[] = [
     { id: "yp_alex", name: "Alex" },
     { id: "yp_jordan", name: "Jordan" },

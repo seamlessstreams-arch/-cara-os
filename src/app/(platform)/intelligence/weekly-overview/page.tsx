@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — WEEKLY INTELLIGENCE OVERVIEW
 // Comprehensive management report: aggregated intelligence snapshot for the week.
-// For Registered Managers — Oak House.
+// For Registered Managers — Chamberlain House.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState } from "react";
@@ -591,7 +591,7 @@ function AriaWeeklyReportSection() {
           page_context: "weekly-overview",
           user_role: "registered_manager",
           question:
-            "Generate a weekly management overview narrative for Oak House. Cover: home climate this week, patterns identified, children's wellbeing scores, outstanding actions, children's voice coverage, and key priorities for next week. Write in management oversight style.",
+            "Generate a weekly management overview narrative for Chamberlain House. Cover: home climate this week, patterns identified, children's wellbeing scores, outstanding actions, children's voice coverage, and key priorities for next week. Write in management oversight style.",
           period_days: 7,
         }),
       });
@@ -947,11 +947,11 @@ export default function WeeklyOverviewPage() {
   return (
     <PageShell
       title="Weekly Intelligence Overview"
-      subtitle="Oak House — management snapshot for the week"
+      subtitle="Chamberlain House — management snapshot for the week"
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Weekly Intelligence Overview" subtitle="Oak House — Weekly Management Snapshot" targetId="weekly-overview-content" />
+          <PrintButton title="Weekly Intelligence Overview" subtitle="Chamberlain House — Weekly Management Snapshot" targetId="weekly-overview-content" />
           <SmartUploadButton variant="inline" label="Upload Weekly Summary" uploadContext="Intelligence — weekly overview supporting document upload" />
         </div>
       }

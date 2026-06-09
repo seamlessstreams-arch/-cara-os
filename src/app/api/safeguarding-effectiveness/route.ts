@@ -3,7 +3,7 @@
 //
 // Safeguarding Effectiveness Intelligence
 //
-// GET  — Returns safeguarding effectiveness metrics with demo data (Oak House)
+// GET  — Returns safeguarding effectiveness metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   SafeguardingSupervision,
 } from "@/lib/safeguarding-effectiveness";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   referrals: SafeguardingReferral[];

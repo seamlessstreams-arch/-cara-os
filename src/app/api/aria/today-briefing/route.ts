@@ -204,7 +204,7 @@ function generateDemoBriefing(homeId: string): TodayBriefing {
   topPriorities.push(`${positiveCount} positive developments to celebrate with the team`);
 
   const summary = `Good morning. It's ${dayOfWeek} ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long" })}. ` +
-    `ARIA has identified ${signals.length} signals across Oak House today. ` +
+    `ARIA has identified ${signals.length} signals across Chamberlain House today. ` +
     (criticalCount > 0
       ? `There ${criticalCount === 1 ? "is" : "are"} ${criticalCount} critical item${criticalCount > 1 ? "s" : ""} requiring immediate attention. `
       : "No critical concerns today. ") +
@@ -215,7 +215,7 @@ function generateDemoBriefing(homeId: string): TodayBriefing {
   return {
     date: today,
     homeId,
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     generatedAt: new Date().toISOString(),
     signalCount: signals.length,
     criticalCount,

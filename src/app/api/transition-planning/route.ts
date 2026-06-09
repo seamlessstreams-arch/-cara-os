@@ -3,7 +3,7 @@
 //
 // Transition & Pathway Planning Intelligence
 //
-// GET  — Returns transition planning assessment with realistic Oak House demo data
+// GET  — Returns transition planning assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   PlacementStabilityRecord,
 } from "@/lib/transition-planning";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_PLANS: TransitionPlan[] = [
   // Alex (14) — Independence skills building
@@ -168,7 +168,7 @@ const DEMO_STABILITY: PlacementStabilityRecord[] = [
     placementStartDate: "2025-10-01",
     previousPlacements: 1,
     disruptionRisks: ["peer conflict at previous home"],
-    stabilityFactors: ["strong key worker relationship", "settled in school", "positive peer group at Oak House"],
+    stabilityFactors: ["strong key worker relationship", "settled in school", "positive peer group at Chamberlain House"],
   },
   {
     childId: "child-jordan",

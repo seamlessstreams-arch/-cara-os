@@ -3,7 +3,7 @@
 //
 // 60+ tests covering overview, building profiles, check type analysis,
 // maintenance analysis, vehicle profiles, alerts, ARIA insights, and
-// Oak House integration.
+// Chamberlain House integration.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
@@ -732,13 +732,13 @@ describe("ARIA insights", () => {
   });
 });
 
-// ── Oak House Integration ────────────────────────────────────────────────
+// ── Chamberlain House Integration ────────────────────────────────────────────────
 
-describe("Oak House integration scenario", () => {
-  it("processes a realistic Oak House premises dataset correctly", () => {
+describe("Chamberlain House integration scenario", () => {
+  it("processes a realistic Chamberlain House premises dataset correctly", () => {
     const oakHouse: BuildingInput = {
       id: "bld_001",
-      name: "Oak House — Main Building",
+      name: "Chamberlain House — Main Building",
       type: "residential",
       status: "operational",
       gas_cert_expiry: "2026-12-01",
@@ -815,7 +815,7 @@ describe("Oak House integration scenario", () => {
 
     // ── Building profile ──────────────────────────────────────────────
     const bp = r.building_profiles[0];
-    expect(bp.building_name).toBe("Oak House — Main Building");
+    expect(bp.building_name).toBe("Chamberlain House — Main Building");
     expect(bp.checks_overdue).toBe(1);
     expect(bp.checks_failed).toBe(1);
     expect(bp.risk_flags).toContain("1 overdue check(s)");

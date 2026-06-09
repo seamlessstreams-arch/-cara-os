@@ -63,7 +63,7 @@ function run(complaints: ComplaintInput[], opts?: { children?: ChildRef[]; staff
   });
 }
 
-// ── Oak House Dataset ───────────────────────────────────────────────────────
+// ── Chamberlain House Dataset ───────────────────────────────────────────────────────
 
 function oakHouseComplaints(): ComplaintInput[] {
   return [
@@ -384,7 +384,7 @@ describe("Complaints Intelligence Engine", () => {
       expect(sc!.theme_label).toBe("Staff Conduct");
     });
 
-    it("includes all unique themes from Oak House data", () => {
+    it("includes all unique themes from Chamberlain House data", () => {
       const result = run(oakHouseComplaints());
       const themes = result.theme_breakdown.map((t) => t.theme);
       expect(themes).toContain("care_quality");
@@ -444,7 +444,7 @@ describe("Complaints Intelligence Engine", () => {
       expect(sw!.source_label).toBe("Social Worker");
     });
 
-    it("includes all unique sources from Oak House data", () => {
+    it("includes all unique sources from Chamberlain House data", () => {
       const result = run(oakHouseComplaints());
       const sources = result.source_breakdown.map((s) => s.source);
       expect(sources).toContain("child");
@@ -743,8 +743,8 @@ describe("Complaints Intelligence Engine", () => {
     });
   });
 
-  describe("Oak House integration", () => {
-    it("produces correct overview for full Oak House dataset", () => {
+  describe("Chamberlain House integration", () => {
+    it("produces correct overview for full Chamberlain House dataset", () => {
       const result = run(oakHouseComplaints());
       expect(result.overview.total_complaints).toBe(8);
       expect(result.overview.open_count).toBe(2);
@@ -774,7 +774,7 @@ describe("Complaints Intelligence Engine", () => {
       expect(result.alerts).toHaveLength(0);
     });
 
-    it("generates alerts when Oak House data has overdue complaint", () => {
+    it("generates alerts when Chamberlain House data has overdue complaint", () => {
       const data = oakHouseComplaints();
       // Make cmp_004 overdue by backdating it
       data[3] = { ...data[3], complaint_date: "2026-04-15" };

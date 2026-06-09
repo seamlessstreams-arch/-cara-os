@@ -3,7 +3,7 @@
 //
 // Dental Health Monitoring Intelligence
 //
-// GET  — Returns dental health assessment with Oak House demo data
+// GET  — Returns dental health assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   StaffDentalTraining,
 } from "@/lib/dental-health-monitoring";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_APPOINTMENTS: DentalAppointment[] = [
   {

@@ -70,7 +70,7 @@ function makeStaff(overrides: Partial<StaffRef> = {}): StaffRef {
   };
 }
 
-// ── Test Data — Oak House ─────────────────────────────────────────────────────
+// ── Test Data — Chamberlain House ─────────────────────────────────────────────────────
 
 const CHILDREN: ChildRef[] = [
   { id: "yp_alex", name: "Alex", date_of_birth: "2008-09-15" },    // age 17
@@ -771,7 +771,7 @@ describe("Leaving Care Intelligence Engine — Alerts", () => {
     });
   });
 
-  describe("Full Oak House scenario alerts", () => {
+  describe("Full Chamberlain House scenario alerts", () => {
     it("has the expected alert counts for test data", () => {
       const result = computeLeavingCareIntelligence(makeFullInput());
       // Jordan plan review overdue (next_review_date 2026-05-20 < today) → high
@@ -993,7 +993,7 @@ describe("Leaving Care Intelligence Engine — Insights", () => {
     });
   });
 
-  describe("Full Oak House scenario insights", () => {
+  describe("Full Chamberlain House scenario insights", () => {
     it("generates critical insight for Alex approaching 18", () => {
       const result = computeLeavingCareIntelligence(makeFullInput());
       // Alex DOB 2008-09-15, turns 18 on 2026-09-15, that's ~4 months from today

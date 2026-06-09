@@ -55,7 +55,7 @@ function useIntelligenceSummary() {
 
   return {
     date: now.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     stats: { children: children.length, staff: staff.length, incidents: incidents.length, tasks: tasks.length },
     needsAttention,
     goingWell,

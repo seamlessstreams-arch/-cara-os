@@ -160,7 +160,7 @@ export default function AuditLogPage() {
       ariaContext={{ pageTitle: "Safer Recruitment Audit Trail", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Audit Log" subtitle="Oak House — Safer Recruitment Audit Trail" targetId="sr-audit-content" />
+          <PrintButton title="Audit Log" subtitle="Chamberlain House — Safer Recruitment Audit Trail" targetId="sr-audit-content" />
           <SmartUploadButton variant="inline" label="Upload Audit Document" uploadContext="Safer Recruitment — audit evidence or inspection bundle document upload" />
           <Button size="sm" variant="outline" className="gap-1.5" disabled title="Inspection bundles are generated from the Documents section. Contact your system administrator.">
             <Download className="h-3.5 w-3.5" />

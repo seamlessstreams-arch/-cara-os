@@ -302,7 +302,7 @@ export default function MaintenancePage() {
         actions={
           <div className="flex items-center gap-2">
             <ExportButton<MaintenanceItem> filename="maintenance-export" data={filtered} columns={MAINTENANCE_EXPORT_COLS} label="Export" />
-            <PrintButton title="Maintenance" subtitle="Oak House — Building Maintenance Log" targetId="maintenance-content" />
+            <PrintButton title="Maintenance" subtitle="Chamberlain House — Building Maintenance Log" targetId="maintenance-content" />
             <SmartUploadButton variant="inline" label="Upload Photo" uploadContext="Maintenance — photo or report upload" />
             <Button size="sm" onClick={() => setShowLog(true)}>
               <Plus className="h-3.5 w-3.5 mr-1" />Log Issue

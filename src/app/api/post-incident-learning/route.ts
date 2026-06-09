@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Post-Incident Learning Intelligence API Route
 //
-// GET  → returns Oak House demo post-incident learning intelligence
+// GET  → returns Chamberlain House demo post-incident learning intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   TeamLearningSession,
 } from "@/lib/post-incident-learning/post-incident-learning-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const reviews: PostIncidentReview[] = [

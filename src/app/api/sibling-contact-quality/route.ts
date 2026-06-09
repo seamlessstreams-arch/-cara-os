@@ -3,7 +3,7 @@
 //
 // Sibling Contact Quality Intelligence
 //
-// GET  — Returns sibling contact assessment with Oak House demo data
+// GET  — Returns sibling contact assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   StaffSiblingTraining,
 } from "@/lib/sibling-contact-quality";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_RELATIONSHIPS: SiblingRelationship[] = [
   // Alex has one sibling (Sam) in a different home

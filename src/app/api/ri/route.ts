@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — RI Governance Scoring API Route
 //
-// GET  → returns Oak House demo governance scorecard
+// GET  → returns Chamberlain House demo governance scorecard
 // POST → accepts custom RiScoreInputs for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import type { RiScoreInputs } from "@/lib/ri/compute-scores";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoInputs(): RiScoreInputs {
   const today = new Date().toISOString().slice(0, 10);

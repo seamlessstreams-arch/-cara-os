@@ -3,7 +3,7 @@
 //
 // Independence & Life Skills Intelligence
 //
-// GET  — Returns independence assessment with Oak House demo data
+// GET  — Returns independence assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   PathwayPlanProgress,
 } from "@/lib/independence-life-skills";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 // Alex (14): developing well — cooking, budgeting, hygiene assessed, goals on track
 const ALEX_ASSESSMENTS: SkillAssessment[] = [

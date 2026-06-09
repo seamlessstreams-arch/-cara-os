@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Sensory & Therapeutic Environment Intelligence API Route
 //
-// GET  — Returns Oak House demo data intelligence
+// GET  — Returns Chamberlain House demo data intelligence
 // POST — Accepts custom data with validation
 // ══════════════════════════════════════════════════════════════════════════════
 

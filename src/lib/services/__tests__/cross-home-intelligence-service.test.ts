@@ -56,10 +56,10 @@ describe("cross-home-intelligence-service", () => {
       }
     });
 
-    it("demo data includes Oak House, Willow Lodge, Birch Cottage", async () => {
+    it("demo data includes Chamberlain House, Willow Lodge, Birch Cottage", async () => {
       const result = await getLatestSnapshots("org-demo-1");
       const names = result.data!.map((s) => s.home_name);
-      expect(names).toContain("Oak House");
+      expect(names).toContain("Chamberlain House");
       expect(names).toContain("Willow Lodge");
       expect(names).toContain("Birch Cottage");
     });

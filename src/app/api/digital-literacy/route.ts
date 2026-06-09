@@ -3,7 +3,7 @@
 //
 // Digital Literacy & Online Engagement Intelligence
 //
-// GET  — Returns digital literacy assessment with realistic Oak House demo data
+// GET  — Returns digital literacy assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -16,7 +16,7 @@ import type {
   DigitalCitizenshipRecord,
 } from "@/lib/digital-literacy";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
 const DEMO_CHILD_NAMES: Record<string, string> = {

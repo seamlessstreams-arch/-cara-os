@@ -595,7 +595,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={PI_DEBRIEF_EXPORT_COLS} filename="pi-debriefs" />
-          <PrintButton title="PI Debrief Register" subtitle="Oak House — Reg 20 Compliance" targetId="pi-debriefs-content" />
+          <PrintButton title="PI Debrief Register" subtitle="Chamberlain House — Reg 20 Compliance" targetId="pi-debriefs-content" />
           <SmartUploadButton
             variant="inline"
             label="Upload PI Record"

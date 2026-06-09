@@ -100,7 +100,7 @@ function makeAssessment(overrides: Partial<InclusionAssessment> = {}): Inclusion
   };
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Alex: active in football club + youth group
 // Jordan: limited engagement (transport barrier)
 // Morgan: art class + volunteering + drama group
@@ -443,7 +443,7 @@ describe("evaluateActivityParticipation", () => {
     expect(result.regularParticipationRate).toBe(0);
   });
 
-  it("scores demo data (Oak House) appropriately", () => {
+  it("scores demo data (Chamberlain House) appropriately", () => {
     const result = evaluateActivityParticipation(DEMO_ACTIVITIES);
     expect(result.totalActivities).toBe(6);
     // 5 out of 6 are regular => 83%
@@ -594,7 +594,7 @@ describe("evaluateSocialNetworks", () => {
     expect(result.overallScore).toBe(0);
   });
 
-  it("scores demo data (Oak House) appropriately", () => {
+  it("scores demo data (Chamberlain House) appropriately", () => {
     const result = evaluateSocialNetworks(DEMO_NETWORKS);
     expect(result.totalNetworks).toBe(3);
     // 2 out of 3 are strong/developing
@@ -717,7 +717,7 @@ describe("evaluateBarrierManagement", () => {
     expect(result.overallScore).toBeLessThanOrEqual(25);
   });
 
-  it("scores demo data (Oak House) appropriately", () => {
+  it("scores demo data (Chamberlain House) appropriately", () => {
     const result = evaluateBarrierManagement(DEMO_BARRIERS);
     expect(result.totalBarriers).toBe(2);
     // Both have action taken, neither resolved
@@ -875,7 +875,7 @@ describe("evaluateInclusionOutcomes", () => {
     expect(result.communityBelongingRate).toBe(100);
   });
 
-  it("scores demo data (Oak House) appropriately", () => {
+  it("scores demo data (Chamberlain House) appropriately", () => {
     const result = evaluateInclusionOutcomes(DEMO_ASSESSMENTS);
     expect(result.totalAssessments).toBe(3);
     // 2 out of 3 feel part of community
@@ -1035,7 +1035,7 @@ describe("buildChildCommunityProfiles", () => {
     expect(profiles[0].feelsPartOfCommunity).toBeNull();
   });
 
-  it("scores demo data (Oak House) profiles correctly", () => {
+  it("scores demo data (Chamberlain House) profiles correctly", () => {
     const profiles = buildChildCommunityProfiles(DEMO_ACTIVITIES, DEMO_NETWORKS, DEMO_BARRIERS, DEMO_ASSESSMENTS);
     expect(profiles).toHaveLength(3);
 
@@ -1090,7 +1090,7 @@ describe("generateCommunityIntegrationIntelligence", () => {
     expect(result.regulatoryLinks.length).toBeGreaterThan(0);
   });
 
-  it("generates correct intelligence for Oak House demo data", () => {
+  it("generates correct intelligence for Chamberlain House demo data", () => {
     const result = generateCommunityIntegrationIntelligence(
       DEMO_ACTIVITIES, DEMO_NETWORKS, DEMO_BARRIERS, DEMO_ASSESSMENTS,
       "oak-house", PERIOD_START, PERIOD_END,

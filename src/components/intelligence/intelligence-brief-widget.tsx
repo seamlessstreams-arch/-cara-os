@@ -130,7 +130,7 @@ export function IntelligenceBriefWidget() {
           page_context: "dashboard",
           user_role: "registered_manager",
           question:
-            "Give me a concise morning intelligence brief for Oak House. Cover: active pattern alerts, home climate, overdue actions, and what I should prioritise today. Be specific and actionable.",
+            "Give me a concise morning intelligence brief for Chamberlain House. Cover: active pattern alerts, home climate, overdue actions, and what I should prioritise today. Be specific and actionable.",
         }),
       });
 

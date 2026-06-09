@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Admissions & Matching Intelligence Engine
 //
-// Demo data: Oak House with children Alex (14), Jordan (13), Morgan (15)
+// Demo data: Chamberlain House with children Alex (14), Jordan (13), Morgan (15)
 // Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (Senior RSW),
 //        Darren Laville (RM)
 //

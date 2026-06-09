@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Staff Deployment Intelligence Engine — Tests
 //
-// Oak House demo data:
+// Chamberlain House demo data:
 //   Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (Senior RSW),
 //          Darren Laville (RM) + 2 bank/agency
 //   Children: Alex (14), Jordan (13), Morgan (15)
@@ -126,7 +126,7 @@ function makeOakHouseRotaPublishedDates() {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateStaffingAdequacy", () => {
-  it("returns correct fill rate for Oak House data", () => {
+  it("returns correct fill rate for Chamberlain House data", () => {
     const result = evaluateStaffingAdequacy(makeOakHouseRotas(), makeOakHouseStaff(), PERIOD_START, PERIOD_END);
     // 27 filled out of 28 total (1 unfilled)
     expect(result.fillRate).toBe(96);
@@ -239,7 +239,7 @@ describe("evaluateStaffingAdequacy", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateAgencyMinimisation", () => {
-  it("calculates agency usage rate for Oak House", () => {
+  it("calculates agency usage rate for Chamberlain House", () => {
     const result = evaluateAgencyMinimisation(makeOakHouseAgencyUsages(), makeOakHouseRotas(), PERIOD_START, PERIOD_END);
     // 1 agency usage out of many staff appearances
     expect(result.agencyUsageRate).toBeLessThan(5);
@@ -325,12 +325,12 @@ describe("evaluateAgencyMinimisation", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateConsistencyOfCare", () => {
-  it("calculates key worker coverage for Oak House (100%)", () => {
+  it("calculates key worker coverage for Chamberlain House (100%)", () => {
     const result = evaluateConsistencyOfCare(makeOakHouseConsistencyRecords());
     expect(result.keyWorkerCoverage).toBe(100);
   });
 
-  it("calculates secondary key worker coverage for Oak House (100%)", () => {
+  it("calculates secondary key worker coverage for Chamberlain House (100%)", () => {
     const result = evaluateConsistencyOfCare(makeOakHouseConsistencyRecords());
     expect(result.secondaryKeyWorkerCoverage).toBe(100);
   });
@@ -521,7 +521,7 @@ describe("evaluateRotaCompliance", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("evaluateIncidentManagement", () => {
-  it("counts incidents for Oak House", () => {
+  it("counts incidents for Chamberlain House", () => {
     const result = evaluateIncidentManagement(makeOakHouseIncidents(), PERIOD_START, PERIOD_END);
     expect(result.totalIncidents).toBe(1);
   });
@@ -636,7 +636,7 @@ describe("generateStaffDeploymentIntelligence", () => {
     expect(result.overallScore).toBeLessThanOrEqual(100);
   });
 
-  it("Oak House scores good or outstanding", () => {
+  it("Chamberlain House scores good or outstanding", () => {
     const result = generateOakHouse();
     expect(["good", "outstanding"]).toContain(result.overallRating);
   });

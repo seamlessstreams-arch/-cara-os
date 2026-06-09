@@ -209,7 +209,7 @@ export default function FlashcardsPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Flashcard Sets" subtitle="Oak House — Learning Flashcards" targetId="flashcards-content" />
+          <PrintButton title="Flashcard Sets" subtitle="Chamberlain House — Learning Flashcards" targetId="flashcards-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Flashcard Sets upload" />
           <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

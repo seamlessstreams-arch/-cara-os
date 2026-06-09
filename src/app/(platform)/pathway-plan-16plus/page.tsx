@@ -216,7 +216,7 @@ export default function PathwayPlan16PlusPage() {
           <div>
             <p className="font-semibold text-blue-900">Continuity-of-care record</p>
             <p className="text-sm text-blue-800 mt-0.5">
-              This page tracks former Oak House residents now in pathway services. All currently
+              This page tracks former Chamberlain House residents now in pathway services. All currently
               resident young people (Alex, Jordan, Casey) are below 16 and remain on Care Plans
               (not yet Pathway Plans). Records below relate to former residents under continuing
               Staying Close arrangements — anonymised where appropriate.
@@ -442,7 +442,7 @@ export default function PathwayPlan16PlusPage() {
                         Plan Version: <strong>{r.plan_version}</strong>
                       </span>
                       <span className="flex items-center gap-1">
-                        Maintained by Oak House continuity record (RM:{" "}
+                        Maintained by Chamberlain House continuity record (RM:{" "}
                         <strong>{getStaffName("staff_darren")}</strong>, Senior:{" "}
                         <strong>{getStaffName("staff_ryan")}</strong>)
                       </span>
@@ -516,7 +516,7 @@ export default function PathwayPlan16PlusPage() {
           <form onSubmit={handleSavePlan} className="space-y-3 py-2">
             <div><Label>Young Person *</Label><Select value={ppForm.child_id} onValueChange={(v) => setPP("child_id", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select young person…" /></SelectTrigger><SelectContent>{YOUNG_PEOPLE.filter((y) => y.status === "current").map((y) => (<SelectItem key={y.id} value={y.id}>{y.preferred_name ?? y.first_name}</SelectItem>))}</SelectContent></Select></div>
             <div><Label>Personal Advisor</Label><Select value={ppForm.personal_advisor} onValueChange={(v) => setPP("personal_advisor", v)}><SelectTrigger className="mt-1"><SelectValue placeholder="Select staff…" /></SelectTrigger><SelectContent><SelectItem value="">TBC</SelectItem>{STAFF.filter((s) => s.employment_status === "active").map((s) => (<SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>))}</SelectContent></Select></div>
-            <div><Label>Current Accommodation</Label><Input className="mt-1" placeholder="e.g. Oak House" value={ppForm.accommodation} onChange={(e) => setPP("accommodation", e.target.value)} /></div>
+            <div><Label>Current Accommodation</Label><Input className="mt-1" placeholder="e.g. Chamberlain House" value={ppForm.accommodation} onChange={(e) => setPP("accommodation", e.target.value)} /></div>
             <div><Label>Aspirations (one per line)</Label><Textarea className="mt-1" rows={3} placeholder="Young person's goals and aspirations…" value={ppForm.aspirations} onChange={(e) => setPP("aspirations", e.target.value)} /></div>
             <DialogFooter><Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button><Button type="submit" disabled={createPlan.isPending}>{createPlan.isPending ? "Saving…" : "Create Plan"}</Button></DialogFooter>
           </form>

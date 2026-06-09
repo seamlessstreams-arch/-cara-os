@@ -12,7 +12,7 @@ import type {
   StaffDailyLogTraining,
 } from "@/lib/daily-log";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: DailyLogRecord[];

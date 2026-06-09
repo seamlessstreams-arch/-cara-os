@@ -3,7 +3,7 @@
 //
 // Complaint Resolution Effectiveness Intelligence
 //
-// GET  -- Returns complaint resolution effectiveness metrics with demo data (Oak House)
+// GET  -- Returns complaint resolution effectiveness metrics with demo data (Chamberlain House)
 // POST -- Accepts custom data and returns analysis
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffComplaintTraining,
 } from "@/lib/complaint-resolution-effectiveness";
 
-// -- Demo Data: Oak House -----------------------------------------------------
+// -- Demo Data: Chamberlain House -----------------------------------------------------
 
 function generateDemoData(): {
   records: ComplaintRecord[];

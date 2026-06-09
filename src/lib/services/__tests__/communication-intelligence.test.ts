@@ -208,7 +208,7 @@ describe("generateShiftBriefingDraft", () => {
 describe("generateManagementSummaryDraft", () => {
   const baseCtx = {
     periodLabel: "Week 22, 2025",
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     occupancy: { current: 3, capacity: 4 },
     significantEvents: [
       { date: "2025-05-28", summary: "Missing from care episode", severity: "high" },
@@ -226,7 +226,7 @@ describe("generateManagementSummaryDraft", () => {
 
   it("should produce the correct title and period", () => {
     const result = generateManagementSummaryDraft(baseCtx);
-    expect(result).toContain("# Management Summary — Oak House");
+    expect(result).toContain("# Management Summary — Chamberlain House");
     expect(result).toContain("**Period:** Week 22, 2025");
   });
 

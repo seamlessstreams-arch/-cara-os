@@ -242,7 +242,7 @@ export default function InterviewsPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Interviews" subtitle="Oak House — Safer Recruitment Interviews" targetId="interviews-content" />
+          <PrintButton title="Interviews" subtitle="Chamberlain House — Safer Recruitment Interviews" targetId="interviews-content" />
           <SmartUploadButton variant="inline" label="Upload Interview Notes" uploadContext="Safer Recruitment — interview notes or scoring template upload" />
         </div>
       }

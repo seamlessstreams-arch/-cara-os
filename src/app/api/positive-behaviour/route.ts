@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Positive Behaviour Support Intelligence API Route
 //
-// GET  → returns Oak House demo intelligence
+// GET  → returns Chamberlain House demo intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -15,7 +15,7 @@ import type {
   BehaviourIncident,
 } from "@/lib/positive-behaviour/positive-behaviour-engine";
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 
 function getDemoData(): {
   plans: BehaviourSupportPlan[];

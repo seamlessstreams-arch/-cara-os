@@ -159,7 +159,7 @@ export default function DocumentExpiryTrackerPage() {
       ariaContext={{ pageTitle: "Document Expiry Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Document Expiry Tracker" subtitle="Oak House — Compliance Management" />
+          <PrintButton title="Document Expiry Tracker" subtitle="Chamberlain House — Compliance Management" />
           <ExportButton data={filtered} columns={exportCols} filename="document-expiry-tracker" />
           <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

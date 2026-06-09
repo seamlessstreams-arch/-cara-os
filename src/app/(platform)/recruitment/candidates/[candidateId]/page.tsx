@@ -316,7 +316,7 @@ export default function CandidateDetailPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <PrintButton title={`${candidate.first_name} ${candidate.last_name}`} subtitle="Oak House — Candidate Profile" targetId="candidate-detail-content" />
+            <PrintButton title={`${candidate.first_name} ${candidate.last_name}`} subtitle="Chamberlain House — Candidate Profile" targetId="candidate-detail-content" />
             <ComplianceRing score={candidate.compliance_score} />
             <SmartUploadButton
               variant="icon"

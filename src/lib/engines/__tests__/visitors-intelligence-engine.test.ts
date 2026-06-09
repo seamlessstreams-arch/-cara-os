@@ -402,7 +402,7 @@ describe("Visitors Intelligence Engine", () => {
     });
   });
 
-  describe("Oak House integration", () => {
+  describe("Chamberlain House integration", () => {
     function oakHouseVisitors(): VisitorInput[] {
       return [
         {
@@ -478,7 +478,7 @@ describe("Visitors Intelligence Engine", () => {
       ];
     }
 
-    it("calculates correct overview for Oak House data", () => {
+    it("calculates correct overview for Chamberlain House data", () => {
       const result = run(oakHouseVisitors());
       expect(result.overview.total_visits).toBe(10);
       expect(result.overview.visits_last_30_days).toBe(10);

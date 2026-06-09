@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — LAC Review Intelligence API Route
 //
-// GET  → returns Oak House demo LAC review intelligence
+// GET  → returns Chamberlain House demo LAC review intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -13,7 +13,7 @@ import type {
   IROActivity,
 } from "@/lib/lac-review/lac-review-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const reviews: LACReview[] = [

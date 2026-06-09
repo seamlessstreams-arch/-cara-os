@@ -3,7 +3,7 @@
 //
 // Governance & Leadership Intelligence
 //
-// GET  — Returns governance assessment with realistic Oak House demo data
+// GET  — Returns governance assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -23,7 +23,7 @@ import type {
   ManagementPresence,
 } from "@/lib/governance";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_SOP: StatementOfPurpose = {
   lastReviewDate: "2026-01-10",

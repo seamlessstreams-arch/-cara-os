@@ -115,7 +115,7 @@ export default function TherapeuticCareModelPage() {
   return (
     <PageShell
       title="Therapeutic Care Model"
-      subtitle="The Trauma-Informed, Attachment-Aware, Relational (TIAR) model underpinning practice at Oak House"
+      subtitle="The Trauma-Informed, Attachment-Aware, Relational (TIAR) model underpinning practice at Chamberlain House"
       ariaContext={{ pageTitle: "Therapeutic Care Model", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">

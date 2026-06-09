@@ -917,7 +917,7 @@ export default function FamilyContactPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={CONTACT_EXPORT_COLS} filename="family-contact" />
-          <PrintButton title="Family Contact" subtitle="Oak House — Family Contact Log" targetId="family-contact-content" />
+          <PrintButton title="Family Contact" subtitle="Chamberlain House — Family Contact Log" targetId="family-contact-content" />
           <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }

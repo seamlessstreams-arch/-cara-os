@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Missing & Absent Episodes Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex, Jordan, Morgan),
+// Demo: Chamberlain House, 3 children (Alex, Jordan, Morgan),
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -72,7 +72,7 @@ const makeTraining = (overrides: Partial<StaffMissingTraining> = {}): StaffMissi
   ...overrides,
 });
 
-// Oak House demo data
+// Chamberlain House demo data
 const OAK_HOUSE_EPISODES: MissingEpisode[] = [
   makeEpisode({
     id: "ep-001",
@@ -729,7 +729,7 @@ describe("evaluateStaffMissingReadiness()", () => {
     expect(result.competencyBreakdown.returnInterviews).toBe(0);
   });
 
-  it("handles Oak House training data", () => {
+  it("handles Chamberlain House training data", () => {
     const result = evaluateStaffMissingReadiness(OAK_HOUSE_TRAINING);
     expect(result.totalStaff).toBe(4);
     expect(result.score).toBeGreaterThan(0);

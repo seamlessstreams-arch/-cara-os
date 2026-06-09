@@ -8,7 +8,7 @@ import type {
   StaffHandoverTraining,
 } from "@/lib/handover";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: HandoverRecord[];

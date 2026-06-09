@@ -80,7 +80,7 @@ const makeIncident = (overrides: Partial<TransportIncident> = {}): TransportInci
   ...overrides,
 });
 
-// ── Oak House Demo Data ────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ────────────────────────────────────────────────────
 
 const oakHouseVehicles: VehicleRecord[] = [
   makeVehicle({
@@ -1094,7 +1094,7 @@ describe("generateTransportSafetyComplianceIntelligence", () => {
     expect(result.incidentResponse).toBeDefined();
   });
 
-  it("Oak House demo data produces reasonable score", () => {
+  it("Chamberlain House demo data produces reasonable score", () => {
     const result = generateTransportSafetyComplianceIntelligence(
       oakHouseVehicles, oakHouseJourneys, oakHouseDrivers, oakHouseIncidents, oakHouseChildIds,
       "oak-house", PERIOD_START, PERIOD_END, REFERENCE_DATE,

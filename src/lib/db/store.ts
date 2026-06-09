@@ -1700,9 +1700,9 @@ const store = {
       id: "mam_001", child_id: "yp_alex", meeting_type: "lac_review" as const,
       meeting_status: "completed" as const, date: daysFromNow(-45), time: "10:00",
       venue: "Virtual — Teams", chaired_by: "S. Williams (IRO)",
-      home_representative: "Darren Laville",
+      home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Darren Laville", role: "Registered Manager", organisation: "Oak House", attended: true },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: true },
         { name: "S. Williams", role: "IRO", organisation: "Local Authority", attended: true },
         { name: "J. Cooper", role: "Social Worker", organisation: "Local Authority", attended: true },
         { name: "Alex", role: "Young Person", organisation: "", attended: true },
@@ -1714,7 +1714,7 @@ const store = {
       action_items: [
         { action: "Update PEP to reflect college aspirations", owner: "T. Evans", due_date: daysFromNow(-30), status: "completed" as const },
         { action: "Arrange CAMHS reassessment", owner: "J. Cooper", due_date: daysFromNow(-15), status: "completed" as const },
-        { action: "MACE update to IRO", owner: "Darren Laville", due_date: daysFromNow(-30), status: "completed" as const },
+        { action: "MACE update to IRO", owner: "Olivia Hayes", due_date: daysFromNow(-30), status: "completed" as const },
       ],
       next_meeting_date: daysFromNow(45), notes: "Positive review. Alex engaged throughout.",
       created_at: daysFromNow(-45) + "T10:00:00Z",
@@ -1722,10 +1722,10 @@ const store = {
     {
       id: "mam_002", child_id: "yp_jordan", meeting_type: "lac_review" as const,
       meeting_status: "scheduled" as const, date: daysFromNow(5), time: "14:00",
-      venue: "Oak House", chaired_by: "M. Khan (IRO)",
-      home_representative: "Darren Laville",
+      venue: "Chamberlain House", chaired_by: "M. Khan (IRO)",
+      home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Darren Laville", role: "Registered Manager", organisation: "Oak House", attended: false },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: false },
         { name: "M. Khan", role: "IRO", organisation: "Local Authority", attended: false },
         { name: "L. Patel", role: "Social Worker", organisation: "Local Authority", attended: false },
         { name: "Jordan", role: "Young Person", organisation: "", attended: false },
@@ -1739,9 +1739,9 @@ const store = {
       id: "mam_003", child_id: "yp_casey", meeting_type: "pep" as const,
       meeting_status: "completed" as const, date: daysFromNow(-20), time: "11:00",
       venue: "School", chaired_by: "Designated Teacher",
-      home_representative: "Anna Mitchell",
+      home_representative: "Priya Mitchell",
       attendees: [
-        { name: "Anna Mitchell", role: "Key Worker", organisation: "Oak House", attended: true },
+        { name: "Priya Mitchell", role: "Key Worker", organisation: "Chamberlain House", attended: true },
         { name: "H. Brooks", role: "Designated Teacher", organisation: "Academy School", attended: true },
         { name: "Casey", role: "Young Person", organisation: "", attended: true },
         { name: "T. Evans", role: "Virtual School Head", organisation: "Local Authority", attended: true },
@@ -1751,7 +1751,7 @@ const store = {
       child_participation: "Casey completed her views form and contributed to target-setting",
       action_items: [
         { action: "Arrange maths tutor (2x weekly)", owner: "H. Brooks", due_date: daysFromNow(-5), status: "completed" as const },
-        { action: "Monitor attendance weekly", owner: "Anna Mitchell", due_date: daysFromNow(60), status: "in_progress" as const },
+        { action: "Monitor attendance weekly", owner: "Priya Mitchell", due_date: daysFromNow(60), status: "in_progress" as const },
       ],
       next_meeting_date: daysFromNow(70), notes: "Positive PEP. Casey's attendance has improved significantly.",
       created_at: daysFromNow(-20) + "T11:00:00Z",
@@ -1760,9 +1760,9 @@ const store = {
       id: "mam_004", child_id: "yp_alex", meeting_type: "strategy" as const,
       meeting_status: "completed" as const, date: daysFromNow(-19), time: "09:00",
       venue: "Virtual — Teams", chaired_by: "J. Cooper (SW)",
-      home_representative: "Darren Laville",
+      home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Darren Laville", role: "Registered Manager", organisation: "Oak House", attended: true },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: true },
         { name: "J. Cooper", role: "Social Worker", organisation: "Local Authority", attended: true },
         { name: "DC Watkins", role: "Police", organisation: "Police", attended: true },
         { name: "MACE Coordinator", role: "MACE", organisation: "Local Authority", attended: true },
@@ -1771,7 +1771,7 @@ const store = {
       decisions_reached: ["Safety plan strengthened", "Police patrols increased near home", "MACE referral confirmed"],
       child_participation: "Not present — strategy meeting",
       action_items: [
-        { action: "Strengthen safety plan — add evening escort", owner: "Darren Laville", due_date: daysFromNow(-17), status: "completed" as const },
+        { action: "Strengthen safety plan — add evening escort", owner: "Olivia Hayes", due_date: daysFromNow(-17), status: "completed" as const },
         { action: "Share intel on associate 'D'", owner: "DC Watkins", due_date: daysFromNow(-14), status: "completed" as const },
         { action: "Reconvene in 4 weeks", owner: "J. Cooper", due_date: daysFromNow(9), status: "in_progress" as const },
       ],
@@ -1781,20 +1781,20 @@ const store = {
     {
       id: "mam_005", child_id: "yp_jordan", meeting_type: "professionals" as const,
       meeting_status: "completed" as const, date: daysFromNow(-35), time: "15:00",
-      venue: "Oak House", chaired_by: "Darren Laville",
-      home_representative: "Darren Laville",
+      venue: "Chamberlain House", chaired_by: "Olivia Hayes",
+      home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Darren Laville", role: "Registered Manager", organisation: "Oak House", attended: true },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: true },
         { name: "L. Patel", role: "Social Worker", organisation: "Local Authority", attended: true },
         { name: "Dr. Singh", role: "CAMHS Therapist", organisation: "NHS", attended: false },
-        { name: "Anna Mitchell", role: "Key Worker", organisation: "Oak House", attended: true },
+        { name: "Priya Mitchell", role: "Key Worker", organisation: "Chamberlain House", attended: true },
       ],
       key_discussion_points: ["CAMHS engagement", "Emotional wellbeing", "Pathway planning"],
       decisions_reached: ["Alternative CAMHS offer to be explored", "Wellbeing check-ins increased"],
       child_participation: "Jordan's views gathered beforehand via key worker",
       action_items: [
         { action: "Explore art therapy as CAMHS alternative", owner: "L. Patel", due_date: daysFromNow(-20), status: "in_progress" as const },
-        { action: "Weekly wellbeing check-ins", owner: "Anna Mitchell", due_date: daysFromNow(25), status: "in_progress" as const },
+        { action: "Weekly wellbeing check-ins", owner: "Priya Mitchell", due_date: daysFromNow(25), status: "in_progress" as const },
       ],
       next_meeting_date: daysFromNow(25), notes: "CAMHS therapist did not attend — 3rd cancellation. Escalated.",
       created_at: daysFromNow(-35) + "T15:00:00Z",
@@ -1803,9 +1803,9 @@ const store = {
       id: "mam_006", child_id: "yp_casey", meeting_type: "lac_review" as const,
       meeting_status: "completed" as const, date: daysFromNow(-60), time: "10:00",
       venue: "Local Authority offices", chaired_by: "M. Khan (IRO)",
-      home_representative: "Darren Laville",
+      home_representative: "Olivia Hayes",
       attendees: [
-        { name: "Darren Laville", role: "Registered Manager", organisation: "Oak House", attended: true },
+        { name: "Olivia Hayes", role: "Registered Manager", organisation: "Chamberlain House", attended: true },
         { name: "M. Khan", role: "IRO", organisation: "Local Authority", attended: true },
         { name: "R. Hughes", role: "Social Worker", organisation: "Local Authority", attended: true },
         { name: "Casey", role: "Young Person", organisation: "", attended: true },
@@ -1815,7 +1815,7 @@ const store = {
       child_participation: "Casey completed consultation booklet and attended meeting",
       action_items: [
         { action: "Increase family contact to weekly", owner: "R. Hughes", due_date: daysFromNow(-45), status: "completed" as const },
-        { action: "Submit home report 3 days before next review", owner: "Darren Laville", due_date: daysFromNow(-3), status: "in_progress" as const },
+        { action: "Submit home report 3 days before next review", owner: "Olivia Hayes", due_date: daysFromNow(-3), status: "in_progress" as const },
       ],
       next_meeting_date: daysFromNow(30), notes: "Good progress noted. Casey settling well.",
       created_at: daysFromNow(-60) + "T10:00:00Z",
@@ -1914,10 +1914,10 @@ const store = {
         "Outdoor activity provision limited in winter months",
       ],
       actions: [
-        { action: "Night shift recording training for all staff", owner: "Darren Laville", target_date: daysFromNow(-10), status: "completed" },
-        { action: "Implement mood capture prompt in daily log template", owner: "Anna Mitchell", target_date: daysFromNow(10), status: "in_progress" },
-        { action: "Add sleep log verification to night shift checklist", owner: "Darren Laville", target_date: daysFromNow(-5), status: "completed" },
-        { action: "Winter activity programme — indoor alternatives and community venues", owner: "Chervelle Grant", target_date: daysFromNow(20), status: "in_progress" },
+        { action: "Night shift recording training for all staff", owner: "Olivia Hayes", target_date: daysFromNow(-10), status: "completed" },
+        { action: "Implement mood capture prompt in daily log template", owner: "Priya Mitchell", target_date: daysFromNow(10), status: "in_progress" },
+        { action: "Add sleep log verification to night shift checklist", owner: "Olivia Hayes", target_date: daysFromNow(-5), status: "completed" },
+        { action: "Winter activity programme — indoor alternatives and community venues", owner: "Naomi Grant", target_date: daysFromNow(20), status: "in_progress" },
       ],
       created_at: daysFromNow(-90) + "T09:00:00Z",
     },
@@ -1956,11 +1956,11 @@ const store = {
         "Need to improve evidence of impact for exploitation safety plans",
       ],
       actions: [
-        { action: "Implement child consultation checklist for all restriction reviews", owner: "Darren Laville", target_date: daysFromNow(5), status: "in_progress" },
-        { action: "Escalate CAMHS non-attendance to team manager", owner: "Anna Mitchell", target_date: daysFromNow(-15), status: "completed" },
-        { action: "Complete overdue locality risk reviews", owner: "Darren Laville", target_date: daysFromNow(3), status: "in_progress" },
-        { action: "Return interview training session for all staff", owner: "Darren Laville", target_date: daysFromNow(14), status: "open" },
-        { action: "Create safety plan impact evidence template", owner: "Chervelle Grant", target_date: daysFromNow(-20), status: "completed" },
+        { action: "Implement child consultation checklist for all restriction reviews", owner: "Olivia Hayes", target_date: daysFromNow(5), status: "in_progress" },
+        { action: "Escalate CAMHS non-attendance to team manager", owner: "Priya Mitchell", target_date: daysFromNow(-15), status: "completed" },
+        { action: "Complete overdue locality risk reviews", owner: "Olivia Hayes", target_date: daysFromNow(3), status: "in_progress" },
+        { action: "Return interview training session for all staff", owner: "Olivia Hayes", target_date: daysFromNow(14), status: "open" },
+        { action: "Create safety plan impact evidence template", owner: "Naomi Grant", target_date: daysFromNow(-20), status: "completed" },
       ],
       created_at: daysFromNow(-90) + "T09:00:00Z",
     },
@@ -1997,11 +1997,11 @@ const store = {
         "Appraisal completion rate needs improvement — 1 overdue",
       ],
       actions: [
-        { action: "Enrol deputy on Level 5 leadership programme", owner: "Darren Laville", target_date: daysFromNow(30), status: "in_progress" },
-        { action: "Schedule monthly peer observations into rota", owner: "Darren Laville", target_date: daysFromNow(7), status: "in_progress" },
-        { action: "Review notification process — add manager alert system", owner: "Darren Laville", target_date: daysFromNow(-10), status: "completed" },
-        { action: "Reflective practice sessions added to team meetings", owner: "Anna Mitchell", target_date: daysFromNow(14), status: "open" },
-        { action: "Complete overdue staff appraisal", owner: "Darren Laville", target_date: daysFromNow(-90), status: "completed" },
+        { action: "Enrol deputy on Level 5 leadership programme", owner: "Olivia Hayes", target_date: daysFromNow(30), status: "in_progress" },
+        { action: "Schedule monthly peer observations into rota", owner: "Olivia Hayes", target_date: daysFromNow(7), status: "in_progress" },
+        { action: "Review notification process — add manager alert system", owner: "Olivia Hayes", target_date: daysFromNow(-10), status: "completed" },
+        { action: "Reflective practice sessions added to team meetings", owner: "Priya Mitchell", target_date: daysFromNow(14), status: "open" },
+        { action: "Complete overdue staff appraisal", owner: "Olivia Hayes", target_date: daysFromNow(-90), status: "completed" },
       ],
       created_at: daysFromNow(-90) + "T09:00:00Z",
     },
@@ -2076,7 +2076,7 @@ const store = {
       education_employment_training: "Apprenticeship in IT support starting September 2026",
       health_needs: ["GP registered", "Dental check booked", "Mental health support via CAMHS"],
       financial_support: ["Setting Up Home Allowance confirmed", "Bursary for apprenticeship"],
-      support_network: ["Personal advisor", "Key worker (Darren)", "CAMHS worker", "College tutor", "CiCC peer mentor"],
+      support_network: ["Personal advisor", "Key worker (Olivia)", "CAMHS worker", "College tutor", "CiCC peer mentor"],
       aspirations: ["Complete apprenticeship", "Live independently", "Learn to drive"],
       risks: ["Anxiety around transitions", "Limited family support"],
       independent_living_skills: { cooking: "developing" as const, budgeting: "established" as const, laundry: "established" as const, travel: "established" as const, health: "developing" as const, communication: "established" as const, job_skills: "developing" as const },
@@ -2091,7 +2091,7 @@ const store = {
       education_employment_training: "Currently disengaged from education — exploring construction apprenticeship",
       health_needs: ["GP registered", "Sleep issues discussed with GP"],
       financial_support: ["Standard leaving care grant eligible"],
-      support_network: ["Personal advisor", "Key worker (Anna)"],
+      support_network: ["Personal advisor", "Key worker (Priya)"],
       aspirations: ["Get a job", "Own flat", "Reconnect with older brother"],
       risks: ["Peer influence", "Disengagement from education", "Limited financial literacy"],
       independent_living_skills: { cooking: "emerging" as const, budgeting: "emerging" as const, laundry: "developing" as const, travel: "established" as const, health: "emerging" as const, communication: "developing" as const, job_skills: "not_yet" as const },
@@ -2106,7 +2106,7 @@ const store = {
       education_employment_training: "Full-time education Year 11",
       health_needs: ["Emotional wellbeing support"],
       financial_support: [],
-      support_network: ["Key worker (Chervelle)", "School pastoral lead"],
+      support_network: ["Key worker (Naomi)", "School pastoral lead"],
       aspirations: ["Art college", "Own creative studio"],
       risks: ["Identity exploration", "Emotional regulation"],
       independent_living_skills: { cooking: "emerging" as const, budgeting: "not_yet" as const, laundry: "emerging" as const, travel: "developing" as const, health: "emerging" as const, communication: "developing" as const, job_skills: "not_yet" as const },
@@ -2216,7 +2216,7 @@ const store = {
   qaAuditRecords: [] as QAAuditRecord[],
   qualityOfCareReviews: [
     {
-      id: "qoc_001", date: daysFromNow(-120), type: "annual" as const, lead_reviewer: "Darren Laville",
+      id: "qoc_001", date: daysFromNow(-120), type: "annual" as const, lead_reviewer: "Olivia Hayes",
       overall_rating: "good" as const,
       domains: [
         { domain: "safety" as const, rating: "good" as const, evidence: "Safeguarding procedures robust", trend: "stable" as const },
@@ -2228,8 +2228,8 @@ const store = {
       children_feedback: "All three children contributed views. Overall positive about care.",
       staff_feedback: "Staff feel supported. Some concern about workload during short-staffing.",
       actions: [
-        { action: "Night shift recording training", owner: "Darren Laville", due_date: daysFromNow(-90), status: "completed" as const, priority: "medium" as const },
-        { action: "Supervision calendar review", owner: "Darren Laville", due_date: daysFromNow(-100), status: "completed" as const, priority: "high" as const },
+        { action: "Night shift recording training", owner: "Olivia Hayes", due_date: daysFromNow(-90), status: "completed" as const, priority: "medium" as const },
+        { action: "Supervision calendar review", owner: "Olivia Hayes", due_date: daysFromNow(-100), status: "completed" as const, priority: "high" as const },
       ],
       next_review_date: daysFromNow(60), notes: "Shared with RI and Ofsted as part of Reg 45 evidence.",
     },
@@ -2291,7 +2291,7 @@ const store = {
       lado_notified: false, dbs_referral: false, ofsted_notified: false,
       confidentiality_level: "standard" as const, trade_union_rep: null,
       lessons_learned: "Reminder issued to all staff about professional language in front of YP",
-      notes: "Edward was receptive and reflective. No repeat incidents.",
+      notes: "Daniel was receptive and reflective. No repeat incidents.",
     },
     {
       id: "disc_002", staff_member: "staff_agency_01", date_raised: daysFromNow(-160),
@@ -2334,7 +2334,7 @@ const store = {
       support_offered: ["Flexible start time (temporary)", "Wellbeing check-in"],
       lado_notified: false, dbs_referral: false, ofsted_notified: false,
       confidentiality_level: "standard" as const, trade_union_rep: null,
-      lessons_learned: "", notes: "Resolved informally. Ryan's attendance has since improved.",
+      lessons_learned: "", notes: "Resolved informally. Marcus's attendance has since improved.",
     },
     {
       id: "disc_004", staff_member: "staff_edward", date_raised: daysFromNow(-14),
@@ -2367,7 +2367,7 @@ const store = {
         { date: daysFromNow(-7), action: "Informal capability conversation held", by: "staff_darren" },
         { date: daysFromNow(-5), action: "Support plan agreed — mentor assigned", by: "staff_darren" },
       ],
-      support_offered: ["Additional recording training", "Mentor assigned (Anna)", "Weekly check-ins"],
+      support_offered: ["Additional recording training", "Mentor assigned (Priya)", "Weekly check-ins"],
       lado_notified: false, dbs_referral: false, ofsted_notified: false,
       confidentiality_level: "standard" as const, trade_union_rep: null,
       lessons_learned: "", notes: "Capability matter, not misconduct. Supportive approach being taken.",
@@ -2477,7 +2477,7 @@ const store = {
       status: "resolved" as const,
       subject_of_concern: "Concerns about previous agency staff conduct",
       summary: "Concern raised about agency staff member not engaging with young person during waking night shift",
-      detail: "Chervelle observed on two occasions that an agency night worker was sleeping during waking night duty. CCTV confirmed staff member was not conducting checks at required intervals.",
+      detail: "Naomi observed on two occasions that an agency night worker was sleeping during waking night duty. CCTV confirmed staff member was not conducting checks at required intervals.",
       evidence_provided: ["CCTV timestamps", "Missing check entries in log"],
       assigned_to: "staff_darren",
       external_referral: "LADO",
@@ -2544,7 +2544,7 @@ const store = {
       id: "obr_default",
       organisation_id: "org_oak",
       company_name: "Seamless Streams Care Ltd",
-      trading_name: "Oak House Residential Care",
+      trading_name: "Chamberlain House Residential Care",
       registered_provider_name: "Seamless Streams Care Ltd",
       company_registration_number: "12345678",
       ofsted_provider_reference: "SC123456",
@@ -2572,10 +2572,10 @@ const store = {
       id: "hbr_oak",
       home_id: "home_oak",
       organisation_id: "org_oak",
-      home_name: "Oak House",
+      home_name: "Chamberlain House",
       home_address: "1 Care Lane, Oak Town, OA1 2BC",
       ofsted_urn: "SC123456",
-      registered_manager_name: "Darren Cartwright",
+      registered_manager_name: "Olivia Cartwright",
       responsible_individual_name: "Eleanor Hartley",
       emergency_contact: "01234 567891",
       safeguarding_contact: "01234 567892",
@@ -2756,7 +2756,7 @@ const store = {
       requester_shift_id: "shift_004",
       target_shift_id: "shift_003",
       status: "pending",
-      reason: "Medical appointment on this date — happy to swap sleep-in for Edward's day shift.",
+      reason: "Medical appointment on this date — happy to swap sleep-in for Daniel's day shift.",
       manager_notes: null,
       decided_by: null,
       decided_at: null,
@@ -2769,7 +2769,7 @@ const store = {
       requester_shift_id: "shift_005",
       target_shift_id: null,
       status: "pending",
-      reason: "Family commitment — need to swap my day shift, Diane has agreed informally.",
+      reason: "Family commitment — need to swap my day shift, Maria has agreed informally.",
       manager_notes: null,
       decided_by: null,
       decided_at: null,
@@ -2913,7 +2913,7 @@ store.missingEpisodes = [
     date_missing: "2026-01-15", time_missing: "21:30",
     date_returned: "2026-01-15", time_returned: "23:25",
     duration_hours: 1.9, risk_level: "medium",
-    location_last_seen: "Outside Oak House — said going to shop",
+    location_last_seen: "Outside Chamberlain House — said going to shop",
     return_location: "Local park, returned voluntarily",
     reported_to_police: false, police_reference: null,
     reported_to_la: true, la_notified_at: "2026-01-16T09:00:00Z",
@@ -2967,7 +2967,7 @@ store.missingEpisodes = [
 // Seed chronology
 store.chronology = [
   // Alex chronology
-  { id: "chr_001", child_id: "yp_alex", date: "2025-09-01", time: "14:00", category: "placement", title: "Placement commenced at Oak House", description: "Alex admitted to Oak House under S20. Initial placement meeting held with LA, IRO, and social worker. Risk assessment reviewed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-09-01T14:00:00Z" },
+  { id: "chr_001", child_id: "yp_alex", date: "2025-09-01", time: "14:00", category: "placement", title: "Placement commenced at Chamberlain House", description: "Alex admitted to Chamberlain House under S20. Initial placement meeting held with LA, IRO, and social worker. Risk assessment reviewed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-09-01T14:00:00Z" },
   { id: "chr_002", child_id: "yp_alex", date: "2025-10-01", time: null, category: "education", title: "School placement arranged — Derby Alternative Provision", description: "Education arranged with Derby AP following exclusion from previous school. Alex settled well in first week.", significance: "significant", recorded_by: "staff_ryan", linked_incident_id: null, home_id: "home_oak", created_at: "2025-10-01T10:00:00Z" },
   { id: "chr_003", child_id: "yp_alex", date: "2026-01-15", time: "21:30", category: "missing", title: "First missing from care episode (MFC-2026-001)", description: "Alex absent 1h 55m. Returned voluntarily. Low-risk return interview completed.", significance: "significant", recorded_by: "staff_edward", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-15T23:30:00Z" },
   { id: "chr_004", child_id: "yp_alex", date: "2026-02-05", time: null, category: "review", title: "LAC Review — Alex W", description: "Looked After Child review held at Derby City Council. Placement stable. Education engagement improved. No change to Care Order.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-02-05T11:00:00Z" },
@@ -2975,11 +2975,11 @@ store.chronology = [
   { id: "chr_006", child_id: "yp_alex", date: "2026-04-01", time: "20:45", category: "missing", title: "Third missing from care episode (MFC-2026-003) — pattern escalated", description: "Alex absent 1h 35m. Police informed. Contextual safeguarding escalation — MASH referral made. Unknown peer group suspected.", significance: "critical", recorded_by: "staff_edward", linked_incident_id: "inc_001", home_id: "home_oak", created_at: "2026-04-01T20:55:00Z" },
   { id: "chr_007", child_id: "yp_alex", date: "2026-04-14", time: "19:10", category: "safeguarding", title: "Safeguarding disclosure — criminal exploitation risk", description: "Alex disclosed older peer asking him to carry items. Immediate safeguarding response. Social worker, police, and RM notified. Strategy discussion arranged.", significance: "critical", recorded_by: "staff_edward", linked_incident_id: "inc_004", home_id: "home_oak", created_at: "2026-04-14T19:15:00Z" },
   // Jordan chronology
-  { id: "chr_010", child_id: "yp_jordan", date: "2025-11-15", time: null, category: "placement", title: "Placement commenced at Oak House", description: "Jordan admitted under Full Care Order (S31). Placement plan agreed with Nottinghamshire CC. Halal food and dietary requirements confirmed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-11-15T12:00:00Z" },
+  { id: "chr_010", child_id: "yp_jordan", date: "2025-11-15", time: null, category: "placement", title: "Placement commenced at Chamberlain House", description: "Jordan admitted under Full Care Order (S31). Placement plan agreed with Nottinghamshire CC. Halal food and dietary requirements confirmed.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2025-11-15T12:00:00Z" },
   { id: "chr_011", child_id: "yp_jordan", date: "2025-12-01", time: null, category: "education", title: "School placement — Highfields Academy", description: "Jordan started at Highfields Academy. Initial settling in period. Positive engagement with PE.", significance: "significant", recorded_by: "staff_ryan", linked_incident_id: null, home_id: "home_oak", created_at: "2025-12-01T09:00:00Z" },
   { id: "chr_012", child_id: "yp_jordan", date: "2026-04-14", time: "14:30", category: "behaviour", title: "Complaint raised — noise during study time (INC-2026-0042)", description: "Jordan raised formal complaint about noise levels. Complaint logged and investigation commenced.", significance: "significant", recorded_by: "staff_chervelle", linked_incident_id: "inc_003", home_id: "home_oak", created_at: "2026-04-14T14:35:00Z" },
   // Casey chronology
-  { id: "chr_020", child_id: "yp_casey", date: "2026-01-10", time: null, category: "placement", title: "Placement commenced at Oak House", description: "Casey admitted under Full Care Order. From previous placement that broke down. Settling-in plan agreed. CAMHS referral in place.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-10T13:00:00Z" },
+  { id: "chr_020", child_id: "yp_casey", date: "2026-01-10", time: null, category: "placement", title: "Placement commenced at Chamberlain House", description: "Casey admitted under Full Care Order. From previous placement that broke down. Settling-in plan agreed. CAMHS referral in place.", significance: "critical", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-10T13:00:00Z" },
   { id: "chr_021", child_id: "yp_casey", date: "2026-01-15", time: null, category: "health", title: "Melatonin prescribed — sleep support", description: "Dr Chen prescribed Melatonin 3mg for sleep difficulties. MAR commenced.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-01-15T10:00:00Z" },
   { id: "chr_022", child_id: "yp_casey", date: "2026-02-01", time: null, category: "health", title: "Fluoxetine prescribed — mood support", description: "Dr Chen prescribed Fluoxetine 10mg for low mood. Risk assessment updated. CAMHS oversight confirmed.", significance: "significant", recorded_by: "staff_darren", linked_incident_id: null, home_id: "home_oak", created_at: "2026-02-01T11:00:00Z" },
   { id: "chr_023", child_id: "yp_casey", date: "2026-04-13", time: "08:15", category: "health", title: "Medication late administration — refusal episode (INC-2026-0040)", description: "Casey refused morning Fluoxetine. Incident logged. Late administration at 08:45 following second attempt.", significance: "significant", recorded_by: "staff_anna", linked_incident_id: "inc_002", home_id: "home_oak", created_at: "2026-04-13T08:20:00Z" },
@@ -3013,8 +3013,8 @@ store.medicationAdministrations = [
 // Seed buildings and H&S
 store.buildings = [
   {
-    id: "bld_001", home_id: "home_oak", name: "Oak House — Main Building",
-    type: "residential", address: "Oak House, Derby, DE1 3AA",
+    id: "bld_001", home_id: "home_oak", name: "Chamberlain House — Main Building",
+    type: "residential", address: "Chamberlain House, Derby, DE1 3AA",
     areas: ["bedroom_alex", "bedroom_jordan", "bedroom_casey", "lounge", "kitchen", "bathroom_main", "bathroom_staff", "office", "medication_room", "garden"],
     gas_cert_expiry: "2026-12-01", electrical_cert_expiry: "2027-03-01",
     fire_risk_assessment_date: "2026-01-15", epc_rating: "C",
@@ -3072,10 +3072,10 @@ store.handovers = [
     created_by: "staff_darren", signed_off_by: null, sign_offs: [],
     child_updates: [
       { child_id: "yp_alex", mood_score: 6, key_notes: "Alex had a settled day overall. Engaged with education in the morning. Some low mood around 4pm — disclosed worrying about court proceedings. Supported with 1:1 time.", alerts: ["Phone usage overnight — third time this week", "Court proceedings anxiety"] },
-      { child_id: "yp_jordan", mood_score: 9, key_notes: "Jordan had an excellent day. Went to football training with Lackson. Made positive comments about feeling settled at Oak House.", alerts: [] },
+      { child_id: "yp_jordan", mood_score: 9, key_notes: "Jordan had an excellent day. Went to football training with Samuel. Made positive comments about feeling settled at Chamberlain House.", alerts: [] },
       { child_id: "yp_casey", mood_score: 4, key_notes: "Casey struggled this afternoon. Became distressed about a phone call from her mother. Supported to regulate. Refused evening medication initially — accepted 30 minutes later.", alerts: ["Contact distress", "Medication delay — administered 30 mins late"] },
     ],
-    general_notes: "Rear gate latch needs fixing urgently — flagged to Ryan. CCTV camera still not installed. Strategy discussion tomorrow re: Alex safeguarding.",
+    general_notes: "Rear gate latch needs fixing urgently — flagged to Marcus. CCTV camera still not installed. Strategy discussion tomorrow re: Alex safeguarding.",
     flags: ["gate_security", "casey_medication_delay", "alex_safeguarding_strategy_tomorrow"],
     linked_incident_ids: ["inc_004"],
     created_at: new Date().toISOString(),
@@ -3093,9 +3093,9 @@ store.handovers = [
     child_updates: [
       { child_id: "yp_alex", mood_score: 6, key_notes: "Alex had a settled night. Some restlessness at 02:00 — checked, was on phone. Phone discussion needed. Mood okay this morning.", alerts: ["Phone usage overnight — third time this week"] },
       { child_id: "yp_jordan", mood_score: 8, key_notes: "Jordan slept well. Up at 07:00, positive this morning. Prepared own breakfast.", alerts: [] },
-      { child_id: "yp_casey", mood_score: 5, key_notes: "Casey had a difficult night. Woke at 01:30 distressed — contact with mother earlier affected mood. Settled with support from Edward.", alerts: ["Sleep disturbance linked to contact", "Medication refusal risk for morning"] },
+      { child_id: "yp_casey", mood_score: 5, key_notes: "Casey had a difficult night. Woke at 01:30 distressed — contact with mother earlier affected mood. Settled with support from Daniel.", alerts: ["Sleep disturbance linked to contact", "Medication refusal risk for morning"] },
     ],
-    general_notes: "Rear gate latch needs fixing urgently — flagged to Ryan. CCTV camera still not installed.",
+    general_notes: "Rear gate latch needs fixing urgently — flagged to Marcus. CCTV camera still not installed.",
     flags: ["gate_security", "alex_phone_overnight", "casey_sleep_disturbance"],
     linked_incident_ids: ["inc_001", "inc_004"],
     created_at: daysFromNow(0) + "T07:30:00Z",
@@ -3117,7 +3117,7 @@ store.vacancies = [
     hours: 40,
     shift_pattern: "Rotating days, evenings and sleep-ins across a 4-week rota",
     reports_to: "staff_darren",
-    safeguarding_statement: "Oak House is committed to safeguarding and promoting the welfare of children and young people. All posts are subject to an enhanced DBS check, barred list check, and satisfactory references.",
+    safeguarding_statement: "Chamberlain House is committed to safeguarding and promoting the welfare of children and young people. All posts are subject to an enhanced DBS check, barred list check, and satisfactory references.",
     status: "open",
     approval_status: "approved",
     created_by: "staff_darren",
@@ -3138,7 +3138,7 @@ store.vacancies = [
     hours: 40,
     shift_pattern: "Supernumerary management shifts plus on-call cover",
     reports_to: "staff_darren",
-    safeguarding_statement: "Oak House is committed to safeguarding and promoting the welfare of children and young people. All posts are subject to an enhanced DBS check, barred list check, and satisfactory references.",
+    safeguarding_statement: "Chamberlain House is committed to safeguarding and promoting the welfare of children and young people. All posts are subject to an enhanced DBS check, barred list check, and satisfactory references.",
     status: "open",
     approval_status: "approved",
     created_by: "staff_darren",
@@ -3637,7 +3637,7 @@ store.careForms = [
   },
   {
     id: "form_004", home_id: "home_oak",
-    title: "Oak House — Monthly Health & Safety Check", form_type: "health_safety_check",
+    title: "Chamberlain House — Monthly Health & Safety Check", form_type: "health_safety_check",
     status: "pending_review", priority: "medium",
     linked_child_id: null, linked_staff_id: "staff_chervelle",
     linked_incident_id: null, linked_shift_id: null, linked_task_id: null,
@@ -3674,7 +3674,7 @@ store.supervisions = [
     id: "sup_001", staff_id: "staff_edward", supervisor_id: "staff_ryan",
     type: "formal", scheduled_date: "2026-03-26", actual_date: "2026-03-26",
     duration_minutes: 60, status: "completed",
-    discussion_points: "Performance review following incident involvement on 2026-02-28. Alex's contextual safeguarding risk — Edward's response was timely and appropriate. Discussed de-escalation techniques. Identified further training need: trauma-informed practice refresher.",
+    discussion_points: "Performance review following incident involvement on 2026-02-28. Alex's contextual safeguarding risk — Daniel's response was timely and appropriate. Discussed de-escalation techniques. Identified further training need: trauma-informed practice refresher.",
     actions_agreed: [
       { id: "act_001a", description: "Book trauma-informed practice refresher", owner: "staff_edward", due_date: "2026-04-15", status: "pending", completed_at: null },
       { id: "act_001b", description: "Shadow senior staff at next strategy discussion", owner: "staff_edward", due_date: "2026-04-30", status: "pending", completed_at: null },
@@ -3688,7 +3688,7 @@ store.supervisions = [
     id: "sup_002", staff_id: "staff_anna", supervisor_id: "staff_ryan",
     type: "formal", scheduled_date: "2026-04-03", actual_date: "2026-04-03",
     duration_minutes: 55, status: "completed",
-    discussion_points: "Monthly formal supervision. Anna managing a full caseload and on sleep-in rota. Discussed medication refusal incident on 2026-04-13 — handled well initially. Concern raised around fatigue from consecutive shifts. Reviewed MAR competency sign-off. Wellbeing discussed — Anna reported feeling supported.",
+    discussion_points: "Monthly formal supervision. Priya managing a full caseload and on sleep-in rota. Discussed medication refusal incident on 2026-04-13 — handled well initially. Concern raised around fatigue from consecutive shifts. Reviewed MAR competency sign-off. Wellbeing discussed — Priya reported feeling supported.",
     actions_agreed: [
       { id: "act_002a", description: "Complete online GDPR refresher before next shift", owner: "staff_anna", due_date: "2026-04-10", status: "completed", completed_at: "2026-04-08T18:00:00Z" },
     ],
@@ -3701,7 +3701,7 @@ store.supervisions = [
     id: "sup_003", staff_id: "staff_lackson", supervisor_id: "staff_ryan",
     type: "formal", scheduled_date: "2026-03-28", actual_date: "2026-03-28",
     duration_minutes: 50, status: "completed",
-    discussion_points: "Monthly supervision. Lackson has settled well and relationships with young people are strong. Discussed Alex's missing pattern — Lackson was present during the second episode and handled it appropriately. Punctuality concern raised — two late arrivals this month. Agreed plan to address.",
+    discussion_points: "Monthly supervision. Samuel has settled well and relationships with young people are strong. Discussed Alex's missing pattern — Samuel was present during the second episode and handled it appropriately. Punctuality concern raised — two late arrivals this month. Agreed plan to address.",
     actions_agreed: [
       { id: "act_003a", description: "No further late arrivals — review at next supervision", owner: "staff_lackson", due_date: "2026-04-25", status: "pending", completed_at: null },
     ],
@@ -3798,7 +3798,7 @@ store.documents = [
     created_by: "staff_darren", updated_by: "staff_darren",
   },
   {
-    id: "doc_3", title: "Oak House — Child Protection Policy",
+    id: "doc_3", title: "Chamberlain House — Child Protection Policy",
     category: "policy", description: "Whole-home child protection and safeguarding policy",
     file_url: "#", file_name: "CP_Policy_2026.pdf", file_size: 320000, mime_type: "application/pdf",
     version: 4, previous_version_id: "doc_3_v3", requires_read_sign: true,
@@ -3828,7 +3828,7 @@ store.documents = [
     created_by: "staff_darren", updated_by: "staff_darren",
   },
   {
-    id: "doc_6", title: "Ryan Forsythe — Employment Contract",
+    id: "doc_6", title: "Marcus Bell — Employment Contract",
     category: "contract", description: "Permanent contract — Deputy Manager",
     file_url: "#", file_name: "Ryan_Contract_2024.pdf", file_size: 145000, mime_type: "application/pdf",
     version: 1, previous_version_id: null, requires_read_sign: false,
@@ -4010,7 +4010,7 @@ store.maintenance = [
   {
     id: "m6", title: "Deep clean — kitchen", category: "cleaning",
     priority: "low", status: "completed", due_date: daysFromNow(-7),
-    assigned_to: "Cleaning company", notes: "Done — signed off by Ryan", recurring: true,
+    assigned_to: "Cleaning company", notes: "Done — signed off by Marcus", recurring: true,
     home_id: "home_oak", created_by: "staff_darren", updated_by: "staff_darren",
     created_at: new Date().toISOString(), updated_at: new Date().toISOString(),
   },
@@ -4035,7 +4035,7 @@ store.competencyProfiles = [
       "Formal leadership coaching to sustain RM role long-term",
       "Level 5 Diploma in Leadership for Health and Social Care (in progress)",
     ],
-    aria_narrative: "Darren demonstrates outstanding strategic and operational leadership. His competency profile across all domains places him firmly at Registered Manager level. ARIA identifies no blocking gaps for his current stage. Continued investment in formal qualification completion (Level 5) and reflective leadership practice is recommended.",
+    aria_narrative: "Olivia demonstrates outstanding strategic and operational leadership. His competency profile across all domains places him firmly at Registered Manager level. ARIA identifies no blocking gaps for his current stage. Continued investment in formal qualification completion (Level 5) and reflective leadership practice is recommended.",
     last_assessed_at: "2026-03-15T10:00:00Z",
     next_review_date: "2026-09-15",
     created_at: NOW, updated_at: NOW,
@@ -4055,7 +4055,7 @@ store.competencyProfiles = [
       "Formal Level 5 Diploma (enrolled, 40% complete)",
       "ARIA engagement — lower utilisation than expected at deputy level",
     ],
-    aria_narrative: "Ryan has a strong foundation at Deputy Manager level with a clear pathway to Registered Manager. His primary development gap is formal leadership qualification and strategic ARIA use. ARIA recommends a structured 12-month succession development plan targeting RM readiness by Q1 2027.",
+    aria_narrative: "Marcus has a strong foundation at Deputy Manager level with a clear pathway to Registered Manager. His primary development gap is formal leadership qualification and strategic ARIA use. ARIA recommends a structured 12-month succession development plan targeting RM readiness by Q1 2027.",
     last_assessed_at: "2026-03-15T10:00:00Z",
     next_review_date: "2026-09-15",
     created_at: NOW, updated_at: NOW,
@@ -4075,7 +4075,7 @@ store.competencyProfiles = [
       "Leadership foundations — ready to begin senior RSW responsibilities",
       "Level 3 Diploma (first unit completed — ongoing)",
     ],
-    aria_narrative: "Edward is performing above the standard RSW benchmark, particularly in trauma-informed practice. ARIA identifies him as a strong candidate for Senior RSW promotion within 6 months pending risk assessment upskill and Level 3 progress.",
+    aria_narrative: "Daniel is performing above the standard RSW benchmark, particularly in trauma-informed practice. ARIA identifies him as a strong candidate for Senior RSW promotion within 6 months pending risk assessment upskill and Level 3 progress.",
     last_assessed_at: "2026-02-20T09:00:00Z",
     next_review_date: "2026-08-20",
     created_at: NOW, updated_at: NOW,
@@ -4095,7 +4095,7 @@ store.competencyProfiles = [
       "Statutory compliance — occasional gaps in recording timeliness",
       "Level 3 Diploma (in progress, 60% complete)",
     ],
-    aria_narrative: "Lackson demonstrates strong practice and cultural intelligence. His EDI competence is a model for the team. ARIA recommends structured leadership exposure (buddy supervision, co-leading team meetings) as preparation for Team Leader candidacy within 9 months.",
+    aria_narrative: "Samuel demonstrates strong practice and cultural intelligence. His EDI competence is a model for the team. ARIA recommends structured leadership exposure (buddy supervision, co-leading team meetings) as preparation for Team Leader candidacy within 9 months.",
     last_assessed_at: "2026-02-20T09:00:00Z",
     next_review_date: "2026-08-20",
     created_at: NOW, updated_at: NOW,
@@ -4114,7 +4114,7 @@ store.competencyProfiles = [
       "Communication — verbal confidence in multi-agency meetings",
       "Level 3 Diploma (not yet started)",
     ],
-    aria_narrative: "Anna is a reliable and conscientious RSW. ARIA identifies medication administration as a key strength. Priority development areas are trauma-informed practice training and enrolment on Level 3 Diploma to unlock progression pathway.",
+    aria_narrative: "Priya is a reliable and conscientious RSW. ARIA identifies medication administration as a key strength. Priority development areas are trauma-informed practice training and enrolment on Level 3 Diploma to unlock progression pathway.",
     last_assessed_at: "2026-03-01T09:00:00Z",
     next_review_date: "2026-09-01",
     created_at: NOW, updated_at: NOW,
@@ -4124,30 +4124,30 @@ store.competencyProfiles = [
 store.developmentPlans = [
   {
     id: "devplan_ryan_rm", staff_id: "staff_ryan", home_id: "home_oak",
-    title: "Ryan Forsythe — Registered Manager Readiness Plan",
+    title: "Marcus Bell — Registered Manager Readiness Plan",
     from_stage: "deputy_manager", to_stage: "registered_manager",
     status: "active", aria_generated: true,
-    aria_rationale: "ARIA analysis of Ryan's competency profile, supervision records, and practice observations indicates strong foundational capability with specific gaps in strategic leadership and regulatory governance. This plan targets RM readiness by Q1 2027.",
+    aria_rationale: "ARIA analysis of Marcus's competency profile, supervision records, and practice observations indicates strong foundational capability with specific gaps in strategic leadership and regulatory governance. This plan targets RM readiness by Q1 2027.",
     actions: [
       { id: "dpa_r1", title: "Complete Level 5 Diploma in Leadership for Health and Social Care", description: "Complete remaining 60% of Level 5 Diploma. Target submission of final units by December 2026.", domain: "learning_and_professional_development", target_date: "2026-12-01", completed: false },
-      { id: "dpa_r2", title: "Lead RI Challenge Log responses (x3)", description: "Take primary responsibility for drafting 3 responses to RI challenge log entries, supported by Darren.", domain: "leadership_and_supervision", target_date: "2026-09-01", completed: false },
-      { id: "dpa_r3", title: "Attend Reg 45 review as lead author", description: "Co-author the next Reg 45 independent review with Alicia. Take lead on evidence collation.", domain: "statutory_compliance", target_date: "2026-07-01", completed: false },
-      { id: "dpa_r4", title: "Shadow RI Governance Scorecard submission", description: "Participate fully in next RI scorecard governance meeting. Prepare briefing notes.", domain: "statutory_compliance", target_date: "2026-06-15", completed: true, completed_at: "2026-04-20T09:00:00Z", evidence_notes: "Ryan attended RI scorecard review on 20 April. Contributed detailed analysis of safeguarding themes. Darren noted excellent strategic thinking." },
+      { id: "dpa_r2", title: "Lead RI Challenge Log responses (x3)", description: "Take primary responsibility for drafting 3 responses to RI challenge log entries, supported by Olivia.", domain: "leadership_and_supervision", target_date: "2026-09-01", completed: false },
+      { id: "dpa_r3", title: "Attend Reg 45 review as lead author", description: "Co-author the next Reg 45 independent review with Patricia. Take lead on evidence collation.", domain: "statutory_compliance", target_date: "2026-07-01", completed: false },
+      { id: "dpa_r4", title: "Shadow RI Governance Scorecard submission", description: "Participate fully in next RI scorecard governance meeting. Prepare briefing notes.", domain: "statutory_compliance", target_date: "2026-06-15", completed: true, completed_at: "2026-04-20T09:00:00Z", evidence_notes: "Marcus attended RI scorecard review on 20 April. Contributed detailed analysis of safeguarding themes. Olivia noted excellent strategic thinking." },
       { id: "dpa_r5", title: "ARIA Strategic Analysis training", description: "Complete ARIA platform deep-dive: safeguarding scan, succession, oversight generator. Produce one strategic analysis per month.", domain: "learning_and_professional_development", target_date: "2026-06-01", completed: false },
     ],
     created_by: "staff_darren", created_at: NOW, updated_at: NOW,
   },
   {
     id: "devplan_edward_senior", staff_id: "staff_edward", home_id: "home_oak",
-    title: "Edward Fitzpatrick — Senior RSW Development Plan",
+    title: "Daniel Frost — Senior RSW Development Plan",
     from_stage: "rsw", to_stage: "senior_rsw",
     status: "active", aria_generated: true,
-    aria_rationale: "ARIA assessment identifies Edward as high-potential for Senior RSW promotion. His strengths in trauma-informed practice and communication are well above RSW benchmark. Risk assessment writing and early leadership exposure are the targeted development areas.",
+    aria_rationale: "ARIA assessment identifies Daniel as high-potential for Senior RSW promotion. His strengths in trauma-informed practice and communication are well above RSW benchmark. Risk assessment writing and early leadership exposure are the targeted development areas.",
     actions: [
       { id: "dpa_e1", title: "Complete Level 3 Diploma Unit 2 — Safeguarding", description: "Submit Level 3 Diploma Unit 2 assessment by June 2026.", domain: "safeguarding_and_child_protection", target_date: "2026-06-30", completed: false },
-      { id: "dpa_e2", title: "Complete 3 written risk assessments with supervision review", description: "Write 3 risk assessments for young people's plans under Darren's supervision. Each to be reviewed and scored.", domain: "risk_management", target_date: "2026-07-01", completed: false },
+      { id: "dpa_e2", title: "Complete 3 written risk assessments with supervision review", description: "Write 3 risk assessments for young people's plans under Olivia's supervision. Each to be reviewed and scored.", domain: "risk_management", target_date: "2026-07-01", completed: false },
       { id: "dpa_e3", title: "Lead one team handover briefing per month", description: "Chair the evening handover briefing monthly — develop confidence in leading practice discussions.", domain: "leadership_and_supervision", target_date: "2026-09-01", completed: false },
-      { id: "dpa_e4", title: "Attend trauma-informed practice refresher workshop", description: "Complete Acacia Therapy Homes TIP refresher (online, 4 hours). Produce a reflective account.", domain: "trauma_informed_practice", target_date: "2026-05-31", completed: true, completed_at: "2026-04-10T11:00:00Z", evidence_notes: "Workshop completed. Reflective account submitted and approved by Ryan." },
+      { id: "dpa_e4", title: "Attend trauma-informed practice refresher workshop", description: "Complete Avisaar Childrens Care Ltd TIP refresher (online, 4 hours). Produce a reflective account.", domain: "trauma_informed_practice", target_date: "2026-05-31", completed: true, completed_at: "2026-04-10T11:00:00Z", evidence_notes: "Workshop completed. Reflective account submitted and approved by Marcus." },
     ],
     created_by: "staff_darren", created_at: NOW, updated_at: NOW,
   },
@@ -4159,7 +4159,7 @@ store.practiceObservations = [
     observer_id: "staff_ryan", observation_date: "2026-04-10",
     context: "Evening keywork session with Alex W",
     domains_observed: ["therapeutic_relationships", "communication_and_recording", "safeguarding_and_child_protection"],
-    narrative: "Edward facilitated a structured keywork session with Alex covering identity and self-esteem. His approach was warm, unhurried, and consistently trauma-informed. He followed Alex's lead and demonstrated excellent active listening. Recording in the keywork log was detailed and captured Alex's voice authentically.",
+    narrative: "Daniel facilitated a structured keywork session with Alex covering identity and self-esteem. His approach was warm, unhurried, and consistently trauma-informed. He followed Alex's lead and demonstrated excellent active listening. Recording in the keywork log was detailed and captured Alex's voice authentically.",
     strengths_noted: ["Child-led approach throughout", "Accurate and detailed recording", "Seamless safeguarding check-in"],
     areas_for_development: ["Could be more confident challenging avoidance — gently persisted but could go further"],
     outcome: "outstanding",
@@ -4170,7 +4170,7 @@ store.practiceObservations = [
     ],
     linked_development_plan_id: "devplan_edward_senior",
     signed_off_by_staff: true, signed_off_at: "2026-04-11T09:00:00Z",
-    aria_summary: "Edward's observed practice in this keywork session meets the standard expected at Senior RSW level. ARIA recommends this observation is used as positive evidence in his promotion case.",
+    aria_summary: "Daniel's observed practice in this keywork session meets the standard expected at Senior RSW level. ARIA recommends this observation is used as positive evidence in his promotion case.",
     created_at: NOW, updated_at: NOW,
   },
   {
@@ -4178,7 +4178,7 @@ store.practiceObservations = [
     observer_id: "staff_darren", observation_date: "2026-03-22",
     context: "Medication administration — morning round",
     domains_observed: ["statutory_compliance", "communication_and_recording", "self_care_and_resilience"],
-    narrative: "Lackson administered morning medications with confidence and precision. MAR completion was accurate and timely. He communicated clearly with Casey about the medication, explaining its purpose without being patronising. Some minor delay in countersigning the controlled drugs register — flagged as learning point.",
+    narrative: "Samuel administered morning medications with confidence and precision. MAR completion was accurate and timely. He communicated clearly with Casey about the medication, explaining its purpose without being patronising. Some minor delay in countersigning the controlled drugs register — flagged as learning point.",
     strengths_noted: ["Accurate MAR completion", "Clear communication with young person", "Calm and consistent manner"],
     areas_for_development: ["CD register countersigning to be done immediately — not at end of round"],
     outcome: "meets_standard",
@@ -4187,7 +4187,7 @@ store.practiceObservations = [
       { domain: "communication_and_recording", delta: 0 },
     ],
     signed_off_by_staff: true, signed_off_at: "2026-03-22T14:00:00Z",
-    aria_summary: "Lackson meets medication administration standards. The CD register timing issue is a minor procedural point, not a competency concern. Overall performance is solid.",
+    aria_summary: "Samuel meets medication administration standards. The CD register timing issue is a minor procedural point, not a competency concern. Overall performance is solid.",
     created_at: NOW, updated_at: NOW,
   },
 ];
@@ -4214,7 +4214,7 @@ store.appraisals = [
     areas_for_improvement: "Level 5 Diploma completion — 60% remaining. ARIA strategic use needs to increase to monthly minimum.",
     objectives_next_period: "Complete Level 5 Diploma. Lead 3 RI Challenge Log responses. Take lead on Reg 45 evidence collation.",
     linked_development_plan_id: "devplan_ryan_rm",
-    aria_insights: "Ryan's appraisal scores are consistent with a high-performing Deputy Manager with strong RM potential. ARIA recommends structured succession exposure in the next 12 months.",
+    aria_insights: "Marcus's appraisal scores are consistent with a high-performing Deputy Manager with strong RM potential. ARIA recommends structured succession exposure in the next 12 months.",
     signed_by_staff: true, signed_at: "2026-03-17T10:00:00Z",
     next_review_date: "2027-03-15",
     created_at: NOW, updated_at: NOW,
@@ -4239,7 +4239,7 @@ store.appraisals = [
     areas_for_improvement: "Risk assessment writing — needs development. Level 3 Diploma to accelerate.",
     objectives_next_period: "Complete 3 supervised risk assessments. Submit Level 3 Unit 2 by June 2026.",
     linked_development_plan_id: "devplan_edward_senior",
-    aria_insights: "Edward passed probation with commendation on therapeutic practice. ARIA identifies Senior RSW readiness trajectory of 4-6 months with focused risk management development.",
+    aria_insights: "Daniel passed probation with commendation on therapeutic practice. ARIA identifies Senior RSW readiness trajectory of 4-6 months with focused risk management development.",
     signed_by_staff: true, signed_at: "2026-03-03T09:00:00Z",
     next_review_date: "2026-09-01",
     created_at: NOW, updated_at: NOW,
@@ -4274,7 +4274,7 @@ store.appraisals = [
     key_achievements: "Outstanding therapeutic relationship with all three young people. Led a successful integration support plan for Casey. Demonstrated exceptional cultural sensitivity in family work.",
     areas_for_improvement: "Recording quality — needs to be more analytical. Leadership shadowing opportunities to be increased for Deputy readiness.",
     objectives_next_period: "Complete 4 shift lead shadowing sessions. Submit reflective piece on leadership. Achieve Level 3 Diploma Unit 3 by August 2026.",
-    aria_insights: "Lackson's EDI and therapeutic relationship scores are the highest in the team. ARIA identifies Deputy Manager readiness potential within 6-9 months with structured leadership exposure.",
+    aria_insights: "Samuel's EDI and therapeutic relationship scores are the highest in the team. ARIA identifies Deputy Manager readiness potential within 6-9 months with structured leadership exposure.",
     signed_by_staff: true, signed_at: "2026-02-22T11:00:00Z",
     next_review_date: "2027-02-20",
     created_at: NOW, updated_at: NOW,
@@ -4299,7 +4299,7 @@ store.appraisals = [
     key_achievements: "Led the Reg 45 evidence collation for Q4 2025 — resulting in the strongest submission in 2 years. Completed SEND specialist pathway qualification. Mentored two new RSWs.",
     areas_for_improvement: "Work–life balance monitoring — tendency to take on too many additional responsibilities. Delegate more to developing staff.",
     objectives_next_period: "Lead Reg 45 Q1 2026 submission. Complete coaching qualification module. Take 3 days' AL in next quarter (overdue).",
-    aria_insights: "Chervelle is the strongest all-round practitioner in the team. ARIA recommends she be the RI evidence quality lead for the next inspection cycle. Outstanding across all statutory compliance domains.",
+    aria_insights: "Naomi is the strongest all-round practitioner in the team. ARIA recommends she be the RI evidence quality lead for the next inspection cycle. Outstanding across all statutory compliance domains.",
     signed_by_staff: true, signed_at: "2026-01-17T14:00:00Z",
     next_review_date: "2026-07-15",
     created_at: NOW, updated_at: NOW,
@@ -4357,7 +4357,7 @@ store.successionPlans = [
     candidates: [
       { staff_id: "staff_ryan", readiness_score: 74, ready_now: false, estimated_ready_date: "2027-03-01", development_plan_id: "devplan_ryan_rm", notes: "Primary succession candidate. On track with RM readiness plan." },
     ],
-    aria_narrative: "Oak House has one clear succession candidate for the Registered Manager role: Ryan Forsythe. His current readiness score of 74/100 reflects strong operational performance with a Level 5 qualification gap as the primary blocking factor. ARIA projects RM readiness by Q1 2027 subject to development plan milestones being met. No immediate risk to regulatory continuity — recommend activating succession plan review at 6-month mark.",
+    aria_narrative: "Chamberlain House has one clear succession candidate for the Registered Manager role: Marcus Bell. His current readiness score of 74/100 reflects strong operational performance with a Level 5 qualification gap as the primary blocking factor. ARIA projects RM readiness by Q1 2027 subject to development plan milestones being met. No immediate risk to regulatory continuity — recommend activating succession plan review at 6-month mark.",
     review_date: "2026-10-01",
     created_by: "staff_darren", created_at: NOW, updated_at: NOW,
   },
@@ -4369,7 +4369,7 @@ store.successionPlans = [
       { staff_id: "staff_edward", readiness_score: 62, ready_now: false, estimated_ready_date: "2026-12-01", development_plan_id: "devplan_edward_senior", notes: "Strong TI practice. Risk management development needed before Deputy consideration." },
       { staff_id: "staff_lackson", readiness_score: 68, ready_now: false, estimated_ready_date: "2026-11-01", notes: "EDI and therapeutic relationship strengths. Leadership exposure programme to be activated." },
     ],
-    aria_narrative: "Two viable internal candidates exist for Deputy Manager succession: Edward Fitzpatrick and Lackson Phiri. Lackson holds a marginally higher readiness score. Both require 6-9 months of structured development. ARIA recommends running both on parallel leadership development tracks and conducting a formal comparison at Q3 2026.",
+    aria_narrative: "Two viable internal candidates exist for Deputy Manager succession: Daniel Frost and Samuel Boateng. Samuel holds a marginally higher readiness score. Both require 6-9 months of structured development. ARIA recommends running both on parallel leadership development tracks and conducting a formal comparison at Q3 2026.",
     review_date: "2026-07-01",
     created_by: "staff_darren", created_at: NOW, updated_at: NOW,
   },
@@ -4391,7 +4391,7 @@ store.inductionRecords = [
       { id: "ii_d6", title: "Regulation 44 awareness", required_by_day: 28, status: "completed", completed_at: "2025-02-10T11:00:00Z", completed_by: "staff_darren" },
       { id: "ii_d7", title: "Level 3 Diploma enrolment", required_by_day: 90, status: "completed", completed_at: "2025-03-30T09:00:00Z", completed_by: "staff_diane" },
     ],
-    notes: "Diane completed induction smoothly. Probation passed March 2026.",
+    notes: "Maria completed induction smoothly. Probation passed March 2026.",
     created_at: NOW, updated_at: NOW,
   },
   {
@@ -4408,7 +4408,7 @@ store.inductionRecords = [
       { id: "ii_a6", title: "Regulation 44 awareness", required_by_day: 28, status: "completed", completed_at: "2025-03-25T11:00:00Z", completed_by: "staff_darren" },
       { id: "ii_a7", title: "Level 3 Diploma enrolment", required_by_day: 90, status: "not_started" },
     ],
-    notes: "Alex (Bennett) progressing well. Level 3 enrolment overdue — chase at next supervision.",
+    notes: "Alex (Walker) progressing well. Level 3 enrolment overdue — chase at next supervision.",
     created_at: NOW, updated_at: NOW,
   },
 ];
@@ -4474,7 +4474,7 @@ store.outcomeTargets = [
   // Jordan — 5 targets
   { ...outBase, id: "ot_007", child_id: "yp_jordan", domain: "education", target_description: "Achieve expected progress in English and Maths at Highfields Academy", success_criteria: "End of year report shows at least 'expected progress' in both subjects", baseline_rating: 3 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(30), set_by: "staff_anna", set_date: daysFromNow(-80), yp_voice: "I'm doing well in maths. English is harder but I'm trying.", notes: "PEP meeting confirmed good progress. Reading age up 6 months.", evidence_notes: "PEP report on file", created_at: outNow, updated_at: outNow },
   { ...outBase, id: "ot_008", child_id: "yp_jordan", domain: "health", target_description: "Maintain healthy eating and physical activity routine", success_criteria: "Participation in 3+ physical activities per week and balanced diet", baseline_rating: 4 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "stable" as const, status: "active" as const, review_date: daysFromNow(30), set_by: "staff_anna", set_date: daysFromNow(-60), yp_voice: "I love football. Can we get more sessions?", notes: "Football Mon/Wed, swimming Saturdays. Eating well.", evidence_notes: null, created_at: outNow, updated_at: outNow },
-  { ...outBase, id: "ot_009", child_id: "yp_jordan", domain: "emotional_wellbeing", target_description: "Feel settled and safe at Oak House", success_criteria: "Express feeling safe and happy in keywork sessions consistently", baseline_rating: 3 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(21), set_by: "staff_anna", set_date: daysFromNow(-45), yp_voice: "I like it here. The staff are nice. I feel safe.", notes: "Very settled. No incidents this month. Positive keywork engagement.", evidence_notes: null, created_at: outNow, updated_at: outNow },
+  { ...outBase, id: "ot_009", child_id: "yp_jordan", domain: "emotional_wellbeing", target_description: "Feel settled and safe at Chamberlain House", success_criteria: "Express feeling safe and happy in keywork sessions consistently", baseline_rating: 3 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(21), set_by: "staff_anna", set_date: daysFromNow(-45), yp_voice: "I like it here. The staff are nice. I feel safe.", notes: "Very settled. No incidents this month. Positive keywork engagement.", evidence_notes: null, created_at: outNow, updated_at: outNow },
   { ...outBase, id: "ot_010", child_id: "yp_jordan", domain: "independence", target_description: "Develop age-appropriate independence skills — cooking and laundry", success_criteria: "Prepare a simple meal independently and manage own laundry weekly", baseline_rating: 2 as const, current_rating: 3 as const, target_rating: 4 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(14), set_by: "staff_anna", set_date: daysFromNow(-40), yp_voice: "I made pasta last week! It was actually good.", notes: "Can make 3 simple meals. Does own laundry with prompting.", evidence_notes: null, created_at: outNow, updated_at: outNow },
   { ...outBase, id: "ot_011", child_id: "yp_jordan", domain: "family_social", target_description: "Maintain positive contact with family and develop peer friendships", success_criteria: "Regular family contact without distress; at least 2 peer social activities per month", baseline_rating: 3 as const, current_rating: 4 as const, target_rating: 5 as const, direction: "improving" as const, status: "active" as const, review_date: daysFromNow(21), set_by: "staff_anna", set_date: daysFromNow(-45), yp_voice: "I like seeing mum at the weekend. I've made friends at football.", notes: "Family contact consistently positive. 2 friends from football team.", evidence_notes: null, created_at: outNow, updated_at: outNow },
   // Casey — 5 targets
@@ -4921,15 +4921,15 @@ store.riskAssessments = [
 store.lacReviews = [
   {
     id: "lac_001", child_id: "yp_alex", date: daysFromNow(-30), review_type: "subsequent",
-    iro: "Sarah Mitchell", venue: "Oak House — Quiet Room",
+    iro: "Sarah Mitchell", venue: "Chamberlain House — Quiet Room",
     attendees: [
-      { name: "Sarah Mitchell", role: "IRO" }, { name: "Darren Laville", role: "Registered Manager" },
+      { name: "Sarah Mitchell", role: "IRO" }, { name: "Olivia Hayes", role: "Registered Manager" },
       { name: "Lisa Chen", role: "Social Worker" }, { name: "Alex", role: "Young Person" },
     ],
     child_participation: "attended",
     child_views: "I like it here. I want to stay. I'm doing better at school and I want to go to college next year.",
     key_discussions: ["Education progress and college plans", "Contact with birth family", "Anger management progress", "Pathway planning"],
-    recommendations: ["Continue placement at Oak House", "Support college application", "Maintain CAMHS sessions"],
+    recommendations: ["Continue placement at Chamberlain House", "Support college application", "Maintain CAMHS sessions"],
     outcome: "placement_continues",
     actions_agreed: [
       { action: "Support Alex with college application", owner: "Key worker", due_date: daysFromNow(30), completed: false },
@@ -4942,10 +4942,10 @@ store.lacReviews = [
   },
   {
     id: "lac_002", child_id: "yp_jordan", date: daysFromNow(-45), review_type: "subsequent",
-    iro: "David Wright", venue: "Oak House — Office",
+    iro: "David Wright", venue: "Chamberlain House — Office",
     attendees: [
-      { name: "David Wright", role: "IRO" }, { name: "Darren Laville", role: "Registered Manager" },
-      { name: "Mark Evans", role: "Social Worker" }, { name: "Anna Kovacs", role: "Key Worker" },
+      { name: "David Wright", role: "IRO" }, { name: "Olivia Hayes", role: "Registered Manager" },
+      { name: "Mark Evans", role: "Social Worker" }, { name: "Priya Kovacs", role: "Key Worker" },
     ],
     child_participation: "views_submitted",
     child_views: "I don't want to come to the meeting but I wrote down what I think. I want more contact with mum and I want to stay here.",
@@ -4963,15 +4963,15 @@ store.lacReviews = [
   },
   {
     id: "lac_003", child_id: "yp_casey", date: daysFromNow(-60), review_type: "first_review",
-    iro: "Sarah Mitchell", venue: "Oak House — Living Room",
+    iro: "Sarah Mitchell", venue: "Chamberlain House — Living Room",
     attendees: [
-      { name: "Sarah Mitchell", role: "IRO" }, { name: "Darren Laville", role: "Registered Manager" },
+      { name: "Sarah Mitchell", role: "IRO" }, { name: "Olivia Hayes", role: "Registered Manager" },
       { name: "Priya Sharma", role: "Social Worker" }, { name: "Casey", role: "Young Person" },
-      { name: "Chervelle Duporte", role: "Key Worker" },
+      { name: "Naomi Duporte", role: "Key Worker" },
     ],
     child_participation: "attended",
     child_views: "I feel safe here. The staff listen to me. I want to keep going to the same school. I like my key worker.",
-    key_discussions: ["Settling in at Oak House", "School attendance", "Identity and wellbeing", "CAMHS referral", "Life story work"],
+    key_discussions: ["Settling in at Chamberlain House", "School attendance", "Identity and wellbeing", "CAMHS referral", "Life story work"],
     recommendations: ["Maintain current school placement", "Prioritise CAMHS referral", "Begin life story work when ready", "Explore cultural identity support"],
     outcome: "placement_continues",
     actions_agreed: [
@@ -5030,7 +5030,7 @@ store.behaviourSupportPlans = [
     ],
     staff_guidance: ["Always offer choice rather than demand", "Avoid confrontation in front of peers", "Debrief privately after incidents"],
     restrictive_interventions: [
-      { intervention: "Team Teach standing hold", last_resort: true, authorised_by: "Darren Laville (RM)", conditions: "Only when imminent risk of serious harm to self or others" },
+      { intervention: "Team Teach standing hold", last_resort: true, authorised_by: "Olivia Hayes (RM)", conditions: "Only when imminent risk of serious harm to self or others" },
     ],
     review_history: [
       { date: daysFromNow(-30), reviewed_by: "staff_darren", changes: "Reduced frequency of verbal aggression from daily to weekly", outcome: "Plan continues with updated strategies" },
@@ -5094,7 +5094,7 @@ store.behaviourLog = [
   { ...behBase, id: "beh_004", child_id: "yp_alex", date: daysFromNow(-4), time: "21:45", direction: "concerning" as const, intensity: "high" as const, title: "Property damage in bedroom", antecedent: "Request to turn off gaming console at bedtime", behaviour: "Alex threw controller at wall, cracking plaster. Shouted and kicked door.", consequence: "Staff maintained calm presence. Repair discussed next day.", trigger: "Perceived restriction on gaming", strategy_used: "Low-arousal approach and minimal language", outcome: "Alex eventually settled but refused debrief until morning.", recorded_by: "staff_chervelle" },
   { ...behBase, id: "beh_005", child_id: "yp_alex", date: daysFromNow(-5), time: "14:30", direction: "positive" as const, intensity: "low" as const, title: "Completed full day at school", antecedent: "Key worker preparation talk in morning", behaviour: "Attended all lessons, positive teacher feedback", consequence: "Takeaway Friday earned", trigger: "", strategy_used: "Morning preparation and social story", outcome: "Best school day this term. Alex proud of achievement.", recorded_by: "staff_ryan" },
   { ...behBase, id: "beh_006", child_id: "yp_alex", date: daysFromNow(-6), time: "18:45", direction: "concerning" as const, intensity: "medium" as const, title: "Refused evening meal and became argumentative", antecedent: "Peer made comment about Alex's appearance", behaviour: "Verbal aggression towards peer, refused to eat, went to room", consequence: "Staff offered alternative meal later. 1:1 discussion.", trigger: "Peer comment", strategy_used: "Verbal reassurance and space", outcome: "Alex regulated after 20 minutes. Ate snack later.", recorded_by: "staff_edward" },
-  { ...behBase, id: "beh_007", child_id: "yp_alex", date: daysFromNow(-8), time: "10:30", direction: "positive" as const, intensity: "low" as const, title: "Positive key worker session", antecedent: "Scheduled 1:1 time with Edward", behaviour: "Engaged openly, discussed feelings about court proceedings", consequence: "Alex expressed gratitude for support", trigger: "", strategy_used: "", outcome: "Excellent engagement. Alex identified two coping strategies.", recorded_by: "staff_edward" },
+  { ...behBase, id: "beh_007", child_id: "yp_alex", date: daysFromNow(-8), time: "10:30", direction: "positive" as const, intensity: "low" as const, title: "Positive key worker session", antecedent: "Scheduled 1:1 time with Daniel", behaviour: "Engaged openly, discussed feelings about court proceedings", consequence: "Alex expressed gratitude for support", trigger: "", strategy_used: "", outcome: "Excellent engagement. Alex identified two coping strategies.", recorded_by: "staff_edward" },
   { ...behBase, id: "beh_008", child_id: "yp_alex", date: daysFromNow(-10), time: "20:15", direction: "concerning" as const, intensity: "severe" as const, title: "Self-harm attempt following difficult conversation", antecedent: "Discussion about upcoming court proceedings", behaviour: "Alex attempted to use sharp object. Staff intervened.", consequence: "PI required. Body map completed. Medical attention.", trigger: "Court proceedings anxiety", strategy_used: "Verbal de-escalation attempted but insufficient", outcome: "PI used. Alex assessed by ambulance. Settled with 1:1 support.", recorded_by: "staff_ryan" },
   { ...behBase, id: "beh_009", child_id: "yp_alex", date: daysFromNow(-12), time: "15:00", direction: "positive" as const, intensity: "low" as const, title: "Used grounding technique independently", antecedent: "Started becoming agitated during group activity", behaviour: "Alex recognised escalation and asked to leave. Used 5-4-3-2-1.", consequence: "Staff praised self-awareness", trigger: "", strategy_used: "Self-initiated grounding technique", outcome: "Excellent self-regulation. Returned to group after 10 minutes.", recorded_by: "staff_anna" },
   { ...behBase, id: "beh_010", child_id: "yp_alex", date: daysFromNow(-14), time: "22:00", direction: "concerning" as const, intensity: "medium" as const, title: "Late evening agitation and verbal threats", antecedent: "Peer conflict earlier unresolved", behaviour: "Pacing corridor, making verbal threats towards peer's bedroom door", consequence: "Staff separated YP, offered cooling off walk", trigger: "Unresolved peer conflict", strategy_used: "Physical separation and offered walk", outcome: "Alex calmed after walk with staff. Agreed to debrief in morning.", recorded_by: "staff_edward" },
@@ -5110,7 +5110,7 @@ store.behaviourLog = [
   { ...behBase, id: "beh_018", child_id: "yp_jordan", date: daysFromNow(-7), time: "08:30", direction: "positive" as const, intensity: "low" as const, title: "Independent morning routine without prompts", antecedent: "Established routine", behaviour: "Shower, breakfast, school prep all completed independently", consequence: "Earned cinema trip points", trigger: "", strategy_used: "", outcome: "Third consecutive independent morning. Excellent progress.", recorded_by: "staff_ryan" },
   { ...behBase, id: "beh_019", child_id: "yp_jordan", date: daysFromNow(-9), time: "16:30", direction: "positive" as const, intensity: "low" as const, title: "Managed frustration during homework", antecedent: "Difficult maths problem", behaviour: "Asked for help calmly instead of giving up", consequence: "Praise for communication", trigger: "", strategy_used: "Self-regulation — asking for help", outcome: "Completed homework. Jordan recognised own progress.", recorded_by: "staff_anna" },
   // Casey — mostly positive, very few concerning
-  { ...behBase, id: "beh_020", child_id: "yp_casey", date: daysFromNow(-1), time: "15:30", direction: "concerning" as const, intensity: "medium" as const, title: "Distressed after phone call from mother", antecedent: "Unplanned phone call from mum", behaviour: "Crying, refusing to speak, withdrew to room", consequence: "1:1 support from Chervelle", trigger: "Family contact", strategy_used: "Active listening and grounding", outcome: "Casey settled after 20 minutes. Reviewed contact agreement.", recorded_by: "staff_chervelle" },
+  { ...behBase, id: "beh_020", child_id: "yp_casey", date: daysFromNow(-1), time: "15:30", direction: "concerning" as const, intensity: "medium" as const, title: "Distressed after phone call from mother", antecedent: "Unplanned phone call from mum", behaviour: "Crying, refusing to speak, withdrew to room", consequence: "1:1 support from Naomi", trigger: "Family contact", strategy_used: "Active listening and grounding", outcome: "Casey settled after 20 minutes. Reviewed contact agreement.", recorded_by: "staff_chervelle" },
   { ...behBase, id: "beh_021", child_id: "yp_casey", date: daysFromNow(-2), time: "11:00", direction: "positive" as const, intensity: "low" as const, title: "Creative writing session — excellent work", antecedent: "Scheduled education time", behaviour: "Produced creative story, shared with group", consequence: "Displayed on notice board with permission", trigger: "", strategy_used: "", outcome: "Casey proud of work. Growing confidence in literacy.", recorded_by: "staff_anna" },
   { ...behBase, id: "beh_022", child_id: "yp_casey", date: daysFromNow(-4), time: "09:00", direction: "positive" as const, intensity: "low" as const, title: "Took morning medication willingly", antecedent: "Staff offered choice of timing", behaviour: "Accepted medication with no refusal", consequence: "Praise for cooperation", trigger: "", strategy_used: "Offering choice and control", outcome: "Three consecutive days of willing medication. Progress noted.", recorded_by: "staff_darren" },
   { ...behBase, id: "beh_023", child_id: "yp_casey", date: daysFromNow(-6), time: "14:00", direction: "positive" as const, intensity: "low" as const, title: "Positive CAMHS session", antecedent: "Scheduled therapy appointment", behaviour: "Engaged openly with therapist", consequence: "Therapist reported good progress", trigger: "", strategy_used: "", outcome: "Casey discussed trauma memories safely. Big step.", recorded_by: "staff_chervelle" },
@@ -5624,7 +5624,7 @@ store.complaintOutcomeRecords = [
 
 store.qaAuditRecords = [
   { id: "qa_001", title: "Medication Management Audit", date: daysFromNow(-60), auditor: "staff_darren", scope: "medication", overall_rating: "excellent" as const, score: 4, findings: ["All MAR records complete and witnessed", "Stock reconciliation up to date"], strengths: ["Consistent double-witness process", "Timely PRN documentation"], areas_for_improvement: ["Storage temperature log gap on 2 days"], actions: [{ action: "Implement daily temperature check reminder", owner: "staff_anna", deadline: daysFromNow(-30), status: "completed" as const }, { action: "Laminate temperature log sheet for fridge", owner: "staff_ryan", deadline: daysFromNow(-30), status: "completed" as const }], notes: "" },
-  { id: "qa_002", title: "Safeguarding Practice Audit", date: daysFromNow(-45), auditor: "staff_darren", scope: "safeguarding", overall_rating: "good" as const, score: 3, findings: ["DBS tracker current for all staff", "Safeguarding referrals timely"], strengths: ["Strong multi-agency communication", "Children know how to raise concerns"], areas_for_improvement: ["Risk assessment template needs updating", "Body map training due for 2 staff"], actions: [{ action: "Update risk assessment template", owner: "staff_darren", deadline: daysFromNow(-15), status: "completed" as const }, { action: "Book body map training for Anna and Lackson", owner: "staff_ryan", deadline: daysFromNow(-10), status: "completed" as const }, { action: "Review safeguarding policy cross-references", owner: "staff_darren", deadline: daysFromNow(-5), status: "overdue" as const }], notes: "" },
+  { id: "qa_002", title: "Safeguarding Practice Audit", date: daysFromNow(-45), auditor: "staff_darren", scope: "safeguarding", overall_rating: "good" as const, score: 3, findings: ["DBS tracker current for all staff", "Safeguarding referrals timely"], strengths: ["Strong multi-agency communication", "Children know how to raise concerns"], areas_for_improvement: ["Risk assessment template needs updating", "Body map training due for 2 staff"], actions: [{ action: "Update risk assessment template", owner: "staff_darren", deadline: daysFromNow(-15), status: "completed" as const }, { action: "Book body map training for Priya and Samuel", owner: "staff_ryan", deadline: daysFromNow(-10), status: "completed" as const }, { action: "Review safeguarding policy cross-references", owner: "staff_darren", deadline: daysFromNow(-5), status: "overdue" as const }], notes: "" },
   { id: "qa_003", title: "Daily Recording Quality Audit", date: daysFromNow(-30), auditor: "staff_darren", scope: "recording", overall_rating: "requires_improvement" as const, score: 2, findings: ["Missing reflective analysis in 40% of entries", "Timestamp gaps on evening records"], strengths: ["Good factual recording of events"], areas_for_improvement: ["Reflective practice training needed", "Evening handover recording protocol", "Child voice not consistently captured", "Timestamps missing on 6 entries"], actions: [{ action: "Deliver reflective recording workshop", owner: "staff_darren", deadline: daysFromNow(-10), status: "completed" as const }, { action: "Create evening recording template", owner: "staff_ryan", deadline: daysFromNow(-5), status: "in_progress" as const }, { action: "Audit child voice inclusion monthly", owner: "staff_anna", deadline: daysFromNow(10), status: "pending" as const }, { action: "Implement timestamp auto-fill on mobile app", owner: "staff_darren", deadline: daysFromNow(-7), status: "overdue" as const }], notes: "" },
   { id: "qa_004", title: "Health & Safety Audit", date: daysFromNow(-20), auditor: "staff_ryan", scope: "health_safety", overall_rating: "excellent" as const, score: 4, findings: ["All areas clean and well-maintained", "Fire exits clear"], strengths: ["Excellent premises condition", "Regular deep cleaning schedule", "COSHH records up to date"], areas_for_improvement: ["Garden shed needs new lock"], actions: [{ action: "Replace garden shed lock", owner: "staff_edward", deadline: daysFromNow(-5), status: "completed" as const }, { action: "Order replacement first aid supplies", owner: "staff_anna", deadline: daysFromNow(-3), status: "completed" as const }], notes: "" },
   { id: "qa_005", title: "Care Planning Audit", date: daysFromNow(-10), auditor: "staff_darren", scope: "care_planning", overall_rating: "good" as const, score: 3, findings: ["All children have current care plans", "Placement plans reviewed on time"], strengths: ["Child participation in care plan reviews", "Multi-agency input evidenced"], areas_for_improvement: ["Pathway plan for Jordan needs update"], actions: [{ action: "Update Jordan pathway plan with leaving care PA", owner: "staff_darren", deadline: daysFromNow(14), status: "pending" as const }, { action: "Schedule Casey care plan review", owner: "staff_anna", deadline: daysFromNow(7), status: "pending" as const }, { action: "File Alex annual review minutes", owner: "staff_ryan", deadline: daysFromNow(-2), status: "completed" as const }], notes: "" },
@@ -5683,9 +5683,9 @@ store.staffWellbeingRecords = [
     stressors: ["Long shifts this week", "Missing episode paperwork backlog"],
     positives: ["Good relationship with Alex", "Team support"],
     support_needed: "Help catching up on recording",
-    action_agreed: "Ryan to cover one shift next week to allow admin catch-up",
+    action_agreed: "Marcus to cover one shift next week to allow admin catch-up",
     follow_up_date: daysFromNow(25), conducted_by: "staff_ryan",
-    confidential: false, notes: "Edward generally positive. Enjoys the work but finding paperwork challenging.",
+    confidential: false, notes: "Daniel generally positive. Enjoys the work but finding paperwork challenging.",
   },
   {
     id: "swbr_002", staff_id: "staff_anna", date: daysFromNow(-10),
@@ -5694,9 +5694,9 @@ store.staffWellbeingRecords = [
     stressors: ["Witnessing physical intervention with Alex", "Worry about doing the right thing"],
     positives: ["Felt supported by team after incident", "Debrief was helpful"],
     support_needed: "Refresher on Team Teach techniques",
-    action_agreed: "Book onto next Team Teach refresher. Darren to provide 1:1 reflective session.",
+    action_agreed: "Book onto next Team Teach refresher. Olivia to provide 1:1 reflective session.",
     follow_up_date: daysFromNow(4), conducted_by: "staff_darren",
-    confidential: false, notes: "Anna shaken after witnessing PI. No signs of burnout but needs reassurance.",
+    confidential: false, notes: "Priya shaken after witnessing PI. No signs of burnout but needs reassurance.",
   },
   {
     id: "swbr_003", staff_id: "staff_diane", date: daysFromNow(-7),
@@ -5705,9 +5705,9 @@ store.staffWellbeingRecords = [
     stressors: ["Returning after sickness", "Catching up with changes"],
     positives: ["Glad to be back", "Children happy to see her"],
     support_needed: "Briefing on any changes during absence",
-    action_agreed: "Ryan to provide catch-up briefing on shift. Phased return first two days.",
+    action_agreed: "Marcus to provide catch-up briefing on shift. Phased return first two days.",
     follow_up_date: daysFromNow(7), conducted_by: "staff_ryan",
-    confidential: false, notes: "Diane returning from stomach bug. Phased return agreed.",
+    confidential: false, notes: "Maria returning from stomach bug. Phased return agreed.",
   },
   {
     id: "swbr_004", staff_id: "staff_lackson", date: daysFromNow(-14),
@@ -5718,7 +5718,7 @@ store.staffWellbeingRecords = [
     support_needed: "None at present",
     action_agreed: "Continue as is. Review shift pattern if tiredness persists.",
     follow_up_date: daysFromNow(16), conducted_by: "staff_darren",
-    confidential: false, notes: "Lackson thriving. Very positive about the home and his role.",
+    confidential: false, notes: "Samuel thriving. Very positive about the home and his role.",
   },
   {
     id: "swbr_005", staff_id: "staff_chervelle", date: daysFromNow(-5),
@@ -5727,9 +5727,9 @@ store.staffWellbeingRecords = [
     stressors: ["Casey's emotional dysregulation can be draining", "Wants more training on trauma-informed care"],
     positives: ["Strong bond with Casey", "Feels valued by management"],
     support_needed: "Trauma-informed care training",
-    action_agreed: "Darren to source TIC training. Chervelle to attend within 8 weeks.",
+    action_agreed: "Olivia to source TIC training. Naomi to attend within 8 weeks.",
     follow_up_date: daysFromNow(23), conducted_by: "staff_darren",
-    confidential: false, notes: "Chervelle is a dedicated worker. Trauma-informed training will strengthen her practice.",
+    confidential: false, notes: "Naomi is a dedicated worker. Trauma-informed training will strengthen her practice.",
   },
   {
     id: "swbr_006", staff_id: "staff_mirela", date: daysFromNow(-20),
@@ -5738,9 +5738,9 @@ store.staffWellbeingRecords = [
     stressors: ["Language barrier in documentation", "Feeling isolated at times", "Unsure about probation expectations"],
     positives: ["Children like her", "Willing to learn"],
     support_needed: "Mentoring from experienced staff member. English support for recording.",
-    action_agreed: "Anna assigned as mentor. Darren to review probation objectives with Mirela. Recording templates provided.",
+    action_agreed: "Priya assigned as mentor. Olivia to review probation objectives with Elena. Recording templates provided.",
     follow_up_date: daysFromNow(-6), conducted_by: "staff_darren",
-    confidential: false, notes: "Mirela struggling with confidence. Needs structured support during probation.",
+    confidential: false, notes: "Elena struggling with confidence. Needs structured support during probation.",
   },
   {
     id: "swbr_007", staff_id: "staff_alex", date: daysFromNow(-12),
@@ -5749,20 +5749,20 @@ store.staffWellbeingRecords = [
     stressors: ["New to residential care", "Learning curve steep"],
     positives: ["Enthusiastic", "Good rapport with young people"],
     support_needed: "Shadowing opportunities with experienced staff",
-    action_agreed: "Schedule shadowing with Edward and Anna over next fortnight.",
+    action_agreed: "Schedule shadowing with Daniel and Priya over next fortnight.",
     follow_up_date: daysFromNow(2), conducted_by: "staff_ryan",
-    confidential: false, notes: "Alex Bennett settling in well. Needs continued induction support.",
+    confidential: false, notes: "Alex Walker settling in well. Needs continued induction support.",
   },
   {
     id: "swbr_008", staff_id: "staff_ryan", date: daysFromNow(-8),
     type: "monthly_checkin" as const,
     overall_score: 7, workload_score: 6, support_score: 7, moral_score: 8,
-    stressors: ["Workload increasing with deputy responsibilities", "Covering supervisions when Darren unavailable"],
+    stressors: ["Workload increasing with deputy responsibilities", "Covering supervisions when Olivia unavailable"],
     positives: ["Enjoys leadership role", "Good relationship with whole team"],
     support_needed: "Protected admin time",
-    action_agreed: "Darren to ensure Ryan has one protected admin day per fortnight.",
+    action_agreed: "Olivia to ensure Marcus has one protected admin day per fortnight.",
     follow_up_date: daysFromNow(22), conducted_by: "staff_darren",
-    confidential: false, notes: "Ryan managing well but workload needs monitoring as deputy demands increase.",
+    confidential: false, notes: "Marcus managing well but workload needs monitoring as deputy demands increase.",
   },
 ] as StaffWellbeingRecord[];
 
@@ -5790,7 +5790,7 @@ store.peerDynamics = [
     concerns: ["Alex's behaviour escalation triggers Casey's anxiety", "Casey avoids communal areas when Alex is dysregulated", "Power imbalance — Alex older and more physically imposing"],
     strategies: ["Never leave unsupervised together", "Proactive separation during Alex's escalation", "Casey given safe space signal"],
     entries: [
-      { id: "pe_004", date: daysFromNow(-3), type: "incident" as const, description: "Alex slammed door during argument with staff. Casey had panic attack in her room.", staff_witness: "staff_chervelle", intervention_used: "Chervelle supported Casey with grounding techniques. Edward de-escalated Alex separately.", outcome: "Casey settled after 20 mins. Alex apologised later." },
+      { id: "pe_004", date: daysFromNow(-3), type: "incident" as const, description: "Alex slammed door during argument with staff. Casey had panic attack in her room.", staff_witness: "staff_chervelle", intervention_used: "Naomi supported Casey with grounding techniques. Daniel de-escalated Alex separately.", outcome: "Casey settled after 20 mins. Alex apologised later." },
       { id: "pe_005", date: daysFromNow(-15), type: "observation" as const, description: "Casey chose to eat in dining room with Alex present. Conversation was polite. Positive step.", staff_witness: "staff_diane", intervention_used: "", outcome: "Successful shared mealtime. Staff praised both." },
       { id: "pe_006", date: daysFromNow(-25), type: "review" as const, description: "Formal review of Alex-Casey dynamic. Risk assessment updated. Strategies reinforced.", staff_witness: "staff_darren", intervention_used: "Risk assessment reviewed with team.", outcome: "Strategies updated. Team briefed." },
     ],
@@ -5858,7 +5858,7 @@ store.onCallShifts = [
       { datetime: daysFromNow(-3) + "T21:00:00Z", from_contact: "staff_edward", call_type: "advisory", duration_mins: 12, outcome: "Follow-up re: Alex settling. Advice on bedtime supervision.", escalated: false },
     ],
     critical_incidents_handled: 1, routine_calls_handled: 0, advisory_calls_handled: 1,
-    staff_wellbeing_during_on_call: "Stressful evening due to safeguarding disclosure. Darren debriefed with RI next morning.",
+    staff_wellbeing_during_on_call: "Stressful evening due to safeguarding disclosure. Olivia debriefed with RI next morning.",
     feedback_on_arrangements: "System worked well. Escalation was appropriate. RM attended within 25 minutes.",
     review_notes: "Consider adding specific safeguarding on-call protocol.", created_at: daysFromNow(-3) + "T17:00:00Z",
   },
@@ -5891,7 +5891,7 @@ store.onCallShifts = [
     role: "first_line_rm" as const, on_call_staff: "staff_darren", backup_staff: "staff_ryan",
     contact_number: "07700 000001", shift_pattern: "weekend_full" as const,
     calls_received: [
-      { datetime: daysFromNow(-14) + "T18:45:00Z", from_contact: "staff_mirela", call_type: "advisory", duration_mins: 20, outcome: "Mirela unsure about recording process. Guided through template.", escalated: false },
+      { datetime: daysFromNow(-14) + "T18:45:00Z", from_contact: "staff_mirela", call_type: "advisory", duration_mins: 20, outcome: "Elena unsure about recording process. Guided through template.", escalated: false },
     ],
     critical_incidents_handled: 0, routine_calls_handled: 0, advisory_calls_handled: 1,
     staff_wellbeing_during_on_call: "Fine. Quiet weekend apart from one advisory call.",
@@ -6201,7 +6201,7 @@ const additionalDailyLogs: DailyLogEntry[] = [
   { ...dlBase, id: "log_102", child_id: "yp_jordan", date: daysFromNow(-2), time: "09:00", entry_type: "education" as const, content: "Jordan completed maths revision. Good focus for 40 minutes. Positive interaction with tutor.", mood_score: 7, staff_id: "staff_anna", linked_incident_id: null, is_significant: false },
   { ...dlBase, id: "log_103", child_id: "yp_casey", date: daysFromNow(-2), time: "14:00", entry_type: "health" as const, content: "Casey attended CAMHS appointment. Positive session — discussed coping strategies for anxiety.", mood_score: 6, staff_id: "staff_chervelle", linked_incident_id: null, is_significant: true },
   // Day -3
-  { ...dlBase, id: "log_104", child_id: "yp_alex", date: daysFromNow(-3), time: "10:30", entry_type: "activity" as const, content: "Alex went swimming with Edward. Completed 20 lengths — personal best. Very proud.", mood_score: 9, staff_id: "staff_edward", linked_incident_id: null, is_significant: true },
+  { ...dlBase, id: "log_104", child_id: "yp_alex", date: daysFromNow(-3), time: "10:30", entry_type: "activity" as const, content: "Alex went swimming with Daniel. Completed 20 lengths — personal best. Very proud.", mood_score: 9, staff_id: "staff_edward", linked_incident_id: null, is_significant: true },
   { ...dlBase, id: "log_105", child_id: "yp_jordan", date: daysFromNow(-3), time: "16:00", entry_type: "contact" as const, content: "Jordan had scheduled phone call with mum. Call was positive — discussed plans for half-term.", mood_score: 8, staff_id: "staff_lackson", linked_incident_id: null, is_significant: false },
   { ...dlBase, id: "log_106", child_id: "yp_casey", date: daysFromNow(-3), time: "20:00", entry_type: "mood" as const, content: "Casey reported feeling anxious before bed. Used breathing exercises from CAMHS. Settled after 15 minutes.", mood_score: 4, staff_id: "staff_anna", linked_incident_id: null, is_significant: false },
   // Day -4
@@ -6223,7 +6223,7 @@ const additionalDailyLogs: DailyLogEntry[] = [
   { ...dlBase, id: "log_118", child_id: "yp_alex", date: daysFromNow(-8), time: "09:00", entry_type: "general" as const, content: "Routine morning. Alex ate breakfast and completed personal care independently.", mood_score: 7, staff_id: "staff_edward", linked_incident_id: null, is_significant: false },
   { ...dlBase, id: "log_119", child_id: "yp_jordan", date: daysFromNow(-9), time: "11:00", entry_type: "education" as const, content: "Jordan attended tuition session. Some difficulty with concentration today.", mood_score: 5, staff_id: "staff_ryan", linked_incident_id: null, is_significant: false },
   { ...dlBase, id: "log_120", child_id: "yp_casey", date: daysFromNow(-10), time: "15:00", entry_type: "contact" as const, content: "Casey had video call with social worker. Discussed placement review.", mood_score: 6, staff_id: "staff_darren", linked_incident_id: null, is_significant: false },
-  { ...dlBase, id: "log_121", child_id: "yp_alex", date: daysFromNow(-11), time: "14:00", entry_type: "activity" as const, content: "Alex went to climbing wall with Lackson. Great engagement and confidence building.", mood_score: 9, staff_id: "staff_lackson", linked_incident_id: null, is_significant: true },
+  { ...dlBase, id: "log_121", child_id: "yp_alex", date: daysFromNow(-11), time: "14:00", entry_type: "activity" as const, content: "Alex went to climbing wall with Samuel. Great engagement and confidence building.", mood_score: 9, staff_id: "staff_lackson", linked_incident_id: null, is_significant: true },
   { ...dlBase, id: "log_122", child_id: "yp_jordan", date: daysFromNow(-12), time: "09:00", entry_type: "general" as const, content: "Jordan had a good morning. Calm and engaged.", mood_score: 7, staff_id: "staff_anna", linked_incident_id: null, is_significant: false },
   { ...dlBase, id: "log_123", child_id: "yp_casey", date: daysFromNow(-13), time: "10:30", entry_type: "health" as const, content: "Casey attended GP appointment. Routine check — no concerns.", mood_score: 6, staff_id: "staff_chervelle", linked_incident_id: null, is_significant: false },
   // Day -10, 21:30 — night welfare log that contradicts the restraint injury recorded earlier the same day (rst_003, 18:30: minor bruise to left forearm). Intentional recording inconsistency for the conflict-detection engine to surface for human reconciliation.
@@ -6571,7 +6571,7 @@ store.selfHarmSafetyPlanRecords = [
     status: "active_preventive" as const,
     co_produced_with: [
       "Alex W",
-      "Edward (key worker)",
+      "Daniel (key worker)",
       "CAMHS practitioner (Dr Olubayo)",
     ],
     warning_signs_external: [
@@ -6599,11 +6599,11 @@ store.selfHarmSafetyPlanRecords = [
     social_distractions: [
       "Playing pool with staff in the games room",
       "Walking the dog at the local park",
-      "Cooking dinner with Edward on shift",
+      "Cooking dinner with Daniel on shift",
     ],
     people_to_contact: [
-      { name: "Edward", relationship: "Key worker", how: "Find on shift or ask any staff to call him" },
-      { name: "Diane", relationship: "Trusted staff member", how: "On shift or via the office phone" },
+      { name: "Daniel", relationship: "Key worker", how: "Find on shift or ask any staff to call him" },
+      { name: "Maria", relationship: "Trusted staff member", how: "On shift or via the office phone" },
       { name: "Auntie Sam", relationship: "Approved family contact", how: "Supervised call arranged through staff" },
     ],
     professional_contacts: [
@@ -6647,7 +6647,7 @@ store.selfHarmSafetyPlanRecords = [
     child_id: "yp_jordan",
     plan_date: daysFromNow(-48),
     status: "not_currently_needed" as const,
-    co_produced_with: ["Jordan M", "Anna (key worker)"],
+    co_produced_with: ["Jordan M", "Priya (key worker)"],
     warning_signs_external: [
       "Becomes quieter than usual and avoids eye contact",
       "Reluctant to go to school in the morning",
@@ -6662,14 +6662,14 @@ store.selfHarmSafetyPlanRecords = [
     internal_coping_strategies: [
       "Going to his room to listen to music until he feels calmer",
       "Kicking a football in the garden to let off steam",
-      "Talking it through with Anna",
+      "Talking it through with Priya",
     ],
     social_distractions: [
       "Football with peers and staff",
       "Playing on the games console in the lounge",
     ],
     people_to_contact: [
-      { name: "Anna", relationship: "Key worker", how: "On shift or ask staff to contact her" },
+      { name: "Priya", relationship: "Key worker", how: "On shift or ask staff to contact her" },
       { name: "Any staff on shift", relationship: "Trusted adults", how: "Approach anyone in the staff team" },
     ],
     professional_contacts: [
@@ -6705,7 +6705,7 @@ store.selfHarmSafetyPlanRecords = [
     status: "active_preventive" as const,
     co_produced_with: [
       "Casey T",
-      "Chervelle (key worker)",
+      "Naomi (key worker)",
       "CAMHS clinician",
     ],
     warning_signs_external: [
@@ -6730,13 +6730,13 @@ store.selfHarmSafetyPlanRecords = [
       "Holding ice cubes as an agreed alternative to self-harm",
     ],
     social_distractions: [
-      "Baking with Chervelle on shift",
+      "Baking with Naomi on shift",
       "Watching a favourite series in the lounge with staff",
       "Caring for the plants in the garden",
     ],
     people_to_contact: [
-      { name: "Chervelle", relationship: "Key worker", how: "On shift or ask staff to call her" },
-      { name: "Ryan", relationship: "Deputy Manager", how: "In the office during the day or on call" },
+      { name: "Naomi", relationship: "Key worker", how: "On shift or ask staff to call her" },
+      { name: "Marcus", relationship: "Deputy Manager", how: "In the office during the day or on call" },
       { name: "Mum", relationship: "Approved family contact", how: "Phone call arranged with staff support" },
     ],
     professional_contacts: [
@@ -6756,7 +6756,7 @@ store.selfHarmSafetyPlanRecords = [
     ],
     reasons_for_hope: [
       "Days are starting to feel 'a bit lighter' since the medication review",
-      "Feels listened to by Chervelle",
+      "Feels listened to by Naomi",
     ],
     child_signed_off: true,
     child_signed_date: daysFromNow(-37),
@@ -6771,7 +6771,7 @@ store.selfHarmSafetyPlanRecords = [
     child_voice:
       "Casey said the ice-cube strategy and her weighted blanket help most. She asked staff not to remove her journal as writing things down 'gets them out of my head'.",
     staff_observation:
-      "Plan co-produced after a period of low mood; Casey engages well with Chervelle. Monthly review is now seven days overdue — CAMHS appointment and key-worker session needed to refresh the plan and confirm medication response.",
+      "Plan co-produced after a period of low mood; Casey engages well with Naomi. Monthly review is now seven days overdue — CAMHS appointment and key-worker session needed to refresh the plan and confirm medication response.",
     flags_for_review: [
       "Monthly review overdue — reschedule key-worker session",
       "Confirm response to recent Fluoxetine review with CAMHS and GP",
@@ -7037,7 +7037,7 @@ store.attachmentProfiles = [
     early_history:
       "Significant early relational trauma. Exposed to domestic abuse and parental substance misuse from infancy; multiple unplanned separations from primary carer before age 5. No consistent attachment figure in early years.",
     placement_history:
-      "Three previous placements before Oak House (one foster, two residential), all ending in placement breakdown linked to escalation and going missing. Current placement under Section 20 since admission, now 17 weeks.",
+      "Three previous placements before Chamberlain House (one foster, two residential), all ending in placement breakdown linked to escalation and going missing. Current placement under Section 20 since admission, now 17 weeks.",
     behaviours: [
       {
         context: "When asked direct questions about his day or his family",
@@ -7067,14 +7067,14 @@ store.attachmentProfiles = [
     ],
     key_relationships: [
       {
-        person: "Edward (key worker)",
+        person: "Daniel (key worker)",
         role: "Key worker",
         quality: "developing" as const,
         notes:
-          "Trust is slowly building. Alex now seeks Edward out at difficult moments roughly twice a week, though can reject him sharply the next day. Consistency is key.",
+          "Trust is slowly building. Alex now seeks Daniel out at difficult moments roughly twice a week, though can reject him sharply the next day. Consistency is key.",
       },
       {
-        person: "Diane (night staff)",
+        person: "Maria (night staff)",
         role: "Residential support worker",
         quality: "developing" as const,
         notes:
@@ -7100,7 +7100,7 @@ store.attachmentProfiles = [
       "Log self-harm incidents factually and share with CAMHS; keep means-restriction plan current",
     ],
     protective_factors: [
-      "Emerging trusted relationship with key worker Edward",
+      "Emerging trusted relationship with key worker Daniel",
       "Engaged and responsive CAMHS practitioner",
       "Stable, low-arousal placement with a consistent staff team",
       "Responds well to predictable routines and sensory regulation tools",
@@ -7111,7 +7111,7 @@ store.attachmentProfiles = [
       "Disrupted contact with birth mother is a recurring destabiliser",
     ],
     child_views:
-      "Alex says he 'doesn't really do feelings talk' but told Edward he 'feels less wound up than the last place'. He has asked to keep the same key worker.",
+      "Alex says he 'doesn't really do feelings talk' but told Daniel he 'feels less wound up than the last place'. He has asked to keep the same key worker.",
     professional_input:
       "CAMHS clinician supports a disorganised-attachment formulation and recommends a consistent dyadic relational approach. Social worker agrees placement should be protected from change wherever possible.",
     notes:
@@ -7135,7 +7135,7 @@ store.attachmentProfiles = [
     early_history:
       "Experienced neglect and inconsistent care, but had one warm, fairly reliable relationship with an older sibling who often took a caregiving role. Some early protective relational experience despite adversity.",
     placement_history:
-      "One previous short-term foster placement that ended due to carer ill-health, not breakdown. Placed at Oak House under Section 31; settling well over the first 6 weeks.",
+      "One previous short-term foster placement that ended due to carer ill-health, not breakdown. Placed at Chamberlain House under Section 31; settling well over the first 6 weeks.",
     behaviours: [
       {
         context: "On days when contact with his sibling is due or has just happened",
@@ -7158,11 +7158,11 @@ store.attachmentProfiles = [
     ],
     key_relationships: [
       {
-        person: "Anna (key worker)",
+        person: "Priya (key worker)",
         role: "Key worker",
         quality: "strong" as const,
         notes:
-          "Warm, trusting relationship established quickly. Jordan seeks Anna out to share news and worries and responds well to her encouragement.",
+          "Warm, trusting relationship established quickly. Jordan seeks Priya out to share news and worries and responds well to her encouragement.",
       },
       {
         person: "Older sibling (in separate placement)",
@@ -7172,11 +7172,11 @@ store.attachmentProfiles = [
           "Central protective relationship. Jordan misses his sibling and is motivated by maintaining regular contact.",
       },
       {
-        person: "Ryan (deputy manager)",
+        person: "Marcus (deputy manager)",
         role: "Deputy manager",
         quality: "developing" as const,
         notes:
-          "Jordan is increasingly comfortable approaching Ryan; sees him as a fair and steady figure in the home.",
+          "Jordan is increasingly comfortable approaching Marcus; sees him as a fair and steady figure in the home.",
       },
     ],
     therapeutic_approach: [
@@ -7190,7 +7190,7 @@ store.attachmentProfiles = [
       "Praise effort and name strengths; he responds strongly to genuine encouragement",
     ],
     protective_factors: [
-      "Strong, trusting relationship with key worker Anna",
+      "Strong, trusting relationship with key worker Priya",
       "Meaningful and protective sibling relationship maintained through contact",
       "Genuine capacity to seek comfort and accept reassurance from trusted adults",
       "Settling well with a positive early trajectory in placement",
@@ -7200,7 +7200,7 @@ store.attachmentProfiles = [
       "Fear of rejection may lead to masking distress or over-compliance",
     ],
     child_views:
-      "Jordan says he 'likes it here' and that Anna 'actually listens'. His main worry is making sure he still gets to see his brother regularly.",
+      "Jordan says he 'likes it here' and that Priya 'actually listens'. His main worry is making sure he still gets to see his brother regularly.",
     professional_input:
       "Social worker notes a positive early trajectory and supports prioritising sibling contact as a protective factor. No CAMHS involvement required at this stage; key-worker-led support assessed as sufficient.",
     notes:
@@ -7224,7 +7224,7 @@ store.attachmentProfiles = [
     early_history:
       "Emotional neglect and unpredictable parental availability; learned early that expressing need rarely brought comfort, so became highly self-reliant and emotionally contained.",
     placement_history:
-      "Two previous placements; the most recent residential placement was reasonably stable but ended on a planned basis to move closer to her home area. Placed at Oak House under Section 31.",
+      "Two previous placements; the most recent residential placement was reasonably stable but ended on a planned basis to move closer to her home area. Placed at Chamberlain House under Section 31.",
     behaviours: [
       {
         context: "When she has had a low day or poor night's sleep",
@@ -7246,11 +7246,11 @@ store.attachmentProfiles = [
     ],
     key_relationships: [
       {
-        person: "Chervelle (key worker)",
+        person: "Naomi (key worker)",
         role: "Key worker",
         quality: "developing" as const,
         notes:
-          "Casey is cautious but warming up; she has started accepting brief chats over a hot drink and is testing whether Chervelle is consistent.",
+          "Casey is cautious but warming up; she has started accepting brief chats over a hot drink and is testing whether Naomi is consistent.",
       },
       {
         person: "School pastoral lead",
@@ -7278,7 +7278,7 @@ store.attachmentProfiles = [
       "Monitor mood and sleep patterns and share concerns discreetly without making her feel watched",
     ],
     protective_factors: [
-      "Cautiously developing trust with key worker Chervelle",
+      "Cautiously developing trust with key worker Naomi",
       "A trusted confiding relationship with the school pastoral lead",
       "Strong capacity for self-reliance and resilience that can be built on",
       "Relationships described by staff as gradually improving",
@@ -7289,7 +7289,7 @@ store.attachmentProfiles = [
       "Avoidant pattern means she may not seek help in a crisis",
     ],
     child_views:
-      "Casey says she 'doesn't really need anyone' but admitted to Chervelle that the drinks-and-chat catch-ups are 'alright'. She would like help with her sleep.",
+      "Casey says she 'doesn't really need anyone' but admitted to Naomi that the drinks-and-chat catch-ups are 'alright'. She would like help with her sleep.",
     professional_input:
       "Social worker supports the low-demand relational approach. Referral to the GP regarding sleep agreed; CAMHS not currently indicated but to be revisited at review if low mood persists.",
     notes:
@@ -7787,7 +7787,7 @@ store.postIncidentChildDebriefs = [
     what_child_wishes_had_been_different: "Wishes staff had not stood between him and the door, and that someone had told him earlier in the day that contact was cancelled rather than 'springing it on him'.",
     what_helped_child: [
       "Staff giving him space once he was in the lounge",
-      "Edward sitting with him afterwards and not 'making a big deal of it'",
+      "Daniel sitting with him afterwards and not 'making a big deal of it'",
       "Being offered a walk later that evening",
     ],
     what_did_not_help: [
@@ -7800,10 +7800,10 @@ store.postIncidentChildDebriefs = [
       "Use the agreed signal (hand up) to mean he needs to leave a room",
     ],
     apologies_offered: "Alex apologised to the member of staff he pushed past and said he 'didn't mean for it to go that way'.",
-    apologies_received: "Edward acknowledged that the way the contact news was shared had not helped and apologised on behalf of the team for that.",
+    apologies_received: "Daniel acknowledged that the way the contact news was shared had not helped and apologised on behalf of the team for that.",
     repairs_agreed: [
       "Alex to help reset the lounge furniture that was moved",
-      "A short repair conversation with the staff member involved, supported by Edward",
+      "A short repair conversation with the staff member involved, supported by Daniel",
       "Key-worker session booked to update Alex's de-escalation plan together",
     ],
     child_accepts_outcome: true,
@@ -7906,7 +7906,7 @@ store.postIncidentChildDebriefs = [
       "Let her ask the nurse questions herself",
     ],
     apologies_offered: "",
-    apologies_received: "Chervelle and the shift team apologised to Casey for the medication error and explained the steps being taken to prevent it happening again.",
+    apologies_received: "Naomi and the shift team apologised to Casey for the medication error and explained the steps being taken to prevent it happening again.",
     repairs_agreed: [
       "Medication administration process reviewed and second-signature check reinforced for Casey's medication",
       "Casey to be shown her own medication chart so she can recognise her usual doses",
@@ -7939,7 +7939,7 @@ store.socialWorkerContactRecords = [
     purpose: "Six-weekly statutory visit under Care Planning Regulations — review of placement, safety and missing/exploitation risk.",
     summary: "Karen visited and saw Alex alone in his bedroom for 40 minutes. Discussed his progress at college, his safety plan and the reduction in missing episodes since the return-home interview work. Reviewed his wishes about contact with his mother. Placement plan and risk assessment confirmed as up to date.",
     key_decisions: [
-      "Maintain current placement at Oak House; no change to S20 arrangements",
+      "Maintain current placement at Chamberlain House; no change to S20 arrangements",
       "Continue weekly return-home interview follow-up with keyworker staff_edward",
       "Refer to CSE/exploitation MACE panel for ongoing multi-agency oversight",
     ],
@@ -7948,7 +7948,7 @@ store.socialWorkerContactRecords = [
       { action: "Send MACE referral form to placing authority", owner: "staff_darren", due_date: daysFromNow(-2), status: "completed" as const },
     ],
     child_aware: true,
-    child_views: "Alex said he feels safer at Oak House than at his last placement and wants to keep going to college. He asked whether he could see his mum more often.",
+    child_views: "Alex said he feels safer at Chamberlain House than at his last placement and wants to keep going to college. He asked whether he could see his mum more often.",
     follow_up_required: true,
     follow_up_date: daysFromNow(33),
     documents_shared: ["Placement plan", "Risk assessment", "Missing-episode log"],
@@ -8002,7 +8002,7 @@ store.socialWorkerContactRecords = [
     initiated_by: "social_worker" as const,
     staff_member: "staff_anna",
     purpose: "Statutory Looked After Child review chaired by the IRO — review of care plan and progress.",
-    summary: "LAC review held at Oak House with the IRO, Michael, keyworker staff_anna and Jordan. Jordan presented as settled and engaged. Education attendance strong. Care plan reviewed and remains appropriate under his full care order. Jordan was seen alone by the IRO before the meeting.",
+    summary: "LAC review held at Chamberlain House with the IRO, Michael, keyworker staff_anna and Jordan. Jordan presented as settled and engaged. Education attendance strong. Care plan reviewed and remains appropriate under his full care order. Jordan was seen alone by the IRO before the meeting.",
     key_decisions: [
       "Care plan endorsed by IRO; no changes required",
       "Continue current education placement and therapeutic support",
@@ -8012,7 +8012,7 @@ store.socialWorkerContactRecords = [
       { action: "Circulate IRO review minutes to all attendees", owner: "staff_anna", due_date: daysFromNow(-6), status: "completed" as const },
     ],
     child_aware: true,
-    child_views: "Jordan said he is happy at Oak House, likes his school and his keyworker, and does not want anything to change.",
+    child_views: "Jordan said he is happy at Chamberlain House, likes his school and his keyworker, and does not want anything to change.",
     follow_up_required: false,
     follow_up_date: null,
     documents_shared: ["Care plan", "IRO review minutes", "Education report"],
@@ -8087,13 +8087,13 @@ store.siblingContactProtocolRecords = [
     child_id: "yp_jordan",
     sibling_name: "Liam M",
     sibling_placement: "Foster placement (separate)",
-    sibling_location: "Greenfield Fostering, approx. 18 miles from Oak House",
+    sibling_location: "Greenfield Fostering, approx. 18 miles from Chamberlain House",
     relationship_pre_oak_house: "Jordan and his older brother Liam lived together until Jordan's admission. Liam was a consistent protective figure throughout childhood, often shielding Jordan during periods of family disruption.",
     current_relationship_quality: "strong" as const,
     contact_frequency: "fortnightly" as const,
     contact_types: ["face_to_face_supervised", "phone", "video_call"],
     agreed_contact_plan: "Fortnightly supervised face-to-face contact at a neutral community venue, alternating with a midweek video call. Plan agreed at the LAC review and signed off by Jordan's social worker.",
-    child_preferences: "Jordan has said he wants to keep seeing Liam 'as much as possible' and prefers visits where they can do an activity together rather than just sitting and talking. He asked that staff he knows, ideally Anna, support the visits.",
+    child_preferences: "Jordan has said he wants to keep seeing Liam 'as much as possible' and prefers visits where they can do an activity together rather than just sitting and talking. He asked that staff he knows, ideally Priya, support the visits.",
     sibling_preferences: "Liam has expressed a strong wish to remain a positive presence in Jordan's life and is happy with the fortnightly rhythm. He has asked to be kept informed of any changes to Jordan's circumstances.",
     risk_factors_to_contact: [],
     protective_factors_to_contact: [
@@ -8103,11 +8103,11 @@ store.siblingContactProtocolRecords = [
     ],
     supervision_required: true,
     supervision_level: "Light-touch supervision by a familiar key worker; staff remain present but step back to allow natural interaction.",
-    transport_arrangements: "Oak House staff transport Jordan to and from the contact venue by car; journey time approx. 30 minutes each way.",
+    transport_arrangements: "Chamberlain House staff transport Jordan to and from the contact venue by car; journey time approx. 30 minutes each way.",
     contact_costs_budget: "Covered within the placement contact budget; approx. £25 per session for venue and activity costs.",
-    locations_for_contact: ["Riverside Community Centre", "Local leisure centre", "Oak House (occasional)"],
+    locations_for_contact: ["Riverside Community Centre", "Local leisure centre", "Chamberlain House (occasional)"],
     favourite_sibling_activities: ["Five-a-side football", "Bowling", "Cooking a meal together"],
-    birthday_celebration_plan: "Both boys' birthdays fall in the summer. Plan agreed for Liam to attend a small celebration at Oak House for Jordan's birthday, and for Jordan to be supported to choose and send a gift for Liam's.",
+    birthday_celebration_plan: "Both boys' birthdays fall in the summer. Plan agreed for Liam to attend a small celebration at Chamberlain House for Jordan's birthday, and for Jordan to be supported to choose and send a gift for Liam's.",
     christmas_arrangements: "A pre-Christmas joint visit is planned with a shared meal and present exchange, agreed in advance with both placements and the local authority.",
     court_ordered_contact: true,
     court_order_terms: "Contact order specifies a minimum of monthly direct contact between Jordan and Liam, to be supervised and reviewed at each LAC review. Current arrangements exceed the ordered minimum.",
@@ -8542,13 +8542,13 @@ store.staffRecognitionRecords = [
     staff_member: "staff_edward",
     recognition_type: "above_and_beyond" as const,
     recognised_by: "registered_manager" as const,
-    recognised_by_name: "Darren Laville",
+    recognised_by_name: "Olivia Hayes",
     what_happened:
-      "During a period of heightened distress, Edward stayed calm and used trauma-informed de-escalation with Alex, naming the feeling, offering choice, and giving space without withdrawing connection. He stayed past the end of his shift to make sure Alex felt safe before handover.",
+      "During a period of heightened distress, Daniel stayed calm and used trauma-informed de-escalation with Alex, naming the feeling, offering choice, and giving space without withdrawing connection. He stayed past the end of his shift to make sure Alex felt safe before handover.",
     impact_description:
       "Alex moved from crisis to settled within the hour without any physical intervention, and later told staff he 'felt heard for once'. The approach modelled exactly the relational practice the home is working towards.",
     child_impact:
-      "Alex avoided a likely restraint and went to bed settled. He has since sought Edward out as a trusted adult on three separate occasions.",
+      "Alex avoided a likely restraint and went to bed settled. He has since sought Daniel out as a trusted adult on three separate occasions.",
     organisational_impact:
       "Demonstrates trauma-informed practice in line with the home's behaviour support ethos; used as a worked example in the following team meeting.",
     way_marked: ["verbal_recognition", "team_meeting_share", "wall_of_awesome"] as const,
@@ -8558,7 +8558,7 @@ store.staffRecognitionRecords = [
     staff_response:
       "Thanked the team and said it 'means a lot to know the slower, relational approach is valued — it's why I came into this work'.",
     reflection_from_manager:
-      "Edward consistently models the regulated, curious adult our young people need. A genuine strength to build the wider team's practice around.",
+      "Daniel consistently models the regulated, curious adult our young people need. A genuine strength to build the wider team's practice around.",
   },
   {
     id: "rec_anna_1",
@@ -8566,11 +8566,11 @@ store.staffRecognitionRecords = [
     staff_member: "staff_anna",
     recognition_type: "quiet_excellence" as const,
     recognised_by: "deputy" as const,
-    recognised_by_name: "Ryan Forsythe",
+    recognised_by_name: "Marcus Bell",
     what_happened:
-      "Anna quietly and consistently supported Jordan through a difficult first fortnight in placement — building a predictable morning routine, sitting with him at mealtimes, and noticing the small things that helped him settle, without ever making it a fuss.",
+      "Priya quietly and consistently supported Jordan through a difficult first fortnight in placement — building a predictable morning routine, sitting with him at mealtimes, and noticing the small things that helped him settle, without ever making it a fuss.",
     impact_description:
-      "Jordan's transition into the home was markedly smoother than expected. Anna's steady, low-key consistency was the single biggest factor staff identified in him settling.",
+      "Jordan's transition into the home was markedly smoother than expected. Priya's steady, low-key consistency was the single biggest factor staff identified in him settling.",
     child_impact:
       "Jordan went from refusing breakfast and isolating in his room to joining the household for meals and engaging in education planning within two weeks.",
     organisational_impact:
@@ -8590,9 +8590,9 @@ store.staffRecognitionRecords = [
     staff_member: "staff_chervelle",
     recognition_type: "innovation" as const,
     recognised_by: "registered_manager" as const,
-    recognised_by_name: "Darren Laville",
+    recognised_by_name: "Olivia Hayes",
     what_happened:
-      "Chervelle designed and led a personalised sleep plan for Casey, drawing on what she had noticed about Casey's bedtime triggers — adjusting lighting, introducing a wind-down routine and a consistent check-in, and coordinating it across the staff team so it was applied the same way every night.",
+      "Naomi designed and led a personalised sleep plan for Casey, drawing on what she had noticed about Casey's bedtime triggers — adjusting lighting, introducing a wind-down routine and a consistent check-in, and coordinating it across the staff team so it was applied the same way every night.",
     impact_description:
       "A creative, child-led intervention that the whole team could follow consistently. Casey's recorded night-time disturbances dropped from most nights to occasional within three weeks.",
     child_impact:
@@ -8606,7 +8606,7 @@ store.staffRecognitionRecords = [
     staff_response:
       "Pleased the plan was being shared more widely and offered to coach colleagues through adapting it for other young people.",
     reflection_from_manager:
-      "Chervelle turned close observation into a practical, replicable intervention. Exactly the kind of initiative we want to grow.",
+      "Naomi turned close observation into a practical, replicable intervention. Exactly the kind of initiative we want to grow.",
   },
   {
     id: "rec_lackson_1",
@@ -8614,9 +8614,9 @@ store.staffRecognitionRecords = [
     staff_member: "staff_lackson",
     recognition_type: "team_contribution" as const,
     recognised_by: "peer" as const,
-    recognised_by_name: "Diane",
+    recognised_by_name: "Maria",
     what_happened:
-      "Peer nomination: Lackson covered two short-notice shifts during a staffing gap and stayed back to support a colleague through a difficult incident debrief, all without being asked and without complaint.",
+      "Peer nomination: Samuel covered two short-notice shifts during a staffing gap and stayed back to support a colleague through a difficult incident debrief, all without being asked and without complaint.",
     impact_description:
       "Kept the home safely staffed during a pressured week and made sure a colleague didn't carry a hard shift alone. Lifted morale across the team at exactly the right moment.",
     child_impact:
@@ -8630,7 +8630,7 @@ store.staffRecognitionRecords = [
     staff_response:
       "Said the team 'are like family' and that he was glad to help out when it was needed.",
     reflection_from_manager:
-      "A peer nomination like this speaks volumes. Lackson is the colleague everyone is quietly grateful for.",
+      "A peer nomination like this speaks volumes. Samuel is the colleague everyone is quietly grateful for.",
   },
   {
     id: "rec_diane_1",
@@ -8640,11 +8640,11 @@ store.staffRecognitionRecords = [
     recognised_by: "child" as const,
     recognised_by_name: "Young person (Casey)",
     what_happened:
-      "Casey asked a member of staff to pass on a quiet thank-you to Diane for 'always listening and never making a big deal of it' when she was having a hard time, and for helping her feel okay about going to her football trial.",
+      "Casey asked a member of staff to pass on a quiet thank-you to Maria for 'always listening and never making a big deal of it' when she was having a hard time, and for helping her feel okay about going to her football trial.",
     impact_description:
-      "A child-led recognition of the trusting, dependable relationship Diane has built. The kind of feedback that matters most because it comes directly from a young person.",
+      "A child-led recognition of the trusting, dependable relationship Maria has built. The kind of feedback that matters most because it comes directly from a young person.",
     child_impact:
-      "Casey attended her football trial and has been more willing to talk to staff when things are difficult, citing Diane as someone she trusts.",
+      "Casey attended her football trial and has been more willing to talk to staff when things are difficult, citing Maria as someone she trusts.",
     organisational_impact:
       "Evidence of relationship-based practice landing where it counts — in how safe a young person feels.",
     way_marked: ["card_handwritten_note"] as const,
@@ -8654,7 +8654,7 @@ store.staffRecognitionRecords = [
     staff_response:
       "Was visibly moved and asked that her thanks be passed back to Casey for trusting her.",
     reflection_from_manager:
-      "Recognition from a young person is the highest form there is. Diane has quietly earned Casey's trust, and that is everything in this work.",
+      "Recognition from a young person is the highest form there is. Maria has quietly earned Casey's trust, and that is everything in this work.",
   },
 ];
 
@@ -8673,7 +8673,7 @@ store.managementWalkrounds = [
     observations_positive: [
       { area: "Kitchen", observation: "Breakfast running calmly; staff sat with young people rather than supervising from the doorway.", staff_or_child_or_thing: "staff_edward" },
       { area: "Lounge", observation: "Young person's artwork displayed on the wall — home feels personalised and cared for.", staff_or_child_or_thing: "Environment" },
-      { area: "Garden", observation: "Edward had set up a football activity that two young people were genuinely enjoying.", staff_or_child_or_thing: "staff_edward" },
+      { area: "Garden", observation: "Daniel had set up a football activity that two young people were genuinely enjoying.", staff_or_child_or_thing: "staff_edward" },
     ],
     observations_for_improvement: [
       { area: "Hallway", observation: "Fire exit signage by the back door partially obscured by a coat rack.", action_agreed: "Coat rack relocated and signage line-of-sight checked." },
@@ -8684,7 +8684,7 @@ store.managementWalkrounds = [
     ],
     staff_interactions: [
       { staff_member: "staff_edward", observation: "Warm, attuned interactions with the young people; modelled good boundaries calmly." },
-      { staff_member: "staff_anna", observation: "Handover notes thorough; Anna flagged a low mood for one young person proactively." },
+      { staff_member: "staff_anna", observation: "Handover notes thorough; Priya flagged a low mood for one young person proactively." },
     ],
     environmental_checks: [
       { area: "Kitchen", status: "good" as const },
@@ -8698,7 +8698,7 @@ store.managementWalkrounds = [
       { action: "Confirm fire signage sight-lines on next health & safety walk.", owner: "staff_ryan", deadline: daysFromNow(-1) },
     ],
     themes_emerging: ["Warm staff-child relationships", "Home environment well personalised"],
-    positive_staff_practice_noted: ["Edward's attuned engagement during the football activity"],
+    positive_staff_practice_noted: ["Daniel's attuned engagement during the football activity"],
     follow_up_date: daysFromNow(5),
     created_at: daysFromNow(-2),
   },
@@ -8712,7 +8712,7 @@ store.managementWalkrounds = [
     areas_visited: ["Lounge", "Kitchen", "Dining area", "Bedrooms (landing)", "Bathroom"],
     observations_positive: [
       { area: "Dining area", observation: "Evening meal eaten together at the table; relaxed conversation, no devices out.", staff_or_child_or_thing: "staff_chervelle" },
-      { area: "Lounge", observation: "Chervelle supporting a young person with homework patiently after dinner.", staff_or_child_or_thing: "staff_chervelle" },
+      { area: "Lounge", observation: "Naomi supporting a young person with homework patiently after dinner.", staff_or_child_or_thing: "staff_chervelle" },
     ],
     observations_for_improvement: [
       { area: "Bathroom", observation: "Shared bathroom low on hand towels and toiletries running down.", action_agreed: "Restock from store cupboard tonight; add to weekly order." },
@@ -8723,7 +8723,7 @@ store.managementWalkrounds = [
     ],
     staff_interactions: [
       { staff_member: "staff_chervelle", observation: "Calm, nurturing approach over the evening routine; good use of praise." },
-      { staff_member: "staff_diane", observation: "Diane managing the kitchen well but seemed stretched covering two tasks at once." },
+      { staff_member: "staff_diane", observation: "Maria managing the kitchen well but seemed stretched covering two tasks at once." },
     ],
     environmental_checks: [
       { area: "Kitchen", status: "good" as const },
@@ -8738,7 +8738,7 @@ store.managementWalkrounds = [
       { action: "Add bathroom toiletries to the standing weekly order.", owner: "staff_diane", deadline: daysFromNow(-3) },
     ],
     themes_emerging: ["Evening routines settled and homely", "Minor environment/maintenance items recurring"],
-    positive_staff_practice_noted: ["Chervelle's patient homework support after a busy shift"],
+    positive_staff_practice_noted: ["Naomi's patient homework support after a busy shift"],
     follow_up_date: daysFromNow(1),
     created_at: daysFromNow(-6),
   },
@@ -8773,7 +8773,7 @@ store.managementWalkrounds = [
       { action: "Re-brief whole team on overnight key-safe protocol at next team meeting.", owner: "staff_darren", deadline: daysFromNow(-2) },
     ],
     themes_emerging: ["Strong night-time oversight culture", "Occasional security-routine slips"],
-    positive_staff_practice_noted: ["Anna's vigilance and accurate overnight recording during an unannounced check"],
+    positive_staff_practice_noted: ["Priya's vigilance and accurate overnight recording during an unannounced check"],
     follow_up_date: daysFromNow(-2),
     created_at: daysFromNow(-11),
   },
@@ -8790,15 +8790,15 @@ store.managementWalkrounds = [
       { area: "Communal areas", observation: "House feels warm and lived-in — children's achievements displayed.", staff_or_child_or_thing: "Environment" },
     ],
     observations_for_improvement: [
-      { area: "Kitchen", observation: "Cleaning rota on the fridge two weeks out of date.", action_agreed: "Refreshed rota printed and signed; Diane to own weekly update." },
+      { area: "Kitchen", observation: "Cleaning rota on the fridge two weeks out of date.", action_agreed: "Refreshed rota printed and signed; Maria to own weekly update." },
     ],
     child_interactions: [
       { child_initial: "J", observation: "J walked me round his room and talked about wanting to redecorate; agreed to raise at his next key-work session." },
       { child_initial: "C", observation: "C asked about her pocket money plan for the weekend; explained clearly and she was satisfied." },
     ],
     staff_interactions: [
-      { staff_member: "staff_diane", observation: "Diane took feedback on the cleaning rota positively and actioned it immediately." },
-      { staff_member: "staff_edward", observation: "Edward proactively decluttered the activity cupboard during the themed walk." },
+      { staff_member: "staff_diane", observation: "Maria took feedback on the cleaning rota positively and actioned it immediately." },
+      { staff_member: "staff_edward", observation: "Daniel proactively decluttered the activity cupboard during the themed walk." },
     ],
     environmental_checks: [
       { area: "Bedrooms", status: "good" as const },
@@ -8810,11 +8810,11 @@ store.managementWalkrounds = [
     book_or_record_reviews: ["Cleaning rota", "Health & safety folder", "Fire log"],
     immediate_actions_taken: ["Printed and displayed an up-to-date cleaning rota."],
     follow_up_actions_logged: [
-      { action: "Diane to take ownership of weekly cleaning-rota updates.", owner: "staff_diane", deadline: daysFromNow(-9) },
+      { action: "Maria to take ownership of weekly cleaning-rota updates.", owner: "staff_diane", deadline: daysFromNow(-9) },
       { action: "Add J's redecoration request to his key-work session agenda.", owner: "staff_edward", deadline: daysFromNow(-5) },
     ],
     themes_emerging: ["High standard of physical environment", "Children proud of their personalised spaces"],
-    positive_staff_practice_noted: ["Responsive, non-defensive reaction to walkround feedback (Diane, Edward)"],
+    positive_staff_practice_noted: ["Responsive, non-defensive reaction to walkround feedback (Maria, Daniel)"],
     follow_up_date: daysFromNow(-9),
     created_at: daysFromNow(-16),
   },
@@ -8853,7 +8853,7 @@ store.managementWalkrounds = [
       { action: "Reflective supervision booked with staff involved in the incident.", owner: "staff_darren", deadline: daysFromNow(-14) },
     ],
     themes_emerging: ["Strong post-incident reflection culture", "Recording detail (body maps) occasionally incomplete"],
-    positive_staff_practice_noted: ["Chervelle's openness in debrief and Anna's peer support after a difficult shift"],
+    positive_staff_practice_noted: ["Naomi's openness in debrief and Priya's peer support after a difficult shift"],
     follow_up_date: daysFromNow(7),
     created_at: daysFromNow(-22),
   },
@@ -8936,12 +8936,12 @@ store.familyTimeSessions = [
     boundary_issues: "None.",
     concerns_raised: [],
     positive_observations: ["Jordan proud to show Liam his room", "Relaxed home-based contact worked well"],
-    child_voice_after: "Jordan asked if Liam could visit Oak House again soon.",
+    child_voice_after: "Jordan asked if Liam could visit Chamberlain House again soon.",
     parent_engagement: "N/A — sibling contact.",
     gifts_exchanged: "None.",
     food_shared_who: "Cooked and ate together.",
     was_it_safe: true, incidents_during: "None.",
-    recommendations_for_next: ["Alternate venue between community and Oak House"],
+    recommendations_for_next: ["Alternate venue between community and Chamberlain House"],
     report_sent_to_sw: true, report_sent_date: daysFromNow(-5), created_at: daysFromNow(-6),
   },
   {
@@ -9015,7 +9015,7 @@ store.activities = [
     id: "act_seed_3", date: daysFromNow(-13), child_id: "yp_alex",
     category: "life_skills" as const, title: "Gym induction and first session",
     description: "Alex completed a supervised gym induction and first workout as part of his identity/health outcome.",
-    location: "Oak House — local gym", duration_minutes: 75, staff_id: "staff_darren",
+    location: "Chamberlain House — local gym", duration_minutes: 75, staff_id: "staff_darren",
     engagement: "suggested_by_yp" as const,
     yp_feedback: "I asked to join the gym. Makes me feel good about myself.",
     outcome_notes: "Self-initiated. Booked 3x/week routine. Links to OT_003 identity goal.",
@@ -9035,7 +9035,7 @@ store.activities = [
     id: "act_seed_5", date: daysFromNow(-8), child_id: "yp_jordan",
     category: "life_skills" as const, title: "Cooking a meal independently",
     description: "Jordan planned, shopped for and cooked pasta for the house with light staff support.",
-    location: "Oak House kitchen", duration_minutes: 60, staff_id: "staff_anna",
+    location: "Chamberlain House kitchen", duration_minutes: 60, staff_id: "staff_anna",
     engagement: "willing" as const,
     yp_feedback: "I made pasta and everyone ate it! It was actually good.",
     outcome_notes: "Independence skills progressing. Links to OT_010.",
@@ -9055,7 +9055,7 @@ store.activities = [
     id: "act_seed_7", date: daysFromNow(-3), child_id: "yp_casey",
     category: "creative" as const, title: "Acrylic painting workshop",
     description: "Casey attended a guided acrylic painting workshop and completed a canvas for her bedroom.",
-    location: "Oak House — art room", duration_minutes: 90, staff_id: "staff_chervelle",
+    location: "Chamberlain House — art room", duration_minutes: 90, staff_id: "staff_chervelle",
     engagement: "enthusiastic" as const,
     yp_feedback: "I love art. Can I do another one next week?",
     outcome_notes: "Growing confidence and self-expression. Displayed with permission.",
@@ -9065,7 +9065,7 @@ store.activities = [
     id: "act_seed_8", date: daysFromNow(-10), child_id: "yp_casey",
     category: "life_skills" as const, title: "Baking — first attempt at a Victoria sponge",
     description: "Casey baked a Victoria sponge from scratch with staff. Followed the recipe carefully and shared it with the house.",
-    location: "Oak House kitchen", duration_minutes: 75, staff_id: "staff_diane",
+    location: "Chamberlain House kitchen", duration_minutes: 75, staff_id: "staff_diane",
     engagement: "willing" as const,
     yp_feedback: "It rose properly! I was proud of it.",
     outcome_notes: "Calming, regulating activity. Good for self-esteem.",
@@ -9179,8 +9179,8 @@ store.seriousIncidentReviewRecords = [
     staff_involved: ["staff_edward", "staff_anna", "staff_ryan"],
     review_lead: "staff_darren",
     panel_members: [
-      { name: "Darren Laville", role: "Registered Manager (Chair)" },
-      { name: "Ryan", role: "Deputy Manager" },
+      { name: "Olivia Hayes", role: "Registered Manager (Chair)" },
+      { name: "Marcus", role: "Deputy Manager" },
       { name: "Dr. H. Okafor", role: "Clinical Psychologist (external)" },
     ],
     background_summary:
@@ -9202,7 +9202,7 @@ store.seriousIncidentReviewRecords = [
     ],
     actions: [
       { action: "Implement structured early-evening activity plan for Alex.", owner: "staff_ryan", due_date: daysFromNow(-30), status: "completed" as const, evidence: "Activity timetable in place from 17:00; logged in daily records since." },
-      { action: "Complete Team-Teach refresher for Edward and Anna.", owner: "staff_darren", due_date: daysFromNow(-14), status: "completed" as const, evidence: "Certificates uploaded to training matrix." },
+      { action: "Complete Team-Teach refresher for Daniel and Priya.", owner: "staff_darren", due_date: daysFromNow(-14), status: "completed" as const, evidence: "Certificates uploaded to training matrix." },
       { action: "Update Alex's behaviour support plan with psychologist input.", owner: "staff_darren", due_date: daysFromNow(-7), status: "completed" as const, evidence: "Revised BSP signed off and shared with team." },
       { action: "Embed a 6-weekly trigger-pattern review into Alex's planning cycle.", owner: "staff_ryan", due_date: daysFromNow(12), status: "in_progress" as const, evidence: "" },
     ],
@@ -9232,8 +9232,8 @@ store.seriousIncidentReviewRecords = [
     staff_involved: ["staff_chervelle", "staff_anna"],
     review_lead: "staff_ryan",
     panel_members: [
-      { name: "Ryan", role: "Deputy Manager (Chair)" },
-      { name: "Darren Laville", role: "Registered Manager" },
+      { name: "Marcus", role: "Deputy Manager (Chair)" },
+      { name: "Olivia Hayes", role: "Registered Manager" },
     ],
     background_summary:
       "A missing-from-care episode (inc_001) prompted a safeguarding-practice review focused on the speed of the missing protocol, the quality of the independent return interview, and information-sharing with the police and placing authority.",
@@ -9280,8 +9280,8 @@ store.seriousIncidentReviewRecords = [
     staff_involved: ["staff_anna", "staff_chervelle"],
     review_lead: "staff_darren",
     panel_members: [
-      { name: "Darren Laville", role: "Registered Manager (Chair)" },
-      { name: "Chervelle", role: "Senior Support Worker / Medication Lead" },
+      { name: "Olivia Hayes", role: "Registered Manager (Chair)" },
+      { name: "Naomi", role: "Senior Support Worker / Medication Lead" },
     ],
     background_summary:
       "A thematic review of recent medication near-misses was opened to identify whether recent recording errors share a common cause and what systemic change would reduce risk. The review is in progress.",

@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Risk Assessment Quality Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex, Jordan, Morgan),
+// Demo: Chamberlain House, 3 children (Alex, Jordan, Morgan),
 // Staff: Sarah Johnson (Senior RSW), Tom Richards (RSW),
 //        Lisa Williams (Senior RSW), Darren Laville (RM/DSL)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -26,7 +26,7 @@ import type {
   StaffRiskAssessmentTraining,
 } from "../risk-assessment-quality-engine";
 
-// ── Test Fixtures: Oak House Demo Data ────────────────────────────────────
+// ── Test Fixtures: Chamberlain House Demo Data ────────────────────────────────────
 
 const makeAssessment = (overrides: Partial<RiskAssessment> = {}): RiskAssessment => ({
   id: "ra-001",
@@ -69,7 +69,7 @@ const makeTraining = (overrides: Partial<StaffRiskAssessmentTraining> = {}): Sta
   ...overrides,
 });
 
-// Oak House demo assessments
+// Chamberlain House demo assessments
 const OAK_HOUSE_ASSESSMENTS: RiskAssessment[] = [
   makeAssessment({ id: "ra-001", childId: "child-alex", childName: "Alex", riskCategory: "self_harm", riskLevel: "medium" }),
   makeAssessment({ id: "ra-002", childId: "child-alex", childName: "Alex", riskCategory: "absconding", riskLevel: "low", assessmentDate: "2026-05-08" }),
@@ -656,7 +656,7 @@ describe("generateRiskAssessmentQualityIntelligence", () => {
     expect(result.overallScore).toBe(Math.round(expected));
   });
 
-  it("overall score is 100 for perfect Oak House data", () => {
+  it("overall score is 100 for perfect Chamberlain House data", () => {
     expect(result.overallScore).toBe(100);
   });
 

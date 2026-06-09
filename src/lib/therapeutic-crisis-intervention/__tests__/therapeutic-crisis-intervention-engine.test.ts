@@ -1063,7 +1063,7 @@ describe("generateTherapeuticCrisisInterventionIntelligence", () => {
 
   // -- Integration --
 
-  it("handles realistic Oak House scenario", () => {
+  it("handles realistic Chamberlain House scenario", () => {
     const incidents: CrisisIncident[] = [
       makeIncident({
         id: "inc-alex-1",

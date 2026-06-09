@@ -48,7 +48,7 @@ function makePlacement(overrides: Partial<Placement> = {}): Placement {
     childId: "child-jordan",
     childName: "Jordan Williams",
     homeId: "home-oak",
-    homeName: "Oak House",
+    homeName: "Chamberlain House",
     status: "established",
 
     referralDate: "2024-08-15T00:00:00Z",
@@ -246,7 +246,7 @@ describe("calculateHomeStabilityMetrics", () => {
       makePlacement({ id: "pl-2", status: "settling_in" }),
       makePlacement({ id: "pl-3", status: "ended", endReason: "planned_move_on" }),
     ];
-    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Oak House", 4, FIXED_NOW);
+    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.totalPlacements).toBe(3);
     expect(result.activePlacements).toBe(2);
   });
@@ -256,7 +256,7 @@ describe("calculateHomeStabilityMetrics", () => {
       makePlacement({ id: "pl-1", admissionDate: "2026-05-01T00:00:00Z" }), // 15 days
       makePlacement({ id: "pl-2", admissionDate: "2026-04-16T00:00:00Z" }), // 30 days
     ];
-    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Oak House", 4, FIXED_NOW);
+    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.averageDaysInPlacement).toBe(23); // avg of 15 and 30
   });
 
@@ -267,7 +267,7 @@ describe("calculateHomeStabilityMetrics", () => {
       makePlacement({ id: "pl-3", status: "ended", endReason: "disruption" }),
       makePlacement({ id: "pl-4", status: "ended", endReason: "reunification" }),
     ];
-    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Oak House", 4, FIXED_NOW);
+    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.disruptionRate).toBe(50); // 2/4
   });
 
@@ -277,7 +277,7 @@ describe("calculateHomeStabilityMetrics", () => {
       makePlacement({ id: "pl-2", status: "settling_in" }),
       makePlacement({ id: "pl-3", status: "at_risk" }),
     ];
-    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Oak House", 4, FIXED_NOW);
+    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.occupancyRate).toBe(75); // 3/4
   });
 
@@ -286,7 +286,7 @@ describe("calculateHomeStabilityMetrics", () => {
       makePlacement({ id: "pl-1", currentRiskIndicators: ["frequent_missing", "escalating_incidents", "peer_conflict"] }),
       makePlacement({ id: "pl-2" }),
     ];
-    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Oak House", 4, FIXED_NOW);
+    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.placementsAtRisk).toBe(1);
   });
 
@@ -295,7 +295,7 @@ describe("calculateHomeStabilityMetrics", () => {
       makePlacement({ id: "pl-1", currentRiskIndicators: ["peer_conflict", "frequent_missing"] }),
       makePlacement({ id: "pl-2", currentRiskIndicators: ["peer_conflict"] }),
     ];
-    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Oak House", 4, FIXED_NOW);
+    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.riskSummary[0].indicator).toBe("peer_conflict");
     expect(result.riskSummary[0].count).toBe(2);
   });
@@ -305,12 +305,12 @@ describe("calculateHomeStabilityMetrics", () => {
       makePlacement({ id: "pl-1", homeId: "home-oak" }),
       makePlacement({ id: "pl-2", homeId: "home-elm" }),
     ];
-    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Oak House", 4, FIXED_NOW);
+    const result = calculateHomeStabilityMetrics(placements, "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.totalPlacements).toBe(1);
   });
 
   it("returns defaults for no placements", () => {
-    const result = calculateHomeStabilityMetrics([], "home-oak", "Oak House", 4, FIXED_NOW);
+    const result = calculateHomeStabilityMetrics([], "home-oak", "Chamberlain House", 4, FIXED_NOW);
     expect(result.totalPlacements).toBe(0);
     expect(result.averageStabilityScore).toBe(100);
     expect(result.disruptionRate).toBe(0);

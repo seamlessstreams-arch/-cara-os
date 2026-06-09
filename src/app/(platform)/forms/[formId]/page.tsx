@@ -252,7 +252,7 @@ export default function FormDetailPage() {
       recordChildId={form.linked_child_id ?? undefined}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title={form.title || "Care Form"} subtitle="Oak House — Care Form Record" targetId="form-detail-content" />
+          <PrintButton title={form.title || "Care Form"} subtitle="Chamberlain House — Care Form Record" targetId="form-detail-content" />
           <SmartUploadButton
             variant="icon"
             linkedChildId={form.linked_child_id ?? undefined}

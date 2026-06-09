@@ -681,7 +681,7 @@ describe("computeOutcomesProgress", () => {
     });
   });
 
-  describe("full Oak House integration", () => {
+  describe("full Chamberlain House integration", () => {
     it("produces comprehensive output for all 3 children with 16 targets", () => {
       const children: ChildInput[] = [
         makeChild("yp_alex", "Alex"),

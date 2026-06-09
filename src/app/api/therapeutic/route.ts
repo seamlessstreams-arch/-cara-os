@@ -68,7 +68,7 @@ const DEMO_PROFILES: ChildTherapeuticProfile[] = [
       {
         id: "int-alex-02",
         type: "sensory_regulation",
-        provider: "Oak House Staff",
+        provider: "Chamberlain House Staff",
         startDate: "2026-02-01",
         frequency: "daily",
         sessionsAttended: 70,
@@ -159,7 +159,7 @@ const DEMO_PROFILES: ChildTherapeuticProfile[] = [
       {
         id: "int-jordan-02",
         type: "emotional_coaching",
-        provider: "Oak House Staff",
+        provider: "Chamberlain House Staff",
         startDate: "2025-06-01",
         frequency: "weekly",
         sessionsAttended: 40,
@@ -265,7 +265,7 @@ const DEMO_PROFILES: ChildTherapeuticProfile[] = [
     therapeuticGoals: [
       "Process trauma from previous placement through narrative therapy",
       "Develop night-time anxiety coping strategies",
-      "Build sense of belonging at Oak House",
+      "Build sense of belonging at Chamberlain House",
       "Strengthen cultural identity connection",
     ],
     protectiveFactors: ["Engaged with therapy", "Growing trust in key worker", "Cultural activities", "Creative writing"],
@@ -307,7 +307,7 @@ const DEMO_PROFILES: ChildTherapeuticProfile[] = [
       {
         id: "int-sam-02",
         type: "sensory_regulation",
-        provider: "Oak House Staff",
+        provider: "Chamberlain House Staff",
         startDate: "2025-11-01",
         frequency: "daily",
         sessionsAttended: 140,

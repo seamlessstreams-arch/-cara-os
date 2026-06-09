@@ -368,7 +368,7 @@ describe("Meetings Intelligence Engine", () => {
     });
   });
 
-  describe("Oak House integration", () => {
+  describe("Chamberlain House integration", () => {
     function oakHouseMeetings(): HouseMeetingInput[] {
       return [
         {
@@ -434,7 +434,7 @@ describe("Meetings Intelligence Engine", () => {
       ];
     }
 
-    it("calculates correct overview for Oak House data", () => {
+    it("calculates correct overview for Chamberlain House data", () => {
       const result = run(oakHouseMeetings());
       expect(result.overview.total_meetings).toBe(4);
       expect(result.overview.meetings_last_30_days).toBe(4);

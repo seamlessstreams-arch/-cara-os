@@ -542,7 +542,7 @@ describe("computeMedicationIntelligence", () => {
     });
   });
 
-  describe("full Oak House integration", () => {
+  describe("full Chamberlain House integration", () => {
     it("processes realistic multi-child medication data", () => {
       const children: ChildInput[] = [
         { id: "yp_casey", name: "Casey" },

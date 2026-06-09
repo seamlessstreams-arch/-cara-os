@@ -31,7 +31,7 @@ const PERIOD_START = "2025-01-01";
 const PERIOD_END = "2025-12-31";
 const REFERENCE_DATE = "2025-06-15";
 
-// ── Oak House Staff IDs ──────────────────────────────────────────────────────
+// ── Chamberlain House Staff IDs ──────────────────────────────────────────────────────
 
 const STAFF_IDS = [
   "staff-sarah",    // Sarah Johnson — RM, Level 5 achieved, strong CPD
@@ -40,7 +40,7 @@ const STAFF_IDS = [
   "staff-darren",   // Darren Laville — RM, Level 5 in progress + management qual
 ];
 
-// ── Oak House Demo Qualifications (8+ records) ──────────────────────────────
+// ── Chamberlain House Demo Qualifications (8+ records) ──────────────────────────────
 
 const demoQualifications: StaffQualification[] = [
   // Sarah Johnson — RM
@@ -58,7 +58,7 @@ const demoQualifications: StaffQualification[] = [
   { id: "q-d03", staffId: "staff-darren", staffName: "Darren Laville", qualificationType: "nvq", qualificationName: "NVQ Level 3 in Children & Young People", status: "achieved", startDate: "2015-09-01", completedDate: "2017-06-30", provider: "City & Guilds", mandatoryForRole: false, evidenceRecorded: false },
 ];
 
-// ── Oak House Demo CPD Records (12+ records) ─────────────────────────────────
+// ── Chamberlain House Demo CPD Records (12+ records) ─────────────────────────────────
 
 const demoCPD: CPDRecord[] = [
   // Sarah Johnson
@@ -80,7 +80,7 @@ const demoCPD: CPDRecord[] = [
   { id: "cpd-d03", staffId: "staff-darren", staffName: "Darren Laville", date: "2025-05-10", category: "safeguarding", title: "Designated Safeguarding Lead Refresher", description: "DSL responsibilities and multi-agency working", hoursCompleted: 6, provider: "Local Authority", reflectionRecorded: true, impactOnPractice: "Strengthened inter-agency communication protocols", supervisorSignOff: true, certificate: true },
 ];
 
-// ── Oak House Demo Competency Assessments (8 records) ────────────────────────
+// ── Chamberlain House Demo Competency Assessments (8 records) ────────────────────────
 
 const demoCompetencies: CompetencyAssessment[] = [
   // Sarah Johnson
@@ -97,7 +97,7 @@ const demoCompetencies: CompetencyAssessment[] = [
   { id: "ca-d02", staffId: "staff-darren", staffName: "Darren Laville", assessmentDate: "2025-02-28", assessor: "External Consultant", competencyArea: "Quality Assurance", level: "proficient", previousLevel: "competent", evidenceBase: ["QA audits demonstrate improvement", "Action plans followed through"], developmentActions: ["Embed outcome measurement tools"], nextAssessmentDate: "2025-08-28" },
 ];
 
-// ── Oak House Demo Development Plans (4 records) ─────────────────────────────
+// ── Chamberlain House Demo Development Plans (4 records) ─────────────────────────────
 
 const demoDevelopmentPlans: DevelopmentPlan[] = [
   // Sarah Johnson
@@ -141,7 +141,7 @@ const demoDevelopmentPlans: DevelopmentPlan[] = [
   },
 ];
 
-// ── Oak House Demo Practice Observations (6 records) ─────────────────────────
+// ── Chamberlain House Demo Practice Observations (6 records) ─────────────────────────
 
 const demoObservations: PracticeObservation[] = [
   // Sarah Johnson

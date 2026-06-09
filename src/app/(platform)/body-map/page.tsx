@@ -250,7 +250,7 @@ export default function BodyMapPage() {
       ariaContext={{ pageTitle: "Body Map Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Body Map Records" subtitle="Oak House — Safeguarding" />
+          <PrintButton title="Body Map Records" subtitle="Chamberlain House — Safeguarding" />
           <ExportButton data={filtered} columns={exportCols} filename="body-map-records" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Record Observation

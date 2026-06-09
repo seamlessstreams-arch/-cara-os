@@ -534,9 +534,9 @@ describe("ARIA insights", () => {
   });
 });
 
-// ── Oak House Integration ───────────────────────────────────────────────────
+// ── Chamberlain House Integration ───────────────────────────────────────────────────
 
-describe("Oak House integration", () => {
+describe("Chamberlain House integration", () => {
   // Mirrors the 7 seeded expenses from store.ts
   const oakExpenses: ExpenseInput[] = [
     {
@@ -590,7 +590,7 @@ describe("Oak House integration", () => {
     },
   ];
 
-  it("produces correct overview for Oak House expense data", () => {
+  it("produces correct overview for Chamberlain House expense data", () => {
     const r = run(oakExpenses, STAFF);
     const o = r.overview;
 
@@ -626,7 +626,7 @@ describe("Oak House integration", () => {
     expect(o.avg_approval_days).toBe(1);
   });
 
-  it("produces correct category breakdown for Oak House", () => {
+  it("produces correct category breakdown for Chamberlain House", () => {
     const r = run(oakExpenses, STAFF);
     // 7 unique categories: young_person_activities, food_shopping, training, transport, maintenance, clothing, petty_cash
     expect(r.category_spend).toHaveLength(7);
@@ -635,7 +635,7 @@ describe("Oak House integration", () => {
     expect(r.category_spend[0].total_amount).toBe(185);
   });
 
-  it("produces correct staff breakdown for Oak House", () => {
+  it("produces correct staff breakdown for Chamberlain House", () => {
     const r = run(oakExpenses, STAFF);
     // 6 unique staff members (Ryan submits 2, but 6 distinct submitters)
     expect(r.staff_spend).toHaveLength(6);
@@ -648,7 +648,7 @@ describe("Oak House integration", () => {
     expect(ryan.count).toBe(2);
   });
 
-  it("fires expected alerts for Oak House data", () => {
+  it("fires expected alerts for Chamberlain House data", () => {
     const r = run(oakExpenses, STAFF);
 
     // exp_4 submitted on May 18, today May 25 = 7 days → NOT >7 → no critical
@@ -673,7 +673,7 @@ describe("Oak House integration", () => {
     expect(draftMed).toHaveLength(1);
   });
 
-  it("fires expected ARIA insights for Oak House data", () => {
+  it("fires expected ARIA insights for Chamberlain House data", () => {
     const r = run(oakExpenses, STAFF);
 
     // No stale approvals → no critical insight

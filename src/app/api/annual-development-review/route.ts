@@ -3,7 +3,7 @@
 //
 // Annual Development Review Intelligence
 //
-// GET  — Returns annual development review metrics with demo data (Oak House)
+// GET  — Returns annual development review metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -22,7 +22,7 @@ import type {
   StaffReviewTraining,
 } from "@/lib/annual-development-review";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   reviews: ReviewRecord[];

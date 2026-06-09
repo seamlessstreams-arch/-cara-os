@@ -3,7 +3,7 @@
 //
 // Sleep Hygiene Quality Intelligence
 //
-// GET  — Returns sleep hygiene quality metrics with demo data (Oak House)
+// GET  — Returns sleep hygiene quality metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffSleepTraining,
 } from "@/lib/sleep-hygiene-quality";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: SleepRecord[];

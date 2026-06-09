@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Placement Stability Intelligence Engine
 //
-// Demo data: Oak House with children Alex (child-alex, 14), Jordan (child-jordan, 13),
+// Demo data: Chamberlain House with children Alex (child-alex, 14), Jordan (child-jordan, 13),
 //            Morgan (child-morgan, 15)
 // Staff: Sarah Johnson (Key Worker), Tom Richards (RSW), Lisa Williams (Senior RSW),
 //        Darren Laville (RM)
@@ -153,7 +153,7 @@ function makeOutcome(overrides: Partial<PlacementOutcome> = {}): PlacementOutcom
   };
 }
 
-// ── Oak House Demo Data ───────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ───────────────────────────────────────────────────
 
 const OAK_HOUSE_PLACEMENTS: Placement[] = [
   makePlacement({
@@ -644,7 +644,7 @@ describe("evaluateDisruptionManagement", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("evaluateMatchingQuality", () => {
-  it("evaluates Oak House matching records", () => {
+  it("evaluates Chamberlain House matching records", () => {
     const result = evaluateMatchingQuality(OAK_HOUSE_MATCHING);
     expect(result.totalAssessments).toBe(3);
     expect(result.averageOverallScore).toBeGreaterThan(0);
@@ -750,7 +750,7 @@ describe("evaluateMatchingQuality", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("evaluateOutcomesDuringPlacement", () => {
-  it("evaluates Oak House outcomes", () => {
+  it("evaluates Chamberlain House outcomes", () => {
     const result = evaluateOutcomesDuringPlacement(OAK_HOUSE_OUTCOMES);
     expect(result.totalOutcomes).toBe(3);
   });
@@ -879,7 +879,7 @@ describe("evaluateOutcomesDuringPlacement", () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 describe("generatePlacementStabilityIntelligence", () => {
-  it("returns complete intelligence for Oak House", () => {
+  it("returns complete intelligence for Chamberlain House", () => {
     const result = generatePlacementStabilityIntelligence(
       OAK_HOUSE_PLACEMENTS,
       OAK_HOUSE_DISRUPTIONS,
@@ -2013,10 +2013,10 @@ describe("edge cases", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 14. Oak House Full Scenario
+// 14. Chamberlain House Full Scenario
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe("Oak House full scenario", () => {
+describe("Chamberlain House full scenario", () => {
   it("produces a coherent full analysis", () => {
     const result = generatePlacementStabilityIntelligence(
       OAK_HOUSE_PLACEMENTS,
@@ -2048,7 +2048,7 @@ describe("Oak House full scenario", () => {
     expect(result.regulatoryLinks.length).toBeGreaterThan(0);
   });
 
-  it("Oak House disruption management score reflects 3 well-managed disruptions", () => {
+  it("Chamberlain House disruption management score reflects 3 well-managed disruptions", () => {
     const result = generatePlacementStabilityIntelligence(
       OAK_HOUSE_PLACEMENTS,
       OAK_HOUSE_DISRUPTIONS,
@@ -2064,7 +2064,7 @@ describe("Oak House full scenario", () => {
     expect(result.componentScores.disruptionManagement).toBeGreaterThan(15);
   });
 
-  it("Oak House matching quality reflects mixed consultation rates", () => {
+  it("Chamberlain House matching quality reflects mixed consultation rates", () => {
     const result = generatePlacementStabilityIntelligence(
       OAK_HOUSE_PLACEMENTS,
       OAK_HOUSE_DISRUPTIONS,
@@ -2081,7 +2081,7 @@ describe("Oak House full scenario", () => {
     expect(result.componentScores.matchingQuality).toBeLessThan(25);
   });
 
-  it("Oak House outcomes reflect mixed attendance and health rates", () => {
+  it("Chamberlain House outcomes reflect mixed attendance and health rates", () => {
     const result = generatePlacementStabilityIntelligence(
       OAK_HOUSE_PLACEMENTS,
       OAK_HOUSE_DISRUPTIONS,
@@ -2097,7 +2097,7 @@ describe("Oak House full scenario", () => {
     expect(result.componentScores.outcomesDuringPlacement).toBeGreaterThan(10);
   });
 
-  it("Oak House child profiles have correct key workers", () => {
+  it("Chamberlain House child profiles have correct key workers", () => {
     const result = generatePlacementStabilityIntelligence(
       OAK_HOUSE_PLACEMENTS,
       OAK_HOUSE_DISRUPTIONS,
@@ -2117,7 +2117,7 @@ describe("Oak House full scenario", () => {
     expect(morgan!.keyWorker).toBe("Lisa Williams");
   });
 
-  it("Oak House child ages match", () => {
+  it("Chamberlain House child ages match", () => {
     const result = generatePlacementStabilityIntelligence(
       OAK_HOUSE_PLACEMENTS,
       OAK_HOUSE_DISRUPTIONS,

@@ -3,7 +3,7 @@
 //
 // Nutrition & Dietary Compliance Intelligence
 //
-// GET  — Returns nutrition intelligence with realistic Oak House demo data
+// GET  — Returns nutrition intelligence with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -21,7 +21,7 @@ import type {
   CookingSession,
 } from "@/lib/nutrition";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_CHILDREN: NutritionChild[] = [
   {

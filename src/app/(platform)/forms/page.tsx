@@ -357,7 +357,7 @@ export default function FormsPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={FORM_EXPORT_COLS} filename="care-forms" />
-          <PrintButton title="Care Forms" subtitle="Oak House — Forms Registry" targetId="forms-content" />
+          <PrintButton title="Care Forms" subtitle="Chamberlain House — Forms Registry" targetId="forms-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Forms — supporting document upload" />
           <AriaStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

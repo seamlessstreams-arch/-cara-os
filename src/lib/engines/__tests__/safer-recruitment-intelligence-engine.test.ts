@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CORNERSTONE — SAFER RECRUITMENT INTELLIGENCE ENGINE — TESTS
 // 40+ tests covering helpers, overview, candidate profiles, check analysis,
-// alerts, ARIA insights, and full Oak House integration scenario.
+// alerts, ARIA insights, and full Chamberlain House integration scenario.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
@@ -711,10 +711,10 @@ describe("ARIA insights", () => {
   });
 });
 
-// ── Oak House Integration ───────────────────────────────────────────────────
+// ── Chamberlain House Integration ───────────────────────────────────────────────────
 
-describe("Oak House integration", () => {
-  it("processes real Oak House safer recruitment data", () => {
+describe("Chamberlain House integration", () => {
+  it("processes real Chamberlain House safer recruitment data", () => {
     const vacancies: VacancyInput[] = [
       makeVacancy({ id: "vac_001", title: "Residential Care Worker", status: "open", created_at: "2026-03-08" }),
       makeVacancy({ id: "vac_002", title: "Team Leader", status: "open", created_at: "2026-03-14" }),

@@ -3,7 +3,7 @@
 //
 // Safeguarding Oversight Intelligence
 //
-// GET  — Returns safeguarding assessment with Oak House demo data
+// GET  — Returns safeguarding assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -25,7 +25,7 @@ import type {
   DSLOversight,
 } from "@/lib/safeguarding-oversight";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_STAFF: StaffSafeguardingRecord[] = [
   { id: "ss-dl", staffId: "staff-darren", staffName: "Darren Laville", role: "Registered Manager", dbsStatus: "enhanced_current", dbsDate: "2025-01-15", trainingLevel: "level_3_current", lastTrainingDate: "2025-09-01", designatedSafeguardingLead: true, deputyDSL: false, saferRecruitmentTrained: true, preventTrained: true },

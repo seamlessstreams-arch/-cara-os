@@ -163,7 +163,7 @@ export default function GuidanceNotesPage() {
         {
           mode: "learning_guidance_note",
           style: "professional_formal",
-          source_content: `Topic: ${topic}. Pathway: ${pathway}. Additional context: ${context || "Standard residential children's home context. Oak House."}`,
+          source_content: `Topic: ${topic}. Pathway: ${pathway}. Additional context: ${context || "Standard residential children's home context. Chamberlain House."}`,
           page_context: "Guidance Notes Generator",
           record_type: "guidance_note",
           user_role: "registered_manager",
@@ -205,7 +205,7 @@ export default function GuidanceNotesPage() {
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Guidance Notes" subtitle="Oak House — Practice Guidance" targetId="guidance-content" />
+          <PrintButton title="Guidance Notes" subtitle="Chamberlain House — Practice Guidance" targetId="guidance-content" />
           <SmartUploadButton variant="inline" label="Upload Guidance" uploadContext="Learning — Guidance Notes upload" />
           <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>

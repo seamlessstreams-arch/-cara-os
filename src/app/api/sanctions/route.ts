@@ -3,7 +3,7 @@
 //
 // Sanctions Intelligence
 //
-// GET  — Returns sanctions metrics with Oak House demo data
+// GET  — Returns sanctions metrics with Chamberlain House demo data
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextResponse } from "next/server";

@@ -3,7 +3,7 @@
 //
 // Deprivation of Liberty Intelligence
 //
-// GET  — Returns DoLS assessment with realistic Oak House demo data
+// GET  — Returns DoLS assessment with realistic Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -24,7 +24,7 @@ import type {
   LegalCompliance,
 } from "@/lib/deprivation-of-liberty";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 // Morgan — court-authorised continuous supervision & locked doors (self-harm risk)
 // Alex — LA-authorised technology monitoring (online safety concern)

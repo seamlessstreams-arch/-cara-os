@@ -423,7 +423,7 @@ describe("Life Skills Intelligence Engine", () => {
     });
   });
 
-  describe("Oak House integration", () => {
+  describe("Chamberlain House integration", () => {
     function oakHousePathways(): IndependencePathwayInput[] {
       return [
         {
@@ -474,7 +474,7 @@ describe("Life Skills Intelligence Engine", () => {
       ];
     }
 
-    it("calculates correct overview for Oak House data", () => {
+    it("calculates correct overview for Chamberlain House data", () => {
       const result = run(oakHousePathways());
       expect(result.overview.total_children).toBe(3);
       expect(result.overview.children_assessed).toBe(3);

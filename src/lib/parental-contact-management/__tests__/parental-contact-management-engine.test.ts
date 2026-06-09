@@ -861,7 +861,7 @@ describe("generateParentalContactManagementIntelligence", () => {
 
   // -- Integration --
 
-  it("handles realistic Oak House scenario", () => {
+  it("handles realistic Chamberlain House scenario", () => {
     const plans = [
       mkPlan({ id: "pcp-1", childId: "child-alex", childName: "Alex", parentId: "parent-alex-mother", contactType: "face_to_face_supervised", riskLevel: "medium", courtOrderInPlace: true }),
       mkPlan({ id: "pcp-2", childId: "child-alex", childName: "Alex", parentId: "parent-alex-father", contactType: "telephone", riskLevel: "low", courtOrderInPlace: false }),

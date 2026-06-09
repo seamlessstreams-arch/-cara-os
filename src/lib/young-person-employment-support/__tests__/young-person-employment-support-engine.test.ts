@@ -849,7 +849,7 @@ describe("generateYoungPersonEmploymentSupportIntelligence", () => {
 
   // -- Integration --
 
-  it("handles realistic Oak House scenario", () => {
+  it("handles realistic Chamberlain House scenario", () => {
     const profiles = [
       mkProfile({ id: "cep-alex", childId: "child-alex", childName: "Alex", age: 14, careersPlanExists: true, careersPlanStatus: "current", careerAspirations: ["Chef"], workExperienceCompleted: true, cvPrepared: true, interviewPracticed: false, financialLiteracyAssessed: false, personalAdviserEngaged: false }),
       mkProfile({ id: "cep-jordan", childId: "child-jordan", childName: "Jordan", age: 13, careersPlanExists: false, careersPlanStatus: "not_in_place", careerAspirations: ["Artist"], workExperienceCompleted: false, cvPrepared: false, interviewPracticed: false, financialLiteracyAssessed: false, personalAdviserEngaged: false }),

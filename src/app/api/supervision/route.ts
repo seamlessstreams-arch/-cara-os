@@ -1,7 +1,7 @@
 /* ──────────────────────────────────────────────────────────────
    API: /api/supervision — Supervision Intelligence
 
-   GET → returns Oak House demo supervision intelligence
+   GET → returns Chamberlain House demo supervision intelligence
    ────────────────────────────────────────────────────────────── */
 
 import { NextResponse } from "next/server";
@@ -12,7 +12,7 @@ import type {
   StaffSupervisionTraining,
 } from "@/lib/supervision/supervision-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const sessions: SupervisionSession[] = [

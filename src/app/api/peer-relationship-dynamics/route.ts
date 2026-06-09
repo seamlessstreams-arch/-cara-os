@@ -3,7 +3,7 @@
 //
 // Peer Relationship Dynamics Intelligence
 //
-// GET  — Returns peer relationship dynamics metrics with demo data (Oak House)
+// GET  — Returns peer relationship dynamics metrics with demo data (Chamberlain House)
 // POST — Accepts custom data and returns analysis
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ import type {
   StaffPeerTraining,
 } from "@/lib/peer-relationship-dynamics";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   interactions: PeerInteraction[];

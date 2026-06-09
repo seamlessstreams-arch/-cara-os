@@ -118,7 +118,7 @@ const DEMO_DRAFTS = [
     id: "d6",
     communication_type: "management_summary" as CommunicationType,
     title: "Weekly Management Summary — W/C 5 May 2026",
-    content: "# Management Summary — Oak House\n**Period:** 5–11 May 2026\n\n## Occupancy\n4/5 places occupied...",
+    content: "# Management Summary — Chamberlain House\n**Period:** 5–11 May 2026\n\n## Occupancy\n4/5 places occupied...",
     status: "sent" as CommunicationStatus,
     child_id: null,
     aria_generated: true,

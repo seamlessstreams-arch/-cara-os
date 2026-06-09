@@ -449,7 +449,7 @@ export default function Regulation44Page() {
   return (
     <PageShell
       title="Regulation 44 Visits"
-      subtitle="Independent visitor reports — Oak House"
+      subtitle="Independent visitor reports — Chamberlain House"
       ariaContext={{ pageTitle: "Regulation 44 — Independent Visiting", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">

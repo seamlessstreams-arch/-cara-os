@@ -548,7 +548,7 @@ export default function WelfareChecksPage() {
           <ExportButton data={filteredRounds} columns={WELFARE_EXPORT_COLS} filename="welfare-checks" />
           <PrintButton
             title="Welfare Check Log"
-            subtitle="Oak House — Night Welfare Checks"
+            subtitle="Chamberlain House — Night Welfare Checks"
             targetId="welfare-checks-content"
           />
           <Button

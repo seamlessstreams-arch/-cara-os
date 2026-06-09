@@ -3,7 +3,7 @@
 //
 // Incident Pattern Analysis Intelligence
 //
-// GET  — Returns Oak House demo data with Alex, Jordan, Morgan
+// GET  — Returns Chamberlain House demo data with Alex, Jordan, Morgan
 // POST — Accepts custom data and returns tailored analysis
 //
 // CHR 2015 Reg 12 — Protection of children standard (behaviour management)

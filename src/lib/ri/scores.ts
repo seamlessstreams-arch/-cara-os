@@ -163,9 +163,9 @@ export function computeRiScoreCard(homeId: string): RiScoreCard {
 
   // Narrative
   const narrative = risk_level === "low"
-    ? `Oak House demonstrates strong governance across all 15 indicators. Safeguarding oversight, compliance, and quality of evidence are all operating at a high level. The RI can have reasonable confidence in the current management picture.`
+    ? `Chamberlain House demonstrates strong governance across all 15 indicators. Safeguarding oversight, compliance, and quality of evidence are all operating at a high level. The RI can have reasonable confidence in the current management picture.`
     : risk_level === "medium"
-    ? `Oak House shows mostly good governance but has areas requiring active attention. The RI should focus challenge on the lower-scoring indicators and ensure the manager has clear action plans in place.`
+    ? `Chamberlain House shows mostly good governance but has areas requiring active attention. The RI should focus challenge on the lower-scoring indicators and ensure the manager has clear action plans in place.`
     : risk_level === "high"
     ? `Significant governance concerns are present. The RI should increase oversight frequency, consider formal challenges, and ensure Ofsted notification thresholds are reviewed.`
     : `Critical governance concerns detected. The RI must act immediately — consider formal escalation, increased provider oversight, and Ofsted notification if statutory thresholds are met.`;

@@ -1,7 +1,7 @@
 // ==============================================================================
 // Cornerstone -- Financial Stewardship Intelligence API Route
 //
-// GET  -> returns Oak House demo financial stewardship intelligence
+// GET  -> returns Chamberlain House demo financial stewardship intelligence
 // POST -> accepts custom data for any home
 // ==============================================================================
 
@@ -14,7 +14,7 @@ import type {
   AllowancePolicy,
 } from "@/lib/financial-stewardship/financial-stewardship-engine";
 
-// -- Oak House Demo Data ------------------------------------------------------
+// -- Chamberlain House Demo Data ------------------------------------------------------
 
 function getDemoData() {
   const profiles: ChildFinancialProfile[] = [

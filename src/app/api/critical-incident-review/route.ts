@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cornerstone — Critical Incident Review Intelligence API Route
 //
-// GET  → returns Oak House demo critical incident review intelligence
+// GET  → returns Chamberlain House demo critical incident review intelligence
 // POST → accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -14,7 +14,7 @@ import type {
   PracticeChange,
 } from "@/lib/critical-incident-review/critical-incident-review-engine";
 
-// ── Oak House Demo Data ─────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ─────────────────────────────────────────────────────
 
 function getDemoData() {
   const incidents: CriticalIncident[] = [

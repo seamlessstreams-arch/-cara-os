@@ -1096,9 +1096,9 @@ describe("generateNightCareIntelligence", () => {
     expect(result.rating).toBe("outstanding");
   });
 
-  // -- Oak House Demo Integration --
+  // -- Chamberlain House Demo Integration --
 
-  it("produces outstanding result with full Oak House demo data", () => {
+  it("produces outstanding result with full Chamberlain House demo data", () => {
     const categories = [
       "night_check", "sleep_monitoring", "night_incident", "waking_night_support",
       "night_medication", "bedtime_routine", "night_handover", "disturbance_response",

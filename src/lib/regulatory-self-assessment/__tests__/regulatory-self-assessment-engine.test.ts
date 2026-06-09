@@ -78,7 +78,7 @@ function makeFeedback(overrides: Partial<ExternalFeedback> = {}): ExternalFeedba
   };
 }
 
-// Oak House demo data — 12 of 15 areas assessed with varying compliance
+// Chamberlain House demo data — 12 of 15 areas assessed with varying compliance
 function buildOakHouseDemoEntries(): SelfAssessmentEntry[] {
   return [
     makeEntry({
@@ -745,10 +745,10 @@ describe("analyseSelfAssessment — single entry", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// analyseSelfAssessment — Oak House Demo
+// analyseSelfAssessment — Chamberlain House Demo
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("analyseSelfAssessment — Oak House demo", () => {
+describe("analyseSelfAssessment — Chamberlain House demo", () => {
   const entries = buildOakHouseDemoEntries();
   const actions = buildOakHouseDemoActions();
   const feedback = buildOakHouseDemoFeedback();
@@ -799,7 +799,7 @@ describe("analyseSelfAssessment — Oak House demo", () => {
     expect(result.actionManagementScore).toBeLessThanOrEqual(25);
   });
 
-  it("counts 12 regulations assessed (Oak House has 12 entries)", () => {
+  it("counts 12 regulations assessed (Chamberlain House has 12 entries)", () => {
     const result = analyseSelfAssessment(entries, actions, feedback, HOME_ID);
     expect(result.regulationsAssessedCount).toBe(12);
   });
@@ -1186,7 +1186,7 @@ describe("getCriticalActions", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("getOverdueActions", () => {
-  it("returns overdue actions from Oak House demo", () => {
+  it("returns overdue actions from Chamberlain House demo", () => {
     const actions = buildOakHouseDemoActions();
     const overdue = getOverdueActions(actions, HOME_ID);
     expect(overdue.length).toBe(2);
@@ -1215,7 +1215,7 @@ describe("getOverdueActions", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("getUnaddressedFeedback", () => {
-  it("returns unaddressed actionable feedback from Oak House demo", () => {
+  it("returns unaddressed actionable feedback from Chamberlain House demo", () => {
     const feedback = buildOakHouseDemoFeedback();
     const unaddressed = getUnaddressedFeedback(feedback, HOME_ID);
     expect(unaddressed.length).toBe(2);

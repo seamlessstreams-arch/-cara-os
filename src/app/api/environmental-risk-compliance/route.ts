@@ -3,7 +3,7 @@
 //
 // Environmental Risk Compliance Intelligence
 //
-// GET  — Returns environmental risk assessment with Oak House demo data
+// GET  — Returns environmental risk assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   StaffSafetyTraining,
 } from "@/lib/environmental-risk-compliance";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_ASSESSMENTS: RiskAssessment[] = [
   // Ligature points — bathrooms

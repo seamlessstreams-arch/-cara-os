@@ -195,7 +195,7 @@ export default function BehaviourLogPage() {
       ariaContext={{ pageTitle: "Behaviour Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
-          <PrintButton title="Behaviour Log" subtitle="Oak House — Behaviour Management" />
+          <PrintButton title="Behaviour Log" subtitle="Chamberlain House — Behaviour Management" />
           <ExportButton data={filtered} columns={exportCols} filename="behaviour-log" />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Log Behaviour

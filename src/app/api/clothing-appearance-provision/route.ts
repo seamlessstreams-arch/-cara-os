@@ -3,7 +3,7 @@
 //
 // Clothing & Appearance Provision Intelligence
 //
-// GET  — Returns assessment with Oak House demo data
+// GET  — Returns assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -20,7 +20,7 @@ import type {
   StaffClothingTraining,
 } from "@/lib/clothing-appearance-provision";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_ASSESSMENTS: ClothingAssessment[] = [
   { id: "a-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", clothingCategory: "everyday_wear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },

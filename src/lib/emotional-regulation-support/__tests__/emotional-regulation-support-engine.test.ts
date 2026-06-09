@@ -4,7 +4,7 @@
 // Covers all evaluators, helpers, label getters, child profiles, and the
 // main orchestrator. 80+ tests covering empty, perfect, partial, and edge cases.
 //
-// Demo data: Oak House — Alex (14), Jordan (13), Morgan (15)
+// Demo data: Chamberlain House — Alex (14), Jordan (13), Morgan (15)
 // Staff: Sarah Johnson, Tom Richards, Lisa Williams, Darren Laville
 // ══════════════════════════════════════════════════════════════════════════════
 

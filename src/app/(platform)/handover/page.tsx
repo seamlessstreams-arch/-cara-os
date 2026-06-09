@@ -836,7 +836,7 @@ export default function HandoverPage() {
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredHistory} columns={HANDOVER_EXPORT_COLS} filename="handover" />
-          <PrintButton title="Shift Handover" subtitle="Oak House — Handover Records" targetId="handover-content" />
+          <PrintButton title="Shift Handover" subtitle="Chamberlain House — Handover Records" targetId="handover-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Handover — supporting document upload" />
           <Button size="sm" onClick={() => setShowForm((v) => !v)}>
             <Plus className="h-3.5 w-3.5 mr-1" />

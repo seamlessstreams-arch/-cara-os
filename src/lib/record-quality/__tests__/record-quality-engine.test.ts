@@ -47,7 +47,7 @@ function makeExpectation(overrides: Partial<RecordExpectation> & { recordType: R
   };
 }
 
-// ── Oak House Demo Data ──────────────────────────────────────────────────────
+// ── Chamberlain House Demo Data ──────────────────────────────────────────────────────
 // Staff: Sarah Johnson (RM), Tom Richards (RSW), Lisa Williams (RSW), Darren Laville (RM)
 // Children: Alex (14), Jordan (13), Morgan (15)
 

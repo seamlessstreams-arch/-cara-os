@@ -1,7 +1,7 @@
 // ==============================================================================
 // TESTS -- Homework & Academic Support Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex 14, Jordan 13, Morgan 15),
+// Demo: Chamberlain House, 3 children (Alex 14, Jordan 13, Morgan 15),
 // Staff: Sarah Johnson (Senior RSW), Tom Richards (RSW),
 //        Lisa Williams (Senior RSW), Darren Laville (RM/DSL)
 // ==============================================================================
@@ -30,7 +30,7 @@ import type {
   StaffEducationTraining,
 } from "../homework-academic-support-engine";
 
-// -- Test Fixtures: Oak House Demo Data ---------------------------------------
+// -- Test Fixtures: Chamberlain House Demo Data ---------------------------------------
 
 const makeRecord = (overrides: Partial<HomeworkRecord> = {}): HomeworkRecord => ({
   id: "hw-001",
@@ -83,7 +83,7 @@ const makeTraining = (overrides: Partial<StaffEducationTraining> = {}): StaffEdu
   ...overrides,
 });
 
-// Oak House demo data
+// Chamberlain House demo data
 const OAK_HOUSE_RECORDS: HomeworkRecord[] = [
   makeRecord({ id: "hw-001", childId: "child-alex", childName: "Alex", date: "2026-05-05", subject: "english", completionStatus: "completed", supportProvided: ["staff_help", "quiet_space"], timeSpentMinutes: 45, schoolFeedbackPositive: true }),
   makeRecord({ id: "hw-002", childId: "child-alex", childName: "Alex", date: "2026-05-07", subject: "maths", completionStatus: "completed", supportProvided: ["staff_help"], timeSpentMinutes: 60, difficultyEncountered: true, schoolFeedbackPositive: true }),
@@ -307,17 +307,17 @@ describe("evaluateHomeworkCompletion", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo has 10 total records", () => {
+  it("Chamberlain House demo has 10 total records", () => {
     const result = evaluateHomeworkCompletion(OAK_HOUSE_RECORDS);
     expect(result.totalRecords).toBe(10);
   });
 
-  it("Oak House demo has 80% completion rate", () => {
+  it("Chamberlain House demo has 80% completion rate", () => {
     const result = evaluateHomeworkCompletion(OAK_HOUSE_RECORDS);
     expect(result.completionRate).toBe(80);
   });
 
-  it("Oak House demo covers 7 subjects", () => {
+  it("Chamberlain House demo covers 7 subjects", () => {
     const result = evaluateHomeworkCompletion(OAK_HOUSE_RECORDS);
     expect(result.subjectsCovered).toBe(7);
   });
@@ -464,17 +464,17 @@ describe("evaluateAcademicInterventions", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo has 2 interventions", () => {
+  it("Chamberlain House demo has 2 interventions", () => {
     const result = evaluateAcademicInterventions(OAK_HOUSE_INTERVENTIONS);
     expect(result.totalInterventions).toBe(2);
   });
 
-  it("Oak House demo has 100% PEP linkage", () => {
+  it("Chamberlain House demo has 100% PEP linkage", () => {
     const result = evaluateAcademicInterventions(OAK_HOUSE_INTERVENTIONS);
     expect(result.pepLinkedRate).toBe(100);
   });
 
-  it("Oak House demo has 100% progress rate", () => {
+  it("Chamberlain House demo has 100% progress rate", () => {
     const result = evaluateAcademicInterventions(OAK_HOUSE_INTERVENTIONS);
     expect(result.progressRate).toBe(100);
   });
@@ -594,18 +594,18 @@ describe("evaluateResourceProvision", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo has 7 resources", () => {
+  it("Chamberlain House demo has 7 resources", () => {
     const result = evaluateResourceProvision(OAK_HOUSE_RESOURCES);
     expect(result.totalResources).toBe(7);
   });
 
-  it("Oak House demo has 6 available out of 7", () => {
+  it("Chamberlain House demo has 6 available out of 7", () => {
     const result = evaluateResourceProvision(OAK_HOUSE_RESOURCES);
     expect(result.availableCount).toBe(6);
     expect(result.availabilityRate).toBe(86);
   });
 
-  it("Oak House demo has 7 resource types present", () => {
+  it("Chamberlain House demo has 7 resource types present", () => {
     const result = evaluateResourceProvision(OAK_HOUSE_RESOURCES);
     expect(result.resourceTypesPresent).toBe(7);
   });
@@ -750,22 +750,22 @@ describe("evaluateStaffEducationReadiness", () => {
     expect(result.score).toBeLessThanOrEqual(25);
   });
 
-  it("Oak House demo has 4 staff", () => {
+  it("Chamberlain House demo has 4 staff", () => {
     const result = evaluateStaffEducationReadiness(OAK_HOUSE_TRAINING);
     expect(result.totalStaff).toBe(4);
   });
 
-  it("Oak House demo has 100% homework support training", () => {
+  it("Chamberlain House demo has 100% homework support training", () => {
     const result = evaluateStaffEducationReadiness(OAK_HOUSE_TRAINING);
     expect(result.homeworkSupportRate).toBe(100);
   });
 
-  it("Oak House demo has 75% exam support training (3 of 4)", () => {
+  it("Chamberlain House demo has 75% exam support training (3 of 4)", () => {
     const result = evaluateStaffEducationReadiness(OAK_HOUSE_TRAINING);
     expect(result.examSupportRate).toBe(75);
   });
 
-  it("Oak House demo has 75% fully trained (3 of 4)", () => {
+  it("Chamberlain House demo has 75% fully trained (3 of 4)", () => {
     const result = evaluateStaffEducationReadiness(OAK_HOUSE_TRAINING);
     expect(result.fullyTrainedRate).toBe(75);
   });

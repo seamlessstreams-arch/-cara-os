@@ -5,7 +5,7 @@
 // strengths/areas/actions generation, main intelligence function,
 // helpers, edge cases.
 //
-// Demo data: Oak House with 3 children (Alex, Jordan, Morgan).
+// Demo data: Chamberlain House with 3 children (Alex, Jordan, Morgan).
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect } from "vitest";
@@ -111,7 +111,7 @@ function makeNotification(overrides: Partial<NotificationRecord> = {}): Notifica
 function makePolicy(overrides: Partial<NotificationPolicy> = {}): NotificationPolicy {
   return {
     homeId: HOME_ID,
-    policyDocumentTitle: "Oak House Notification Policy v3.1",
+    policyDocumentTitle: "Chamberlain House Notification Policy v3.1",
     lastReviewedAt: "2026-03-01",
     nextReviewDue: "2026-09-01",
     approvedBy: "Darren Laville",
@@ -141,7 +141,7 @@ function makeAudit(overrides: Partial<NotificationAudit> = {}): NotificationAudi
   };
 }
 
-// Oak House demo events for Alex, Jordan, Morgan
+// Chamberlain House demo events for Alex, Jordan, Morgan
 function makeOakHouseEvents(): NotifiableEvent[] {
   return [
     // Event 1: Alex serious injury — all on time
@@ -1318,7 +1318,7 @@ describe("generateActions", () => {
 // ── generateNotificationTimelinessIntelligence Tests ───────────────────────
 
 describe("generateNotificationTimelinessIntelligence", () => {
-  it("produces a complete intelligence result for Oak House demo data", () => {
+  it("produces a complete intelligence result for Chamberlain House demo data", () => {
     const events = makeOakHouseEvents();
     const policy = makePolicy();
     const audits = [makeAudit()];

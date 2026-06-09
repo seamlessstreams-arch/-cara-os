@@ -692,12 +692,8 @@ body::before {
 
 /* ── Cornerstone sidebar — deep navy gradient ─────────────────────────────── */
 .cs-sidebar-gradient {
-  background: linear-gradient(
-    180deg,
-    var(--cs-navy) 0%,
-    #0a1628 60%,
-    #070e1a 100%
-  );
+  /* Light, high-readability sidebar (was navy). */
+  background: linear-gradient(180deg, #ffffff 0%, var(--cs-bg) 100%);
 }
 
 /* ── Cornerstone loading shimmer — gold warmth ────────────────────────────── */

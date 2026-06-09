@@ -58,7 +58,7 @@ function makeOrder(overrides: Partial<DoLOrderInput> = {}): DoLOrderInput {
     expiry_date: "2026-08-13",
     status: "active",
     court: "Family Court",
-    conditions: ["Must reside at Oak House", "Staff escort after 6pm"],
+    conditions: ["Must reside at Chamberlain House", "Staff escort after 6pm"],
     ...overrides,
   };
 }
@@ -74,7 +74,7 @@ function makeInput(overrides: Partial<DoLIntelligenceInput> = {}): DoLIntelligen
   };
 }
 
-// ── Oak House Test Data ───────────────────────────────────────────────────────
+// ── Chamberlain House Test Data ───────────────────────────────────────────────────────
 
 const OAK_HOUSE_CHILDREN: ChildRef[] = [
   { id: "yp_alex", name: "Alex" },
@@ -96,7 +96,7 @@ const OAK_HOUSE_ORDERS: DoLOrderInput[] = [
     expiry_date: "2026-08-13", // 80 days from 2026-05-25
     status: "active",
     court: "Family Court",
-    conditions: ["Must reside at Oak House", "Staff escort after 6pm"],
+    conditions: ["Must reside at Chamberlain House", "Staff escort after 6pm"],
   }),
 ];
 
@@ -807,9 +807,9 @@ describe("computeDoLIntelligence — Insights", () => {
   });
 });
 
-// ── Integration Tests: Full Oak House Scenario ──────────────────────────────
+// ── Integration Tests: Full Chamberlain House Scenario ──────────────────────────────
 
-describe("computeDoLIntelligence — Oak House Full Scenario", () => {
+describe("computeDoLIntelligence — Chamberlain House Full Scenario", () => {
   it("returns complete result structure", () => {
     const result = computeDoLIntelligence(makeOakHouseInput());
     expect(result).toHaveProperty("overview");
@@ -820,7 +820,7 @@ describe("computeDoLIntelligence — Oak House Full Scenario", () => {
     expect(result).toHaveProperty("insights");
   });
 
-  it("overview matches expected Oak House state", () => {
+  it("overview matches expected Chamberlain House state", () => {
     const result = computeDoLIntelligence(makeOakHouseInput());
     expect(result.overview).toEqual({
       active_orders: 1,
@@ -852,7 +852,7 @@ describe("computeDoLIntelligence — Oak House Full Scenario", () => {
     expect(result.active_orders[0].order_type).toBe("inherent_jurisdiction");
   });
 
-  it("generates appropriate alerts for Oak House state", () => {
+  it("generates appropriate alerts for Chamberlain House state", () => {
     const result = computeDoLIntelligence(makeOakHouseInput());
     // Should have: 2 high alerts (overdue reviews) + low alerts for restrictions > 90 days
     const high = result.alerts.filter((a) => a.severity === "high");
@@ -862,14 +862,14 @@ describe("computeDoLIntelligence — Oak House Full Scenario", () => {
     expect(low.length).toBe(2); // both of Jordan's restrictions are > 90 days
   });
 
-  it("generates overdue warning insight for Oak House", () => {
+  it("generates overdue warning insight for Chamberlain House", () => {
     const result = computeDoLIntelligence(makeOakHouseInput());
     const warnings = result.insights.filter((i) => i.severity === "warning");
     expect(warnings.length).toBeGreaterThan(0);
     expect(warnings.some((w) => w.text.includes("overdue"))).toBe(true);
   });
 
-  it("generates positive removal insight for Oak House", () => {
+  it("generates positive removal insight for Chamberlain House", () => {
     const result = computeDoLIntelligence(makeOakHouseInput());
     const positive = result.insights.filter((i) => i.severity === "positive");
     expect(positive.some((p) => p.text.includes("removed"))).toBe(true);

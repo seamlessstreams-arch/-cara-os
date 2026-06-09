@@ -8,7 +8,7 @@ import type {
   StaffRestraintTraining,
 } from "@/lib/restraint";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 function generateDemoData(): {
   records: RestraintRecord[];

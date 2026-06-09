@@ -4,7 +4,7 @@ import {
 } from "@/lib/medication";
 import type { MedicationRecord, MedicationPolicy, StaffMedicationTraining } from "@/lib/medication";
 
-// ── Demo Data: Oak House — 12 records across Alex/Jordan/Morgan, all 8 categories ──
+// ── Demo Data: Chamberlain House — 12 records across Alex/Jordan/Morgan, all 8 categories ──
 
 const demoRecords: MedicationRecord[] = [
   // Alex — regular meds + PRN + consent review + competency assessment

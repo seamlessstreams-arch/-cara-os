@@ -3,7 +3,7 @@
 //
 // Body Map Protocol Intelligence
 //
-// GET  — Returns body map protocol assessment with Oak House demo data
+// GET  — Returns body map protocol assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ==============================================================================
 
@@ -24,7 +24,7 @@ import type {
   SafeguardingEscalation,
 } from "@/lib/body-map-protocol";
 
-// -- Demo Data: Oak House -------------------------------------------------------
+// -- Demo Data: Chamberlain House -------------------------------------------------------
 
 const DEMO_RECORDS: BodyMapRecord[] = [
   // Alex — bruise on knee from football, accidental explained

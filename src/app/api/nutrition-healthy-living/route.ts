@@ -3,7 +3,7 @@
 //
 // Nutrition & Healthy Living Intelligence
 //
-// GET  — Returns nutrition/health assessment with Oak House demo data
+// GET  — Returns nutrition/health assessment with Chamberlain House demo data
 // POST — Accepts custom data and returns tailored assessment
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -23,7 +23,7 @@ import type {
   MenuPlan,
 } from "@/lib/nutrition-healthy-living";
 
-// ── Demo Data: Oak House ──────────────────────────────────────────────────
+// ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
 const DEMO_PROFILES: ChildDietaryProfile[] = [
   { id: "prof-alex", childId: "child-alex", childName: "Alex", dietaryRequirements: ["none"], allergies: [], preferences: ["pasta", "pizza"], lastReviewedDate: "2026-04-01", reviewedBy: "Sarah Johnson", weightHealthy: true, dietaryPlanInPlace: true },

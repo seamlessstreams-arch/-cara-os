@@ -100,7 +100,7 @@ export default function OfstedReadinessPage() {
         {
           mode: "ri_ofsted_readiness",
           style: "inspection_ready",
-          source_content: context || "Oak House children's home. 3 young people aged 13-17. Registered Manager in post 18 months. Last Ofsted inspection 14 months ago — Good with Outstanding features. Seeking current readiness assessment.",
+          source_content: context || "Chamberlain House children's home. 3 young people aged 13-17. Registered Manager in post 18 months. Last Ofsted inspection 14 months ago — Good with Outstanding features. Seeking current readiness assessment.",
           page_context: "Ofsted Readiness Review",
           record_type: "ofsted_readiness",
           user_role: "responsible_individual",
@@ -127,7 +127,7 @@ export default function OfstedReadinessPage() {
         <div className="flex items-center gap-2">
           <PrintButton
             title="Ofsted Readiness"
-            subtitle="Oak House — Inspection Preparation"
+            subtitle="Chamberlain House — Inspection Preparation"
             targetId="ofsted-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Ofsted readiness — inspection evidence upload" />

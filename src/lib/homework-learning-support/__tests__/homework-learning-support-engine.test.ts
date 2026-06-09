@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // TESTS — Homework & Learning Support Intelligence Engine
 //
-// Demo: Oak House, 3 children (Alex, Jordan, Morgan),
+// Demo: Chamberlain House, 3 children (Alex, Jordan, Morgan),
 // Staff: Sarah Johnson (Senior RSW), Tom Richards (RSW),
 //        Lisa Williams (Senior RSW), Darren Laville (RM/DSL)
 // ══════════════════════════════════════════════════════════════════════════════
