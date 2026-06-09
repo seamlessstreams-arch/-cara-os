@@ -6,9 +6,9 @@ import { Menu, X, ArrowRight } from "lucide-react";
 
 const LINKS = [
   { href: "/#how", label: "How it works" },
-  { href: "/intelligence", label: "ARIA Intelligence" },
+  { href: "/product/intelligence", label: "ARIA Intelligence" },
   { href: "/#features", label: "Features" },
-  { href: "/workforce", label: "Workforce" },
+  { href: "/product/workforce", label: "Workforce" },
   { href: "/#platform", label: "Platform" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/security", label: "Security & trust" },

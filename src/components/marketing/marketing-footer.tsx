@@ -24,9 +24,9 @@ export function MarketingFooter() {
               <p className="text-xs font-bold uppercase tracking-wider text-[var(--cs-text-gentle)]">Product</p>
               <ul className="mt-3 space-y-2 text-sm text-[var(--cs-text-secondary)]">
                 <li><a href="/#how" className="hover:text-[var(--cs-navy)]">How it works</a></li>
-                <li><Link href="/intelligence" className="hover:text-[var(--cs-navy)]">ARIA intelligence</Link></li>
+                <li><Link href="/product/intelligence" className="hover:text-[var(--cs-navy)]">ARIA intelligence</Link></li>
                 <li><a href="/#features" className="hover:text-[var(--cs-navy)]">Features</a></li>
-                <li><Link href="/workforce" className="hover:text-[var(--cs-navy)]">Workforce</Link></li>
+                <li><Link href="/product/workforce" className="hover:text-[var(--cs-navy)]">Workforce</Link></li>
                 <li><a href="/#pricing" className="hover:text-[var(--cs-navy)]">Pricing</a></li>
                 <li><Link href="/dashboard" className="hover:text-[var(--cs-navy)]">Platform</Link></li>
               </ul>

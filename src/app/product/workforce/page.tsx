@@ -197,7 +197,7 @@ export default function WorkforcePage() {
           <p className="mx-auto mt-4 max-w-xl text-lg text-[var(--cs-text-secondary)]">See how Cornerstone joins the rota, the doorway and the evidence into one picture.</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link href="/#contact" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-6 py-3.5 text-sm font-bold text-white transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md">Book a demo <ArrowRight className="h-4 w-4" /></Link>
-            <Link href="/intelligence" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white px-6 py-3.5 text-sm font-bold text-[var(--cs-navy)] transition-colors hover:bg-[var(--cs-bg)]">Explore intelligence <CheckCircle2 className="h-4 w-4 text-[var(--cs-teal)]" /></Link>
+            <Link href="/product/intelligence" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white px-6 py-3.5 text-sm font-bold text-[var(--cs-navy)] transition-colors hover:bg-[var(--cs-bg)]">Explore intelligence <CheckCircle2 className="h-4 w-4 text-[var(--cs-teal)]" /></Link>
           </div>
         </div>
       </section>

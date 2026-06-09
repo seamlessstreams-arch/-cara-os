@@ -325,7 +325,7 @@ export default function HomePage() {
               ))}
             </div>
             <div className="mt-8 text-center">
-              <Link href="/intelligence" className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10">Explore ARIA intelligence in depth <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/product/intelligence" className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/5 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-white/10">Explore ARIA intelligence in depth <ArrowRight className="h-4 w-4" /></Link>
             </div>
           </div>
         </div>
@@ -387,7 +387,7 @@ export default function HomePage() {
             ))}
           </div>
           <div className="mt-8 text-center">
-            <Link href="/workforce" className="inline-flex items-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-bold text-white transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md">Explore workforce in depth <ArrowRight className="h-4 w-4" /></Link>
+            <Link href="/product/workforce" className="inline-flex items-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-bold text-white transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md">Explore workforce in depth <ArrowRight className="h-4 w-4" /></Link>
           </div>
         </div>
       </section>
