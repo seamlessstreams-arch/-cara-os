@@ -33,6 +33,7 @@ import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engine
 import type { ReflectiveSupervisionRecord } from "@/lib/engines/supervision-engine";
 import type { IncidentSession, IncidentTimelineEntry, AriaRecordingReview } from "@/lib/aria-incident/aria-incident-engine";
 import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from "@/lib/aria-incident/post-incident-engine";
+import type { AlertStateRecord } from "@/lib/aria-incident/manager-oversight-engine";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -752,6 +753,7 @@ const store = {
   ariaRecordingReviews: [] as AriaRecordingReview[],
   ariaRestorativeConversations: [] as RestorativeConversationRecord[],
   ariaPostIncidentReflections: [] as PostIncidentReflectionRecord[],
+  ariaManagerAlertStates: [] as AlertStateRecord[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],
@@ -3338,9 +3340,22 @@ store.candidateValuesProfiles = [
 ];
 
 // ── Reflective supervision records (more than tick-box; slice 3) ─────────────
-// ── ARIA Incident Mode demo session (ended; record not yet finalised) ─────────
+// ── ARIA Incident Mode demo sessions ───────────────────────────────────────────
+// ais_demo_0: an earlier family-contact incident (record completed, but child's
+// voice + restorative follow-up missing) — lights up oversight alerts and, with
+// ais_demo_1, the family-contact pattern insight.
+const ariaIncDay0 = daysFromNow(-12);
 const ariaIncDay = daysFromNow(-2);
 store.ariaIncidentSessions = [
+  {
+    id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", started_by_user_id: "staff_lackson",
+    started_at: ariaIncDay0 + "T20:15:00Z", ended_at: ariaIncDay0 + "T20:55:00Z",
+    incident_type: "family_contact_distress", incident_status: "record_created", immediate_risk_level: "low",
+    manager_notified: true, manager_notified_at: ariaIncDay0 + "T20:25:00Z",
+    ai_support_used: true, final_record_created: true,
+    workflow_progress: { reassure: true, trigger: true },
+    created_at: ariaIncDay0 + "T20:15:00Z", updated_at: ariaIncDay0 + "T20:55:00Z",
+  },
   {
     id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", started_by_user_id: "staff_edward",
     started_at: ariaIncDay + "T19:42:00Z", ended_at: ariaIncDay + "T20:20:00Z",
@@ -3352,6 +3367,9 @@ store.ariaIncidentSessions = [
   },
 ];
 store.ariaIncidentTimeline = [
+  { id: "ait_d0a", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "observation", raw_text: "Alex became tearful and slammed his door after the phone call with his mum was cut short.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay0 + "T20:15:00Z", created_at: ariaIncDay0 + "T20:15:00Z" },
+  { id: "ait_d0b", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "staff_action", raw_text: "Staff gave space and checked in gently after ten minutes.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay0 + "T20:30:00Z", created_at: ariaIncDay0 + "T20:30:00Z" },
+  { id: "ait_d0c", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "manager_notification", raw_text: "Duty manager made aware.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay0 + "T20:25:00Z", created_at: ariaIncDay0 + "T20:25:00Z" },
   { id: "ait_d1", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "observation", raw_text: "Young person became distressed after family phone contact.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:42:00Z", created_at: ariaIncDay + "T19:42:00Z" },
   { id: "ait_d2", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "staff_action", raw_text: "Staff reduced demands and offered space.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:44:00Z", created_at: ariaIncDay + "T19:44:00Z" },
   { id: "ait_d3", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "observation", raw_text: "Young person declined support but remained in the communal area.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:47:00Z", created_at: ariaIncDay + "T19:47:00Z" },
