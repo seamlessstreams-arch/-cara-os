@@ -13,6 +13,9 @@ import {
   HeartHandshake, Pill, ArrowRight, CheckCircle2, Eye, Lock, GitMerge,
   Mic, Brain, Bell, TrendingUp, TrendingDown, Minus, Quote,
   Home, Building2, ChevronDown,
+  CalendarCheck, CalendarClock, Activity, Layers, Fingerprint, MapPin,
+  GraduationCap, UserCheck, MessageSquare, ShieldAlert, BookOpen, Award,
+  PenLine, Scale, Stethoscope, Sunrise,
 } from "lucide-react";
 import { MobileMenu } from "@/components/marketing/mobile-menu";
 
@@ -83,13 +86,14 @@ export default function HomePage() {
               <span className="rounded-md bg-[var(--cs-navy)]/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--cs-teal-strong)]">Care OS</span>
             </span>
           </Link>
-          <nav className="hidden items-center gap-7 text-sm font-medium text-[var(--cs-text-secondary)] md:flex">
+          <nav className="hidden items-center gap-6 text-sm font-medium text-[var(--cs-text-secondary)] lg:flex">
             <a href="#how" className="hover:text-[var(--cs-navy)]">How it works</a>
+            <a href="#intelligence" className="hover:text-[var(--cs-navy)]">Intelligence</a>
             <a href="#features" className="hover:text-[var(--cs-navy)]">Features</a>
+            <a href="#workforce" className="hover:text-[var(--cs-navy)]">Workforce</a>
             <a href="#pricing" className="hover:text-[var(--cs-navy)]">Pricing</a>
-            <a href="#why" className="hover:text-[var(--cs-navy)]">Why Cornerstone</a>
+            <a href="#why" className="hover:text-[var(--cs-navy)]">Why</a>
             <a href="#faq" className="hover:text-[var(--cs-navy)]">FAQ</a>
-            <a href="#compliance" className="hover:text-[var(--cs-navy)]">Compliance</a>
           </nav>
           <div className="flex items-center gap-2.5">
             <Link href="/dashboard" className="hidden text-sm font-semibold text-[var(--cs-navy)] hover:text-[var(--cs-teal-strong)] sm:inline">Sign in</Link>
@@ -241,6 +245,113 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── ARIA real-time intelligence ──────────────────────────────────────── */}
+      <section id="intelligence" className="relative overflow-hidden bg-[var(--cs-navy)] text-white">
+        <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background: "radial-gradient(50% 60% at 0% 0%, var(--cs-aria-glow) 0%, transparent 55%), radial-gradient(45% 55% at 100% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
+        <div className="relative mx-auto max-w-7xl px-5 py-20">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="inline-block rounded-full border border-[var(--cs-aria-gold)]/30 bg-[var(--cs-aria-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-aria-gold-soft)]">ARIA · real-time intelligence</span>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">Your records, analysed the moment they land.</h2>
+            <p className="mt-4 text-lg text-white/75">
+              Every entry your team makes flows through around <span className="font-semibold text-white">300 deterministic intelligence engines</span> — turning today&rsquo;s notes into live RAG ratings, ranked priorities and a clear direction of travel. No overnight batch. No black box.
+            </p>
+          </div>
+
+          <div className="mt-14 grid items-start gap-8 lg:grid-cols-2">
+            {/* How ARIA thinks */}
+            <div>
+              <h3 className="text-xl font-bold">How ARIA thinks — fast first, deep only when needed</h3>
+              <p className="mt-2 text-sm leading-relaxed text-white/70">
+                ARIA resolves most signals instantly with transparent rules, falls back to a learned cache for the rest, and escalates to the AI model only for the genuinely novel — so it&rsquo;s fast, low-cost and explainable, with the records behind every rating one click away.
+              </p>
+              <div className="mt-5 space-y-3">
+                {[
+                  { Icon: Scale, t: "Deterministic rules", d: "Auditable logic resolves the vast majority of cases — the same way every time, traceable to the record." },
+                  { Icon: Layers, t: "Learned cache", d: "Recognises patterns it has reasoned about before and answers instantly." },
+                  { Icon: Brain, t: "ARIA model", d: "Escalates to AI only for the genuinely new — always with a human in the loop on anything that matters." },
+                ].map((s, i) => (
+                  <div key={i} className="flex gap-3.5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-teal)]/20 text-[var(--cs-teal-soft)]"><s.Icon className="h-5 w-5" /></div>
+                    <div>
+                      <div className="flex items-center gap-2 text-sm font-bold">{s.t}{i < 2 && <span className="text-[var(--cs-teal-soft)]">→</span>}</div>
+                      <p className="mt-0.5 text-xs leading-relaxed text-white/65">{s.d}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {[
+                  { Icon: PenLine, t: "Draft", d: "Turns a few words into a structured, professional record." },
+                  { Icon: ShieldAlert, t: "Advise", d: "Flags when a threshold (LADO, notifiable event) may be met — for you to decide." },
+                  { Icon: Award, t: "Recognise", d: "Surfaces good practice worth celebrating, not just risk." },
+                ].map((s, i) => (
+                  <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                    <s.Icon className="h-5 w-5 text-[var(--cs-aria-gold-soft)]" />
+                    <div className="mt-2 text-sm font-bold">{s.t}</div>
+                    <p className="mt-0.5 text-xs leading-relaxed text-white/65">{s.d}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Live analysis panel */}
+            <div className="rounded-3xl border border-white/10 bg-white/[0.05] p-5 shadow-[var(--cs-shadow-card)]">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-sm font-bold"><Activity className="h-4 w-4 text-[var(--cs-teal-soft)]" /> Live analysis</span>
+                <span className="flex items-center gap-1.5 text-[11px] font-semibold text-white/60"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[var(--cs-teal)]" /> updating as you record</span>
+              </div>
+              <div className="mt-4 space-y-2">
+                {[
+                  { d: "Safeguarding", s: "Requires attention", c: "bg-amber-400", w: "82%" },
+                  { d: "Health & medication", s: "Good", c: "bg-[var(--cs-teal)]", w: "91%" },
+                  { d: "Education", s: "Good", c: "bg-[var(--cs-teal)]", w: "88%" },
+                  { d: "Relationships", s: "Good", c: "bg-[var(--cs-teal)]", w: "94%" },
+                  { d: "Care & wellbeing", s: "Requires attention", c: "bg-amber-400", w: "76%" },
+                  { d: "Leadership", s: "Good", c: "bg-[var(--cs-teal)]", w: "90%" },
+                ].map((r, i) => (
+                  <div key={i} className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-white/90">{r.d}</span>
+                      <span className="text-white/55">{r.s}</span>
+                    </div>
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+                      <div className={`h-full rounded-full ${r.c}`} style={{ width: r.w }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center justify-between rounded-2xl border border-white/10 bg-[var(--cs-teal)]/10 px-4 py-3">
+                <span className="text-xs font-semibold text-white/80">237 signals analysed across 78 engines</span>
+                <span className="flex items-center gap-1 text-[11px] font-bold text-[var(--cs-teal-soft)]"><Radar className="h-3.5 w-3.5" /> ranked &amp; deep-linked</span>
+              </div>
+            </div>
+          </div>
+
+          {/* What it produces */}
+          <div className="mt-16">
+            <h3 className="text-center text-sm font-bold uppercase tracking-widest text-white/55">What real-time intelligence puts in front of you</h3>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { Icon: Radar, t: "Priority Briefing", d: "One ranked feed of what needs attention across every engine — deep-linked to act." },
+                { Icon: LineChart, t: "Direction of Travel", d: "Home and per-child trends: are your safety and wellbeing signals improving?" },
+                { Icon: CalendarCheck, t: "Plan Currency", d: "Every statutory plan and assessment, RAG-rated by review date, on one board." },
+                { Icon: ShieldCheck, t: "Premises Compliance", d: "Are all building-safety checks and certificates in date? One Reg-31 view." },
+                { Icon: Sunrise, t: "Shift Briefing", d: "What must happen this shift — who&rsquo;s on, what&rsquo;s due, what happened overnight." },
+                { Icon: ClipboardCheck, t: "Ofsted Readiness", d: "A live composite rating across all six judgement areas — today, not on the night." },
+                { Icon: Brain, t: "Manager Briefing", d: "The core domains distilled for leadership, with the one thing that matters next." },
+                { Icon: FileText, t: "Report Packs", d: "Home Summary and Child Review packs in one click — ARIA-narrated, print-ready." },
+              ].map((o, i) => (
+                <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                  <o.Icon className="h-6 w-6 text-[var(--cs-teal-soft)]" />
+                  <h4 className="mt-3 text-sm font-bold">{o.t}</h4>
+                  <p className="mt-1 text-xs leading-relaxed text-white/65">{o.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Features ─────────────────────────────────────────────────────────── */}
       <section id="features" className="mx-auto max-w-7xl px-5 py-20">
         <div className="mx-auto max-w-2xl text-center">
@@ -258,6 +369,86 @@ export default function HomePage() {
           <FeatureCard accent="navy" Icon={HeartHandshake} title="Safeguarding & Child Voice" body="Capture concerns, escalate to the right people, and never lose a high or critical flag. The child&rsquo;s voice, kept central." />
           <FeatureCard accent="gold" Icon={Pill} title="Medication Governance" body="MAR, stock and storage audits, errors and near-misses — tracked, scored, and ready to evidence." />
         </div>
+      </section>
+
+      {/* ── Workforce & safe access ──────────────────────────────────────────── */}
+      <section id="workforce" className="border-y border-[var(--cs-border)] bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-20">
+          <div className="mx-auto max-w-2xl text-center">
+            <SectionEyebrow>Workforce &amp; safe access</SectionEyebrow>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">The right people, on shift, with the right access.</h2>
+            <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">
+              Cornerstone runs the whole staffing picture — from the rota to the doorway — and turns supervision, training and recruitment into evidence you can show an inspector.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <FeatureCard accent="navy" Icon={CalendarClock} title="Rotas & shift-based access" body="Plan the rota and let it drive access — staff see exactly what their shift needs, only while they're on it." />
+            <FeatureCard accent="teal" Icon={Fingerprint} title="Smart Sign-In" body="Clock on with confidence. The right person, on the right shift, before the system unlocks what they need." />
+            <FeatureCard accent="gold" Icon={MapPin} title="Geofence, QR & kiosk presence" body="Confirm who is actually in the building — by location, a scan at the door, or a shared kiosk." />
+            <FeatureCard accent="teal" Icon={ShieldAlert} title="Safe staffing & emergency" body="Live ratios with alerts the moment cover dips below safe — and an emergency protocol always to hand." />
+            <FeatureCard accent="navy" Icon={MessageSquare} title="Supervision & reflective practice" body="1:1s, safeguarding supervision and theme tracking — never an overdue supervision slipping through again." />
+            <FeatureCard accent="gold" Icon={GraduationCap} title="Training matrix & CPD" body="Every mandatory course RAG-rated by currency, with the gaps surfaced before they ever lapse." />
+            <FeatureCard accent="teal" Icon={UserCheck} title="Safer recruitment & vetting" body="DBS renewals, right-to-work and the full safer-recruitment audit trail, tracked end to end." />
+            <FeatureCard accent="navy" Icon={Bell} title="Comms Centre & governance" body="Team messaging with the oversight a regulated setting needs — nothing important lost in a group chat." />
+            <FeatureCard accent="gold" Icon={Sunrise} title="Shift Briefing" body="Coming on shift? One screen: who's on, what's due this shift, and what happened overnight." />
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {[
+              { Icon: Eye, t: "Sensitive-screen protection", d: "Confidential information stays protected on shared and public-facing screens." },
+              { Icon: ClipboardCheck, t: "Workforce oversight & evidence", d: "Wellbeing, conduct and capacity — captured as evidence, not anecdote." },
+              { Icon: Building2, t: "Responsible-Individual oversight", d: "Readiness, risk and direction of travel across every home — without chasing." },
+            ].map((w, i) => (
+              <div key={i} className="flex items-start gap-3 rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-bg)] p-5">
+                <w.Icon className="h-5 w-5 shrink-0 text-[var(--cs-teal-strong)]" />
+                <div>
+                  <h3 className="text-sm font-bold text-[var(--cs-navy)]">{w.t}</h3>
+                  <p className="mt-0.5 text-xs leading-relaxed text-[var(--cs-text-secondary)]">{w.d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Platform breadth ─────────────────────────────────────────────────── */}
+      <section id="platform" className="mx-auto max-w-7xl px-5 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <SectionEyebrow>The whole home, end to end</SectionEyebrow>
+          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">If you do it in the home, it&rsquo;s in Cornerstone.</h2>
+          <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">
+            Hundreds of connected workflows across every part of running a children&rsquo;s home — all feeding the same intelligence, all inspection-ready.
+          </p>
+        </div>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {[
+            { Icon: HeartHandshake, t: "Children & care planning", items: ["Child profiles & 360° view", "Care, placement & pathway plans", "LAC reviews & PEPs", "Wishes, feelings & participation"] },
+            { Icon: BookOpen, t: "Daily practice", items: ["Daily logs & key-working", "Care events & handovers", "House meetings & activities", "“Record anything” — type or talk"] },
+            { Icon: ShieldCheck, t: "Safeguarding & risk", items: ["Concerns & LADO referrals", "Missing-from-care & return interviews", "Exploitation & contextual safeguarding", "Risk management plans"] },
+            { Icon: Stethoscope, t: "Health & medication", items: ["MAR & medication governance", "Health assessments & plans", "Self-harm safety plans", "Therapeutic & MDT input"] },
+            { Icon: GraduationCap, t: "Education & aspirations", items: ["PEP tracking & attendance", "Engagement & attainment", "Aspirations & independence", "Travel & life skills"] },
+            { Icon: MessageSquare, t: "Family & relationships", items: ["Family time & contact", "Supervised contact reports", "Sibling & social-worker contact", "Advocacy & independent voice"] },
+            { Icon: Users, t: "Workforce", items: ["Rotas, shifts & safe staffing", "Supervision & training matrix", "Safer recruitment & vetting", "Comms & oversight"] },
+            { Icon: Building2, t: "Premises & H&S", items: ["Fire, gas, electrical & water safety", "Premises compliance currency", "Maintenance & environment", "Vehicles & visits"] },
+            { Icon: ClipboardCheck, t: "Compliance & Ofsted", items: ["Reg 44 & 45 visits", "Notifiable events", "Complaints & SARs", "Self-evaluation & readiness"] },
+          ].map((m, i) => (
+            <div key={i} className="rounded-2xl border border-[var(--cs-border)] bg-white p-6 shadow-[var(--cs-shadow-card)]">
+              <div className="flex items-center gap-2.5">
+                <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]"><m.Icon className="h-5 w-5" /></div>
+                <h3 className="text-base font-bold text-[var(--cs-navy)]">{m.t}</h3>
+              </div>
+              <ul className="mt-3.5 space-y-1.5">
+                {m.items.map((it, j) => (
+                  <li key={j} className="flex items-start gap-2 text-sm text-[var(--cs-text-secondary)]">
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--cs-teal)]" /> {it}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p className="mt-8 text-center text-sm text-[var(--cs-text-muted)]">
+          …plus reporting, finance and provider oversight on top — every workflow feeding the same captured-once record.
+        </p>
       </section>
 
       {/* ── Pricing ──────────────────────────────────────────────────────────── */}

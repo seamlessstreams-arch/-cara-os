@@ -6,11 +6,14 @@ import { Menu, X, ArrowRight } from "lucide-react";
 
 const LINKS = [
   { href: "#how", label: "How it works" },
+  { href: "#intelligence", label: "ARIA Intelligence" },
   { href: "#features", label: "Features" },
+  { href: "#workforce", label: "Workforce" },
+  { href: "#platform", label: "Platform" },
   { href: "#pricing", label: "Pricing" },
   { href: "#why", label: "Why Cornerstone" },
-  { href: "#faq", label: "FAQ" },
   { href: "#compliance", label: "Compliance" },
+  { href: "#faq", label: "FAQ" },
 ];
 
 /** Mobile-only hamburger that opens a full-screen nav overlay. */
