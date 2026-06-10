@@ -10,7 +10,7 @@ import Link from "next/link";
 import {
   Brain, Radar, LineChart, CalendarCheck, ShieldCheck, Sunrise, ClipboardCheck,
   FileText, Scale, Layers, PenLine, ShieldAlert, Award, Activity, Eye, GitMerge,
-  ArrowRight, CheckCircle2, Lock,
+  ArrowRight, CheckCircle2, Lock, Siren, HeartHandshake, BookOpen, FileLock2,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
@@ -19,7 +19,7 @@ import { SectionEyebrow } from "@/components/marketing/ui";
 export const metadata: Metadata = {
   title: "ARIA real-time intelligence | Cornerstone Care OS",
   description:
-    "How Cornerstone turns the records your team already keeps into live RAG ratings, ranked priorities and a clear direction of travel — analysed the moment they land, explainable, and human-in-the-loop.",
+    "How Cornerstone turns the records your team already keeps into live RAG ratings, ranked priorities and a clear direction of travel — plus the ARIA Practice Assistant: live support during incidents, quality-checked recording and manager-reviewed drafts.",
 };
 
 const OUTPUTS = [
@@ -160,6 +160,50 @@ export default function IntelligencePage() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* ARIA Practice Assistant */}
+      <section id="practice-assistant" className="relative overflow-hidden bg-[var(--cs-navy)] text-white">
+        <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background: "radial-gradient(50% 60% at 85% 0%, var(--cs-aria-glow) 0%, transparent 55%), radial-gradient(45% 55% at 0% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
+        <div className="relative mx-auto max-w-7xl px-5 py-20">
+          <div className="mx-auto max-w-2xl text-center">
+            <span className="inline-block rounded-full border border-[var(--cs-aria-gold)]/30 bg-[var(--cs-aria-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-aria-gold-soft)]">ARIA Practice Assistant</span>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">Live support when practice is hardest.</h2>
+            <p className="mt-4 text-lg leading-relaxed text-white/75">
+              Intelligence isn&rsquo;t only hindsight. During and after an incident, ARIA works alongside your team — in the moment, in the write-up, and in the follow-up.
+            </p>
+          </div>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { Icon: Siren, t: "Incident Mode", d: "Open a live session as events unfold — a timestamped timeline you can dictate to, co-regulation prompts matched to what's happening, and the right workflow checklist so nothing statutory is missed." },
+              { Icon: PenLine, t: "Recording Assistant", d: "Reviews the language of any record — flagging judgemental phrasing, missing child voice and factual gaps — and offers a professional re-write you accept or decline. It can even re-write a record to the child, warmly and honestly." },
+              { Icon: HeartHandshake, t: "Restorative follow-up", d: "Structured restorative conversations and post-incident reflection for staff — so relationships are repaired and the learning is captured, not lost." },
+              { Icon: ClipboardCheck, t: "Manager oversight", d: "Every AI draft waits in a manager approval queue, alerts clear by doing the practice — not by dismissing them — and pattern recognition surfaces what repeats." },
+            ].map((c, i) => (
+              <div key={i} className="rounded-2xl border border-white/10 bg-white/[0.04] p-6">
+                <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/10 text-[var(--cs-teal-soft)]"><c.Icon className="h-6 w-6" /></div>
+                <h3 className="mt-4 text-base font-bold">{c.t}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-white/70">{c.d}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mx-auto mt-10 max-w-4xl rounded-3xl border border-white/15 bg-white/[0.05] p-7 text-center sm:p-9">
+            <p className="text-xl font-extrabold tracking-tight sm:text-2xl">AI suggests. Staff decide. Manager reviews. System audits.</p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+              {[
+                { Icon: FileLock2, t: "Raw, AI & final versions preserved" },
+                { Icon: ShieldCheck, t: "Never decides a statutory threshold" },
+                { Icon: CheckCircle2, t: "Quality gate before anything saves" },
+                { Icon: BookOpen, t: "Practice library built in" },
+              ].map((c, i) => (
+                <span key={i} className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-xs font-semibold text-white/85"><c.Icon className="h-3.5 w-3.5 text-[var(--cs-teal-soft)]" /> {c.t}</span>
+              ))}
+            </div>
+            <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-white/60">
+              Nothing is ever sent externally by automation, and every draft keeps the original words alongside the suggestion — so the record stays honest and the judgement stays human.
+            </p>
+          </div>
         </div>
       </section>
 

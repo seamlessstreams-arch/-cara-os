@@ -13,7 +13,7 @@ import {
   ArrowRight, HeartHandshake, CheckCircle2, RefreshCw, UserX, FileWarning,
   ClipboardList, CheckSquare, Activity, Flame, CalendarClock, BarChart3, Quote,
   UserCheck, Fingerprint, MessageSquare, GraduationCap, Brain, FileText, Sparkles,
-  ShieldCheck, Lock, ScrollText, KeyRound, FileCheck, Heart, Users, X, Check,
+  ShieldCheck, Lock, ScrollText, KeyRound, FileCheck, Heart, Users, X, Check, Siren,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
@@ -22,7 +22,7 @@ import { SectionEyebrow, PrimaryButton, GhostButton } from "@/components/marketi
 export const metadata: Metadata = {
   title: "Cornerstone Care OS | Care quality starts with workforce quality",
   description:
-    "Cornerstone Care OS is one complete system to run your children's home — recording, safeguarding, medication, care planning, workforce, practice intelligence and Ofsted evidence in one place. Care quality starts with workforce quality.",
+    "Cornerstone Care OS is one complete system to run your children's home — recording, safeguarding, live incident support, medication, care planning, workforce, practice intelligence and Ofsted evidence in one place. Care quality starts with workforce quality.",
 };
 
 const PROBLEMS = [
@@ -43,6 +43,7 @@ const PILLARS = [
   "Staff onboarding & induction pathway", "Probation review tracking", "Supervision & reflective practice tools",
   "Training matrix & development planning", "Burnout & retention risk indicators", "Ofsted-readiness dashboard",
   "Practice quality intelligence", "PACE, trauma-informed & relational safeguarding prompts",
+  "Live incident support & recording quality (ARIA)",
 ];
 
 const STEPS = [
@@ -60,12 +61,13 @@ const MODULES = [
   { Icon: MessageSquare, t: "Supervision", href: "/product/workforce", d: "Reflective practice, not tick-box.", pts: ["Wellbeing, workload & safeguarding", "PACE & reflective-practice prompts", "Actions with follow-up dates"] },
   { Icon: GraduationCap, t: "Training & Development", href: "/product/workforce", d: "A living view of capability.", pts: ["Mandatory & role-specific training", "Expiry & currency, RAG-rated", "Development planning"] },
   { Icon: Brain, t: "Practice Intelligence", href: "/product/intelligence", d: "Understand how care is really going.", pts: ["Relational & trauma-informed signals", "Direction of travel over time", "Explainable, never a black box"] },
+  { Icon: Siren, t: "ARIA Practice Assistant", href: "/product/intelligence#practice-assistant", d: "Live support during & after incidents.", pts: ["Incident Mode — guided, in the moment", "Recording quality checks & re-writes", "Restorative follow-up, manager-reviewed"] },
   { Icon: FileText, t: "Ofsted Evidence", href: "/product/intelligence", d: "Inspection-ready, all year.", pts: ["Workforce evidence maintained live", "Mapped to the way inspectors read", "Export when you need it"] },
   { Icon: Sparkles, t: "AI Assistant for Managers", href: "/product/intelligence", d: "A draft-first co-pilot for RMs.", pts: ["Adverts, questions & summaries", "Supervision & action-plan prompts", "Human approval on everything"] },
 ];
 
 const OLD_WAY = ["A separate recording system", "Spreadsheets for recruitment & training", "Supervision in Word documents", "Evidence scattered across folders", "No single view of your home", "Manual, last-minute Ofsted prep"];
-const ALL_IN_ONE = ["Daily recording, incidents & safeguarding", "Medication, health & care planning", "Young person records, wishes & feelings", "Values-led recruitment & matching", "Reflective supervision & training", "Retention & support indicators", "Live practice intelligence", "Ofsted evidence — always ready"];
+const ALL_IN_ONE = ["Daily recording, incidents & safeguarding", "Live support during & after incidents", "Medication, health & care planning", "Young person records, wishes & feelings", "Values-led recruitment & matching", "Reflective supervision & training", "Retention & support indicators", "Live practice intelligence", "Ofsted evidence — always ready"];
 
 const SAFEGUARDING = [
   { Icon: Fingerprint, t: "Safer recruitment" }, { Icon: ScrollText, t: "Audit trails" },
@@ -178,10 +180,10 @@ export default function HomePage() {
       <section id="modules" className="border-y border-[var(--cs-border)] bg-white">
         <div className="mx-auto max-w-7xl px-5 py-20">
           <div className="mx-auto max-w-2xl text-center">
-            <SectionEyebrow>One platform, eight modules</SectionEyebrow>
+            <SectionEyebrow>One platform, nine modules</SectionEyebrow>
             <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Everything the people-side of a home needs.</h2>
           </div>
-          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {MODULES.map((m, i) => (
               <Link key={i} href={m.href} className="group flex flex-col rounded-2xl border border-[var(--cs-border)] bg-white p-6 shadow-[var(--cs-shadow-card)] transition-transform hover:-translate-y-0.5">
                 <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]"><m.Icon className="h-6 w-6" /></div>
