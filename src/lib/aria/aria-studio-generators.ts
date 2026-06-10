@@ -272,6 +272,21 @@ Generate a realistic practice scenario for training or reflective practice. Incl
 
 Framework: ${input.framework}. Mode: ${input.creativeMode}.`;
 
+    case "team_meeting_discussion":
+      return `## Instructions — Team Discussion Guide
+
+Generate a facilitated team practice discussion, designed the way a practitioner-researcher would. Include:
+
+1. **Purpose** — the practice shift this discussion is for, in one sentence
+2. **The theory, briefly** — two short paragraphs naming the framework (${input.framework}) and what the evidence says
+3. **A realistic vignette** — drawn ONLY from the source material provided; if none, a clearly-labelled generic example
+4. **Discussion questions (6–8)** — moving from noticing → interpreting (what might the behaviour communicate?) → responding → team culture
+5. **Common pitfalls** — including judgemental-language traps and quick-fix thinking
+6. **Agreed practice commitments** — a short template the team completes together
+7. **Five-minute follow-up** — how to check the commitments at the next meeting
+
+Reflective, not tick-box. Runnable in 30–45 minutes by a deputy with no preparation time. Tone: ${input.tone}. Mode: ${input.creativeMode}.`;
+
     default:
       return `## Instructions — ${input.artifactType.replace(/_/g, " ")}
 
