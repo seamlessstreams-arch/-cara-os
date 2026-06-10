@@ -46,6 +46,7 @@ const COMPARISON: { group: string; rows: { label: string; v: (boolean | string)[
       { label: "Plan currency, premises & shift briefing", v: [true, true, true] },
       { label: "Workforce & safe access", v: [true, true, true] },
       { label: "ARIA assistant (human-in-the-loop)", v: [true, true, true] },
+      { label: "ARIA Practice Assistant — incident support & recording quality", v: [true, true, true] },
       { label: "Mobile, installable & offline-ready", v: [true, true, true] },
     ],
   },

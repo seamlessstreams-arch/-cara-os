@@ -9,7 +9,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  LayoutDashboard, Radar, Sunrise, CalendarCheck, ShieldCheck, LineChart,
+  LayoutDashboard, Radar, Sunrise, CalendarCheck, ShieldCheck, LineChart, Siren,
   ArrowRight, ArrowUpRight, CheckCircle2,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
@@ -19,7 +19,7 @@ import { SectionEyebrow } from "@/components/marketing/ui";
 export const metadata: Metadata = {
   title: "Product tour | Cornerstone Care OS",
   description:
-    "See Cornerstone in action — real screens from the live platform: the Command Centre, Priority Briefing, Shift Briefing, Plan Currency, Premises Compliance and Direction of Travel.",
+    "See Cornerstone in action — real screens from the live platform: the Command Centre, Priority Briefing, Shift Briefing, ARIA Incident Mode, Plan Currency, Premises Compliance and Direction of Travel.",
 };
 
 const STEPS = [
@@ -40,6 +40,12 @@ const STEPS = [
     title: "Everything this shift, on one screen.",
     body: "Coming on duty? See who's on, the tasks and plan reviews due, active medications and overnight events — with a must-not-miss attention list at the top.",
     points: ["Who's on & what's due now", "Overnight incidents flagged", "Every item links to act"],
+  },
+  {
+    Icon: Siren, eyebrow: "Incident Mode", href: "/aria/incident-mode", img: "/tour/incident-mode.jpg",
+    title: "Live support while an incident is happening.",
+    body: "When things escalate, open a live session — pick the child, what's happening and the risk level, and ARIA stays alongside you: co-regulation prompts, the right workflow checklist, a timestamped timeline you can dictate to, and a quality-checked draft record at the end. ARIA suggests; staff decide; the manager reviews.",
+    points: ["Guided start: who, what, risk level", "Live timeline with voice dictation", "Draft record held for manager review"],
   },
   {
     Icon: CalendarCheck, eyebrow: "Plan Currency", href: "/plan-currency", img: "/tour/plan-currency.jpg",
