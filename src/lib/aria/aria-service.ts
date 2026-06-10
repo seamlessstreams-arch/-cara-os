@@ -88,6 +88,19 @@ export const ARIA_COMMANDS: Record<AriaCommandId, AriaCommandSpec> = {
     systemPromptFragment:
       "Re-write the source in plain English. Keep the meaning. Avoid jargon. Use short sentences. Preserve safeguarding-relevant detail accurately.",
   },
+  write_to_child: {
+    id: "write_to_child",
+    label: "Write to the child",
+    description: "Re-write the text so it speaks directly TO the child — warm, honest, age-appropriate and easy to read aloud.",
+    modules: [],
+    requiredPermission: "aria.rewrite",
+    approvalRequired: true,
+    canCreateTasks: false,
+    canCommit: false,
+    riskLevel: "low",
+    systemPromptFragment:
+      "Re-write the source so it is addressed directly to the child or young person, in the second person ('you'). Be warm, honest and trauma-informed: short sentences, everyday words, no jargon, no euphemisms that hide the truth, and no blame or shame. Preserve every fact — never invent, never promise what is not in the source, and keep anything safeguarding-relevant accurate. Acknowledge feelings where the source supports it, explain what happens next if the source says so, and make it suitable for a trusted adult to read aloud with the child.",
+  },
   summarise_text: {
     id: "summarise_text",
     label: "Summarise",

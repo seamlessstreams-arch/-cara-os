@@ -21,7 +21,10 @@ export interface StudioAIResponse {
 }
 
 export function getStudioAIProvider(): StudioAIProviderConfig {
-  const provider = (process.env.AI_PROVIDER ?? "stub").toLowerCase() as StudioAIProviderConfig["provider"];
+  // Default: when AI_PROVIDER isn't set, use Anthropic if a key is present
+  // (matching the platform-wide aria-provider default) — stub only when no key.
+  const defaultProvider = process.env.ANTHROPIC_API_KEY ? "anthropic" : "stub";
+  const provider = (process.env.AI_PROVIDER ?? defaultProvider).toLowerCase() as StudioAIProviderConfig["provider"];
   const model = process.env.AI_DEFAULT_MODEL ?? "gpt-4.1-mini";
   const maxSourceTokens = parseInt(process.env.ARIA_MAX_SOURCE_TOKENS ?? "8000", 10);
 

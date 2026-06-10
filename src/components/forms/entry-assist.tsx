@@ -26,6 +26,7 @@ const REWRITES: Array<{ id: AriaCommandId; label: string }> = [
   { id: "improve_writing", label: "Improve writing" },
   { id: "professionalise_record", label: "Make professional" },
   { id: "simplify_language", label: "Simplify language" },
+  { id: "write_to_child", label: "Write to the child" },
   { id: "check_tone", label: "Check tone" },
 ];
 

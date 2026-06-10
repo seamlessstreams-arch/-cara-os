@@ -10,8 +10,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { NAV_GROUPS, DOMAIN_NAV } from "@/config/navigation";
-import type { FormDomain } from "@/config/form-registry";
-import { DomainCreateMenu } from "@/components/common/domain-create-menu";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useSidebarCounts } from "@/hooks/use-sidebar-counts";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -79,14 +77,6 @@ const PRIMARY_ICONS: Record<string, React.ElementType> = {
   // Domain nav IDs
   young_person: HeartHandshake,
   employee:     Users,
-};
-
-// ── Map domain nav group IDs to FormDomain for Create menus ───────────────────
-
-const DOMAIN_NAV_TO_FORM_DOMAIN: Record<string, FormDomain> = {
-  young_person: "young_person",
-  employee:     "employee",
-  home:         "home",
 };
 
 // ── Role Switcher ─────────────────────────────────────────────────────────────
@@ -269,7 +259,6 @@ export function Sidebar() {
       <nav className="flex-1 overflow-y-auto py-3 space-y-0.5">
         {DOMAIN_NAV.map((group) => {
           const PrimaryIcon = PRIMARY_ICONS[group.id] ?? LayoutDashboard;
-          const formDomain = DOMAIN_NAV_TO_FORM_DOMAIN[group.id];
 
           // Filter children by permission
           const visibleChildren = group.children.filter(
@@ -310,7 +299,7 @@ export function Sidebar() {
           // ── Expanded ─────────────────────────────────────────────────
           return (
             <div key={group.id} className="px-3">
-              {/* Primary button row with Create menu */}
+              {/* Primary button row */}
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => toggleGroup(group.id)}
@@ -331,14 +320,6 @@ export function Sidebar() {
                     : <ChevronRight className="h-3.5 w-3.5 text-[var(--cs-text-gentle)] shrink-0" />
                   }
                 </button>
-
-                {/* Domain Create button */}
-                {formDomain && (
-                  <DomainCreateMenu
-                    domain={formDomain}
-                    className="shrink-0"
-                  />
-                )}
               </div>
 
               {/* Children */}

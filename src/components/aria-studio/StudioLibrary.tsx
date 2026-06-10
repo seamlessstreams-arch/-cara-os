@@ -37,6 +37,7 @@ const TYPE_LABELS: Record<GenerationType, string> = {
   CARE_PLAN_DRAFT: "Care Plan Draft",
   STAFF_MICRO_TRAINING: "Staff Micro-Training",
   TEAM_MEETING_PACK: "Team Meeting Pack",
+  TEAM_DISCUSSION_GUIDE: "Team Discussion Guide",
   REG44_EVIDENCE_PREP: "Reg 44 Evidence",
   REG45_EVIDENCE_PREP: "Reg 45 Evidence",
   EDUCATION_SUPPORT_SESSION: "Education Support",

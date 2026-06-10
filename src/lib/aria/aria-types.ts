@@ -14,6 +14,7 @@ export type AriaCommandId =
   | "improve_writing"
   | "professionalise_record"
   | "simplify_language"
+  | "write_to_child"
   | "summarise_text"
   | "extract_actions"
   | "extract_key_points"
