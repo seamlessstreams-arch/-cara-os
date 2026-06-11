@@ -48,8 +48,9 @@ export const PERSISTENCE_MANIFEST: PersistenceEntry[] = [
   { entity: "Cara assist requests (legacy aria_* layer)", area: "Cara Studio & AI", write_through: false, table: "aria_requests/aria_outputs (migration 013, ready)", audit_trail: "In-store approval trail", note: "Schema migrated; wiring planned" },
 
   // ── Recruitment ──
-  { entity: "Safer-recruitment candidates & checks", area: "Recruitment", write_through: false, table: "(v2 schema to be migrated)", audit_trail: "recruitmentAudit in-store entries on every action", note: "Command Centre recomputes from records; durable write-through planned" },
-  { entity: "Referee submissions (secure links)", area: "Recruitment", write_through: false, table: null, audit_trail: "IP + user-agent + timestamp captured on submission", note: "Tokens are per-instance until persistence — fine for demo flows" },
+  { entity: "Safer-recruitment candidates & checks", area: "Recruitment", write_through: false, table: "(v2 schema to be migrated)", audit_trail: "Recruitment audit entries on every action (durable)", note: "Command Centre recomputes from records; durable write-through planned" },
+  { entity: "Referee submissions & secure links", area: "Recruitment", write_through: true, table: "recruitment_candidate_references", audit_trail: "Token lifecycle (hash only), IP + user-agent + timestamp on submission, verification outcome" },
+  { entity: "Recruitment audit trail", area: "Recruitment", write_through: true, table: "recruitment_audit", audit_trail: "Every link issued, reference received, check verified, reminder synced and decision recorded" },
 
   // ── System ──
   { entity: "Sensitive-action audit log", area: "System", write_through: true, table: "audit_logs", audit_trail: "writeAuditLog() on sensitive routes" },

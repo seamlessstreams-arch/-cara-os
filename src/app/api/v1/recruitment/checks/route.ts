@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
 
 // ── GET /api/v1/recruitment/checks?candidate_id= ──────────────────────────────
 
@@ -77,7 +78,7 @@ export async function PATCH(req: NextRequest) {
 
   // Write audit entry
   if (candidate_id) {
-    db.recruitmentAudit.create({
+    createRecruitmentAuditRecord({
       candidate_id,
       actor_id: "staff_darren",
       event_type: `check_${status ?? "updated"}`,

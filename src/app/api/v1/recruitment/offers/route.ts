@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 
 // ── PATCH /api/v1/recruitment/offers ─────────────────────────────────────────
@@ -47,7 +48,7 @@ export async function PATCH(req: NextRequest) {
       status: "final_accepted",
     });
 
-    db.recruitmentAudit.create({
+    createRecruitmentAuditRecord({
       candidate_id,
       actor_id: by ?? "staff_darren",
       event_type: "final_clearance_granted",

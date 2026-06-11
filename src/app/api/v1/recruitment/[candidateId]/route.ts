@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 
 // Stages in progression order — advancing past the last element is never valid
@@ -239,7 +240,7 @@ export async function PATCH(
   }
 
   // Write audit entry
-  db.recruitmentAudit.create({
+  createRecruitmentAuditRecord({
     candidate_id: candidateId,
     vacancy_id: updated.vacancy_id ?? undefined,
     actor_id: "staff_darren",

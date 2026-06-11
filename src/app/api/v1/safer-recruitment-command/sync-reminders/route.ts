@@ -10,6 +10,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
+import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
 import { createTaskRecord } from "@/lib/supabase/care-records";
 import { computeSaferRecruitmentCommand } from "@/lib/engines/safer-recruitment-command-engine";
 import { deriveReminderSpecs, planReminderSync } from "@/lib/engines/recruitment-reminder-engine";
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (created.length > 0) {
-    db.recruitmentAudit.create({
+    createRecruitmentAuditRecord({
       candidate_id: null,
       actor_id: actor,
       event_type: "chase_reminders_synced",

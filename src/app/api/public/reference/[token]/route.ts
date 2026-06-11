@@ -9,6 +9,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
+import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
 import {
   validateToken,
   applySubmission,
@@ -67,8 +68,8 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
     return NextResponse.json({ error: outcome.errors.join(" "), errors: outcome.errors }, { status: 422 });
   }
 
-  db.candidateReferences.update(result.reference.id, outcome.update);
-  db.recruitmentAudit.create({
+  updateCandidateReferenceRecord(result.reference.id, outcome.update);
+  createRecruitmentAuditRecord({
     candidate_id: result.reference.candidate_id,
     actor_id: "referee_via_secure_link",
     event_type: "reference_received",

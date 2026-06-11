@@ -8,6 +8,7 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
+import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
 import { issueToken } from "@/lib/safer-recruitment/reference-link-service";
 
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ referenceI
   const now = new Date().toISOString();
   const issued = issueToken(now);
 
-  db.candidateReferences.update(referenceId, {
+  updateCandidateReferenceRecord(referenceId, {
     secure_token_hash: issued.secure_token_hash,
     token_expires_at: issued.token_expires_at,
     token_used_at: null,
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ referenceI
   });
 
   const actor = req.headers.get("x-user-id") ?? "staff_darren";
-  db.recruitmentAudit.create({
+  createRecruitmentAuditRecord({
     candidate_id: reference.candidate_id,
     actor_id: actor,
     event_type: "reference_link_issued",

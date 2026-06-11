@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
 import { generateId } from "@/lib/utils";
 import type { CandidateReference } from "@/types/recruitment";
 
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
     status: "not_requested",
   });
 
-  db.recruitmentAudit.create({
+  createRecruitmentAuditRecord({
     candidate_id,
     actor_id: "staff_darren",
     event_type: "reference_added",
@@ -108,7 +109,7 @@ export async function PATCH(req: NextRequest) {
       ?? existing.structured_response?.additional_comments ?? null,
   };
 
-  const updated = db.candidateReferences.update(id, {
+  const updated = updateCandidateReferenceRecord(id, {
     ...(status !== undefined && { status }),
     ...(received_date !== undefined && { received_at: received_date }),
     ...(discrepancy_flag !== undefined && { discrepancy_flag }),
@@ -123,7 +124,7 @@ export async function PATCH(req: NextRequest) {
   // Audit
   const cidForAudit = candidate_id ?? existing.candidate_id;
   if (cidForAudit) {
-    db.recruitmentAudit.create({
+    createRecruitmentAuditRecord({
       candidate_id: cidForAudit,
       actor_id: "staff_darren",
       event_type: status ? `reference_${status}` : "reference_updated",
