@@ -12,10 +12,10 @@
 import { useState } from "react";
 import {
   ShieldCheck, AlertTriangle, Clock, UserCheck, FileWarning, Siren,
-  ChevronDown, ChevronUp, CheckCircle2, XCircle, CircleDashed, Phone,
+  ChevronDown, ChevronUp, CheckCircle2, XCircle, CircleDashed, Phone, Link2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
-import { useSaferRecruitmentCommand } from "@/hooks/use-safer-recruitment-command";
+import { useSaferRecruitmentCommand, useIssueReferenceLink, type IssuedReferenceLink } from "@/hooks/use-safer-recruitment-command";
 import type {
   CommandCandidate,
   TrafficLight,
@@ -93,6 +93,66 @@ export default function SaferRecruitmentCommandPage() {
   );
 }
 
+function ReferenceChases({ chases }: { chases: CommandCandidate["reference_chases"] }) {
+  const issueLink = useIssueReferenceLink();
+  const [issued, setIssued] = useState<Record<string, IssuedReferenceLink>>({});
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function issue(referenceId: string) {
+    setBusy(referenceId);
+    try {
+      const link = await issueLink.mutateAsync(referenceId);
+      setIssued((m) => ({ ...m, [referenceId]: link }));
+    } catch {
+      // surfaced via the mutation error below
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      <div className="flex flex-wrap gap-2">
+        {chases.map((r) => (
+          <span
+            key={r.reference_id}
+            title={r.action}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
+              r.state === "escalate_manager" || r.state === "suggest_alternative"
+                ? "border-red-200 bg-red-50 text-red-700"
+                : r.state === "awaiting"
+                  ? "border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-text-secondary)]"
+                  : "border-amber-200 bg-amber-50 text-amber-700"
+            }`}
+          >
+            <Phone className="h-3 w-3" /> {r.referee_name} · {r.days_waiting}d · {r.state.replace(/_/g, " ")}
+            <button
+              onClick={() => issue(r.reference_id)}
+              disabled={busy === r.reference_id}
+              title="Issue a secure one-time form link for this referee"
+              className="ml-1 inline-flex items-center gap-1 rounded-full bg-white/70 px-1.5 py-0.5 font-semibold text-[var(--cs-navy)] ring-1 ring-[var(--cs-border)] hover:bg-white disabled:opacity-50"
+            >
+              <Link2 className="h-3 w-3" /> {busy === r.reference_id ? "…" : "link"}
+            </button>
+          </span>
+        ))}
+      </div>
+      {issueLink.isError && <p className="text-xs text-red-600">{issueLink.error.message}</p>}
+      {Object.entries(issued).map(([refId, link]) => (
+        <div key={refId} className="rounded-lg border border-[var(--cs-teal-soft)] bg-[var(--cs-teal-bg)]/40 px-3 py-2">
+          <p className="text-[11px] font-semibold text-[var(--cs-navy)]">Secure link for {link.referee_name} — share it yourself; shown once, single use, expires in 7 days:</p>
+          <input
+            readOnly
+            value={link.link}
+            onFocus={(e) => e.target.select()}
+            className="mt-1 w-full rounded border border-[var(--cs-border)] bg-white px-2 py-1.5 font-mono text-[11px] text-[var(--cs-text)]"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SummaryStat({ label, value, Icon, tone }: { label: string; value: number; Icon: typeof UserCheck; tone?: string }) {
   return (
     <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-bg)] px-3 py-2.5">
@@ -152,26 +212,8 @@ function CandidateCard({ c }: { c: CommandCandidate }) {
         </ul>
       )}
 
-      {/* Reference chase ladder */}
-      {c.reference_chases.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {c.reference_chases.map((r) => (
-            <span
-              key={r.reference_id}
-              title={r.action}
-              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${
-                r.state === "escalate_manager" || r.state === "suggest_alternative"
-                  ? "border-red-200 bg-red-50 text-red-700"
-                  : r.state === "awaiting"
-                    ? "border-[var(--cs-border)] bg-[var(--cs-bg)] text-[var(--cs-text-secondary)]"
-                    : "border-amber-200 bg-amber-50 text-amber-700"
-              }`}
-            >
-              <Phone className="h-3 w-3" /> {r.referee_name} · {r.days_waiting}d · {r.state.replace(/_/g, " ")}
-            </span>
-          ))}
-        </div>
-      )}
+      {/* Reference chase ladder + secure links */}
+      {c.reference_chases.length > 0 && <ReferenceChases chases={c.reference_chases} />}
 
       {/* Exceptional start panel */}
       {c.exceptional_start && (

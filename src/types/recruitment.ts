@@ -202,6 +202,12 @@ export interface CandidateReference {
   discrepancy_notes: string | null;
   reliability_rating: "high" | "medium" | "low" | null;
   status: ReferenceStatus;
+  // ── Secure referee link (one-time token; the token itself is never stored,
+  //    only its SHA-256 hash). Optional: legacy/seeded references have none. ──
+  secure_token_hash?: string | null;
+  token_expires_at?: string | null;
+  token_used_at?: string | null;
+  submission_meta?: { ip: string | null; user_agent: string | null } | null;
   created_at: string;
   updated_at: string;
 }
