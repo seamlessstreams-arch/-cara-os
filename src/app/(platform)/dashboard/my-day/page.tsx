@@ -128,8 +128,8 @@ export default function MyDayPage() {
               <Sun className="h-6 w-6 text-yellow-300" />
             </div>
             <div className="flex-1">
-              <div className="text-xs font-medium text-[var(--cs-text-gentle)] mb-1">{new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
-              <div className="text-xl font-bold">{greeting}, {displayName}</div>
+              <div suppressHydrationWarning className="text-xs font-medium text-[var(--cs-text-gentle)] mb-1">{new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</div>
+              <div suppressHydrationWarning className="text-xl font-bold">{greeting}, {displayName}</div>
               <div className="text-sm text-[var(--cs-text-gentle)] mt-1">
                 {myTasks.length > 0
                   ? `${myTasks.filter((t) => isDueToday(t.due_date)).length} tasks due today · ${myTasks.filter((t) => isOverdue(t.due_date, t.status)).length} overdue`

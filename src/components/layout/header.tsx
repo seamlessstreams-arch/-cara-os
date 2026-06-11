@@ -92,7 +92,11 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
                 ))}
               </div>
             )}
-            <h1 className="text-[15px] font-semibold text-[var(--cs-navy)] leading-tight truncate tracking-[-0.01em]">
+            {/* suppressHydrationWarning: several pages derive the title/subtitle
+                from the current time (greeting, live date). Statically prerendered
+                HTML can straddle a time boundary, so the client text legitimately
+                differs — accept the client value instead of a hydration error. */}
+            <h1 suppressHydrationWarning className="text-[15px] font-semibold text-[var(--cs-navy)] leading-tight truncate tracking-[-0.01em]">
               {title}
             </h1>
           </div>
@@ -151,7 +155,7 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
         {/* ── Optional subtitle bar ── */}
         {subtitle && (
           <div className="hidden sm:block border-t border-[var(--cs-border-subtle)] px-4 md:px-6 py-1.5">
-            <p className="text-[11px] text-[var(--cs-text-muted)]">{subtitle}</p>
+            <p suppressHydrationWarning className="text-[11px] text-[var(--cs-text-muted)]">{subtitle}</p>
           </div>
         )}
       </header>
