@@ -3280,6 +3280,67 @@ store.employerValuesProfiles = [
   },
 ];
 
+// ── Safer-recruitment training (panel eligibility for vacancy setup) ─────────
+// APPENDED to the seed-data.ts records (never reassign — that wipes them).
+// Deliberately is_mandatory:false (specialist CPD) so the mandatory-training
+// compliance engines are unaffected by these records.
+store.trainingRecords.push(
+  {
+    id: "tr_diane_safer_rec",
+    staff_id: "staff_diane",
+    course_name: "Safer Recruitment in Children's Residential Care",
+    category: "safeguarding",
+    provider: "NSPCC Learning",
+    completed_date: "2025-09-12",
+    expiry_date: "2027-09-12",
+    certificate_url: null,
+    status: "compliant",
+    is_mandatory: false,
+    notes: "Panel-lead refresher completed.",
+    home_id: "home_oak",
+    created_at: "2025-09-12T09:00:00Z",
+    updated_at: "2025-09-12T09:00:00Z",
+    created_by: "staff_darren",
+    updated_by: "staff_darren",
+  },
+  {
+    id: "tr_edward_safer_rec",
+    staff_id: "staff_edward",
+    course_name: "Safer Recruitment Training (Level 2)",
+    category: "safeguarding",
+    provider: "Local Safeguarding Partnership",
+    completed_date: "2024-07-03",
+    expiry_date: "2026-07-03",
+    certificate_url: null,
+    status: "expiring_soon",
+    is_mandatory: false,
+    notes: "Refresher due — book before July.",
+    home_id: "home_oak",
+    created_at: "2024-07-03T09:00:00Z",
+    updated_at: "2026-05-20T09:00:00Z",
+    created_by: "staff_darren",
+    updated_by: "staff_darren",
+  },
+  {
+    id: "tr_anna_safer_rec",
+    staff_id: "staff_anna",
+    course_name: "Safer Recruitment Essentials",
+    category: "safeguarding",
+    provider: "Local Safeguarding Partnership",
+    completed_date: "2023-04-18",
+    expiry_date: "2026-04-18",
+    certificate_url: null,
+    status: "expired",
+    is_mandatory: false,
+    notes: "Lapsed — cannot panel until renewed.",
+    home_id: "home_oak",
+    created_at: "2023-04-18T09:00:00Z",
+    updated_at: "2026-05-20T09:00:00Z",
+    created_by: "staff_darren",
+    updated_by: "staff_darren",
+  },
+);
+
 // ── Candidate values profiles (overlay the recruitment candidate records) ────
 store.candidateValuesProfiles = [
   {

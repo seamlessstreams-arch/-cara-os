@@ -391,6 +391,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Night Handover",  href: "/night-staff-handover",        icon: "Moon",          module: "staff"        },
       { label: "Recruitment Tracker",href: "/safer-recruitment-tracker",icon: "UserCheck",    module: "recruitment"  },
       { label: "Recruitment Command",href: "/safer-recruitment-command",icon: "ShieldCheck",  module: "recruitment"  },
+      { label: "Vacancy Setup",   href: "/vacancy-setup",               icon: "ClipboardList", module: "recruitment"  },
       { label: "Shadow Shifts",   href: "/staff-shadowing-log",         icon: "Eye",           module: "staff"        },
       { label: "Lone Working RA", href: "/lone-working-risk-assessment",icon: "UserCheck",     module: "staff"        },
       { label: "Training Matrix", href: "/mandatory-training-matrix",  icon: "GraduationCap", module: "training"     },

@@ -72,7 +72,7 @@ const CHASE_TASKS: Record<string, { title: (ref: string, cand: string) => string
   remind_48h: { title: (r, c) => `Send first reference reminder — ${r} (${c})`, priority: "medium", manager: false },
   second_reminder: { title: (r, c) => `Send second reference reminder — ${r} (${c})`, priority: "high", manager: false },
   escalate_manager: { title: (r, c) => `Phone referee ${r} — reference overdue (${c})`, priority: "urgent", manager: true },
-  suggest_alternative: { title: (r, c) => `Request alternative referee for ${c}`, priority: "urgent", manager: true },
+  suggest_alternative: { title: (r, c) => `Request alternative referee for ${c} (re ${r})`, priority: "urgent", manager: true },
 };
 
 function candidateSpecs(c: CommandCandidate, today: string): ReminderSpec[] {
