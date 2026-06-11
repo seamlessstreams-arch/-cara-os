@@ -607,17 +607,21 @@ body {
   color: var(--cs-navy);
 }
 
-/* ── Cornerstone typography — distinctive letter-spacing and weight ────────── */
-h1, h2, h3, h4, h5, h6,
-[class*="CardTitle"],
-[class*="font-bold"] {
-  letter-spacing: -0.01em;
-  font-feature-settings: "kern" 1, "liga" 1;
-}
+/* ── Cornerstone typography — distinctive letter-spacing and weight ──────────
+   Inside @layer base so Tailwind utilities (text-white, tracking-wider, …)
+   can override these defaults; unlayered rules would beat every utility. */
+@layer base {
+  h1, h2, h3, h4, h5, h6,
+  [class*="CardTitle"],
+  [class*="font-bold"] {
+    letter-spacing: -0.01em;
+    font-feature-settings: "kern" 1, "liga" 1;
+  }
 
-/* Headings get the navy ink treatment */
-h1, h2, h3 {
-  color: var(--cs-navy);
+  /* Headings get the navy ink treatment */
+  h1, h2, h3 {
+    color: var(--cs-navy);
+  }
 }
 
 /* Small text gets slightly more spacing for readability */
