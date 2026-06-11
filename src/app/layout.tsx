@@ -20,7 +20,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: `${BRAND.productName} | Care OS for Children's Homes`,
+  title: `${BRAND.productName} | The Care Intelligence OS for children's homes`,
   description: BRAND.description,
   applicationName: BRAND.productName,
   manifest: "/manifest.webmanifest",

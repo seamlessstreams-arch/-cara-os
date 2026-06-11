@@ -5,11 +5,11 @@ import Link from "next/link";
 import { Menu, X, ArrowRight } from "lucide-react";
 
 const LINKS = [
-  { href: "/#how", label: "How it works" },
-  { href: "/#modules", label: "Modules" },
-  { href: "/product/intelligence", label: "Practice Intelligence" },
+  { href: "/#layers", label: "Intelligence layers" },
+  { href: "/product/intelligence", label: "Cara Intelligence" },
+  { href: "/product/safeguarding", label: "Safeguarding" },
+  { href: "/product/compliance", label: "Compliance" },
   { href: "/product/workforce", label: "Workforce" },
-  { href: "/#comparison", label: "Where we fit" },
   { href: "/product/tour", label: "Product tour" },
   { href: "/pricing", label: "Pricing" },
   { href: "/security", label: "Security & trust" },
@@ -38,7 +38,7 @@ export function MobileMenu() {
             <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icon-192.png" alt="Cara" className="h-9 w-9 rounded-xl" />
-              <span className="text-lg font-extrabold tracking-tight text-[var(--cs-navy)]">Cara <span className="text-[var(--cs-teal-strong)]">Care OS</span></span>
+              <span className="text-lg font-extrabold tracking-tight text-[var(--cs-navy)]">Cara <span className="text-[var(--cs-teal-strong)]">Care Intelligence OS</span></span>
             </Link>
             <button
               type="button"
@@ -76,7 +76,7 @@ export function MobileMenu() {
               onClick={() => setOpen(false)}
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-semibold text-white"
             >
-              Request early access <ArrowRight className="h-4 w-4" />
+              Book a Demo <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         </div>

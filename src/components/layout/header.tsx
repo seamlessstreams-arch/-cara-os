@@ -96,7 +96,7 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
                 from the current time (greeting, live date). Statically prerendered
                 HTML can straddle a time boundary, so the client text legitimately
                 differs — accept the client value instead of a hydration error. */}
-            <h1 suppressHydrationWarning className="text-[15px] font-semibold text-[var(--cs-navy)] leading-tight truncate tracking-[-0.01em]">
+            <h1 suppressHydrationWarning className="text-[17px] font-extrabold text-[var(--cs-navy)] leading-tight truncate tracking-tight">
               {title}
             </h1>
           </div>

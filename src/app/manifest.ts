@@ -7,7 +7,7 @@ import { BRAND } from "@/lib/brand";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: `${BRAND.productName} — Care OS for Children's Homes`,
+    name: `${BRAND.productName} — Care Intelligence OS for Children's Homes`,
     short_name: BRAND.shortName,
     description:
       "Secure operations for children's residential care — sign-in, comms, safeguarding, staffing and oversight.",

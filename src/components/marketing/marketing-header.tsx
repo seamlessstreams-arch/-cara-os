@@ -8,8 +8,9 @@ import Link from "next/link";
 import { MobileMenu } from "@/components/marketing/mobile-menu";
 
 const NAV = [
-  { href: "/#how", label: "How it works" },
-  { href: "/product/intelligence", label: "Intelligence" },
+  { href: "/#layers", label: "Intelligence" },
+  { href: "/product/safeguarding", label: "Safeguarding" },
+  { href: "/product/compliance", label: "Compliance" },
   { href: "/product/workforce", label: "Workforce" },
   { href: "/product/tour", label: "Tour" },
   { href: "/security", label: "Security" },
@@ -25,7 +26,7 @@ export function MarketingHeader() {
           <img src="/icon-192.png" alt="Cara" className="h-9 w-9 rounded-xl" />
           <span className="flex items-baseline gap-1.5">
             <span className="text-lg font-extrabold tracking-tight text-[var(--cs-navy)]">Cara</span>
-            <span className="rounded-md bg-[var(--cs-navy)]/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--cs-teal-strong)]">Care OS</span>
+            <span className="rounded-md bg-[var(--cs-navy)]/5 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--cs-teal-strong)]">Care Intelligence OS</span>
           </span>
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-medium text-[var(--cs-text-secondary)] lg:flex">
@@ -39,7 +40,7 @@ export function MarketingHeader() {
             href="/contact"
             className="hidden items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md sm:inline-flex"
           >
-            Request early access
+            Book a Demo
           </Link>
           <MobileMenu />
         </div>

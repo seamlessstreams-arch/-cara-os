@@ -68,7 +68,9 @@ export function LearningDesignSection() {
         </div>
       )}
       <p className="mt-3 text-[11px] text-[var(--cs-text-muted)]">
-        Cara drafts; you decide. Everything is trauma-informed, PACE-informed and non-shaming by design — and anything sensitive goes to a manager before use.
+        Cara supports professional judgement. Staff and managers remain responsible for decisions, recording, and
+        safeguarding actions — everything here is trauma-informed, PACE-informed and non-shaming by design, and
+        anything sensitive goes to a manager before use.
       </p>
     </section>
   );

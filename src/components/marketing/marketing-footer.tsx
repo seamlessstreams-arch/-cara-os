@@ -15,16 +15,17 @@ export function MarketingFooter() {
             <Link href="/" className="flex items-center gap-2.5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/icon-192.png" alt="Cara" className="h-9 w-9 rounded-xl" />
-              <span className="text-lg font-extrabold tracking-tight text-[var(--cs-navy)]">Cara <span className="text-[var(--cs-teal-strong)]">Care OS</span></span>
+              <span className="text-lg font-extrabold tracking-tight text-[var(--cs-navy)]">Cara <span className="text-[var(--cs-teal-strong)]">Care Intelligence OS</span></span>
             </Link>
-            <p className="mt-3 text-sm leading-relaxed text-[var(--cs-text-muted)]">The operating system for children&rsquo;s residential care. Capture once. Surface everywhere.</p>
+            <p className="mt-3 text-sm leading-relaxed text-[var(--cs-text-muted)]">The Care Intelligence OS for children&rsquo;s homes. Cara turns everyday residential care into live safeguarding intelligence.</p>
           </div>
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
             <div>
               <p className="text-xs font-bold uppercase tracking-wider text-[var(--cs-text-gentle)]">Platform</p>
               <ul className="mt-3 space-y-2 text-sm text-[var(--cs-text-secondary)]">
-                <li><a href="/#how" className="hover:text-[var(--cs-navy)]">How it works</a></li>
-                <li><a href="/#modules" className="hover:text-[var(--cs-navy)]">Modules</a></li>
+                <li><a href="/#layers" className="hover:text-[var(--cs-navy)]">Intelligence layers</a></li>
+                <li><Link href="/product/safeguarding" className="hover:text-[var(--cs-navy)]">Safeguarding</Link></li>
+                <li><Link href="/product/compliance" className="hover:text-[var(--cs-navy)]">Compliance</Link></li>
                 <li><Link href="/product/intelligence" className="hover:text-[var(--cs-navy)]">Practice intelligence</Link></li>
                 <li><Link href="/product/workforce" className="hover:text-[var(--cs-navy)]">Workforce</Link></li>
                 <li><Link href="/product/tour" className="hover:text-[var(--cs-navy)]">Product tour</Link></li>

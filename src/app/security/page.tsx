@@ -42,7 +42,7 @@ export default function SecurityPage() {
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link href="/contact" className="inline-flex items-center justify-center gap-2 rounded-xl bg-[var(--cs-navy)] px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[var(--cs-navy-soft)] hover:shadow-md">Talk to us about your data <ArrowRight className="h-4 w-4" /></Link>
-            <Link href="/#how" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white/70 px-5 py-3 text-sm font-semibold text-[var(--cs-navy)] transition-colors hover:bg-white">How it works</Link>
+            <Link href="/#layers" className="inline-flex items-center justify-center gap-2 rounded-xl border border-[var(--cs-border)] bg-white/70 px-5 py-3 text-sm font-semibold text-[var(--cs-navy)] transition-colors hover:bg-white">How Cara thinks</Link>
           </div>
         </div>
       </section>

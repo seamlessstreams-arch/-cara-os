@@ -12,9 +12,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 export const BRAND = {
-  productName: process.env.NEXT_PUBLIC_APP_NAME || "Cara OS",
+  productName: process.env.NEXT_PUBLIC_APP_NAME || "Cara",
   shortName: process.env.NEXT_PUBLIC_APP_SHORT_NAME || "Cara",
   legalName: "Cara OS",
+  category: "The Care Intelligence OS for children's homes",
+  positioning: "Cara turns everyday residential care into live safeguarding intelligence.",
   intelligenceName: process.env.NEXT_PUBLIC_AI_NAME || "Cara Intelligence",
   insightsName: "Cara Insights",
   assistantName: process.env.NEXT_PUBLIC_ASSISTANT_NAME || "Cara Assistant",
@@ -25,9 +27,11 @@ export const BRAND = {
   knowledgeBankName: "Cara Knowledge Bank",
   practiceIntelligenceName: "Cara Practice Intelligence",
   tagline:
-    "Care intelligence, quality assurance, and operational oversight for children's homes.",
+    "The Care Intelligence OS for children's homes.",
   description:
-    "Cara OS brings care records, quality assurance, workforce oversight, compliance workflows, and Cara Intelligence together in one secure operating system for children's homes.",
+    "Cara helps children's homes record in the moment, identify safeguarding patterns, support reflective practice, and evidence the impact of care — without losing professional judgement or the child's voice.",
+  assistDisclaimer:
+    "Cara supports professional judgement. Staff and managers remain responsible for decisions, recording, and safeguarding actions.",
 } as const;
 
 export type BrandKey = keyof typeof BRAND;

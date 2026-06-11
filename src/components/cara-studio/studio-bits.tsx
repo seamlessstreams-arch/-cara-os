@@ -169,7 +169,8 @@ export function OutputView({ result }: { result: CaraApiResult }) {
       ) : null}
       <p className="flex items-start gap-2 text-[11px] text-[var(--cs-text-muted)]">
         <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-        Cara drafts support your thinking — they never replace professional judgement, therapy or safeguarding procedures. Adapt freely; the child in front of you beats any plan.
+        Cara supports professional judgement. Staff and managers remain responsible for decisions, recording, and
+        safeguarding actions. Adapt freely — the child in front of you beats any plan.
       </p>
     </div>
   );

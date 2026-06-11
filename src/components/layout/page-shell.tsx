@@ -55,14 +55,21 @@ export function PageShell({
   );
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col">
+      {/* Ambient brand glow — the same warmth as the marketing site, kept
+          subtle enough for a dense working screen. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-72 opacity-50 print:hidden"
+        style={{ background: "radial-gradient(55% 90% at 70% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(40% 70% at 10% 0%, var(--cs-aria-glow) 0%, transparent 55%)" }}
+      />
       <Header
         title={title}
         subtitle={subtitle ?? description}
         actions={headerActions}
         ariaContext={ariaContext}
       />
-      <main className={`flex-1 p-4 sm:p-6 ${fullWidth ? "" : "max-w-[1440px] mx-auto w-full"}`}>
+      <main className={`relative flex-1 p-4 sm:p-6 ${fullWidth ? "" : "max-w-[1440px] mx-auto w-full"}`}>
         {children}
       </main>
     </div>
