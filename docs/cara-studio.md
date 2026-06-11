@@ -1,3 +1,69 @@
+# Cara Studio — the learning-design engine
+
+> This document covers BOTH Cara Studio layers: the **learning-design engine**
+> (this section — curriculum, sessions, materials, conversation coach,
+> incident-to-learning, SEND adaptation, debriefs) and the original
+> **artifact studio** (second section below).
+
+Cara Studio turns what staff already know about a child — needs, risks, strengths, incidents, key-work themes — into things they can actually use on shift: curriculum pathways, session plans, conversation scripts, interactive materials, SEND adaptations, incident-to-learning conversions and staff debriefs.
+
+**The contract everywhere: Cara drafts, staff decide, managers review, the system audits.** Cara never diagnoses, never replaces therapy or safeguarding procedures, and never makes a professional decision.
+
+## How staff use it
+
+Open **/cara-studio** and pick a tool from the Learning Design section (or jump straight from a child's workspace at `/cara-studio/children/[childId]`):
+
+| Tool | What it gives you |
+| --- | --- |
+| Curriculum Builder | A modular weekly pathway from the child's risk themes, key-work themes and goals — trust first, independence last |
+| Session Planner | 5/10/20/45-minute sessions with the full 10-part structure (before-you-start → follow-up), shaped by the child's learning style |
+| Conversation Coach | PACE-informed openers, validations and curiosity questions, with branch plans for shutdown / anger / upset / walking away |
+| Incident → Learning | A non-shaming reframe, the possible unmet need, a conversation plan and a 5-minute micro-session |
+| Interactive Materials | 19 types (visual cards, social stories, scenario cards, decision trees, audio scripts…) — every one with a no-writing alternative |
+| Make This Easier | Paste anything; rule-based SEND/communication adaptation with an explainable change list and a do-not-do list |
+| Staff Debrief | No-blame reflection: what the child may have been communicating, what to keep, repair planning, supervision questions |
+
+Every output ends in the same safety spine: staff guidance, adaptation notes, safeguarding notes, **signs to pause**, follow-up actions, a **recording prompt** and a manager-review flag.
+
+## Child learning profiles
+
+`cara_child_learning_profiles` (and the in-memory `caraLearningProfiles` mirror) hold how the child learns: communication and SEND needs, learning-style booleans (visual/audio/practical/movement/creative/low-literacy/short-bursts), attention, sensory and trigger profiles, calming strategies, strengths, avoided topics, trusted adults and risk themes. The **context builder** pulls the profile + recent incidents + key-work themes into every generation, so a session for a movement-based short-burst learner genuinely looks different from one for a conversational reader.
+
+## How the guardrails work
+
+`runCaraGuardrails` scans every generated output (the full serialised object) for blaming, shaming, punitive or threatening language, restraint/sanction suggestions, interrogation, secrecy promises, diagnosis claims, therapy replacement, safeguarding minimisation, confidentiality breaches and unsafe practice. Severity ladder: low / medium / high / critical.
+
+* **low–medium** → saved and shown with a review banner (`flag_for_review`)
+* **high–critical** → saved but **blocked from the response** — the staff member sees a held-for-review notice and the content only appears in the manager Review Centre (`block_pending_review`). Critical content is never shown without manager review.
+
+Fields that intentionally quote bad phrasing as *negative examples* (a blueprint's `avoidPhrases`) are excluded from the scan. Every flag is logged to `cara_guardrail_events`; every generation to `cara_ai_runs`.
+
+## Manager review policy
+
+`computeManagerReview` requires review when: emotional intensity is high; the topic touches exploitation, self-harm, violence, sexual harm, missing episodes, abuse or disclosure; staff confidence is low on a non-trivial topic; the content was converted from a serious incident; the topic overlaps the child's known triggers; or guardrail severity is medium+. The UI shows: "This resource should be reviewed by a manager before use."
+
+Managers work the queue at **/cara-studio/review**: approve, request changes, or archive — with a note. Only manager/deputy roles can review (`x-user-role`), and **nobody can approve their own output**.
+
+## SEND adaptations
+
+`adaptCaraContent` is rule-based and explainable: 19 declared needs (ADHD, autism, dyslexia, demand avoidance, shame sensitivity…) each contribute changes, regulation adjustments and do-not-do entries; a plain-language pass replaces clinical/abstract wording; content is shortened for attention profiles and broken into numbered micro-steps. Output includes a simplified version, an audio script, visual suggestions and the do-not-do list.
+
+## AI provider
+
+`/lib/cara-studio/ai-provider.ts` defines `generateStructured<T>` (Zod-validated structured output) with two implementations: the platform provider (server-only Anthropic path; `CARA_*`/`ARIA_*` env, key never exposed) and a **mock provider** (`CARA_STUDIO_MOCK_AI=true`) that always returns null. Generators are **deterministic-first**: the scaffold is complete and safe without any model; LLM enrichment can re-voice it later and is discarded if it fails validation or guardrails. This is why the whole module works in the demo with no API key.
+
+## Resource library & future RAG
+
+`cara_resource_library` stores resources tagged by domain, age range, SEND tags, trauma tags, type and **approval status**. The context builder already prefers approved resources matching the theme; when nothing matches, content is explicitly an AI/deterministic draft requiring professional review. Ingesting policies, key-work templates, safeguarding guidance and PACE resources later means: insert rows, mark approved — retrieval slots into the same hook.
+
+## Data & API map
+
+Tables (migration `411_cara_studio.sql`, RLS home-scoped via `get_my_home_id()`, no self-approval by constraint): learning profiles, curriculum maps, session plans, interactive materials, conversation blueprints, incident learning conversions, resource library, `cara_ai_runs`, `cara_guardrail_events`. The in-memory demo store mirrors these with a unified `caraStudioOutputs` collection.
+
+Routes: `POST /api/cara/{curriculum, session-plan, materials, conversation, incident-learning, adapt, reflect}` · `GET /api/cara/child/[childId]` · `GET /api/cara/library` · `GET /api/cara/review` · `PATCH /api/cara/review/[id]`. Every POST: authenticate → validate (Zod) → build context → generate → validate output (Zod) → guardrails → save → log run + flags → respond.
+
+---
+
 # Cara Studio — Technical Documentation
 
 ## Overview

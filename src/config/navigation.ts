@@ -630,6 +630,8 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Oversight Radar",     href: "/intelligence/cara/oversight-radar",    icon: "Radar",       module: "dashboard"    },
       { label: "Oversight Writer",    href: "/intelligence/cara/oversight",          icon: "ScrollText",  module: "dashboard"    },
       { label: "Oversight Engine",    href: "/intelligence/cara/management-oversight",icon: "ShieldCheck",module: "dashboard"    },
+      { label: "Cara Studio",         href: "/cara-studio",                          icon: "Palette",     module: "dashboard"    },
+      { label: "Studio Review Centre",href: "/cara-studio/review",                   icon: "ClipboardCheck",module: "dashboard"  },
       { label: "Voice of the Child",  href: "/intelligence/cara/voice-of-child",     icon: "Quote",       module: "young-people" },
       { label: "Cara Compose",        href: "/intelligence/cara/compose",            icon: "Sparkles",    module: "dashboard"    },
       { label: "HR Risk Command Centre", href: "/intelligence/hr/risk-command-centre", icon: "Activity",    module: "staff"        },

@@ -256,6 +256,10 @@ import type {
   ConditionalOffer, RecruitmentAuditEntry,
 } from "@/types/recruitment";
 import type {
+  CaraChildLearningProfile, CaraSavedOutput, CaraLibraryResource,
+  CaraAiRun, CaraGuardrailEvent,
+} from "@/lib/cara-studio/cara-types";
+import type {
   StaffCompetencyProfile, CompetencyScore, DevelopmentPlan,
   PracticeObservation, CareerReadinessReport, SuccessionPlan,
   AppraisalRecord, InductionRecord, QualificationRecord,
@@ -756,6 +760,11 @@ const store = {
   ariaPostIncidentReflections: [] as PostIncidentReflectionRecord[],
   ariaManagerAlertStates: [] as AlertStateRecord[],
   ariaPromptBank: defaultPromptBank() as PromptBankEntry[],
+  caraLearningProfiles: [] as CaraChildLearningProfile[],
+  caraStudioOutputs: [] as CaraSavedOutput[],
+  caraLibraryResources: [] as CaraLibraryResource[],
+  caraAiRuns: [] as CaraAiRun[],
+  caraGuardrailEvents: [] as CaraGuardrailEvent[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],
@@ -3338,6 +3347,120 @@ store.trainingRecords.push(
     updated_at: "2026-05-20T09:00:00Z",
     created_by: "staff_darren",
     updated_by: "staff_darren",
+  },
+);
+
+// ── Cara Studio seeds: learning profiles + approved library resources ────────
+// APPENDED (never reassign). Profiles power adapted session/material/
+// conversation generation for the demo children.
+store.caraLearningProfiles.push(
+  {
+    id: "clp_alex",
+    child_id: "yp_alex",
+    age: 14,
+    developmental_age_notes: "Emotionally working at around 11–12; strong practical reasoning.",
+    communication_needs: "Short sentences, real wait time; struggles with 'why' questions when stressed.",
+    send_needs: "ADHD traits; suspected dyslexia (no formal assessment on file).",
+    learning_style: { visual: true, audio: false, practical: true, movement_based: true, conversation_based: false, creative: true, low_literacy: true, short_bursts: true },
+    attention_profile: "Engages in 5–10 minute bursts; movement helps.",
+    sensory_profile: "Noise-sensitive in the evenings; dislikes being faced head-on.",
+    emotional_triggers: "Being told no in front of peers; family contact cancellations.",
+    calming_strategies: "Music through one earphone; kicking a ball outside; food.",
+    trauma_considerations: "Neglect; multiple placement moves — endings and goodbyes are loaded.",
+    cultural_identity_notes: null,
+    literacy_level: "Reads reluctantly, writes very little — never make reading the gateway.",
+    preferred_activities: "Football, drawing, helping with cooking.",
+    avoided_topics: "Dad; the last foster placement.",
+    trusted_adults: "Olivia, Marcus",
+    known_strengths: "Funny, loyal, protective of younger children, notices when staff are down.",
+    current_goals: "Settle at school; manage family-time disappointment without going missing.",
+    risk_themes: ["missing", "cannabis"],
+    review_notes: null,
+    created_by: "staff_olivia",
+    updated_by: "staff_olivia",
+    created_at: "2026-05-20T09:00:00Z",
+    updated_at: "2026-06-08T09:00:00Z",
+  },
+  {
+    id: "clp_jordan",
+    child_id: "yp_jordan",
+    age: 15,
+    developmental_age_notes: "Age-appropriate cognition; emotional literacy growing fast.",
+    communication_needs: "Articulate but masks — check understanding gently rather than assuming.",
+    send_needs: "Autistic (diagnosed 2023); demand avoidance under stress.",
+    learning_style: { visual: true, audio: true, practical: false, movement_based: false, conversation_based: true, creative: false, low_literacy: false, short_bursts: false },
+    attention_profile: "Can sustain 30+ minutes on chosen topics; drops fast on imposed ones.",
+    sensory_profile: "Overwhelmed by overlapping voices; needs predictable structure announced first.",
+    emotional_triggers: "Sudden plan changes; perceived unfairness between children.",
+    calming_strategies: "Exact information about what happens next; drawing routines; quiet room.",
+    trauma_considerations: "Witnessed domestic violence; startle response to raised male voices.",
+    cultural_identity_notes: "Strong faith identity via grandmother — a stabilising thread worth honouring.",
+    literacy_level: "Strong reader and writer.",
+    preferred_activities: "Coding videos, chess, baking with exact recipes.",
+    avoided_topics: null,
+    trusted_adults: "Priya",
+    known_strengths: "Precise, honest, kind in one-to-ones, brilliant memory.",
+    current_goals: "Build tolerance for plan changes; one peer connection in the home.",
+    risk_themes: ["isolation", "online"],
+    review_notes: null,
+    created_by: "staff_olivia",
+    updated_by: "staff_olivia",
+    created_at: "2026-05-20T09:00:00Z",
+    updated_at: "2026-06-05T09:00:00Z",
+  },
+);
+
+store.caraLibraryResources.push(
+  {
+    id: "clr_trust",
+    title: "Trusting adults toolkit (PACE openers and trust-map activity)",
+    resource_type: "activity_pack",
+    domain: "Trust and safe adults",
+    age_range: "10-17",
+    send_tags: ["low_literacy", "visual"],
+    trauma_tags: ["attachment", "multiple_moves"],
+    content: "Trust-map drawing activity, safe-adults circle template and six PACE-informed opening lines reviewed by the home's therapeutic lead.",
+    source: "Internal therapeutic lead",
+    source_type: "internal",
+    approved: true,
+    approved_by: "staff_olivia",
+    created_by: "staff_marcus",
+    created_at: "2026-04-10T09:00:00Z",
+    updated_at: "2026-04-10T09:00:00Z",
+  },
+  {
+    id: "clr_exploitation",
+    title: "Exploitation awareness scenario set (contextual safeguarding)",
+    resource_type: "scenario_cards",
+    domain: "Exploitation awareness",
+    age_range: "12-17",
+    send_tags: ["short_bursts"],
+    trauma_tags: ["exploitation"],
+    content: "Eight age-banded scenarios on grooming hooks, gifts, debt bondage and safe exits, mapped to the local contextual-safeguarding guidance.",
+    source: "Local safeguarding partnership materials, adapted",
+    source_type: "internal",
+    approved: true,
+    approved_by: "staff_olivia",
+    created_by: "staff_marcus",
+    created_at: "2026-04-22T09:00:00Z",
+    updated_at: "2026-04-22T09:00:00Z",
+  },
+  {
+    id: "clr_feelings_draft",
+    title: "Feelings vocabulary builder (draft — awaiting review)",
+    resource_type: "worksheet",
+    domain: "Emotional literacy",
+    age_range: "10-14",
+    send_tags: ["low_literacy"],
+    trauma_tags: [],
+    content: "Draft feelings-word ladder; needs therapeutic lead review before use.",
+    source: "Staff-created",
+    source_type: "internal",
+    approved: false,
+    approved_by: null,
+    created_by: "staff_daniel",
+    created_at: "2026-06-01T09:00:00Z",
+    updated_at: "2026-06-01T09:00:00Z",
   },
 );
 
@@ -11472,6 +11595,57 @@ export const db = {
       const entry = { ...data, id: generateId("aud"), created_at: new Date().toISOString() } as RecruitmentAuditEntry;
       store.recruitmentAudit.push(entry);
       return entry;
+    },
+  },
+
+  // ── Cara Studio (learning-design engine) ──────────────────────────────────
+  caraLearningProfiles: {
+    findAll: () => store.caraLearningProfiles,
+    findByChild: (childId: string) => store.caraLearningProfiles.find((p) => p.child_id === childId),
+    upsert: (data: CaraChildLearningProfile): CaraChildLearningProfile => {
+      const idx = store.caraLearningProfiles.findIndex((p) => p.child_id === data.child_id);
+      if (idx >= 0) {
+        store.caraLearningProfiles[idx] = { ...store.caraLearningProfiles[idx], ...data, updated_at: new Date().toISOString() };
+        return store.caraLearningProfiles[idx];
+      }
+      store.caraLearningProfiles.push(data);
+      return data;
+    },
+  },
+  caraStudioOutputs: {
+    findAll: () => store.caraStudioOutputs,
+    findById: (id: string) => store.caraStudioOutputs.find((o) => o.id === id),
+    findByChild: (childId: string) => store.caraStudioOutputs.filter((o) => o.child_id === childId),
+    findNeedingReview: () =>
+      store.caraStudioOutputs.filter((o) => o.manager_review_status === "review_required" && o.status !== "archived"),
+    create: (data: CaraSavedOutput): CaraSavedOutput => {
+      store.caraStudioOutputs.push(data);
+      return data;
+    },
+    update: (id: string, data: Partial<CaraSavedOutput>): CaraSavedOutput | null => {
+      const idx = store.caraStudioOutputs.findIndex((o) => o.id === id);
+      if (idx === -1) return null;
+      store.caraStudioOutputs[idx] = { ...store.caraStudioOutputs[idx], ...data, updated_at: new Date().toISOString() };
+      return store.caraStudioOutputs[idx];
+    },
+  },
+  caraLibraryResources: {
+    findAll: () => store.caraLibraryResources,
+    findApproved: () => store.caraLibraryResources.filter((r) => r.approved),
+  },
+  caraAiRuns: {
+    findAll: () => store.caraAiRuns,
+    create: (data: CaraAiRun): CaraAiRun => {
+      store.caraAiRuns.push(data);
+      return data;
+    },
+  },
+  caraGuardrailEvents: {
+    findAll: () => store.caraGuardrailEvents,
+    findRecent: (limit = 50) => [...store.caraGuardrailEvents].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, limit),
+    create: (data: CaraGuardrailEvent): CaraGuardrailEvent => {
+      store.caraGuardrailEvents.push(data);
+      return data;
     },
   },
 

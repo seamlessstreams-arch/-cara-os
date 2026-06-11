@@ -9,6 +9,7 @@
 import React, { useState, useCallback, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageShell } from "@/components/ui/page-shell";
+import { LearningDesignSection } from "@/components/cara-studio/learning-design-section";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -239,6 +240,9 @@ function AriaStudioContent() {
   return (
     <PageShell title="Cara Studio" subtitle="Therapeutic Care Intelligence Studio">
       <div className="space-y-6 pb-12">
+
+        {/* ── Learning design engine (curriculum, sessions, materials, coach) ─ */}
+        <LearningDesignSection />
 
         {/* ── Hero banner ──────────────────────────────────────────────────── */}
         <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-6">
