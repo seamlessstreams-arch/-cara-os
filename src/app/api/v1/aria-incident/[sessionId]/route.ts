@@ -11,6 +11,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { persistIncidentSessionUpdate } from "@/lib/supabase/incident-persist";
 import { NextResponse } from "next/server";
 import { findSession, buildSessionBundle, addTimelineEntry, currentUserId, logIncidentAudit } from "@/lib/aria-incident/incident-service";
 import type { RiskLevel } from "@/lib/aria-incident/aria-incident-engine";
@@ -62,6 +63,17 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ sessionId: st
   } else {
     return NextResponse.json({ ok: false, error: "Unknown action." }, { status: 400 });
   }
+
+  // Durable mirror of whichever mutation just happened (best-effort).
+  void persistIncidentSessionUpdate({
+    id: session.id,
+    ended_at: session.ended_at,
+    incident_status: session.incident_status,
+    manager_notified: session.manager_notified,
+    manager_notified_at: session.manager_notified_at,
+    immediate_risk_level: session.immediate_risk_level,
+    workflow_progress: session.workflow_progress,
+  });
 
   return NextResponse.json({ ok: true, data: buildSessionBundle(session) });
 }

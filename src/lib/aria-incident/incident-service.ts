@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { getStore } from "@/lib/db/store";
+import { persistIncidentSession, persistTimelineEntry, persistIncidentAudit } from "@/lib/supabase/incident-persist";
 import { generateId } from "@/lib/utils";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { AuditActionType } from "@/types/extended";
@@ -42,6 +43,7 @@ export function logIncidentAudit(opts: {
       human_edit: opts.note,
       approval_status: opts.approval_status,
     });
+    void persistIncidentAudit(opts);
   } catch {
     // audit must never break the operational flow
   }
@@ -94,6 +96,7 @@ export function startSession(opts: { child_id: string; incident_type: string; im
   };
   store.ariaIncidentSessions = store.ariaIncidentSessions ?? [];
   store.ariaIncidentSessions.push(session);
+  void persistIncidentSession(session as unknown as Record<string, unknown>);
   logIncidentAudit({ action_type: "incident_started", user_id: opts.user_id, child_id: opts.child_id, source_id: session.id, note: `type=${opts.incident_type} risk=${opts.immediate_risk_level}` });
   return session;
 }
@@ -116,6 +119,7 @@ export function addTimelineEntry(opts: { session: IncidentSession; entry_type: s
   };
   store.ariaIncidentTimeline = store.ariaIncidentTimeline ?? [];
   store.ariaIncidentTimeline.push(entry);
+  void persistTimelineEntry(entry as unknown as Record<string, unknown>);
   opts.session.updated_at = now;
   logIncidentAudit({ action_type: "timeline_entry_added", user_id: opts.user_id, child_id: opts.session.child_id, source_id: opts.session.id, note: `entry=${entry.id} type=${opts.entry_type}` });
   return entry;

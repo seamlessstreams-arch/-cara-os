@@ -32,13 +32,15 @@ export const PERSISTENCE_MANIFEST: PersistenceEntry[] = [
   // ── Safeguarding & incidents ──
   { entity: "Incidents", area: "Safeguarding & incidents", write_through: true, table: "incidents", audit_trail: "Manager oversight fields + linked records" },
   { entity: "Care events (capture spine)", area: "Safeguarding & incidents", write_through: false, table: null, audit_trail: "In-memory event stream projection", note: "Projection is recomputed from source records, which do persist" },
-  { entity: "Incident Mode sessions & timelines", area: "Safeguarding & incidents", write_through: false, table: "incident_sessions (migration 409, ready)", audit_trail: "Raw + AI + final versions kept in-store", note: "Write-through planned — schema already migrated" },
+  { entity: "Incident Mode sessions & timelines", area: "Safeguarding & incidents", write_through: true, table: "incident_sessions / incident_timeline_entries", audit_trail: "Raw + AI + final preserved; every action in aria_audit_logs" },
+  { entity: "Recording reviews, restorative & reflections", area: "Safeguarding & incidents", write_through: true, table: "aria_recording_reviews / restorative_conversations / post_incident_reflections", audit_trail: "Manager-review fields on each row" },
 
   // ── Workforce & comms ──
   { entity: "Comms Centre (channels, messages, receipts)", area: "Workforce & comms", write_through: true, table: "comms_*", audit_trail: "Message governance + receipt trail" },
   { entity: "Sign-in / presence verifications", area: "Workforce & comms", write_through: true, table: "signin_verifications", audit_trail: "Who, where, method, when" },
   { entity: "Emergency alerts", area: "Workforce & comms", write_through: true, table: "emergency_alerts", audit_trail: "Trigger + acknowledgement trail" },
-  { entity: "Supervisions / training / rotas", area: "Workforce & comms", write_through: false, table: "(schema ready in early migrations)", audit_trail: "In-store records with author fields", note: "Reads are dal-ready; write-through to be wired" },
+  { entity: "Reflective supervision records", area: "Workforce & comms", write_through: true, table: "reflective_supervisions", audit_trail: "Wellbeing, themes and sign-off fields on the row" },
+  { entity: "Classic supervisions / training / rotas", area: "Workforce & comms", write_through: false, table: "(uuid schemas in migration 001)", audit_trail: "In-store records with author fields", note: "Tables expect real staff uuids — activates naturally with production staff data" },
 
   // ── Cara Studio & AI ──
   { entity: "Cara Studio outputs (all 7 modules)", area: "Cara Studio & AI", write_through: true, table: "cara_studio_outputs", audit_trail: "Guardrail flags + manager review decisions on the row" },

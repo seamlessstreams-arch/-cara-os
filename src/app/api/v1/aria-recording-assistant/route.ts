@@ -15,6 +15,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { persistRecordingReview } from "@/lib/supabase/incident-persist";
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
@@ -79,6 +80,7 @@ export async function POST(req: Request) {
     };
     store.ariaRecordingReviews = store.ariaRecordingReviews ?? [];
     store.ariaRecordingReviews.push(review);
+    void persistRecordingReview(review as unknown as Record<string, unknown>);
     logIncidentAudit({ action_type: "ai_suggestion_accepted", user_id, child_id, source_id: review.id, note: `recording-assistant type=${record_type}`, approval_status: manager_review_required ? "pending_manager_review" : "recorded" });
     return NextResponse.json({ ok: true, data: { review_id: review.id, manager_review_required } }, { status: 201 });
   }

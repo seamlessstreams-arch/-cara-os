@@ -9,6 +9,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { persistReflectiveSupervision } from "@/lib/supabase/incident-persist";
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
@@ -78,5 +79,6 @@ export async function POST(req: Request) {
 
   store.reflectiveSupervisions = store.reflectiveSupervisions ?? [];
   store.reflectiveSupervisions.push(record);
+  void persistReflectiveSupervision(record as unknown as Record<string, unknown>);
   return NextResponse.json({ ok: true, data: record }, { status: 201 });
 }

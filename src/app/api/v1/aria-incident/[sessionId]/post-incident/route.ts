@@ -15,6 +15,7 @@
 
 export const dynamic = "force-dynamic";
 
+import { persistRestorativeConversation, persistPostIncidentReflection } from "@/lib/supabase/incident-persist";
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
@@ -110,6 +111,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
 
     store.ariaRestorativeConversations = store.ariaRestorativeConversations ?? [];
     store.ariaRestorativeConversations.push(rec);
+    void persistRestorativeConversation(rec as unknown as Record<string, unknown>);
     addTimelineEntry({
       session,
       entry_type: "restorative_action",
@@ -153,6 +155,7 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
 
     store.ariaPostIncidentReflections = store.ariaPostIncidentReflections ?? [];
     store.ariaPostIncidentReflections.push(rec);
+    void persistPostIncidentReflection(rec as unknown as Record<string, unknown>);
     logIncidentAudit({ action_type: "ai_suggestion_accepted", user_id, child_id: session.child_id, source_id: session.id, note: `reflection=${rec.id}`, approval_status: rec.manager_review_required ? "pending_manager_review" : "recorded" });
     return NextResponse.json({ ok: true, data: rec }, { status: 201 });
   }
