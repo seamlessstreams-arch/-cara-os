@@ -47,6 +47,7 @@ export const PERSISTENCE_MANIFEST: PersistenceEntry[] = [
   { entity: "Cara Studio review decisions", area: "Cara Studio & AI", write_through: true, table: "cara_studio_outputs (update)", audit_trail: "reviewed_by / reviewed_at / note; no self-approval (DB constraint)" },
   { entity: "Cara AI run log", area: "Cara Studio & AI", write_through: true, table: "cara_ai_runs", audit_trail: "Every generation: who, child, module, flags, model" },
   { entity: "Cara guardrail events", area: "Cara Studio & AI", write_through: true, table: "cara_guardrail_events", audit_trail: "Each flag with severity and action taken" },
+  { entity: "Resource library (ingest + approvals)", area: "Cara Studio & AI", write_through: true, table: "cara_resource_library", audit_trail: "approved_by on the row; no self-approval (DB constraint)" },
   { entity: "Cara assist requests (legacy aria_* layer)", area: "Cara Studio & AI", write_through: false, table: "aria_requests/aria_outputs (migration 013, ready)", audit_trail: "In-store approval trail", note: "Schema migrated; wiring planned" },
 
   // ── Recruitment ──

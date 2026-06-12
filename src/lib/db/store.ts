@@ -11632,6 +11632,17 @@ export const db = {
   caraLibraryResources: {
     findAll: () => store.caraLibraryResources,
     findApproved: () => store.caraLibraryResources.filter((r) => r.approved),
+    findById: (id: string) => store.caraLibraryResources.find((r) => r.id === id),
+    create: (data: CaraLibraryResource): CaraLibraryResource => {
+      store.caraLibraryResources.push(data);
+      return data;
+    },
+    update: (id: string, data: Partial<CaraLibraryResource>): CaraLibraryResource | null => {
+      const idx = store.caraLibraryResources.findIndex((r) => r.id === id);
+      if (idx === -1) return null;
+      store.caraLibraryResources[idx] = { ...store.caraLibraryResources[idx], ...data, updated_at: new Date().toISOString() };
+      return store.caraLibraryResources[idx];
+    },
   },
   caraAiRuns: {
     findAll: () => store.caraAiRuns,

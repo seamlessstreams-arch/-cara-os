@@ -126,6 +126,33 @@ export async function persistCaraAiRun(r: CaraAiRun): Promise<void> {
   }
 }
 
+/** Insert a library resource (text app id preserved — migration 413). */
+export async function persistLibraryResource(r: Record<string, unknown>): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    await raw(c).from("cara_resource_library").insert({ home_id: homeId(), ...r });
+  } catch {
+    // best-effort
+  }
+}
+
+/** Update a library resource's approval state (matches by text id). */
+export async function persistLibraryApproval(r: { id: string; approved: boolean; approved_by: string | null; updated_at: string }): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    await raw(c)
+      .from("cara_resource_library")
+      .update({ approved: r.approved, approved_by: r.approved_by, updated_at: r.updated_at })
+      .eq("id", r.id);
+  } catch {
+    // best-effort
+  }
+}
+
 /** Append a guardrail event (maps onto migration 411 cara_guardrail_events). */
 export async function persistCaraGuardrailEvent(e: CaraGuardrailEvent): Promise<void> {
   if (!isSupabaseEnabled()) return;

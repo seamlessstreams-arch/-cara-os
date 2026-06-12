@@ -2,6 +2,7 @@
 
 // CARA STUDIO — /cara-studio/session/new
 import { useState } from "react";
+import Link from "next/link";
 import { GeneratorPage, ChildPicker, Labelled, TextInput, Pills } from "@/components/cara-studio/studio-bits";
 import { CARA_SESSION_THEMES } from "@/lib/cara-studio/cara-prompt-library";
 
@@ -30,6 +31,12 @@ export default function NewSessionPage() {
         if (!aim.trim()) return "Say in one line what you want this session to do.";
         return { childId, theme, aim, durationMinutes: duration, childReadiness: readiness, emotionalIntensity: intensity, staffConfidence: confidence, preferredActivityType: activity || undefined };
       }}
+      afterResult={
+        <div className="flex flex-wrap gap-2 print:hidden">
+          <Link href={`/cara-studio/materials/new?childId=${encodeURIComponent(childId)}&theme=${encodeURIComponent(theme)}`} className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]">Create a material from this session →</Link>
+          <Link href={`/cara-studio/conversation/new?childId=${encodeURIComponent(childId)}&topic=${encodeURIComponent(theme)}`} className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]">Create a conversation script →</Link>
+        </div>
+      }
     >
       <Labelled label="Child"><ChildPicker value={childId} onChange={setChildId} /></Labelled>
       <Labelled label="Theme (pick or type your own)">

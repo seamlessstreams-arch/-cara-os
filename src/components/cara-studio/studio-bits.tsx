@@ -179,7 +179,7 @@ export function OutputView({ result }: { result: CaraApiResult }) {
 // ── Generator page scaffold ───────────────────────────────────────────────────
 
 export function GeneratorPage({
-  title, subtitle, endpoint, buildBody, children, generateLabel,
+  title, subtitle, endpoint, buildBody, children, generateLabel, afterResult,
 }: {
   title: string;
   subtitle: string;
@@ -187,6 +187,7 @@ export function GeneratorPage({
   buildBody: () => Record<string, unknown> | string; // string = validation error
   children: React.ReactNode;
   generateLabel: string;
+  afterResult?: React.ReactNode; // e.g. chain-to-material links, shown once generated
 }) {
   const [result, setResult] = useState<CaraApiResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -219,7 +220,7 @@ export function GeneratorPage({
           </button>
         </div>
         <div>
-          {result ? <OutputView result={result} /> : (
+          {result ? <div className="space-y-3"><OutputView result={result} />{afterResult}</div> : (
             <div className="rounded-2xl border border-dashed border-[var(--cs-border)] bg-white/50 p-10 text-center text-sm text-[var(--cs-text-muted)]">
               Fill in the left side and Cara will draft it here — adapted to the child, with safety notes, signs to pause and a recording prompt built in.
             </div>
