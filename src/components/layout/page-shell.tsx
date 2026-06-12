@@ -69,7 +69,7 @@ export function PageShell({
         actions={headerActions}
         ariaContext={ariaContext}
       />
-      <main className={`relative flex-1 p-4 sm:p-6 ${fullWidth ? "" : "max-w-[1440px] mx-auto w-full"}`}>
+      <main className={`relative flex-1 px-4 py-6 sm:px-7 sm:py-8 ${fullWidth ? "" : "max-w-[1440px] mx-auto w-full"}`}>
         {children}
       </main>
     </div>
