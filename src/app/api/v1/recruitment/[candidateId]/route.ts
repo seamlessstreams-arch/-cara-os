@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
+import { createRecruitmentAuditRecord, persistRecruitmentCandidate } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 
 // Stages in progression order — advancing past the last element is never valid
@@ -238,6 +238,7 @@ export async function PATCH(
   if (!updated) {
     return NextResponse.json({ error: "Candidate not found" }, { status: 404 });
   }
+  void persistRecruitmentCandidate(updated); // best-effort write-through (no-op when off)
 
   // Write audit entry
   createRecruitmentAuditRecord({

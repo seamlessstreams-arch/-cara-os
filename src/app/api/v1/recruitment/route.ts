@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { persistRecruitmentCandidate } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 import type { CandidateProfile } from "@/types/recruitment";
 
@@ -162,6 +163,8 @@ export async function POST(req: NextRequest) {
     cv_url: null,
     created_by: "staff_darren",
   } as Partial<CandidateProfile>);
+
+  void persistRecruitmentCandidate(created); // best-effort write-through (no-op when off)
 
   const today = new Date().toISOString().slice(0, 10);
   return NextResponse.json({ data: buildCandidateSummary(created, today).detail }, { status: 201 });

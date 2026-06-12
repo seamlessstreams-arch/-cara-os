@@ -10,7 +10,7 @@
 
 import { db } from "@/lib/db/store";
 import { isSupabaseEnabled, createServerClient } from "./server";
-import type { CandidateReference, RecruitmentAuditEntry } from "@/types/recruitment";
+import type { CandidateCheck, CandidateProfile, CandidateReference, ConditionalOffer, RecruitmentAuditEntry } from "@/types/recruitment";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RawClient = { from(table: string): any };
@@ -107,4 +107,75 @@ export function updateCandidateReferenceRecord(
   const updated = db.candidateReferences.update(id, data);
   if (updated) void persistCandidateReference(updated);
   return updated;
+}
+
+// ── 415: candidates / checks / offers (hot columns + full record in jsonb) ──
+
+/** Upsert the candidate profile row by its application id. */
+export async function persistRecruitmentCandidate(c0: CandidateProfile): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    await raw(c).from("recruitment_candidates").upsert(
+      {
+        id: c0.id,
+        home_id: homeId(),
+        vacancy_id: c0.vacancy_id ?? null,
+        full_name: `${c0.first_name ?? ""} ${c0.last_name ?? ""}`.trim() || null,
+        current_stage: c0.current_stage ?? null,
+        risk_level: c0.risk_level ?? null,
+        data: c0,
+        updated_at: c0.updated_at ?? new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+  } catch {
+    // best-effort
+  }
+}
+
+/** Upsert a Schedule-2 / vetting check row by its application id. */
+export async function persistRecruitmentCheck(k: CandidateCheck): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    await raw(c).from("recruitment_candidate_checks").upsert(
+      {
+        id: k.id,
+        home_id: homeId(),
+        candidate_id: k.candidate_id,
+        check_type: k.check_type ?? null,
+        status: k.status ?? null,
+        data: k,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+  } catch {
+    // best-effort
+  }
+}
+
+/** Upsert a conditional-offer row by its application id. */
+export async function persistRecruitmentOffer(o: ConditionalOffer): Promise<void> {
+  if (!isSupabaseEnabled()) return;
+  const c = createServerClient();
+  if (!c) return;
+  try {
+    await raw(c).from("recruitment_conditional_offers").upsert(
+      {
+        id: o.id,
+        home_id: homeId(),
+        candidate_id: o.candidate_id,
+        status: o.status ?? null,
+        data: o,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" },
+    );
+  } catch {
+    // best-effort
+  }
 }

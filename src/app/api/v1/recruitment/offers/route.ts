@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
+import { createRecruitmentAuditRecord, persistRecruitmentOffer } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 
 // ── PATCH /api/v1/recruitment/offers ─────────────────────────────────────────
@@ -47,6 +47,7 @@ export async function PATCH(req: NextRequest) {
       final_clearance_by: by ?? "staff_darren",
       status: "final_accepted",
     });
+    if (updated) void persistRecruitmentOffer(updated); // best-effort write-through (no-op when off)
 
     createRecruitmentAuditRecord({
       candidate_id,

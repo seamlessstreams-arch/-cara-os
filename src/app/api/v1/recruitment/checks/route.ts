@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { createRecruitmentAuditRecord } from "@/lib/supabase/recruitment-persist";
+import { createRecruitmentAuditRecord, persistRecruitmentCheck } from "@/lib/supabase/recruitment-persist";
 
 // ── GET /api/v1/recruitment/checks?candidate_id= ──────────────────────────────
 
@@ -75,6 +75,7 @@ export async function PATCH(req: NextRequest) {
   if (!updated) {
     return NextResponse.json({ error: "Check not found" }, { status: 404 });
   }
+  void persistRecruitmentCheck(updated); // best-effort write-through (no-op when off)
 
   // Write audit entry
   if (candidate_id) {
