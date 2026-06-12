@@ -163,6 +163,11 @@ export async function POST(req: NextRequest) {
       persisted = rec.persisted;
     } catch { /* best-effort */ }
 
+    // HQ usage metering — kind + actor label only, never incident content.
+    void import("@/lib/hq/hq-service")
+      .then((m) => m.logUsageEvent("incident", { userLabel: (input.reported_by as string | undefined) ?? null }))
+      .catch(() => {});
+
     return NextResponse.json({
       data: result.incident,
       linked_updates: result.linked_updates,

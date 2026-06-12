@@ -57,6 +57,10 @@ export const PERSISTENCE_MANIFEST: PersistenceEntry[] = [
 
   // ── System ──
   { entity: "Sensitive-action audit log", area: "System", write_through: true, table: "audit_logs", audit_trail: "writeAuditLog() on sensitive routes" },
+  { entity: "Platform customers (Cara HQ)", area: "System", write_through: true, table: "organisations", audit_trail: "Provisioning + status changes logged as usage events", note: "Metadata only — HQ never touches children's records" },
+  { entity: "Usage metering (Cara HQ)", area: "System", write_through: true, table: "usage_events", audit_trail: "Append-only activity ledger", note: "HQ actions log automatically; app-wide activity wiring is incremental" },
+  { entity: "AI usage & cost (Cara HQ)", area: "System", write_through: true, table: "ai_usage", audit_trail: "Per-call feature/model/tokens with estimated cost", note: "Metered at the provider seam — fills whenever AI runs" },
+  { entity: "Break-glass grants (Cara HQ)", area: "System", write_through: true, table: "break_glass_grants", audit_trail: "Reason, time-box and revocation on the row", note: "Records intent only — does not open children's records" },
 ];
 
 export function persistenceSummary() {

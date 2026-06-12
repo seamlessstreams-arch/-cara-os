@@ -664,6 +664,15 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
 // ---------------------------------------------------------------------------
 // POST /api/v1/[slug]
 // ---------------------------------------------------------------------------
+
+// HQ usage metering — which catch-all creates count as platform activity.
+// Metadata only (kind + actor label); record content never leaves the route.
+const HQ_USAGE_KINDS: Record<string, string> = {
+  "incidents": "incident",
+  "missing-episodes": "missing",
+  "daily-log": "daily_log",
+};
+
 export async function POST(req: NextRequest, ctx: RouteContext) {
   try {
     const { slug } = await ctx.params;
@@ -687,6 +696,12 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     }
 
     const record = await collection.create(body);
+    const usageKind = HQ_USAGE_KINDS[slugKey];
+    if (usageKind) {
+      void import("@/lib/hq/hq-service")
+        .then((m) => m.logUsageEvent(usageKind, { userLabel: req.headers.get("x-user-id") }))
+        .catch(() => {});
+    }
     return json({ data: record }, 201);
   } catch (err) {
     return serverError(err);

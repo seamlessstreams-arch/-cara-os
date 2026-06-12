@@ -1,0 +1,40 @@
+// CARA HQ — /api/v1/hq/customers (list + provision)
+import { NextResponse } from "next/server";
+import { getStore } from "@/lib/db/store";
+import {
+  hqActorFromHeaders,
+  isPlatformAdmin,
+  ProvisionCustomerSchema,
+  provisionCustomer,
+} from "@/lib/hq/hq-service";
+
+export const dynamic = "force-dynamic";
+
+export async function GET(req: Request) {
+  const actor = hqActorFromHeaders(new Headers(req.headers));
+  if (!isPlatformAdmin(actor)) {
+    return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
+  }
+  const store = getStore();
+  const customers = [...store.hqOrganisations].sort((a, b) =>
+    b.created_at.localeCompare(a.created_at),
+  );
+  return NextResponse.json({ data: { customers } });
+}
+
+export async function POST(req: Request) {
+  const actor = hqActorFromHeaders(new Headers(req.headers));
+  if (!isPlatformAdmin(actor)) {
+    return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
+  }
+  const body = await req.json().catch(() => null);
+  const parsed = ProvisionCustomerSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "Invalid request" },
+      { status: 400 },
+    );
+  }
+  const org = provisionCustomer(parsed.data, actor);
+  return NextResponse.json({ data: { customer: org } }, { status: 201 });
+}

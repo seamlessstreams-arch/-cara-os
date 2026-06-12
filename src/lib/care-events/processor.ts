@@ -86,6 +86,10 @@ function processDailyLog(event: CareEvent, route: CareEventRoute): void {
     updated_by: event.staff_id,
   } as never);
   void persistDailyLog(entry); // best-effort Supabase write-through (no-op when off)
+  // HQ usage metering — kind + actor label only, never log content.
+  void import("@/lib/hq/hq-service")
+    .then((m) => m.logUsageEvent("daily_log", { userLabel: event.staff_id ?? null }))
+    .catch(() => {});
   {
     const e = entry as any;
     const significant = !!e.is_significant;

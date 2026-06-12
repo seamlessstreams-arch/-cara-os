@@ -79,6 +79,8 @@ export interface AriaTextGenerationInput {
   // For commands that ask the model for JSON, supply true so we instruct the
   // provider to return JSON. The caller still validates.
   expectJson?: boolean;
+  // HQ cost metering label — which product feature made this call.
+  feature?: string;
 }
 
 export interface AriaTextGenerationResult {
@@ -131,8 +133,21 @@ export async function generateText(
       }
       const data = (await res.json()) as {
         content?: { type: string; text?: string }[];
+        usage?: { input_tokens?: number; output_tokens?: number };
       };
       const text = data.content?.[0]?.text?.trim() ?? "";
+      // HQ cost metering — best-effort, never blocks or fails the call.
+      // Dynamic import keeps the server-only meter out of this module graph.
+      void import("@/lib/hq/usage-meter")
+        .then((m) =>
+          m.recordAiUsage({
+            feature: input.feature ?? "cara_text",
+            model: config.textModel,
+            tokensInput: data.usage?.input_tokens ?? 0,
+            tokensOutput: data.usage?.output_tokens ?? Math.ceil(text.length / 4),
+          }),
+        )
+        .catch(() => {});
       return {
         text,
         llmUsed: true,

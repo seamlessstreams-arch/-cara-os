@@ -55,3 +55,27 @@ Entities still marked in-memory are listed honestly in the matrix with their pla
 - AI: `cara_ai_runs` (who/child/module/flags/model) + `cara_guardrail_events` (every safety flag and the action taken).
 - Review: `cara_studio_outputs.reviewed_by / reviewed_at / review_note` — the DB refuses self-approval.
 - Sensitive actions: `audit_logs` via `writeAuditLog()`.
+
+## Cara HQ (platform owner) bootstrap
+Migration 414 adds the platform-owner layer: `organisations` (customers),
+`platform_admins`, `usage_events`, `ai_usage` and `break_glass_grants`.
+
+**Safeguarding boundary:** platform admins operate on metadata only — counts,
+usage, billing, health. No policy in 414 grants access to children's record
+content, and break-glass records intent without opening any data.
+
+To become the first platform admin:
+1. Run migration `414_platform_hq.sql` with the rest of the chain.
+2. Supabase Dashboard → Authentication → **Add user** (your own email), and
+   copy the new user's UUID.
+3. In the SQL editor, run:
+   ```sql
+   insert into platform_admins (user_id, full_name)
+   values ('<YOUR_AUTH_USER_UUID>', 'Owner — Pain Point Resolutions Ltd');
+   ```
+
+The HQ cockpit lives at `/hq` (overview, customers, AI usage & cost). AI calls
+meter themselves into `ai_usage` automatically; costs are estimates for margin
+watching, not billing. Manager sign-in provisioning (auth users + temporary
+passwords) deliberately waits for the Supabase Auth login flow — until then,
+provisioning records the customer organisation and manager contact.

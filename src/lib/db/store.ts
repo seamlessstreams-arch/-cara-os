@@ -35,6 +35,8 @@ import type { IncidentSession, IncidentTimelineEntry, AriaRecordingReview, Promp
 import { defaultPromptBank } from "@/lib/aria-incident/aria-incident-engine";
 import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from "@/lib/aria-incident/post-incident-engine";
 import type { AlertStateRecord } from "@/lib/aria-incident/manager-oversight-engine";
+import type { HqOrganisation, HqUsageEvent, HqAiUsageRow, HqBreakGlassGrant } from "@/lib/hq/hq-types";
+import { seedHqOrganisations, seedHqUsageEvents } from "@/lib/hq/hq-seeds";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -765,6 +767,11 @@ const store = {
   caraLibraryResources: [] as CaraLibraryResource[],
   caraAiRuns: [] as CaraAiRun[],
   caraGuardrailEvents: [] as CaraGuardrailEvent[],
+  // Cara HQ (platform owner) — metadata only, never children's records
+  hqOrganisations: seedHqOrganisations() as HqOrganisation[],
+  hqUsageEvents: seedHqUsageEvents() as HqUsageEvent[],
+  hqAiUsage: [] as HqAiUsageRow[],
+  hqBreakGlassGrants: [] as HqBreakGlassGrant[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],

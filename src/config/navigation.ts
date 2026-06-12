@@ -669,6 +669,20 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Data Persistence", href: "/data-persistence", icon: "Database", module: "dashboard" },
     ],
   },
+
+  // ── 9. Cara HQ (platform owner — metadata only, never children's records) ──
+  {
+    id:     "hq",
+    label:  "Cara HQ",
+    icon:   "Building2",
+    href:   "/hq",
+    module: "dashboard",
+    children: [
+      { label: "Overview",       href: "/hq",           icon: "LayoutDashboard", module: "dashboard" },
+      { label: "Customers",      href: "/hq/customers", icon: "Building2",       module: "dashboard" },
+      { label: "AI Usage & Cost", href: "/hq/ai-usage", icon: "Activity",        module: "dashboard" },
+    ],
+  },
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
