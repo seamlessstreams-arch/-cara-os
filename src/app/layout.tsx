@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { QueryProvider } from "@/providers/query-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
@@ -6,10 +7,16 @@ import { OfflineBanner } from "@/components/pwa/offline-banner";
 import { BRAND } from "@/lib/brand";
 import "./globals.css";
 
-// ── Cara OS uses Avenir Next LT Pro (declared in globals.css via @font-face)
-// with a graceful fallback chain. No Google Fonts dependency.
-// This gives Cara OS a distinctive, warm, professional identity
-// that doesn't look like a generic template.
+// ── Typeface: Plus Jakarta Sans, self-hosted at build time by next/font
+// (no runtime Google requests — files are baked into the deployment).
+// Licensed Avenir Next LT Pro takes over automatically if its files are
+// added to /public/fonts (see globals.css).
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-jakarta",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -45,7 +52,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="h-full antialiased" style={{ fontFamily: "var(--font-sans)" }}>
+    <html lang="en" className={`h-full antialiased ${jakarta.variable}`} style={{ fontFamily: "var(--font-sans)" }}>
       <body className="min-h-full bg-[var(--cs-bg)] text-[var(--cs-text)] selection:bg-[var(--cs-aria-gold-soft)] selection:text-[var(--cs-navy)]">
         <OfflineBanner />
         <QueryProvider>{children}</QueryProvider>

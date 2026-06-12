@@ -67,7 +67,7 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-[var(--cs-surface-elevated)] border-b border-[var(--cs-border)]">
+      <header className="sticky top-0 z-30 border-b border-[var(--cs-border)] bg-[var(--cs-surface-elevated)]/85 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--cs-surface-elevated)]/75">
         <div className="flex items-center gap-2 sm:gap-3 px-4 md:px-6 h-[56px] sm:h-[60px]">
 
           {/* ── Left: breadcrumb + title ── */}

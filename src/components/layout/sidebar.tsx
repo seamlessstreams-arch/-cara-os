@@ -306,7 +306,7 @@ export function Sidebar() {
                   className={cn(
                     "flex-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                     childActive
-                      ? "bg-slate-100 text-[var(--cs-navy)]"
+                      ? "bg-[var(--cs-teal-bg)] text-[var(--cs-navy)] font-semibold shadow-[inset_2px_0_0_var(--cs-teal)]"
                       : "text-[var(--cs-text-secondary)] hover:bg-[var(--cs-bg)] hover:text-[var(--cs-navy)]",
                   )}
                 >

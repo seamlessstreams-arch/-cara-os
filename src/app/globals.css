@@ -1,42 +1,10 @@
-/* ── Avenir Next LT Pro — local font declarations ─────────────────────────── */
-/* Place licensed font files in /public/fonts/ to activate.                    */
-/* Falls back gracefully to Avenir Next → Avenir → Inter when absent.          */
-
-@font-face {
-  font-family: "Avenir Next LT Pro";
-  src: url("/fonts/AvenirNextLTPro-Regular.woff2") format("woff2"),
-       url("/fonts/AvenirNextLTPro-Regular.woff") format("woff");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Avenir Next LT Pro";
-  src: url("/fonts/AvenirNextLTPro-Medium.woff2") format("woff2"),
-       url("/fonts/AvenirNextLTPro-Medium.woff") format("woff");
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Avenir Next LT Pro";
-  src: url("/fonts/AvenirNextLTPro-Demi.woff2") format("woff2"),
-       url("/fonts/AvenirNextLTPro-Demi.woff") format("woff");
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Avenir Next LT Pro";
-  src: url("/fonts/AvenirNextLTPro-Bold.woff2") format("woff2"),
-       url("/fonts/AvenirNextLTPro-Bold.woff") format("woff");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+/* ── Typeface ─────────────────────────────────────────────────────────────── */
+/* Primary: Plus Jakarta Sans (free, OFL), self-hosted at build time via      */
+/* next/font in src/app/layout.tsx (exposed as --font-jakarta). It closely    */
+/* matches the Avenir Next look the brand was designed around.                */
+/* To activate licensed Avenir Next LT Pro instead: drop the woff2 files in  */
+/* /public/fonts/ and restore the @font-face declarations from git history — */
+/* "Avenir Next LT Pro" stays first in the stack, so it wins automatically.  */
 
 /* ── Tailwind v4 import ───────────────────────────────────────────────────── */
 @import "tailwindcss";
@@ -47,9 +15,11 @@
 
 /* ── Cara Calm Design Tokens ───────────────────────────────────────── */
 :root {
-  /* Font stack — Avenir with graceful fallback chain */
-  --font-sans: "Avenir Next LT Pro", "Avenir Next", Avenir, ui-sans-serif,
-    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  /* Font stack — licensed Avenir wins if present, Plus Jakarta Sans is the
+     shipped face, then the system chain. */
+  --font-sans: "Avenir Next LT Pro", var(--font-jakarta, "Plus Jakarta Sans"),
+    "Avenir Next", Avenir, ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
 
   /* ── Cara Calm palette ─────────────────────────────────────────── */
   --cs-bg:              #f7f3ec;
@@ -605,6 +575,40 @@ body {
 ::selection {
   background: var(--cs-aria-gold-soft);
   color: var(--cs-navy);
+}
+
+/* ── Finish details: focus rings and scrollbars ────────────────────────────── */
+@layer base {
+  /* Visible, on-brand keyboard focus everywhere (mouse clicks stay clean). */
+  :focus-visible {
+    outline: 2px solid var(--cs-teal);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  /* Calm, slim scrollbars that match the surface palette. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(15, 30, 54, 0.18) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgba(15, 30, 54, 0.16);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 30, 54, 0.28);
+    background-clip: content-box;
+    border: 2px solid transparent;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 /* ── Cara typography — distinctive letter-spacing and weight ──────────
