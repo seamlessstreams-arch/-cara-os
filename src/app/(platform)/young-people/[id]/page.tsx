@@ -53,6 +53,7 @@ import { ChildHealthIntelligenceCard } from "@/components/intelligence/child-hea
 import { ChildBehaviourSafetyIntelligenceCard } from "@/components/intelligence/child-behaviour-safety-intelligence-card";
 import { ChildIndependenceIntelligenceCard } from "@/components/intelligence/child-independence-intelligence-card";
 import { ChildSafeguardingIntelligenceCard } from "@/components/intelligence/child-safeguarding-intelligence-card";
+import { ChildSafeguardingActionsCard } from "@/components/intelligence/child-safeguarding-actions-card";
 import { ChildPlacementQualityCard } from "@/components/intelligence/child-placement-quality-card";
 import { ChildMissingIntelligenceCard } from "@/components/intelligence/child-missing-intelligence-card";
 import { ChildLACReviewIntelligenceCard } from "@/components/intelligence/child-lac-review-intelligence-card";
@@ -668,6 +669,11 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
             {/* Independence & Life Skills Intelligence */}
             <div className="sm:col-span-2">
               <ChildIndependenceIntelligenceCard childId={id} />
+            </div>
+
+            {/* Safeguarding — open actions (operational) then the analysis */}
+            <div className="sm:col-span-2">
+              <ChildSafeguardingActionsCard childId={id} childName={displayName} />
             </div>
 
             {/* Safeguarding Intelligence */}

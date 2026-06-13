@@ -7,9 +7,13 @@ import { computeSafeguardingOverview } from "@/lib/engines/safeguarding-overview
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
   const store = getStore() as any;
   const today = new Date().toISOString().slice(0, 10);
+  // Optional child scope: ?childId=X narrows every section to one child.
+  const childId = new URL(req.url).searchParams.get("childId");
+  const forChild = (cid: any) => !childId || String(cid) === childId;
+  const ladoForChild = (ids: any[]) => !childId || (Array.isArray(ids) && ids.map(String).includes(childId));
 
   const ypById = new Map<string, string>(
     (store.youngPeople ?? []).map((y: any) => [String(y.id), y.preferred_name || y.first_name || "Unknown"]),
@@ -18,7 +22,7 @@ export async function GET() {
 
   const result = computeSafeguardingOverview({
     today,
-    incidents: (store.incidents ?? []).map((i: any) => ({
+    incidents: (store.incidents ?? []).filter((i: any) => forChild(i.child_id)).map((i: any) => ({
       id: String(i.id),
       child_id: String(i.child_id),
       type: String(i.type ?? "incident"),
@@ -28,7 +32,7 @@ export async function GET() {
       requires_oversight: !!i.requires_oversight,
       oversight_at: i.oversight_at ?? null,
     })),
-    missing: (store.missingEpisodes ?? []).map((m: any) => ({
+    missing: (store.missingEpisodes ?? []).filter((m: any) => forChild(m.child_id)).map((m: any) => ({
       id: String(m.id),
       child_id: String(m.child_id),
       date_missing: String(m.date_missing ?? "").slice(0, 10),
@@ -36,7 +40,7 @@ export async function GET() {
       risk_level: String(m.risk_level ?? "medium"),
       return_interview_completed: !!m.return_interview_completed,
     })),
-    risk: (store.riskAssessments ?? []).map((r: any) => ({
+    risk: (store.riskAssessments ?? []).filter((r: any) => forChild(r.child_id)).map((r: any) => ({
       id: String(r.id),
       child_id: String(r.child_id),
       domain: String(r.domain ?? "general"),
@@ -44,7 +48,7 @@ export async function GET() {
       status: String(r.status ?? "current"),
       review_date: r.review_date ? String(r.review_date).slice(0, 10) : "",
     })),
-    lado: (store.ladoReferrals ?? []).map((l: any) => ({
+    lado: (store.ladoReferrals ?? []).filter((l: any) => ladoForChild(l.child_ids)).map((l: any) => ({
       id: String(l.id),
       child_ids: Array.isArray(l.child_ids) ? l.child_ids.map(String) : [],
       status: String(l.status ?? "initial_assessment"),
@@ -52,7 +56,7 @@ export async function GET() {
       closed_date: l.closed_date ? String(l.closed_date).slice(0, 10) : null,
       allegation_type: String(l.allegation_type ?? "allegation"),
     })),
-    notifiable: (store.notifiableEvents ?? []).map((n: any) => ({
+    notifiable: (store.notifiableEvents ?? []).filter((n: any) => forChild(n.child_id)).map((n: any) => ({
       id: String(n.id),
       child_id: n.child_id ? String(n.child_id) : null,
       date: String(n.date ?? "").slice(0, 10),
