@@ -40,6 +40,9 @@ import { seedHqOrganisations, seedHqUsageEvents } from "@/lib/hq/hq-seeds";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { seedCalendarEvents } from "@/lib/calendar/calendar-seeds";
 import { seedStaffSicknessRecords } from "@/lib/workforce/absence-seeds";
+import type { ShiftPattern } from "@/lib/rota/shift-patterns";
+import type { StaffingPolicy } from "@/lib/rota/staffing-cover-engine";
+import { seedShiftPatterns, seedStaffingPolicy, seedShiftCoverNotes, type ShiftCoverNote } from "@/lib/rota/rota-seeds";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -777,6 +780,10 @@ const store = {
   hqBreakGlassGrants: [] as HqBreakGlassGrant[],
   // Calendar — ONE editable collection; everything else is projected live
   calendarEvents: seedCalendarEvents() as CalendarEvent[],
+  // Rota — shift patterns, the home staffing policy (singleton), and over-cover reason notes
+  shiftPatterns: seedShiftPatterns() as ShiftPattern[],
+  staffingPolicy: seedStaffingPolicy() as StaffingPolicy,
+  shiftCoverNotes: seedShiftCoverNotes() as ShiftCoverNote[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],

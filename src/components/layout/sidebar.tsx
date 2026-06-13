@@ -30,7 +30,7 @@ import {
   MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck, FileSignature,
   // Team icons
   Calendar, MessageSquare, GraduationCap, UserCheck, Fingerprint, TrendingUp,
-  Network, Milestone, CalendarDays, CalendarClock, Clock,
+  Network, Milestone, CalendarDays, CalendarClock, CalendarRange, Clock,
   // Home icons
   Car, Wrench, Receipt,
   // Compliance icons
@@ -53,7 +53,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   HeartHandshake, ClipboardList, BookOpen, AlertTriangle, ShieldAlert, MessageCircle,
   MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck, FileSignature,
   Calendar, MessageSquare, GraduationCap, UserCheck, Fingerprint, TrendingUp,
-  Network, Milestone, CalendarDays, CalendarClock, Clock,
+  Network, Milestone, CalendarDays, CalendarClock, CalendarRange, Clock,
   Car, Wrench, Receipt,
   Gavel, Eye, Flag, ClipboardCheck, Award,
   BarChart2,
