@@ -12,9 +12,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { usePlanMyDay } from "@/hooks/use-plan-my-day";
 import {
-  Clock, ArrowRight, Sparkles, ShieldAlert, Users, ClipboardList, CheckSquare, HeartHandshake, Stethoscope, CheckCircle2, CalendarClock,
+  Clock, ArrowRight, Sparkles, ShieldAlert, Users, ClipboardList, CheckSquare, HeartHandshake, Stethoscope, CheckCircle2, CalendarClock, Coffee, Sunrise,
 } from "lucide-react";
 import type { PlanActionItem, PlanCategory, PlanSeverity } from "@/lib/engines/manager-plan-my-day-engine";
+import type { ScheduleBlock } from "@/lib/engines/day-schedule";
 
 const SEV_BAR: Record<PlanSeverity, string> = {
   critical: "border-l-[var(--cs-risk)]",
@@ -68,6 +69,44 @@ function ActionRow({ item }: { item: PlanActionItem }) {
   );
 }
 
+function ScheduleRow({ block }: { block: ScheduleBlock }) {
+  const time = `${block.start}–${block.end}`;
+  const TimeCol = <span className="w-[96px] shrink-0 pt-3 text-xs font-semibold tabular-nums text-[var(--cs-text-gentle)]">{time}</span>;
+
+  if (block.kind === "task") {
+    const Icon = CAT_ICON[(block.category as PlanCategory)] ?? CheckSquare;
+    return (
+      <div className="flex gap-3">
+        {TimeCol}
+        <Link
+          href={block.href ?? "#"}
+          className={`flex-1 rounded-xl border border-[var(--cs-border-subtle)] bg-[var(--cs-surface-elevated)] p-3 border-l-4 ${SEV_BAR[(block.severity as PlanSeverity)] ?? SEV_BAR.medium} transition-shadow hover:shadow-[var(--cs-shadow-soft)]`}
+        >
+          <div className="flex items-center gap-2"><Icon className="h-3.5 w-3.5 shrink-0 text-[var(--cs-text-muted)]" /><span className="text-sm font-semibold text-[var(--cs-navy)]">{block.title}</span></div>
+          {block.detail && <p className="mt-0.5 text-xs text-[var(--cs-text-secondary)]">{block.detail}</p>}
+        </Link>
+      </div>
+    );
+  }
+
+  const Icon = block.kind === "anchor" ? CalendarClock : block.kind === "break" ? Coffee : Sunrise;
+  const tone = block.kind === "anchor"
+    ? "border-[var(--cs-teal)] bg-[var(--cs-teal-bg)]"
+    : "border-[var(--cs-border-subtle)] bg-[var(--cs-surface)]";
+  const body = (
+    <div className={`flex-1 rounded-xl border ${tone} p-3`}>
+      <div className="flex items-center gap-2"><Icon className="h-3.5 w-3.5 shrink-0 text-[var(--cs-text-muted)]" /><span className="text-sm font-semibold text-[var(--cs-navy)]">{block.title}</span></div>
+      {block.detail && <p className="mt-0.5 text-xs text-[var(--cs-text-secondary)]">{block.detail}</p>}
+    </div>
+  );
+  return (
+    <div className="flex gap-3">
+      {TimeCol}
+      {block.kind === "anchor" && block.href ? <Link href={block.href} className="flex-1">{body}</Link> : body}
+    </div>
+  );
+}
+
 export default function PlanMyDayPage() {
   const { data: resp, isLoading, error } = usePlanMyDay();
   const plan = resp?.data;
@@ -116,25 +155,38 @@ export default function PlanMyDayPage() {
               </Card>
             )}
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              {/* Fixed commitments */}
+            {/* Today's schedule — the timed running order */}
+            <CardErrorBoundary>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-[var(--cs-teal)]" /> Your day</CardTitle>
-                  <Link href="/calendar" className="inline-flex items-center gap-1 text-xs font-semibold text-[var(--cs-teal)] hover:underline">Calendar <ArrowRight className="h-3 w-3" /></Link>
+                  <CardTitle className="flex items-center gap-2 text-sm"><Clock className="h-4 w-4 text-[var(--cs-teal)]" /> Today&apos;s schedule</CardTitle>
+                  <span className="text-xs text-[var(--cs-text-muted)]">{plan.day_window.start}–{plan.day_window.end}</span>
                 </CardHeader>
                 <CardContent>
-                  {plan.fixed.length === 0 ? (
-                    <p className="py-2 text-sm text-[var(--cs-text-muted)]">No fixed commitments today — your time is your own to allocate to the priorities.</p>
+                  {plan.schedule.length === 0 ? (
+                    <p className="py-2 text-sm text-[var(--cs-text-muted)]">Nothing to schedule — your day is clear.</p>
                   ) : (
-                    <div className="space-y-1.5">
-                      {plan.fixed.map((f) => (
-                        <Link key={f.id} href={f.href} className="flex items-center gap-3 rounded-lg px-2 py-1.5 transition-colors hover:bg-[var(--cs-surface)]">
-                          <span className="w-14 shrink-0 text-xs font-semibold tabular-nums text-[var(--cs-text-gentle)]">{f.all_day ? "All day" : f.time}</span>
-                          <span className="flex-1 truncate text-sm text-[var(--cs-navy)]">{f.title}</span>
-                          {f.subtitle && <span className="hidden shrink-0 text-xs text-[var(--cs-text-muted)] sm:inline">{f.subtitle}</span>}
-                        </Link>
-                      ))}
+                    <div className="space-y-2">
+                      {plan.schedule.map((b, i) => <ScheduleRow key={`${b.start}_${i}`} block={b} />)}
+                    </div>
+                  )}
+                  <p className="mt-3 text-[11px] text-[var(--cs-text-gentle)]">A suggested running order — times are estimates worked around your fixed commitments. Adjust as the day unfolds.</p>
+                </CardContent>
+              </Card>
+            </CardErrorBoundary>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              {/* If time allows (carry-over) */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-sm"><CalendarClock className="h-4 w-4 text-[var(--cs-navy)]" /> If time allows</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {plan.carry_over.length === 0 ? (
+                    <p className="py-2 text-sm text-[var(--cs-text-muted)]">Everything fits in the day — nothing carried over.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {plan.carry_over.map((p) => <ActionRow key={p.id} item={p} />)}
                     </div>
                   )}
                 </CardContent>
@@ -147,7 +199,7 @@ export default function PlanMyDayPage() {
                 </CardHeader>
                 <CardContent>
                   {plan.positives.length === 0 ? (
-                    <p className="py-2 text-sm text-[var(--cs-text-muted)]">Plenty on today — work the priorities on the right.</p>
+                    <p className="py-2 text-sm text-[var(--cs-text-muted)]">Plenty on today — work the schedule above.</p>
                   ) : (
                     <ul className="space-y-1.5">
                       {plan.positives.map((p) => (
@@ -160,24 +212,6 @@ export default function PlanMyDayPage() {
                 </CardContent>
               </Card>
             </div>
-
-            {/* Priorities */}
-            <CardErrorBoundary>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-sm"><CalendarClock className="h-4 w-4 text-[var(--cs-navy)]" /> Priorities — what needs you</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {plan.priorities.length === 0 ? (
-                    <p className="py-2 text-sm text-[var(--cs-text-muted)]">Nothing pressing right now. Use the time for key-working, observations and getting ahead.</p>
-                  ) : (
-                    <div className="space-y-2">
-                      {plan.priorities.map((p) => <ActionRow key={p.id} item={p} />)}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </CardErrorBoundary>
 
             {/* Watch */}
             {plan.watch.length > 0 && (

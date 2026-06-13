@@ -120,6 +120,29 @@ describe("computeManagerPlanDay — priorities", () => {
   });
 });
 
+describe("computeManagerPlanDay — timed schedule", () => {
+  it("produces a running order with a handover block and anchors a timed calendar item", () => {
+    const r = computeManagerPlanDay(
+      input({
+        calendar: [{ id: "m", title: "Team meeting", start: "2026-06-15T10:00:00", all_day: false, source: "calendar", href: "/calendar?event=m" }],
+        incidents: [{ id: "i", type: "safeguarding", severity: "high", date: "2026-06-14", requires_oversight: true, oversight_at: null, status: "open" }],
+        tasks: [{ id: "t1", title: "Update care plan", due_date: "2026-06-10", status: "in_progress", priority: "high" }],
+        dayStart: "09:00",
+        dayEnd: "17:00",
+      }),
+    );
+    expect(r.schedule.length).toBeGreaterThan(0);
+    expect(r.schedule[0].title).toContain("Start of shift");
+    // the meeting is anchored at 10:00
+    expect(r.schedule.find((b) => b.title === "Team meeting")?.start).toBe("10:00");
+    // a lunch break exists
+    expect(r.schedule.some((b) => b.kind === "break")).toBe(true);
+    // the safeguarding oversight got a time slot
+    expect(r.schedule.some((b) => b.kind === "task" && b.category === "safeguarding")).toBe(true);
+    expect(r.day_window).toEqual({ start: "09:00", end: "17:00" });
+  });
+});
+
 describe("computeManagerPlanDay — headline & positives", () => {
   it("writes a clean-day headline and positives when nothing is pressing", () => {
     const r = computeManagerPlanDay(input());

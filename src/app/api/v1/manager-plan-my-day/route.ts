@@ -13,8 +13,9 @@ const FIXED_EXCLUDE = new Set(["task", "training", "shift"]);
 
 export async function GET() {
   const store = getStore();
-  const today = new Date().toISOString().slice(0, 10);
-  const now = new Date().toISOString();
+  const nowDate = new Date();
+  const today = nowDate.toISOString().slice(0, 10);
+  const now = nowDate.toISOString();
 
   const ypById = new Map(store.youngPeople.map((y) => [y.id, y.preferred_name || y.first_name || "Unknown"]));
   const staffById = new Map(store.staff.map((s) => [s.id, s.full_name || `${s.first_name} ${s.last_name}`.trim()]));
@@ -82,6 +83,9 @@ export async function GET() {
       return { child_name: ypById.get(y.id) ?? "Unknown", last_session_date: last, days_since: days };
     });
 
+  // Start the timed plan from "now" (rounded) so it reflects the day remaining.
+  const scheduleFrom = `${String(nowDate.getHours()).padStart(2, "0")}:${String(nowDate.getMinutes()).padStart(2, "0")}`;
+
   const plan = computeManagerPlanDay({
     today,
     now,
@@ -91,6 +95,7 @@ export async function GET() {
     supervisions,
     training,
     keyworkGaps,
+    scheduleFrom,
   });
 
   // ── Optional AI narrative (graceful: null when no key) ──

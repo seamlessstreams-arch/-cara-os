@@ -9,6 +9,8 @@
 // A route may attach an optional AI narrative on top; the plan stands alone.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { buildDaySchedule, type ScheduleBlock } from "./day-schedule";
+
 export type PlanSeverity = "critical" | "high" | "medium" | "low";
 export type PlanCategory = "safeguarding" | "staff" | "records" | "tasks" | "keywork" | "health";
 
@@ -69,6 +71,11 @@ export interface PlanMyDayInput {
   keyworkGaps: PlanDayKeyworkGapInput[];
   /** Days without a key-working session before it counts as overdue. */
   keyworkOverdueDays?: number;
+  /** Working-day window for the timed schedule (defaults 09:00–17:00). */
+  dayStart?: string;
+  dayEnd?: string;
+  /** Floor the schedule at this HH:MM (e.g. "now" when planning mid-day). */
+  scheduleFrom?: string | null;
 }
 
 export interface PlanFixedItem {
@@ -87,6 +94,8 @@ export interface PlanActionItem {
   detail: string;
   href: string;
   due: string | null;
+  /** Estimated time to action, used by the day scheduler. */
+  duration_min: number;
 }
 export interface ManagerPlanDayResult {
   generated_for: string;
@@ -95,6 +104,11 @@ export interface ManagerPlanDayResult {
   fixed: PlanFixedItem[];
   priorities: PlanActionItem[];
   watch: PlanActionItem[];
+  /** The timed running order for the day (anchors + lunch + filled priorities). */
+  schedule: ScheduleBlock[];
+  /** Priorities that did not fit into the working day. */
+  carry_over: PlanActionItem[];
+  day_window: { start: string; end: string };
   counts: {
     fixed: number;
     priorities: number;
@@ -156,6 +170,7 @@ function buildIncidentActions(incidents: PlanDayIncidentInput[]): PlanActionItem
       detail: "Incident is awaiting your management oversight and sign-off.",
       href: "/incidents",
       due: i.date,
+      duration_min: 30,
     }));
 }
 
@@ -172,6 +187,7 @@ function buildTaskActions(tasks: PlanDayTaskInput[], today: string): { prioritie
     detail: `${t.child_name ? `${t.child_name}. ` : ""}Due ${t.due_date}.`,
     href: "/tasks",
     due: t.due_date,
+    duration_min: 30,
   }));
 
   const watch: PlanActionItem[] = dueToday.map((t) => ({
@@ -182,6 +198,7 @@ function buildTaskActions(tasks: PlanDayTaskInput[], today: string): { prioritie
     detail: t.child_name ? `${t.child_name}.` : "Due by end of day.",
     href: "/tasks",
     due: t.due_date,
+    duration_min: 30,
   }));
 
   return { priorities, watch, overdueCount: overdue.length };
@@ -198,6 +215,7 @@ function buildSupervisionActions(sups: PlanDaySupervisionInput[], today: string)
       detail: `Scheduled ${s.scheduled_date} and not yet completed.`,
       href: "/supervisions",
       due: s.scheduled_date,
+      duration_min: 45,
     }));
 }
 
@@ -223,6 +241,7 @@ function buildTrainingActions(training: PlanDayTrainingInput[], today: string): 
         detail: expired ? `Expired ${tr.expiry_date} — arrange renewal.` : `Expires ${tr.expiry_date}.`,
         href: "/training",
         due: tr.expiry_date,
+        duration_min: 15,
       });
     } else if (month) {
       watch.push({
@@ -233,6 +252,7 @@ function buildTrainingActions(training: PlanDayTrainingInput[], today: string): 
         detail: `Expires ${tr.expiry_date}.`,
         href: "/training",
         due: tr.expiry_date,
+        duration_min: 15,
       });
     }
   }
@@ -250,6 +270,7 @@ function buildKeyworkActions(gaps: PlanDayKeyworkGapInput[], overdueDays: number
       detail: g.last_session_date ? `Last session ${g.last_session_date} (${g.days_since}d ago).` : "No key-working session recorded yet.",
       href: "/child-keyworker-1to1-sessions",
       due: null,
+      duration_min: 20,
     }));
 }
 
@@ -290,6 +311,17 @@ export function computeManagerPlanDay(input: PlanMyDayInput): ManagerPlanDayResu
   if (trnPri.length === 0) positives.push("No training expired or expiring this week");
   if (kwActions.length === 0) positives.push("Key-working is up to date across the home");
 
+  // ── Timed running order ──
+  const schedule = buildDaySchedule<PlanActionItem>({
+    dayStart: input.dayStart,
+    dayEnd: input.dayEnd,
+    startFrom: input.scheduleFrom ?? null,
+    anchors: fixed
+      .filter((f) => !f.all_day && f.time)
+      .map((f) => ({ time: f.time as string, duration_min: 60, title: f.title, subtitle: f.subtitle, href: f.href })),
+    actions: priorities,
+  });
+
   return {
     generated_for: input.manager_name ?? "Manager",
     date: input.today,
@@ -297,6 +329,9 @@ export function computeManagerPlanDay(input: PlanMyDayInput): ManagerPlanDayResu
     fixed,
     priorities,
     watch,
+    schedule: schedule.blocks,
+    carry_over: schedule.carry_over,
+    day_window: schedule.window,
     counts: {
       fixed: fixed.length,
       priorities: priorities.length,
