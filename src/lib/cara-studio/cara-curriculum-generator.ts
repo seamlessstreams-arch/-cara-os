@@ -11,6 +11,7 @@ import type { CaraCurriculumMapOutput } from "./cara-types";
 import type { CaraChildContext } from "./cara-context-builder";
 import { CARA_CURRICULUM_DOMAINS, RISK_TO_DOMAINS, RECORDING_PROMPTS, type CaraCurriculumDomain } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
+import { independenceSkillsForDomain } from "@/lib/aria/practice-frameworks";
 
 export interface CurriculumGenInput {
   ctx: CaraChildContext;
@@ -88,7 +89,11 @@ export function generateCaraCurriculumMap(input: CurriculumGenInput): { output: 
         : ctx.riskThemes.some((r) => (RISK_TO_DOMAINS[r.toLowerCase()] ?? []).includes(domain))
           ? `Directly linked to ${ctx.name}'s current risk themes.`
           : "Builds on the previous week and keeps momentum without overload.",
-    sessionIdeas: DOMAIN_SESSION_IDEAS[domain] ?? [`A short, practical session on ${domain.toLowerCase()}`, `A visual or walk-and-talk follow-up on ${domain.toLowerCase()}`],
+    sessionIdeas: [
+      ...(DOMAIN_SESSION_IDEAS[domain] ?? [`A short, practical session on ${domain.toLowerCase()}`, `A visual or walk-and-talk follow-up on ${domain.toLowerCase()}`]),
+      // Blend in concrete preparation-for-adulthood skills that map to this domain.
+      ...independenceSkillsForDomain(domain).slice(0, 2).map((s) => `Independence skill — ${s.skill}: ${s.summary}`),
+    ],
   }));
 
   const priorityNeeds = [

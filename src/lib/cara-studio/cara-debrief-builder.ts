@@ -10,6 +10,7 @@
 import type { CaraStaffDebriefOutput } from "./cara-types";
 import { RECORDING_PROMPTS, STAFF_REGULATION_REMINDERS } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
+import { BEHAVIOUR_DRIVERS } from "@/lib/aria/practice-frameworks";
 
 export interface DebriefInput {
   incidentSummary: string;
@@ -36,6 +37,7 @@ export function generateStaffDebrief(input: DebriefInput): { output: CaraStaffDe
       "A need that couldn't find words — safety, control, space, significance or connection",
       input.childPresentation ? `Their presentation (${input.childPresentation.slice(0, 100)}) suggests the nervous system was driving, not choice` : "Behaviour that intense is usually a nervous-system response, not a decision",
       "Possibly something about earlier in the day, or earlier in their life, that the moment touched",
+      `Through the R-Domain lens, weigh which driver was loudest: ${BEHAVIOUR_DRIVERS.map((d) => d.name.toLowerCase()).join(", ")}`,
     ],
     whatWorkedWell: [
       input.whatWorked?.trim() || "You stayed, and the child experienced an adult who didn't disappear — name that win",
@@ -60,6 +62,7 @@ export function generateStaffDebrief(input: DebriefInput): { output: CaraStaffDe
       "What support would have changed how it went — staffing, information, backup?",
       "Is this part of a pattern (time, trigger, pairing) the team should see?",
       "What do you need before the next similar moment?",
+      "Would the child recognise themselves in how we've understood this moment — or have adult explanations taken centre stage?",
     ],
     recordingImprovements: [
       "Record observable facts and the child's words verbatim — interpretation goes in clearly-marked reflection",

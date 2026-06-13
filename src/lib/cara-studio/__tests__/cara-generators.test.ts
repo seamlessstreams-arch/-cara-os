@@ -138,6 +138,12 @@ describe("curriculum generator", () => {
     expect(generateCaraCurriculumMap(input)).toEqual(generateCaraCurriculumMap(input));
     expect(generateCaraCurriculumMap(input).output.weeklyPlan).toHaveLength(4);
   });
+
+  it("blends preparation-for-adulthood independence skills into session ideas", () => {
+    const { output } = generateCaraCurriculumMap({ ctx: ctx(), desiredOutcomes: ["Safer free time"], timeframeWeeks: 8 });
+    const allIdeas = output.weeklyPlan.flatMap((w) => w.sessionIdeas);
+    expect(allIdeas.some((i) => /Independence skill —/.test(i))).toBe(true);
+  });
 });
 
 describe("conversation coach", () => {
@@ -171,6 +177,11 @@ describe("incident converter", () => {
   it("outputs stay guardrail-clean (non-shaming by construction)", () => {
     const r = convertIncidentToLearning({ ctx: ctx(), incidentSummary: "Refused to attend school and ignored staff all morning." });
     expect(runCaraGuardrails(r.output).passed).toBe(true);
+  });
+
+  it("frames the unmet need through behaviour-as-communication drivers", () => {
+    const r = convertIncidentToLearning({ ctx: ctx(), incidentSummary: "Alex went missing after curfew and returned at 2am." });
+    expect(r.output.possibleUnmetNeed.some((n) => /Behaviour is communication/i.test(n))).toBe(true);
   });
 });
 
@@ -228,5 +239,11 @@ describe("debrief builder", () => {
     expect(output.whatCouldBeImproved.join(" ")).toMatch(/raised my voice/);
     expect(runCaraGuardrails(output).passed).toBe(true);
     expect(output.staffGuidance).toMatch(/never disciplinary/i);
+  });
+
+  it("offers an R-Domain behaviour lens and a child-centred supervision question", () => {
+    const { output } = generateStaffDebrief({ incidentSummary: "De-escalation after a difficult phone call" });
+    expect(output.whatTheChildMayHaveBeenCommunicating.some((x) => /R-Domain/i.test(x))).toBe(true);
+    expect(output.supervisionQuestions.some((q) => /recognise themselves/i.test(q))).toBe(true);
   });
 });

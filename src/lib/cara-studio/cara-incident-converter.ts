@@ -11,6 +11,7 @@ import type { CaraIncidentLearningOutput } from "./cara-types";
 import type { CaraChildContext } from "./cara-context-builder";
 import { PACE_OPENINGS, PACE_VALIDATIONS, RECORDING_PROMPTS } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
+import { BEHAVIOUR_DRIVERS } from "@/lib/aria/practice-frameworks";
 
 export interface IncidentLearningInput {
   ctx: CaraChildContext;
@@ -116,7 +117,11 @@ export function convertIncidentToLearning(input: IncidentLearningInput): { outpu
   const output: CaraIncidentLearningOutput = {
     learningTheme: input.desiredLearning || rule.theme,
     nonShamingReframe: rule.reframe(name),
-    possibleUnmetNeed: rule.unmetNeeds,
+    possibleUnmetNeed: [
+      ...rule.unmetNeeds,
+      // Behaviour as communication — weigh which relational/psychological driver may fit.
+      `Behaviour is communication: gently weigh which driver may have been loudest for ${name} — ${BEHAVIOUR_DRIVERS.map((d) => d.name.toLowerCase()).join(", ")}.`,
+    ],
     staffReflection: `Before the conversation, ask yourself: what was the moment like for ${name}, second by second? What did our response communicate? ${input.staffResponse ? `Looking at what we did (${input.staffResponse.slice(0, 120)}), what would we keep and what would we soften?` : "What would 'connection before correction' have looked like at each step?"}`,
     childConversationPlan: [
       `Wait until ${name} is regulated and the moment is ordinary — never relitigate in the heat.`,
