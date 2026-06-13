@@ -16,6 +16,7 @@ import { AriaPanel } from "@/components/aria/aria-panel";
 import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
 import { StudioQuickActions } from "@/components/aria-studio/studio-quick-actions";
 import { useStaffMember } from "@/hooks/use-staff";
+import { StaffComplianceCard } from "@/components/staff/staff-compliance-card";
 import { useTrainingNeeds } from "@/hooks/use-ri-learning";
 import { useAuthContext } from "@/contexts/auth-context";
 import { PrintButton } from "@/components/common/print-button";
@@ -388,6 +389,11 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                 </div>
               </CardContent>
             </Card>
+
+            {/* Consolidated compliance & absence verdict */}
+            <div className="sm:col-span-2">
+              <StaffComplianceCard staffId={id} />
+            </div>
 
             {/* Recent training */}
             {training.length > 0 && (
