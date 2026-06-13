@@ -2,7 +2,7 @@
 // CARA — PRODUCT TOUR  (route: /product/tour)
 //
 // A visual "see it in action" walkthrough using REAL screenshots of the live
-// platform (captured from cara-os-fresh.vercel.app, demo data). Each step
+// platform (captured from the live demo deployment). Each step
 // links straight into the corresponding live page.
 // ══════════════════════════════════════════════════════════════════════════════
 

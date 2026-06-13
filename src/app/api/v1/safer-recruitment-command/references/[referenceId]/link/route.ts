@@ -46,7 +46,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ referenceI
     notes: `Secure one-time reference link issued for ${reference.referee_name} (${reference.organisation_name}). Token stored hashed; link shown once to the manager.`,
   });
 
-  const origin = req.headers.get("origin") ?? `https://${req.headers.get("host") ?? "cara-os-fresh.vercel.app"}`;
+  // Prefer the request's own origin/host; fall back to Vercel's auto-injected
+  // production domain so a changed deploy alias never silently breaks the link.
+  const origin = req.headers.get("origin") ?? `https://${req.headers.get("host") ?? process.env.VERCEL_PROJECT_PRODUCTION_URL ?? "cara-careos-fresh.vercel.app"}`;
   return NextResponse.json({
     data: {
       link: `${origin}/reference/${issued.token}`,
