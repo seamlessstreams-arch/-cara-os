@@ -7,11 +7,12 @@
 // chronology notes — projected live (capture once, surface everywhere). No
 // manual upkeep: record anywhere and it appears here.
 
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { Activity, ArrowRight, Sparkles } from "lucide-react";
+import { Activity, ArrowRight, Sparkles, FileUp } from "lucide-react";
 import { useChildChronology, type ChronologyItem } from "@/hooks/use-child-chronology";
 import { getStaffName } from "@/lib/seed-data";
+import { ChronologyImportDialog } from "@/components/young-person/chronology-import-dialog";
 
 const SOURCE_LABEL: Record<ChronologyItem["source_type"], string> = {
   care_event: "Care Event",
@@ -46,6 +47,7 @@ function monthKey(date: string): string {
 
 export function ChildChronologyTab({ childId, childName }: { childId: string; childName: string }) {
   const { data, isLoading } = useChildChronology({ childId, limit: 80 });
+  const [importOpen, setImportOpen] = useState(false);
   const items = data?.data ?? [];
   const stats = data?.stats;
 
@@ -71,12 +73,20 @@ export function ChildChronologyTab({ childId, childName }: { childId: string; ch
             assessments. Record anywhere and it appears here; no manual upkeep.
           </p>
         </div>
-        <Link
-          href={`/young-people/${childId}/chronology`}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
-          Full chronology <ArrowRight className="h-3.5 w-3.5" />
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={() => setImportOpen(true)}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            <FileUp className="h-3.5 w-3.5" /> Import history
+          </button>
+          <Link
+            href={`/young-people/${childId}/chronology`}
+            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            Full chronology <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
       </div>
 
       {stats && stats.total > 0 && (
@@ -108,6 +118,11 @@ export function ChildChronologyTab({ childId, childName }: { childId: string; ch
                           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                             {SOURCE_LABEL[it.source_type]}
                           </span>
+                          {it.imported && (
+                            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-700">
+                              Imported
+                            </span>
+                          )}
                           <span className="text-sm font-semibold text-slate-900">{it.title}</span>
                         </div>
                         <p className="mt-1 text-xs leading-relaxed text-slate-600">{it.summary}</p>
@@ -131,6 +146,8 @@ export function ChildChronologyTab({ childId, childName }: { childId: string; ch
           ))}
         </div>
       )}
+
+      <ChronologyImportDialog childId={childId} childName={childName} open={importOpen} onClose={() => setImportOpen(false)} />
     </div>
   );
 }

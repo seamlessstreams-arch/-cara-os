@@ -30,6 +30,7 @@ export interface ChronologyItem {
   category: string;
   staff_id: string | null;
   links: { label: string; href: string }[];
+  imported?: boolean;
 }
 
 export interface ChronologyStats {

@@ -35,6 +35,8 @@ export interface ChronologyItem {
   category: string;
   staff_id: string | null;
   links: { label: string; href: string }[];
+  /** True for entries imported from a prior placement's chronology. */
+  imported?: boolean;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -227,6 +229,7 @@ async function getChronology(
         category:    e.category,
         staff_id:    e.recorded_by ?? null,
         links:       [],
+        imported:    e.imported === true,
       });
     }
   }
