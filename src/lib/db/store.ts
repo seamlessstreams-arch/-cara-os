@@ -39,6 +39,7 @@ import type { HqOrganisation, HqUsageEvent, HqAiUsageRow, HqBreakGlassGrant } fr
 import { seedHqOrganisations, seedHqUsageEvents } from "@/lib/hq/hq-seeds";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { seedCalendarEvents } from "@/lib/calendar/calendar-seeds";
+import { seedStaffSicknessRecords } from "@/lib/workforce/absence-seeds";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -2418,7 +2419,7 @@ const store = {
   staffReflectionRecords: [] as StaffReflectionRecord[],
   staffSaferCaringRecords: [] as StaffSaferCaringRecord[],
   staffShadowingRecords: [] as StaffShadowingRecord[],
-  staffSicknessRecords: [] as StaffSicknessRecord[],
+  staffSicknessRecords: seedStaffSicknessRecords() as StaffSicknessRecord[],
   staffSupervisionThemeRecords: [] as StaffSupervisionThemeRecord[],
   staffWellbeingRecords: [] as StaffWellbeingRecord[],
   stakeholderFeedbackRecords: [] as StakeholderFeedbackRecord[],
