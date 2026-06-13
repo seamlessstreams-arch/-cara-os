@@ -54,6 +54,8 @@ export function seedCalendarEvents(): CalendarEvent[] {
       reminder_minutes_before: 60,
       reminder_sent: false,
       invite_sent: false,
+      recurrence: null,
+      last_reminded_occurrence: null,
       status: "scheduled",
       created_at: now,
       updated_at: now,
@@ -67,6 +69,7 @@ export function seedCalendarEvents(): CalendarEvent[] {
       event_type: "meeting",
       location: "Staff room",
       description: "Standing weekly check-in: handover themes, rota, actions.",
+      recurrence: { freq: "weekly", interval: 1, until: null, count: null },
       attendees: [
         { id: "a1", kind: "staff", name: "Olivia Hayes", email: null, staff_id: "staff_olivia", response: "accepted" },
         { id: "a2", kind: "staff", name: "Marcus Bell", email: null, staff_id: "staff_marcus", response: "pending" },
@@ -85,6 +88,7 @@ export function seedCalendarEvents(): CalendarEvent[] {
       event_type: "meeting",
       location: "Video call",
       description: "Cross-home practice and compliance catch-up.",
+      recurrence: { freq: "monthly", interval: 1, until: null, count: null },
     }),
   ];
 }

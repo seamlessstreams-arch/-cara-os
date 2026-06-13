@@ -81,6 +81,29 @@ describe("buildCalendarFeed — planned events", () => {
     const feed = buildCalendarFeed(emptyInput({ events: [baseEvent({ status: "cancelled" })] }));
     expect(feed.items).toHaveLength(0);
   });
+
+  it("expands a recurring event across the range, occurrences share the base source_id", () => {
+    const feed = buildCalendarFeed(
+      emptyInput({
+        events: [baseEvent({ id: "wk", start: "2026-06-01T10:00:00", end: "2026-06-01T11:00:00", recurrence: { freq: "weekly", interval: 1, until: null, count: null } })],
+        range: { from: "2026-06-01", to: "2026-06-30" },
+      }),
+    );
+    expect(feed.items.map((i) => i.date)).toEqual(["2026-06-01", "2026-06-08", "2026-06-15", "2026-06-22", "2026-06-29"]);
+    // Every occurrence is editable, recurring, and links back to the one series id.
+    expect(feed.items.every((i) => i.editable && i.recurring && i.source_id === "wk")).toBe(true);
+    expect(feed.items[1].id).toBe("cal_wk__2026-06-08");
+    expect(feed.items[1].href).toBe("/calendar?event=wk");
+    // End shifts onto the occurrence day, preserving time.
+    expect(feed.items[1].end).toBe("2026-06-08T11:00:00");
+  });
+
+  it("does not expand recurring events without a range (emits base only)", () => {
+    const feed = buildCalendarFeed(
+      emptyInput({ events: [baseEvent({ id: "wk", recurrence: { freq: "weekly", interval: 1, until: null, count: null } })] }),
+    );
+    expect(feed.items).toHaveLength(1);
+  });
 });
 
 describe("buildCalendarFeed — projections never duplicate, always read-only", () => {
@@ -225,6 +248,22 @@ describe("dueReminders", () => {
     const cancelled = baseEvent({ reminder_minutes_before: 60, status: "cancelled" });
     const none = baseEvent({ reminder_minutes_before: null });
     expect(dueReminders([sent, cancelled, none], "2026-06-20T13:30:00")).toHaveLength(0);
+  });
+
+  it("recurring: reminds the next occurrence and dedupes via last_reminded_occurrence", () => {
+    const weekly = baseEvent({
+      id: "wk",
+      start: "2026-06-01T10:00:00",
+      reminder_minutes_before: 60,
+      recurrence: { freq: "weekly", interval: 1, until: null, count: null },
+    });
+    // 30 min before the 15 Jun occurrence → due, occurrence_day tagged
+    const due = dueReminders([weekly], "2026-06-15T09:30:00");
+    expect(due).toHaveLength(1);
+    expect(due[0].occurrence_day).toBe("2026-06-15");
+    // Already reminded that occurrence → suppressed
+    const already = dueReminders([{ ...weekly, last_reminded_occurrence: "2026-06-15" }], "2026-06-15T09:30:00");
+    expect(already).toHaveLength(0);
   });
 });
 

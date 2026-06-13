@@ -16,6 +16,7 @@ import type {
   CalendarSource,
 } from "./calendar-types";
 import { ALL_CALENDAR_SOURCES } from "./calendar-types";
+import { expandOccurrences, nextOccurrenceStart } from "./recurrence";
 
 // ── Minimal shapes of the projected records (only the fields we read) ──────────
 // Kept structural so the engine never depends on the full store types.
@@ -147,28 +148,46 @@ function endFromTimes(date: string, endTime: string | null): string | null {
 
 // ── Per-source projectors (each pure; never mutate input) ──────────────────────
 
+/** Shift an event's end onto a different occurrence day, preserving time-of-day. */
+function occurrenceEnd(e: CalendarEvent, occStart: string): string | null {
+  if (!e.end) return null;
+  return `${dayKey(occStart)}T${e.end.slice(11)}`;
+}
+
 function projectEvents(events: CalendarEvent[], input: CalendarProjectionInput): CalendarItem[] {
-  return events
-    .filter((e) => e.status !== "cancelled")
-    .map((e) => ({
-      id: `cal_${e.id}`,
-      source: "calendar" as const,
-      title: e.title,
-      start: e.start,
-      end: e.end,
-      all_day: e.all_day,
-      date: dayKey(e.start),
-      event_type: e.event_type,
-      child_id: e.child_id,
-      child_name: input.resolveChild(e.child_id),
-      staff_id: e.organiser_id,
-      staff_name: input.resolveStaff(e.organiser_id),
-      location: e.location,
-      status: e.status,
-      editable: true,
-      href: `/calendar?event=${e.id}`,
-      source_id: e.id,
-    }));
+  const out: CalendarItem[] = [];
+  for (const e of events) {
+    if (e.status === "cancelled") continue;
+    const recurrence = e.recurrence ?? null;
+    // Expand recurring events across the visible window; one-offs stay as-is.
+    // Without a range we can't bound an infinite series, so emit only the base.
+    const starts =
+      recurrence && input.range ? expandOccurrences(e.start, recurrence, input.range) : [e.start];
+    for (const start of starts) {
+      const occDay = dayKey(start);
+      out.push({
+        id: recurrence ? `cal_${e.id}__${occDay}` : `cal_${e.id}`,
+        source: "calendar",
+        title: e.title,
+        start,
+        end: recurrence ? occurrenceEnd(e, start) : e.end,
+        all_day: e.all_day,
+        date: occDay,
+        event_type: e.event_type,
+        child_id: e.child_id,
+        child_name: input.resolveChild(e.child_id),
+        staff_id: e.organiser_id,
+        staff_name: input.resolveStaff(e.organiser_id),
+        location: e.location,
+        status: e.status,
+        editable: true,
+        href: `/calendar?event=${e.id}`,
+        source_id: e.id,
+        recurring: Boolean(recurrence),
+      });
+    }
+  }
+  return out;
 }
 
 function projectTasks(tasks: TaskLike[], input: CalendarProjectionInput): CalendarItem[] {
@@ -462,26 +481,48 @@ export function buildCalendarFeed(input: CalendarProjectionInput): CalendarFeed 
 export interface DueReminder {
   event: CalendarEvent;
   fire_at: string;
+  /** ISO start of the specific occurrence being reminded. */
+  occurrence: string;
+  /** YYYY-MM-DD of that occurrence (the recurring dedupe key). */
+  occurrence_day: string;
 }
 
 /**
  * Which planned events are inside their reminder window at `now` and haven't
- * fired yet. Pure — the route turns these into notifications and flips
- * reminder_sent. (No wall clock here; `now` is injected.)
+ * fired yet. Pure — the route turns these into notifications and records that
+ * the reminder fired. (No wall clock here; `now` is injected.)
+ *
+ * One-offs dedupe on `reminder_sent`; recurring events dedupe on
+ * `last_reminded_occurrence` so each occurrence reminds exactly once.
  */
 export function dueReminders(events: CalendarEvent[], now: string): DueReminder[] {
   const nowMs = Date.parse(now);
   const out: DueReminder[] = [];
   for (const e of events) {
     if (e.status !== "scheduled") continue;
-    if (e.reminder_sent) continue;
     if (e.reminder_minutes_before == null) continue;
+    const recurrence = e.recurrence ?? null;
+
+    if (recurrence) {
+      const occ = nextOccurrenceStart(e.start, recurrence, now);
+      if (!occ) continue;
+      const occDay = occ.slice(0, 10);
+      if (e.last_reminded_occurrence === occDay) continue;
+      const startMs = Date.parse(occ);
+      const fireMs = startMs - e.reminder_minutes_before * 60_000;
+      if (nowMs >= fireMs && nowMs <= startMs) {
+        out.push({ event: e, fire_at: new Date(fireMs).toISOString(), occurrence: occ, occurrence_day: occDay });
+      }
+      continue;
+    }
+
+    if (e.reminder_sent) continue;
     const startMs = Date.parse(e.start);
     if (!Number.isFinite(startMs)) continue;
     const fireMs = startMs - e.reminder_minutes_before * 60_000;
     // Fire once we're inside the window but the meeting hasn't started.
     if (nowMs >= fireMs && nowMs <= startMs) {
-      out.push({ event: e, fire_at: new Date(fireMs).toISOString() });
+      out.push({ event: e, fire_at: new Date(fireMs).toISOString(), occurrence: e.start, occurrence_day: e.start.slice(0, 10) });
     }
   }
   return out;

@@ -61,6 +61,8 @@ export function EventEditor({
   const [staffIds, setStaffIds] = useState<string[]>([]);
   const [externals, setExternals] = useState<ExternalRow[]>([]);
   const [reminder, setReminder] = useState<number | null>(60);
+  const [recurFreq, setRecurFreq] = useState<"none" | "daily" | "weekly" | "fortnightly" | "monthly">("none");
+  const [recurUntil, setRecurUntil] = useState("");
   const [tasks, setTasks] = useState<TaskRow[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -80,6 +82,8 @@ export function EventEditor({
       setStaffIds(editing.attendees.filter((a) => a.kind === "staff" && a.staff_id).map((a) => a.staff_id as string));
       setExternals(editing.attendees.filter((a) => a.kind === "external").map((a) => ({ name: a.name, email: a.email ?? "" })));
       setReminder(editing.reminder_minutes_before);
+      setRecurFreq(editing.recurrence?.freq ?? "none");
+      setRecurUntil(editing.recurrence?.until ?? "");
       setTasks([]);
     } else {
       setTitle("");
@@ -94,6 +98,8 @@ export function EventEditor({
       setStaffIds([]);
       setExternals([]);
       setReminder(60);
+      setRecurFreq("none");
+      setRecurUntil("");
       setTasks([]);
     }
     setError(null);
@@ -124,6 +130,11 @@ export function EventEditor({
       .filter((x) => x.name.trim())
       .map((x) => ({ kind: "external" as const, name: x.name.trim(), email: x.email.trim() || null, staff_id: null }));
 
+    const recurrence =
+      recurFreq === "none"
+        ? null
+        : { freq: recurFreq, interval: 1, until: recurUntil || null, count: null };
+
     const body: CreateEventBody = {
       title: title.trim(),
       description: description.trim(),
@@ -135,12 +146,13 @@ export function EventEditor({
       child_id: childId || null,
       attendees: [...staffAttendees, ...extAttendees],
       reminder_minutes_before: reminder,
+      recurrence,
       tasks: tasks.filter((t) => t.title.trim()).map((t) => ({ title: t.title.trim(), due_date: t.due_date || null })),
     };
 
     if (editing) {
       update.mutate(
-        { title: body.title, description: body.description, event_type: body.event_type, start, end, all_day: allDay, location: body.location, child_id: body.child_id, reminder_minutes_before: reminder },
+        { title: body.title, description: body.description, event_type: body.event_type, start, end, all_day: allDay, location: body.location, child_id: body.child_id, reminder_minutes_before: reminder, recurrence },
         { onSuccess: (d) => { onSaved?.(d.event.id); onClose(); } },
       );
     } else {
@@ -252,6 +264,30 @@ export function EventEditor({
               {REMINDERS.map((r) => <option key={r.label} value={r.value ?? ""}>{r.label}</option>)}
             </select>
           </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Repeats</label>
+              <select value={recurFreq} onChange={(e) => setRecurFreq(e.target.value as typeof recurFreq)} className={inputCls}>
+                <option value="none">Does not repeat</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="fortnightly">Fortnightly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            {recurFreq !== "none" && (
+              <div>
+                <label className={labelCls}>Until (optional)</label>
+                <input type="date" value={recurUntil} onChange={(e) => setRecurUntil(e.target.value)} className={inputCls} />
+              </div>
+            )}
+          </div>
+          {recurFreq !== "none" && (
+            <p className="-mt-2 text-[11px] text-[var(--cs-text-gentle)]">
+              Editing or cancelling applies to the whole series.
+            </p>
+          )}
 
           {!editing && (
             <div>

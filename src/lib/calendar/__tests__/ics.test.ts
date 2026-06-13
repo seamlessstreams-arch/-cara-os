@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildICS, buildInviteMailto } from "../ics";
+import { buildICS, buildInviteMailto, buildRRule } from "../ics";
 import type { CalendarEvent } from "../calendar-types";
 
 function event(over: Partial<CalendarEvent> = {}): CalendarEvent {
@@ -88,6 +88,33 @@ describe("buildICS", () => {
   it("marks cancelled events CANCELLED", () => {
     const ics = buildICS(event({ status: "cancelled" }), { dtstamp: DTSTAMP, organiserName: "Olivia" });
     expect(ics).toContain("STATUS:CANCELLED");
+  });
+});
+
+describe("buildRRule", () => {
+  it("returns null for non-recurring", () => {
+    expect(buildRRule(null)).toBeNull();
+  });
+  it("maps frequencies and interval", () => {
+    expect(buildRRule({ freq: "daily", interval: 1, until: null, count: null })).toBe("FREQ=DAILY;INTERVAL=1");
+    expect(buildRRule({ freq: "weekly", interval: 2, until: null, count: null })).toBe("FREQ=WEEKLY;INTERVAL=2");
+    expect(buildRRule({ freq: "fortnightly", interval: 1, until: null, count: null })).toBe("FREQ=WEEKLY;INTERVAL=2");
+    expect(buildRRule({ freq: "monthly", interval: 1, until: null, count: null })).toBe("FREQ=MONTHLY;INTERVAL=1");
+  });
+  it("appends UNTIL or COUNT", () => {
+    expect(buildRRule({ freq: "weekly", interval: 1, until: "2026-09-01", count: null })).toBe("FREQ=WEEKLY;INTERVAL=1;UNTIL=20260901T235959Z");
+    expect(buildRRule({ freq: "weekly", interval: 1, until: null, count: 6 })).toBe("FREQ=WEEKLY;INTERVAL=1;COUNT=6");
+  });
+});
+
+describe("buildICS recurrence", () => {
+  it("emits an RRULE line for recurring events", () => {
+    const ics = buildICS(event({ recurrence: { freq: "weekly", interval: 1, until: null, count: null } }), { dtstamp: DTSTAMP, organiserName: "Olivia" });
+    expect(ics).toContain("RRULE:FREQ=WEEKLY;INTERVAL=1");
+  });
+  it("omits RRULE for one-off events", () => {
+    const ics = buildICS(event(), { dtstamp: DTSTAMP, organiserName: "Olivia" });
+    expect(ics).not.toContain("RRULE:");
   });
 });
 

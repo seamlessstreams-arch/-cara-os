@@ -43,6 +43,8 @@ export async function persistCalendarEvent(e: CalendarEvent): Promise<void> {
         reminder_minutes_before: e.reminder_minutes_before,
         reminder_sent: e.reminder_sent,
         invite_sent: e.invite_sent,
+        recurrence: e.recurrence ?? null,
+        last_reminded_occurrence: e.last_reminded_occurrence ?? null,
         status: e.status,
         updated_at: e.updated_at,
       },
