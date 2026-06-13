@@ -38,6 +38,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Manager Control Centre", href: "/dashboard/manager-control-centre", icon: "ShieldCheck", module: "dashboard" },
       { label: "Priority Briefing",      href: "/priority-briefing", icon: "Radar",   module: "dashboard" },
       { label: "Shift Briefing",         href: "/shift-briefing",    icon: "Sunrise", module: "dashboard" },
+      { label: "Shift Plan",             href: "/shift-plan",        icon: "ClipboardCheck", module: "dashboard" },
       { label: "Actions Register",       href: "/actions-register",  icon: "ListChecks", module: "dashboard" },
       { label: "Provider Oversight",     href: "/dashboard/provider-oversight",     icon: "Building2",   module: "ri"        },
       { label: "My Day",          href: "/dashboard/my-day",icon: "Target",          module: "my-day"     },
@@ -730,6 +731,7 @@ export const DOMAIN_NAV: NavGroup[] = [
     children: [
       { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard", module: "dashboard" },
       { label: "Plan My Day", href: "/plan-my-day", icon: "CalendarClock", module: "dashboard" },
+      { label: "Shift Plan", href: "/shift-plan", icon: "ClipboardCheck", module: "dashboard" },
       { label: "Calendar", href: "/calendar", icon: "CalendarDays", module: "dashboard" },
       { label: "Manager Control", href: "/dashboard/manager-control-centre", icon: "ShieldCheck", module: "dashboard" },
       { label: "Tasks", href: "/tasks", icon: "CheckSquare", module: "tasks", badgeKey: "tasks" },
