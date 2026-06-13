@@ -349,6 +349,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Staff Profiles",       href: "/staff",                       icon: "Users",         module: "staff"        },
       { label: "Rota",                 href: "/rota",                        icon: "Calendar",      module: "rota"         },
       { label: "Staffing Cover",       href: "/staffing-cover",              icon: "CalendarRange", module: "rota"         },
+      { label: "Shift Patterns",       href: "/staffing-patterns",           icon: "CalendarCheck", module: "rota"         },
       { label: "Supervision",          href: "/supervision",                 icon: "MessageSquare", module: "supervision"  },
       { label: "Reflective Supervision",href: "/reflective-supervision",     icon: "HeartHandshake",module: "supervision"  },
       { label: "Retention & Support",  href: "/retention-support",           icon: "Activity",      module: "staff"        },
@@ -728,6 +729,7 @@ export const DOMAIN_NAV: NavGroup[] = [
       { label: "Sickness & Absence", href: "/workforce-absence", icon: "Activity", module: "staff" },
       { label: "Rota", href: "/rota", icon: "Calendar", module: "rota" },
       { label: "Staffing Cover", href: "/staffing-cover", icon: "CalendarRange", module: "rota" },
+      { label: "Shift Patterns", href: "/staffing-patterns", icon: "CalendarCheck", module: "rota" },
     ],
   },
   {
