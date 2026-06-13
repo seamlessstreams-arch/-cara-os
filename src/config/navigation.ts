@@ -481,6 +481,7 @@ export const NAV_GROUPS: NavGroup[] = [
     module: "ri",
     children: [
       { label: "RI Command Centre",   href: "/ri",                   icon: "Gavel",         module: "ri"         },
+      { label: "Compliance Documents",href: "/compliance-documents", icon: "FileText",      module: "documents"  },
       { label: "Key Dates",           href: "/key-dates",            icon: "CalendarDays",  module: "ri"         },
       { label: "Governance Scorecard",href: "/ri/scorecard",         icon: "BarChart3",     module: "ri"         },
       { label: "Reg 44 Visits",       href: "/ri/reg44",             icon: "Eye",           module: "ri"         },

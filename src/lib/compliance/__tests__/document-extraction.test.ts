@@ -77,4 +77,9 @@ Some narrative sentence that is not an action at all really.`;
     const r = run("Policy.\n- review the lone working procedure\n- update the contact list");
     expect(r.riskFlags.some((f) => f.flag_type === "no_responsible_person")).toBe(true);
   });
+  it("does not mistake an 'Actions:' heading for an action", () => {
+    const r = run("Home Development Plan\nActions:\n- review the fire plan\n- update the risk assessment");
+    expect(r.actions.length).toBe(2);
+    expect(r.actions.some((a) => /^actions?:?$/i.test(a.action.trim()))).toBe(false);
+  });
 });

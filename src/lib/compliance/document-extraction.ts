@@ -121,6 +121,8 @@ function extractActions(text: string): { action: string; responsible_person: str
     if (!isBullet && !hasCue) continue;
     const line = cleanLine(raw);
     if (line.length < 6 || line.length > 240) continue;
+    // skip section headings ("Actions:", "Recommendations:", "Next steps:")
+    if (/^(actions?|recommendations?|next steps?|to ?do|tasks?|action plan)\s*:?\s*$/i.test(line)) continue;
     // skip pure headings (no verb-ish cue and short)
     if (!hasCue && line.split(" ").length < 3) continue;
     const key = line.toLowerCase();
