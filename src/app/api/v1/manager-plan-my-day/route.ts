@@ -1,0 +1,114 @@
+// CARA — GET /api/v1/manager-plan-my-day
+// Deterministic "Plan My Day" assembled from the store + today's calendar feed,
+// with an optional AI narrative on top (the plan stands alone without it).
+import { NextResponse } from "next/server";
+import { getStore } from "@/lib/db/store";
+import { getCalendarFeed } from "@/lib/calendar/calendar-service";
+import { computeManagerPlanDay } from "@/lib/engines/manager-plan-my-day-engine";
+import { generateReportNarrative } from "@/lib/aria/report-narrative";
+
+export const dynamic = "force-dynamic";
+
+const FIXED_EXCLUDE = new Set(["task", "training", "shift"]);
+
+export async function GET() {
+  const store = getStore();
+  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date().toISOString();
+
+  const ypById = new Map(store.youngPeople.map((y) => [y.id, y.preferred_name || y.first_name || "Unknown"]));
+  const staffById = new Map(store.staff.map((s) => [s.id, s.full_name || `${s.first_name} ${s.last_name}`.trim()]));
+
+  // ── Fixed commitments: today's calendar minus task/training/shift noise ──
+  const feed = getCalendarFeed({ from: today, to: today });
+  const calendar = feed.items
+    .filter((i) => !FIXED_EXCLUDE.has(i.source))
+    .map((i) => ({
+      id: i.id,
+      title: i.title,
+      start: i.start,
+      all_day: i.all_day,
+      source: i.source,
+      child_name: i.child_name,
+      location: i.location,
+      href: i.editable ? `/calendar?event=${i.source_id}` : i.href,
+    }));
+
+  const tasks = store.tasks.map((t) => ({
+    id: t.id,
+    title: t.title,
+    due_date: t.due_date,
+    status: t.status,
+    priority: t.priority,
+    child_name: t.linked_child_id ? ypById.get(t.linked_child_id) ?? null : null,
+  }));
+
+  const incidents = store.incidents.map((i) => ({
+    id: i.id,
+    child_name: i.child_id ? ypById.get(i.child_id) ?? null : null,
+    type: i.type,
+    severity: i.severity,
+    date: i.date,
+    requires_oversight: i.requires_oversight,
+    oversight_at: i.oversight_at,
+    status: i.status,
+  }));
+
+  const supervisions = store.supervisions.map((s) => ({
+    staff_name: staffById.get(s.staff_id) ?? null,
+    scheduled_date: s.scheduled_date,
+    status: s.status,
+  }));
+
+  const training = store.trainingRecords.map((t) => ({
+    staff_name: staffById.get(t.staff_id) ?? null,
+    course_name: t.course_name,
+    expiry_date: t.expiry_date,
+    status: t.status,
+  }));
+
+  // ── Key-working gaps: last session per active child ──
+  const lastByChild = new Map<string, string>();
+  for (const s of store.keyWorkingSessions) {
+    const cur = lastByChild.get(s.child_id);
+    if (!cur || s.date > cur) lastByChild.set(s.child_id, s.date);
+  }
+  const todayMs = Date.parse(`${today}T00:00:00`);
+  const keyworkGaps = store.youngPeople
+    .filter((y) => y.status === "current")
+    .map((y) => {
+      const last = lastByChild.get(y.id) ?? null;
+      const days = last ? Math.floor((todayMs - Date.parse(`${last}T00:00:00`)) / 864e5) : null;
+      return { child_name: ypById.get(y.id) ?? "Unknown", last_session_date: last, days_since: days };
+    });
+
+  const plan = computeManagerPlanDay({
+    today,
+    now,
+    calendar,
+    tasks,
+    incidents,
+    supervisions,
+    training,
+    keyworkGaps,
+  });
+
+  // ── Optional AI narrative (graceful: null when no key) ──
+  let ai_narrative: string | null = null;
+  try {
+    const facts = [
+      `Fixed today: ${plan.fixed.map((f) => `${f.time ?? "all day"} ${f.title}`).join("; ") || "nothing scheduled"}`,
+      ...plan.priorities.slice(0, 10).map((p) => `- ${p.severity.toUpperCase()} (${p.category}): ${p.title}`),
+    ].join("\n");
+    ai_narrative = await generateReportNarrative({
+      kind: "manager's daily plan for a children's home",
+      subject: `the home on ${today}`,
+      facts,
+    });
+  } catch {
+    ai_narrative = null;
+  }
+  plan.ai_narrative = ai_narrative;
+
+  return NextResponse.json({ data: plan });
+}
