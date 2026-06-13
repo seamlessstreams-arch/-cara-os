@@ -9,11 +9,14 @@ import React from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/common/print-button";
+import { DictationButton } from "@/components/common/dictation-button";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
-import { usePlanMyDay } from "@/hooks/use-plan-my-day";
+import { usePlanMyDay, usePlanMyDayWithNotes } from "@/hooks/use-plan-my-day";
 import {
-  Clock, ArrowRight, Sparkles, ShieldAlert, Users, ClipboardList, CheckSquare, HeartHandshake, Stethoscope, CheckCircle2, CalendarClock, Coffee, Sunrise,
+  Clock, ArrowRight, Sparkles, ShieldAlert, Users, ClipboardList, CheckSquare, HeartHandshake, Stethoscope, CheckCircle2, CalendarClock, Coffee, Sunrise, ListPlus, Wand2, X,
 } from "lucide-react";
 import type { PlanActionItem, PlanCategory, PlanSeverity } from "@/lib/engines/manager-plan-my-day-engine";
 import type { ScheduleBlock } from "@/lib/engines/day-schedule";
@@ -37,6 +40,7 @@ const CAT_ICON: Record<PlanCategory, React.ElementType> = {
   tasks: CheckSquare,
   keywork: HeartHandshake,
   health: Stethoscope,
+  added: ListPlus,
 };
 const CAT_LABEL: Record<PlanCategory, string> = {
   safeguarding: "Safeguarding",
@@ -45,6 +49,7 @@ const CAT_LABEL: Record<PlanCategory, string> = {
   tasks: "Tasks",
   keywork: "Key-working",
   health: "Health",
+  added: "Added today",
 };
 
 function ActionRow({ item }: { item: PlanActionItem }) {
@@ -110,7 +115,13 @@ function ScheduleRow({ block }: { block: ScheduleBlock }) {
 
 export default function PlanMyDayPage() {
   const { data: resp, isLoading, error } = usePlanMyDay();
-  const plan = resp?.data;
+  const planner = usePlanMyDayWithNotes();
+  const [notes, setNotes] = React.useState("");
+  // Once the manager re-plans with their own list, that result takes over.
+  const plan = planner.data?.data ?? resp?.data;
+
+  const onPlan = () => { if (notes.trim()) planner.mutate(notes); };
+  const onClear = () => { setNotes(""); planner.reset(); };
 
   return (
     <PageShell
@@ -127,6 +138,49 @@ export default function PlanMyDayPage() {
           <Card><CardContent className="py-6 text-sm text-[var(--cs-text-muted)]">Building your plan…</CardContent></Card>
         )}
 
+        {/* Brain-dump: paste a list (e.g. from an email) or dictate "what's happening today", then re-plan. */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-sm"><ListPlus className="h-4 w-4 text-[var(--cs-teal)]" /> Add today&apos;s list</CardTitle>
+            <DictationButton
+              mode="append"
+              size="sm"
+              onTranscript={(t) => setNotes((prev) => (prev.trim() ? `${prev.replace(/\s*$/, "")}\n${t}` : t))}
+            />
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={4}
+              placeholder={"Paste a to-do list (e.g. from an email), or tap the mic and say what's happening today — \"visit at 2pm, call the social worker, staff supervision at 4, order Alex's meds\". Then plan my day."}
+              className="resize-y text-sm"
+            />
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button onClick={onPlan} disabled={!notes.trim() || planner.isPending} className="gap-1.5">
+                <Wand2 className="h-4 w-4" />
+                {planner.isPending ? "Planning…" : "Plan my day"}
+              </Button>
+              {(notes.trim() || planner.data) && (
+                <Button variant="ghost" size="sm" onClick={onClear} className="gap-1.5 text-[var(--cs-text-muted)]">
+                  <X className="h-3.5 w-3.5" /> Clear
+                </Button>
+              )}
+              {planner.data && (plan?.counts.added ?? 0) > 0 && (
+                <span className="text-xs font-medium text-[var(--cs-teal)]">
+                  Folded {plan!.counts.added} item{plan!.counts.added === 1 ? "" : "s"} into your schedule below.
+                </span>
+              )}
+              {planner.data && (plan?.counts.added ?? 0) === 0 && (
+                <span className="text-xs text-[var(--cs-text-muted)]">No items recognised — try one per line.</span>
+              )}
+            </div>
+            {planner.isError && (
+              <p className="mt-2 text-xs text-[var(--cs-risk)]">Couldn&apos;t plan that just now — please try again.</p>
+            )}
+          </CardContent>
+        </Card>
+
         {plan && (
           <div id="plan-my-day-print" className="space-y-6">
             {/* Counts */}
@@ -136,6 +190,7 @@ export default function PlanMyDayPage() {
                 { label: "Priorities", value: plan.counts.priorities },
                 { label: "Concerns", value: plan.counts.concerns },
                 { label: "Overdue tasks", value: plan.counts.overdue_tasks },
+                ...(plan.counts.added > 0 ? [{ label: "Added today", value: plan.counts.added }] : []),
               ].map((s) => (
                 <div key={s.label} className="rounded-xl bg-[var(--cs-surface)] px-4 py-3">
                   <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">{s.label}</p>

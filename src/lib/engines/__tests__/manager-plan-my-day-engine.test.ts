@@ -169,3 +169,46 @@ describe("computeManagerPlanDay — headline & positives", () => {
     expect(r.counts.by_category.find((c) => c.category === "safeguarding")?.count).toBe(1);
   });
 });
+
+describe("computeManagerPlanDay — added items (pasted / dictated)", () => {
+  it("folds untimed items in as 'added' and schedules them", () => {
+    const r = computeManagerPlanDay(
+      input({
+        dayStart: "09:00",
+        dayEnd: "17:00",
+        addedItems: [
+          { title: "Call the social worker" },
+          { title: "Order Alex's meds", duration_min: 15 },
+        ],
+      }),
+    );
+    expect(r.added.map((a) => a.title)).toEqual(["Call the social worker", "Order Alex's meds"]);
+    expect(r.added.every((a) => a.category === "added")).toBe(true);
+    expect(r.added[1].duration_min).toBe(15);
+    expect(r.counts.added).toBe(2);
+    expect(r.schedule.some((b) => b.kind === "task" && b.title === "Call the social worker")).toBe(true);
+  });
+
+  it("anchors a timed added item at its time and counts both kinds", () => {
+    const r = computeManagerPlanDay(
+      input({
+        dayStart: "09:00",
+        dayEnd: "17:00",
+        addedItems: [
+          { title: "Placement review", time: "14:00", duration_min: 60 },
+          { title: "Tidy the office" },
+        ],
+      }),
+    );
+    // timed item becomes an anchor (not in `added`, which holds untimed only)
+    expect(r.schedule.find((b) => b.title === "Placement review")?.start).toBe("14:00");
+    expect(r.added.map((a) => a.title)).toEqual(["Tidy the office"]);
+    expect(r.counts.added).toBe(2);
+  });
+
+  it("defaults to no added items", () => {
+    const r = computeManagerPlanDay(input());
+    expect(r.added).toEqual([]);
+    expect(r.counts.added).toBe(0);
+  });
+});

@@ -1,17 +1,20 @@
-// CARA — GET /api/v1/manager-plan-my-day
-// Deterministic "Plan My Day" assembled from the store + today's calendar feed,
-// with an optional AI narrative on top (the plan stands alone without it).
+// CARA — Plan My Day API
+//   GET  → deterministic plan from the store + today's calendar
+//   POST → same, plus ad-hoc items the manager pasted/dictated ({ notes })
+// An optional AI narrative sits on top; the plan stands alone without it.
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { getCalendarFeed } from "@/lib/calendar/calendar-service";
-import { computeManagerPlanDay } from "@/lib/engines/manager-plan-my-day-engine";
+import { computeManagerPlanDay, type PlanMyDayInput, type ManagerPlanDayResult } from "@/lib/engines/manager-plan-my-day-engine";
+import { parsePlanNotes } from "@/lib/plan/plan-notes";
 import { generateReportNarrative } from "@/lib/aria/report-narrative";
 
 export const dynamic = "force-dynamic";
 
 const FIXED_EXCLUDE = new Set(["task", "training", "shift"]);
 
-export async function GET() {
+/** Assemble the engine input from the live store + today's calendar feed. */
+function gatherPlanInput(addedItems: PlanMyDayInput["addedItems"]): PlanMyDayInput {
   const store = getStore();
   const nowDate = new Date();
   const today = nowDate.toISOString().slice(0, 10);
@@ -86,34 +89,48 @@ export async function GET() {
   // Start the timed plan from "now" (rounded) so it reflects the day remaining.
   const scheduleFrom = `${String(nowDate.getHours()).padStart(2, "0")}:${String(nowDate.getMinutes()).padStart(2, "0")}`;
 
-  const plan = computeManagerPlanDay({
-    today,
-    now,
-    calendar,
-    tasks,
-    incidents,
-    supervisions,
-    training,
-    keyworkGaps,
-    scheduleFrom,
-  });
+  return { today, now, calendar, tasks, incidents, supervisions, training, keyworkGaps, scheduleFrom, addedItems };
+}
 
-  // ── Optional AI narrative (graceful: null when no key) ──
-  let ai_narrative: string | null = null;
+/** Attach an optional AI narrative (graceful: stays null when no key is set). */
+async function attachNarrative(plan: ManagerPlanDayResult): Promise<void> {
   try {
     const facts = [
       `Fixed today: ${plan.fixed.map((f) => `${f.time ?? "all day"} ${f.title}`).join("; ") || "nothing scheduled"}`,
+      ...(plan.added.length ? [`Added by the manager for today: ${plan.added.map((a) => a.title).join("; ")}`] : []),
       ...plan.priorities.slice(0, 10).map((p) => `- ${p.severity.toUpperCase()} (${p.category}): ${p.title}`),
     ].join("\n");
-    ai_narrative = await generateReportNarrative({
+    plan.ai_narrative = await generateReportNarrative({
       kind: "manager's daily plan for a children's home",
-      subject: `the home on ${today}`,
+      subject: `the home on ${plan.date}`,
       facts,
     });
   } catch {
-    ai_narrative = null;
+    plan.ai_narrative = null;
   }
-  plan.ai_narrative = ai_narrative;
+}
 
+export async function GET() {
+  const plan = computeManagerPlanDay(gatherPlanInput([]));
+  await attachNarrative(plan);
+  return NextResponse.json({ data: plan });
+}
+
+export async function POST(req: Request) {
+  let addedItems: PlanMyDayInput["addedItems"] = [];
+  try {
+    const body = await req.json();
+    if (typeof body?.notes === "string" && body.notes.trim()) {
+      addedItems = parsePlanNotes(body.notes).map((p) => ({ title: p.title, time: p.time, duration_min: p.duration_min }));
+    } else if (Array.isArray(body?.addedItems)) {
+      addedItems = body.addedItems
+        .filter((i: unknown): i is { title: string } => !!i && typeof (i as { title?: unknown }).title === "string")
+        .map((i: { title: string; time?: string | null; duration_min?: number }) => ({ title: i.title, time: i.time ?? null, duration_min: i.duration_min }));
+    }
+  } catch {
+    addedItems = [];
+  }
+  const plan = computeManagerPlanDay(gatherPlanInput(addedItems));
+  await attachNarrative(plan);
   return NextResponse.json({ data: plan });
 }
