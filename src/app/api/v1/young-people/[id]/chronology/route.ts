@@ -21,7 +21,11 @@ export interface ChronologyItem {
     | "key_working"
     | "daily_log"
     | "risk_assessment"
-    | "chronology_entry";
+    | "chronology_entry"
+    | "family_time"
+    | "lac_review"
+    | "appointment"
+    | "education";
   source_id: string;
   date: string;
   time: string | null;
@@ -227,6 +231,89 @@ async function getChronology(
     }
   }
 
+  // ── Family time / contact ────────────────────────────────────────────────
+  if (!types.length || types.includes("family_time")) {
+    const sessions = db.familyTimeSessions.findAll().filter((s) => s.child_id === childId);
+    for (const s of sessions) {
+      const hasConcern = Array.isArray(s.concerns_raised) && s.concerns_raised.length > 0;
+      const positives = Array.isArray(s.positive_observations) ? s.positive_observations.slice(0, 2).join("; ") : "";
+      items.push({
+        id:          `ft:${s.id}`,
+        source_type: "family_time",
+        source_id:   s.id,
+        date:        s.date,
+        time:        s.time ?? null,
+        title:       `Family time — ${s.family_member_name || s.family_member || "family"}`,
+        summary:     `${s.location ? `${String(s.location).replace(/_/g, " ")}. ` : ""}${hasConcern ? `Concerns: ${s.concerns_raised.join(", ")}` : positives || "Contact took place."}`.slice(0, 200),
+        severity:    hasConcern ? "significant" : "routine",
+        category:    "contact",
+        staff_id:    s.supervised_by ?? null,
+        links:       [{ label: "Family Time", href: `/family-time-supervision` }],
+      });
+    }
+  }
+
+  // ── LAC reviews ───────────────────────────────────────────────────────────
+  if (!types.length || types.includes("lac_review")) {
+    const reviews = db.lacReviews.findByChild(childId);
+    for (const r of reviews) {
+      const recs = Array.isArray(r.recommendations) ? r.recommendations.length : 0;
+      items.push({
+        id:          `lac:${r.id}`,
+        source_type: "lac_review",
+        source_id:   r.id,
+        date:        r.date,
+        time:        null,
+        title:       `LAC review — ${(r.review_type ?? "statutory").replace(/_/g, " ")}`,
+        summary:     `${r.venue ? `${r.venue}. ` : ""}IRO: ${r.iro ?? "—"}.${recs ? ` ${recs} recommendation(s).` : ""}`.slice(0, 200),
+        severity:    "significant",
+        category:    "review",
+        staff_id:    null,
+        links:       [{ label: "LAC Reviews", href: `/lac-reviews` }],
+      });
+    }
+  }
+
+  // ── Health appointments ───────────────────────────────────────────────────
+  if (!types.length || types.includes("appointment")) {
+    const appts = db.appointments.findAll().filter((a) => a.child_id === childId);
+    for (const a of appts) {
+      items.push({
+        id:          `apt:${a.id}`,
+        source_type: "appointment",
+        source_id:   a.id,
+        date:        a.date,
+        time:        a.time ?? null,
+        title:       a.title || `Appointment — ${(a.type ?? "health").replace(/_/g, " ")}`,
+        summary:     `${a.professional_name ? `${a.professional_name}. ` : ""}${a.outcome || a.status || ""}`.slice(0, 200),
+        severity:    "routine",
+        category:    "health",
+        staff_id:    null,
+        links:       [{ label: "Appointments", href: `/appointments` }],
+      });
+    }
+  }
+
+  // ── Education records ─────────────────────────────────────────────────────
+  if (!types.length || types.includes("education")) {
+    const edu = db.educationRecords.findByChild(childId);
+    for (const e of edu) {
+      items.push({
+        id:          `edu:${e.id}`,
+        source_type: "education",
+        source_id:   e.id,
+        date:        e.date,
+        time:        null,
+        title:       e.title || `Education — ${(e.record_type ?? "update").replace(/_/g, " ")}`,
+        summary:     `${e.school ? `${e.school}. ` : ""}${e.details || e.outcome || ""}`.slice(0, 200),
+        severity:    "routine",
+        category:    "education",
+        staff_id:    e.staff_id ?? null,
+        links:       [{ label: "Education", href: `/education` }],
+      });
+    }
+  }
+
   // ── Filter by date range ──────────────────────────────────────────────────
   let filtered = items;
   if (from) filtered = filtered.filter((i) => i.date >= from);
@@ -251,6 +338,10 @@ async function getChronology(
     missing:     filtered.filter((i) => i.source_type === "missing_episode").length,
     keywork:     filtered.filter((i) => i.source_type === "key_working").length,
     behaviour:   filtered.filter((i) => i.source_type === "behaviour_log").length,
+    contact:     filtered.filter((i) => i.source_type === "family_time").length,
+    reviews:     filtered.filter((i) => i.source_type === "lac_review").length,
+    health:      filtered.filter((i) => i.source_type === "appointment").length,
+    education:   filtered.filter((i) => i.source_type === "education").length,
   };
 
   return NextResponse.json({ data: paged, stats, total });

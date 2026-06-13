@@ -16,7 +16,11 @@ export interface ChronologyItem {
     | "key_working"
     | "daily_log"
     | "risk_assessment"
-    | "chronology_entry";
+    | "chronology_entry"
+    | "family_time"
+    | "lac_review"
+    | "appointment"
+    | "education";
   source_id: string;
   date: string;
   time: string | null;
@@ -36,6 +40,10 @@ export interface ChronologyStats {
   missing: number;
   keywork: number;
   behaviour: number;
+  contact: number;
+  reviews: number;
+  health: number;
+  education: number;
 }
 
 interface ChronologyResponse {

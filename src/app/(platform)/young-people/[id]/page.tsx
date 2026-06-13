@@ -26,6 +26,7 @@ import { useYoungPerson } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { PrintButton } from "@/components/common/print-button";
 import { ChildCalendarTab } from "@/components/calendar/child-calendar-tab";
+import { ChildChronologyTab } from "@/components/young-person/child-chronology-tab";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
@@ -1429,34 +1430,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
 
         {/* ── Chronology ───────────────────────────────────────────────────── */}
         {tab === "chronology" && (
-          <div className="space-y-2">
-            {!(related?.chronology as unknown[])?.length ? (
-              <EmptyTabState icon={Activity} label="No chronology entries" description="Significant events will appear here as they are recorded." />
-            ) : (
-              (related?.chronology as Array<{ id: string; date: string; time: string | null; category: string; title: string; description: string; significance: string; recorded_by: string }>)?.map((entry) => (
-                <div key={entry.id} className={cn(
-                  "rounded-2xl border bg-white p-4 border-l-4",
-                  entry.significance === "critical" ? "border-l-red-500" :
-                  entry.significance === "significant" ? "border-l-amber-500" : "border-l-slate-300"
-                )}>
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-semibold text-slate-900">{entry.title}</span>
-                        {entry.significance === "critical" && <Badge variant="destructive" className="text-[9px] rounded-full">Critical</Badge>}
-                        {entry.significance === "significant" && <Badge variant="warning" className="text-[9px] rounded-full">Significant</Badge>}
-                      </div>
-                      <div className="text-xs text-slate-500 mt-0.5 capitalize">
-                        {entry.category.replace("_", " ")} · {formatDate(entry.date)}{entry.time && ` at ${entry.time}`}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">{entry.description}</p>
-                  <div className="text-[10px] text-slate-400 mt-2">Recorded by {getStaffName(entry.recorded_by)}</div>
-                </div>
-              ))
-            )}
-          </div>
+          <ChildChronologyTab childId={id} childName={displayName} />
         )}
 
         {/* ── Documents ────────────────────────────────────────────────────── */}
