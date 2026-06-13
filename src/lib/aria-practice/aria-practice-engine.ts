@@ -88,6 +88,17 @@ const LADO_CUES = [
   "allegation about a worker", "staff conduct", "harmed by a worker", "harmed by staff",
 ];
 
+// Adult / professional / process references. When these dominate and the
+// child's lived experience is absent, it signals "adult-centred drift" — the
+// child-centred supervision warning sign: "most of the discussion is about adults."
+const ADULT_FOCUS = [
+  "mother", "father", "the mum", "the dad", "parent", "parents", "grandmother",
+  "grandfather", "social worker", "professional", "professionals", "agency",
+  "agencies", "multi-agency", "staff team", "the team", "manager", "carer",
+  "foster carer", "meeting", "review meeting", "placement meeting", "panel",
+  "the adults", "case conference", "strategy meeting",
+];
+
 // Staff wellbeing / burnout signals (support-focused, never punitive).
 const WELLBEING_CUES = [
   "exhausted", "overwhelmed", "emotionally drained", "drained", "anxious about work",
@@ -545,6 +556,38 @@ export function analyzePractice(input: AriaPracticeInput): AriaPracticeOutput {
       { domain: "relationship", question: "What does the child currently allow this adult to see, and can difficult truths be shared safely?" },
       { domain: "relationship", question: "What evidence shows the child feels emotionally safe with this adult?" },
     );
+  }
+
+  // 7b. Adult-centred drift — the child-centred supervision warning sign
+  // ("most of the discussion is about adults"). Advisory and reflective: it
+  // invites the child's lived experience back to the centre, never asserts a
+  // failing. Length-gated so terse notes aren't mistaken for adult-centred analysis.
+  const adultFocusHits = matches(text, ADULT_FOCUS);
+  if (adultFocusHits.length >= 3 && !childImpact && text.length > 120) {
+    modes.add("recognises");
+    flags.push({
+      flagType: "adult_centred_drift",
+      severity: "medium",
+      title: "Possible adult-centred drift — the child's lived experience is hard to see",
+      description:
+        "This record refers mainly to adults, professionals and process; the child's own experience, voice and impact are not yet visible. Child-centred practice asks what life is currently like for this child.",
+      evidence: adultFocusHits,
+      recommendedAction:
+        "Bring the child to the centre: what they said, showed or felt, and how the intervention changed their day-to-day reality.",
+      requiresManagerReview: false,
+      requiresRiReview: false,
+    });
+    questions.push(
+      { domain: "child_centred", question: "Would the child recognise themselves within this record — or is most of it about adults?" },
+      { domain: "child_centred", question: "What is life currently like for this child, in their own words and behaviour?" },
+      { domain: "child_centred", question: "Are we describing what adults are doing more than what the child is experiencing?" },
+    );
+    recommendations.push({
+      title: "Return the child to the centre",
+      detail: "Re-anchor the record in the child's lived experience, voice, and the impact of intervention on their daily reality.",
+      urgency: "soon",
+    });
+    nextBestActions.push("Add a line evidencing the child's lived experience and voice, not only adult activity.");
   }
 
   // 8. L.I.V.E.R.S. — for analysis mode or complex inputs

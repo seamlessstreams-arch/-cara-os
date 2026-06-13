@@ -66,7 +66,8 @@ export type AriaFlagType =
   | "staff_wellbeing"
   | "relationship_depth"
   | "risk_drift"
-  | "culture_drift";
+  | "culture_drift"
+  | "adult_centred_drift";
 
 // The fourteen developmental domains a childhood reasonably requires.
 export const DEVELOPMENTAL_DOMAINS = [

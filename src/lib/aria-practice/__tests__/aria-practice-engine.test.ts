@@ -51,6 +51,27 @@ describe("Acceptance 2 — protective factor", () => {
   });
 });
 
+// ── Acceptance test 2b: adult-centred drift (child-centred supervision lens) ──
+describe("Acceptance 2b — adult-centred drift", () => {
+  it("flags when a record is mostly about adults and the child's experience is absent", () => {
+    const out = run(
+      "A review meeting was held with the mother, father and the social worker. The professionals discussed the care plan and agency involvement. The team agreed the parents would attend the next meeting.",
+    );
+    expect(flagTypes(out)).toContain("adult_centred_drift");
+    expect(questionDomains(out)).toContain("child_centred");
+  });
+  it("does NOT flag a child-centred record even when adults are mentioned", () => {
+    const out = run(
+      "The child said she felt safer this week and chose to join the group with staff. She told staff she felt heard, and her mother attended contact as planned.",
+    );
+    expect(flagTypes(out)).not.toContain("adult_centred_drift");
+  });
+  it("does NOT flag a terse note (length-gated)", () => {
+    const out = run("Meeting with mum and the social worker.");
+    expect(flagTypes(out)).not.toContain("adult_centred_drift");
+  });
+});
+
 // ── Acceptance test 3: developmental gap ──────────────────────────────────────
 describe("Acceptance 3 — developmental gap", () => {
   const out = run("Child lacks stability, belonging and emotional security.", "care_plan");
