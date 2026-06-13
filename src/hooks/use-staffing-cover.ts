@@ -44,3 +44,28 @@ export function useLogCoverReason(from?: string, to?: string) {
     },
   });
 }
+
+export interface StaffingPolicyInput {
+  min_day: number;
+  min_night: number;
+  expected_day: number;
+  expected_night: number;
+  waking_night_required: boolean;
+}
+
+/**
+ * Update the home staffing policy (minimums + norms + waking-night rule) and
+ * recompute. Same recompute-and-cache approach as logging a reason — the PUT
+ * returns the freshly-analysed picture so the view reflects the new policy
+ * without a refetch that might land on a stale serverless instance.
+ */
+export function useUpdateStaffingPolicy(from?: string, to?: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (policy: StaffingPolicyInput) =>
+      api.patch<{ data: StaffingCoverData }>("/staffing-cover", { ...policy, from, to }),
+    onSuccess: (resp) => {
+      qc.setQueryData(["staffing-cover", from, to], resp);
+    },
+  });
+}

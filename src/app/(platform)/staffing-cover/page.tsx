@@ -10,12 +10,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { PrintButton } from "@/components/common/print-button";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useStaffingCover, useLogCoverReason } from "@/hooks/use-staffing-cover";
-import { CalendarRange, AlertTriangle, CheckCircle2, Sun, Moon, Users, PlusCircle } from "lucide-react";
+import { useStaffingCover, useLogCoverReason, useUpdateStaffingPolicy, type StaffingPolicyInput } from "@/hooks/use-staffing-cover";
+import { CalendarRange, AlertTriangle, CheckCircle2, Sun, Moon, Users, PlusCircle, SlidersHorizontal } from "lucide-react";
 import type { CoverSeverity, CoverStatus, PeriodCover } from "@/lib/rota/staffing-cover-engine";
 
 const COVER_REASONS: { value: string; label: string }[] = [
@@ -102,6 +103,18 @@ export default function StaffingCoverPage() {
     );
   };
 
+  const updatePolicy = useUpdateStaffingPolicy();
+  const [policyOpen, setPolicyOpen] = useState(false);
+  const [form, setForm] = useState<StaffingPolicyInput | null>(null);
+  const openPolicy = () => {
+    if (!o) return;
+    setForm({ min_day: o.policy.min_day, min_night: o.policy.min_night, expected_day: o.policy.expected_day, expected_night: o.policy.expected_night, waking_night_required: o.policy.waking_night_required });
+    updatePolicy.reset();
+    setPolicyOpen(true);
+  };
+  const setField = (k: keyof StaffingPolicyInput, v: number | boolean) => setForm((f) => (f ? { ...f, [k]: v } : f));
+  const submitPolicy = () => { if (form) updatePolicy.mutate(form, { onSuccess: () => setPolicyOpen(false) }); };
+
   const byDate = useMemo(() => {
     const m = new Map<string, PeriodCover[]>();
     for (const p of o?.periods ?? []) {
@@ -129,6 +142,13 @@ export default function StaffingCoverPage() {
             <div className="flex flex-wrap items-center gap-2 rounded-xl bg-[var(--cs-surface)] px-4 py-3 text-xs text-[var(--cs-text-secondary)]">
               <Users className="h-4 w-4 text-[var(--cs-teal)]" />
               <span>Policy — day min <b>{o.policy.min_day}</b> (norm {o.policy.expected_day}) · night min <b>{o.policy.min_night}</b> (norm {o.policy.expected_night}) · waking night {o.policy.waking_night_required ? "required" : "not required"}</span>
+              <button
+                type="button"
+                onClick={openPolicy}
+                className="ml-auto inline-flex items-center gap-1 rounded-md px-2 py-1 text-[11px] font-semibold text-[var(--cs-teal)] transition-colors hover:bg-[var(--cs-teal-bg)] print:hidden"
+              >
+                <SlidersHorizontal className="h-3 w-3" /> Edit policy
+              </button>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -223,6 +243,49 @@ export default function StaffingCoverPage() {
             <Button onClick={submitReason} disabled={!reason || logReason.isPending}>
               {logReason.isPending ? "Logging…" : "Log reason"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit staffing policy — minimums + norms, updatable for need / risk */}
+      <Dialog open={policyOpen} onOpenChange={setPolicyOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Home staffing policy</DialogTitle>
+            <DialogDescription>The minimum cover and the usual norm, per period. Update these for the home&apos;s current need or risk — the forward view re-checks against them straight away.</DialogDescription>
+          </DialogHeader>
+          {form && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2 rounded-lg bg-[var(--cs-surface)] p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-navy)]"><Sun className="h-3.5 w-3.5 text-[var(--cs-warning)]" /> Day</p>
+                  <div><Label className="text-[11px]">Minimum</Label><Input type="number" min={0} max={20} value={form.min_day} onChange={(e) => setField("min_day", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                  <div><Label className="text-[11px]">Norm</Label><Input type="number" min={0} max={20} value={form.expected_day} onChange={(e) => setField("expected_day", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                </div>
+                <div className="space-y-2 rounded-lg bg-[var(--cs-surface)] p-3">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-navy)]"><Moon className="h-3.5 w-3.5 text-[var(--cs-teal)]" /> Night</p>
+                  <div><Label className="text-[11px]">Minimum</Label><Input type="number" min={0} max={20} value={form.min_night} onChange={(e) => setField("min_night", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                  <div><Label className="text-[11px]">Norm</Label><Input type="number" min={0} max={20} value={form.expected_night} onChange={(e) => setField("expected_night", Math.max(0, parseInt(e.target.value || "0", 10)))} className="mt-1 h-9" /></div>
+                </div>
+              </div>
+              <div>
+                <Label className="text-xs">Waking-night cover</Label>
+                <div className="mt-1 inline-flex rounded-lg border border-[var(--cs-border-subtle)] p-0.5">
+                  {[{ v: true, l: "Required" }, { v: false, l: "Not required" }].map((opt) => (
+                    <button key={opt.l} type="button" onClick={() => setField("waking_night_required", opt.v)}
+                      className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${form.waking_night_required === opt.v ? "bg-[var(--cs-teal)] text-white" : "text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)]"}`}>
+                      {opt.l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <p className="text-[11px] text-[var(--cs-text-gentle)]">The norm can&apos;t sit below the minimum — it&apos;ll be raised to match if needed.</p>
+              {updatePolicy.isError && <p className="text-xs text-[var(--cs-risk)]">Couldn&apos;t save the policy just now — please try again.</p>}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setPolicyOpen(false)}>Cancel</Button>
+            <Button onClick={submitPolicy} disabled={!form || updatePolicy.isPending}>{updatePolicy.isPending ? "Saving…" : "Save policy"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

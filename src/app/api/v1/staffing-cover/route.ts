@@ -129,3 +129,31 @@ export async function POST(req: Request) {
   const to = body.to || addDays(from, 13);
   return NextResponse.json({ data: computeCover(store, from, to), note });
 }
+
+// PATCH /api/v1/staffing-cover { min_day, min_night, expected_day, expected_night,
+// waking_night_required, from?, to? } — update the home staffing policy
+// ("updatable for need / risk") and recompute the forward picture.
+export async function PATCH(req: Request) {
+  const store = getStore() as any;
+  let body: any = {};
+  try { body = await req.json(); } catch { body = {}; }
+
+  const cur = store.staffingPolicy ?? {};
+  const intOr = (v: any, fallback: number) => {
+    const n = Math.round(Number(v));
+    return Number.isFinite(n) ? Math.min(20, Math.max(0, n)) : fallback;
+  };
+  const next = {
+    min_day: intOr(body.min_day, cur.min_day ?? 2),
+    min_night: intOr(body.min_night, cur.min_night ?? 1),
+    // The norm can't sensibly sit below the minimum — clamp up to it.
+    expected_day: Math.max(intOr(body.expected_day, cur.expected_day ?? 2), intOr(body.min_day, cur.min_day ?? 2)),
+    expected_night: Math.max(intOr(body.expected_night, cur.expected_night ?? 1), intOr(body.min_night, cur.min_night ?? 1)),
+    waking_night_required: typeof body.waking_night_required === "boolean" ? body.waking_night_required : !!cur.waking_night_required,
+  };
+  store.staffingPolicy = next;
+
+  const from = body.from || new Date().toISOString().slice(0, 10);
+  const to = body.to || addDays(from, 13);
+  return NextResponse.json({ data: computeCover(store, from, to) });
+}
