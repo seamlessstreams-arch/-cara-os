@@ -12,7 +12,7 @@
 import { buildDaySchedule, type ScheduleBlock } from "./day-schedule";
 
 export type PlanSeverity = "critical" | "high" | "medium" | "low";
-export type PlanCategory = "safeguarding" | "staff" | "records" | "tasks" | "keywork" | "health";
+export type PlanCategory = "safeguarding" | "staff" | "records" | "tasks" | "keywork" | "health" | "added";
 
 export interface PlanDayCalendarInput {
   id: string;
@@ -76,6 +76,8 @@ export interface PlanMyDayInput {
   dayEnd?: string;
   /** Floor the schedule at this HH:MM (e.g. "now" when planning mid-day). */
   scheduleFrom?: string | null;
+  /** Ad-hoc items the manager pasted/dictated for today — folded into the plan. */
+  addedItems?: { title: string; time?: string | null; duration_min?: number }[];
 }
 
 export interface PlanFixedItem {
@@ -104,6 +106,8 @@ export interface ManagerPlanDayResult {
   fixed: PlanFixedItem[];
   priorities: PlanActionItem[];
   watch: PlanActionItem[];
+  /** Items the manager added today (pasted/dictated), folded into the schedule. */
+  added: PlanActionItem[];
   /** The timed running order for the day (anchors + lunch + filled priorities). */
   schedule: ScheduleBlock[];
   /** Priorities that did not fit into the working day. */
@@ -114,6 +118,7 @@ export interface ManagerPlanDayResult {
     priorities: number;
     concerns: number;
     overdue_tasks: number;
+    added: number;
     by_category: { category: PlanCategory; count: number }[];
   };
   positives: string[];
@@ -311,15 +316,34 @@ export function computeManagerPlanDay(input: PlanMyDayInput): ManagerPlanDayResu
   if (trnPri.length === 0) positives.push("No training expired or expiring this week");
   if (kwActions.length === 0) positives.push("Key-working is up to date across the home");
 
-  // ── Timed running order ──
+  // ── Added items (pasted / dictated for today) ──
+  const addedItems = input.addedItems ?? [];
+  const added: PlanActionItem[] = addedItems
+    .filter((it) => !it.time && it.title.trim())
+    .map((it, i) => ({
+      id: `added_${i}`,
+      severity: "medium" as const,
+      category: "added" as const,
+      title: it.title.trim(),
+      detail: "Added for today",
+      href: "/plan-my-day",
+      due: null,
+      duration_min: it.duration_min && it.duration_min > 0 ? it.duration_min : 30,
+    }));
+  const addedAnchors = addedItems
+    .filter((it) => it.time && it.title.trim())
+    .map((it) => ({ time: it.time as string, duration_min: it.duration_min && it.duration_min > 0 ? it.duration_min : 30, title: it.title.trim(), subtitle: "Added for today", href: "/plan-my-day" }));
+
+  // ── Timed running order ── (added items come first so the manager's own list lands)
   const schedule = buildDaySchedule<PlanActionItem>({
     dayStart: input.dayStart,
     dayEnd: input.dayEnd,
     startFrom: input.scheduleFrom ?? null,
-    anchors: fixed
-      .filter((f) => !f.all_day && f.time)
-      .map((f) => ({ time: f.time as string, duration_min: 60, title: f.title, subtitle: f.subtitle, href: f.href })),
-    actions: priorities,
+    anchors: [
+      ...fixed.filter((f) => !f.all_day && f.time).map((f) => ({ time: f.time as string, duration_min: 60, title: f.title, subtitle: f.subtitle, href: f.href })),
+      ...addedAnchors,
+    ],
+    actions: [...added, ...priorities],
   });
 
   return {
@@ -329,6 +353,7 @@ export function computeManagerPlanDay(input: PlanMyDayInput): ManagerPlanDayResu
     fixed,
     priorities,
     watch,
+    added,
     schedule: schedule.blocks,
     carry_over: schedule.carry_over,
     day_window: schedule.window,
@@ -337,6 +362,7 @@ export function computeManagerPlanDay(input: PlanMyDayInput): ManagerPlanDayResu
       priorities: priorities.length,
       concerns,
       overdue_tasks: overdueCount,
+      added: added.length + addedAnchors.length,
       by_category: [...catMap.entries()].map(([category, count]) => ({ category, count })),
     },
     positives,
