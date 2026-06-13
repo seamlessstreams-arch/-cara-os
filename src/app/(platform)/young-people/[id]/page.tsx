@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import {
-  ArrowLeft, Heart, AlertTriangle, Shield, Pill, CalendarDays,
+  ArrowLeft, Heart, AlertTriangle, Shield, Pill, CalendarDays, CalendarClock,
   GraduationCap, Phone, Mail, User, MapPin, FileText,
   Activity, Loader2, AlertCircle, ChevronRight, Clock,
   Brain, CheckCircle2, Sparkles, X, MessageCircle, Plus, Tag,
@@ -25,6 +25,7 @@ import { AriaQuickActions } from "@/components/intelligence/cara-quick-actions";
 import { useYoungPerson } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { PrintButton } from "@/components/common/print-button";
+import { ChildCalendarTab } from "@/components/calendar/child-calendar-tab";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
 import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
@@ -246,7 +247,7 @@ function WhatChangedSection({ childName, incidents, chronology, recentLog }: {
 // ── Tab type ──────────────────────────────────────────────────────────────────
 
 type ProfileTab =
-  | "overview" | "daily-life" | "voice"
+  | "overview" | "daily-life" | "calendar" | "voice"
   | "health" | "medication" | "education"
   | "plans-risk" | "keywork" | "family-time" | "missing"
   | "incidents" | "outcomes" | "chronology" | "documents"
@@ -367,6 +368,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
       tabs: [
         { id: "overview",   label: "Overview",   icon: User },
         { id: "daily-life", label: "Daily Life",  icon: CalendarDays, count: related?.recent_log?.length || undefined },
+        { id: "calendar",   label: "Calendar",    icon: CalendarClock },
         { id: "voice",      label: "Voice",       icon: MessageSquare, count: voiceEntries.length || undefined },
       ],
     },
@@ -765,6 +767,11 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
               </div>
             )}
           </div>
+        )}
+
+        {/* ── Calendar ─────────────────────────────────────────────────────── */}
+        {tab === "calendar" && (
+          <ChildCalendarTab childId={id} childName={displayName} />
         )}
 
         {/* ── Voice ────────────────────────────────────────────────────────── */}

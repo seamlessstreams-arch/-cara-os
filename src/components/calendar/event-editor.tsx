@@ -35,12 +35,14 @@ export function EventEditor({
   open,
   onClose,
   defaultDate,
+  defaultChildId,
   editing,
   onSaved,
 }: {
   open: boolean;
   onClose: () => void;
   defaultDate?: string;
+  defaultChildId?: string;
   editing?: CalendarEvent | null;
   onSaved?: (id: string) => void;
 }) {
@@ -93,7 +95,7 @@ export function EventEditor({
       setEndTime("11:00");
       setAllDay(false);
       setLocation("");
-      setChildId("");
+      setChildId(defaultChildId ?? "");
       setDescription("");
       setStaffIds([]);
       setExternals([]);
@@ -103,7 +105,7 @@ export function EventEditor({
       setTasks([]);
     }
     setError(null);
-  }, [open, editing, defaultDate]);
+  }, [open, editing, defaultDate, defaultChildId]);
 
   if (!open) return null;
 
