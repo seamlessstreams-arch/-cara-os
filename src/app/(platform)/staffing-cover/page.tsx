@@ -15,8 +15,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useStaffingCover, useLogCoverReason, useUpdateStaffingPolicy, type StaffingPolicyInput } from "@/hooks/use-staffing-cover";
-import { CalendarRange, AlertTriangle, CheckCircle2, Sun, Moon, Users, PlusCircle, SlidersHorizontal } from "lucide-react";
+import { useStaffingCover, useLogCoverReason, useUpdateStaffingPolicy, useGenerateRota, type StaffingPolicyInput } from "@/hooks/use-staffing-cover";
+import { CalendarRange, AlertTriangle, CheckCircle2, Sun, Moon, Users, PlusCircle, SlidersHorizontal, CalendarPlus } from "lucide-react";
 import type { CoverSeverity, CoverStatus, PeriodCover } from "@/lib/rota/staffing-cover-engine";
 
 const COVER_REASONS: { value: string; label: string }[] = [
@@ -115,6 +115,12 @@ export default function StaffingCoverPage() {
   const setField = (k: keyof StaffingPolicyInput, v: number | boolean) => setForm((f) => (f ? { ...f, [k]: v } : f));
   const submitPolicy = () => { if (form) updatePolicy.mutate(form, { onSuccess: () => setPolicyOpen(false) }); };
 
+  const generate = useGenerateRota();
+  const [genOpen, setGenOpen] = useState(false);
+  const gen = generate.data?.data;
+  const openGen = () => { setGenOpen(true); generate.reset(); generate.mutate({ mode: "preview", from: o?.range.from, to: o?.range.to }); };
+  const publishRota = () => generate.mutate({ mode: "publish", from: o?.range.from, to: o?.range.to });
+
   const byDate = useMemo(() => {
     const m = new Map<string, PeriodCover[]>();
     for (const p of o?.periods ?? []) {
@@ -130,7 +136,12 @@ export default function StaffingCoverPage() {
       title="Staffing Cover"
       subtitle={o ? `${o.range.from} → ${o.range.to} · ${o.headline}` : "Forward cover vs the home's minimum and norm — defeating rota blindness."}
       showQuickCreate={false}
-      actions={o ? <PrintButton title="Staffing Cover" subtitle={o.headline} targetId="staffing-cover-print" /> : undefined}
+      actions={o ? (
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={openGen} className="gap-1.5"><CalendarPlus className="h-4 w-4" /> Generate rota</Button>
+          <PrintButton title="Staffing Cover" subtitle={o.headline} targetId="staffing-cover-print" />
+        </div>
+      ) : undefined}
     >
       <div className="space-y-6">
         {error && <Card><CardContent className="py-6 text-sm text-[var(--cs-text-muted)]">Could not load cover: {(error as Error).message}</CardContent></Card>}
@@ -286,6 +297,59 @@ export default function StaffingCoverPage() {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setPolicyOpen(false)}>Cancel</Button>
             <Button onClick={submitPolicy} disabled={!form || updatePolicy.isPending}>{updatePolicy.isPending ? "Saving…" : "Save policy"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate & publish rota from staff patterns */}
+      <Dialog open={genOpen} onOpenChange={setGenOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Generate rota from patterns</DialogTitle>
+            <DialogDescription>
+              {o ? `Cara expands each staff member's shift pattern across ${fmtDate(o.range.from)} – ${fmtDate(o.range.to)}, skipping dates already published and anyone on approved leave or off sick.` : ""}
+            </DialogDescription>
+          </DialogHeader>
+
+          {generate.isPending && !gen && <p className="py-4 text-sm text-[var(--cs-text-muted)]">Working out the rota…</p>}
+          {generate.isError && <p className="py-2 text-sm text-[var(--cs-risk)]">Couldn&apos;t generate the rota just now — please try again.</p>}
+
+          {gen && gen.mode === "preview" && (
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-[var(--cs-surface)] px-3 py-2"><p className="text-2xl font-extrabold text-[var(--cs-navy)]">{gen.total}</p><p className="text-[10px] uppercase tracking-wide text-[var(--cs-text-muted)]">To create</p></div>
+                <div className="rounded-lg bg-[var(--cs-surface)] px-3 py-2"><p className="text-2xl font-extrabold text-[var(--cs-text-muted)]">{gen.skipped_existing}</p><p className="text-[10px] uppercase tracking-wide text-[var(--cs-text-muted)]">Already set</p></div>
+                <div className="rounded-lg bg-[var(--cs-surface)] px-3 py-2"><p className="text-2xl font-extrabold text-[var(--cs-text-muted)]">{gen.skipped_unavailable}</p><p className="text-[10px] uppercase tracking-wide text-[var(--cs-text-muted)]">On leave/sick</p></div>
+              </div>
+              {gen.by_staff.length > 0 ? (
+                <div className="max-h-40 divide-y divide-[var(--cs-border-subtle)] overflow-y-auto rounded-lg border border-[var(--cs-border-subtle)]">
+                  {gen.by_staff.map((s) => (
+                    <div key={s.staff_id} className="flex items-center justify-between px-3 py-1.5 text-xs"><span className="text-[var(--cs-text-secondary)]">{s.staff_name}</span><span className="font-semibold text-[var(--cs-navy)]">{s.count} shift{s.count === 1 ? "" : "s"}</span></div>
+                  ))}
+                </div>
+              ) : <p className="text-sm text-[var(--cs-text-muted)]">Nothing to generate — every patterned shift in this window is already published or covered by leave.</p>}
+              <p className="text-[11px] text-[var(--cs-text-gentle)]">Publishing creates these as scheduled shifts; you can still edit or cancel any of them afterwards. Generation is driven by patterns — it supports your judgement, it doesn&apos;t replace it.</p>
+            </div>
+          )}
+
+          {gen && gen.mode === "publish" && (
+            <div className="space-y-2 py-2">
+              <p className="flex items-center gap-2 text-sm font-semibold text-[var(--cs-success)]"><CheckCircle2 className="h-5 w-5" /> Published {gen.published} shift{gen.published === 1 ? "" : "s"}.</p>
+              <p className="text-xs text-[var(--cs-text-secondary)]">They&apos;re now scheduled shifts across {fmtDate(gen.range.from)} – {fmtDate(gen.range.to)} and count as published cover in the view above.</p>
+            </div>
+          )}
+
+          <DialogFooter>
+            {gen && gen.mode === "publish" ? (
+              <Button onClick={() => setGenOpen(false)}>Done</Button>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => setGenOpen(false)}>Cancel</Button>
+                <Button onClick={publishRota} disabled={generate.isPending || !gen || gen.total === 0} className="gap-1.5">
+                  {generate.isPending && gen?.mode === "preview" ? "Publishing…" : `Publish ${gen?.total ?? 0} shift${(gen?.total ?? 0) === 1 ? "" : "s"}`}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

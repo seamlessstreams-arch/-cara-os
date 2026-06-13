@@ -69,3 +69,40 @@ export function useUpdateStaffingPolicy(from?: string, to?: string) {
     },
   });
 }
+
+export interface RotaGenCandidate {
+  date: string;
+  staff_id: string;
+  staff_name: string;
+  shift_type: string;
+  period: "day" | "night";
+  start_time: string;
+  end_time: string;
+}
+export interface RotaGenResult {
+  mode: "preview" | "publish";
+  range: { from: string; to: string };
+  candidates: RotaGenCandidate[];
+  total: number;
+  published: number;
+  skipped_existing: number;
+  skipped_unavailable: number;
+  by_staff: { staff_id: string; staff_name: string; count: number }[];
+  by_date: { date: string; day: number; night: number }[];
+}
+
+/**
+ * Generate shifts in advance from staff patterns. `mode:"preview"` proposes the
+ * rota without writing; `mode:"publish"` persists it. Publishing invalidates the
+ * cover view so the new shifts show as published rather than projected.
+ */
+export function useGenerateRota() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (vars: { mode: "preview" | "publish"; from?: string; to?: string }) =>
+      api.post<{ data: RotaGenResult }>("/rota/generate", vars),
+    onSuccess: (_resp, vars) => {
+      if (vars.mode === "publish") qc.invalidateQueries({ queryKey: ["staffing-cover"] });
+    },
+  });
+}
