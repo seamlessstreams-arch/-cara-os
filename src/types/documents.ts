@@ -71,6 +71,9 @@ export type DocumentIntelCategory =
   | "safer_recruitment"
   | "medication_audit"
   | "training_matrix"
+  | "statement_of_purpose"
+  | "workforce_development_plan"
+  | "home_development_plan"
   | "other";
 
 export const DOCUMENT_CATEGORY_LABELS: Record<DocumentIntelCategory, string> = {
@@ -117,6 +120,9 @@ export const DOCUMENT_CATEGORY_LABELS: Record<DocumentIntelCategory, string> = {
   safer_recruitment: "Safer Recruitment Evidence",
   medication_audit: "Medication Audit",
   training_matrix: "Training Matrix",
+  statement_of_purpose: "Statement of Purpose",
+  workforce_development_plan: "Workforce Development Plan",
+  home_development_plan: "Home Development Plan",
   other: "Other",
 };
 
@@ -164,6 +170,9 @@ export const DOCUMENT_CATEGORY_MODULE: Record<DocumentIntelCategory, string> = {
   safer_recruitment: "/recruitment",
   medication_audit: "/medication",
   training_matrix: "/training",
+  statement_of_purpose: "/compliance-documents",
+  workforce_development_plan: "/compliance-documents",
+  home_development_plan: "/compliance-documents",
   other: "/documents",
 };
 
