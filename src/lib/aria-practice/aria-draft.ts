@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { analyzePractice } from "./aria-practice-engine";
+import { FRAMEWORK_GUIDANCE_BLOCK } from "@/lib/aria/practice-frameworks";
 import type { AriaPracticeOutput, PracticeSourceType } from "./types";
 
 export type AriaDraftType =
@@ -229,7 +230,7 @@ const DRAFT_SYSTEM_PROMPT = [
   "Replace vague reassurance: 'engaged well' → 'engaged by doing X, and the impact for the child was Y'; 'settled' → 'appeared calmer because X, but Y remains unclear'; 'no concerns' → 'no new concerns observed during X; existing concerns remain Y'.",
   "You DRAFT and ADVISE; humans decide. Never make a final statutory safeguarding decision. Advise emergency action if immediate danger is described. Recommend manager review for safeguarding thresholds and LADO consideration where an adult's conduct toward a child may meet threshold.",
   "Return a clear, editable draft the author can refine. Keep it grounded in the supplied record; do not invent facts.",
-].join(" ");
+].join(" ") + "\n\n" + FRAMEWORK_GUIDANCE_BLOCK;
 
 /**
  * Returns the deterministic scaffold, enhanced with an AI narrative when a

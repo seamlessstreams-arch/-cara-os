@@ -26,6 +26,7 @@ import {
   ThresholdConsultationResult,
   AriaGuidanceRule,
 } from "./types";
+import { BEHAVIOUR_DRIVERS } from "@/lib/aria/practice-frameworks";
 
 // ── Lexicons ──────────────────────────────────────────────────────────────────
 
@@ -242,6 +243,8 @@ function liversQuestions(): AriaQuestion[] {
     { domain: "livers", question: "V — Viability of Change: Is change possible within the child's timeframe?" },
     { domain: "livers", question: "E — Environment & System Forces: What forces are helping or sabotaging change?" },
     { domain: "livers", question: "R — Relational & Psychological Drivers: What unmet need, trauma, attachment pattern or function may be sustaining the behaviour?" },
+    // R Domain detail — behaviour is the clue, not the answer; test each driver.
+    ...BEHAVIOUR_DRIVERS.map((d) => ({ domain: "livers", question: `R — ${d.name}: ${d.reflectiveQuestions[0]}` })),
     { domain: "livers", question: "S — Sustainability of Safety: Can safety continue without professional pressure, monitoring or presence?" },
     { domain: "livers", question: "Final test: Does the analysis explain the child's present, predict their future, and justify the intervention? If not, it is description, not analysis." },
   ];
