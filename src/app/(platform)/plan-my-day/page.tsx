@@ -8,6 +8,7 @@
 import React from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { PrintButton } from "@/components/common/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { usePlanMyDay } from "@/hooks/use-plan-my-day";
@@ -116,6 +117,7 @@ export default function PlanMyDayPage() {
       title="Plan My Day"
       subtitle={plan ? `${plan.date} · ${plan.headline}` : "Your running order for the day — concerns, commitments and what needs you."}
       showQuickCreate={false}
+      actions={plan ? <PrintButton title={`Plan My Day — ${plan.date}`} subtitle={plan.headline} targetId="plan-my-day-print" /> : undefined}
     >
       <div className="space-y-6">
         {error && (
@@ -126,7 +128,7 @@ export default function PlanMyDayPage() {
         )}
 
         {plan && (
-          <>
+          <div id="plan-my-day-print" className="space-y-6">
             {/* Counts */}
             <div className="grid gap-3 sm:grid-cols-4">
               {[
@@ -230,7 +232,7 @@ export default function PlanMyDayPage() {
             <p className="text-xs text-[var(--cs-text-gentle)]">
               Cara assembles this from your calendar, open concerns, tasks, supervisions, training and key-working. It supports your judgement — you decide what to action and when.
             </p>
-          </>
+          </div>
         )}
       </div>
     </PageShell>

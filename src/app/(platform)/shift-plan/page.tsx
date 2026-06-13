@@ -7,6 +7,7 @@
 import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { PrintButton } from "@/components/common/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { useShiftPlan } from "@/hooks/use-shift-plan";
@@ -65,6 +66,7 @@ export default function ShiftPlanPage() {
             {periodBtn("day", Sun, "Day")}
             {periodBtn("night", Moon, "Night")}
           </div>
+          {plan && <PrintButton title={`Shift Plan — ${plan.period_label}`} subtitle={`${plan.date} · ${plan.window_label}`} targetId="shift-plan-print" />}
         </div>
       }
     >
@@ -73,7 +75,7 @@ export default function ShiftPlanPage() {
         {isLoading && <Card><CardContent className="py-6 text-sm text-[var(--cs-text-muted)]">Building the plan…</CardContent></Card>}
 
         {plan && (
-          <>
+          <div id="shift-plan-print" className="space-y-6">
             {/* Staffing banner */}
             <div className={`flex flex-wrap items-center justify-between gap-3 rounded-xl px-4 py-3 ${STAFFING_STYLE[plan.staffing.severity]}`}>
               <div className="flex items-center gap-2.5">
@@ -206,7 +208,7 @@ export default function ShiftPlanPage() {
             <p className="text-xs text-[var(--cs-text-gentle)]">
               Cara generates this plan from the rota, calendar, medications, tasks and recent records. It supports the team&apos;s judgement — staff remain responsible for decisions, recording and safeguarding actions.
             </p>
-          </>
+          </div>
         )}
       </div>
     </PageShell>
