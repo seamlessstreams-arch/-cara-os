@@ -15,6 +15,9 @@ import {
   RECORDING_PROMPTS, STAFF_REGULATION_REMINDERS,
 } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
+import { safetyPlanConversationPrompts } from "@/lib/aria/practice-frameworks";
+
+const SAFETY_THEME_RE = /safe|calm|regulat|crisis|overwhelm|missing|self.?harm|de-?escalat|melt ?down|big feelings|anger/i;
 
 export interface SessionGenInput {
   ctx: CaraChildContext;
@@ -76,6 +79,9 @@ export function generateCaraSessionPlan(input: SessionGenInput): { output: CaraS
   const opening = pick(PACE_OPENINGS, theme + name);
   const validation = pick(PACE_VALIDATIONS, theme + name, 7);
   const reflective = [pick(PACE_CURIOSITY, theme, 1), pick(PACE_CURIOSITY, theme, 5), pick(PACE_REPAIR, theme, 3)];
+  // Safety / regulation themes: weave in the child's own safety-plan building.
+  const safetyTheme = SAFETY_THEME_RE.test(`${theme} ${input.aim}`);
+  const safetyPlanPrompts = safetyTheme ? safetyPlanConversationPrompts() : [];
 
   const adaptations: string[] = [];
   if (ctx.profile?.send_needs) adaptations.push(`SEND: ${ctx.profile.send_needs} — keep demands low, offer choices over questions.`);
@@ -98,13 +104,13 @@ export function generateCaraSessionPlan(input: SessionGenInput): { output: CaraS
     title: `${theme} — ${durationMinutes}-minute ${micro ? "micro-session" : brief ? "conversation" : "key-work session"} for ${name}`,
     childFriendlyTitle: micro ? `A quick two minutes about ${theme.toLowerCase()}` : `Some time for us: ${theme.toLowerCase()}`,
     purpose: input.aim,
-    aims: [input.aim, `Strengthen ${name}'s sense that adults here are safe and on their side`, "Leave the door open for the next conversation"],
+    aims: [input.aim, `Strengthen ${name}'s sense that adults here are safe and on their side`, "Leave the door open for the next conversation", ...(safetyTheme ? [`Begin building ${name}'s own safety plan — what helps, the early warning signs, and who to go to`] : [])],
     emotionalSafetyCheck: `Before starting: is ${name} regulated, fed and not mid-crisis? ${ctx.triggerMatch ? `CAUTION — this theme overlaps known triggers (${ctx.profile?.emotional_triggers}). Pair with a trusted adult${ctx.profile?.trusted_adults ? ` (${ctx.profile.trusted_adults})` : ""} and have an exit plan.` : "If anything feels off, do the warm five-minute version instead and try the rest another day."}`,
     resourcesNeeded: activity.name === "Card sort" ? ["Theme cards (make or print)", "Flat space", "Drink/snack"] : activity.name === "Draw it out" ? ["Big paper", "Pens", "Drink/snack"] : ["Just you, time and a drink"],
     sessionStructure: structure,
     openingScript: `"${opening}" …then bridge: "I wanted a few minutes about ${theme.toLowerCase()} — not because you're in trouble. ${validation}"`,
     mainActivity: activity.description,
-    reflectiveQuestions: reflective,
+    reflectiveQuestions: [...reflective, ...safetyPlanPrompts.slice(0, 2)],
     regulationBreaks: [
       "Drink/snack break — offered, not earned",
       ctx.profile?.calming_strategies ? `Their known calmer: ${ctx.profile.calming_strategies}` : "Step outside / music / movement for two minutes",

@@ -14,6 +14,9 @@ import {
   AVOID_PHRASES, STAFF_REGULATION_REMINDERS, SHUTDOWN_RESPONSES, RECORDING_PROMPTS,
 } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
+import { safetyPlanConversationPrompts } from "@/lib/aria/practice-frameworks";
+
+const SAFETY_TOPIC_RE = /safe|calm|regulat|upset|angr|overwhelm|crisis|missing|self.?harm|hurt|de-?escalat|melt ?down/i;
 
 export interface ConversationGenInput {
   ctx: CaraChildContext;
@@ -56,7 +59,13 @@ export function generateCaraConversationBlueprint(input: ConversationGenInput): 
     validationStatements: [PACE_VALIDATIONS[0], PACE_VALIDATIONS[2], PACE_VALIDATIONS[3]],
     curiosityQuestions: [...PACE_CURIOSITY.slice(0, 4)],
     reflectivePrompts: [PACE_REPAIR[0], PACE_REPAIR[1]],
-    safetyQuestions: input.emotionalRisk === "low" ? [PACE_SAFETY[2]] : [...PACE_SAFETY],
+    safetyQuestions: (() => {
+      const base = input.emotionalRisk === "low" ? [PACE_SAFETY[2]] : [...PACE_SAFETY];
+      // When the conversation is about safety / regulation, gently build the
+      // child's own safety plan (what helps, warning signs, safe adults).
+      const safetyRelevant = input.emotionalRisk === "high" || SAFETY_TOPIC_RE.test(`${input.conversationTopic} ${input.reasonForConversation}`);
+      return safetyRelevant ? [...base, ...safetyPlanConversationPrompts()] : base;
+    })(),
     avoidPhrases: [...AVOID_PHRASES],
     ifChildShutsDown: SHUTDOWN_RESPONSES.shutsDown,
     ifChildBecomesAngry: SHUTDOWN_RESPONSES.becomesAngry,

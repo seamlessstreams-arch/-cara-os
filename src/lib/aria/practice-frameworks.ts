@@ -448,3 +448,20 @@ export function independenceSkillsForDomain(domain: string): IndependenceSkill[]
   const d = domain.trim().toLowerCase();
   return INDEPENDENCE_SKILLS.filter((s) => s.domains.some((x) => x.toLowerCase() === d));
 }
+
+/**
+ * PACE-toned, child-facing prompts that gently build the child's OWN safety plan
+ * — drawn from SAFETY_PLAN_SECTIONS (what helps me calm, my warning signs, my
+ * safe adults, what staff should do, my safe spaces). For safety / regulation
+ * conversations and sessions. Curious and accepting, never a checklist read at
+ * the child.
+ */
+export function safetyPlanConversationPrompts(): string[] {
+  return [
+    "When things start to feel too big, what helps you feel calmer? (your way — there's no wrong answer)",
+    "How do you know — and how could I know — when you're starting to feel wound up?",
+    "Who are the people you trust to go to when it's hard?",
+    "When you're upset, what actually helps — and what should we do (or not do)?",
+    "Where do you feel safest here?",
+  ];
+}

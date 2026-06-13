@@ -119,6 +119,12 @@ describe("session generator", () => {
     expect(output.managerReviewNeeded).toBe(true);
     expect(output.emotionalSafetyCheck).toMatch(/CAUTION/);
   });
+
+  it("weaves safety-plan building into a regulation-themed session", () => {
+    const { output } = generateCaraSessionPlan({ ctx: ctx(), theme: "Staying calm when things feel overwhelming", aim: "Help Alex find what helps him regulate", durationMinutes: 20, childReadiness: "medium", emotionalIntensity: "medium", staffConfidence: "medium" });
+    expect(output.aims.join(" ")).toMatch(/safety plan/i);
+    expect(output.reflectiveQuestions.join(" ")).toMatch(/feel calmer|safest/i);
+  });
 });
 
 describe("curriculum generator", () => {
@@ -154,7 +160,13 @@ describe("conversation coach", () => {
     expect(output.avoidPhrases).toContain("Why did you do that?");
     expect(output.openingLines.join(" ")).toMatch(/not here to have a go at you/i);
     expect(output.safetyQuestions.length).toBeGreaterThan(1);
+    expect(output.safetyQuestions.join(" ")).toMatch(/feel calmer|safest|trust to go to/i); // safety-plan prompts woven in
     expect(runCaraGuardrails(output).passed).toBe(true);
+  });
+
+  it("does not bolt safety-plan prompts onto an unrelated low-risk conversation", () => {
+    const { output } = generateCaraConversationBlueprint({ ctx: ctx(), conversationTopic: "joining the football club", reasonForConversation: "he mentioned wanting to play", emotionalRisk: "low" });
+    expect(output.safetyQuestions.join(" ")).not.toMatch(/feel calmer/i);
   });
 });
 
