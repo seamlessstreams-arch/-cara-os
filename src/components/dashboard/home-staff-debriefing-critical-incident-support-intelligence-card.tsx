@@ -19,7 +19,7 @@ const INSIGHT_STYLES: Record<string, string> = { critical: "border-red-200 bg-re
 export function HomeStaffDebriefingCriticalIncidentSupportIntelligenceCard() {
   const { data, isLoading } = useHomeStaffDebriefingCriticalIncidentSupportIntelligence();
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  const d = data?.data ?? data;
+  const d = data?.data;
   if (!d) return null;
   const ratingStyle = RATING_STYLES[d.debriefing_rating as StaffDebriefingRating] ?? RATING_STYLES.insufficient_data;
   const isAlert = d.debriefing_rating === "inadequate";
