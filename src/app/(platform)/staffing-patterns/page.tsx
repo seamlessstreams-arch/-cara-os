@@ -5,7 +5,7 @@
 // deputy 2-on/4-off). Patterns drive the cover view and the generate-&-publish
 // flow, so what's set here flows straight through.
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useShiftPatterns, useCreatePattern, useUpdatePattern, useDeletePattern, type ShiftPatternRow } from "@/hooks/use-shift-patterns";
+import { patternWorksOn, type ShiftPattern } from "@/lib/rota/shift-patterns";
 import { CalendarRange, Plus, Pencil, Trash2, Sun, Moon, CalendarCheck } from "lucide-react";
 
 // Display Mon-first; values follow JS getUTCDay (0=Sun … 6=Sat).
@@ -54,6 +55,46 @@ function formFrom(p: ShiftPatternRow): FormState {
     weekdays: p.weekdays ?? [], cycle_on: p.cycle_on ?? 2, cycle_off: p.cycle_off ?? 4, anchor_date: (p.anchor_date ?? "").slice(0, 10) || new Date().toISOString().slice(0, 10),
     shift_type: p.shift_type, start_time: p.start_time, end_time: p.end_time, active: p.active,
   };
+}
+
+// Live calendar preview of the pattern being set — the next 4 weeks, aligned to
+// weekday columns so the rhythm of a rotating cycle is visible at a glance.
+function PatternPreview({ form }: { form: FormState }) {
+  const { cells, worked } = useMemo(() => {
+    const candidate: ShiftPattern = {
+      id: "preview", staff_id: form.staff_id || "preview", name: "preview", kind: form.kind,
+      weekdays: form.weekdays, cycle_on: form.cycle_on, cycle_off: form.cycle_off, anchor_date: form.anchor_date,
+      shift_type: form.shift_type, start_time: form.start_time, end_time: form.end_time, active: true, home_id: "home_oak",
+    };
+    const valid = form.kind === "weekly" ? form.weekdays.length > 0 : form.cycle_on >= 1 && !!form.anchor_date;
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const todayMs = Date.parse(`${todayStr}T00:00:00Z`);
+    const mondayOffset = (new Date(todayMs).getUTCDay() + 6) % 7; // back to this week's Monday
+    const startMs = todayMs - mondayOffset * 864e5;
+    const cells = Array.from({ length: 28 }, (_, i) => {
+      const ms = startMs + i * 864e5;
+      const date = new Date(ms).toISOString().slice(0, 10);
+      return { date, num: new Date(ms).getUTCDate(), on: valid && patternWorksOn(candidate, date), past: date < todayStr };
+    });
+    return { cells, worked: cells.filter((c) => c.on && !c.past).length };
+  }, [form]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <Label className="text-xs">Preview — next 4 weeks</Label>
+        <span className="text-[11px] font-medium text-[var(--cs-teal)]">{worked} shift{worked === 1 ? "" : "s"}</span>
+      </div>
+      <div className="mt-1 grid grid-cols-7 gap-1">
+        {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
+          <div key={i} className="text-center text-[9px] font-semibold uppercase tracking-wide text-[var(--cs-text-gentle)]">{d}</div>
+        ))}
+        {cells.map((c) => (
+          <div key={c.date} title={c.date} className={`flex h-7 items-center justify-center rounded text-[10px] font-semibold ${c.on ? "bg-[var(--cs-teal)] text-white" : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]"} ${c.past ? "opacity-40" : ""}`}>{c.num}</div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 export default function ShiftPatternsPage() {
@@ -190,6 +231,8 @@ export default function ShiftPatternsPage() {
               <div><Label className="text-[11px]">Start</Label><Input value={form.start_time} onChange={(e) => set("start_time", e.target.value)} placeholder="08:00" className="mt-1 h-9" /></div>
               <div><Label className="text-[11px]">End</Label><Input value={form.end_time} onChange={(e) => set("end_time", e.target.value)} placeholder="20:00" className="mt-1 h-9" /></div>
             </div>
+
+            <PatternPreview form={form} />
 
             {(create.isError || update.isError) && <p className="text-xs text-[var(--cs-risk)]">{((create.error || update.error) as Error)?.message || "Couldn't save — please try again."}</p>}
           </div>
