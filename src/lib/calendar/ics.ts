@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CalendarEvent } from "./calendar-types";
+import type { CalendarRecurrence } from "./recurrence";
 
 /** Escape per RFC 5545 §3.3.11 (TEXT): backslash, semicolon, comma, newline. */
 function escapeText(value: string): string {
@@ -46,6 +47,24 @@ function fold(line: string): string {
   }
   if (rest.length) parts.push(" " + rest);
   return parts.join("\r\n");
+}
+
+/** Build an RFC 5545 RRULE from our recurrence rule (null → no line). */
+export function buildRRule(rec: CalendarRecurrence | null): string | null {
+  if (!rec) return null;
+  const interval = Math.max(1, rec.interval || 1);
+  let freq: string;
+  let mult = interval;
+  if (rec.freq === "daily") freq = "DAILY";
+  else if (rec.freq === "weekly") freq = "WEEKLY";
+  else if (rec.freq === "fortnightly") {
+    freq = "WEEKLY";
+    mult = interval * 2;
+  } else freq = "MONTHLY";
+  let rule = `FREQ=${freq};INTERVAL=${mult}`;
+  if (rec.until) rule += `;UNTIL=${rec.until.replace(/-/g, "")}T235959Z`;
+  else if (rec.count) rule += `;COUNT=${rec.count}`;
+  return rule;
 }
 
 export interface IcsOptions {
@@ -101,6 +120,9 @@ export function buildICS(event: CalendarEvent, opts: IcsOptions): string {
   if (event.description) descParts.push(event.description);
   if (opts.childName) descParts.push(`Young person: ${opts.childName}`);
   if (event.event_type) descParts.push(`Type: ${event.event_type}`);
+
+  const rrule = buildRRule(event.recurrence ?? null);
+  if (rrule) lines.push(`RRULE:${rrule}`);
 
   lines.push(`SUMMARY:${escapeText(event.title)}`);
   if (descParts.length) lines.push(`DESCRIPTION:${escapeText(descParts.join("\n"))}`);

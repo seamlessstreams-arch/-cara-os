@@ -141,6 +141,16 @@ const AttendeeSchema = z.object({
   staff_id: z.string().nullable().optional(),
 });
 
+const RecurrenceSchema = z
+  .object({
+    freq: z.enum(["daily", "weekly", "fortnightly", "monthly"]),
+    interval: z.number().int().min(1).max(52).default(1),
+    until: z.string().nullable().default(null),
+    count: z.number().int().min(1).max(365).nullable().default(null),
+  })
+  .nullable()
+  .optional();
+
 export const CreateEventSchema = z.object({
   title: z.string().trim().min(2, "A title is required."),
   description: z.string().trim().optional().default(""),
@@ -153,6 +163,7 @@ export const CreateEventSchema = z.object({
   organiser_id: z.string().default("staff_darren"),
   attendees: z.array(AttendeeSchema).default([]),
   reminder_minutes_before: z.number().int().min(0).max(10080).nullable().optional(),
+  recurrence: RecurrenceSchema,
   /** When provided, a linked task is created for each (capture-once: the task lives in store.tasks). */
   tasks: z.array(z.object({ title: z.string().trim().min(2), due_date: z.string().nullable().optional() })).default([]),
 });
@@ -168,6 +179,7 @@ export const UpdateEventSchema = z.object({
   location: z.string().trim().nullable().optional(),
   child_id: z.string().nullable().optional(),
   reminder_minutes_before: z.number().int().min(0).max(10080).nullable().optional(),
+  recurrence: RecurrenceSchema,
   status: z.enum(["scheduled", "cancelled", "completed"]).optional(),
 });
 
@@ -237,6 +249,14 @@ export function createCalendarEvent(input: CreateEventInput): CalendarEvent {
     attendees,
     linked_task_ids: linkedTaskIds,
     reminder_minutes_before: input.reminder_minutes_before ?? null,
+    recurrence: input.recurrence
+      ? {
+          freq: input.recurrence.freq,
+          interval: input.recurrence.interval,
+          until: input.recurrence.until,
+          count: input.recurrence.count,
+        }
+      : null,
   });
 
   void persistCalendarEvent(event);
@@ -288,9 +308,13 @@ export function markInviteSent(id: string): { event: CalendarEvent; notified: nu
 export function runDueReminders(now: string): { fired: number } {
   const store = getStore();
   const due = dueReminders(store.calendarEvents, now);
-  for (const { event } of due) {
-    notifyStaff(event, "Meeting reminder", `${event.title} starts at ${event.start.replace("T", " ").slice(0, 16)}`);
-    const updated = db.calendarEvents.update(event.id, { reminder_sent: true });
+  for (const { event, occurrence, occurrence_day } of due) {
+    notifyStaff(event, "Meeting reminder", `${event.title} starts at ${occurrence.replace("T", " ").slice(0, 16)}`);
+    // Recurring events dedupe per occurrence; one-offs flip reminder_sent.
+    const patch = event.recurrence
+      ? { last_reminded_occurrence: occurrence_day }
+      : { reminder_sent: true };
+    const updated = db.calendarEvents.update(event.id, patch);
     if (updated) void persistCalendarEvent(updated);
   }
   return { fired: due.length };

@@ -53,6 +53,7 @@ export interface CreateEventBody {
   organiser_id?: string;
   attendees?: { kind: "staff" | "external"; name: string; email?: string | null; staff_id?: string | null }[];
   reminder_minutes_before?: number | null;
+  recurrence?: { freq: "daily" | "weekly" | "fortnightly" | "monthly"; interval?: number; until?: string | null; count?: number | null } | null;
   tasks?: { title: string; due_date?: string | null }[];
 }
 

@@ -11,6 +11,9 @@
 // Pure types only — safe to import anywhere (store, hooks, UI, engine).
 // ══════════════════════════════════════════════════════════════════════════════
 
+import type { CalendarRecurrence } from "./recurrence";
+export type { CalendarRecurrence, RecurrenceFreq } from "./recurrence";
+
 export type CalendarEventType =
   | "meeting"
   | "appointment"
@@ -56,6 +59,10 @@ export interface CalendarEvent {
   reminder_minutes_before: number | null;
   reminder_sent: boolean;
   invite_sent: boolean;
+  /** Repeat rule; null for a one-off event. */
+  recurrence?: CalendarRecurrence | null;
+  /** YYYY-MM-DD of the last occurrence we sent a reminder for (recurring dedupe). */
+  last_reminded_occurrence?: string | null;
   status: "scheduled" | "cancelled" | "completed";
   created_at: string;
   updated_at: string;
@@ -100,6 +107,8 @@ export interface CalendarItem {
   href: string;
   /** Original record id (un-prefixed) for the source module. */
   source_id: string;
+  /** True when this item is one occurrence of a recurring planned event. */
+  recurring?: boolean;
 }
 
 export interface CalendarFeed {

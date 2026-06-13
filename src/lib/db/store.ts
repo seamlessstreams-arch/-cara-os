@@ -11235,6 +11235,8 @@ export const db = {
         reminder_minutes_before: null,
         reminder_sent: false,
         invite_sent: false,
+        recurrence: null,
+        last_reminded_occurrence: null,
         status: "scheduled",
         created_by: "staff_darren",
         ...data,
