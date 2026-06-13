@@ -104,6 +104,10 @@ export interface ChronologyEntry {
   linked_incident_id: string | null;
   home_id: string;
   created_at: string;
+  /** True when imported from a prior placement's chronology (vs recorded in Cara). */
+  imported?: boolean;
+  /** Free-text provenance for imported entries, e.g. "Imported — LA chronology". */
+  source_label?: string | null;
 }
 
 // ── Building ──────────────────────────────────────────────────────────────────
