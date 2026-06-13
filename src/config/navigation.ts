@@ -32,6 +32,7 @@ export const NAV_GROUPS: NavGroup[] = [
     module: "dashboard",
     children: [
       { label: "Command Centre",  href: "/dashboard",       icon: "LayoutDashboard", module: "dashboard"  },
+      { label: "Calendar",        href: "/calendar",        icon: "CalendarDays",    module: "dashboard"  },
       { label: "Dashboards",      href: "/dashboards",      icon: "Activity",        module: "dashboard"  },
       { label: "Manager Control Centre", href: "/dashboard/manager-control-centre", icon: "ShieldCheck", module: "dashboard" },
       { label: "Priority Briefing",      href: "/priority-briefing", icon: "Radar",   module: "dashboard" },
@@ -727,6 +728,7 @@ export const DOMAIN_NAV: NavGroup[] = [
     module: "dashboard",
     children: [
       { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard", module: "dashboard" },
+      { label: "Calendar", href: "/calendar", icon: "CalendarDays", module: "dashboard" },
       { label: "Manager Control", href: "/dashboard/manager-control-centre", icon: "ShieldCheck", module: "dashboard" },
       { label: "Tasks", href: "/tasks", icon: "CheckSquare", module: "tasks", badgeKey: "tasks" },
       { label: "Handover", href: "/handover", icon: "ArrowRightLeft", module: "handover" },

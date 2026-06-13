@@ -28,6 +28,7 @@ export const PERSISTENCE_MANIFEST: PersistenceEntry[] = [
   { entity: "Young people profiles", area: "Care records", write_through: true, table: "young_people", audit_trail: "Change history fields" },
   { entity: "Medications (MAR)", area: "Care records", write_through: true, table: "medications", audit_trail: "Administration records with checker identity" },
   { entity: "Tasks & actions", area: "Care records", write_through: true, table: "tasks", audit_trail: "Status changes with actor + completion sign-off" },
+  { entity: "Calendar events (meetings/appointments)", area: "Care records", write_through: true, table: "calendar_events", audit_trail: "Create/reschedule/cancel + attendees + linked tasks on the row", note: "Only the calendar's own events persist here; all other calendar items are projected live from their source tables (capture once)" },
 
   // ── Safeguarding & incidents ──
   { entity: "Incidents", area: "Safeguarding & incidents", write_through: true, table: "incidents", audit_trail: "Manager oversight fields + linked records" },

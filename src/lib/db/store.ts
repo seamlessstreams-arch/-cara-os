@@ -37,6 +37,8 @@ import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from
 import type { AlertStateRecord } from "@/lib/aria-incident/manager-oversight-engine";
 import type { HqOrganisation, HqUsageEvent, HqAiUsageRow, HqBreakGlassGrant } from "@/lib/hq/hq-types";
 import { seedHqOrganisations, seedHqUsageEvents } from "@/lib/hq/hq-seeds";
+import type { CalendarEvent } from "@/lib/calendar/calendar-types";
+import { seedCalendarEvents } from "@/lib/calendar/calendar-seeds";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -772,6 +774,8 @@ const store = {
   hqUsageEvents: seedHqUsageEvents() as HqUsageEvent[],
   hqAiUsage: [] as HqAiUsageRow[],
   hqBreakGlassGrants: [] as HqBreakGlassGrant[],
+  // Calendar — ONE editable collection; everything else is projected live
+  calendarEvents: seedCalendarEvents() as CalendarEvent[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],
@@ -11204,6 +11208,52 @@ export const db = {
       if (idx === -1) return null;
       store.notifications[idx] = { ...store.notifications[idx], ...updates };
       return store.notifications[idx];
+    },
+  },
+
+  calendarEvents: {
+    findAll: (): CalendarEvent[] => store.calendarEvents,
+    findById: (id: string): CalendarEvent | undefined => store.calendarEvents.find((e) => e.id === id),
+    findByChild: (childId: string): CalendarEvent[] =>
+      store.calendarEvents.filter((e) => e.child_id === childId),
+    create: (data: Partial<CalendarEvent>): CalendarEvent => {
+      const nowIso = new Date().toISOString();
+      const event: CalendarEvent = {
+        id: generateId("cal"),
+        home_id: "home_oak",
+        title: "",
+        description: "",
+        event_type: "meeting",
+        start: nowIso,
+        end: null,
+        all_day: false,
+        location: null,
+        child_id: null,
+        organiser_id: "staff_darren",
+        attendees: [],
+        linked_task_ids: [],
+        reminder_minutes_before: null,
+        reminder_sent: false,
+        invite_sent: false,
+        status: "scheduled",
+        created_by: "staff_darren",
+        ...data,
+        created_at: nowIso,
+        updated_at: nowIso,
+      };
+      store.calendarEvents.push(event);
+      return event;
+    },
+    update: (id: string, updates: Partial<CalendarEvent>): CalendarEvent | null => {
+      const idx = store.calendarEvents.findIndex((e) => e.id === id);
+      if (idx === -1) return null;
+      store.calendarEvents[idx] = {
+        ...store.calendarEvents[idx],
+        ...updates,
+        id: store.calendarEvents[idx].id,
+        updated_at: new Date().toISOString(),
+      };
+      return store.calendarEvents[idx];
     },
   },
 
