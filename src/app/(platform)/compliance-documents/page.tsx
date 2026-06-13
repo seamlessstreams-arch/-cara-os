@@ -4,7 +4,7 @@
 // actions inside it, track those actions, and keep oversight — so nothing rots
 // in a folder and the development plan keeps moving.
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,8 +19,9 @@ import {
   useComplianceOversight, useComplianceDocuments, useIngestComplianceDoc, useTrackComplianceActions,
 } from "@/hooks/use-compliance";
 import { COMPLIANCE_CATEGORIES } from "@/lib/compliance/compliance-oversight-engine";
+import { extractFileText } from "@/lib/compliance/extract-file-text";
 import { DOCUMENT_CATEGORY_LABELS, type DocumentIntelCategory } from "@/types/documents";
-import { FileText, Sparkles, CalendarClock, AlertTriangle, CheckCircle2, ListChecks, ShieldCheck, Clock } from "lucide-react";
+import { FileText, Sparkles, CalendarClock, AlertTriangle, CheckCircle2, ListChecks, ShieldCheck, Clock, Upload } from "lucide-react";
 
 const CATEGORY_OPTIONS = [...COMPLIANCE_CATEGORIES]
   .map((c) => ({ value: c as DocumentIntelCategory, label: DOCUMENT_CATEGORY_LABELS[c] }))
@@ -59,6 +60,31 @@ export default function ComplianceDocumentsPage() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>("auto");
   const [text, setText] = useState("");
+  const [fileNote, setFileNote] = useState<string | null>(null);
+  const [reading, setReading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const onFile = async (f: File | undefined | null) => {
+    if (!f) return;
+    setFileNote(null);
+    setReading(true);
+    try {
+      const res = await extractFileText(f);
+      if (res.text && res.text.trim().length >= 20) {
+        setText(res.text);
+        if (!title.trim()) setTitle(f.name.replace(/\.[^.]+$/, ""));
+        ingest.reset();
+        setFileNote(`Read “${f.name}” — review the text below, then Analyse.`);
+      } else {
+        setFileNote(res.note ?? "Couldn't read text from that file — paste it instead.");
+      }
+    } catch {
+      setFileNote("Couldn't read that file — paste the text instead.");
+    } finally {
+      setReading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
 
   const analysed = ingest.data?.data;
   const ai = analysed?.ai_result;
@@ -66,7 +92,7 @@ export default function ComplianceDocumentsPage() {
 
   const onAnalyse = () => { track.reset(); ingest.mutate({ text, title: title.trim() || undefined, category: category === "auto" ? null : (category as DocumentIntelCategory) }); };
   const onTrack = () => { if (analysed) track.mutate({ documentId: analysed.id }); };
-  const onClear = () => { setText(""); setTitle(""); setCategory("auto"); ingest.reset(); track.reset(); };
+  const onClear = () => { setText(""); setTitle(""); setCategory("auto"); setFileNote(null); ingest.reset(); track.reset(); };
 
   const untracked = (ai?.suggested_tasks ?? []).filter((s) => !s.created_task_id);
 
@@ -98,8 +124,16 @@ export default function ComplianceDocumentsPage() {
               </div>
             </div>
             <div>
-              <div className="flex items-center justify-between"><Label className="text-xs">Paste the document text</Label><DictationButton mode="append" size="sm" onTranscript={(t) => setText((p) => (p.trim() ? `${p}\n${t}` : t))} /></div>
-              <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={6} placeholder="Paste the contents of the Statement of Purpose, development plan, fire risk assessment, policy… Cara will pull out the review date, expiry and the actions inside it." className="mt-1 text-sm" />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="text-xs">Upload a file or paste the text</Label>
+                <div className="flex items-center gap-2">
+                  <input ref={fileRef} type="file" accept=".docx,.txt,.md,.csv,.pdf" className="hidden" onChange={(e) => onFile(e.target.files?.[0])} />
+                  <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={reading} className="gap-1.5"><Upload className="h-3.5 w-3.5" />{reading ? "Reading…" : "Upload .docx / .txt"}</Button>
+                  <DictationButton mode="append" size="sm" onTranscript={(t) => setText((p) => (p.trim() ? `${p}\n${t}` : t))} />
+                </div>
+              </div>
+              <Textarea value={text} onChange={(e) => setText(e.target.value)} rows={6} placeholder="Drop in a Word (.docx) or text file, or paste the contents of the Statement of Purpose, development plan, fire risk assessment, policy… Cara pulls out the review date, expiry and the actions inside it." className="mt-1 text-sm" />
+              {fileNote && <p className="mt-1 text-[11px] text-[var(--cs-text-muted)]">{fileNote}</p>}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Button onClick={onAnalyse} disabled={text.trim().length < 20 || ingest.isPending} className="gap-1.5"><Sparkles className="h-4 w-4" />{ingest.isPending ? "Reading…" : "Analyse with Cara"}</Button>
