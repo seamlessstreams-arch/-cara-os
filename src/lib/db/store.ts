@@ -45,6 +45,13 @@ import { seedStaffSicknessRecords } from "@/lib/workforce/absence-seeds";
 import type { ShiftPattern } from "@/lib/rota/shift-patterns";
 import type { StaffingPolicy } from "@/lib/rota/staffing-cover-engine";
 import { seedShiftPatterns, seedStaffingPolicy, seedShiftCoverNotes, type ShiftCoverNote } from "@/lib/rota/rota-seeds";
+import {
+  seedFireEquipmentChecks, seedWaterHygieneRecords, seedWindowChecks, seedPestRecords,
+  seedAgencyStaffLog, seedAgencyInductions, seedAgencyFeedback,
+  seedCommunityEngagements, seedIndependentTravelRecords,
+  seedHomePolicies, seedPolicyReviewSchedule, seedPolicyVersionControl,
+  seedPolicyAcknowledgements, seedPolicyAlignment, seedPolicyAccessibility,
+} from "@/lib/seed-dead-cell-collections";
 import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
@@ -1151,8 +1158,8 @@ const store = {
     },
   ] as AdvocacyRecord[],
   afterCareRecords: [] as AfterCareRecord[],
-  agencyInductions: [] as AgencyInduction[],
-  agencyStaffLog: [] as AgencyStaffRecord[],
+  agencyInductions: seedAgencyInductions() as AgencyInduction[],
+  agencyStaffLog: seedAgencyStaffLog() as AgencyStaffRecord[],
   annualDevelopmentReviews: [] as AnnualDevelopmentReview[],
   annualHealthAssessments: [] as AnnualHealthAssessment[],
   annualOutcomes: [] as AnnualOutcome[],
@@ -1516,7 +1523,7 @@ const store = {
   familyTimeSessions: [] as FamilyTimeSession[],
   genogramEntries: [] as GenogramEntry[],
   fireRiskItems: [] as FireRiskItem[],
-  fireEquipmentChecks: [] as FireEquipmentCheck[],
+  fireEquipmentChecks: seedFireEquipmentChecks() as FireEquipmentCheck[],
   firstAiderRecords: [] as FirstAiderRecord[],
   foodBudgetWeekRecords: [] as FoodBudgetWeekRecord[],
   foodHygieneRecords: [] as FoodHygieneRecord[],
@@ -1545,7 +1552,7 @@ const store = {
   impactAssessments: [] as ImpactAssessment[],
   incidentTrends: [] as IncidentTrendRecord[],
   clubRecords: [] as ClubRecord[],
-  agencyFeedback: [] as AgencyFeedback[],
+  agencyFeedback: seedAgencyFeedback() as AgencyFeedback[],
   bedroomProfiles: [] as BedroomProfile[],
   bedtimeRoutines: [] as BedtimeRoutine[],
   wakeUpRoutines: [] as WakeUpRoutine[],
@@ -1568,8 +1575,8 @@ const store = {
   cardRecords: [] as CardRecord[],
   boardReports: [] as BoardReport[],
   asbestosRecords: [] as AsbestosRecord[],
-  pestRecords: [] as PestRecord[],
-  windowChecks: [] as WindowCheck[],
+  pestRecords: seedPestRecords() as PestRecord[],
+  windowChecks: seedWindowChecks() as WindowCheck[],
   bcpScenarios: [] as BcpScenarioPlan[],
   caseFileAudits: [] as CaseFileAudit[],
   moneyRecords: [] as MoneyRecord[],
@@ -1583,7 +1590,7 @@ const store = {
   workExpRecords: [] as WorkExpRecord[],
   childPledges: [] as ChildPledge[],
   cleaningEntries: [] as CleaningEntry[],
-  communityEngagements: [] as CommunityEngagement[],
+  communityEngagements: seedCommunityEngagements() as CommunityEngagement[],
   resolutionMeetings: [] as ResolutionMeeting[],
   consequenceRecords: [] as ConsequenceRecord[],
   contactPlans: [] as ContactPlan[],
@@ -1654,7 +1661,7 @@ const store = {
     },
   ] as IndependenceSkillsRecord[],
   independenceLivingAssessments: [] as IndependenceLivingAssessment[],
-  independentTravelRecords: [] as IndependentTravelRecord[],
+  independentTravelRecords: seedIndependentTravelRecords() as IndependentTravelRecord[],
   visitorReports: [] as VisitorReport[],
   infectionRecords: [] as InfectionRecord[],
   readinessItems: [] as ReadinessItem[],
@@ -2251,9 +2258,15 @@ const store = {
   successFactors: [] as SuccessFactor[],
   pocketMoneyTransactions: [] as PocketMoneyTransaction[],
   pocketMoneyAccounts: [] as PocketMoneyAccount[],
-  homePolicies: [] as HomePolicy[],
+  homePolicies: seedHomePolicies() as HomePolicy[],
   policyImpactAnalyses: [] as PolicyImpactAnalysis[],
   policyReviewRecords: [] as PolicyReviewRecord[],
+  // Policy review-cycle compliance source collections (feed home-policy-review-cycle-compliance-intelligence)
+  policyReviewScheduleRecords: seedPolicyReviewSchedule(),
+  policyVersionControlRecords: seedPolicyVersionControl(),
+  policyAcknowledgementRecords: seedPolicyAcknowledgements(),
+  policyAlignmentRecords: seedPolicyAlignment(),
+  policyAccessibilityRecords: seedPolicyAccessibility(),
   childrensRights: [] as ChildrensRightEntry[],
   localOfferSections: [] as LocalOfferSection[],
   locationAssessmentAreas: [] as LocationAssessmentArea[],
@@ -2471,7 +2484,7 @@ const store = {
   idVerificationRecords: [] as IdVerificationRecord[],
   safeguardingProtocolRecords: [] as SafeguardingProtocolRecord[],
   visitorLogRecords: [] as VisitorLogRecord[],
-  waterHygieneRecords: [] as WaterHygieneRecord[],
+  waterHygieneRecords: seedWaterHygieneRecords() as WaterHygieneRecord[],
   wellbeingPulseSurveyRecords: [] as WellbeingPulseSurveyRecord[],
   whistleblowingRecords: [
     {

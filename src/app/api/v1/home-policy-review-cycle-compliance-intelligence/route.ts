@@ -19,7 +19,7 @@ export async function GET() {
     const staff = (store.staff ?? []) as any[];
     const total_staff = staff.filter((s: any) => s.status === "current" || s.status === "active").length;
 
-    const policies = (store.policies ?? store.policyRecords ?? []) as any[];
+    const policies = (store.homePolicies ?? []) as any[];
     const total_policies = policies.length;
 
     const rawReviewSchedule = (store.policyReviewScheduleRecords ?? []) as any[];

@@ -87,7 +87,7 @@ export async function GET() {
     independent_travel_records,
     trip_plans,
     community_engagements,
-    total_children: (store as any).children?.length ?? 0,
+    total_children: store.youngPeople?.length ?? 0,
   });
 
   return NextResponse.json({ data: result });

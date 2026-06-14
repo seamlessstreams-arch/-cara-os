@@ -31,7 +31,7 @@ export async function GET() {
 
   // Transparency culture — derive from staff + policy acknowledgements
   // Check if staff have read the whistleblowing policy
-  const rawPolicies = (store.policies as any[] ?? []);
+  const rawPolicies = (store.homePolicies as any[] ?? []);
   const wbPolicy = rawPolicies.find((p: any) =>
     p.category === "whistleblowing" || p.title?.toLowerCase().includes("whistleblowing")
   );
