@@ -46,7 +46,7 @@ const LAYERS = [
   {
     Icon: HeartHandshake, accent: "navy", href: "/product/intelligence#practice-assistant",
     t: "Practice Quality Intelligence",
-    d: "PACE-informed, trauma-informed support that helps every record stay professional and non-blaming.",
+    d: "A highly-trained critical friend that professionally challenges your language, stance and thinking — PACE- and trauma-informed, always with the child in mind.",
     pts: ["Language checks & re-writes", "Co-regulation prompts in the moment", "Reflective questions & debriefs", "Staff development themes"],
   },
   {

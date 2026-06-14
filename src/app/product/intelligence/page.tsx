@@ -11,6 +11,7 @@ import {
   Brain, Radar, LineChart, CalendarCheck, ShieldCheck, Sunrise, ClipboardCheck,
   FileText, Scale, Layers, PenLine, ShieldAlert, Award, Activity, Eye, GitMerge,
   ArrowRight, CheckCircle2, Lock, Siren, HeartHandshake, BookOpen, FileLock2,
+  Quote, Users,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
@@ -160,6 +161,53 @@ export default function IntelligencePage() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* The critical friend */}
+      <section className="border-y border-[var(--cs-border)] bg-white">
+        <div className="mx-auto max-w-7xl px-5 py-20">
+          <div className="grid items-start gap-12 lg:grid-cols-2">
+            <div>
+              <SectionEyebrow>A critical friend, not just an assistant</SectionEyebrow>
+              <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">It will challenge you &mdash; kindly, specifically, and always with the child in mind.</h2>
+              <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">
+                Cara&rsquo;s practice intelligence comes preloaded with the thinking your best supervisor would bring. It doesn&rsquo;t just help you write faster &mdash; it professionally challenges your language, your stance and your reasoning <em>before</em> a record is ever saved. You always decide; Cara makes sure you&rsquo;ve thought it through.
+              </p>
+              <div className="mt-6 rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-bg)] p-6">
+                <Quote className="h-6 w-6 text-[var(--cs-cara-gold)]" />
+                <p className="mt-3 text-lg font-semibold leading-relaxed text-[var(--cs-navy)]">
+                  &ldquo;Would the child recognise themselves in this record? Whose voice is missing? Is the risk in the context &mdash; not the child?&rdquo;
+                </p>
+                <p className="mt-2 text-sm text-[var(--cs-text-secondary)]">The questions a great critical friend asks &mdash; built in, every time, not bolted on.</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              {[
+                { Icon: PenLine, t: "Challenges your language", d: "Spots shaming, blaming or institutional wording — “refused to engage”, “absconded”, “returned safe and well” — and offers careful, child-readable alternatives that keep the risk clear. Write the record as evidence for professionals, but as memory for the child." },
+                { Icon: HeartHandshake, t: "Challenges your stance", d: "Holds the PACE lens — Playfulness, Acceptance, Curiosity, Empathy, from Dr Dan Hughes’s DDP. Was it connect-before-correct? Is the child’s voice there? Acceptance of feelings is never acceptance of unsafe behaviour." },
+                { Icon: Radar, t: "Challenges your lens", d: "Brings Contextual Safeguarding to every record — is the harm in the context, not the child? It frames guardianship, never surveillance, and treats a young person’s survival strategies as something to understand, not to criminalise." },
+                { Icon: Brain, t: "Challenges your thinking", d: "Asks the reflective questions before you commit — what is this behaviour communicating, what did adults do to help, what happens next — so the record explains the child’s lived experience, not just the event." },
+              ].map((c, i) => (
+                <div key={i} className="flex gap-4 rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)]">
+                  <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]"><c.Icon className="h-6 w-6" /></div>
+                  <div>
+                    <h3 className="text-base font-bold text-[var(--cs-navy)]">{c.t}</h3>
+                    <p className="mt-1 text-sm leading-relaxed text-[var(--cs-text-secondary)]">{c.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Built by people who care */}
+          <div className="mx-auto mt-14 max-w-4xl rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-navy)] p-8 text-center text-white sm:p-10">
+            <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 text-[var(--cs-cara-gold-soft)]"><Users className="h-6 w-6" /></div>
+            <h3 className="mt-4 text-2xl font-extrabold tracking-tight sm:text-3xl">Designed by a team passionate about children&rsquo;s residential care.</h3>
+            <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-white/75">
+              This is what comes from being built by people who love this work: a critical friend grounded in the models the sector trusts &mdash; trauma-informed, rights-based, anti-oppressive, relationship-first &mdash; not generic AI bolted onto care. One that actually knows the work, and holds your team to the standard the children deserve.
+            </p>
+          </div>
         </div>
       </section>
 
