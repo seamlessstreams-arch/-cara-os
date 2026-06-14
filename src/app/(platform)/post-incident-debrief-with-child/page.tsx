@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { PacePanel } from "@/components/pace/pace-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -411,6 +412,9 @@ export default function PostIncidentDebriefWithChildPage() {
         recordType="incident"
         className="mt-6"
       />
+      <div className="mt-4">
+        <PacePanel context="DEBRIEF" title="PACE check — reflect on the relational response" />
+      </div>
     </PageShell>
   );
 }

@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { PacePanel } from "@/components/pace/pace-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -313,6 +314,9 @@ export default function RestraintLogPage() {
         days={60}
         defaultCollapsed
       />
+      <div className="mt-4">
+        <PacePanel context="PHYSICAL_INTERVENTION" title="PACE check — the relational stance during & after" />
+      </div>
     </PageShell>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { PacePanel } from "@/components/pace/pace-panel";
 import {
   HandMetal, Plus, Search, ArrowUpDown,
   AlertTriangle, CheckCircle2, Clock,
@@ -319,6 +320,9 @@ export default function PositiveHandlingPage() {
           </form>
         </DialogContent>
       </Dialog>
+      <div className="mt-4">
+        <PacePanel context="PHYSICAL_INTERVENTION" title="PACE check — the relational stance during & after" />
+      </div>
     </PageShell>
   );
 }
