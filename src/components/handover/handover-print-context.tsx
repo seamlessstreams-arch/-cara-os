@@ -35,7 +35,7 @@ export function HandoverPrintContext({ incomingStaffIds }: Props) {
             </span>
           </div>
           <pre className="text-[10px] text-[var(--cs-text-secondary)] whitespace-pre-wrap font-sans leading-relaxed border-l-2 border-[var(--cs-border)] pl-3">
-            {ctx.aria_summary}
+            {ctx.cara_summary}
           </pre>
         </div>
       ))}

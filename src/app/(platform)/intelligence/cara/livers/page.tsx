@@ -320,9 +320,9 @@ function AnalysisCard({
             <p className="text-xs text-[var(--cs-text-muted)] mt-0.5">{formatDate(analysis.created_at)}</p>
           </div>
           <div className="flex items-center gap-2 flex-wrap justify-end">
-            {analysis.aria_confidence && (
-              <Badge className={CONFIDENCE_COLOURS[analysis.aria_confidence]}>
-                {analysis.aria_confidence.replace(/_/g, " ")}
+            {analysis.cara_confidence && (
+              <Badge className={CONFIDENCE_COLOURS[analysis.cara_confidence]}>
+                {analysis.cara_confidence.replace(/_/g, " ")}
               </Badge>
             )}
             <Badge className={STATUS_COLOURS[analysis.status]}>
@@ -350,10 +350,10 @@ function AnalysisCard({
         )}
 
         {/* Cara Summary */}
-        {analysis.aria_summary && (
+        {analysis.cara_summary && (
           <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
             <Label className="text-[var(--cs-cara-gold)]">Cara Summary</Label>
-            <p className="text-sm text-[var(--cs-navy)] mt-1 leading-relaxed">{analysis.aria_summary}</p>
+            <p className="text-sm text-[var(--cs-navy)] mt-1 leading-relaxed">{analysis.cara_summary}</p>
           </div>
         )}
 
@@ -765,8 +765,8 @@ function LiversGeneratorForm({
           relational_psychological_drivers: parsed.relational_psychological_drivers as string,
           sustainability_independence_safety: parsed.sustainability_independence_safety as string,
           sustainability_rating: parsed.sustainability_rating as "low" | "moderate" | "high",
-          aria_summary: parsed.aria_summary as string,
-          aria_confidence: parsed.aria_confidence as "high" | "possible" | "needs_human_review" | "insufficient_information",
+          cara_summary: parsed.cara_summary as string,
+          cara_confidence: parsed.cara_confidence as "high" | "possible" | "needs_human_review" | "insufficient_information",
           recommended_intervention_type: parsed.recommended_intervention_type as string,
           escalation_required: parsed.escalation_required as boolean,
           escalation_actions: parsed.escalation_actions as string[],
@@ -865,7 +865,7 @@ export default function LiversPage() {
           `E - Environment: ${analysis.environment_system_forces ?? ""}`,
           `R - Relational Drivers: ${analysis.relational_psychological_drivers ?? ""}`,
           `S - Sustainability: ${analysis.sustainability_independence_safety ?? ""} (${analysis.sustainability_rating ?? ""})`,
-          `Cara Summary: ${analysis.aria_summary ?? ""}`,
+          `Cara Summary: ${analysis.cara_summary ?? ""}`,
           `Recommended intervention: ${analysis.recommended_intervention_type ?? ""}`,
         ].join("\n"),
         max_tokens: 4000,

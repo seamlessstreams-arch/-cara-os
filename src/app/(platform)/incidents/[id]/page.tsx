@@ -216,7 +216,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
         description: `Identified from ${INCIDENT_TYPE_LABELS[incident.type]} incident. ${incident.description.slice(0, 200)}…`,
         priority,
         status: "identified",
-        aria_evidence: `Linked to incident ${incident.reference} (${incident.severity} severity).`,
+        cara_evidence: `Linked to incident ${incident.reference} (${incident.severity} severity).`,
         created_by: currentUser?.id ?? "staff_darren",
       },
       { onSuccess: () => setNeedCreated(true) }
@@ -292,7 +292,7 @@ export default function IncidentDetailPage({ params }: { params: Promise<{ id: s
                 <Badge className={cn("text-[10px] rounded-full border", stat.bg, stat.color)}>
                   {stat.label}
                 </Badge>
-                {incident.aria_oversight_used && (
+                {incident.cara_oversight_used && (
                   <CaraUsageBadge
                     caraAssisted
                     sourceTable="incidents"

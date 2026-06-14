@@ -33,8 +33,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       home_id: updated.home_id,
       user_id: (body.manager_id as string) ?? "staff_darren",
       child_id: updated.child_id,
-      action_type: "aria_oversight_approved",
-      source_table: "aria_oversight",
+      action_type: "cara_oversight_approved",
+      source_table: "cara_oversight",
       source_id: id,
     });
   }

@@ -121,7 +121,7 @@ export function buildPracticeDashboard(input: PracticeDashboardInput): PracticeD
         childId: c.child_id,
         kind: "threshold_consultation",
         severity: (c.emergency_action_recommended ? "critical" : "high") as CaraSeverity,
-        title: c.aria_summary || "Threshold consultation",
+        title: c.cara_summary || "Threshold consultation",
         strategyDiscussion: c.strategy_discussion_recommended,
         lado: c.lado_consultation_recommended,
       })),

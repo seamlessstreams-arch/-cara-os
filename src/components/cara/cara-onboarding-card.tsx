@@ -25,7 +25,7 @@ interface CaraOnboardingCardProps {
   className?: string;
 }
 
-const DISMISSED_KEY = "cs_aria_onboarding_dismissed";
+const DISMISSED_KEY = "cs_cara_onboarding_dismissed";
 
 const FEATURES = [
   {

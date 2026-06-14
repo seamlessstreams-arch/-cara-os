@@ -171,7 +171,7 @@ function IncidentCard({
               <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-[var(--cs-text-secondary)]">
                 {INCIDENT_TYPE_LABELS[inc.type] || inc.type}
               </span>
-              {inc.aria_oversight_used && (
+              {inc.cara_oversight_used && (
                 <CaraUsageBadge
                   caraAssisted
                   sourceTable="incidents"

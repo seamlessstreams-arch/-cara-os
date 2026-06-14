@@ -2,7 +2,7 @@
 // API: /api/cara/orchestrate/feedback
 //
 // Records user feedback on an orchestration session (1-5 star rating, optional
-// free-text feedback, optional issue type). Saved to aria_user_feedback table.
+// free-text feedback, optional issue type). Saved to cara_user_feedback table.
 //
 // POST body: { sessionId, userId, rating, feedbackText?, issueType? }
 // rating: integer 1-5
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
 
   // ── Verify session exists ─────────────────────────────────────────────────
 
-  const { data: session, error: sessionError } = await (sb.from("aria_sessions") as SB)
+  const { data: session, error: sessionError } = await (sb.from("cara_sessions") as SB)
     .select("id")
     .eq("id", body.sessionId)
     .single();
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 
   // ── Check for duplicate feedback ──────────────────────────────────────────
 
-  const { data: existingFeedback } = await (sb.from("aria_user_feedback") as SB)
+  const { data: existingFeedback } = await (sb.from("cara_user_feedback") as SB)
     .select("id")
     .eq("session_id", body.sessionId)
     .eq("user_id", body.userId)
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
 
   if (existingFeedback && existingFeedback.length > 0) {
     // Update existing feedback instead of creating a duplicate
-    const { data: updatedFeedback, error: updateError } = await (sb.from("aria_user_feedback") as SB)
+    const { data: updatedFeedback, error: updateError } = await (sb.from("cara_user_feedback") as SB)
       .update({
         rating: body.rating,
         feedback_text: feedbackText,
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
 
   // ── Insert new feedback record ────────────────────────────────────────────
 
-  const { data: newFeedback, error: insertError } = await (sb.from("aria_user_feedback") as SB)
+  const { data: newFeedback, error: insertError } = await (sb.from("cara_user_feedback") as SB)
     .insert({
       session_id: body.sessionId,
       user_id: body.userId,

@@ -41,11 +41,11 @@ export type DashboardWidget =
   | "leave_overview"
   | "daily_log_summary"
   | "environment_status"
-  | "aria_intelligence"
-  | "aria_briefing"
-  | "aria_regulatory_pulse"
-  | "aria_recording_quality"
-  | "aria_shift_safety"
+  | "cara_intelligence"
+  | "cara_briefing"
+  | "cara_regulatory_pulse"
+  | "cara_recording_quality"
+  | "cara_shift_safety"
   | "qa_metrics"
   | "filing_status"
   | "escalation_tracker"
@@ -210,7 +210,7 @@ export const DASHBOARD_CONFIG: Record<string, RoleDashboardConfig> = {
       "recruitment_pipeline",
       "care_plan_compliance",
       "filing_status",
-      "aria_intelligence",
+      "cara_intelligence",
     ],
     navSections: ["dashboard", "my_work", "children", "staff", "quality", "filing_cabinet", "reporting"],
     features: {
@@ -236,7 +236,7 @@ export const DASHBOARD_CONFIG: Record<string, RoleDashboardConfig> = {
       "escalation_tracker",
       "qa_metrics",
       "governance_score",
-      "aria_regulatory_pulse",
+      "cara_regulatory_pulse",
     ],
     secondaryWidgets: [
       "young_people_risk",
@@ -247,8 +247,8 @@ export const DASHBOARD_CONFIG: Record<string, RoleDashboardConfig> = {
       "incident_trends",
       "care_plan_compliance",
       "filing_status",
-      "aria_intelligence",
-      "aria_recording_quality",
+      "cara_intelligence",
+      "cara_recording_quality",
     ],
     navSections: ["dashboard", "my_work", "children", "staff", "quality", "control_centre", "filing_cabinet", "reporting", "hr", "recruitment", "audit"],
     features: {
@@ -283,8 +283,8 @@ export const DASHBOARD_CONFIG: Record<string, RoleDashboardConfig> = {
       "training_compliance",
       "recruitment_pipeline",
       "incident_trends",
-      "aria_intelligence",
-      "aria_regulatory_pulse",
+      "cara_intelligence",
+      "cara_regulatory_pulse",
     ],
     navSections: ["dashboard", "children", "staff", "quality", "control_centre", "filing_cabinet", "reporting", "hr", "recruitment", "audit", "provider_overview"],
     features: {
@@ -318,8 +318,8 @@ export const DASHBOARD_CONFIG: Record<string, RoleDashboardConfig> = {
       "young_people_risk",
       "outcomes_summary",
       "staffing_coverage",
-      "aria_regulatory_pulse",
-      "aria_intelligence",
+      "cara_regulatory_pulse",
+      "cara_intelligence",
     ],
     navSections: ["dashboard", "children", "staff", "quality", "control_centre", "filing_cabinet", "reporting", "hr", "recruitment", "audit", "provider_overview", "settings"],
     features: {

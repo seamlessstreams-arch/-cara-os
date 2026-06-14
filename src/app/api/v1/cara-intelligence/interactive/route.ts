@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     responses:            body.responses ?? [],
     child_voice:          body.child_voice,
     staff_notes:          body.staff_notes,
-    aria_summary:         body.aria_summary,
+    cara_summary:         body.cara_summary,
     safeguarding_flags:   body.safeguarding_flags ?? [],
     follow_up_actions:    body.follow_up_actions ?? [],
     status:               (body.status as InteractiveSessionStatus) ?? "active",

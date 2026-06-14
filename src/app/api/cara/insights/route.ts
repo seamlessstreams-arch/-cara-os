@@ -125,7 +125,7 @@ export async function GET(request: Request) {
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        let query = (sb.from("aria_insights") as any)
+        let query = (sb.from("cara_insights") as any)
           .select("*")
           .order("detected_at", { ascending: false })
           .limit(limit);

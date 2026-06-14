@@ -87,7 +87,7 @@ const DEMO_WORKFLOWS = [
     risk_factors: ["Self-harm history", "Absconding"],
     previous_placements_count: 3,
     created_at: "2026-04-28",
-    aria_risk_summary: "Medium risk — previous placement disruptions and self-harm history require enhanced support plan. Age-appropriate matching with current cohort.",
+    cara_risk_summary: "Medium risk — previous placement disruptions and self-harm history require enhanced support plan. Age-appropriate matching with current cohort.",
   },
   {
     id: "wf-2",
@@ -103,7 +103,7 @@ const DEMO_WORKFLOWS = [
     risk_factors: ["CSE vulnerability indicator"],
     previous_placements_count: 1,
     created_at: "2026-04-15",
-    aria_risk_summary: "Elevated safeguarding attention needed — CSE vulnerability identified. Strong protective factors including family engagement and educational motivation.",
+    cara_risk_summary: "Elevated safeguarding attention needed — CSE vulnerability identified. Strong protective factors including family engagement and educational motivation.",
   },
   {
     id: "wf-3",
@@ -119,7 +119,7 @@ const DEMO_WORKFLOWS = [
     risk_factors: ["Physical aggression to peers", "Substance use", "CCE indicators"],
     previous_placements_count: 5,
     created_at: "2026-05-10",
-    aria_risk_summary: "High risk referral — multiple placement breakdowns and significant risk factors. Full impact assessment critical before progression. Not recommended for current cohort without enhanced staffing.",
+    cara_risk_summary: "High risk referral — multiple placement breakdowns and significant risk factors. Full impact assessment critical before progression. Not recommended for current cohort without enhanced staffing.",
   },
   {
     id: "wf-4",
@@ -135,7 +135,7 @@ const DEMO_WORKFLOWS = [
     risk_factors: [],
     previous_placements_count: 0,
     created_at: "2026-02-01",
-    aria_risk_summary: "Low risk — first placement, strong family support, good educational engagement. Standard monitoring recommended.",
+    cara_risk_summary: "Low risk — first placement, strong family support, good educational engagement. Standard monitoring recommended.",
   },
 ];
 
@@ -298,10 +298,10 @@ export default function AdmissionWorkflowPage() {
                     </div>
 
                     {/* Cara insight */}
-                    {wf.aria_risk_summary && (
+                    {wf.cara_risk_summary && (
                       <div className="mt-3 flex items-start gap-2 px-3 py-2 rounded-lg bg-violet-50 border border-violet-100">
                         <Sparkles className="h-4 w-4 text-violet-500 shrink-0 mt-0.5" />
-                        <p className="text-xs text-violet-700 leading-relaxed">{wf.aria_risk_summary}</p>
+                        <p className="text-xs text-violet-700 leading-relaxed">{wf.cara_risk_summary}</p>
                       </div>
                     )}
                   </CardContent>
@@ -803,7 +803,7 @@ function CaraTab({ workflow }: { workflow: (typeof DEMO_WORKFLOWS)[0] }) {
     {
       type: "risk_assessment",
       title: "Cara Risk Summary",
-      content: workflow.aria_risk_summary ?? "No risk summary available",
+      content: workflow.cara_risk_summary ?? "No risk summary available",
       severity: workflow.risk_factors.length > 2 ? "high" : workflow.risk_factors.length > 0 ? "medium" : "low",
     },
     {

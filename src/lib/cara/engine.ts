@@ -148,7 +148,7 @@ export async function runCaraIntelligence(rawRequest: unknown, requestedBy: stri
 
   const promptHash = hashPrompt(`${systemPrompt}:${userPayload}`);
 
-  const { data: run, error: runError } = await (sb.from("aria_ai_runs") as SB)
+  const { data: run, error: runError } = await (sb.from("cara_ai_runs") as SB)
     .insert({
       home_id: request.homeId,
       child_id: request.childId,
@@ -174,7 +174,7 @@ export async function runCaraIntelligence(rawRequest: unknown, requestedBy: stri
   const evidenceRows = output.evidenceUsed.length ? output.evidenceUsed : evidence.slice(0, 12);
 
   if (evidenceRows.length) {
-    await (sb.from("aria_evidence_links") as SB).insert(
+    await (sb.from("cara_evidence_links") as SB).insert(
       evidenceRows.map((item) => ({
         home_id: request.homeId,
         ai_run_id: run.id,
@@ -193,7 +193,7 @@ export async function runCaraIntelligence(rawRequest: unknown, requestedBy: stri
   }
 
   if (output.suggestedUpdates.length) {
-    await (sb.from("aria_suggested_updates") as SB).insert(
+    await (sb.from("cara_suggested_updates") as SB).insert(
       output.suggestedUpdates.map((update) => ({
         home_id: request.homeId,
         ai_run_id: run.id,
@@ -210,7 +210,7 @@ export async function runCaraIntelligence(rawRequest: unknown, requestedBy: stri
     );
   }
 
-  await (sb.from("aria_approval_events") as SB).insert({
+  await (sb.from("cara_approval_events") as SB).insert({
     home_id: request.homeId,
     ai_run_id: run.id,
     actor_id: requestedBy,
@@ -232,7 +232,7 @@ export async function approveCaraRun(input: {
   const sb = createServerClient();
   if (!sb) return { ok: true };
 
-  const { data: existing, error: fetchError } = await (sb.from("aria_ai_runs") as SB)
+  const { data: existing, error: fetchError } = await (sb.from("cara_ai_runs") as SB)
     .select("*")
     .eq("id", input.aiRunId)
     .eq("home_id", input.homeId)
@@ -240,7 +240,7 @@ export async function approveCaraRun(input: {
 
   if (fetchError || !existing) throw new Error(fetchError?.message ?? "AI run not found.");
 
-  const { error } = await (sb.from("aria_ai_runs") as SB)
+  const { error } = await (sb.from("cara_ai_runs") as SB)
     .update({
       status: "approved",
       human_approved_by: input.actorId,
@@ -252,7 +252,7 @@ export async function approveCaraRun(input: {
 
   if (error) throw new Error(error.message);
 
-  await (sb.from("aria_approval_events") as SB).insert({
+  await (sb.from("cara_approval_events") as SB).insert({
     home_id: input.homeId,
     ai_run_id: input.aiRunId,
     actor_id: input.actorId,
@@ -274,7 +274,7 @@ export async function rejectCaraRun(input: {
   const sb = createServerClient();
   if (!sb) return { ok: true };
 
-  const { data: existing, error: fetchError } = await (sb.from("aria_ai_runs") as SB)
+  const { data: existing, error: fetchError } = await (sb.from("cara_ai_runs") as SB)
     .select("*")
     .eq("id", input.aiRunId)
     .eq("home_id", input.homeId)
@@ -282,7 +282,7 @@ export async function rejectCaraRun(input: {
 
   if (fetchError || !existing) throw new Error(fetchError?.message ?? "AI run not found.");
 
-  const { error } = await (sb.from("aria_ai_runs") as SB)
+  const { error } = await (sb.from("cara_ai_runs") as SB)
     .update({
       status: "rejected",
       rejection_reason: input.reason,
@@ -293,7 +293,7 @@ export async function rejectCaraRun(input: {
 
   if (error) throw new Error(error.message);
 
-  await (sb.from("aria_approval_events") as SB).insert({
+  await (sb.from("cara_approval_events") as SB).insert({
     home_id: input.homeId,
     ai_run_id: input.aiRunId,
     actor_id: input.actorId,

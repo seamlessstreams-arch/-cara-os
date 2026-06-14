@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     title: body.title ?? "New Resource",
     content: body.content ?? {},
     status: "draft",
-    aria_generated: body.aria_generated ?? true,
+    cara_generated: body.cara_generated ?? true,
     created_by: body.created_by ?? "staff_darren",
     ...body,
   });

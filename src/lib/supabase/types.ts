@@ -182,7 +182,7 @@ export interface Database {
           lessons_learned: string | null;
           linked_task_ids: string[];
           linked_document_ids: string[];
-          aria_oversight_used: boolean;
+          cara_oversight_used: boolean;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -380,7 +380,7 @@ export interface Database {
           supervisor_signature: boolean;
           next_date: string | null;
           linked_document_id: string | null;
-          aria_assist_used: boolean;
+          cara_assist_used: boolean;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -475,7 +475,7 @@ export interface Database {
           due_date: string | null;
           priority: string;
           tags: string[];
-          aria_assist_used: boolean;
+          cara_assist_used: boolean;
           created_at: string;
           updated_at: string;
           created_by: string | null;
@@ -717,7 +717,7 @@ export interface Database {
         Update: never; // audit log is immutable
       };
 
-      aria_interactions: {
+      cara_interactions: {
         Row: {
           id: string;
           home_id: string;
@@ -734,7 +734,7 @@ export interface Database {
           linked_entity_type: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["aria_interactions"]["Row"], "created_at"> & { id?: string };
+        Insert: Omit<Database["public"]["Tables"]["cara_interactions"]["Row"], "created_at"> & { id?: string };
         Update: never;
       };
 
@@ -788,9 +788,9 @@ export interface Database {
           amendment_reason: string | null;
           amended_at: string | null;
           amended_by: string | null;
-          aria_suggested_category: string | null;
-          aria_suggested_routes: Json | null;
-          aria_suggested_summary: string | null;
+          cara_suggested_category: string | null;
+          cara_suggested_routes: Json | null;
+          cara_suggested_summary: string | null;
           submitted_at: string | null;
           created_at: string;
           updated_at: string;

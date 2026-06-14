@@ -320,13 +320,13 @@ function ComplaintCard({
           )}
 
           {/* Cara analysis */}
-          {complaint.aria_summary ? (
+          {complaint.cara_summary ? (
             <div className="rounded-xl border border-teal-100 bg-teal-50/40 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-teal-600" />
                 <p className="text-[10px] font-semibold text-teal-700 uppercase tracking-widest">Cara Analysis</p>
               </div>
-              <p className="text-xs text-[var(--cs-text-secondary)]">{complaint.aria_summary}</p>
+              <p className="text-xs text-[var(--cs-text-secondary)]">{complaint.cara_summary}</p>
             </div>
           ) : (
             <button
@@ -620,7 +620,7 @@ ${complaint.lessons_learned ? `Learning: ${complaint.lessons_learned}` : ""}`;
         response?.choices?.[0]?.message?.content ??
         `${complaint.reference} (${CATEGORY_LABELS[complaint.category]}) — ${complaint.outcome ? OUTCOME_LABELS[complaint.outcome] : "pending outcome"}. ${complaint.status === "closed" ? "Closed within statutory timeframe." : `Response due ${formatDate(complaint.response_due)}.`} ${complaint.lessons_learned ? "Learning documented." : "Learning pending."}`;
 
-      await updateComplaint.mutateAsync({ id: complaint.id, data: { aria_summary: summary } });
+      await updateComplaint.mutateAsync({ id: complaint.id, data: { cara_summary: summary } });
     } catch {
       setCaraError("Cara analysis failed — please try again");
     } finally {

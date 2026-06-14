@@ -48,7 +48,7 @@ export async function persistTimelineEntry(e: Record<string, unknown>): Promise<
 }
 
 export async function persistRecordingReview(r: Record<string, unknown>): Promise<void> {
-  await insert("aria_recording_reviews", { home_id: "home_oak", ...r });
+  await insert("cara_recording_reviews", { home_id: "home_oak", ...r });
 }
 
 export async function persistRestorativeConversation(r: Record<string, unknown>): Promise<void> {
@@ -67,13 +67,13 @@ export async function persistIncidentAudit(a: {
   note?: string;
   approval_status?: string;
 }): Promise<void> {
-  await insert("aria_audit_logs", {
+  await insert("cara_audit_logs", {
     id: `aal_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     home_id: "home_oak",
     child_id: a.child_id ?? null,
     user_id: a.user_id,
     action_type: a.action_type,
-    entity_type: "aria_incident_sessions",
+    entity_type: "cara_incident_sessions",
     entity_id: a.source_id ?? null,
     metadata: { note: a.note ?? null, approval_status: a.approval_status ?? null },
   });

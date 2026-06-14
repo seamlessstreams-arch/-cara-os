@@ -151,7 +151,7 @@ export interface Incident extends AuditFields {
   lessons_learned: string | null;
   linked_task_ids: string[];
   linked_document_ids: string[];
-  aria_oversight_used?: boolean;
+  cara_oversight_used?: boolean;
   home_id: string;
 }
 
@@ -244,7 +244,7 @@ export interface Supervision extends AuditFields {
   supervisor_signature: boolean;
   next_date: string | null;
   linked_document_id: string | null;
-  aria_assist_used?: boolean;
+  cara_assist_used?: boolean;
   home_id: string;
 }
 
@@ -335,7 +335,7 @@ export interface DailyLogEntry extends AuditFields {
   staff_id: string;
   linked_incident_id: string | null;
   is_significant: boolean;
-  aria_assist_used?: boolean;
+  cara_assist_used?: boolean;
   home_id: string;
 }
 

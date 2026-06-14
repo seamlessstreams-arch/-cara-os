@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     rm_sign_off_date:            null,
     rm_sign_off_by:              null,
     rm_comments:                 null,
-    aria_analysis:               null,
+    cara_analysis:               null,
     created_by:                  body.created_by ?? "staff_darren",
     ...body,
   });

@@ -524,8 +524,8 @@ export interface DocumentIntelligenceJob {
   chronology_entries_suggested: ChronologySuggestion[];
   actions_suggested: ActionSuggestion[];
 
-  aria_summary: string | null;
-  aria_confidence: number | null;  // 0–1
+  cara_summary: string | null;
+  cara_confidence: number | null;  // 0–1
 
   error_message: string | null;
 
@@ -573,8 +573,8 @@ export type DocumentIntelligenceJobUpdate = Partial<
     | 'form_draft_id'
     | 'chronology_entries_suggested'
     | 'actions_suggested'
-    | 'aria_summary'
-    | 'aria_confidence'
+    | 'cara_summary'
+    | 'cara_confidence'
     | 'error_message'
   >
 >;

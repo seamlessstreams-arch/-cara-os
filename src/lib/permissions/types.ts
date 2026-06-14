@@ -64,7 +64,7 @@ export type ResourceType =
   | "training"
   | "audit_log"
   | "permission_settings"
-  | "aria_intelligence"
+  | "cara_intelligence"
   | "quality_assurance"
   | "approval_queue"
   | "rota"

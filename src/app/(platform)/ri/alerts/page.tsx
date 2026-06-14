@@ -112,7 +112,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
         description: alert.description,
         priority,
         status: "identified",
-        aria_evidence: `Auto-generated from RI Alert (${alert.severity} severity, type: ${alert.alert_type}).`,
+        cara_evidence: `Auto-generated from RI Alert (${alert.severity} severity, type: ${alert.alert_type}).`,
         created_by: currentUser?.id ?? "staff_darren",
       },
       { onSuccess: () => setNeedCreated(true) },

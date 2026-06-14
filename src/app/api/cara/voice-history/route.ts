@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/cara/voice-history
 //
-// GET endpoint that fetches recent aria_sessions where task_type = 'voice_reflection'
+// GET endpoint that fetches recent cara_sessions where task_type = 'voice_reflection'
 // for the current user's home. Returns last 20 sessions with their structured
 // outputs. Gracefully degrades with demo data if Supabase is not configured.
 // ══════════════════════════════════════════════════════════════════════════════
@@ -84,7 +84,7 @@ export async function GET(req: NextRequest) {
       if (sb) {
         try {
           // Fetch sessions with task_type = voice_reflection
-          const { data: sessions, error } = await (sb.from("aria_sessions") as SB)
+          const { data: sessions, error } = await (sb.from("cara_sessions") as SB)
             .select("id, created_at, status, risk_level, task_type, page_context")
             .eq("home_id", homeId)
             .eq("task_type", "voice_reflection")
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest) {
             const entries: VoiceHistoryEntry[] = [];
 
             for (const session of sessions) {
-              const { data: messages } = await (sb.from("aria_messages") as SB)
+              const { data: messages } = await (sb.from("cara_messages") as SB)
                 .select("role, content, agent_used, risk_level")
                 .eq("session_id", session.id)
                 .order("created_at", { ascending: true })

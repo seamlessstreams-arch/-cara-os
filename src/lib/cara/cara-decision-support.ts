@@ -37,7 +37,7 @@ interface RunOptions {
 
 function evidenceFromPattern(p: CaraSafeguardingPattern): CaraSafeguardingEvidenceRef {
   return {
-    source_table: "aria_safeguarding_patterns",
+    source_table: "cara_safeguarding_patterns",
     source_id: p.id,
     date: p.detected_at?.slice(0, 10) ?? new Date().toISOString().slice(0, 10),
     excerpt: p.title,

@@ -96,7 +96,7 @@ export default function CaraRecordingAssistantPage() {
                 </div>
                 <textarea rows={5} className={inputCls} placeholder="Write (or dictate) what happened, in your own words…" value={raw} onChange={(e) => setRaw(e.target.value)} />
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <EntryAssist value={raw} onChange={setRaw} sourceModule="aria_recording_assistant" sourceField="raw_note" childId={childId || undefined} />
+                  <EntryAssist value={raw} onChange={setRaw} sourceModule="cara_recording_assistant" sourceField="raw_note" childId={childId || undefined} />
                   <button onClick={() => analyse.mutate()} disabled={!raw.trim() || analyse.isPending}
                     className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--cs-navy)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--cs-navy-soft)] disabled:opacity-40">
                     {analyse.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />} Check quality &amp; suggest rewrite

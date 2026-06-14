@@ -345,7 +345,7 @@ Rules:
     try {
       // Insert agent run
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: agentRunData } = await (sb.from("aria_agent_runs") as any)
+      const { data: agentRunData } = await (sb.from("cara_agent_runs") as any)
         .insert({
           organisation_id: request.organisationId,
           home_id: request.homeId,
@@ -422,7 +422,7 @@ Rules:
         // Update agent run with report_id
         if (agentRunId) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (sb.from("aria_agent_runs") as any)
+          await (sb.from("cara_agent_runs") as any)
             .update({ report_id: reportData.id })
             .eq("id", agentRunId);
         }

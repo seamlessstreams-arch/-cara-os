@@ -97,7 +97,7 @@ export function fileCommittedArtifact(artifact: CaraArtifact): FileArtifactResul
 
   // Idempotency key: pseudo-care-event id derived from artifact id.
   // Ensures upsert on (care_event_id + category) never duplicates.
-  const careEventKey = `aria_${artifact.id}`;
+  const careEventKey = `cara_${artifact.id}`;
 
   const item = db.filingCabinet.upsert({
     care_event_id: careEventKey,
@@ -109,14 +109,14 @@ export function fileCommittedArtifact(artifact: CaraArtifact): FileArtifactResul
     description: artifact.plain_text_content
       ? artifact.plain_text_content.slice(0, 280)
       : artifact.generated_content.slice(0, 280),
-    source_type: "aria_studio",
+    source_type: "cara_studio",
     linked_record_id: artifact.id,
-    linked_record_table: "aria_artifacts",
+    linked_record_table: "cara_artifacts",
     is_verified: true,
     verified_at: artifact.committed_at,
     verified_by: artifact.committed_by,
     tags: [
-      "aria_studio",
+      "cara_studio",
       artifact.artifact_type,
       ...(artifact.framework && artifact.framework !== "none" ? [artifact.framework] : []),
     ],

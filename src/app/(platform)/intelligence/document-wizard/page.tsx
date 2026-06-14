@@ -44,7 +44,7 @@ interface FormResult {
   title?: string;
   fields?: Record<string, string>;
   missing_fields?: string[];
-  aria_notes?: string;
+  cara_notes?: string;
 }
 
 // ── Step indicator ────────────────────────────────────────────────────────────
@@ -239,7 +239,7 @@ export default function DocumentWizardPage() {
 
       const json = await res.json();
       // Cara route pre-parses JSON for document_to_form — use parsed directly
-      const parsed: FormResult = json?.data?.parsed ?? { aria_notes: json?.data?.response ?? "" };
+      const parsed: FormResult = json?.data?.parsed ?? { cara_notes: json?.data?.response ?? "" };
 
       setFormResult(parsed);
       setStage("form_created");
@@ -733,10 +733,10 @@ export default function DocumentWizardPage() {
               )}
 
               {/* Cara notes */}
-              {formResult.aria_notes && (
+              {formResult.cara_notes && (
                 <div className="rounded-xl bg-slate-50 border border-[var(--cs-border)] px-4 py-3">
                   <SectionLabel>Cara notes</SectionLabel>
-                  <p className="text-xs text-[var(--cs-text-secondary)] whitespace-pre-wrap">{formResult.aria_notes}</p>
+                  <p className="text-xs text-[var(--cs-text-secondary)] whitespace-pre-wrap">{formResult.cara_notes}</p>
                 </div>
               )}
 

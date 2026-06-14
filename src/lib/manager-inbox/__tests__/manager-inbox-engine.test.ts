@@ -62,7 +62,7 @@ describe("categorisation by precedence", () => {
 describe("Cara suggestion, evidence links and actions", () => {
   it("surfaces the event's Cara suggested response and evidence categories", () => {
     const i = run([ev({ id: "1", type: "incident", risk: "high", approval: "manager", suggestion: "Record the outcome and lessons learned" })]).items[0];
-    expect(i.aria_suggested_response).toBe("Record the outcome and lessons learned");
+    expect(i.cara_suggested_response).toBe("Record the outcome and lessons learned");
     expect(i.evidence_categories).toContain("risk management");
     expect(i.available_actions).toEqual(["approve", "request_changes", "escalate"]);
   });

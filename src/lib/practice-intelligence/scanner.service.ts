@@ -45,31 +45,31 @@ export async function runPracticeIntelligenceScan(
   const [incidentsResult, dailyLogsResult, gapsResult, safeguardingResult, warningsResult] =
     await Promise.all([
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("aria_studio_sources") as any)
+      (sb.from("cara_studio_sources") as any)
         .select("id, child_id, content, summary, source_type, source_date")
         .eq("home_id", hid)
         .eq("source_type", "incident")
         .gte("source_date", weekAgo)
         .order("source_date", { ascending: false }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("aria_studio_sources") as any)
+      (sb.from("cara_studio_sources") as any)
         .select("id, child_id, content, summary, source_type, source_date")
         .eq("home_id", hid)
         .eq("source_type", "daily_log")
         .gte("source_date", weekAgo)
         .order("source_date", { ascending: false }),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("aria_studio_gaps") as any)
+      (sb.from("cara_studio_gaps") as any)
         .select("*")
         .eq("home_id", hid)
         .eq("status", "open"),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("aria_studio_safeguarding_patterns") as any)
+      (sb.from("cara_studio_safeguarding_patterns") as any)
         .select("*")
         .eq("home_id", hid)
         .eq("status", "open"),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (sb.from("aria_studio_early_warnings") as any)
+      (sb.from("cara_studio_early_warnings") as any)
         .select("*")
         .eq("home_id", hid)
         .eq("status", "open"),

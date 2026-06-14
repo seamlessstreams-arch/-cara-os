@@ -31,7 +31,7 @@ export async function detectContradictions(
   const sb = createServerClient();
   if (!sb) return getDemoContradictions();
 
-  let query = (sb.from("aria_studio_sources") as any)
+  let query = (sb.from("cara_studio_sources") as any)
     .select("id, source_type, title, content, summary, source_date")
     .eq("home_id", hId)
     .order("source_date", { ascending: false })
@@ -100,7 +100,7 @@ export async function detectContradictions(
 
   // Persist
   if (contradictions.length > 0) {
-    const { error: insertErr } = await (sb.from("aria_studio_contradictions") as any)
+    const { error: insertErr } = await (sb.from("cara_studio_contradictions") as any)
       .insert(contradictions.map((c) => ({
         home_id: c.home_id, child_id: c.child_id, source_a_id: c.source_a_id,
         source_b_id: c.source_b_id, contradiction_type: c.contradiction_type,
@@ -119,7 +119,7 @@ export async function listContradictions(hId: string, childId?: string, status?:
   const sb = createServerClient();
   if (!sb) return getDemoContradictions();
 
-  let query = (sb.from("aria_studio_contradictions") as any)
+  let query = (sb.from("cara_studio_contradictions") as any)
     .select("*").eq("home_id", hId).order("created_at", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
   if (status) query = query.eq("status", status);
@@ -135,7 +135,7 @@ export async function resolveContradiction(contradictionId: string, reviewedBy: 
   const sb = createServerClient();
   if (!sb) return false;
 
-  const { error } = await (sb.from("aria_studio_contradictions") as any)
+  const { error } = await (sb.from("cara_studio_contradictions") as any)
     .update({ status: "resolved", reviewed_by: reviewedBy, reviewed_at: new Date().toISOString(), recommended_review_action: resolution })
     .eq("id", contradictionId);
 

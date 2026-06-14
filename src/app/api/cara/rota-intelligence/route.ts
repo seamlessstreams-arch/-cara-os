@@ -120,7 +120,7 @@ export async function GET(request: Request) {
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        let query = (sb.from("aria_rota_alerts") as any)
+        let query = (sb.from("cara_rota_alerts") as any)
           .select("*")
           .order("created_at", { ascending: false })
           .limit(20);

@@ -102,7 +102,7 @@ const NOTIFICATION_CATEGORIES: NotificationCategory[] = [
   },
 ];
 
-const STORAGE_KEY = "cs_aria_notification_prefs";
+const STORAGE_KEY = "cs_cara_notification_prefs";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 

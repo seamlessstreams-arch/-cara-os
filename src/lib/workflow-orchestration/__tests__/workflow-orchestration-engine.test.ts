@@ -21,7 +21,7 @@ describe("default rules", () => {
   it("ships a configurable rule set including the incident workflow", () => {
     expect(DEFAULT_WORKFLOW_RULES.length).toBeGreaterThanOrEqual(5);
     const inc = DEFAULT_WORKFLOW_RULES.find((r) => r.id === "wf-incident")!;
-    expect(inc.actions.map((a) => a.type)).toEqual(expect.arrayContaining(["create_approval_task", "create_debrief_task", "suggest_keywork", "add_evidence", "generate_aria_summary", "update_trend"]));
+    expect(inc.actions.map((a) => a.type)).toEqual(expect.arrayContaining(["create_approval_task", "create_debrief_task", "suggest_keywork", "add_evidence", "generate_cara_summary", "update_trend"]));
   });
 });
 
@@ -30,7 +30,7 @@ describe("incident workflow (the spec example)", () => {
   it("fires and generates the full action set", () => {
     expect(r.triggered.some((t) => t.rule_id === "wf-incident")).toBe(true);
     const types = r.actions.map((a) => a.type);
-    expect(types).toEqual(expect.arrayContaining(["create_approval_task", "create_debrief_task", "suggest_keywork", "add_evidence", "generate_aria_summary", "update_trend"]));
+    expect(types).toEqual(expect.arrayContaining(["create_approval_task", "create_debrief_task", "suggest_keywork", "add_evidence", "generate_cara_summary", "update_trend"]));
     expect(r.overview.actions_generated).toBe(6);
   });
   it("the approval task is owned, deadlined and escalates", () => {

@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const { data: generation, error: fetchError } = await (sb.from("aria_studio_generations") as SB)
+    const { data: generation, error: fetchError } = await (sb.from("cara_studio_generations") as SB)
       .select("id, status, generation_type, created_by")
       .eq("id", generationId)
       .single();
@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
     const now = new Date().toISOString();
     const newStatus = action === "approve" ? "approved" : "rejected";
 
-    await (sb.from("aria_studio_generations") as SB)
+    await (sb.from("cara_studio_generations") as SB)
       .update({
         status: newStatus,
         approved_by: action === "approve" ? userId : null,

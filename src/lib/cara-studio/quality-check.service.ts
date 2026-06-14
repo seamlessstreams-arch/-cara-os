@@ -134,7 +134,7 @@ export async function runQualityCheck(
   if (sb) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (sb.from("aria_studio_quality_checks") as any).insert({
+      await (sb.from("cara_studio_quality_checks") as any).insert({
         artifact_id: artifactId,
         evidence_cited: check.evidence_cited,
         child_voice_considered: check.child_voice_considered,

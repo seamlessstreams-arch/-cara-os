@@ -51,7 +51,7 @@ describe("conflict-detection engine", () => {
     expect(c[0].event_b.event_id).toBe("evt_log_in");
     expect(c[0].subject_name).toBe("Ava Reed");
     expect(c[0].severity).toBe("high");
-    expect(c[0].aria_assessment.likely_accurate_event_id).toBe("evt_mis_1");
+    expect(c[0].cara_assessment.likely_accurate_event_id).toBe("evt_mis_1");
   });
 
   it("R2: flags an injury recorded in one record but denied in another within 24h", () => {
@@ -64,7 +64,7 @@ describe("conflict-detection engine", () => {
     expect(c.length).toBe(1);
     expect(c[0].event_a.event_id).toBe("evt_pi");   // the record documenting the injury leads
     expect(c[0].event_b.event_id).toBe("evt_log");
-    expect(c[0].aria_assessment.likely_accurate_event_id).toBe("evt_pi"); // formal record
+    expect(c[0].cara_assessment.likely_accurate_event_id).toBe("evt_pi"); // formal record
   });
 
   it("R3: flags the same event graded with two different severities", () => {
@@ -77,7 +77,7 @@ describe("conflict-detection engine", () => {
     expect(c.length).toBe(1);
     expect(c[0].event_a.risk_level).toBe("high"); // higher risk leads
     expect(c[0].event_b.risk_level).toBe("low");
-    expect(c[0].aria_assessment.likely_accurate_event_id).toBe("evt_a"); // precautionary: higher stands
+    expect(c[0].cara_assessment.likely_accurate_event_id).toBe("evt_a"); // precautionary: higher stands
   });
 
   it("R4: flags a staff member working inside a leave period", () => {
@@ -94,7 +94,7 @@ describe("conflict-detection engine", () => {
     expect(c.length).toBe(1);
     expect(c[0].subject_name).toBe("Sam Lee");
     expect(c[0].severity).toBe("medium");
-    expect(c[0].aria_assessment.likely_accurate_event_id).toBeNull(); // genuinely unclear
+    expect(c[0].cara_assessment.likely_accurate_event_id).toBeNull(); // genuinely unclear
   });
 
   it("returns no conflicts and a positive insight for internally-consistent records", () => {
@@ -124,8 +124,8 @@ describe("conflict-detection engine", () => {
     for (const c of r.conflicts) {
       expect(c.status).toBe("needs_human_review");
       expect(c.auto_resolved).toBe(false);
-      expect(c.aria_assessment.confidence).toBeGreaterThanOrEqual(0);
-      expect(c.aria_assessment.confidence).toBeLessThanOrEqual(1);
+      expect(c.cara_assessment.confidence).toBeGreaterThanOrEqual(0);
+      expect(c.cara_assessment.confidence).toBeLessThanOrEqual(1);
     }
     // The transparency safeguard statement is always surfaced when conflicts exist.
     expect(r.insights.some((i) => /never auto-resolved/i.test(i.text))).toBe(true);

@@ -380,7 +380,7 @@ export const PERMISSION_RULES: PermissionRule[] = [
   // ─────────────────────────────────────────────────────────────────────────
   {
     role: ["rsw", "senior_rsw", "waking_night"],
-    resourceType: "aria_intelligence",
+    resourceType: "cara_intelligence",
     actions: ["view"],
     sensitivityMax: "internal",
     requiresHomeMatch: true,
@@ -388,27 +388,27 @@ export const PERMISSION_RULES: PermissionRule[] = [
   },
   {
     role: ["team_leader"],
-    resourceType: "aria_intelligence",
+    resourceType: "cara_intelligence",
     actions: ["view"],
     sensitivityMax: "restricted",
     requiresHomeMatch: true,
   },
   {
     role: ["deputy_manager"],
-    resourceType: "aria_intelligence",
+    resourceType: "cara_intelligence",
     actions: ["view"],
     sensitivityMax: "confidential",
     requiresHomeMatch: true,
   },
   {
     role: ["registered_manager"],
-    resourceType: "aria_intelligence",
+    resourceType: "cara_intelligence",
     actions: ["view", "export"],
     requiresHomeMatch: true,
   },
   {
     role: ["responsible_individual", "operations_manager", "provider_owner", "super_admin"],
-    resourceType: "aria_intelligence",
+    resourceType: "cara_intelligence",
     actions: ["view", "export"],
   },
 

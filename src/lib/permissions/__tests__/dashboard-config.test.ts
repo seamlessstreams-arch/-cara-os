@@ -38,7 +38,7 @@ describe("getDashboardConfig", () => {
     const config = getDashboardConfig("registered_manager");
     expect(config.dashboardTitle).toBe("Home Control Centre");
     expect(config.primaryWidgets).toContain("governance_score");
-    expect(config.primaryWidgets).toContain("aria_regulatory_pulse");
+    expect(config.primaryWidgets).toContain("cara_regulatory_pulse");
   });
 
   it("returns responsible_individual config", () => {

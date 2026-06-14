@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     if (!sessionId && isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        const { data, error } = await (sb.from("aria_sessions") as SB)
+        const { data, error } = await (sb.from("cara_sessions") as SB)
           .insert({
             home_id: body.homeId,
             user_id: body.userId,
@@ -98,7 +98,7 @@ async function persistSessionData(
 ) {
   try {
     // Insert user message
-    const { data: userMsg } = await (sb.from("aria_messages") as SB).insert({
+    const { data: userMsg } = await (sb.from("cara_messages") as SB).insert({
       session_id: sessionId,
       role: "user",
       content: body.query as string,
@@ -106,7 +106,7 @@ async function persistSessionData(
     }).select("id").single();
 
     // Insert assistant message
-    const { data: assistantMsg } = await (sb.from("aria_messages") as SB).insert({
+    const { data: assistantMsg } = await (sb.from("cara_messages") as SB).insert({
       session_id: sessionId,
       role: "assistant",
       content: (result.answer as string) ?? "",
@@ -119,7 +119,7 @@ async function persistSessionData(
     }).select("id").single();
 
     // Insert route decision
-    await (sb.from("aria_routes") as SB).insert({
+    await (sb.from("cara_routes") as SB).insert({
       session_id: sessionId,
       query: (body.query as string).slice(0, 2000),
       task_type: (result.agentUsed as string) ?? "unknown",
@@ -153,13 +153,13 @@ async function persistSessionData(
         source_url: null,
       }));
 
-      await (sb.from("aria_orchestration_evidence") as SB).insert(evidenceRows);
+      await (sb.from("cara_orchestration_evidence") as SB).insert(evidenceRows);
     }
 
     // Insert safety review if there are safety notes or blocked status
     const safetyNotes = result.safetyNotes as string[] | undefined;
     if (safetyNotes && safetyNotes.length > 0) {
-      await (sb.from("aria_safety_reviews") as SB).insert({
+      await (sb.from("cara_safety_reviews") as SB).insert({
         session_id: sessionId,
         message_id: assistantMsg?.id ?? null,
         risk_flags: safetyNotes,
@@ -179,7 +179,7 @@ async function persistSessionData(
     } | undefined;
 
     if (cost) {
-      await (sb.from("aria_cost_logs") as SB).insert({
+      await (sb.from("cara_cost_logs") as SB).insert({
         session_id: sessionId,
         agent: (result.agentUsed as string) ?? "unknown",
         model: cost.modelId ?? "unknown",
@@ -193,7 +193,7 @@ async function persistSessionData(
     // Update session risk level to match highest risk seen
     const riskLevel = result.riskLevel as string;
     if (riskLevel === "high" || riskLevel === "critical") {
-      await (sb.from("aria_sessions") as SB)
+      await (sb.from("cara_sessions") as SB)
         .update({ risk_level: riskLevel })
         .eq("id", sessionId);
     }

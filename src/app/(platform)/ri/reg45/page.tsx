@@ -78,15 +78,15 @@ function Reg45Card({ record }: { record: RiReg45Evidence }) {
           </button>
         </div>
 
-        {expanded && record.aria_strengths && (
+        {expanded && record.cara_strengths && (
           <div className="mt-4 space-y-4 border-t border-[var(--cs-border-subtle)] pt-4">
             {[
-              { label: "Strengths", content: record.aria_strengths, colour: "bg-emerald-50 border-emerald-100 text-emerald-900" },
-              { label: "Weaknesses / Areas for Development", content: record.aria_weaknesses, colour: "bg-amber-50 border-amber-100 text-amber-900" },
-              { label: "Improvement Areas", content: record.aria_improvement_areas, colour: "bg-blue-50 border-blue-100 text-blue-900" },
-              { label: "Impact on Children", content: record.aria_child_impact, colour: "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)] text-[var(--cs-navy)]" },
-              { label: "Action Plan", content: record.aria_action_plan, colour: "bg-slate-50 border-[var(--cs-border)] text-[var(--cs-navy)]" },
-              { label: "RI Statement", content: record.aria_ri_statement, colour: "bg-indigo-50 border-indigo-100 text-indigo-900" },
+              { label: "Strengths", content: record.cara_strengths, colour: "bg-emerald-50 border-emerald-100 text-emerald-900" },
+              { label: "Weaknesses / Areas for Development", content: record.cara_weaknesses, colour: "bg-amber-50 border-amber-100 text-amber-900" },
+              { label: "Improvement Areas", content: record.cara_improvement_areas, colour: "bg-blue-50 border-blue-100 text-blue-900" },
+              { label: "Impact on Children", content: record.cara_child_impact, colour: "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)] text-[var(--cs-navy)]" },
+              { label: "Action Plan", content: record.cara_action_plan, colour: "bg-slate-50 border-[var(--cs-border)] text-[var(--cs-navy)]" },
+              { label: "RI Statement", content: record.cara_ri_statement, colour: "bg-indigo-50 border-indigo-100 text-indigo-900" },
             ].filter((s) => !!s.content).map(({ label, content, colour }) => (
               <div key={label}>
                 <p className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1">{label}</p>
@@ -491,13 +491,13 @@ function GenerateForm({
         period_start: periodStart,
         period_end: periodEnd,
         evidence_items: [],
-        aria_strengths: result.strengths,
-        aria_weaknesses: result.weaknesses,
-        aria_improvement_areas: result.improvement_areas,
-        aria_child_impact: result.child_impact,
-        aria_action_plan: Array.isArray(result.action_plan) ? (result.action_plan as string[]).join("\n") : result.action_plan,
-        aria_ri_statement: result.ri_statement,
-        aria_generated_at: new Date().toISOString(),
+        cara_strengths: result.strengths,
+        cara_weaknesses: result.weaknesses,
+        cara_improvement_areas: result.improvement_areas,
+        cara_child_impact: result.child_impact,
+        cara_action_plan: Array.isArray(result.action_plan) ? (result.action_plan as string[]).join("\n") : result.action_plan,
+        cara_ri_statement: result.ri_statement,
+        cara_generated_at: new Date().toISOString(),
         status: "in_progress",
         submitted_to_ofsted: false,
         created_by: currentUser?.id ?? "staff_darren",

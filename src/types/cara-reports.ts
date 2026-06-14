@@ -138,7 +138,7 @@ export const AGENT_ID_LABELS: Record<AgentId, string> = {
 // DATA INTERFACES — DATABASE ROWS
 // ══════════════════════════════════════════════════════════════════════════════
 
-// ── aria_agent_runs ─────────────────────────────────────────────────────────
+// ── cara_agent_runs ─────────────────────────────────────────────────────────
 
 export interface AgentRun {
   id: string;
@@ -167,7 +167,7 @@ export interface AgentRun {
 
 export type AgentRunInsert = Omit<AgentRun, "id" | "created_at" | "completed_at">;
 
-// ── aria_evidence_links ─────────────────────────────────────────────────────
+// ── cara_evidence_links ─────────────────────────────────────────────────────
 
 export interface CaraEvidenceLink {
   id: string;
@@ -184,7 +184,7 @@ export interface CaraEvidenceLink {
 
 export type CaraEvidenceLinkInsert = Omit<CaraEvidenceLink, "id" | "created_at">;
 
-// ── aria_drafts ─────────────────────────────────────────────────────────────
+// ── cara_drafts ─────────────────────────────────────────────────────────────
 
 export interface CaraDraft {
   id: string;
@@ -314,7 +314,7 @@ export interface ChildReportAction {
 
 export type ChildReportActionInsert = Omit<ChildReportAction, "id" | "created_at" | "updated_at">;
 
-// ── aria_governance_settings ────────────────────────────────────────────────
+// ── cara_governance_settings ────────────────────────────────────────────────
 
 export interface CaraGovernanceSettings {
   id: string;
@@ -340,7 +340,7 @@ export interface CaraGovernanceSettings {
 
 export type CaraGovernanceSettingsInsert = Omit<CaraGovernanceSettings, "id" | "created_at" | "updated_at">;
 
-// ── aria_prompt_templates ───────────────────────────────────────────────────
+// ── cara_prompt_templates ───────────────────────────────────────────────────
 
 export interface CaraPromptTemplate {
   id: string;
@@ -392,7 +392,7 @@ export interface Regulation45EvidenceItem {
 
 export type Regulation45EvidenceItemInsert = Omit<Regulation45EvidenceItem, "id" | "created_at">;
 
-// ── aria_audit_events ───────────────────────────────────────────────────────
+// ── cara_audit_events ───────────────────────────────────────────────────────
 
 export interface CaraAuditEvent {
   id: string;

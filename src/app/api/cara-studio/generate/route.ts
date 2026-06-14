@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
     const sb = createServerClient();
 
     if (sb && isSupabaseEnabled() && result.output) {
-      const { data: inserted } = await (sb.from("aria_studio_generations") as SB)
+      const { data: inserted } = await (sb.from("cara_studio_generations") as SB)
         .insert({
           organisation_id: organisationId,
           home_id: homeId,

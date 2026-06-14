@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
 
   // ── Fetch the existing draft ──────────────────────────────────────────────
 
-  const { data: existingDraft, error: fetchError } = await (sb.from("aria_orchestration_approvals") as SB)
+  const { data: existingDraft, error: fetchError } = await (sb.from("cara_orchestration_approvals") as SB)
     .select("*")
     .eq("id", body.draftId)
     .eq("session_id", body.sessionId)
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
 
   // ── Verify session belongs to this home ───────────────────────────────────
 
-  const { data: session, error: sessionError } = await (sb.from("aria_sessions") as SB)
+  const { data: session, error: sessionError } = await (sb.from("cara_sessions") as SB)
     .select("id, home_id")
     .eq("id", body.sessionId)
     .eq("home_id", body.homeId)
@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
 
   // ── Apply the update ──────────────────────────────────────────────────────
 
-  const { data: updatedDraft, error: updateError } = await (sb.from("aria_orchestration_approvals") as SB)
+  const { data: updatedDraft, error: updateError } = await (sb.from("cara_orchestration_approvals") as SB)
     .update(updatePayload)
     .eq("id", body.draftId)
     .select("*")
@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
   // ── Write audit event ─────────────────────────────────────────────────────
 
   try {
-    await (sb.from("aria_orchestrator_audit") as SB).insert({
+    await (sb.from("cara_orchestrator_audit") as SB).insert({
       home_id: body.homeId,
       user_id: body.userId,
       agent_id: "approval-workflow",
@@ -241,7 +241,7 @@ export async function POST(req: NextRequest) {
   // ── Update session status if escalated ────────────────────────────────────
 
   if (body.decision === "reject") {
-    await (sb.from("aria_sessions") as SB)
+    await (sb.from("cara_sessions") as SB)
       .update({ status: "escalated" })
       .eq("id", body.sessionId);
   }

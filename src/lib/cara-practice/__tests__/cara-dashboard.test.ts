@@ -63,7 +63,7 @@ describe("buildPracticeDashboard", () => {
       child_lived_experience: "", evidence_and_harm_analysis: "", family_functioning_parental_capacity: "",
       threshold_and_escalation_analysis: "", decision_rationale: "", recommended_next_step: "",
       reasonable_cause_to_suspect_significant_harm: null, strategy_discussion_recommended: true,
-      lado_consultation_recommended: false, emergency_action_recommended: true, aria_summary: "concern",
+      lado_consultation_recommended: false, emergency_action_recommended: true, cara_summary: "concern",
       manager_decision: null, manager_rationale: null, created_by: "u", created_at: "2026-06-07",
     };
     const d = buildPracticeDashboard(emptyInput({ thresholdConsultations: [consult] }));

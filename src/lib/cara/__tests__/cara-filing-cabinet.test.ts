@@ -100,11 +100,11 @@ describe("Cara Studio — filing cabinet writeback", () => {
       .findAll()
       .find((f) => f.id === committed!.official_record_id);
     expect(linkedItem).toBeDefined();
-    expect(linkedItem!.source_type).toBe("aria_studio");
+    expect(linkedItem!.source_type).toBe("cara_studio");
     expect(linkedItem!.linked_record_id).toBe(art.id);
-    expect(linkedItem!.linked_record_table).toBe("aria_artifacts");
+    expect(linkedItem!.linked_record_table).toBe("cara_artifacts");
     expect(linkedItem!.is_verified).toBe(true);
-    expect(linkedItem!.tags).toContain("aria_studio");
+    expect(linkedItem!.tags).toContain("cara_studio");
     expect(linkedItem!.category).toBe("regulation_45");
   });
 

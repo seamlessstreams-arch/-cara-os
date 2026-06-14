@@ -22,7 +22,7 @@ export async function submitForReview(artifactId: string, submittedBy: string): 
   const client = sb();
   const now = new Date().toISOString();
 
-  await client.from("aria_studio_artifacts").update({
+  await client.from("cara_studio_artifacts").update({
     status: "in_review",
     submitted_for_review_at: now,
   }).eq("id", artifactId);
@@ -41,7 +41,7 @@ export async function reviewArtifact(
   const now = new Date().toISOString();
 
   // Create review record
-  await client.from("aria_studio_artifact_reviews").insert({
+  await client.from("cara_studio_artifact_reviews").insert({
     artifact_id: artifactId,
     reviewer_id: reviewerId,
     review_status: decision,
@@ -67,7 +67,7 @@ export async function reviewArtifact(
   if (decision === "rejected") updates.rejected_by = reviewerId;
   if (decision === "rejected") updates.rejected_at = now;
 
-  await client.from("aria_studio_artifacts").update(updates).eq("id", artifactId);
+  await client.from("cara_studio_artifacts").update(updates).eq("id", artifactId);
 
   await writeStudioAuditLog({
     home_id: homeId(), actor_id: reviewerId,
@@ -85,11 +85,11 @@ export async function commitArtifact(artifactId: string, committedBy: string): P
   const now = new Date().toISOString();
 
   // Save current version before commit
-  const { data: artifact } = await client.from("aria_studio_artifacts")
+  const { data: artifact } = await client.from("cara_studio_artifacts")
     .select("*").eq("id", artifactId).single();
 
   if (artifact) {
-    await client.from("aria_studio_artifact_versions").insert({
+    await client.from("cara_studio_artifact_versions").insert({
       artifact_id: artifactId,
       version_number: artifact.version_number,
       title: artifact.title,
@@ -100,7 +100,7 @@ export async function commitArtifact(artifactId: string, committedBy: string): P
     });
   }
 
-  await client.from("aria_studio_artifacts").update({
+  await client.from("cara_studio_artifacts").update({
     status: "committed",
     committed_by: committedBy,
     committed_at: now,

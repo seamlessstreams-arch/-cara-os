@@ -43,7 +43,7 @@ export interface ProviderHealth {
   model?: string;
   /** Safe description of any error (no keys, no raw provider messages). */
   errorMessage?: string;
-  /** ISO timestamp of the most recent successful use recorded in aria_requests. */
+  /** ISO timestamp of the most recent successful use recorded in cara_requests. */
   lastUsedAt?: string;
   /** Total requests using this provider today. */
   requestsToday?: number;
@@ -58,12 +58,12 @@ export interface PersistenceHealth {
   missingTables: string[];
   /** Safe description of any connection error. */
   errorMessage?: string;
-  /** ISO timestamp of the most recent aria_requests insert. */
+  /** ISO timestamp of the most recent cara_requests insert. */
   lastWriteAt?: string;
 }
 
 export interface AuditHealth {
-  /** Whether aria_audit_events is reachable and writable. */
+  /** Whether cara_audit_events is reachable and writable. */
   writable: boolean;
   /** ISO timestamp of the most recent audit event. */
   lastEventAt?: string;
@@ -113,9 +113,9 @@ export interface CaraHealthStatus {
   approvals: ApprovalHealth;
   commandRegistry: CommandRegistryHealth;
   moduleCoverage: ModuleCoverageHealth;
-  /** ISO timestamp of the most recent successful generation in aria_requests. */
+  /** ISO timestamp of the most recent successful generation in cara_requests. */
   lastGeneratedAt?: string;
-  /** ISO timestamp of the most recent provider_failed in aria_requests. */
+  /** ISO timestamp of the most recent provider_failed in cara_requests. */
   lastFailedAt?: string;
   /** Total failed persistence attempts (requests that completed with no output). */
   failedPersistenceCount?: number;
@@ -126,11 +126,11 @@ export interface CaraHealthStatus {
 // ─── Cara tables that must be present ────────────────────────────────────────
 
 const REQUIRED_CARA_TABLES = [
-  "aria_requests",
-  "aria_outputs",
-  "aria_approvals",
-  "aria_audit_events",
-  "aria_transcriptions",
+  "cara_requests",
+  "cara_outputs",
+  "cara_approvals",
+  "cara_audit_events",
+  "cara_transcriptions",
 ] as const;
 
 // ─── Platform module ids we track for coverage ───────────────────────────────
@@ -407,7 +407,7 @@ export async function checkCaraHealth(
       // Last write
       try {
         const { data: lastReq } = await sb
-          .from("aria_requests")
+          .from("cara_requests")
           .select("created_at")
           .order("created_at", { ascending: false })
           .limit(1)
@@ -418,7 +418,7 @@ export async function checkCaraHealth(
       // Last generated / failed
       try {
         const { data: lastOk } = await sb
-          .from("aria_requests")
+          .from("cara_requests")
           .select("created_at")
           .eq("status", "complete")
           .order("created_at", { ascending: false })
@@ -427,7 +427,7 @@ export async function checkCaraHealth(
         if (lastOk?.created_at) lastGeneratedAt = lastOk.created_at;
 
         const { data: lastFail } = await sb
-          .from("aria_requests")
+          .from("cara_requests")
           .select("created_at")
           .eq("status", "provider_failed")
           .order("created_at", { ascending: false })
@@ -436,7 +436,7 @@ export async function checkCaraHealth(
         if (lastFail?.created_at) lastFailedAt = lastFail.created_at;
 
         const { count: failCount } = await sb
-          .from("aria_requests")
+          .from("cara_requests")
           .select("id", { count: "exact", head: true })
           .eq("status", "provider_failed");
         failedPersistenceCount = failCount ?? 0;
@@ -445,7 +445,7 @@ export async function checkCaraHealth(
       // Provider usage stats
       try {
         const { data: openaiReqs } = await sb
-          .from("aria_requests")
+          .from("cara_requests")
           .select("created_at")
           .eq("provider_id", "openai")
           .gte("created_at", todayIso)
@@ -457,14 +457,14 @@ export async function checkCaraHealth(
         }
 
         const { count: openaiCount } = await sb
-          .from("aria_requests")
+          .from("cara_requests")
           .select("id", { count: "exact", head: true })
           .eq("provider_id", "openai")
           .gte("created_at", todayIso);
         openaiRequestsToday = openaiCount ?? 0;
 
         const { data: anthropicReqs } = await sb
-          .from("aria_requests")
+          .from("cara_requests")
           .select("created_at")
           .eq("provider_id", "anthropic")
           .gte("created_at", todayIso)
@@ -475,7 +475,7 @@ export async function checkCaraHealth(
         }
 
         const { count: anthropicCount } = await sb
-          .from("aria_requests")
+          .from("cara_requests")
           .select("id", { count: "exact", head: true })
           .eq("provider_id", "anthropic")
           .gte("created_at", todayIso);
@@ -485,7 +485,7 @@ export async function checkCaraHealth(
       // Approval queue
       try {
         const { data: pendingOutputs } = await sb
-          .from("aria_outputs")
+          .from("cara_outputs")
           .select("created_at")
           .eq("status", "draft")
           .eq("approval_required", true)
@@ -504,7 +504,7 @@ export async function checkCaraHealth(
 
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
         const { count: rejCount } = await sb
-          .from("aria_outputs")
+          .from("cara_outputs")
           .select("id", { count: "exact", head: true })
           .eq("status", "rejected")
           .gte("rejected_at", sevenDaysAgo);
@@ -514,7 +514,7 @@ export async function checkCaraHealth(
       // Audit health
       try {
         const { data: lastAudit } = await sb
-          .from("aria_audit_events")
+          .from("cara_audit_events")
           .select("created_at")
           .order("created_at", { ascending: false })
           .limit(1)
@@ -529,7 +529,7 @@ export async function checkCaraHealth(
         }
 
         const { count: auditCount } = await sb
-          .from("aria_audit_events")
+          .from("cara_audit_events")
           .select("id", { count: "exact", head: true })
           .gte("created_at", todayIso);
         totalEventsToday = auditCount ?? 0;
@@ -622,12 +622,12 @@ export async function checkCaraHealth(
   }
   if (supabaseConnected && missingTables.length > 0) {
     recommendations.push(
-      `Run Supabase migration 013_aria_universal_layer.sql — missing tables: ${missingTables.join(", ")}.`,
+      `Run Supabase migration 013_cara_universal_layer.sql — missing tables: ${missingTables.join(", ")}.`,
     );
   }
   if (!auditWritable && supabaseConnected && tablesPresent) {
     recommendations.push(
-      "Cara audit log is not writable. Check RLS policies on aria_audit_events for the service role.",
+      "Cara audit log is not writable. Check RLS policies on cara_audit_events for the service role.",
     );
   }
   if (overdueCount > 0) {

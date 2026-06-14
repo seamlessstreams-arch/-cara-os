@@ -26,7 +26,7 @@ export async function detectGaps(
   // Check for missing child voice in recent sources
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query = (sb.from("aria_studio_sources") as any)
+    let query = (sb.from("cara_studio_sources") as any)
       .select("id, source_type, title, content, summary, child_id")
       .eq("home_id", hid)
       .is("archived_at", null)
@@ -56,7 +56,7 @@ export async function detectGaps(
   // Check for overdue actions
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: overdueActions } = await (sb.from("aria_studio_artifact_actions") as any)
+    const { data: overdueActions } = await (sb.from("cara_studio_artifact_actions") as any)
       .select("id, action_title, due_date")
       .eq("status", "open")
       .lt("due_date", now)
@@ -75,7 +75,7 @@ export async function detectGaps(
   for (const gap of gaps) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (sb.from("aria_studio_gaps") as any).insert({
+      await (sb.from("cara_studio_gaps") as any).insert({
         home_id: gap.home_id,
         child_id: gap.child_id,
         gap_type: gap.gap_type,
@@ -96,7 +96,7 @@ export async function resolveGap(gapId: string, resolvedBy: string): Promise<voi
   if (!sb) return;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (sb.from("aria_studio_gaps") as any).update({
+  await (sb.from("cara_studio_gaps") as any).update({
     status: "resolved",
     resolved_at: new Date().toISOString(),
     assigned_to: resolvedBy,

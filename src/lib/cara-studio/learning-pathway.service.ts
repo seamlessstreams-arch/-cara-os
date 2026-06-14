@@ -97,7 +97,7 @@ export async function generateStaffPathway(staffId: string): Promise<StaffLearni
     .limit(20);
 
   // Look up existing training artifacts linked to staff
-  const { data: trainingArtifacts } = await (sb.from("aria_studio_artifacts") as any)
+  const { data: trainingArtifacts } = await (sb.from("cara_studio_artifacts") as any)
     .select("id, title, artifact_type, status, created_at")
     .eq("home_id", homeId())
     .in("artifact_type", ["staff_training", "quiz", "scenario_simulation", "reflective_workbook"])

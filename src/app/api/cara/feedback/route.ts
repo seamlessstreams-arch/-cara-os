@@ -2,7 +2,7 @@
 // POST /api/cara/feedback
 //
 // Records user feedback on an Cara output (thumbs up/down, optional tags and
-// free-text note). Stored in aria_feedback for quality improvement analytics.
+// free-text note). Stored in cara_feedback for quality improvement analytics.
 //
 // Body: { outputId, commandId, rating, note?, tags? }
 // ══════════════════════════════════════════════════════════════════════════════
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        const { error } = await (sb.from("aria_feedback") as any).insert({
+        const { error } = await (sb.from("cara_feedback") as any).insert({
           output_id: outputId,
           command_id: commandId,
           rating,

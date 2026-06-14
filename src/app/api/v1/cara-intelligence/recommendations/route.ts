@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     user_id:      "staff_darren",
     child_id:     rec.child_id,
     action_type:  "recommendation_created",
-    source_table: "aria_recommendations",
+    source_table: "cara_recommendations",
     source_id:    rec.id,
   });
 

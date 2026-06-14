@@ -59,7 +59,7 @@ export function useUploadDocument() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (payload: UploadPayload) =>
-      api.post<{ data: UploadedDocument; aria_error?: string }>("/doc-intelligence", payload),
+      api.post<{ data: UploadedDocument; cara_error?: string }>("/doc-intelligence", payload),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["doc-intelligence"] }),
   });
 }

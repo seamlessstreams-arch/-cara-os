@@ -496,13 +496,13 @@ function CarePlanCard({
           </div>
 
           {/* Cara overview */}
-          {plan.aria_overview ? (
+          {plan.cara_overview ? (
             <div className="rounded-xl border border-teal-100 bg-teal-50/40 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-teal-600" />
                 <p className="text-[10px] font-semibold text-teal-700 uppercase tracking-widest">Cara Overview</p>
               </div>
-              <p className="text-xs text-[var(--cs-text-secondary)]">{plan.aria_overview}</p>
+              <p className="text-xs text-[var(--cs-text-secondary)]">{plan.cara_overview}</p>
             </div>
           ) : (
             <button
@@ -576,7 +576,7 @@ export default function CarePlansPage() {
       const d = lacDaysUntil(p.next_lac_review);
       return d !== null && d >= 0 && d <= 30;
     }).length;
-    const withoutCaraOverview = plans.filter((p) => !p.aria_overview).length;
+    const withoutCaraOverview = plans.filter((p) => !p.cara_overview).length;
 
     const redCount   = plans.filter((p) => overallRAG(p) === "red").length;
     const amberCount = plans.filter((p) => overallRAG(p) === "amber").length;
@@ -656,7 +656,7 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
         response?.choices?.[0]?.message?.content ??
         `${ypName}'s care plan (v${plan.version}) has ${plan.goals.length} goals — ${plan.goals.filter((g) => g.status === "attention_needed").length} requiring attention, ${plan.goals.filter((g) => g.status === "on_track").length} on track. ${plan.next_lac_review ? `Next LAC review ${formatDate(plan.next_lac_review)}.` : "LAC review date not set."} ${plan.concerns_summary ? "Key concerns: " + plan.concerns_summary.slice(0, 100) + "…" : ""}`;
 
-      await updatePlan.mutateAsync({ id: plan.id, data: { aria_overview: overview } });
+      await updatePlan.mutateAsync({ id: plan.id, data: { cara_overview: overview } });
     } catch {
       setCaraError("Cara generation failed — please try again");
     } finally {

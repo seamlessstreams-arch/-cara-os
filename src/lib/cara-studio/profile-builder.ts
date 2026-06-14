@@ -149,7 +149,7 @@ export async function buildChildProfile(
   };
 
   // ── Persist profile snapshot ───────────────────────────────────────────────
-  await (sb.from("aria_studio_profiles") as SB).insert({
+  await (sb.from("cara_studio_profiles") as SB).insert({
     organisation_id: organisationId,
     home_id: homeId,
     child_id: childId,

@@ -4,8 +4,8 @@
 // Server-side only. Defines the Cara configuration types, default system
 // profile, tool registry, and in-memory interaction logging.
 //
-// When Supabase is connected, the equivalent tables (aria_config,
-// aria_system_profiles, aria_interaction_logs, aria_tool_registry) will
+// When Supabase is connected, the equivalent tables (cara_config,
+// cara_system_profiles, cara_interaction_logs, cara_tool_registry) will
 // be read instead. This module provides the TypeScript-side defaults that
 // power the system before database tables are populated.
 // ══════════════════════════════════════════════════════════════════════════════
@@ -66,7 +66,7 @@ export interface CaraToolDefinition {
 
 // ─── Default System Profile ─────────────────────────────────────────────────
 
-const DEFAULT_PROFILE_ID = "profile_cornerstone_aria_default";
+const DEFAULT_PROFILE_ID = "profile_cornerstone_cara_default";
 
 const DEFAULT_SYSTEM_PROFILE: CaraSystemProfile = {
   id: DEFAULT_PROFILE_ID,
@@ -406,7 +406,7 @@ export function getCaraConfig(): CaraConfig {
 
 /**
  * Return the active system profile. In production this will read from
- * aria_system_profiles where active = true. For now, returns the default.
+ * cara_system_profiles where active = true. For now, returns the default.
  */
 export function getActiveSystemProfile(): CaraSystemProfile {
   return DEFAULT_SYSTEM_PROFILE;
@@ -414,7 +414,7 @@ export function getActiveSystemProfile(): CaraSystemProfile {
 
 /**
  * Log an Cara interaction in memory. In production this writes to
- * aria_interaction_logs in Supabase.
+ * cara_interaction_logs in Supabase.
  */
 export function logInteraction(
   log: Omit<CaraInteractionLog, "id" | "created_at">,

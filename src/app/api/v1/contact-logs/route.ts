@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     social_worker_notified: body.social_worker_notified ?? false,
     photos_shared:  body.photos_shared ?? false,
     gifts_received: body.gifts_received ?? false,
-    aria_analysis: null,
+    cara_analysis: null,
     created_by: body.created_by ?? "staff_darren",
   });
   return NextResponse.json({ data: record }, { status: 201 });

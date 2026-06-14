@@ -19,16 +19,16 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     if (!sb) return NextResponse.json({ error: "Database not available" }, { status: 503 });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: artifact, error } = await (sb.from("aria_studio_artifacts") as any)
+    const { data: artifact, error } = await (sb.from("cara_studio_artifacts") as any)
       .select("*").eq("id", id).single();
     if (error || !artifact) return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
 
     // Fetch related data
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [sources, versions, reviews] = await Promise.all([
-      (sb.from("aria_studio_artifact_sources") as any).select("*").eq("artifact_id", id),
-      (sb.from("aria_studio_artifact_versions") as any).select("*").eq("artifact_id", id).order("version_number", { ascending: false }),
-      (sb.from("aria_studio_artifact_reviews") as any).select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
+      (sb.from("cara_studio_artifact_sources") as any).select("*").eq("artifact_id", id),
+      (sb.from("cara_studio_artifact_versions") as any).select("*").eq("artifact_id", id).order("version_number", { ascending: false }),
+      (sb.from("cara_studio_artifact_reviews") as any).select("*").eq("artifact_id", id).order("created_at", { ascending: false }),
     ]);
 
     return NextResponse.json({
@@ -71,7 +71,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         case "archive":
           if (sb) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (sb.from("aria_studio_artifacts") as any).update({
+            await (sb.from("cara_studio_artifacts") as any).update({
               status: "archived", archived_at: new Date().toISOString(),
             }).eq("id", id);
             await writeStudioAuditLog({ home_id: homeId(), actor_id: userId, action_type: "artifact_archived", artifact_id: id });
@@ -94,7 +94,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (Object.keys(updates).length) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (sb.from("aria_studio_artifacts") as any)
+      const { data, error } = await (sb.from("cara_studio_artifacts") as any)
         .update(updates).eq("id", id).select("*").single();
       if (error) throw error;
 
@@ -121,7 +121,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     // Soft delete
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (sb.from("aria_studio_artifacts") as any).update({
+    await (sb.from("cara_studio_artifacts") as any).update({
       status: "deleted_recoverable",
     }).eq("id", id);
 

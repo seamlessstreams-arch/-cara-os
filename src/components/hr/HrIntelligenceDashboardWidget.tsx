@@ -73,7 +73,7 @@ const DEMO_TASKS: DemoHrTask[] = [
 ];
 
 const DEMO_LETTER_PIPELINE: DemoLetterPipeline[] = [
-  { status: "aria_draft", count: 1 },
+  { status: "cara_draft", count: 1 },
   { status: "manager_review", count: 1 },
   { status: "approved", count: 1 },
 ];
@@ -242,14 +242,14 @@ function GateBadge({ outcome }: { outcome: "approved" | "in_progress" | "blocked
 
 function LetterStatusBadge({ status }: { status: HrLetterStatus }) {
   const map: Record<HrLetterStatus, string> = {
-    aria_draft: "bg-purple-100 text-purple-700 border-purple-200",
+    cara_draft: "bg-purple-100 text-purple-700 border-purple-200",
     manager_review: "bg-amber-100 text-amber-700 border-amber-200",
     approved: "bg-green-100 text-green-700 border-green-200",
     sent: "bg-blue-100 text-blue-700 border-blue-200",
     withdrawn: "bg-gray-100 text-gray-500 border-gray-200",
   };
   const labels: Record<HrLetterStatus, string> = {
-    aria_draft: "Cara Draft",
+    cara_draft: "Cara Draft",
     manager_review: "Manager Review",
     approved: "Approved",
     sent: "Sent",
@@ -545,7 +545,7 @@ export function HrIntelligenceDashboardWidget() {
         {expandedSection === "letters" && (
           <div className="mt-3 rounded-lg border border-gray-200 bg-white p-4">
             <div className="flex items-center gap-4 mb-3">
-              {(["aria_draft", "manager_review", "approved", "sent"] as const).map((stage, idx, arr) => {
+              {(["cara_draft", "manager_review", "approved", "sent"] as const).map((stage, idx, arr) => {
                 const entry = DEMO_LETTER_PIPELINE.find((l) => l.status === stage);
                 const count = entry?.count ?? 0;
                 return (

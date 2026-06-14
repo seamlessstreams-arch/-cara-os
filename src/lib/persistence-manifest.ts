@@ -33,8 +33,8 @@ export const PERSISTENCE_MANIFEST: PersistenceEntry[] = [
   // ── Safeguarding & incidents ──
   { entity: "Incidents", area: "Safeguarding & incidents", write_through: true, table: "incidents", audit_trail: "Manager oversight fields + linked records" },
   { entity: "Care events (capture spine)", area: "Safeguarding & incidents", write_through: false, table: null, audit_trail: "In-memory event stream projection", note: "Projection is recomputed from source records, which do persist" },
-  { entity: "Incident Mode sessions & timelines", area: "Safeguarding & incidents", write_through: true, table: "incident_sessions / incident_timeline_entries", audit_trail: "Raw + AI + final preserved; every action in aria_audit_logs" },
-  { entity: "Recording reviews, restorative & reflections", area: "Safeguarding & incidents", write_through: true, table: "aria_recording_reviews / restorative_conversations / post_incident_reflections", audit_trail: "Manager-review fields on each row" },
+  { entity: "Incident Mode sessions & timelines", area: "Safeguarding & incidents", write_through: true, table: "incident_sessions / incident_timeline_entries", audit_trail: "Raw + AI + final preserved; every action in cara_audit_logs" },
+  { entity: "Recording reviews, restorative & reflections", area: "Safeguarding & incidents", write_through: true, table: "cara_recording_reviews / restorative_conversations / post_incident_reflections", audit_trail: "Manager-review fields on each row" },
 
   // ── Workforce & comms ──
   { entity: "Comms Centre (channels, messages, receipts)", area: "Workforce & comms", write_through: true, table: "comms_*", audit_trail: "Message governance + receipt trail" },
@@ -49,7 +49,7 @@ export const PERSISTENCE_MANIFEST: PersistenceEntry[] = [
   { entity: "Cara AI run log", area: "Cara Studio & AI", write_through: true, table: "cara_ai_runs", audit_trail: "Every generation: who, child, module, flags, model" },
   { entity: "Cara guardrail events", area: "Cara Studio & AI", write_through: true, table: "cara_guardrail_events", audit_trail: "Each flag with severity and action taken" },
   { entity: "Resource library (ingest + approvals)", area: "Cara Studio & AI", write_through: true, table: "cara_resource_library", audit_trail: "approved_by on the row; no self-approval (DB constraint)" },
-  { entity: "Cara assist requests (legacy aria_* layer)", area: "Cara Studio & AI", write_through: false, table: "aria_requests/aria_outputs (migration 013, ready)", audit_trail: "In-store approval trail", note: "Schema migrated; wiring planned" },
+  { entity: "Cara assist requests (legacy cara_* layer)", area: "Cara Studio & AI", write_through: false, table: "cara_requests/cara_outputs (migration 013, ready)", audit_trail: "In-store approval trail", note: "Schema migrated; wiring planned" },
 
   // ── Recruitment ──
   { entity: "Safer-recruitment candidates & checks", area: "Recruitment", write_through: true, table: "recruitment_candidates / _candidate_checks / _conditional_offers", audit_trail: "Recruitment audit entries on every action (durable)", note: "Profiles, Schedule-2 checks and offers upsert by app id (migration 415); Command Centre recomputes from records" },

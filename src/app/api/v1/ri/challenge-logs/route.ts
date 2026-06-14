@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     challenge_text: body.challenge_text ?? "",
     escalation_level: body.escalation_level ?? "standard",
     status: body.status ?? "open",
-    aria_generated: body.aria_generated ?? false,
+    cara_generated: body.cara_generated ?? false,
     created_by: body.created_by ?? "staff_darren",
     ...body,
   });

@@ -168,7 +168,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
         description: `Identified from safeguarding concern ${concern.reference}. ${concern.description.slice(0, 200)}…`,
         priority: SG_SEV_PRIORITY[concern.severity] ?? "high",
         status: "identified",
-        aria_evidence: `Linked to safeguarding concern ${concern.reference} (${concern.severity} severity, type: ${concern.type}).`,
+        cara_evidence: `Linked to safeguarding concern ${concern.reference} (${concern.severity} severity, type: ${concern.type}).`,
         created_by: currentUser?.id ?? "staff_darren",
       },
       { onSuccess: () => setNeedCreated(true) }
@@ -310,7 +310,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
                     {concern.status.replace("_", " ")}
                   </Badge>
                 )}
-                {concern.aria_oversight_used && (
+                {concern.cara_oversight_used && (
                   <CaraUsageBadge caraAssisted sourceTable="incidents" recordId={concern.id} size="sm" />
                 )}
               </div>

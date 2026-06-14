@@ -89,9 +89,9 @@ export function YourHandoverCard() {
               "text-[10px] text-[var(--cs-text-secondary)] whitespace-pre-wrap font-sans leading-relaxed",
               !expanded && "line-clamp-4"
             )}>
-              {ctx.aria_summary}
+              {ctx.cara_summary}
             </pre>
-            {ctx.aria_summary.split("\n").length > 4 && (
+            {ctx.cara_summary.split("\n").length > 4 && (
               <button
                 onClick={() => setExpanded((v) => !v)}
                 className="text-[10px] text-[var(--cs-cara-gold)] hover:text-[var(--cs-cara-gold)] mt-1"

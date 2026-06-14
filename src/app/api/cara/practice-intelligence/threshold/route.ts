@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       strategy_discussion_recommended: t?.strategyDiscussionRecommended ?? false,
       lado_consultation_recommended: t?.ladoConsultationRecommended ?? false,
       emergency_action_recommended: t?.emergencyActionRecommended ?? false,
-      aria_summary: output.summary,
+      cara_summary: output.summary,
       manager_decision: null,
       manager_rationale: null,
       created_by: userId,

@@ -96,22 +96,22 @@ export async function GET(req: NextRequest) {
     tasksResult,
   ] = await Promise.all([
     // Total requests
-    (supabase.from("aria_requests") as any)
+    (supabase.from("cara_requests") as any)
       .select("id, command_id, user_id")
       .gte("created_at", cutoffISO)
       .limit(1000),
     // Outputs with statuses
-    (supabase.from("aria_outputs") as any)
+    (supabase.from("cara_outputs") as any)
       .select("id, status, confidence")
       .gte("created_at", cutoffISO)
       .limit(1000),
     // Transcriptions
-    (supabase.from("aria_transcriptions") as any)
+    (supabase.from("cara_transcriptions") as any)
       .select("id")
       .gte("created_at", cutoffISO)
       .limit(1000),
     // Task links
-    (supabase.from("aria_task_links") as any)
+    (supabase.from("cara_task_links") as any)
       .select("id")
       .gte("created_at", cutoffISO)
       .limit(1000),

@@ -166,7 +166,7 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
         }),
       });
       const data = await res.json();
-      onUpdate(log.id, { aria_analysis: data.response ?? data.content ?? "Analysis unavailable." });
+      onUpdate(log.id, { cara_analysis: data.response ?? data.content ?? "Analysis unavailable." });
     } finally {
       setCaraBusy(false);
     }
@@ -323,12 +323,12 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
           )}
 
           {/* Cara analysis */}
-          {log.aria_analysis && (
+          {log.cara_analysis && (
             <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
               <p className="text-xs font-semibold text-indigo-600 mb-1 flex items-center gap-1">
                 ✦ Cara analysis
               </p>
-              <p className="text-sm text-indigo-900 leading-relaxed">{log.aria_analysis}</p>
+              <p className="text-sm text-indigo-900 leading-relaxed">{log.cara_analysis}</p>
             </div>
           )}
 
@@ -351,7 +351,7 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
               uploadContext={`Family contact log — ${getYPName(log.child_id)} with ${log.contact_person?.name ?? "family"} on ${formatDate(log.date)}`}
             />
 
-            {!log.aria_analysis && !isCancelled && (
+            {!log.cara_analysis && !isCancelled && (
               <Button
                 size="sm"
                 variant="outline"
@@ -477,7 +477,7 @@ function ArrangementCard({
       photos_shared:  false,
       gifts_received: false,
       gifts_detail:   null,
-      aria_analysis:  null,
+      cara_analysis:  null,
       created_by:     currentUserId,
     });
     setShowLogForm(false);

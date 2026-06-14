@@ -77,7 +77,7 @@ export interface ConflictFinding {
   event_b: ConflictEventRef;
   description: string;
   recommended_action: string;
-  aria_assessment: CaraConflictAssessment;
+  cara_assessment: CaraConflictAssessment;
   /** Safeguard: every conflict is surfaced for a human and never auto-resolved. */
   status: "needs_human_review";
   auto_resolved: false;
@@ -281,7 +281,7 @@ export function computeConflictDetection(input: ConflictDetectionInput): Conflic
         event_b: refOf(e),
         description: `A ${e.eventType.replace(/_/g, " ")} for ${resolveName(iv.subject_id, childById)} is timestamped during a recorded missing episode (${iv.label}). The child cannot have been both missing and cared for in the home at that moment — one of the two records has the wrong time or status.`,
         recommended_action: "Reconcile the timeline: confirm the exact missing/return times and the time of the care log, then correct whichever record is wrong. Do not delete either — annotate the correction.",
-        aria_assessment: {
+        cara_assessment: {
           likely_accurate_event_id: missingRef.event_id,
           reasoning: "A missing episode is a formally-logged safeguarding event (often with police/LA notification), so a routine care log falling inside it is the more likely timing error. Verify against the return-home record before correcting.",
           confidence: 0.6,
@@ -321,7 +321,7 @@ export function computeConflictDetection(input: ConflictDetectionInput): Conflic
         event_b: refOf(e),
         description: `${resolveName(iv.subject_id, staffById)} is recorded delivering care / working (${e.eventType.replace(/_/g, " ")}) inside a period also recorded as ${iv.label}. They cannot have been both on leave and on shift.`,
         recommended_action: "Confirm whether the leave was taken or the shift was worked, and correct the rota or leave record. This affects staffing ratios and payroll, so resolve before either is relied upon.",
-        aria_assessment: {
+        cara_assessment: {
           likely_accurate_event_id: null,
           reasoning: "Either record could be the error — leave is sometimes cancelled at short notice and worked, or a shift mis-attributed. There is no reliable signal here as to which is correct, so this needs a human to confirm.",
           confidence: 0.5,
@@ -368,7 +368,7 @@ export function computeConflictDetection(input: ConflictDetectionInput): Conflic
               event_b: refOf(no),
               description: `For ${childName}, one record documents an injury while another within 24 hours records none. These cannot both be a complete account of the same period — the discrepancy must be resolved so the child's injury history is accurate.`,
               recommended_action: "Check the body map, medical/health notes and any photographs to establish the facts, then reconcile both records. Consider whether the omission needs a safeguarding review.",
-              aria_assessment: {
+              cara_assessment: {
                 likely_accurate_event_id: formal ? yes.id : null,
                 reasoning: formal
                   ? "The record documenting the injury is a formal incident/intervention record (more likely to be body-mapped and reviewed), so it is the more reliable account — but confirm against the body map before treating the other as a simple omission."
@@ -400,7 +400,7 @@ export function computeConflictDetection(input: ConflictDetectionInput): Conflic
               event_b: refOf(lower),
               description: `Two ${a.eventType.replace(/_/g, " ")} records for ${childName} within 12 hours describe what appears to be the same event (${Math.round(sim * 100)}% wording overlap) but grade it differently — "${higher.riskLevel}" in one and "${lower.riskLevel}" in the other. The seriousness of an event must be recorded consistently.`,
               recommended_action: "Confirm whether these are one event or two. If one, agree a single severity (defaulting to the higher pending review) and consolidate; if two, clarify the wording so they are not mistaken for the same event.",
-              aria_assessment: {
+              cara_assessment: {
                 likely_accurate_event_id: higher.id,
                 reasoning: "Where the same event is graded inconsistently, the higher rating should stand until a human reviews it — under-grading risk is the more dangerous error. This is precautionary, not a judgement that the higher record is correct.",
                 confidence: 0.55,

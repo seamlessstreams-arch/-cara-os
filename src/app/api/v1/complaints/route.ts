@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     }],
     includes_safeguarding_element: body.includes_safeguarding_element ?? false,
     linked_incident_id:        body.linked_incident_id ?? null,
-    aria_summary:              null,
+    cara_summary:              null,
     created_by:                body.created_by ?? "staff_darren",
   });
 

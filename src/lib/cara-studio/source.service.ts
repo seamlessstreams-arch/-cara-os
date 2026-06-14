@@ -15,7 +15,7 @@ export async function indexSource(source: Partial<CaraStudioSource>): Promise<Ca
   if (!sb) return null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (sb.from("aria_studio_sources") as any)
+  const { data, error } = await (sb.from("cara_studio_sources") as any)
     .insert({
       home_id: source.home_id ?? homeId(),
       child_id: source.child_id ?? null,
@@ -59,7 +59,7 @@ export async function listSources(
   if (!sb) return getDemoSources();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (sb.from("aria_studio_sources") as any)
+  let query = (sb.from("cara_studio_sources") as any)
     .select("*")
     .eq("home_id", hid)
     .is("archived_at", null)
@@ -81,7 +81,7 @@ export async function getSource(id: string): Promise<CaraStudioSource | null> {
   if (!sb) return null;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (sb.from("aria_studio_sources") as any)
+  const { data } = await (sb.from("cara_studio_sources") as any)
     .select("*")
     .eq("id", id)
     .single();

@@ -357,7 +357,7 @@ export async function persistSuggestions(
 
   for (const s of suggestions) {
     const id = `as_${uid()}`;
-    const { error } = await supabase.from("aria_suggestions").insert({
+    const { error } = await supabase.from("cara_suggestions").insert({
       id,
       organisation_id: s.organisationId ?? null,
       home_id: s.homeId ?? null,
@@ -385,7 +385,7 @@ export async function persistSuggestions(
 
     if (s.linkedRecords && s.linkedRecords.length > 0) {
       for (const lr of s.linkedRecords) {
-        await supabase.from("aria_suggestion_links").insert({
+        await supabase.from("cara_suggestion_links").insert({
           id: `asl_${uid()}`,
           suggestion_id: id,
           linked_record_type: lr.linkedRecordType,
@@ -432,7 +432,7 @@ export async function getSuggestions(filters: SuggestionFilters): Promise<CaraSu
   if (!supabaseRaw) return [];
   const supabase = loose(supabaseRaw);
 
-  let query = supabase.from("aria_suggestions").select("*");
+  let query = supabase.from("cara_suggestions").select("*");
   if (filters.status) query = query.eq("status", filters.status);
   if (filters.relatedRecordType) query = query.eq("related_record_type", filters.relatedRecordType);
   if (filters.relatedRecordId) query = query.eq("related_record_id", filters.relatedRecordId);
@@ -453,14 +453,14 @@ export async function getSuggestionById(id: string, actor: CaraActor): Promise<C
   const supabase = loose(supabaseRaw);
 
   const { data, error } = await supabase
-    .from("aria_suggestions")
+    .from("cara_suggestions")
     .select("*")
     .eq("id", id)
     .single();
   if (error || !data) return null;
 
   const { data: links } = await supabase
-    .from("aria_suggestion_links")
+    .from("cara_suggestion_links")
     .select("*")
     .eq("suggestion_id", id);
 
@@ -490,12 +490,12 @@ export async function approveSuggestion(
   if (!supabaseRaw) return null;
   const supabase = loose(supabaseRaw);
 
-  const { data: existing } = await supabase.from("aria_suggestions").select("draft_text").eq("id", id).single();
+  const { data: existing } = await supabase.from("cara_suggestions").select("draft_text").eq("id", id).single();
   const isAmended = finalText && existing && finalText !== existing.draft_text;
   const now = new Date().toISOString();
 
   const { data, error } = await supabase
-    .from("aria_suggestions")
+    .from("cara_suggestions")
     .update({
       status: isAmended ? "amended_and_approved" : "approved",
       final_text: finalText ?? existing?.draft_text ?? null,
@@ -534,7 +534,7 @@ export async function rejectSuggestion(
 
   const now = new Date().toISOString();
   const { data, error } = await supabase
-    .from("aria_suggestions")
+    .from("cara_suggestions")
     .update({
       status: "rejected",
       rejection_reason: reason,
@@ -571,7 +571,7 @@ export async function markNoAction(
 
   const now = new Date().toISOString();
   const { data, error } = await supabase
-    .from("aria_suggestions")
+    .from("cara_suggestions")
     .update({
       status: "no_action_required",
       reviewed_by: actor.userId,
@@ -606,7 +606,7 @@ export async function commitSuggestion(
 
   const now = new Date().toISOString();
   const { data, error } = await supabase
-    .from("aria_suggestions")
+    .from("cara_suggestions")
     .update({
       status: "committed",
       committed_by: actor.userId,
@@ -638,7 +638,7 @@ export async function getAuditTimeline(suggestionId: string): Promise<CaraSugges
   const supabase = loose(supabaseRaw);
 
   const { data, error } = await supabase
-    .from("aria_suggestion_audit")
+    .from("cara_suggestion_audit")
     .select("*")
     .eq("suggestion_id", suggestionId)
     .order("created_at", { ascending: true });
@@ -665,7 +665,7 @@ export async function writeAuditEntry(args: WriteAuditArgs): Promise<void> {
   if (!supabaseRaw) return;
   const supabase = loose(supabaseRaw);
 
-  await supabase.from("aria_suggestion_audit").insert({
+  await supabase.from("cara_suggestion_audit").insert({
     id: `asa_${uid()}`,
     organisation_id: args.organisationId ?? null,
     home_id: args.homeId ?? null,

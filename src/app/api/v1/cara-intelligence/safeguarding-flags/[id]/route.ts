@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       user_id: (body.reviewed_by as string) ?? "staff_darren",
       child_id: updated.child_id,
       action_type: "safeguarding_flag_reviewed",
-      source_table: "aria_safeguarding_flags",
+      source_table: "cara_safeguarding_flags",
       source_id: id,
     });
   }

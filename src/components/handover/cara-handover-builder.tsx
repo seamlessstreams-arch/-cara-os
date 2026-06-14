@@ -104,7 +104,7 @@ function StaffContextCard({ ctx }: { ctx: StaffHandoverContext }) {
               </span>
             </div>
             <pre className="text-[11px] text-[var(--cs-text-secondary)] whitespace-pre-wrap font-sans leading-relaxed">
-              {ctx.aria_summary}
+              {ctx.cara_summary}
             </pre>
           </div>
         </div>

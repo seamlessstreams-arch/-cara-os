@@ -34,7 +34,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       user_id: "staff_darren",
       child_id: updated.child_id,
       action_type: "recommendation_actioned",
-      source_table: "aria_recommendations",
+      source_table: "cara_recommendations",
       source_id: id,
     });
   }

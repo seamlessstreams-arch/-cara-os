@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
     home_id: assessment.home_id,
     user_id: assessment.created_by,
     child_id: assessment.child_id,
-    action_type: "aria_assessment_created",
-    source_table: "aria_assessments",
+    action_type: "cara_assessment_created",
+    source_table: "cara_assessments",
     source_id: assessment.id,
   });
 

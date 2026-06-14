@@ -96,7 +96,7 @@ describe("runReg45EvidenceBuild", () => {
     expect(chip!.is_ai_draft).toBe(true);
     expect(chip!.severity).toBe("high");
     expect(chip!.sentiment).toBe("concern");
-    expect(chip!.source_table).toBe("aria_safeguarding_patterns");
+    expect(chip!.source_table).toBe("cara_safeguarding_patterns");
   });
 
   it("drafts a complaints_voice chip from a recent complaint", () => {

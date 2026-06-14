@@ -25,7 +25,7 @@ function makePlan(over: Partial<CarePlan> = {}): CarePlan {
     rm_sign_off_by: null,
     strengths_summary: null,
     concerns_summary: null,
-    aria_overview: null,
+    cara_overview: null,
     created_by: "staff_test",
     ...over,
   } as Omit<CarePlan, "id" | "created_at" | "updated_at">);

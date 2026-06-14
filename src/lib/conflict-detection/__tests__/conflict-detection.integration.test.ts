@@ -30,8 +30,8 @@ describe("conflict-detection integration (store → spine + intervals → engine
       // Safeguard invariants on every finding.
       expect(c.status).toBe("needs_human_review");
       expect(c.auto_resolved).toBe(false);
-      expect(c.aria_assessment.confidence).toBeGreaterThanOrEqual(0);
-      expect(c.aria_assessment.confidence).toBeLessThanOrEqual(1);
+      expect(c.cara_assessment.confidence).toBeGreaterThanOrEqual(0);
+      expect(c.cara_assessment.confidence).toBeLessThanOrEqual(1);
     }
   });
 

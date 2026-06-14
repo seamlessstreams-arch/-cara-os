@@ -130,8 +130,8 @@ export interface AdmissionWorkflow {
   school_arrangements_made: boolean;
   emergency_contacts: Record<string, unknown>[];
   created_yp_id: string | null;
-  aria_risk_summary: string | null;
-  aria_recommendations: Record<string, unknown>[];
+  cara_risk_summary: string | null;
+  cara_recommendations: Record<string, unknown>[];
   notes: string | null;
   created_by: string;
   completed_at: string | null;

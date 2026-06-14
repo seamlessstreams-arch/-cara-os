@@ -141,7 +141,7 @@ export function DocumentUploadModal({
         upload_context: context || null,
       });
       setResult(res.data);
-      if (res.aria_error) setCaraError(res.aria_error);
+      if (res.cara_error) setCaraError(res.cara_error);
       // Pre-select all suggested tasks
       const allIds = new Set(res.data.ai_result?.suggested_tasks.map((t) => t.id) ?? []);
       setApprovedTaskIds(allIds);

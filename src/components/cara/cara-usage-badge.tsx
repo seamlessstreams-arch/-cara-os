@@ -25,7 +25,7 @@ interface CaraUsage {
 }
 
 interface CaraUsageBadgeProps {
-  /** Whether the record has the aria_assist_used / aria_oversight_used flag */
+  /** Whether the record has the cara_assist_used / cara_oversight_used flag */
   caraAssisted?: boolean;
   /** Source table name for fetching usage details */
   sourceTable?: string;

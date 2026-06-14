@@ -3,13 +3,13 @@
 //
 // Fetches operational Cara records for Cara command context. Every
 // record retrieved is permission-checked, summarised (never raw PII sent to
-// the model), and logged in aria_context_links for audit.
+// the model), and logged in cara_context_links for audit.
 //
 // Principles:
 // 1. Only fetch what the command needs — module-scoped queries.
 // 2. Summarise before sending — never pass raw child/staff PII to the model.
 // 3. Permission-gate every fetch — the actor's role controls scope.
-// 4. Record every context link — full audit trail via aria_context_links.
+// 4. Record every context link — full audit trail via cara_context_links.
 // 5. Graceful fallback — if Supabase is not configured, return empty context.
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -54,7 +54,7 @@ export interface CaraContextRecord {
 export interface CaraContextResult {
   /** Assembled context snippet to inject into the user prompt */
   contextSnippet: string;
-  /** Individual records retrieved (for aria_context_links) */
+  /** Individual records retrieved (for cara_context_links) */
   records: CaraContextRecord[];
   /** Human-readable summary (no PII) */
   redactedSummary: string;
@@ -554,7 +554,7 @@ async function writeContextLinks(
   if (!request.sourceRecordId) return;
 
   const links = records.slice(0, 50).map((rec) => ({
-    id: `aria_ctx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    id: `cara_ctx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     request_id: request.sourceRecordId,
     source_table: rec.sourceTable,
     source_record_id: rec.sourceRecordId,
@@ -563,7 +563,7 @@ async function writeContextLinks(
 
   if (links.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("aria_context_links") as any).insert(links);
+    await (supabase.from("cara_context_links") as any).insert(links);
   }
 }
 

@@ -116,7 +116,7 @@ function FindingCard({
         <div className="flex items-center gap-1.5 shrink-0">
           <Badge className={cn("text-[10px] rounded-full border", sc.colour)}>{sc.label}</Badge>
           <Badge className={cn("text-[10px] rounded-full border", fc.colour)}>{fc.label}</Badge>
-          <CaraUsageBadge caraAssisted={(finding as any).aria_assist_used} sourceTable="audit_findings" recordId={finding.id} />
+          <CaraUsageBadge caraAssisted={(finding as any).cara_assist_used} sourceTable="audit_findings" recordId={finding.id} />
         </div>
       </div>
 

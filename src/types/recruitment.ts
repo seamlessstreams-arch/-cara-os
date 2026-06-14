@@ -292,7 +292,7 @@ export interface RulesResult {
   blockers: RulesBlocker[];
   warnings: RulesWarning[];
   auto_tasks: AutoTask[];
-  aria_suggestions: string[];
+  cara_suggestions: string[];
 }
 
 export interface RulesBlocker {

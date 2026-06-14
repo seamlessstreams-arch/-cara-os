@@ -190,7 +190,7 @@ export default function GuidanceNotesPage() {
         content: result as unknown as Record<string, unknown>,
         raw_text: result.main_content,
         status: "draft",
-        aria_generated: true,
+        cara_generated: true,
         created_by: currentUser?.id ?? "staff_darren",
       },
       { onSuccess: () => setResult(null) }

@@ -60,9 +60,9 @@ export async function GET(req: NextRequest) {
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
 
-  const { data, error } = await (supabase.from("aria_requests") as any)
+  const { data, error } = await (supabase.from("cara_requests") as any)
     .select(
-      "id, command_id, module, created_at, aria_outputs(id, status, confidence, generated_text, guardrail_flagged)",
+      "id, command_id, module, created_at, cara_outputs(id, status, confidence, generated_text, guardrail_flagged)",
     )
     .eq("user_id", userId)
     .gte("created_at", cutoff.toISOString())
@@ -74,7 +74,7 @@ export async function GET(req: NextRequest) {
   }
 
   const entries: HistoryEntry[] = ((data as any[]) ?? []).map((row) => {
-    const output = row.aria_outputs?.[0] ?? null;
+    const output = row.cara_outputs?.[0] ?? null;
     return {
       requestId: row.id,
       commandId: row.command_id,

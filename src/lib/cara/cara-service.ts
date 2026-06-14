@@ -46,7 +46,7 @@ function loose(client: ReturnType<typeof createServerClient>): LooseSupabase {
 // ─── Command registry ───────────────────────────────────────────────────────
 // Every CaraCommandId is wired here. Domain-specific engines (management
 // oversight, voice of child, HR Process Guardian) keep their own deeper
-// analysis and are not duplicated — they write results back into aria_outputs.
+// analysis and are not duplicated — they write results back into cara_outputs.
 
 export const CARA_COMMANDS: Record<CaraCommandId, CaraCommandSpec> = {
   improve_writing: {
@@ -1482,12 +1482,12 @@ export async function invokeCaraCommand(
 
   // Persist the request (best effort — if Supabase is not configured, we
   // still call the provider and return the draft, but with persisted=false).
-  const requestId = `aria_req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const requestId = `cara_req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   const supabaseRaw = createServerClient();
   const supabase = supabaseRaw ? loose(supabaseRaw) : null;
 
   if (supabase) {
-    await supabase.from("aria_requests").insert({
+    await supabase.from("cara_requests").insert({
       id: requestId,
       organisation_id: args.organisationId ?? null,
       home_id: args.homeId ?? null,
@@ -1579,18 +1579,18 @@ export async function invokeCaraCommand(
       }
     }
   }
-  const outputId = `aria_out_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  const outputId = `cara_out_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 
   if (supabase) {
     await supabase
-      .from("aria_requests")
+      .from("cara_requests")
       .update({
         status: generation.llmUsed ? "complete" : "provider_failed",
         llm_used: generation.llmUsed,
       })
       .eq("id", requestId);
 
-    await supabase.from("aria_outputs").insert({
+    await supabase.from("cara_outputs").insert({
       id: outputId,
       request_id: requestId,
       generated_text: cleanedText,
@@ -1668,8 +1668,8 @@ export async function writeAuditEvent(args: WriteAuditEventArgs): Promise<void> 
   const supabaseRaw = createServerClient();
   if (!supabaseRaw) return;
   const supabase = loose(supabaseRaw);
-  await supabase.from("aria_audit_events").insert({
-    id: `aria_aud_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+  await supabase.from("cara_audit_events").insert({
+    id: `cara_aud_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     request_id: args.requestId,
     output_id: args.outputId,
     actor_user_id: args.actorUserId,
@@ -1744,7 +1744,7 @@ export async function applyApprovalDecision(args: ApplyApprovalArgs): Promise<{
   }
 
   const { data: updated, error: updateError } = await supabase
-    .from("aria_outputs")
+    .from("cara_outputs")
     .update(updates)
     .eq("id", args.outputId)
     .select()
@@ -1753,8 +1753,8 @@ export async function applyApprovalDecision(args: ApplyApprovalArgs): Promise<{
     return { ok: false, status: 500, errorReason: updateError.message };
   }
 
-  await supabase.from("aria_approvals").insert({
-    id: `aria_appr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+  await supabase.from("cara_approvals").insert({
+    id: `cara_appr_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     output_id: args.outputId,
     decision: args.decision,
     decided_by: args.actor.userId,

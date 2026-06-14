@@ -250,11 +250,11 @@ export interface CaraPracticeAssessment {
   workforce_wellbeing_score: number;
   overall_practice_quality_score: number;
   summary: string;
-  aria_advice: CaraRecommendation[];
-  aria_flags: CaraFlag[];
-  aria_recommendations: CaraRecommendation[];
-  aria_questions: CaraQuestion[];
-  aria_draft_output: Record<string, unknown> | null;
+  cara_advice: CaraRecommendation[];
+  cara_flags: CaraFlag[];
+  cara_recommendations: CaraRecommendation[];
+  cara_questions: CaraQuestion[];
+  cara_draft_output: Record<string, unknown> | null;
   reviewer_id: string | null;
   reviewed_at: string | null;
   manager_decision: string | null;
@@ -301,7 +301,7 @@ export interface CaraProtectiveFactorReview {
   what_it_protects_from: string;
   evidence_it_reduces_harm: string;
   what_happens_if_removed: string;
-  aria_challenge: string;
+  cara_challenge: string;
   risk_of_overstatement: CaraSeverity;
   created_by: string;
   created_at: string;
@@ -340,7 +340,7 @@ export interface CaraThresholdConsultation {
   strategy_discussion_recommended: boolean;
   lado_consultation_recommended: boolean;
   emergency_action_recommended: boolean;
-  aria_summary: string;
+  cara_summary: string;
   manager_decision: string | null;
   manager_rationale: string | null;
   created_by: string;

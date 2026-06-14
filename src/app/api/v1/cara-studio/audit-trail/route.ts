@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   const guard = requireCaraStudioPermission(req, null, {
     permission: "cara.view_audit_logs",
     homeId,
-    intent: "read aria_audit_trail",
+    intent: "read cara_audit_trail",
   });
   if (!guard.ok) return guard.response;
 

@@ -258,8 +258,8 @@ describe("AUDIT_ENTITY_TYPES", () => {
     expect(AUDIT_ENTITY_TYPES.EVIDENCE_LINK).toBe("evidence_link");
   });
 
-  it("maps CARA_RECOMMENDATION to 'aria_recommendation'", () => {
-    expect(AUDIT_ENTITY_TYPES.CARA_RECOMMENDATION).toBe("aria_recommendation");
+  it("maps CARA_RECOMMENDATION to 'cara_recommendation'", () => {
+    expect(AUDIT_ENTITY_TYPES.CARA_RECOMMENDATION).toBe("cara_recommendation");
   });
 
   it("maps INSPECTION_SCAN to 'inspection_scan'", () => {

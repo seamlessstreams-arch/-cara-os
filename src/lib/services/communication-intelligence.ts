@@ -38,8 +38,8 @@ export interface CommunicationDraft {
   linked_entity_type: string | null;
   linked_entity_id: string | null;
   status: CommunicationStatus;
-  aria_generated: boolean;
-  aria_prompt_used: string | null;
+  cara_generated: boolean;
+  cara_prompt_used: string | null;
   edited_by: string | null;
   edited_at: string | null;
   approved_by: string | null;
@@ -425,8 +425,8 @@ export async function createDraft(input: {
       linked_entity_type: input.linkedEntityType ?? null,
       linked_entity_id: input.linkedEntityId ?? null,
       recipient_context: input.recipientContext ?? null,
-      aria_generated: input.caraGenerated ?? false,
-      aria_prompt_used: input.caraPromptUsed ?? null,
+      cara_generated: input.caraGenerated ?? false,
+      cara_prompt_used: input.caraPromptUsed ?? null,
       status: "draft",
     })
     .select()
@@ -509,14 +509,14 @@ export async function getCommunicationStats(
   total: number;
   by_type: Record<string, number>;
   by_status: Record<string, number>;
-  aria_generated: number;
+  cara_generated: number;
   this_week: number;
 }>> {
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
 
   const { data, error } = await (s.from("cs_communication_drafts") as SB)
-    .select("communication_type, status, aria_generated, created_at")
+    .select("communication_type, status, cara_generated, created_at")
     .eq("home_id", homeId);
 
   if (error) return { ok: false, error: error.message };
@@ -537,7 +537,7 @@ export async function getCommunicationStats(
       total: all.length,
       by_type: byType,
       by_status: byStatus,
-      aria_generated: all.filter((d: any) => d.aria_generated).length,
+      cara_generated: all.filter((d: any) => d.cara_generated).length,
       this_week: all.filter((d: any) => d.created_at > weekAgo).length,
     },
   };

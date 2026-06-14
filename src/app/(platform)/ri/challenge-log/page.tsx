@@ -40,7 +40,7 @@ const CHALLENGE_EXPORT_COLS: ExportColumn<RiChallengeLog>[] = [
   { header: "Manager Response", accessor: (c) => c.manager_response ?? "" },
   { header: "Action Required", accessor: (c) => c.action_required ?? "" },
   { header: "Action Due", accessor: (c) => c.action_due_date ?? "" },
-  { header: "Cara Generated", accessor: (c) => c.aria_generated ? "Yes" : "No" },
+  { header: "Cara Generated", accessor: (c) => c.cara_generated ? "Yes" : "No" },
   { header: "Created", accessor: (c) => c.created_at },
 ];
 import {
@@ -112,7 +112,7 @@ function ChallengeCard({ log, onRespond }: { log: RiChallengeLog; onRespond: (lo
         description: `Identified from RI challenge log. ${log.evidence_summary ?? ""} ${log.action_required ? `Action required: ${log.action_required}` : ""}`.trim(),
         priority,
         status: "identified",
-        aria_evidence: `Escalated from RI Challenge Log entry dated ${formatDate(log.created_at)}. Level: ${log.escalation_level}. Area: ${log.challenge_area}.`,
+        cara_evidence: `Escalated from RI Challenge Log entry dated ${formatDate(log.created_at)}. Level: ${log.escalation_level}. Area: ${log.challenge_area}.`,
         created_by: currentUser?.id ?? "staff_darren",
       },
       { onSuccess: () => setNeedCreated(true) }
@@ -274,7 +274,7 @@ function NewChallengeDialog({ open, onClose }: { open: boolean; onClose: () => v
         escalation_level: escalation,
         action_required: actionRequired || undefined,
         status: "open",
-        aria_generated: false,
+        cara_generated: false,
         created_by: currentUser?.id ?? "staff_darren",
       },
       { onSuccess: () => { onClose(); setTitle(""); setEvidence(""); setChallenge(""); setActionRequired(""); } }

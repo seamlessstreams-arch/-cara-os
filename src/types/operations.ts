@@ -172,7 +172,7 @@ export type CsTaskCategory =
   | "compliance" | "safeguarding" | "medication" | "maintenance"
   | "staffing" | "training" | "supervision" | "young_person_plans"
   | "professional_communication" | "finance" | "inspection"
-  | "health_and_safety" | "admin" | "aria_generated";
+  | "health_and_safety" | "admin" | "cara_generated";
 
 export type CsTaskPriority = "low" | "medium" | "high" | "urgent" | "critical";
 
@@ -213,10 +213,10 @@ export interface CsTask {
   escalated_at: string | null;
   escalation_reason: string | null;
   escalation_level: number;
-  aria_risk_score: number | null;
-  aria_risk_factors: Record<string, unknown> | null;
-  aria_generated: boolean;
-  aria_source: string | null;
+  cara_risk_score: number | null;
+  cara_risk_factors: Record<string, unknown> | null;
+  cara_generated: boolean;
+  cara_source: string | null;
   linked_child_id: string | null;
   linked_incident_id: string | null;
   linked_document_id: string | null;
@@ -414,9 +414,9 @@ export interface CsManagementOversightNote {
     decisionClarity: number;
     actionSpecificity: number;
   } | null;
-  aria_prompted: boolean;
-  aria_prompt_used: string | null;
-  aria_suggestions: Record<string, unknown> | null;
+  cara_prompted: boolean;
+  cara_prompt_used: string | null;
+  cara_suggestions: Record<string, unknown> | null;
   actions_identified: string[];
   tasks_created: string[];
   oversight_by: string | null;

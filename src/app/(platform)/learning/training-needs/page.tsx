@@ -45,7 +45,7 @@ const TRAINING_NEED_EXPORT_COLS: ExportColumn<TrainingNeed>[] = [
   { header: "Description", accessor: (n) => n.description },
   { header: "Affected Roles", accessor: (n) => (n.affected_roles ?? []).join(", ") },
   { header: "Deadline", accessor: (n) => n.deadline ?? "" },
-  { header: "Cara Evidence", accessor: (n) => n.aria_evidence ?? "" },
+  { header: "Cara Evidence", accessor: (n) => n.cara_evidence ?? "" },
   { header: "Created", accessor: (n) => n.created_at },
 ];
 
@@ -126,10 +126,10 @@ function NeedCard({ need, onSendToStudio }: { need: TrainingNeed; onSendToStudio
         {expanded && (
           <div className="mt-3 pt-3 border-t border-[var(--cs-border-subtle)] space-y-3">
             <p className="text-sm text-[var(--cs-text-secondary)] leading-relaxed">{need.description}</p>
-            {need.aria_evidence && (
+            {need.cara_evidence && (
               <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
                 <p className="text-[10px] font-semibold text-[var(--cs-cara-gold)] mb-1 uppercase tracking-wide">Cara Evidence</p>
-                <p className="text-xs text-[var(--cs-navy)] leading-relaxed">{need.aria_evidence}</p>
+                <p className="text-xs text-[var(--cs-navy)] leading-relaxed">{need.cara_evidence}</p>
               </div>
             )}
             {need.affected_roles?.length ? (
@@ -261,7 +261,7 @@ function SendToStudioDialog({ need, onClose }: { need: TrainingNeed; onClose: ()
         pathway:       pathway as "staff" | "child" | "mixed",
         content,
         status:        "draft",
-        aria_generated: true,
+        cara_generated: true,
         created_by:    currentUser?.id ?? "staff_darren",
       });
 
@@ -549,7 +549,7 @@ type DetectedNeed = {
   description: string;
   priority: TrainingNeedPriority;
   need_type: string;
-  aria_evidence: string;
+  cara_evidence: string;
   identified_by: TrainingNeedIdentifiedBy;
 };
 
@@ -596,7 +596,7 @@ function CaraAutoDetect({
               : "No existing training needs on record.",
             "Identify 3–5 specific training needs that are most likely based on typical residential care risks.",
             "Focus on safeguarding, de-escalation, recording quality, medication, contextual safeguarding, MCA, and PACE.",
-            "For each need: provide a clear title, description, priority (urgent/high/medium/low), need_type, and aria_evidence explaining why this need was identified.",
+            "For each need: provide a clear title, description, priority (urgent/high/medium/low), need_type, and cara_evidence explaining why this need was identified.",
           ].join(" "),
           page_context: "Training Needs — Cara Auto-Detect",
           record_type: "training_need",
@@ -623,7 +623,7 @@ function CaraAutoDetect({
         description: need.description,
         priority: need.priority ?? "medium",
         status: "identified",
-        aria_evidence: need.aria_evidence,
+        cara_evidence: need.cara_evidence,
         created_by: currentUser?.id ?? "staff_darren",
       });
       setAdded((prev) => new Set(prev).add(index));
@@ -711,9 +711,9 @@ function CaraAutoDetect({
                       </Badge>
                     </div>
                     <p className="text-xs text-[var(--cs-text-secondary)] mt-1 leading-relaxed">{need.description}</p>
-                    {need.aria_evidence && (
+                    {need.cara_evidence && (
                       <p className="text-[10px] text-[var(--cs-cara-gold)] mt-1.5 italic leading-relaxed">
-                        Cara: {need.aria_evidence}
+                        Cara: {need.cara_evidence}
                       </p>
                     )}
                   </div>
@@ -779,7 +779,7 @@ export default function TrainingNeedsPage() {
           n.priority,
           n.identified_by,
           n.status,
-          n.aria_evidence || "",
+          n.cara_evidence || "",
         ].join(" ").toLowerCase();
         return hay.includes(q);
       });

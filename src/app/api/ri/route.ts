@@ -244,7 +244,7 @@ function getDemoInputs(): RiScoreInputs {
         id: "chal-demo-1", home_id: "oak-house", title: "Staffing levels at weekends",
         challenge_area: "staffing", evidence_summary: "Weekend cover frequently requires agency staff",
         challenge_text: "What steps are being taken to reduce reliance on agency cover at weekends?",
-        escalation_level: "standard", status: "open", aria_generated: true,
+        escalation_level: "standard", status: "open", cara_generated: true,
         created_by: "system", created_at: threeDaysAgo, updated_at: threeDaysAgo,
       },
       {
@@ -256,7 +256,7 @@ function getDemoInputs(): RiScoreInputs {
         manager_responded_at: yesterday, manager_responded_by: "staff-sarah",
         status: "action_pending", action_required: "Monitor over next 2 weeks",
         action_due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-        aria_generated: true, created_by: "system", created_at: fiveDaysAgo, updated_at: yesterday,
+        cara_generated: true, created_by: "system", created_at: fiveDaysAgo, updated_at: yesterday,
       },
       {
         id: "chal-demo-3", home_id: "oak-house", title: "Daily log quality improvement",
@@ -266,7 +266,7 @@ function getDemoInputs(): RiScoreInputs {
         manager_response: "Template updated and training delivered to all staff",
         manager_responded_at: fiveDaysAgo, manager_responded_by: "staff-sarah",
         action_completed_at: threeDaysAgo,
-        status: "resolved", aria_generated: true,
+        status: "resolved", cara_generated: true,
         created_by: "system", created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
         updated_at: threeDaysAgo,
       },

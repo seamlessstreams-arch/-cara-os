@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     resources:       body.resources ?? [],
     child_voice:     body.child_voice,
     staff_reflection:body.staff_reflection,
-    aria_summary:    body.aria_summary,
+    cara_summary:    body.cara_summary,
     manager_oversight_id: body.manager_oversight_id,
     status:          (body.status as KeyWorkSessionStatus) ?? "planned",
     created_by:      body.created_by ?? "staff_darren",

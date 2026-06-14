@@ -36,7 +36,7 @@ export interface InboxItem {
   staff_id?: string;
   required_action: string;
   approval_level?: CornerstoneApprovalLevel;
-  aria_suggested_response: string | null;
+  cara_suggested_response: string | null;
   evidence_categories: string[];
   occurred_at: string;
   deadline: string;          // ISO date
@@ -144,7 +144,7 @@ function toItem(e: CornerstoneEvent, today: string): InboxItem | null {
     staff_id: e.staffId,
     required_action,
     approval_level: e.approvalLevel,
-    aria_suggested_response: e.caraAnalysis?.suggestedActions?.[0] ?? null,
+    cara_suggested_response: e.caraAnalysis?.suggestedActions?.[0] ?? null,
     evidence_categories: e.evidenceCategories ?? [],
     occurred_at: e.occurredAt,
     deadline,

@@ -122,7 +122,7 @@ function ShiftRow({ shift }: { shift: Shift }) {
       <Badge className={cn("text-[10px] rounded-full border ml-auto shrink-0", sc.colour)}>
         {sc.label}
       </Badge>
-      <CaraUsageBadge caraAssisted={(shift as any).aria_assist_used} sourceTable="timesheets" recordId={shift.id} />
+      <CaraUsageBadge caraAssisted={(shift as any).cara_assist_used} sourceTable="timesheets" recordId={shift.id} />
 
       {/* Notes */}
       {shift.notes && (

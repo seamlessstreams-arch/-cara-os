@@ -78,12 +78,12 @@ function rowToCareEvent(row: Record<string, any>): CareEvent {
     amended_by: row.amended_by ?? null,
     amended_at: row.amended_at ?? null,
     is_current_version: row.is_current_version ?? true,
-    aria_suggested_summary: row.aria_suggested_summary ?? null,
-    aria_suggested_category: row.aria_suggested_category ?? null,
-    aria_suggested_routing: row.aria_suggested_routes ?? null,
-    aria_suggested_reg45: null,
-    aria_suggested_annex_a: null,
-    aria_suggestions_reviewed: false,
+    cara_suggested_summary: row.cara_suggested_summary ?? null,
+    cara_suggested_category: row.cara_suggested_category ?? null,
+    cara_suggested_routing: row.cara_suggested_routes ?? null,
+    cara_suggested_reg45: null,
+    cara_suggested_annex_a: null,
+    cara_suggestions_reviewed: false,
     routing_summary: row.routing_summary ?? null,
     created_at: row.created_at,
     updated_at: row.updated_at,
@@ -124,9 +124,9 @@ function careEventToRow(data: Partial<CareEvent>): Record<string, any> {
   if (data.manager_review_note !== undefined) row.manager_review_notes = data.manager_review_note;
   if (data.manager_review_at !== undefined) row.manager_review_at = data.manager_review_at;
   if (data.routing_summary !== undefined) row.routing_summary = data.routing_summary as unknown;
-  if (data.aria_suggested_summary !== undefined) row.aria_suggested_summary = data.aria_suggested_summary;
-  if (data.aria_suggested_category !== undefined) row.aria_suggested_category = data.aria_suggested_category;
-  if (data.aria_suggested_routing !== undefined) row.aria_suggested_routes = data.aria_suggested_routing as unknown;
+  if (data.cara_suggested_summary !== undefined) row.cara_suggested_summary = data.cara_suggested_summary;
+  if (data.cara_suggested_category !== undefined) row.cara_suggested_category = data.cara_suggested_category;
+  if (data.cara_suggested_routing !== undefined) row.cara_suggested_routes = data.cara_suggested_routing as unknown;
   return row;
 }
 
@@ -248,9 +248,9 @@ export const sbCareEvents = {
       verified_by: data.verified_by ?? null,
       locked_at: data.locked_at ?? null,
       locked_by: data.locked_by ?? null,
-      aria_suggested_summary: data.aria_suggested_summary ?? null,
-      aria_suggested_category: data.aria_suggested_category ?? null,
-      aria_suggested_routes: data.aria_suggested_routing ?? null,
+      cara_suggested_summary: data.cara_suggested_summary ?? null,
+      cara_suggested_category: data.cara_suggested_category ?? null,
+      cara_suggested_routes: data.cara_suggested_routing ?? null,
       routing_summary: data.routing_summary ?? null,
       created_at: now,
       updated_at: now,

@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    let query = (sb.from("aria_studio_generations") as SB)
+    let query = (sb.from("cara_studio_generations") as SB)
       .select("id, organisation_id, home_id, child_id, generation_type, title, brief, tone, audience, status, output_json, safety_json, model, created_by, created_at, approved_by, approved_at, committed_by, committed_at, updated_at", { count: "exact" })
       .eq("home_id", homeId)
       .order("created_at", { ascending: false });

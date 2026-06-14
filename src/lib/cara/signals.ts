@@ -82,7 +82,7 @@ export async function generateRiskSignals(input: {
 
   if (!signals.length) return { created: 0 };
 
-  const { error } = await (sb.from("aria_intelligence_signals") as SB).insert(signals);
+  const { error } = await (sb.from("cara_intelligence_signals") as SB).insert(signals);
   if (error) throw new Error(error.message);
 
   return { created: signals.length };

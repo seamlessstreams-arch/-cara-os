@@ -56,7 +56,7 @@ export function CaraCommandCentre({
       homeId,
       childId,
       roleMode,
-      featureKey: "aria_command_centre",
+      featureKey: "cara_command_centre",
       userQuestion: question,
       strictEvidenceMode: true,
       includeTherapeuticLens: true,

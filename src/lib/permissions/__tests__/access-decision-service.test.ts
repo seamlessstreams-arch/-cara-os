@@ -669,7 +669,7 @@ describe("Sensitivity enforcement", () => {
     const rsw = makeUser();
     const result = checkAccess({
       user: rsw,
-      resourceType: "aria_intelligence",
+      resourceType: "cara_intelligence",
       action: "view",
       resourceHomeId: "home_1",
       resourceSensitivity: "restricted",

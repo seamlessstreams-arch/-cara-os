@@ -44,7 +44,7 @@ export const AUDIT_ENTITY_TYPES = {
   ROLE_ASSIGNMENT:     "role_assignment",
   PERMISSION:          "permission_change",
   SYSTEM_SETTING:      "system_setting",
-  CARA_RECOMMENDATION: "aria_recommendation",
+  CARA_RECOMMENDATION: "cara_recommendation",
   INSPECTION_SCAN:     "inspection_scan",
   EXPORT:              "data_export",
   SESSION:             "user_session",

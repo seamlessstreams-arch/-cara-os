@@ -245,7 +245,7 @@ export interface HandoverEntry {
   general_notes: string;
   flags: string[];
   linked_incident_ids: string[];
-  aria_assist_used?: boolean;
+  cara_assist_used?: boolean;
   created_at: string;
 }
 
@@ -273,7 +273,7 @@ export interface TimeSavedEntry {
   id: string;
   home_id: string;
   staff_id: string;
-  action_type: "auto_fill" | "linked_record" | "aria_draft" | "auto_task" | "auto_handover" | "one_click_summary" | "avoided_duplicate";
+  action_type: "auto_fill" | "linked_record" | "cara_draft" | "auto_task" | "auto_handover" | "one_click_summary" | "avoided_duplicate";
   minutes_saved: number;
   description: string;
   created_at: string;
@@ -591,7 +591,7 @@ export interface DocumentIntelligenceJob {
   placed_at: string | null;
   placement_ref_type: string | null;
   placement_ref_id: string | null;
-  aria_notes: string | null;
+  cara_notes: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -726,13 +726,13 @@ export interface KeyWorkSession {
   resources: string[];
   child_voice?: string;
   staff_reflection?: string;
-  aria_summary?: string;
+  cara_summary?: string;
   manager_oversight_id?: string;
   status: KeyWorkSessionStatus;
   created_by: string;
   completed_by?: string;
   reviewed_by?: string;
-  aria_assist_used?: boolean;
+  cara_assist_used?: boolean;
   created_at: string;
   completed_at?: string;
   reviewed_at?: string;
@@ -800,7 +800,7 @@ export interface InteractiveSession {
   responses: InteractiveSessionResponse[];
   child_voice?: string;
   staff_notes?: string;
-  aria_summary?: string;
+  cara_summary?: string;
   safeguarding_flags: string[];
   follow_up_actions: string[];
   status: InteractiveSessionStatus;
@@ -809,7 +809,7 @@ export interface InteractiveSession {
   completed_at?: string;
 }
 
-export type AuditActionType = "aria_assessment_created" | "aria_assessment_reviewed" | "aria_assessment_approved" | "aria_oversight_generated" | "aria_oversight_approved" | "keywork_session_created" | "keywork_session_completed" | "keywork_session_reviewed" | "child_resource_created" | "child_resource_approved" | "interactive_session_completed" | "safeguarding_flag_raised" | "safeguarding_flag_reviewed" | "recommendation_created" | "recommendation_actioned" | "ai_prompt_sent" | "ai_response_received" | "human_edit_made" | "record_approved" | "incident_started" | "incident_ended" | "timeline_entry_added" | "manager_notified" | "ai_record_rewrite_generated" | "ai_suggestion_accepted" | "ai_suggestion_rejected" | "manager_review_completed" | "alert_resolved";
+export type AuditActionType = "cara_assessment_created" | "cara_assessment_reviewed" | "cara_assessment_approved" | "cara_oversight_generated" | "cara_oversight_approved" | "keywork_session_created" | "keywork_session_completed" | "keywork_session_reviewed" | "child_resource_created" | "child_resource_approved" | "interactive_session_completed" | "safeguarding_flag_raised" | "safeguarding_flag_reviewed" | "recommendation_created" | "recommendation_actioned" | "ai_prompt_sent" | "ai_response_received" | "human_edit_made" | "record_approved" | "incident_started" | "incident_ended" | "timeline_entry_added" | "manager_notified" | "ai_record_rewrite_generated" | "ai_suggestion_accepted" | "ai_suggestion_rejected" | "manager_review_completed" | "alert_resolved";
 
 export interface CaraAuditEntry {
   id: string;
@@ -909,7 +909,7 @@ export interface RiChallengeLog {
   status: RiChallengeStatus;
   linked_record_type?: string;
   linked_record_id?: string;
-  aria_generated: boolean;
+  cara_generated: boolean;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -943,13 +943,13 @@ export interface RiReg45Evidence {
   period_start: string;
   period_end: string;
   evidence_items: Record<string, unknown>[];
-  aria_strengths?: string;
-  aria_weaknesses?: string;
-  aria_improvement_areas?: string;
-  aria_child_impact?: string;
-  aria_action_plan?: string;
-  aria_ri_statement?: string;
-  aria_generated_at?: string;
+  cara_strengths?: string;
+  cara_weaknesses?: string;
+  cara_improvement_areas?: string;
+  cara_child_impact?: string;
+  cara_action_plan?: string;
+  cara_ri_statement?: string;
+  cara_generated_at?: string;
   status: RiReg45Status;
   submitted_to_ofsted: boolean;
   submitted_at?: string;
@@ -1070,7 +1070,7 @@ export interface CarePlan {
   // Summary
   strengths_summary: string | null;
   concerns_summary: string | null;
-  aria_overview: string | null;
+  cara_overview: string | null;
   created_at: string;
   updated_at: string;
   created_by: string;
@@ -1142,7 +1142,7 @@ export interface Complaint {
   // Flags
   includes_safeguarding_element: boolean;
   linked_incident_id: string | null;
-  aria_summary: string | null;
+  cara_summary: string | null;
   created_at: string;
   updated_at: string;
   created_by: string;
@@ -1218,7 +1218,7 @@ export interface PIDebrief {
   rm_sign_off_date: string | null;
   rm_sign_off_by: string | null;
   rm_comments: string | null;
-  aria_analysis: string | null;
+  cara_analysis: string | null;
   created_at: string;
   updated_at: string;
   created_by: string;
@@ -1332,7 +1332,7 @@ export interface ContactLog {
   photos_shared: boolean;
   gifts_received: boolean;
   gifts_detail: string | null;
-  aria_analysis: string | null;
+  cara_analysis: string | null;
   created_at: string;
   updated_at: string;
   created_by: string;
@@ -1386,7 +1386,7 @@ export interface Reg44Visit {
   ri_review_date: string | null;
   ri_review_by: string | null;
   ri_comments: string | null;
-  aria_summary: string | null;
+  cara_summary: string | null;
   created_at: string;
   created_by: string;
   updated_at: string;
@@ -1476,7 +1476,7 @@ export interface GeneratedResource {
   approved_at?: string;
   assigned_to?: string[];
   tags?: string[];
-  aria_generated: boolean;
+  cara_generated: boolean;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -1502,7 +1502,7 @@ export interface TrainingNeed {
   linked_learning_project_id?: string;
   linked_incident_id?: string;
   linked_audit_id?: string;
-  aria_evidence?: string;
+  cara_evidence?: string;
   deadline?: string;
   completed_at?: string;
   created_by: string;
@@ -1578,8 +1578,8 @@ export interface LiversAnalysis {
   sustainability_independence_safety?: string;
   sustainability_rating?: LiversSustainabilityRating;
   // Cara output
-  aria_summary?: string;
-  aria_confidence?: LiversConfidence;
+  cara_summary?: string;
+  cara_confidence?: LiversConfidence;
   recommended_intervention_type?: string;
   escalation_required?: boolean;
   escalation_actions?: string[];
@@ -1832,7 +1832,7 @@ export interface StaffCompetencyProfile {
   domain_scores: CompetencyScore[];
   strengths: string[];
   development_areas: string[];
-  aria_narrative?: string;
+  cara_narrative?: string;
   last_assessed_at?: string;
   next_review_date?: string;
   created_at: string;
@@ -1862,8 +1862,8 @@ export interface DevelopmentPlan {
   from_stage: PathwayStage;
   to_stage: PathwayStage;
   status: DevelopmentPlanStatus;
-  aria_generated: boolean;
-  aria_rationale?: string;
+  cara_generated: boolean;
+  cara_rationale?: string;
   actions: DevelopmentPlanAction[];
   review_notes?: string;
   reviewed_by?: string;
@@ -1896,7 +1896,7 @@ export interface PracticeObservation {
   staff_response?: string;
   signed_off_by_staff: boolean;
   signed_off_at?: string;
-  aria_summary?: string;
+  cara_summary?: string;
   created_at: string;
   updated_at: string;
 }
@@ -1918,7 +1918,7 @@ export interface CareerReadinessReport {
     notes?: string;
   }>;
   blocking_gaps: CompetencyDomain[];
-  aria_recommendation: string;
+  cara_recommendation: string;
   generated_by: "cara" | "manager";
   generated_at: string;
   reviewed_by?: string;
@@ -1946,7 +1946,7 @@ export interface SuccessionPlan {
   target_stage: PathwayStage;
   urgency: SuccessionUrgency;
   candidates: SuccessionCandidate[];
-  aria_narrative?: string;
+  cara_narrative?: string;
   approved_by?: string;
   approved_at?: string;
   review_date?: string;
@@ -1975,7 +1975,7 @@ export interface AppraisalRecord {
   areas_for_improvement?: string;
   objectives_next_period?: string;
   linked_development_plan_id?: string;
-  aria_insights?: string;
+  cara_insights?: string;
   staff_comments?: string;
   signed_by_staff: boolean;
   signed_at?: string;

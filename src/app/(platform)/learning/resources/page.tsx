@@ -249,7 +249,7 @@ export default function ResourceGeneratorPage() {
         pathway,
         content: result,
         status: "draft",
-        aria_generated: true,
+        cara_generated: true,
         created_by: currentUser?.id ?? "staff_darren",
         tags: [pathway, readingLevel],
       });

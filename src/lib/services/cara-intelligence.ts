@@ -36,7 +36,7 @@ export async function listRecommendations(
   const s = sb();
   if (!s) return { ok: true, data: [] };
 
-  let q = (s.from("cs_aria_recommendations") as SB).select("*").eq("home_id", homeId);
+  let q = (s.from("cs_cara_recommendations") as SB).select("*").eq("home_id", homeId);
   if (opts?.type) q = q.eq("recommendation_type", opts.type);
   if (opts?.severity) q = q.eq("severity", opts.severity);
   if (opts?.status) q = q.eq("status", opts.status);
@@ -56,7 +56,7 @@ export async function acknowledgeRecommendation(
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
 
-  const { data, error } = await (s.from("cs_aria_recommendations") as SB)
+  const { data, error } = await (s.from("cs_cara_recommendations") as SB)
     .update({
       status: "acknowledged",
       acknowledged_by: userId,
@@ -78,7 +78,7 @@ export async function actionRecommendation(
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
 
-  const { data, error } = await (s.from("cs_aria_recommendations") as SB)
+  const { data, error } = await (s.from("cs_cara_recommendations") as SB)
     .update({
       status: "actioned",
       action_taken: actionTaken,
@@ -101,7 +101,7 @@ export async function dismissRecommendation(
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
 
-  const { data, error } = await (s.from("cs_aria_recommendations") as SB)
+  const { data, error } = await (s.from("cs_cara_recommendations") as SB)
     .update({
       status: "dismissed",
       dismissed_reason: reason,
@@ -565,7 +565,7 @@ export async function storeRecommendations(
     expires_at: new Date(Date.now() + 7 * 86400000).toISOString(), // 7 days
   }));
 
-  const { data, error } = await (s.from("cs_aria_recommendations") as SB)
+  const { data, error } = await (s.from("cs_cara_recommendations") as SB)
     .insert(inserts)
     .select();
   if (error) return { ok: false, error: error.message };
@@ -586,7 +586,7 @@ export async function getRecommendationStats(
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
 
-  const { data, error } = await (s.from("cs_aria_recommendations") as SB)
+  const { data, error } = await (s.from("cs_cara_recommendations") as SB)
     .select("status, severity, recommendation_type, action_at, acknowledged_at")
     .eq("home_id", homeId);
 

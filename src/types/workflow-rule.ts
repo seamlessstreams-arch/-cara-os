@@ -16,7 +16,7 @@ export type WorkflowActionType =
   | "create_debrief_task"
   | "suggest_keywork"
   | "add_evidence"
-  | "generate_aria_summary"
+  | "generate_cara_summary"
   | "update_trend"
   | "create_notification_draft";
 

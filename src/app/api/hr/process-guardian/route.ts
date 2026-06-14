@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     suggested_safer_wording: review.suggestedSaferWording ?? null,
     suggested_actions: review.suggestedActions,
     regulatory_links: review.regulatoryLinks,
-    aria_confidence: review.caraConfidence,
+    cara_confidence: review.caraConfidence,
     llm_used: review.llmUsed,
     engine_version: review.engineVersion,
     generated_at: review.generatedAt,

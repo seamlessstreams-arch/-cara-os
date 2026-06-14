@@ -232,8 +232,8 @@ export default function LeadershipReadinessPage() {
                               {profile.overall_readiness_score}%
                             </span>
                           </div>
-                          {profile.aria_narrative && (
-                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">{profile.aria_narrative}</p>
+                          {profile.cara_narrative && (
+                            <p className="text-xs text-slate-600 leading-relaxed line-clamp-2">{profile.cara_narrative}</p>
                           )}
                         </div>
                         <Link href={`/workforce/staff/${profile.staff_id}`}>

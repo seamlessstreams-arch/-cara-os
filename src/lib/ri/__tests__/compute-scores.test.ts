@@ -149,7 +149,7 @@ function makeChallenge(overrides: Partial<RiChallengeLog> = {}): RiChallengeLog 
     challenge_text: "Challenge text",
     escalation_level: "standard",
     status: "resolved",
-    aria_generated: false,
+    cara_generated: false,
     created_by: "sys",
     created_at: "2026-01-01T00:00:00Z",
     updated_at: "2026-01-01T00:00:00Z",

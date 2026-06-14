@@ -6,7 +6,7 @@ import type { TimeSavedSummary } from "@/types/extended";
 const BASELINE_MINUTES: Record<string, number> = {
   auto_fill: 5,
   linked_record: 4,
-  aria_draft: 15,
+  cara_draft: 15,
   auto_task: 5,
   auto_handover: 10,
   one_click_summary: 8,

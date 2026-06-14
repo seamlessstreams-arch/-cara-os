@@ -971,7 +971,7 @@ const store = {
       assigned_to: "staff_darren", investigation_notes: "Reflective discussion held; no further conduct concern.",
       lessons_learned: "Reflective session held; communication approach reviewed.", learning_shared: true,
       escalated_to_stage2_at: null, escalated_reason: null, ombudsman_reference: null, timeline: [],
-      includes_safeguarding_element: false, linked_incident_id: null, aria_summary: null,
+      includes_safeguarding_element: false, linked_incident_id: null, cara_summary: null,
       created_at: daysFromNow(-52), updated_at: daysFromNow(-45), created_by: "staff_edward",
     },
     {
@@ -985,7 +985,7 @@ const store = {
       assigned_to: "staff_darren", investigation_notes: "Reviewed last three interventions with the team.",
       lessons_learned: "Behaviour support plan and de-escalation strategies revisited with Alex.", learning_shared: true,
       escalated_to_stage2_at: null, escalated_reason: null, ombudsman_reference: null, timeline: [],
-      includes_safeguarding_element: false, linked_incident_id: null, aria_summary: null,
+      includes_safeguarding_element: false, linked_incident_id: null, cara_summary: null,
       created_at: daysFromNow(-45), updated_at: daysFromNow(-36), created_by: "staff_anna",
     },
     {
@@ -999,7 +999,7 @@ const store = {
       assigned_to: "staff_darren", investigation_notes: "Stage 2 review underway with the placing authority.",
       lessons_learned: null, learning_shared: false,
       escalated_to_stage2_at: daysFromNow(-30), escalated_reason: "Advocate not satisfied that Alex's safety concerns were acted on at stage 1.", ombudsman_reference: null, timeline: [],
-      includes_safeguarding_element: true, linked_incident_id: null, aria_summary: null,
+      includes_safeguarding_element: true, linked_incident_id: null, cara_summary: null,
       created_at: daysFromNow(-38), updated_at: daysFromNow(-30), created_by: "staff_darren",
     },
     {
@@ -1013,7 +1013,7 @@ const store = {
       assigned_to: "staff_edward", investigation_notes: "Debrief with Alex scheduled.",
       lessons_learned: null, learning_shared: false,
       escalated_to_stage2_at: null, escalated_reason: null, ombudsman_reference: null, timeline: [],
-      includes_safeguarding_element: false, linked_incident_id: "inc_007", aria_summary: null,
+      includes_safeguarding_element: false, linked_incident_id: "inc_007", cara_summary: null,
       created_at: daysFromNow(-5), updated_at: daysFromNow(-4), created_by: "staff_edward",
     },
     {
@@ -1027,7 +1027,7 @@ const store = {
       assigned_to: "staff_ryan", investigation_notes: "Rota and contact scheduling reviewed.",
       lessons_learned: "Family contact now logged in a protected contact diary.", learning_shared: true,
       escalated_to_stage2_at: null, escalated_reason: null, ombudsman_reference: null, timeline: [],
-      includes_safeguarding_element: false, linked_incident_id: null, aria_summary: null,
+      includes_safeguarding_element: false, linked_incident_id: null, cara_summary: null,
       created_at: daysFromNow(-40), updated_at: daysFromNow(-32), created_by: "staff_ryan",
     },
     {
@@ -1041,7 +1041,7 @@ const store = {
       assigned_to: "staff_chervelle", investigation_notes: "Discussed and resolved at house meeting.",
       lessons_learned: "Protected quiet study time introduced.", learning_shared: true,
       escalated_to_stage2_at: null, escalated_reason: null, ombudsman_reference: null, timeline: [],
-      includes_safeguarding_element: false, linked_incident_id: "inc_003", aria_summary: null,
+      includes_safeguarding_element: false, linked_incident_id: "inc_003", cara_summary: null,
       created_at: daysFromNow(-14), updated_at: daysFromNow(-6), created_by: "staff_chervelle",
     },
     {
@@ -1055,7 +1055,7 @@ const store = {
       assigned_to: "staff_chervelle", investigation_notes: "Key-working session arranged to hear Casey's views.",
       lessons_learned: null, learning_shared: false,
       escalated_to_stage2_at: null, escalated_reason: null, ombudsman_reference: null, timeline: [],
-      includes_safeguarding_element: false, linked_incident_id: null, aria_summary: null,
+      includes_safeguarding_element: false, linked_incident_id: null, cara_summary: null,
       created_at: daysFromNow(-6), updated_at: daysFromNow(-5), created_by: "staff_diane",
     },
     {
@@ -1069,7 +1069,7 @@ const store = {
       assigned_to: "staff_ryan", investigation_notes: "Reviewed communication records with school.",
       lessons_learned: "Shared a single point of contact for school communication.", learning_shared: true,
       escalated_to_stage2_at: null, escalated_reason: null, ombudsman_reference: null, timeline: [],
-      includes_safeguarding_element: false, linked_incident_id: null, aria_summary: null,
+      includes_safeguarding_element: false, linked_incident_id: null, cara_summary: null,
       created_at: daysFromNow(-25), updated_at: daysFromNow(-16), created_by: "staff_ryan",
     },
   ] as Complaint[],
@@ -4493,7 +4493,7 @@ store.competencyProfiles = [
       "Formal leadership coaching to sustain RM role long-term",
       "Level 5 Diploma in Leadership for Health and Social Care (in progress)",
     ],
-    aria_narrative: "Olivia demonstrates outstanding strategic and operational leadership. His competency profile across all domains places him firmly at Registered Manager level. Cara identifies no blocking gaps for his current stage. Continued investment in formal qualification completion (Level 5) and reflective leadership practice is recommended.",
+    cara_narrative: "Olivia demonstrates outstanding strategic and operational leadership. His competency profile across all domains places him firmly at Registered Manager level. Cara identifies no blocking gaps for his current stage. Continued investment in formal qualification completion (Level 5) and reflective leadership practice is recommended.",
     last_assessed_at: "2026-03-15T10:00:00Z",
     next_review_date: "2026-09-15",
     created_at: NOW, updated_at: NOW,
@@ -4513,7 +4513,7 @@ store.competencyProfiles = [
       "Formal Level 5 Diploma (enrolled, 40% complete)",
       "Cara engagement — lower utilisation than expected at deputy level",
     ],
-    aria_narrative: "Marcus has a strong foundation at Deputy Manager level with a clear pathway to Registered Manager. His primary development gap is formal leadership qualification and strategic Cara use. Cara recommends a structured 12-month succession development plan targeting RM readiness by Q1 2027.",
+    cara_narrative: "Marcus has a strong foundation at Deputy Manager level with a clear pathway to Registered Manager. His primary development gap is formal leadership qualification and strategic Cara use. Cara recommends a structured 12-month succession development plan targeting RM readiness by Q1 2027.",
     last_assessed_at: "2026-03-15T10:00:00Z",
     next_review_date: "2026-09-15",
     created_at: NOW, updated_at: NOW,
@@ -4533,7 +4533,7 @@ store.competencyProfiles = [
       "Leadership foundations — ready to begin senior RSW responsibilities",
       "Level 3 Diploma (first unit completed — ongoing)",
     ],
-    aria_narrative: "Daniel is performing above the standard RSW benchmark, particularly in trauma-informed practice. Cara identifies him as a strong candidate for Senior RSW promotion within 6 months pending risk assessment upskill and Level 3 progress.",
+    cara_narrative: "Daniel is performing above the standard RSW benchmark, particularly in trauma-informed practice. Cara identifies him as a strong candidate for Senior RSW promotion within 6 months pending risk assessment upskill and Level 3 progress.",
     last_assessed_at: "2026-02-20T09:00:00Z",
     next_review_date: "2026-08-20",
     created_at: NOW, updated_at: NOW,
@@ -4553,7 +4553,7 @@ store.competencyProfiles = [
       "Statutory compliance — occasional gaps in recording timeliness",
       "Level 3 Diploma (in progress, 60% complete)",
     ],
-    aria_narrative: "Samuel demonstrates strong practice and cultural intelligence. His EDI competence is a model for the team. Cara recommends structured leadership exposure (buddy supervision, co-leading team meetings) as preparation for Team Leader candidacy within 9 months.",
+    cara_narrative: "Samuel demonstrates strong practice and cultural intelligence. His EDI competence is a model for the team. Cara recommends structured leadership exposure (buddy supervision, co-leading team meetings) as preparation for Team Leader candidacy within 9 months.",
     last_assessed_at: "2026-02-20T09:00:00Z",
     next_review_date: "2026-08-20",
     created_at: NOW, updated_at: NOW,
@@ -4572,7 +4572,7 @@ store.competencyProfiles = [
       "Communication — verbal confidence in multi-agency meetings",
       "Level 3 Diploma (not yet started)",
     ],
-    aria_narrative: "Priya is a reliable and conscientious RSW. Cara identifies medication administration as a key strength. Priority development areas are trauma-informed practice training and enrolment on Level 3 Diploma to unlock progression pathway.",
+    cara_narrative: "Priya is a reliable and conscientious RSW. Cara identifies medication administration as a key strength. Priority development areas are trauma-informed practice training and enrolment on Level 3 Diploma to unlock progression pathway.",
     last_assessed_at: "2026-03-01T09:00:00Z",
     next_review_date: "2026-09-01",
     created_at: NOW, updated_at: NOW,
@@ -4584,8 +4584,8 @@ store.developmentPlans = [
     id: "devplan_ryan_rm", staff_id: "staff_ryan", home_id: "home_oak",
     title: "Marcus Bell — Registered Manager Readiness Plan",
     from_stage: "deputy_manager", to_stage: "registered_manager",
-    status: "active", aria_generated: true,
-    aria_rationale: "Cara analysis of Marcus's competency profile, supervision records, and practice observations indicates strong foundational capability with specific gaps in strategic leadership and regulatory governance. This plan targets RM readiness by Q1 2027.",
+    status: "active", cara_generated: true,
+    cara_rationale: "Cara analysis of Marcus's competency profile, supervision records, and practice observations indicates strong foundational capability with specific gaps in strategic leadership and regulatory governance. This plan targets RM readiness by Q1 2027.",
     actions: [
       { id: "dpa_r1", title: "Complete Level 5 Diploma in Leadership for Health and Social Care", description: "Complete remaining 60% of Level 5 Diploma. Target submission of final units by December 2026.", domain: "learning_and_professional_development", target_date: "2026-12-01", completed: false },
       { id: "dpa_r2", title: "Lead RI Challenge Log responses (x3)", description: "Take primary responsibility for drafting 3 responses to RI challenge log entries, supported by Olivia.", domain: "leadership_and_supervision", target_date: "2026-09-01", completed: false },
@@ -4599,8 +4599,8 @@ store.developmentPlans = [
     id: "devplan_edward_senior", staff_id: "staff_edward", home_id: "home_oak",
     title: "Daniel Frost — Senior RSW Development Plan",
     from_stage: "rsw", to_stage: "senior_rsw",
-    status: "active", aria_generated: true,
-    aria_rationale: "Cara assessment identifies Daniel as high-potential for Senior RSW promotion. His strengths in trauma-informed practice and communication are well above RSW benchmark. Risk assessment writing and early leadership exposure are the targeted development areas.",
+    status: "active", cara_generated: true,
+    cara_rationale: "Cara assessment identifies Daniel as high-potential for Senior RSW promotion. His strengths in trauma-informed practice and communication are well above RSW benchmark. Risk assessment writing and early leadership exposure are the targeted development areas.",
     actions: [
       { id: "dpa_e1", title: "Complete Level 3 Diploma Unit 2 — Safeguarding", description: "Submit Level 3 Diploma Unit 2 assessment by June 2026.", domain: "safeguarding_and_child_protection", target_date: "2026-06-30", completed: false },
       { id: "dpa_e2", title: "Complete 3 written risk assessments with supervision review", description: "Write 3 risk assessments for young people's plans under Olivia's supervision. Each to be reviewed and scored.", domain: "risk_management", target_date: "2026-07-01", completed: false },
@@ -4628,7 +4628,7 @@ store.practiceObservations = [
     ],
     linked_development_plan_id: "devplan_edward_senior",
     signed_off_by_staff: true, signed_off_at: "2026-04-11T09:00:00Z",
-    aria_summary: "Daniel's observed practice in this keywork session meets the standard expected at Senior RSW level. Cara recommends this observation is used as positive evidence in his promotion case.",
+    cara_summary: "Daniel's observed practice in this keywork session meets the standard expected at Senior RSW level. Cara recommends this observation is used as positive evidence in his promotion case.",
     created_at: NOW, updated_at: NOW,
   },
   {
@@ -4645,7 +4645,7 @@ store.practiceObservations = [
       { domain: "communication_and_recording", delta: 0 },
     ],
     signed_off_by_staff: true, signed_off_at: "2026-03-22T14:00:00Z",
-    aria_summary: "Samuel meets medication administration standards. The CD register timing issue is a minor procedural point, not a competency concern. Overall performance is solid.",
+    cara_summary: "Samuel meets medication administration standards. The CD register timing issue is a minor procedural point, not a competency concern. Overall performance is solid.",
     created_at: NOW, updated_at: NOW,
   },
 ];
@@ -4672,7 +4672,7 @@ store.appraisals = [
     areas_for_improvement: "Level 5 Diploma completion — 60% remaining. Cara strategic use needs to increase to monthly minimum.",
     objectives_next_period: "Complete Level 5 Diploma. Lead 3 RI Challenge Log responses. Take lead on Reg 45 evidence collation.",
     linked_development_plan_id: "devplan_ryan_rm",
-    aria_insights: "Marcus's appraisal scores are consistent with a high-performing Deputy Manager with strong RM potential. Cara recommends structured succession exposure in the next 12 months.",
+    cara_insights: "Marcus's appraisal scores are consistent with a high-performing Deputy Manager with strong RM potential. Cara recommends structured succession exposure in the next 12 months.",
     signed_by_staff: true, signed_at: "2026-03-17T10:00:00Z",
     next_review_date: "2027-03-15",
     created_at: NOW, updated_at: NOW,
@@ -4697,7 +4697,7 @@ store.appraisals = [
     areas_for_improvement: "Risk assessment writing — needs development. Level 3 Diploma to accelerate.",
     objectives_next_period: "Complete 3 supervised risk assessments. Submit Level 3 Unit 2 by June 2026.",
     linked_development_plan_id: "devplan_edward_senior",
-    aria_insights: "Daniel passed probation with commendation on therapeutic practice. Cara identifies Senior RSW readiness trajectory of 4-6 months with focused risk management development.",
+    cara_insights: "Daniel passed probation with commendation on therapeutic practice. Cara identifies Senior RSW readiness trajectory of 4-6 months with focused risk management development.",
     signed_by_staff: true, signed_at: "2026-03-03T09:00:00Z",
     next_review_date: "2026-09-01",
     created_at: NOW, updated_at: NOW,
@@ -4732,7 +4732,7 @@ store.appraisals = [
     key_achievements: "Outstanding therapeutic relationship with all three young people. Led a successful integration support plan for Casey. Demonstrated exceptional cultural sensitivity in family work.",
     areas_for_improvement: "Recording quality — needs to be more analytical. Leadership shadowing opportunities to be increased for Deputy readiness.",
     objectives_next_period: "Complete 4 shift lead shadowing sessions. Submit reflective piece on leadership. Achieve Level 3 Diploma Unit 3 by August 2026.",
-    aria_insights: "Samuel's EDI and therapeutic relationship scores are the highest in the team. Cara identifies Deputy Manager readiness potential within 6-9 months with structured leadership exposure.",
+    cara_insights: "Samuel's EDI and therapeutic relationship scores are the highest in the team. Cara identifies Deputy Manager readiness potential within 6-9 months with structured leadership exposure.",
     signed_by_staff: true, signed_at: "2026-02-22T11:00:00Z",
     next_review_date: "2027-02-20",
     created_at: NOW, updated_at: NOW,
@@ -4757,7 +4757,7 @@ store.appraisals = [
     key_achievements: "Led the Reg 45 evidence collation for Q4 2025 — resulting in the strongest submission in 2 years. Completed SEND specialist pathway qualification. Mentored two new RSWs.",
     areas_for_improvement: "Work–life balance monitoring — tendency to take on too many additional responsibilities. Delegate more to developing staff.",
     objectives_next_period: "Lead Reg 45 Q1 2026 submission. Complete coaching qualification module. Take 3 days' AL in next quarter (overdue).",
-    aria_insights: "Naomi is the strongest all-round practitioner in the team. Cara recommends she be the RI evidence quality lead for the next inspection cycle. Outstanding across all statutory compliance domains.",
+    cara_insights: "Naomi is the strongest all-round practitioner in the team. Cara recommends she be the RI evidence quality lead for the next inspection cycle. Outstanding across all statutory compliance domains.",
     signed_by_staff: true, signed_at: "2026-01-17T14:00:00Z",
     next_review_date: "2026-07-15",
     created_at: NOW, updated_at: NOW,
@@ -4815,7 +4815,7 @@ store.successionPlans = [
     candidates: [
       { staff_id: "staff_ryan", readiness_score: 74, ready_now: false, estimated_ready_date: "2027-03-01", development_plan_id: "devplan_ryan_rm", notes: "Primary succession candidate. On track with RM readiness plan." },
     ],
-    aria_narrative: "Chamberlain House has one clear succession candidate for the Registered Manager role: Marcus Bell. His current readiness score of 74/100 reflects strong operational performance with a Level 5 qualification gap as the primary blocking factor. Cara projects RM readiness by Q1 2027 subject to development plan milestones being met. No immediate risk to regulatory continuity — recommend activating succession plan review at 6-month mark.",
+    cara_narrative: "Chamberlain House has one clear succession candidate for the Registered Manager role: Marcus Bell. His current readiness score of 74/100 reflects strong operational performance with a Level 5 qualification gap as the primary blocking factor. Cara projects RM readiness by Q1 2027 subject to development plan milestones being met. No immediate risk to regulatory continuity — recommend activating succession plan review at 6-month mark.",
     review_date: "2026-10-01",
     created_by: "staff_darren", created_at: NOW, updated_at: NOW,
   },
@@ -4827,7 +4827,7 @@ store.successionPlans = [
       { staff_id: "staff_edward", readiness_score: 62, ready_now: false, estimated_ready_date: "2026-12-01", development_plan_id: "devplan_edward_senior", notes: "Strong TI practice. Risk management development needed before Deputy consideration." },
       { staff_id: "staff_lackson", readiness_score: 68, ready_now: false, estimated_ready_date: "2026-11-01", notes: "EDI and therapeutic relationship strengths. Leadership exposure programme to be activated." },
     ],
-    aria_narrative: "Two viable internal candidates exist for Deputy Manager succession: Daniel Frost and Samuel Boateng. Samuel holds a marginally higher readiness score. Both require 6-9 months of structured development. Cara recommends running both on parallel leadership development tracks and conducting a formal comparison at Q3 2026.",
+    cara_narrative: "Two viable internal candidates exist for Deputy Manager succession: Daniel Frost and Samuel Boateng. Samuel holds a marginally higher readiness score. Both require 6-9 months of structured development. Cara recommends running both on parallel leadership development tracks and conducting a formal comparison at Q3 2026.",
     review_date: "2026-07-01",
     created_by: "staff_darren", created_at: NOW, updated_at: NOW,
   },
@@ -6652,7 +6652,7 @@ store.sleepLog = [
 ] as SleepLogEntry[];
 
 // ── Additional Daily Log entries (Reg 36 — Recording quality) ───────────────
-const dlBase = { home_id: "home_oak", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), created_by: "staff_darren", updated_by: "staff_darren", aria_assist_used: false };
+const dlBase = { home_id: "home_oak", created_at: new Date().toISOString(), updated_at: new Date().toISOString(), created_by: "staff_darren", updated_by: "staff_darren", cara_assist_used: false };
 const additionalDailyLogs: DailyLogEntry[] = [
   // Day -2
   { ...dlBase, id: "log_101", child_id: "yp_alex", date: daysFromNow(-2), time: "08:45", entry_type: "general" as const, content: "Alex had a relaxed morning. Good engagement at breakfast. Discussed plans for the day — wants to practice guitar.", mood_score: 7, staff_id: "staff_ryan", linked_incident_id: null, is_significant: false },
@@ -6705,14 +6705,14 @@ store.caraPracticeFlags = [
   { id: "apf_seed_11", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: null, flag_type: "nrm_consideration", severity: "high", title: "Consider a National Referral Mechanism (NRM) referral", description: "Possible modern-slavery / trafficking indicators (criminal exploitation, debt). A child who is exploited is a victim, not an offender (Section 45 may apply). No consent is needed to refer a child. The manager / DSL should consider whether an NRM referral is required, alongside the usual safeguarding referrals.", evidence: "county line; owes a debt", recommended_action: "Manager / DSL to consider an NRM referral for suspected modern slavery or trafficking — Cara advises, the manager decides. Recognise the child as a victim and guard against adultification bias.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
 ];
 store.caraThresholdConsultations = [
-  { id: "atc_seed_1", tenant_id: null, child_id: "yp_jordan", concern_type: "safeguarding", source_type: "safeguarding_concern", source_id: null, child_lived_experience: "Jordan describes feeling unsafe and unheard at home.", evidence_and_harm_analysis: "Disclosure of harm; corroborating low mood recorded over two weeks.", family_functioning_parental_capacity: "Manager to complete — parental capacity assessment outstanding.", threshold_and_escalation_analysis: "Concern may meet threshold; structured consultation required.", decision_rationale: "Manager to complete — Cara does not make the statutory decision.", recommended_next_step: "Complete a threshold consultation and consider a strategy discussion.", reasonable_cause_to_suspect_significant_harm: null, strategy_discussion_recommended: true, lado_consultation_recommended: false, emergency_action_recommended: false, aria_summary: "Possible safeguarding threshold concern — manager review advised.", manager_decision: null, manager_rationale: null, created_by: "staff_darren", created_at: caraPracticeSeedAt },
+  { id: "atc_seed_1", tenant_id: null, child_id: "yp_jordan", concern_type: "safeguarding", source_type: "safeguarding_concern", source_id: null, child_lived_experience: "Jordan describes feeling unsafe and unheard at home.", evidence_and_harm_analysis: "Disclosure of harm; corroborating low mood recorded over two weeks.", family_functioning_parental_capacity: "Manager to complete — parental capacity assessment outstanding.", threshold_and_escalation_analysis: "Concern may meet threshold; structured consultation required.", decision_rationale: "Manager to complete — Cara does not make the statutory decision.", recommended_next_step: "Complete a threshold consultation and consider a strategy discussion.", reasonable_cause_to_suspect_significant_harm: null, strategy_discussion_recommended: true, lado_consultation_recommended: false, emergency_action_recommended: false, cara_summary: "Possible safeguarding threshold concern — manager review advised.", manager_decision: null, manager_rationale: null, created_by: "staff_darren", created_at: caraPracticeSeedAt },
 ];
 store.caraStaffWellbeingSignals = [
   { id: "aws_seed_1", tenant_id: null, staff_id: "staff_ryan", home_id: "home_oak", signal_type: "burnout", signal_source: "supervision", severity: "medium", evidence: "Reported feeling overwhelmed and emotionally drained over recent shifts.", support_recommendation: "Reflective supervision, wellbeing check-in, and a workload/rota review.", manager_action: null, resolved: false, created_at: caraPracticeSeedAt },
 ];
 store.caraPracticeAssessments = [
-  { id: "apa_seed_1", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: "log_120", assessment_type: "practice_quality", status: "open", created_by: "staff_anna", created_at: caraPracticeSeedAt, updated_at: caraPracticeSeedAt, developmental_gap_score: 100, child_lived_experience_score: 35, protective_factor_score: 100, relationship_depth_score: 28, safeguarding_threshold_score: 100, supervision_quality_score: 55, workforce_wellbeing_score: 100, overall_practice_quality_score: 55, summary: "Activity recorded without evidencing child impact.", aria_advice: [], aria_flags: [], aria_recommendations: [], aria_questions: [], aria_draft_output: null, reviewer_id: null, reviewed_at: null, manager_decision: null, manager_rationale: null },
-  { id: "apa_seed_2", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "key_work", source_id: null, assessment_type: "practice_quality", status: "open", created_by: "staff_chervelle", created_at: caraPracticeSeedAt, updated_at: caraPracticeSeedAt, developmental_gap_score: 78, child_lived_experience_score: 90, protective_factor_score: 100, relationship_depth_score: 64, safeguarding_threshold_score: 100, supervision_quality_score: 72, workforce_wellbeing_score: 100, overall_practice_quality_score: 72, summary: "Strong child-centred record evidencing what changed for the child.", aria_advice: [], aria_flags: [], aria_recommendations: [], aria_questions: [], aria_draft_output: null, reviewer_id: null, reviewed_at: null, manager_decision: null, manager_rationale: null },
+  { id: "apa_seed_1", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: "log_120", assessment_type: "practice_quality", status: "open", created_by: "staff_anna", created_at: caraPracticeSeedAt, updated_at: caraPracticeSeedAt, developmental_gap_score: 100, child_lived_experience_score: 35, protective_factor_score: 100, relationship_depth_score: 28, safeguarding_threshold_score: 100, supervision_quality_score: 55, workforce_wellbeing_score: 100, overall_practice_quality_score: 55, summary: "Activity recorded without evidencing child impact.", cara_advice: [], cara_flags: [], cara_recommendations: [], cara_questions: [], cara_draft_output: null, reviewer_id: null, reviewed_at: null, manager_decision: null, manager_rationale: null },
+  { id: "apa_seed_2", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "key_work", source_id: null, assessment_type: "practice_quality", status: "open", created_by: "staff_chervelle", created_at: caraPracticeSeedAt, updated_at: caraPracticeSeedAt, developmental_gap_score: 78, child_lived_experience_score: 90, protective_factor_score: 100, relationship_depth_score: 64, safeguarding_threshold_score: 100, supervision_quality_score: 72, workforce_wellbeing_score: 100, overall_practice_quality_score: 72, summary: "Strong child-centred record evidencing what changed for the child.", cara_advice: [], cara_flags: [], cara_recommendations: [], cara_questions: [], cara_draft_output: null, reviewer_id: null, reviewed_at: null, manager_decision: null, manager_rationale: null },
 ];
 
 // ── Outcome Star assessments (seed) ───────────────────────────────────────────
@@ -18375,12 +18375,12 @@ export const db = {
         amended_by: null,
         amended_at: null,
         is_current_version: true,
-        aria_suggested_summary: null,
-        aria_suggested_category: null,
-        aria_suggested_routing: null,
-        aria_suggested_reg45: null,
-        aria_suggested_annex_a: null,
-        aria_suggestions_reviewed: false,
+        cara_suggested_summary: null,
+        cara_suggested_category: null,
+        cara_suggested_routing: null,
+        cara_suggested_reg45: null,
+        cara_suggested_annex_a: null,
+        cara_suggestions_reviewed: false,
         routing_summary: null,
         created_at: now,
         updated_at: now,

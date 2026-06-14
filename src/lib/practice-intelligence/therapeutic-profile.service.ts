@@ -228,7 +228,7 @@ export async function buildProfileFromEvidence(
   // Gather evidence from multiple tables
   const [incidents, dailyLogs, keywork, riskAssessments] = await Promise.all([
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("aria_studio_sources") as any)
+    (sb.from("cara_studio_sources") as any)
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
@@ -236,7 +236,7 @@ export async function buildProfileFromEvidence(
       .order("source_date", { ascending: false })
       .limit(20),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("aria_studio_sources") as any)
+    (sb.from("cara_studio_sources") as any)
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
@@ -244,7 +244,7 @@ export async function buildProfileFromEvidence(
       .order("source_date", { ascending: false })
       .limit(30),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("aria_studio_sources") as any)
+    (sb.from("cara_studio_sources") as any)
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)
@@ -252,7 +252,7 @@ export async function buildProfileFromEvidence(
       .order("source_date", { ascending: false })
       .limit(20),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (sb.from("aria_studio_sources") as any)
+    (sb.from("cara_studio_sources") as any)
       .select("content, summary, source_type, source_date")
       .eq("home_id", hid)
       .eq("child_id", childId)

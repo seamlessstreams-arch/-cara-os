@@ -38,7 +38,7 @@ export function logIncidentAudit(opts: {
       user_id: opts.user_id,
       child_id: opts.child_id,
       action_type: opts.action_type,
-      source_table: "aria_incident_sessions",
+      source_table: "cara_incident_sessions",
       source_id: opts.source_id,
       human_edit: opts.note,
       approval_status: opts.approval_status,

@@ -109,7 +109,7 @@ export async function persistCost(input: {
   if (!sb) return;
 
   try {
-    await (sb.from("aria_cost_entries") as SB).insert({
+    await (sb.from("cara_cost_entries") as SB).insert({
       home_id: input.homeId,
       user_id: input.userId,
       audit_id: input.auditId,

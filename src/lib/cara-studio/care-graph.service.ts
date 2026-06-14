@@ -24,7 +24,7 @@ export async function upsertGraphNode(
   const sb = createServerClient();
   if (!sb) return null;
 
-  const { data, error } = await (sb.from("aria_studio_care_graph_nodes") as any)
+  const { data, error } = await (sb.from("cara_studio_care_graph_nodes") as any)
     .upsert(
       { ...node, home_id: node.home_id || homeId(), updated_at: new Date().toISOString() },
       { onConflict: "id" },
@@ -47,7 +47,7 @@ export async function createGraphEdge(
   const sb = createServerClient();
   if (!sb) return null;
 
-  const { data, error } = await (sb.from("aria_studio_care_graph_edges") as any)
+  const { data, error } = await (sb.from("cara_studio_care_graph_edges") as any)
     .insert(edge)
     .select()
     .single();
@@ -68,7 +68,7 @@ export async function getNodesByType(
   const sb = createServerClient();
   if (!sb) return getDemoNodes(nodeType);
 
-  let query = (sb.from("aria_studio_care_graph_nodes") as any)
+  let query = (sb.from("cara_studio_care_graph_nodes") as any)
     .select("*")
     .eq("home_id", homeId())
     .eq("node_type", nodeType)
@@ -94,20 +94,20 @@ export async function getEdgesForNode(
   if (!sb) return [];
 
   if (direction === "from") {
-    const { data } = await (sb.from("aria_studio_care_graph_edges") as any)
+    const { data } = await (sb.from("cara_studio_care_graph_edges") as any)
       .select("*").eq("from_node_id", nodeId);
     return (data ?? []) as CaraStudioCareGraphEdge[];
   }
 
   if (direction === "to") {
-    const { data } = await (sb.from("aria_studio_care_graph_edges") as any)
+    const { data } = await (sb.from("cara_studio_care_graph_edges") as any)
       .select("*").eq("to_node_id", nodeId);
     return (data ?? []) as CaraStudioCareGraphEdge[];
   }
 
-  const { data: fromData } = await (sb.from("aria_studio_care_graph_edges") as any)
+  const { data: fromData } = await (sb.from("cara_studio_care_graph_edges") as any)
     .select("*").eq("from_node_id", nodeId);
-  const { data: toData } = await (sb.from("aria_studio_care_graph_edges") as any)
+  const { data: toData } = await (sb.from("cara_studio_care_graph_edges") as any)
     .select("*").eq("to_node_id", nodeId);
 
   return [
@@ -128,7 +128,7 @@ export async function getChildKnowledgeGraph(childId: string): Promise<ChildKnow
   const sb = createServerClient();
   if (!sb) return getDemoChildGraph(childId);
 
-  const { data: childNodes } = await (sb.from("aria_studio_care_graph_nodes") as any)
+  const { data: childNodes } = await (sb.from("cara_studio_care_graph_nodes") as any)
     .select("*")
     .eq("home_id", homeId())
     .eq("node_type", "child")
@@ -148,7 +148,7 @@ export async function getChildKnowledgeGraph(childId: string): Promise<ChildKnow
 
   let nodes: CaraStudioCareGraphNode[] = [childNode];
   if (relatedNodeIds.size > 0) {
-    const { data: relatedNodes } = await (sb.from("aria_studio_care_graph_nodes") as any)
+    const { data: relatedNodes } = await (sb.from("cara_studio_care_graph_nodes") as any)
       .select("*").in("id", Array.from(relatedNodeIds));
     nodes = [childNode, ...((relatedNodes ?? []) as CaraStudioCareGraphNode[])];
   }
@@ -162,7 +162,7 @@ export async function findConnections(nodeAId: string, nodeBId: string): Promise
   const sb = createServerClient();
   if (!sb) return [];
 
-  const { data } = await (sb.from("aria_studio_care_graph_edges") as any)
+  const { data } = await (sb.from("cara_studio_care_graph_edges") as any)
     .select("*")
     .or(
       `and(from_node_id.eq.${nodeAId},to_node_id.eq.${nodeBId}),` +
@@ -181,7 +181,7 @@ export async function autoPopulateGraphForChild(childId: string): Promise<{ node
   let nodesCreated = 0;
   let edgesCreated = 0;
 
-  const { data: existingChild } = await (sb.from("aria_studio_care_graph_nodes") as any)
+  const { data: existingChild } = await (sb.from("cara_studio_care_graph_nodes") as any)
     .select("id")
     .eq("home_id", homeId())
     .eq("node_type", "child")
@@ -202,7 +202,7 @@ export async function autoPopulateGraphForChild(childId: string): Promise<{ node
     childNodeId = existingChild[0].id;
   }
 
-  const { data: sources } = await (sb.from("aria_studio_sources") as any)
+  const { data: sources } = await (sb.from("cara_studio_sources") as any)
     .select("id, source_type, title, summary")
     .eq("home_id", homeId())
     .eq("child_id", childId)

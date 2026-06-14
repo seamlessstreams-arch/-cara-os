@@ -21,21 +21,21 @@ export async function generateHomeDynamicsSnapshot(hId: string, snapshotDate?: s
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const countQuery = async (sourceType: string) => {
-    const { count } = await (sb.from("aria_studio_sources") as any)
+    const { count } = await (sb.from("cara_studio_sources") as any)
       .select("id", { count: "exact", head: true })
       .eq("home_id", hId).eq("source_type", sourceType).gte("source_date", weekAgo);
     return count ?? 0;
   };
 
   const overdueActionsQuery = async () => {
-    const { count } = await (sb.from("aria_studio_gaps") as any)
+    const { count } = await (sb.from("cara_studio_gaps") as any)
       .select("id", { count: "exact", head: true })
       .eq("home_id", hId).eq("gap_type", "overdue_action").eq("status", "open");
     return count ?? 0;
   };
 
   const safeguardingAlertsQuery = async () => {
-    const { count } = await (sb.from("aria_studio_safeguarding_patterns") as any)
+    const { count } = await (sb.from("cara_studio_safeguarding_patterns") as any)
       .select("id", { count: "exact", head: true })
       .eq("home_id", hId).eq("status", "open");
     return count ?? 0;
@@ -67,7 +67,7 @@ export async function generateHomeDynamicsSnapshot(hId: string, snapshotDate?: s
     data: { period: "7_days", from: weekAgo.slice(0, 10), to: date, risk_score: riskScore },
   };
 
-  const { data, error } = await (sb.from("aria_studio_home_dynamics") as any).insert(snapshot).select().single();
+  const { data, error } = await (sb.from("cara_studio_home_dynamics") as any).insert(snapshot).select().single();
   if (error) { console.error("[cara-studio/home-dynamics] Snapshot error:", error); return getDemoSnapshot(hId, date); }
   return data as CaraStudioHomeDynamics;
 }
@@ -76,7 +76,7 @@ export async function getLatestSnapshot(hId: string): Promise<CaraStudioHomeDyna
   const sb = createServerClient();
   if (!sb) return getDemoSnapshot(hId, new Date().toISOString().slice(0, 10));
 
-  const { data, error } = await (sb.from("aria_studio_home_dynamics") as any)
+  const { data, error } = await (sb.from("cara_studio_home_dynamics") as any)
     .select("*").eq("home_id", hId).order("snapshot_date", { ascending: false }).limit(1).single();
   if (error) return null;
   return data as CaraStudioHomeDynamics;
@@ -87,7 +87,7 @@ export async function listSnapshots(hId: string, days: number = 30): Promise<Car
   if (!sb) return [getDemoSnapshot(hId, new Date().toISOString().slice(0, 10))];
 
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const { data, error } = await (sb.from("aria_studio_home_dynamics") as any)
+  const { data, error } = await (sb.from("cara_studio_home_dynamics") as any)
     .select("*").eq("home_id", hId).gte("snapshot_date", since).order("snapshot_date", { ascending: true });
   if (error) { console.error("[cara-studio/home-dynamics] List error:", error); return []; }
   return (data ?? []) as CaraStudioHomeDynamics[];

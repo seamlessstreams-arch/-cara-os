@@ -45,7 +45,7 @@ export async function getArtifactOutcome(artifactId: string): Promise<OutcomeLoo
   const sb = createServerClient();
   if (!sb) return getDemoOutcome(artifactId);
 
-  const { data: artifact, error } = await (sb.from("aria_studio_artifacts") as any)
+  const { data: artifact, error } = await (sb.from("cara_studio_artifacts") as any)
     .select("id, artifact_type, title, committed_at, status")
     .eq("id", artifactId)
     .single();
@@ -53,7 +53,7 @@ export async function getArtifactOutcome(artifactId: string): Promise<OutcomeLoo
   if (error || !artifact) return null;
 
   // Get actions for this artifact
-  const { data: actions } = await (sb.from("aria_studio_artifact_actions") as any)
+  const { data: actions } = await (sb.from("cara_studio_artifact_actions") as any)
     .select("id, status, completed_at")
     .eq("artifact_id", artifactId);
 
@@ -86,7 +86,7 @@ export async function getOutcomeLoopSummary(childId?: string): Promise<OutcomeLo
   const sb = createServerClient();
   if (!sb) return getDemoSummary();
 
-  let query = (sb.from("aria_studio_artifacts") as any)
+  let query = (sb.from("cara_studio_artifacts") as any)
     .select("id, artifact_type, title, committed_at, status")
     .eq("home_id", homeId())
     .eq("status", "committed")

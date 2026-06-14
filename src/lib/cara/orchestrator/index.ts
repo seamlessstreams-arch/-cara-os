@@ -356,7 +356,7 @@ async function writeAuditEntry(input: {
   if (!sb) return demoId;
 
   try {
-    const { data, error } = await (sb.from("aria_orchestrator_audit") as SB)
+    const { data, error } = await (sb.from("cara_orchestrator_audit") as SB)
       .insert({
         home_id: input.request.homeId,
         user_id: input.request.userId,

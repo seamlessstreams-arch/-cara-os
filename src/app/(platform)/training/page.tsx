@@ -428,7 +428,7 @@ export default function TrainingPage() {
         description: `${record.status === "expired" ? "Expired" : "Expiring soon"}: ${record.course_name} for ${getStaffName(record.staff_id)}. Renewal must be arranged promptly.`,
         priority,
         status: "identified",
-        aria_evidence: `Training record status: ${record.status}. Auto-generated from Training & Compliance matrix.`,
+        cara_evidence: `Training record status: ${record.status}. Auto-generated from Training & Compliance matrix.`,
         created_by: currentUser?.id ?? "staff_darren",
       },
       {

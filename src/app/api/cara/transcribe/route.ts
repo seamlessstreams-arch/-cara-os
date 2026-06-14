@@ -177,8 +177,8 @@ export async function POST(req: NextRequest) {
     const supabaseRaw = createServerClient();
     if (supabaseRaw) {
       const supabase = loose(supabaseRaw);
-      transcriptionId = `aria_tx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-      await supabase.from("aria_transcriptions").insert({
+      transcriptionId = `cara_tx_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+      await supabase.from("cara_transcriptions").insert({
         id: transcriptionId,
         user_id: actorUserId,
         organisation_id: organisationId ?? null,

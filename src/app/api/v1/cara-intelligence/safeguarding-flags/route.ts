@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     user_id:      "staff_darren",
     child_id:     flag.child_id,
     action_type:  "safeguarding_flag_raised",
-    source_table: "aria_safeguarding_flags",
+    source_table: "cara_safeguarding_flags",
     source_id:    flag.id,
   });
 
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
   intelligenceDb.caraRecommendations.create({
     home_id:             flag.home_id,
     child_id:            flag.child_id,
-    source_type:         "aria_safeguarding_flag",
+    source_type:         "cara_safeguarding_flag",
     source_id:           flag.id,
     recommendation_type: "management_oversight",
     title:               `Manager review required: ${flag.flag_type.replace(/_/g, " ")}`,

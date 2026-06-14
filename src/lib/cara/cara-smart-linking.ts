@@ -4,14 +4,14 @@
 // Links Cara outputs bidirectionally to source records. When an Cara output
 // is approved/committed, the smart linker:
 //
-// 1. Writes aria_context_links for every source record the context builder used
+// 1. Writes cara_context_links for every source record the context builder used
 // 2. Updates the source record with an cara-related flag (where supported)
 // 3. Creates backlinks so record pages can show "Cara was used here"
 //
 // This creates the full traceability chain:
-//   Source records → aria_context_links → aria_request → aria_output
-//   aria_output → aria_task_links → tasks
-//   aria_output → committed_record_type/committed_record_id → destination
+//   Source records → cara_context_links → cara_request → cara_output
+//   cara_output → cara_task_links → tasks
+//   cara_output → committed_record_type/committed_record_id → destination
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -53,7 +53,7 @@ export interface RecordCaraUsage {
   confidence: string;
 }
 
-// ── Tables that support the aria_used flag ──────────────────────────────────
+// ── Tables that support the cara_used flag ──────────────────────────────────
 
 const CARA_FLAGGABLE_TABLES = new Set([
   "daily_log_entries",
@@ -80,7 +80,7 @@ export async function writeSmartLinks(
   const supabase = loose(supabaseRaw);
 
   const rows = links.map((link) => ({
-    id: `aria_sl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    id: `cara_sl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     request_id: link.requestId ?? null,
     output_id: link.outputId,
     source_table: link.sourceTable,
@@ -89,8 +89,8 @@ export async function writeSmartLinks(
     summary: link.summary?.slice(0, 500) ?? null,
   }));
 
-  // Use aria_context_links table (already exists from migration 022)
-  const { error } = await (supabase.from("aria_context_links") as any).insert(rows);
+  // Use cara_context_links table (already exists from migration 022)
+  const { error } = await (supabase.from("cara_context_links") as any).insert(rows);
   if (error) {
     console.warn("[cara-smart-linking] writeSmartLinks failed:", error.message);
     return { written: 0 };
@@ -104,7 +104,7 @@ export async function writeSmartLinks(
 // ══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Marks the source record with `aria_assist_used = true` so record pages
+ * Marks the source record with `cara_assist_used = true` so record pages
  * can show a badge. Only updates tables that have the column.
  */
 export async function flagRecordAsCaraAssisted(
@@ -118,9 +118,9 @@ export async function flagRecordAsCaraAssisted(
   if (!supabaseRaw) return false;
   const supabase = loose(supabaseRaw);
 
-  // The column name varies — most use aria_assist_used, incidents use aria_oversight_used
+  // The column name varies — most use cara_assist_used, incidents use cara_oversight_used
   const column =
-    sourceTable === "incidents" ? "aria_oversight_used" : "aria_assist_used";
+    sourceTable === "incidents" ? "cara_oversight_used" : "cara_assist_used";
 
   const { error } = await (supabase.from(sourceTable) as any)
     .update({ [column]: true })
@@ -153,7 +153,7 @@ export async function getCaraUsageForRecord(
   const supabase = loose(supabaseRaw);
 
   // Query context links that reference this record
-  const { data: links, error } = await (supabase.from("aria_context_links") as any)
+  const { data: links, error } = await (supabase.from("cara_context_links") as any)
     .select("output_id, summary, created_at")
     .eq("source_table", sourceTable)
     .eq("source_record_id", sourceRecordId)
@@ -164,7 +164,7 @@ export async function getCaraUsageForRecord(
 
   // Fetch the corresponding outputs
   const outputIds = [...new Set((links as Array<{ output_id: string }>).map((l) => l.output_id))];
-  const { data: outputs } = await (supabase.from("aria_outputs") as any)
+  const { data: outputs } = await (supabase.from("cara_outputs") as any)
     .select("id, status, confidence, created_at, request_id")
     .in("id", outputIds);
 
@@ -179,7 +179,7 @@ export async function getCaraUsageForRecord(
 
   let requestMap = new Map<string, { command_id: string }>();
   if (requestIds.length > 0) {
-    const { data: requests } = await (supabase.from("aria_requests") as any)
+    const { data: requests } = await (supabase.from("cara_requests") as any)
       .select("id, command_id")
       .in("id", requestIds);
     if (requests) {

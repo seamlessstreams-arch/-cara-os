@@ -237,7 +237,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                   <Badge variant="outline" className="text-[10px] rounded-full capitalize">
                     {staff.employment_type}
                   </Badge>
-                  <CaraUsageBadge caraAssisted={(staff as any).aria_assist_used} sourceTable="staff" recordId={staff.id} />
+                  <CaraUsageBadge caraAssisted={(staff as any).cara_assist_used} sourceTable="staff" recordId={staff.id} />
                   {staff.supervision_overdue && (
                     <Badge variant="destructive" className="text-[10px] rounded-full">
                       Supervision Overdue

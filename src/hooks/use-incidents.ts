@@ -41,8 +41,8 @@ export function useIncidents(params?: { status?: string; child_id?: string; need
 export function useAddOversight() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, note, by, aria_assisted }: { id: string; note: string; by: string; aria_assisted?: boolean }) =>
-      api.post(`/incidents/${id}/oversight`, { oversight_note: note, oversight_by: by, aria_assisted }),
+    mutationFn: ({ id, note, by, cara_assisted }: { id: string; note: string; by: string; cara_assisted?: boolean }) =>
+      api.post(`/incidents/${id}/oversight`, { oversight_note: note, oversight_by: by, cara_assisted }),
     onSuccess: () => {
       careToast.oversightAdded();
       qc.invalidateQueries({ queryKey: ["incidents"] });

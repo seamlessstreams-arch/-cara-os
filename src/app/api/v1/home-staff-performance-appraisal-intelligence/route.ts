@@ -225,8 +225,8 @@ export async function GET() {
           : typeof action.progress === "number"
             ? action.progress
             : 0,
-        support_provided: !!plan.aria_generated || !!action.evidence_notes,
-        resource_allocated: !!plan.aria_generated,
+        support_provided: !!plan.cara_generated || !!action.evidence_notes,
+        resource_allocated: !!plan.cara_generated,
       });
     }
   }
@@ -271,7 +271,7 @@ export async function GET() {
   // Appraisal-derived feedback (from completed appraisals with Cara insights)
   for (const a of rawAppraisals) {
     if (a.status !== "completed") continue;
-    if (a.aria_insights) {
+    if (a.cara_insights) {
       feedback_records.push({
         id: `fb_${a.id}`,
         staff_id: a.staff_id ?? "",

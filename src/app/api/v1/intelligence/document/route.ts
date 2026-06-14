@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     placed_at: null,
     placement_ref_type: null,
     placement_ref_id: null,
-    aria_notes: (body.aria_notes as string) ?? null,
+    cara_notes: (body.cara_notes as string) ?? null,
     created_by: (body.created_by as string) ?? "staff_darren",
   });
 

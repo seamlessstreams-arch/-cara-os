@@ -272,7 +272,7 @@ function SessionView({ sessionId, bundle, onBack }: { sessionId: string; bundle:
                   </button>
                 ))}
               </div>
-              <EntryAssist value={note} onChange={setNote} sourceModule="aria_incident_mode" sourceField="timeline_note" childId={session.child_id} className="justify-end" />
+              <EntryAssist value={note} onChange={setNote} sourceModule="cara_incident_mode" sourceField="timeline_note" childId={session.child_id} className="justify-end" />
               <div className="flex gap-2">
                 <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Brief note — speak it or type it…"
                   className="min-h-[52px] flex-1 rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:border-[var(--cs-teal)] focus:outline-none focus:ring-1 focus:ring-[var(--cs-teal)]" />

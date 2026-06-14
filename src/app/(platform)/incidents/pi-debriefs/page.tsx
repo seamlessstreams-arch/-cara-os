@@ -378,13 +378,13 @@ function PIDebriefCard({
           )}
 
           {/* Cara analysis */}
-          {debrief.aria_analysis ? (
+          {debrief.cara_analysis ? (
             <div className="rounded-xl border border-teal-100 bg-teal-50/40 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-teal-600" />
                 <p className="text-[10px] font-semibold text-teal-700 uppercase tracking-widest">Cara Analysis</p>
               </div>
-              <p className="text-xs text-[var(--cs-text-secondary)]">{debrief.aria_analysis}</p>
+              <p className="text-xs text-[var(--cs-text-secondary)]">{debrief.cara_analysis}</p>
             </div>
           ) : (
             <button
@@ -512,7 +512,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
         response?.choices?.[0]?.message?.content ??
         `${incident?.reference ?? debrief.incident_id} — ${TECHNIQUE_LABELS[debrief.technique_used]} for ${debrief.duration_minutes} min. ${debrief.yp_debrief_completed && debrief.staff_debrief_completed ? "Both YP and staff debriefs completed." : `Outstanding debriefs: ${!debrief.yp_debrief_completed ? "YP" : ""}${!debrief.yp_debrief_completed && !debrief.staff_debrief_completed ? " and " : ""}${!debrief.staff_debrief_completed ? "Staff" : ""}.`} Trigger: ${debrief.trigger_identified ?? "not yet identified"}.`;
 
-      await updateDebrief.mutateAsync({ id: debrief.id, data: { aria_analysis: analysis } });
+      await updateDebrief.mutateAsync({ id: debrief.id, data: { cara_analysis: analysis } });
     } catch {
       setCaraError("Cara analysis failed — please try again");
     } finally {

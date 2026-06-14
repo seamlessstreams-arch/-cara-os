@@ -376,10 +376,10 @@ export default function PracticeObservationsPage() {
                   </div>
 
                   {/* Cara summary */}
-                  {obs.aria_summary && (
+                  {obs.cara_summary && (
                     <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2.5">
                       <p className="text-[10px] font-semibold text-indigo-600 mb-1">Cara Observation Intelligence</p>
-                      <p className="text-xs text-indigo-800 leading-relaxed">{obs.aria_summary}</p>
+                      <p className="text-xs text-indigo-800 leading-relaxed">{obs.cara_summary}</p>
                     </div>
                   )}
 

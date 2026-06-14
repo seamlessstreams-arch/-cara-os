@@ -389,13 +389,13 @@ function AppraisalRow({
             </div>
           )}
 
-          {appraisal.aria_insights && (
+          {appraisal.cara_insights && (
             <div className="rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-2">
               <p className="text-[10px] font-semibold text-indigo-700 mb-0.5 flex items-center gap-1">
                 <Sparkles className="h-3 w-3" />
                 Cara Insights
               </p>
-              <p className="text-xs text-indigo-800 leading-relaxed">{appraisal.aria_insights}</p>
+              <p className="text-xs text-indigo-800 leading-relaxed">{appraisal.cara_insights}</p>
             </div>
           )}
 

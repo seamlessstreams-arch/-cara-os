@@ -308,7 +308,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
             description: first.description,
             priority: (first.priority as "urgent" | "high" | "medium" | "low") ?? "medium",
             status: "identified",
-            aria_evidence: `Extracted from supervision with ${staff?.full_name ?? "staff"} on ${formatDate(sup.scheduled_date)}.`,
+            cara_evidence: `Extracted from supervision with ${staff?.full_name ?? "staff"} on ${formatDate(sup.scheduled_date)}.`,
             created_by: currentUser?.id ?? "staff_darren",
           },
           { onSuccess: () => setNeedCreated(true) }

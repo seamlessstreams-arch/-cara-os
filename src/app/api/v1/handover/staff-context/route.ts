@@ -15,7 +15,7 @@ export interface StaffHandoverContext {
     medication_issues: number;
     tasks_completed: number;
   };
-  aria_summary: string;
+  cara_summary: string;
 }
 
 function getStaffName(staffId: string): string {
@@ -199,7 +199,7 @@ export async function GET(req: NextRequest) {
         medication_issues: 0,
         tasks_completed: tasksDone,
       },
-      aria_summary: buildCaraSummary(getStaffName(staffId), daysSince, sinceDate, depth),
+      cara_summary: buildCaraSummary(getStaffName(staffId), daysSince, sinceDate, depth),
     });
   }
 

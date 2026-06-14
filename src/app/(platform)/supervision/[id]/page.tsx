@@ -203,7 +203,7 @@ export default function SupervisionDetailPage({
       description: `Identified during supervision on ${formatDate(sup.actual_date ?? sup.scheduled_date)}: ${sup.discussion_points.slice(0, 200)}`,
       priority: "medium",
       status: "identified",
-      aria_evidence: `Source supervision record: ${sup.id}`,
+      cara_evidence: `Source supervision record: ${sup.id}`,
       created_by: currentUser?.id ?? "staff_darren",
     });
     setNeedCreated(true);
@@ -320,7 +320,7 @@ export default function SupervisionDetailPage({
                       <Badge className={cn("rounded-full text-[10px]", STATUS_COLOURS[sup.status] ?? "bg-slate-100 text-[var(--cs-text-secondary)]")}>
                         {sup.status.charAt(0).toUpperCase() + sup.status.slice(1)}
                       </Badge>
-                      {sup.aria_assist_used && (
+                      {sup.cara_assist_used && (
                         <CaraUsageBadge
                           caraAssisted
                           sourceTable="supervisions"

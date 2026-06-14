@@ -78,7 +78,7 @@ export const DEFAULT_SETTINGS: DefaultSetting[] = [
   // Display
   { category: "display", key: "display.theme", label: "Theme", description: "Dashboard colour theme", dataType: "string", defaultValue: "default" },
   { category: "display", key: "display.date_format", label: "Date Format", description: "Date display format", dataType: "string", defaultValue: "DD/MM/YYYY" },
-  { category: "display", key: "display.show_aria_badges", label: "Show Cara Badges", description: "Display Cara-generated badges on records", dataType: "boolean", defaultValue: true },
+  { category: "display", key: "display.show_cara_badges", label: "Show Cara Badges", description: "Display Cara-generated badges on records", dataType: "boolean", defaultValue: true },
 ];
 
 // ── CRUD ───────────────────────────────────────────────────────────────────

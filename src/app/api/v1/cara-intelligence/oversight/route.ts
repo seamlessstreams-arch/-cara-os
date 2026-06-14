@@ -44,8 +44,8 @@ export async function POST(req: NextRequest) {
     home_id:      record.home_id,
     user_id:      body.manager_id ?? "staff_darren",
     child_id:     body.child_id,
-    action_type:  "aria_oversight_generated",
-    source_table: "aria_oversight",
+    action_type:  "cara_oversight_generated",
+    source_table: "cara_oversight",
     source_id:    record.id,
   });
 

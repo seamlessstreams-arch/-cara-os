@@ -19,7 +19,7 @@ export async function createDecisionSupport(
   const sb = createServerClient();
   if (!sb) return getDemoDecisionSupport(record.decision_context);
 
-  const { data, error } = await (sb.from("aria_studio_decision_support") as any)
+  const { data, error } = await (sb.from("cara_studio_decision_support") as any)
     .insert({
       home_id: record.home_id || homeId(),
       decision_context: record.decision_context,
@@ -41,7 +41,7 @@ export async function getDecisionSupport(id: string): Promise<CaraStudioDecision
   const sb = createServerClient();
   if (!sb) return getDemoDecisionSupport();
 
-  const { data, error } = await (sb.from("aria_studio_decision_support") as any)
+  const { data, error } = await (sb.from("cara_studio_decision_support") as any)
     .select("*").eq("id", id).single();
   if (error) return null;
   return data as CaraStudioDecisionSupport;
@@ -51,7 +51,7 @@ export async function listDecisionSupport(hId: string, childId?: string): Promis
   const sb = createServerClient();
   if (!sb) return [getDemoDecisionSupport()];
 
-  let query = (sb.from("aria_studio_decision_support") as any)
+  let query = (sb.from("cara_studio_decision_support") as any)
     .select("*").eq("home_id", hId).order("created_at", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
 
@@ -64,7 +64,7 @@ export async function recordDecision(id: string, decisionMadeBy: string): Promis
   const sb = createServerClient();
   if (!sb) return false;
 
-  const { error } = await (sb.from("aria_studio_decision_support") as any)
+  const { error } = await (sb.from("cara_studio_decision_support") as any)
     .update({ decision_made_by: decisionMadeBy, decision_recorded_at: new Date().toISOString() })
     .eq("id", id);
 

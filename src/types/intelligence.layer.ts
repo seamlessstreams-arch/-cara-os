@@ -29,7 +29,7 @@ export type AttentionCategory =
   | "task_overdue"
   | "staff_debrief"
   | "document_sign_off"
-  | "aria_pattern";
+  | "cara_pattern";
 
 export interface ManagerAttentionItem {
   id: string;

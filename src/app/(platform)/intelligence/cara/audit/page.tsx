@@ -24,11 +24,11 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 
 const ACTION_TYPE_OPTIONS: { value: string; label: string }[] = [
   { value: "all", label: "All Actions" },
-  { value: "aria_assessment_created", label: "Assessment Created" },
-  { value: "aria_assessment_reviewed", label: "Assessment Reviewed" },
-  { value: "aria_assessment_approved", label: "Assessment Approved" },
-  { value: "aria_oversight_generated", label: "Oversight Generated" },
-  { value: "aria_oversight_approved", label: "Oversight Approved" },
+  { value: "cara_assessment_created", label: "Assessment Created" },
+  { value: "cara_assessment_reviewed", label: "Assessment Reviewed" },
+  { value: "cara_assessment_approved", label: "Assessment Approved" },
+  { value: "cara_oversight_generated", label: "Oversight Generated" },
+  { value: "cara_oversight_approved", label: "Oversight Approved" },
   { value: "keywork_session_created", label: "Key Work Created" },
   { value: "keywork_session_completed", label: "Key Work Completed" },
   { value: "keywork_session_reviewed", label: "Key Work Reviewed" },
@@ -55,8 +55,8 @@ const DATE_FILTERS = [
 
 function ActionIcon({ actionType }: { actionType: AuditActionType }) {
   const iconClass = "h-4 w-4";
-  if (actionType.startsWith("aria_assessment")) return <Brain className={cn(iconClass, "text-[var(--cs-cara-gold)]")} />;
-  if (actionType.startsWith("aria_oversight")) return <ClipboardList className={cn(iconClass, "text-emerald-500")} />;
+  if (actionType.startsWith("cara_assessment")) return <Brain className={cn(iconClass, "text-[var(--cs-cara-gold)]")} />;
+  if (actionType.startsWith("cara_oversight")) return <ClipboardList className={cn(iconClass, "text-emerald-500")} />;
   if (actionType.startsWith("keywork")) return <BookOpen className={cn(iconClass, "text-amber-500")} />;
   if (actionType.startsWith("child_resource")) return <FileText className={cn(iconClass, "text-pink-500")} />;
   if (actionType.startsWith("interactive_session")) return <Users className={cn(iconClass, "text-teal-500")} />;

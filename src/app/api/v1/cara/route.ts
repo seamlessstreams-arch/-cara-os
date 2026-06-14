@@ -210,7 +210,7 @@ Never rewrite the record unless asked.`,
   "missing_information": string[],
   "recommended_placement": string,
   "recommended_linkages": { "type": string, "description": string }[],
-  "aria_summary": string
+  "cara_summary": string
 }`,
 
   document_intel: `You are in DOCUMENT INTELLIGENCE mode. Perform a complete analysis of the uploaded document and return ONLY a valid JSON object matching this exact schema — no markdown, no prose, just the JSON.
@@ -302,7 +302,7 @@ Return this exact JSON structure:
     "type": string | null
   },
   "missing_fields": string[],
-  "aria_notes": string,
+  "cara_notes": string,
   "confidence": number (0-1)
 }`,
 
@@ -754,7 +754,7 @@ Use only the evidence provided. Be specific, evaluative and honest about both st
       "priority": string (one of: urgent/high/medium/low),
       "identified_by": string (one of: cara/incident/supervision/audit/ri_challenge/reg45),
       "affected_roles": string[],
-      "aria_evidence": string,
+      "cara_evidence": string,
       "recommended_approach": string,
       "deadline_days": number
     }
@@ -904,8 +904,8 @@ Return ONLY a valid JSON object — no markdown, no prose, no code fences, just 
   "relational_psychological_drivers": string,
   "sustainability_independence_safety": string,
   "sustainability_rating": "low" | "moderate" | "high",
-  "aria_summary": string,
-  "aria_confidence": "high" | "possible" | "needs_human_review" | "insufficient_information",
+  "cara_summary": string,
+  "cara_confidence": "high" | "possible" | "needs_human_review" | "insufficient_information",
   "recommended_intervention_type": string,
   "escalation_required": boolean,
   "escalation_actions": string[],

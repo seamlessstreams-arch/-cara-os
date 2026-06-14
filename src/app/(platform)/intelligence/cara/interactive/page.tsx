@@ -370,7 +370,7 @@ function SessionSummary({
         childId: session.child_id,
         status: "completed",
         responses,
-        aria_summary: caraSummary ? JSON.stringify(caraSummary) : undefined,
+        cara_summary: caraSummary ? JSON.stringify(caraSummary) : undefined,
         child_voice: caraSummary?.child_voice,
         staff_notes: caraSummary?.staff_reflection,
         safeguarding_flags: [],

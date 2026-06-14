@@ -42,10 +42,10 @@ function makeTask(overrides: Partial<CsTask> = {}): CsTask {
     escalated_at: null,
     escalation_reason: null,
     escalation_level: 0,
-    aria_risk_score: null,
-    aria_risk_factors: null,
-    aria_generated: false,
-    aria_source: null,
+    cara_risk_score: null,
+    cara_risk_factors: null,
+    cara_generated: false,
+    cara_source: null,
     linked_child_id: null,
     linked_incident_id: null,
     linked_document_id: null,
@@ -78,8 +78,8 @@ describe("Task Service", () => {
       expect(CATEGORY_PREFIX.safeguarding).toBe("SFG");
     });
 
-    it("aria_generated prefix is ARA", () => {
-      expect(CATEGORY_PREFIX.aria_generated).toBe("ARA");
+    it("cara_generated prefix is ARA", () => {
+      expect(CATEGORY_PREFIX.cara_generated).toBe("ARA");
     });
   });
 

@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
       missing_evidence: review.missingEvidence,
       strengths: review.strengths,
       regulatory_links: review.regulatoryLinks,
-      aria_confidence: review.caraConfidence,
+      cara_confidence: review.caraConfidence,
       llm_used: review.llmUsed,
       engine_version: review.engineVersion,
       generated_at: review.generatedAt,

@@ -523,19 +523,19 @@ function ARIASuggestionsPanel({
   event,
 }: {
   event: {
-    aria_suggested_summary: string | null;
-    aria_suggested_category: string | null;
-    aria_suggested_routing: string[] | null;
-    aria_suggested_reg45: string | null;
-    aria_suggested_annex_a: string | null;
-    aria_suggestions_reviewed: boolean;
+    cara_suggested_summary: string | null;
+    cara_suggested_category: string | null;
+    cara_suggested_routing: string[] | null;
+    cara_suggested_reg45: string | null;
+    cara_suggested_annex_a: string | null;
+    cara_suggestions_reviewed: boolean;
   };
 }) {
   const hasSuggestions =
-    event.aria_suggested_summary ||
-    event.aria_suggested_category ||
-    event.aria_suggested_reg45 ||
-    event.aria_suggested_annex_a;
+    event.cara_suggested_summary ||
+    event.cara_suggested_category ||
+    event.cara_suggested_reg45 ||
+    event.cara_suggested_annex_a;
 
   if (!hasSuggestions) return null;
 
@@ -546,36 +546,36 @@ function ARIASuggestionsPanel({
           Cara suggestions
         </p>
         <span className="text-xs text-indigo-500">
-          {event.aria_suggestions_reviewed ? "Reviewed" : "Awaiting review"}
+          {event.cara_suggestions_reviewed ? "Reviewed" : "Awaiting review"}
         </span>
       </div>
       <p className="text-xs text-indigo-600 bg-indigo-100 rounded px-2 py-1">
         These are AI-generated suggestions only. They are stored separately from the human record and must not be treated as verified information.
       </p>
-      {event.aria_suggested_summary && (
+      {event.cara_suggested_summary && (
         <div>
           <p className="text-xs font-medium text-slate-500 mb-1">Suggested summary</p>
-          <p className="text-sm text-slate-700">{event.aria_suggested_summary}</p>
+          <p className="text-sm text-slate-700">{event.cara_suggested_summary}</p>
         </div>
       )}
-      {event.aria_suggested_category && (
+      {event.cara_suggested_category && (
         <div>
           <p className="text-xs font-medium text-slate-500 mb-1">Suggested category</p>
           <p className="text-sm text-slate-700 capitalize">
-            {event.aria_suggested_category.replace(/_/g, " ")}
+            {event.cara_suggested_category.replace(/_/g, " ")}
           </p>
         </div>
       )}
-      {event.aria_suggested_reg45 && (
+      {event.cara_suggested_reg45 && (
         <div>
           <p className="text-xs font-medium text-slate-500 mb-1">Suggested Reg 45 text</p>
-          <p className="text-sm text-slate-700">{event.aria_suggested_reg45}</p>
+          <p className="text-sm text-slate-700">{event.cara_suggested_reg45}</p>
         </div>
       )}
-      {event.aria_suggested_annex_a && (
+      {event.cara_suggested_annex_a && (
         <div>
           <p className="text-xs font-medium text-slate-500 mb-1">Suggested Annex A text</p>
-          <p className="text-sm text-slate-700">{event.aria_suggested_annex_a}</p>
+          <p className="text-sm text-slate-700">{event.cara_suggested_annex_a}</p>
         </div>
       )}
     </div>

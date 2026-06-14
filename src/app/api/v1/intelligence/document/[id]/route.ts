@@ -27,7 +27,7 @@ export async function PATCH(
     placed_at,
     placement_ref_type,
     placement_ref_id,
-    aria_notes,
+    cara_notes,
   } = body;
 
   const patch: Record<string, unknown> = {};
@@ -43,7 +43,7 @@ export async function PATCH(
   if (placed_at !== undefined) patch.placed_at = placed_at;
   if (placement_ref_type !== undefined) patch.placement_ref_type = placement_ref_type;
   if (placement_ref_id !== undefined) patch.placement_ref_id = placement_ref_id;
-  if (aria_notes !== undefined) patch.aria_notes = aria_notes;
+  if (cara_notes !== undefined) patch.cara_notes = cara_notes;
 
   const updated = intelligenceDb.docJobs.patch(id, patch as Parameters<typeof intelligenceDb.docJobs.patch>[1]);
 

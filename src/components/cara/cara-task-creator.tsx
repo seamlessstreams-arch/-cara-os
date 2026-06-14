@@ -154,7 +154,7 @@ function finaliseTask(partial: Partial<ParsedTask>, index: number): ParsedTask {
     );
 
   return {
-    id: `aria_task_${index}_${Date.now()}`,
+    id: `cara_task_${index}_${Date.now()}`,
     title,
     description: desc,
     priority: partial.priority ?? (isSafeguarding ? "urgent" : "medium"),

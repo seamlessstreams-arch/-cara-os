@@ -68,9 +68,9 @@ export async function GET(req: NextRequest) {
   const supabase = loose(supabaseRaw);
 
   // Fetch outputs in pending statuses
-  const { data, error } = await (supabase.from("aria_outputs") as any)
+  const { data, error } = await (supabase.from("cara_outputs") as any)
     .select(
-      "id, request_id, generated_text, confidence, status, guardrail_flagged, guardrail_summary, created_at, aria_requests(command_id, user_id)",
+      "id, request_id, generated_text, confidence, status, guardrail_flagged, guardrail_summary, created_at, cara_requests(command_id, user_id)",
     )
     .in("status", ["draft", "edited", "submitted_for_approval"])
     .order("created_at", { ascending: false })
@@ -83,11 +83,11 @@ export async function GET(req: NextRequest) {
   const outputs: PendingOutput[] = ((data as any[]) ?? []).map((row) => ({
     id: row.id,
     requestId: row.request_id,
-    commandId: row.aria_requests?.command_id ?? "unknown",
+    commandId: row.cara_requests?.command_id ?? "unknown",
     generatedText: row.generated_text ?? "",
     confidence: row.confidence ?? "medium",
     status: row.status,
-    userId: row.aria_requests?.user_id ?? "",
+    userId: row.cara_requests?.user_id ?? "",
     createdAt: row.created_at,
     guardrailFlagged: row.guardrail_flagged ?? false,
     guardrailSummary: row.guardrail_summary ?? null,

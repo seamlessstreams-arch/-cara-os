@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ ok: true, data: result.data });
       }
 
-      case "aria_analyse": {
+      case "cara_analyse": {
         const query = body.query ?? "Provide a cross-home analysis for this organisation";
         // Gather context for orchestration
         const snapshots = await getLatestSnapshots(organisationId);
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
 
       default:
         return NextResponse.json(
-          { error: `Unknown action: ${action}. Valid actions: generate_snapshot, aria_analyse` },
+          { error: `Unknown action: ${action}. Valid actions: generate_snapshot, cara_analyse` },
           { status: 400 },
         );
     }
@@ -154,7 +154,7 @@ interface AnalysisContext {
     ofsted_readiness_score: number;
     management_oversight_current: boolean;
     key_work_sessions_overdue: number;
-    aria_risk_factors: Array<{ factor: string; severity: string; trend: string }>;
+    cara_risk_factors: Array<{ factor: string; severity: string; trend: string }>;
   }>;
   alerts: Array<{
     severity: string;
@@ -185,8 +185,8 @@ function generateCrossHomeAnalysis(ctx: AnalysisContext) {
     lines.push(`**Homes Requiring Immediate Attention (${highRiskHomes.length}):**`);
     for (const home of highRiskHomes) {
       lines.push(`- **${home.home_name}** — Risk level: ${home.risk_level_overall}, Compliance: ${home.recording_compliance_pct}%, Incidents (7d): ${home.total_incidents_7d}`);
-      if (home.aria_risk_factors.length > 0) {
-        for (const rf of home.aria_risk_factors) {
+      if (home.cara_risk_factors.length > 0) {
+        for (const rf of home.cara_risk_factors) {
           lines.push(`  - ${rf.factor} (${rf.severity}, ${rf.trend})`);
         }
       }

@@ -190,7 +190,7 @@ export default function SuccessionBoardPage() {
     const q = search.toLowerCase();
     return plans.filter((p) => {
       const candidateNames = p.candidates.map((c) => getStaffName(c.staff_id)).join(" ");
-      const hay = [p.role_title, p.urgency, candidateNames, p.aria_narrative || ""].join(" ").toLowerCase();
+      const hay = [p.role_title, p.urgency, candidateNames, p.cara_narrative || ""].join(" ").toLowerCase();
       return hay.includes(q);
     });
   }, [plans, search, staff]);
@@ -430,13 +430,13 @@ export default function SuccessionBoardPage() {
                   </div>
 
                   {/* Cara Narrative — in expanded mode */}
-                  {isExpanded && plan.aria_narrative && (
+                  {isExpanded && plan.cara_narrative && (
                     <div className="mx-4 mb-4 rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2.5">
                       <p className="text-[10px] font-semibold text-indigo-600 mb-1 flex items-center gap-1">
                         <Sparkles className="h-3 w-3" />
                         Cara Succession Intelligence
                       </p>
-                      <p className="text-xs text-indigo-800 leading-relaxed">{plan.aria_narrative}</p>
+                      <p className="text-xs text-indigo-800 leading-relaxed">{plan.cara_narrative}</p>
                     </div>
                   )}
                 </div>

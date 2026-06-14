@@ -417,7 +417,7 @@ const CATEGORY_META: Record<AttentionCategory, { label: string; badge: string; i
   task_overdue:          { label: "Task Overdue",          badge: "bg-stone-100 text-stone-800",   icon: Clock },
   staff_debrief:         { label: "Staff Debrief",         badge: "bg-blue-100 text-blue-800",     icon: Users },
   document_sign_off:     { label: "Document Sign-off",     badge: "bg-zinc-100 text-zinc-800",     icon: ClipboardList },
-  aria_pattern:          { label: "Cara Pattern",          badge: "bg-purple-100 text-purple-800", icon: Brain },
+  cara_pattern:          { label: "Cara Pattern",          badge: "bg-purple-100 text-purple-800", icon: Brain },
 };
 
 const STATUS_LABELS: Record<AttentionStatus, string> = {
@@ -477,7 +477,7 @@ const CATEGORY_OPTIONS: { value: AttentionCategory; label: string }[] = [
   { value: "task_overdue", label: "Task Overdue" },
   { value: "staff_debrief", label: "Staff Debrief" },
   { value: "document_sign_off", label: "Document Sign-off" },
-  { value: "aria_pattern", label: "Cara Pattern" },
+  { value: "cara_pattern", label: "Cara Pattern" },
 ];
 
 /* ══════════════════════════════════════════════════════════════════════════════
@@ -573,9 +573,9 @@ export default function ManagerControlCentrePage() {
     const severityToUrgency = (s: string): Urgency =>
       s === "urgent" ? "critical" : s === "high" ? "high" : s === "medium" ? "medium" : "low";
     const caraItems: AttentionItem[] = caraAlerts.map((a) => ({
-      id:             `aria_${a.id}`,
+      id:             `cara_${a.id}`,
       title:          a.title,
-      category:       "aria_pattern" as AttentionCategory,
+      category:       "cara_pattern" as AttentionCategory,
       urgency:        severityToUrgency(a.severity),
       status:         "open" as AttentionStatus,
       reason:         a.description,
@@ -585,7 +585,7 @@ export default function ManagerControlCentrePage() {
       createdAt:      a.detectedAt,
     }));
     setItems((prev) => [
-      ...prev.filter((i) => i.category !== "aria_pattern"),
+      ...prev.filter((i) => i.category !== "cara_pattern"),
       ...caraItems,
     ]);
   }, [caraAlerts]);
@@ -644,7 +644,7 @@ export default function ManagerControlCentrePage() {
     const supervisionGaps = activeItems.filter((i) => i.category === "supervision_overdue").length;
     const trainingGaps = activeItems.filter((i) => i.category === "training_gap").length;
     const complaintsOpen = activeItems.filter((i) => i.category === "complaint_open").length;
-    const patternsDetected = activeItems.filter((i) => i.category === "aria_pattern").length;
+    const patternsDetected = activeItems.filter((i) => i.category === "cara_pattern").length;
 
     return [
       { label: "Critical Items",       value: criticalCount,     icon: AlertTriangle,        colour: "text-red-600" },

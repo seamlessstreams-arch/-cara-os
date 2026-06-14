@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     rm_sign_off_by:            null,
     strengths_summary:         null,
     concerns_summary:          null,
-    aria_overview:             null,
+    cara_overview:             null,
     created_by:                body.created_by ?? "staff_darren",
   });
   return NextResponse.json({ data: record }, { status: 201 });

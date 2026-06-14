@@ -358,13 +358,13 @@ export function buildCareGraph(homeId: string, options: BuildOptions = {}): Cara
   for (const p of sgps) {
     if (childIdFilter && p.child_id !== childIdFilter) continue;
     if (p.child_id && !childIds.has(p.child_id)) continue;
-    const key = `aria_safeguarding_patterns:${p.id}`;
+    const key = `cara_safeguarding_patterns:${p.id}`;
     addNode({
       key,
       node_type: "safeguarding_pattern",
       label: p.title,
       description: p.description,
-      source_table: "aria_safeguarding_patterns",
+      source_table: "cara_safeguarding_patterns",
       source_id: p.id,
       metadata: { pattern_type: p.pattern_type, status: p.status },
       severity: p.severity,
@@ -401,13 +401,13 @@ export function buildCareGraph(homeId: string, options: BuildOptions = {}): Cara
   for (const w of warnings) {
     if (childIdFilter && w.child_id !== childIdFilter) continue;
     if (w.child_id && !childIds.has(w.child_id)) continue;
-    const key = `aria_early_warnings:${w.id}`;
+    const key = `cara_early_warnings:${w.id}`;
     addNode({
       key,
       node_type: "early_warning",
       label: w.title,
       description: w.rationale,
-      source_table: "aria_early_warnings",
+      source_table: "cara_early_warnings",
       source_id: w.id,
       metadata: { warning_type: w.warning_type, status: w.status },
       severity: w.severity,
@@ -425,7 +425,7 @@ export function buildCareGraph(homeId: string, options: BuildOptions = {}): Cara
     }
     if (w.source_pattern_id) {
       addEdge({
-        from_key: `aria_safeguarding_patterns:${w.source_pattern_id}`,
+        from_key: `cara_safeguarding_patterns:${w.source_pattern_id}`,
         to_key: key,
         edge_type: "escalated_from",
         weight: 2,

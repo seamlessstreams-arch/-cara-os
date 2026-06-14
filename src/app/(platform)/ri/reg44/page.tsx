@@ -352,13 +352,13 @@ function VisitCard({
           )}
 
           {/* Cara summary */}
-          {visit.aria_summary && (
+          {visit.cara_summary && (
             <div className="rounded-xl border border-teal-100 bg-teal-50/40 p-3">
               <div className="flex items-center gap-1.5 mb-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-teal-600" />
                 <p className="text-[10px] font-semibold text-teal-700 uppercase tracking-widest">Cara Analysis</p>
               </div>
-              <p className="text-xs text-[var(--cs-text-secondary)]">{visit.aria_summary}</p>
+              <p className="text-xs text-[var(--cs-text-secondary)]">{visit.cara_summary}</p>
             </div>
           )}
         </div>
@@ -514,7 +514,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
         response?.choices?.[0]?.message?.content ??
         `Visit ${visit.visit_number} (${formatDate(visit.visit_date ?? visit.scheduled_date)}): Overall finding was ${visit.overall_finding ? OVERALL_LABELS[visit.overall_finding] : "not recorded"}. ${(visit.findings ?? []).filter(f => f.type === "concern").length} concern(s) and ${(visit.findings ?? []).filter(f => f.type === "strength").length} strength(s) identified. ${countOpenActions(visit)} action(s) remain open.`;
 
-      await updateVisit.mutateAsync({ id: visit.id, data: { aria_summary: summary } });
+      await updateVisit.mutateAsync({ id: visit.id, data: { cara_summary: summary } });
     } catch {
       setCaraError("Cara analysis failed — please try again");
     } finally {
@@ -702,8 +702,8 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
             filteredVisits.map((visit) => (
               <div key={visit.id}>
                 <VisitCard visit={visit} onRespondClick={setRespondingTo} />
-                {/* Cara analysis button for visits with findings but no aria_summary */}
-                {!visit.aria_summary && (visit.findings?.length ?? 0) > 0 && (
+                {/* Cara analysis button for visits with findings but no cara_summary */}
+                {!visit.cara_summary && (visit.findings?.length ?? 0) > 0 && (
                   <div className="mt-1.5 flex justify-end">
                     <button
                       onClick={() => handleCaraAnalysis(visit)}

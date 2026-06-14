@@ -378,7 +378,7 @@ export function useUpdateDocumentJob() {
       placed_at?: string;
       placement_ref_type?: string;
       placement_ref_id?: string;
-      aria_notes?: string;
+      cara_notes?: string;
     }) => api.patch<SingleResponse<DocumentIntelligenceJob>>(`/intelligence/document/${id}`, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["intelligence", "document-jobs"] });

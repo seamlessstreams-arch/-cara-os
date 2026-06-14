@@ -168,7 +168,7 @@ export type HrLetterType =
   | "safeguarding_allegation_holding";
 
 export type HrLetterStatus =
-  | "aria_draft"
+  | "cara_draft"
   | "manager_review"
   | "approved"
   | "sent"

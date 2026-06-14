@@ -107,7 +107,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     // Cara matching analysis
-    if (action === "aria_matching") {
+    if (action === "cara_matching") {
       const { incomingChild, currentYoungPeople, homeCapacity } = body;
       if (!incomingChild || !homeCapacity) {
         return NextResponse.json({ error: "incomingChild and homeCapacity required" }, { status: 400 });

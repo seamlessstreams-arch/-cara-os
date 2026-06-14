@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       homeId,
       entityType: recordType,
       entityId: recordId,
-      action: "aria_draft_generated",
+      action: "cara_draft_generated",
       actorUserId,
       actorRole,
       detail: { confidence: result.confidence, riskFlags: result.riskFlags },

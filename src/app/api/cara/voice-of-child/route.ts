@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
       records_considered: summary.recordsConsidered,
       period_start: summary.periodStart ?? null,
       period_end: summary.periodEnd ?? null,
-      aria_confidence: summary.caraConfidence,
+      cara_confidence: summary.caraConfidence,
       llm_used: summary.llmUsed,
       engine_version: summary.engineVersion,
       generated_at: summary.generatedAt,

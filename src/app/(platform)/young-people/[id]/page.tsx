@@ -1146,10 +1146,10 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                         </div>
                       )}
                       {session.staff_reflection && <div><p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-0.5">Staff Reflection</p><p className="text-xs text-slate-600 leading-relaxed">{session.staff_reflection}</p></div>}
-                      {session.aria_summary && (
+                      {session.cara_summary && (
                         <div className="rounded-xl border border-violet-100 bg-violet-50/40 px-3 py-2">
                           <p className="text-[10px] font-semibold text-violet-600 uppercase tracking-wide mb-0.5 flex items-center gap-1"><Sparkles className="h-2.5 w-2.5" />Cara Summary</p>
-                          <p className="text-xs text-slate-700">{session.aria_summary}</p>
+                          <p className="text-xs text-slate-700">{session.cara_summary}</p>
                         </div>
                       )}
                     </div>
@@ -1532,7 +1532,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                           title: `${label} — ${displayName}'s care team`,
                           description: `Training need identified from ${displayName}'s care profile.`,
                           priority, status: "identified",
-                          aria_evidence: `Identified from YP profile: ${displayName}. Care team training need: ${label}.`,
+                          cara_evidence: `Identified from YP profile: ${displayName}. Care team training need: ${label}.`,
                         },
                         { onSuccess: () => setNeedsCreated((p) => new Set(p).add(key)) }
                       )

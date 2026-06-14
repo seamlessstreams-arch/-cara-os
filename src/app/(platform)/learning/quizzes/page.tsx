@@ -347,7 +347,7 @@ export default function QuizzesPage() {
         pathway,
         content: result as Record<string, unknown>,
         status: "draft",
-        aria_generated: true,
+        cara_generated: true,
         created_by: currentUser?.id ?? "staff_darren",
       });
       setSaved(true);

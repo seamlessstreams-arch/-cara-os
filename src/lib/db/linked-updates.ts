@@ -29,7 +29,7 @@ const TIME_SAVED = {
   auto_task_creation: 5,     // minutes saved vs manually creating oversight task
   auto_handover: 10,         // minutes saved vs manually updating handover
   auto_notification: 3,      // minutes saved vs manually notifying
-  aria_draft: 15,            // minutes saved per Cara-assisted draft
+  cara_draft: 15,            // minutes saved per Cara-assisted draft
   linked_record_display: 4,  // minutes saved per linked record surfacing
 };
 
@@ -398,7 +398,7 @@ function trackTimeSaved(
     id: generateId("ts"),
     home_id: homeId,
     staff_id: staffId,
-    action_type: actionType as "auto_fill" | "linked_record" | "aria_draft" | "auto_task" | "auto_handover" | "one_click_summary" | "avoided_duplicate",
+    action_type: actionType as "auto_fill" | "linked_record" | "cara_draft" | "auto_task" | "auto_handover" | "one_click_summary" | "avoided_duplicate",
     minutes_saved: minutes,
     description,
     created_at: new Date().toISOString(),

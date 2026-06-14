@@ -19,7 +19,7 @@ const INSIGHT_STYLES: Record<string, string> = {
 };
 const TYPE_LABEL: Record<string, string> = {
   create_approval_task: "Approval", create_task: "Task", create_debrief_task: "Debrief", suggest_keywork: "Key-work",
-  add_evidence: "Evidence", generate_aria_summary: "Cara summary", update_trend: "Trend", create_notification_draft: "Notification draft",
+  add_evidence: "Evidence", generate_cara_summary: "Cara summary", update_trend: "Trend", create_notification_draft: "Notification draft",
 };
 
 export function WorkflowOrchestrationCard() {

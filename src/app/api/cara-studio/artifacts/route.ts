@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query = (sb.from("aria_studio_artifacts") as any)
+    let query = (sb.from("cara_studio_artifacts") as any)
       .select("*", { count: "exact" })
       .eq("home_id", homeId())
       .neq("status", "deleted_recoverable")
@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (sb.from("aria_studio_artifacts") as any)
+    const { data, error } = await (sb.from("cara_studio_artifacts") as any)
       .insert({
         home_id: homeId(),
         artifact_type: body.artifact_type,

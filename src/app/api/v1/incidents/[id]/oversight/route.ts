@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   // Track time saved (Cara draft used)
-  if (body.aria_assisted) {
+  if (body.cara_assisted) {
     // Log Cara-assisted time saving
   }
 

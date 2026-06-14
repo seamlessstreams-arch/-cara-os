@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     ri_review_date: null,
     ri_review_by: null,
     ri_comments: null,
-    aria_summary: null,
+    cara_summary: null,
     created_by: body.created_by ?? "staff_darren",
     ...body,
   });

@@ -1321,7 +1321,7 @@ function StockOversightTab({
                                 description: `Medication exception recorded: ${med.name} ${med.dosage} was ${admin.status} for ${getYPName(med.child_id)} on ${formatDate(admin.scheduled_time)}. ${admin.reason_not_given ? `Reason: ${admin.reason_not_given}.` : ""} Training need identified to review medication administration procedures.`,
                                 priority: admin.status === "missed" ? "high" : "medium",
                                 status: "identified",
-                                aria_evidence: `${admin.status.toUpperCase()} medication event: ${med.name} for ${getYPName(med.child_id)}. ${admin.reason_not_given ?? admin.notes ?? ""}`.trim(),
+                                cara_evidence: `${admin.status.toUpperCase()} medication event: ${med.name} for ${getYPName(med.child_id)}. ${admin.reason_not_given ?? admin.notes ?? ""}`.trim(),
                               },
                               { onSuccess: () => setNeedCreated((p) => new Set(p).add(admin.id)) }
                             );

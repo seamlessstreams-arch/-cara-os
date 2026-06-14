@@ -33,7 +33,7 @@ export async function writeCaraAudit(event: {
     if (!sb) return;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (sb.from("aria_audit_events") as any).insert({
+    await (sb.from("cara_audit_events") as any).insert({
       organisation_id: event.organisationId,
       home_id: event.homeId,
       event_type: event.eventType,
@@ -74,7 +74,7 @@ export async function getAuditTrail(opts: {
   const { homeId, entityType, entityId, limit = 50 } = opts;
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let query = (sb.from("aria_audit_events") as any)
+  let query = (sb.from("cara_audit_events") as any)
     .select("*")
     .eq("home_id", homeId)
     .order("created_at", { ascending: false })

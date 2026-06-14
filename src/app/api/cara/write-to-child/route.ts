@@ -155,7 +155,7 @@ export async function POST(request: Request) {
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        const { data, error } = await (sb.from("aria_write_to_child") as any).insert({
+        const { data, error } = await (sb.from("cara_write_to_child") as any).insert({
           source_type: source,
           source_record_id: sourceRecordId,
           source_text: sourceText,
@@ -203,7 +203,7 @@ export async function GET(request: Request) {
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        let query = (sb.from("aria_write_to_child") as any)
+        let query = (sb.from("cara_write_to_child") as any)
           .select("*")
           .order("created_at", { ascending: false })
           .limit(20);

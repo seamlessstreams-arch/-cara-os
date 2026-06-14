@@ -1,6 +1,6 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara V1 — SUGGESTION TYPES
-// Mirrors the schema in supabase/migrations/014_aria_suggestions.sql.
+// Mirrors the schema in supabase/migrations/014_cara_suggestions.sql.
 // ══════════════════════════════════════════════════════════════════════════════
 
 export type CaraSuggestionType =

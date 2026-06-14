@@ -73,14 +73,14 @@ function makeTask(overrides: Partial<CsTask> = {}): CsTask {
         : null,
     escalation_level:
       "escalation_level" in overrides ? overrides.escalation_level! : 0,
-    aria_risk_score:
-      "aria_risk_score" in overrides ? overrides.aria_risk_score! : null,
-    aria_risk_factors:
-      "aria_risk_factors" in overrides ? overrides.aria_risk_factors! : null,
-    aria_generated:
-      "aria_generated" in overrides ? overrides.aria_generated! : false,
-    aria_source:
-      "aria_source" in overrides ? overrides.aria_source! : null,
+    cara_risk_score:
+      "cara_risk_score" in overrides ? overrides.cara_risk_score! : null,
+    cara_risk_factors:
+      "cara_risk_factors" in overrides ? overrides.cara_risk_factors! : null,
+    cara_generated:
+      "cara_generated" in overrides ? overrides.cara_generated! : false,
+    cara_source:
+      "cara_source" in overrides ? overrides.cara_source! : null,
     linked_child_id:
       "linked_child_id" in overrides ? overrides.linked_child_id! : null,
     linked_incident_id:
@@ -185,8 +185,8 @@ describe("CATEGORY_PREFIX", () => {
     expect(CATEGORY_PREFIX.admin).toBe("ADM");
   });
 
-  it("maps aria_generated to ARA", () => {
-    expect(CATEGORY_PREFIX.aria_generated).toBe("ARA");
+  it("maps cara_generated to ARA", () => {
+    expect(CATEGORY_PREFIX.cara_generated).toBe("ARA");
   });
 
   it("has no duplicate prefix values", () => {
@@ -219,8 +219,8 @@ describe("generateTaskReference", () => {
     expect(ref.startsWith("ADM-")).toBe(true);
   });
 
-  it("uses ARA prefix for aria_generated category", () => {
-    const ref = generateTaskReference("aria_generated");
+  it("uses ARA prefix for cara_generated category", () => {
+    const ref = generateTaskReference("cara_generated");
     expect(ref.startsWith("ARA-")).toBe(true);
   });
 
@@ -279,7 +279,7 @@ describe("generateTaskReference", () => {
       "inspection",
       "health_and_safety",
       "admin",
-      "aria_generated",
+      "cara_generated",
     ];
     for (const cat of categories) {
       const ref = generateTaskReference(cat);

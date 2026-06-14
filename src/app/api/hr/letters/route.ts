@@ -3,7 +3,7 @@
 //
 // POST   /api/hr/letters         — generate a letter from template, run it
 //                                  through the HR Process Guardian, and persist
-//                                  it as an aria_draft on hr_letters
+//                                  it as an cara_draft on hr_letters
 // GET    /api/hr/letters?id=...  — fetch a letter
 // GET    /api/hr/letters?caseId=... — list letters for a case
 // PATCH  /api/hr/letters         — manager edit / approve / send / withdraw
@@ -140,13 +140,13 @@ export async function POST(req: NextRequest) {
 
   if (!isSupabaseEnabled()) {
     return NextResponse.json({
-      data: { letter: { draftBody, status: "aria_draft", letterType }, guardianReview, persisted: false },
+      data: { letter: { draftBody, status: "cara_draft", letterType }, guardianReview, persisted: false },
     });
   }
   const supabaseRaw = createServerClient();
   if (!supabaseRaw) {
     return NextResponse.json({
-      data: { letter: { draftBody, status: "aria_draft", letterType }, guardianReview, persisted: false },
+      data: { letter: { draftBody, status: "cara_draft", letterType }, guardianReview, persisted: false },
     });
   }
   const supabase = loose(supabaseRaw);
@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
       suggested_safer_wording: guardianReview.suggestedSaferWording ?? null,
       suggested_actions: guardianReview.suggestedActions,
       regulatory_links: guardianReview.regulatoryLinks,
-      aria_confidence: guardianReview.caraConfidence,
+      cara_confidence: guardianReview.caraConfidence,
       llm_used: guardianReview.llmUsed,
       engine_version: guardianReview.engineVersion,
       generated_at: guardianReview.generatedAt,
@@ -203,7 +203,7 @@ export async function POST(req: NextRequest) {
     case_id: caseId ?? null,
     staff_id: staffId,
     letter_type: letterType,
-    status: "aria_draft",
+    status: "cara_draft",
     draft_body: draftBody,
     guardian_review_id: guardianReviewId,
   });
@@ -234,7 +234,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({
     data: {
       letterId,
-      letter: { id: letterId, draftBody, status: "aria_draft", letterType },
+      letter: { id: letterId, draftBody, status: "cara_draft", letterType },
       guardianReviewId,
       guardianReview,
       persisted: true,

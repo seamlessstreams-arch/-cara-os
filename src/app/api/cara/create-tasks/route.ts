@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API: /api/cara/create-tasks
 // POST — creates one or more tasks from an Cara output. Links them via
-// aria_task_links. Requires cara.create_tasks permission.
+// cara_task_links. Requires cara.create_tasks permission.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
@@ -117,12 +117,12 @@ export async function POST(req: NextRequest) {
 
       // Link to Cara output if provided
       if (outputId) {
-        await (supabase.from("aria_task_links") as any).insert({
-          id: `aria_tl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        await (supabase.from("cara_task_links") as any).insert({
+          id: `cara_tl_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
           output_id: outputId,
           task_id: inserted.id,
           task_title: inserted.title,
-          task_source: "aria_suggested",
+          task_source: "cara_suggested",
           confirmed_by: actor.userId,
         });
       }

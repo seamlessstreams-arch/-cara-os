@@ -19,7 +19,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const existing = intelligenceDb.keyWorkSessions.findById(id);
   if (!existing) return NextResponse.json({ error: "Session not found" }, { status: 404 });
 
-  const allowed = ["status","session_plan","resources","child_voice","staff_reflection","aria_summary","completed_by","completed_at","reviewed_by","reviewed_at","manager_oversight_id","title","theme","reason","aims","desired_outcomes"];
+  const allowed = ["status","session_plan","resources","child_voice","staff_reflection","cara_summary","completed_by","completed_at","reviewed_by","reviewed_at","manager_oversight_id","title","theme","reason","aims","desired_outcomes"];
   const patch: Record<string, unknown> = {};
   for (const key of allowed) {
     if (body[key] !== undefined) patch[key] = body[key];

@@ -32,7 +32,7 @@ export type OversightDomain =
   | "risk_escalation"
   | "financial_oversight"
   | "safeguarding_audit"
-  | "aria_output_validation"
+  | "cara_output_validation"
   | "regulatory_interpretation"
   | "record_oversight"
   | "operational_intelligence"
@@ -66,7 +66,7 @@ export interface GatewayResponse {
 export const ALL_OVERSIGHT_DOMAINS: OversightDomain[] = [
   "quality_of_care_review", "compliance_audit", "pattern_detection", "ofsted_readiness",
   "staff_practice_quality", "governance_verification", "outcome_tracking", "risk_escalation",
-  "financial_oversight", "safeguarding_audit", "aria_output_validation", "regulatory_interpretation",
+  "financial_oversight", "safeguarding_audit", "cara_output_validation", "regulatory_interpretation",
   "record_oversight", "operational_intelligence", "therapeutic_support", "daily_analysis",
 ];
 

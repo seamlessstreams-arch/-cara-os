@@ -176,7 +176,7 @@ export function evaluateCandidateRules(
     blockers,
     warnings,
     auto_tasks: autoTasks,
-    aria_suggestions: caraSuggestions,
+    cara_suggestions: caraSuggestions,
   };
 }
 

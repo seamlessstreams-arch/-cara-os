@@ -64,7 +64,7 @@ function buildRowData(body: VoiceSaveRequest): Record<string, unknown> {
     created_at: now,
     updated_at: now,
     source: "voice_intelligence",
-    aria_session_id: body.sessionId ?? null,
+    cara_session_id: body.sessionId ?? null,
   };
 
   switch (body.recordType) {
@@ -189,7 +189,7 @@ export async function POST(req: NextRequest) {
 
     // ── Mark session as saved (if sessionId provided) ────────────────────────
     if (body.sessionId) {
-      await (sb.from("aria_sessions") as SB)
+      await (sb.from("cara_sessions") as SB)
         .update({
           status: "saved",
           saved_record_type: body.recordType,

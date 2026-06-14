@@ -90,10 +90,10 @@ async function fetchCaraHealth(deep = false): Promise<CaraHealthStatus> {
     headers: {
       // These headers are populated from the auth context in the UI wrapper.
       // The component must pass them or the route returns 403.
-      // Read the cara_* keys; fall back to the legacy aria_* keys for any
+      // Read the cara_* keys; fall back to the legacy cara_* keys for any
       // session that set them before the rename (graceful, transient).
-      "x-cara-role": sessionStorage.getItem("cara_role") ?? sessionStorage.getItem("aria_role") ?? "",
-      "x-cara-user-id": sessionStorage.getItem("cara_user_id") ?? sessionStorage.getItem("aria_user_id") ?? "",
+      "x-cara-role": sessionStorage.getItem("cara_role") ?? sessionStorage.getItem("cara_role") ?? "",
+      "x-cara-user-id": sessionStorage.getItem("cara_user_id") ?? sessionStorage.getItem("cara_user_id") ?? "",
     },
     cache: "no-store",
   });

@@ -17,7 +17,7 @@ export async function createFormulation(
   const sb = createServerClient();
   if (!sb) return getDemoFormulation(formulation.child_id);
 
-  const { data, error } = await (sb.from("aria_studio_formulations") as any)
+  const { data, error } = await (sb.from("cara_studio_formulations") as any)
     .insert({
       home_id: formulation.home_id || homeId(),
       child_id: formulation.child_id, title: formulation.title,
@@ -45,7 +45,7 @@ export async function getFormulationForChild(childId: string): Promise<CaraStudi
   const sb = createServerClient();
   if (!sb) return getDemoFormulation(childId);
 
-  const { data, error } = await (sb.from("aria_studio_formulations") as any)
+  const { data, error } = await (sb.from("cara_studio_formulations") as any)
     .select("*").eq("home_id", homeId()).eq("child_id", childId)
     .order("created_at", { ascending: false }).limit(1).single();
 
@@ -57,7 +57,7 @@ export async function listFormulations(hId: string, childId?: string): Promise<C
   const sb = createServerClient();
   if (!sb) return [getDemoFormulation(childId ?? "demo-child-1")];
 
-  let query = (sb.from("aria_studio_formulations") as any)
+  let query = (sb.from("cara_studio_formulations") as any)
     .select("*").eq("home_id", hId).order("created_at", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
 
@@ -70,7 +70,7 @@ export async function updateFormulation(formulationId: string, updates: Partial<
   const sb = createServerClient();
   if (!sb) return null;
 
-  const { data, error } = await (sb.from("aria_studio_formulations") as any)
+  const { data, error } = await (sb.from("cara_studio_formulations") as any)
     .update(updates).eq("id", formulationId).select().single();
 
   if (error) { console.error("[cara-studio/formulation] Update error:", error); return null; }
@@ -81,7 +81,7 @@ export async function approveFormulation(formulationId: string, approvedBy: stri
   const sb = createServerClient();
   if (!sb) return false;
 
-  const { error } = await (sb.from("aria_studio_formulations") as any)
+  const { error } = await (sb.from("cara_studio_formulations") as any)
     .update({ approved_by: approvedBy, approved_at: new Date().toISOString() })
     .eq("id", formulationId);
 

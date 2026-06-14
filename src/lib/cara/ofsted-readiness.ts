@@ -47,7 +47,7 @@ export async function generateOfstedReadinessSnapshot(input: {
       .select("*")
       .eq("home_id", input.homeId)
       .gte("event_date", since.toISOString()),
-    (sb.from("aria_intelligence_signals") as SB)
+    (sb.from("cara_intelligence_signals") as SB)
       .select("*")
       .eq("home_id", input.homeId)
       .in("status", ["open", "acknowledged", "in_progress"]),
@@ -55,7 +55,7 @@ export async function generateOfstedReadinessSnapshot(input: {
       .select("*")
       .eq("home_id", input.homeId)
       .gte("created_at", since.toISOString()),
-    (sb.from("aria_ai_runs") as SB)
+    (sb.from("cara_ai_runs") as SB)
       .select("*")
       .eq("home_id", input.homeId)
       .gte("created_at", since.toISOString()),

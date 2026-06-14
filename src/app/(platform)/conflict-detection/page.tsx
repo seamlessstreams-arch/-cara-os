@@ -144,24 +144,24 @@ export default function ConflictDetectionPage() {
 
                     {/* The two contradicting records */}
                     <div className="flex flex-col sm:flex-row items-stretch gap-2">
-                      <RecordCard label="Record A" record={c.event_a} highlighted={c.aria_assessment.likely_accurate_event_id === c.event_a.event_id} />
+                      <RecordCard label="Record A" record={c.event_a} highlighted={c.cara_assessment.likely_accurate_event_id === c.event_a.event_id} />
                       <div className="flex items-center justify-center text-[var(--cs-text-muted)] sm:flex-col">
                         <span className="text-[10px] font-semibold rounded-full border px-2 py-0.5 bg-[var(--cs-bg)]">vs</span>
                       </div>
-                      <RecordCard label="Record B" record={c.event_b} highlighted={c.aria_assessment.likely_accurate_event_id === c.event_b.event_id} />
+                      <RecordCard label="Record B" record={c.event_b} highlighted={c.cara_assessment.likely_accurate_event_id === c.event_b.event_id} />
                     </div>
 
                     {/* Cara advisory assessment */}
                     <div className="rounded-lg border border-purple-200 bg-purple-50/60 p-3 space-y-1">
                       <p className="text-xs font-semibold flex items-center gap-1.5 text-purple-700">
                         <Brain className="h-3.5 w-3.5" /> Cara assessment
-                        <span className="ml-auto font-normal text-[10px] text-purple-500">confidence {Math.round(c.aria_assessment.confidence * 100)}%</span>
+                        <span className="ml-auto font-normal text-[10px] text-purple-500">confidence {Math.round(c.cara_assessment.confidence * 100)}%</span>
                       </p>
                       <p className="text-xs text-purple-900 leading-relaxed">
-                        {c.aria_assessment.likely_accurate_event_id
-                          ? <>Likely more accurate: <span className="font-mono">{c.aria_assessment.likely_accurate_event_id}</span>. </>
+                        {c.cara_assessment.likely_accurate_event_id
+                          ? <>Likely more accurate: <span className="font-mono">{c.cara_assessment.likely_accurate_event_id}</span>. </>
                           : <>No reliable signal as to which record is correct. </>}
-                        {c.aria_assessment.reasoning}
+                        {c.cara_assessment.reasoning}
                       </p>
                       <p className="text-[10px] text-purple-500 italic">Advisory only — Cara does not edit either record. The decision stays with you.</p>
                     </div>

@@ -15,7 +15,7 @@ export interface CaraRequestPayload {
   audience?: string;
   question?: string;
   user_role?: string;
-  aria_assisted?: boolean;
+  cara_assisted?: boolean;
   /** Document text — used for document_classify and document_to_form modes */
   document_text?: string;
 }

@@ -157,7 +157,7 @@ export default function CaraDevPlannerPage() {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-3 px-4 py-3 bg-slate-50 border-b border-slate-100">
                   <div className="flex items-start gap-3">
-                    {plan.aria_generated && (
+                    {plan.cara_generated && (
                       <div className="p-1.5 rounded-lg bg-indigo-100 shrink-0 mt-0.5">
                         <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
                       </div>
@@ -229,10 +229,10 @@ export default function CaraDevPlannerPage() {
                   </div>
 
                   {/* Cara rationale */}
-                  {plan.aria_rationale && (
+                  {plan.cara_rationale && (
                     <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2.5">
                       <p className="text-[10px] font-semibold text-indigo-600 mb-1">Cara Rationale</p>
-                      <p className="text-xs text-indigo-800 leading-relaxed">{plan.aria_rationale}</p>
+                      <p className="text-xs text-indigo-800 leading-relaxed">{plan.cara_rationale}</p>
                     </div>
                   )}
 

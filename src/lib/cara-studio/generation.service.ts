@@ -37,7 +37,7 @@ export async function generateArtifact(
 
   if (sb && request.source_ids?.length) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: sources } = await (sb.from("aria_studio_sources") as any)
+    const { data: sources } = await (sb.from("cara_studio_sources") as any)
       .select("*")
       .in("id", request.source_ids)
       .eq("home_id", hid);
@@ -71,7 +71,7 @@ export async function generateArtifact(
   let artifact: CaraStudioArtifact;
   if (sb) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (sb.from("aria_studio_artifacts") as any)
+    const { data, error } = await (sb.from("cara_studio_artifacts") as any)
       .insert({
         home_id: hid,
         artifact_type: request.artifact_type,
@@ -104,7 +104,7 @@ export async function generateArtifact(
         is_contradicted: false,
       }));
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (sb.from("aria_studio_artifact_sources") as any).insert(links);
+      await (sb.from("cara_studio_artifact_sources") as any).insert(links);
     }
 
     // Write audit log

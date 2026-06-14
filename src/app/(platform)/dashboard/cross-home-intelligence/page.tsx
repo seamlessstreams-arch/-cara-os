@@ -52,9 +52,9 @@ interface CrossHomeSnapshot {
   ofsted_readiness_score: number;
   reg45_due_date: string | null;
   reg44_due_date: string | null;
-  aria_alerts: CaraAlert[];
-  aria_risk_factors: CaraRiskFactor[];
-  aria_recommendations: CaraRecommendation[];
+  cara_alerts: CaraAlert[];
+  cara_risk_factors: CaraRiskFactor[];
+  cara_recommendations: CaraRecommendation[];
   created_at: string;
 }
 
@@ -175,11 +175,11 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
     ofsted_readiness_score: 88,
     reg45_due_date: "2026-06-01",
     reg44_due_date: "2026-05-28",
-    aria_alerts: [],
-    aria_risk_factors: [
+    cara_alerts: [],
+    cara_risk_factors: [
       { factor: "Night staff supervision gap", severity: "low", trend: "improving" },
     ],
-    aria_recommendations: [
+    cara_recommendations: [
       { recommendation: "Complete night worker supervision by end of week", priority: "this_week", home_id: "home-oak", home_name: "Chamberlain House" },
     ],
     created_at: "2026-05-16T08:00:00Z",
@@ -204,17 +204,17 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
     ofsted_readiness_score: 52,
     reg45_due_date: "2026-05-20",
     reg44_due_date: "2026-05-10",
-    aria_alerts: [
+    cara_alerts: [
       { id: "alert-1", severity: "critical", message: "Reg 44 visit overdue by 6 days", home_id: "home-willow", home_name: "Willow Lodge", category: "compliance", created_at: "2026-05-16T08:00:00Z" },
       { id: "alert-2", severity: "high", message: "2 open safeguarding concerns require RI oversight", home_id: "home-willow", home_name: "Willow Lodge", category: "safeguarding", created_at: "2026-05-16T08:00:00Z" },
       { id: "alert-3", severity: "high", message: "Recording compliance below 65% threshold", home_id: "home-willow", home_name: "Willow Lodge", category: "recording", created_at: "2026-05-16T08:00:00Z" },
     ],
-    aria_risk_factors: [
+    cara_risk_factors: [
       { factor: "Pattern of escalating incidents", severity: "high", trend: "worsening" },
       { factor: "Staff supervision below minimum", severity: "high", trend: "worsening" },
       { factor: "Management oversight lapsed", severity: "critical", trend: "worsening" },
     ],
-    aria_recommendations: [
+    cara_recommendations: [
       { recommendation: "Urgent: Schedule RI visit to Willow Lodge within 48 hours", priority: "immediate", home_id: "home-willow", home_name: "Willow Lodge" },
       { recommendation: "Review safeguarding concerns with designated officer", priority: "immediate", home_id: "home-willow", home_name: "Willow Lodge" },
       { recommendation: "Implement supervision recovery plan for all staff", priority: "this_week", home_id: "home-willow", home_name: "Willow Lodge" },
@@ -241,9 +241,9 @@ const DEMO_SNAPSHOTS: CrossHomeSnapshot[] = [
     ofsted_readiness_score: 94,
     reg45_due_date: "2026-06-15",
     reg44_due_date: "2026-06-02",
-    aria_alerts: [],
-    aria_risk_factors: [],
-    aria_recommendations: [
+    cara_alerts: [],
+    cara_risk_factors: [],
+    cara_recommendations: [
       { recommendation: "Continue current practices - exemplary performance", priority: "this_month", home_id: "home-birch", home_name: "Birch Cottage" },
     ],
     created_at: "2026-05-16T08:00:00Z",
@@ -450,7 +450,7 @@ export default function CrossHomeIntelligencePage() {
       const res = await fetch("/api/cara/cross-home", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "aria_analyse", organisationId: DEMO_ORG_ID, query }),
+        body: JSON.stringify({ action: "cara_analyse", organisationId: DEMO_ORG_ID, query }),
       });
       if (res.ok) {
         const d = await res.json();
@@ -725,9 +725,9 @@ function OverviewTab({
               </div>
 
               {/* Risk factors */}
-              {home.aria_risk_factors.length > 0 && (
+              {home.cara_risk_factors.length > 0 && (
                 <div className="pt-2 border-t space-y-1">
-                  {home.aria_risk_factors.slice(0, 2).map((rf, i) => (
+                  {home.cara_risk_factors.slice(0, 2).map((rf, i) => (
                     <div key={i} className="flex items-center gap-2 text-xs">
                       {trendIcon(rf.trend)}
                       <span style={{ color: "var(--cs-text-secondary)" }}>{rf.factor}</span>
@@ -940,9 +940,9 @@ function RiskMatrixTab({ snapshots }: { snapshots: CrossHomeSnapshot[] }) {
                     </Badge>
                   </div>
                   {/* Top 3 risk factors */}
-                  {home.aria_risk_factors.length > 0 ? (
+                  {home.cara_risk_factors.length > 0 ? (
                     <div className="space-y-1">
-                      {home.aria_risk_factors.slice(0, 3).map((rf, i) => (
+                      {home.cara_risk_factors.slice(0, 3).map((rf, i) => (
                         <div key={i} className="flex items-center gap-2 text-sm">
                           {trendIcon(rf.trend)}
                           <span style={{ color: "var(--cs-text-secondary)" }}>{rf.factor}</span>

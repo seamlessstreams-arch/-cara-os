@@ -396,7 +396,7 @@ function CaraPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
       priority: p.priority,
       affected_roles: ["residential_care_worker", "senior_residential_care_worker"],
       status: "identified",
-      aria_evidence: `Detected by Cara from ${entries.length} daily log entries`,
+      cara_evidence: `Detected by Cara from ${entries.length} daily log entries`,
       created_by: currentUser?.id ?? "staff_darren",
     });
     setCreated((prev) => new Set(prev).add(idx));

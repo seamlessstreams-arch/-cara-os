@@ -19,7 +19,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const existing = intelligenceDb.interactiveSessions.findById(id);
   if (!existing) return NextResponse.json({ error: "Session not found" }, { status: 404 });
 
-  const allowed = ["responses","child_voice","staff_notes","aria_summary","status","safeguarding_flags","follow_up_actions","completed_at","consent_notes"];
+  const allowed = ["responses","child_voice","staff_notes","cara_summary","status","safeguarding_flags","follow_up_actions","completed_at","consent_notes"];
   const patch: Record<string, unknown> = {};
   for (const key of allowed) {
     if (body[key] !== undefined) patch[key] = body[key];

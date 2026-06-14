@@ -64,7 +64,7 @@ export async function runEarlyWarningChecks(hId: string, childId?: string): Prom
       confidence_score: w.confidence_score, recommended_action: w.recommended_action,
       status: "open",
     }));
-    const { error } = await (sb.from("aria_studio_early_warnings") as any).insert(toInsert);
+    const { error } = await (sb.from("cara_studio_early_warnings") as any).insert(toInsert);
     if (error) console.error("[cara-studio/early-warning] Insert error:", error);
   }
 
@@ -75,7 +75,7 @@ export async function listEarlyWarnings(hId: string, childId?: string, status?: 
   const sb = createServerClient();
   if (!sb) return getDemoWarnings();
 
-  let query = (sb.from("aria_studio_early_warnings") as any)
+  let query = (sb.from("cara_studio_early_warnings") as any)
     .select("*").eq("home_id", hId).order("created_at", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
   if (status) query = query.eq("status", status);
@@ -89,7 +89,7 @@ export async function reviewEarlyWarning(warningId: string, status: "acknowledge
   const sb = createServerClient();
   if (!sb) return false;
 
-  const { error } = await (sb.from("aria_studio_early_warnings") as any)
+  const { error } = await (sb.from("cara_studio_early_warnings") as any)
     .update({ status, reviewed_at: new Date().toISOString() }).eq("id", warningId);
 
   if (error) { console.error("[cara-studio/early-warning] Review error:", error); return false; }
@@ -104,7 +104,7 @@ const WARNING_CHECKS: WarningCheck[] = [
     title: "Recording gaps detected",
     check: async (sb, hId) => {
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { count } = await sb.from("aria_studio_sources").select("id", { count: "exact", head: true })
+      const { count } = await sb.from("cara_studio_sources").select("id", { count: "exact", head: true })
         .eq("home_id", hId).eq("source_type", "daily_log").gte("source_date", weekAgo);
       const logCount = count ?? 0;
       if (logCount < 5) {
@@ -124,7 +124,7 @@ const WARNING_CHECKS: WarningCheck[] = [
     title: "Overdue management oversight",
     check: async (sb, hId) => {
       const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
-      const { count } = await sb.from("aria_studio_sources").select("id", { count: "exact", head: true })
+      const { count } = await sb.from("cara_studio_sources").select("id", { count: "exact", head: true })
         .eq("home_id", hId).eq("source_type", "management_oversight").gte("source_date", fourteenDaysAgo);
       if ((count ?? 0) === 0) {
         return {
@@ -146,9 +146,9 @@ const WARNING_CHECKS: WarningCheck[] = [
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
 
-      const { count: recentCount } = await sb.from("aria_studio_sources").select("id", { count: "exact", head: true })
+      const { count: recentCount } = await sb.from("cara_studio_sources").select("id", { count: "exact", head: true })
         .eq("home_id", hId).eq("child_id", childId).eq("source_type", "incident").gte("source_date", weekAgo);
-      const { count: priorCount } = await sb.from("aria_studio_sources").select("id", { count: "exact", head: true })
+      const { count: priorCount } = await sb.from("cara_studio_sources").select("id", { count: "exact", head: true })
         .eq("home_id", hId).eq("child_id", childId).eq("source_type", "incident").gte("source_date", twoWeeksAgo).lt("source_date", weekAgo);
 
       const recent = recentCount ?? 0;
@@ -170,7 +170,7 @@ const WARNING_CHECKS: WarningCheck[] = [
     title: "Supervision overdue",
     check: async (sb, hId) => {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-      const { count } = await sb.from("aria_studio_sources").select("id", { count: "exact", head: true })
+      const { count } = await sb.from("cara_studio_sources").select("id", { count: "exact", head: true })
         .eq("home_id", hId).eq("source_type", "supervision").gte("source_date", thirtyDaysAgo);
       if ((count ?? 0) === 0) {
         return {

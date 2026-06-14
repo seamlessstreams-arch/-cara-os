@@ -2,7 +2,7 @@
 // Cara — UNIVERSAL TYPES
 // Shared shapes for the universal Cara layer. Domain engines (oversight,
 // voice-of-child, HR Process Guardian) keep their own narrow types and write
-// their results back into aria_outputs.structured_output.
+// their results back into cara_outputs.structured_output.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CaraPermission, CaraRole } from "./cara-permissions";

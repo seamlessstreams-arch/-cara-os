@@ -93,7 +93,7 @@ function collectSafeguardingPatterns(homeId: string, start: string, end: string)
       severity: p.severity,
       sentiment: "concern",
       source_type: "safeguarding",
-      source_table: "aria_safeguarding_patterns",
+      source_table: "cara_safeguarding_patterns",
       source_id: p.id,
       occurred_at: p.detected_at?.slice(0, 10) ?? p.window_end,
     }));
@@ -111,7 +111,7 @@ function collectEarlyWarnings(homeId: string, start: string, end: string): Draft
       severity: w.severity,
       sentiment: "concern",
       source_type: "safeguarding",
-      source_table: "aria_early_warnings",
+      source_table: "cara_early_warnings",
       source_id: w.id,
       occurred_at: w.created_at?.slice(0, 10) ?? start,
     }));
@@ -129,7 +129,7 @@ function collectFormulations(homeId: string, start: string, end: string): DraftI
       severity: "medium",
       sentiment: "neutral",
       source_type: "management_oversight",
-      source_table: "aria_formulations",
+      source_table: "cara_formulations",
       source_id: f.id,
       occurred_at: (f.approved_at ?? f.generated_at).slice(0, 10),
     }));
@@ -151,7 +151,7 @@ function collectRecommendations(homeId: string, start: string, end: string): Dra
       severity: r.priority === "p1" ? "critical" : r.priority === "p2" ? "high" : r.priority === "p3" ? "medium" : "low",
       sentiment: r.status === "completed" ? "positive" : "neutral",
       source_type: "management_oversight",
-      source_table: "aria_decision_recommendations",
+      source_table: "cara_decision_recommendations",
       source_id: r.id,
       occurred_at: (r.decided_at ?? r.generated_at).slice(0, 10),
     }));

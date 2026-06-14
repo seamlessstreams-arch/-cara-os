@@ -49,7 +49,7 @@ export async function scanSafeguardingPatterns(hId: string, childId?: string): P
   const sb = createServerClient();
   if (!sb) return getDemoPatterns();
 
-  let query = (sb.from("aria_studio_sources") as any)
+  let query = (sb.from("cara_studio_sources") as any)
     .select("id, source_type, title, content, summary, source_date, child_id")
     .eq("home_id", hId).order("source_date", { ascending: false }).limit(200);
   if (childId) query = query.eq("child_id", childId);
@@ -101,7 +101,7 @@ export async function scanSafeguardingPatterns(hId: string, childId?: string): P
   }
 
   if (patterns.length > 0) {
-    const { error: insertErr } = await (sb.from("aria_studio_safeguarding_patterns") as any)
+    const { error: insertErr } = await (sb.from("cara_studio_safeguarding_patterns") as any)
       .insert(patterns.map((p) => ({
         home_id: p.home_id, child_id: p.child_id, pattern_type: p.pattern_type,
         risk_level: p.risk_level, title: p.title, description: p.description,
@@ -118,7 +118,7 @@ export async function listSafeguardingPatterns(hId: string, childId?: string, st
   const sb = createServerClient();
   if (!sb) return getDemoPatterns();
 
-  let query = (sb.from("aria_studio_safeguarding_patterns") as any)
+  let query = (sb.from("cara_studio_safeguarding_patterns") as any)
     .select("*").eq("home_id", hId).order("created_at", { ascending: false });
   if (childId) query = query.eq("child_id", childId);
   if (status) query = query.eq("status", status);
@@ -132,7 +132,7 @@ export async function reviewSafeguardingPattern(patternId: string, _reviewedBy: 
   const sb = createServerClient();
   if (!sb) return false;
 
-  const { error } = await (sb.from("aria_studio_safeguarding_patterns") as any)
+  const { error } = await (sb.from("cara_studio_safeguarding_patterns") as any)
     .update({ status, reviewed_at: new Date().toISOString() }).eq("id", patternId);
 
   if (error) { console.error("[cara-studio/safeguarding] Review error:", error); return false; }

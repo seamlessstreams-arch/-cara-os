@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     if (isSupabaseEnabled()) {
       const sb = createServerClient();
       if (sb) {
-        const { data, error } = await (sb.from("aria_sessions") as SB)
+        const { data, error } = await (sb.from("cara_sessions") as SB)
           .insert({
             home_id: body.homeId,
             user_id: body.actorUserId,
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
       if (sb) {
         try {
           // Store the user message (transcript)
-          await (sb.from("aria_messages") as SB).insert({
+          await (sb.from("cara_messages") as SB).insert({
             session_id: sessionId,
             role: "user",
             content: body.transcript.slice(0, 5000),
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
           });
 
           // Store the assistant response
-          await (sb.from("aria_messages") as SB).insert({
+          await (sb.from("cara_messages") as SB).insert({
             session_id: sessionId,
             role: "assistant",
             content: result.answer ?? "",
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
           });
 
           // Update session with final risk level
-          await (sb.from("aria_sessions") as SB)
+          await (sb.from("cara_sessions") as SB)
             .update({
               risk_level: result.riskLevel ?? "low",
               status: "completed",

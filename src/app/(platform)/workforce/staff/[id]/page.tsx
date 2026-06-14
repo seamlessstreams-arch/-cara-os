@@ -186,7 +186,7 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
                   {PATHWAY_STAGE_LABELS[profile.current_stage]}
                 </Badge>
               )}
-              <CaraUsageBadge caraAssisted={(profile as any)?.aria_assist_used} sourceTable="workforce_profiles" recordId={profile?.staff_id} />
+              <CaraUsageBadge caraAssisted={(profile as any)?.cara_assist_used} sourceTable="workforce_profiles" recordId={profile?.staff_id} />
               {profile?.target_stage && (
                 <div className="flex items-center gap-1 text-xs text-[var(--cs-text-muted)]">
                   <ArrowUpRight className="h-3.5 w-3.5" />
@@ -268,10 +268,10 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
       {tab === "overview" && profile && (
         <div className="space-y-4">
           {/* Cara narrative */}
-          {profile.aria_narrative && (
+          {profile.cara_narrative && (
             <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
               <p className="text-[10px] font-semibold text-indigo-600 mb-2 uppercase tracking-widest">Cara Profile Intelligence</p>
-              <p className="text-sm text-indigo-900 leading-relaxed">{profile.aria_narrative}</p>
+              <p className="text-sm text-indigo-900 leading-relaxed">{profile.cara_narrative}</p>
               {profile.last_assessed_at && (
                 <p className="text-[10px] text-indigo-400 mt-2">
                   Assessed {profile.last_assessed_at.slice(0, 10)}
@@ -447,10 +447,10 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
                       </div>
                     ))}
                   </div>
-                  {plan.aria_rationale && (
+                  {plan.cara_rationale && (
                     <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2.5">
                       <p className="text-[10px] font-semibold text-indigo-600 mb-0.5">Cara Rationale</p>
-                      <p className="text-xs text-indigo-800 leading-relaxed">{plan.aria_rationale}</p>
+                      <p className="text-xs text-indigo-800 leading-relaxed">{plan.cara_rationale}</p>
                     </div>
                   )}
                 </div>
@@ -494,10 +494,10 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
                     </ul>
                   </div>
                 )}
-                {o.aria_summary && (
+                {o.cara_summary && (
                   <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2">
                     <p className="text-[10px] font-semibold text-indigo-600 mb-0.5">Cara</p>
-                    <p className="text-xs text-indigo-800">{o.aria_summary}</p>
+                    <p className="text-xs text-indigo-800">{o.cara_summary}</p>
                   </div>
                 )}
               </div>
@@ -546,10 +546,10 @@ export default function StaffCompetencyProfilePage({ params }: { params: Promise
                     <p className="text-xs text-[var(--cs-text-secondary)]">{appraisal.key_achievements}</p>
                   </div>
                 )}
-                {appraisal.aria_insights && (
+                {appraisal.cara_insights && (
                   <div className="rounded-xl border border-indigo-100 bg-indigo-50/50 px-3 py-2">
                     <p className="text-[10px] font-semibold text-indigo-600 mb-0.5">Cara Insights</p>
-                    <p className="text-xs text-indigo-800">{appraisal.aria_insights}</p>
+                    <p className="text-xs text-indigo-800">{appraisal.cara_insights}</p>
                   </div>
                 )}
                 <div className="flex items-center gap-3 text-[10px] text-[var(--cs-text-muted)] pt-1">

@@ -188,13 +188,13 @@ function StaffReadinessCard({
             )}
 
             {/* Cara Narrative */}
-            {profile.aria_narrative && (
+            {profile.cara_narrative && (
               <div className="rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-2">
                 <p className="text-[10px] font-semibold text-indigo-700 mb-0.5 flex items-center gap-1">
                   <Sparkles className="h-3 w-3" />
                   Cara Analysis
                 </p>
-                <p className="text-[11px] text-indigo-800 leading-relaxed">{profile.aria_narrative}</p>
+                <p className="text-[11px] text-indigo-800 leading-relaxed">{profile.cara_narrative}</p>
               </div>
             )}
 
@@ -340,7 +340,7 @@ export default function CareerPathwayPage() {
         p.target_stage ? PATHWAY_STAGE_LABELS[p.target_stage] : "",
         ...p.strengths,
         ...p.development_areas,
-        p.aria_narrative || "",
+        p.cara_narrative || "",
       ].join(" ").toLowerCase();
       return hay.includes(q);
     });

@@ -207,7 +207,7 @@ function TasksTab() {
     { ref: "CMP-B2L002", title: "Update Reg 45 evidence folder", category: "compliance", priority: "high", status: "not_started", due: "Tomorrow", assigned: "Darren L", riskScore: 55 },
     { ref: "MED-C3M003", title: "Medication stock check — monthly", category: "medication", priority: "medium", status: "awaiting_sign_off", due: "14 May", assigned: "James H", riskScore: 30 },
     { ref: "TRN-D4N004", title: "Book restraint refresher training", category: "training", priority: "high", status: "overdue", due: "10 May", assigned: "Unassigned", riskScore: 68 },
-    { ref: "ARA-E5O005", title: "Cara: Pattern detected — weekend incident increase", category: "aria_generated", priority: "high", status: "not_started", due: "15 May", assigned: "Darren L", riskScore: 61 },
+    { ref: "ARA-E5O005", title: "Cara: Pattern detected — weekend incident increase", category: "cara_generated", priority: "high", status: "not_started", due: "15 May", assigned: "Darren L", riskScore: 61 },
   ];
 
   return (
@@ -250,7 +250,7 @@ function TasksTab() {
                     <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded-full border", PRIORITY_COLOURS[task.priority])}>
                       {task.priority}
                     </span>
-                    {task.category === "aria_generated" && (
+                    {task.category === "cara_generated" && (
                       <span className="flex items-center gap-0.5 text-[10px] text-[var(--cs-cara-gold)]">
                         <Sparkles className="h-2.5 w-2.5" /> Cara
                       </span>

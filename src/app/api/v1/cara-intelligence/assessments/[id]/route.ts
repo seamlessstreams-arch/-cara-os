@@ -61,8 +61,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       home_id: updated.home_id,
       user_id: body.reviewed_by ?? "unknown",
       child_id: updated.child_id,
-      action_type: "aria_assessment_reviewed",
-      source_table: "aria_assessments",
+      action_type: "cara_assessment_reviewed",
+      source_table: "cara_assessments",
       source_id: id,
     });
   } else if (body.status === "approved") {
@@ -70,8 +70,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       home_id: updated.home_id,
       user_id: body.approved_by ?? "unknown",
       child_id: updated.child_id,
-      action_type: "aria_assessment_approved",
-      source_table: "aria_assessments",
+      action_type: "cara_assessment_approved",
+      source_table: "cara_assessments",
       source_id: id,
     });
   }

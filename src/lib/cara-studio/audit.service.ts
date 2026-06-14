@@ -14,7 +14,7 @@ export async function writeStudioAuditLog(
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (sb.from("aria_studio_audit_log") as any).insert({
+    await (sb.from("cara_studio_audit_log") as any).insert({
       home_id: entry.home_id,
       actor_id: entry.actor_id,
       action_type: entry.action_type,
@@ -44,7 +44,7 @@ export async function getAuditTrail(
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (sb.from("aria_studio_audit_log") as any)
+    const { data } = await (sb.from("cara_studio_audit_log") as any)
       .select("*")
       .eq("artifact_id", artifactId)
       .order("created_at", { ascending: true });
