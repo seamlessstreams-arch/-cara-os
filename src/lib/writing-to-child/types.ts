@@ -22,6 +22,7 @@ export type WritingRecordType =
   | "health"
   | "medication"
   | "exploitation"
+  | "risk_assessment"
   | "professional_meeting";
 
 export type WritingTone = "warm" | "clear" | "formal" | "child_readable" | "professional";

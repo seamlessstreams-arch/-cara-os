@@ -192,6 +192,19 @@ export const RECORD_TYPE_INTELLIGENCE: RecordTypeIntelligence[] = [
     avoid: ["session completed (without the child's voice)"],
   },
   {
+    type: "risk_assessment",
+    label: "Risk assessment",
+    focus: "Name risk plainly without blaming the child; balance it with strengths and protective factors; record the child's voice and what protective adults will do.",
+    checks: [
+      { element: "risk stated plainly but not blamingly", cues: ["risk", "harm", "concern", "exposed to", "at risk from"], prompt: "State the risk clearly — but locate it in the context/others where relevant, not as the child's fault ('exposed to', not 'puts themselves at')." },
+      { element: "strengths and protective factors", cues: ["strength", "protective", "what helps", "trusted", "safe", "going well", "resilience"], prompt: "Balance the risks with the child's strengths and protective factors — a risk assessment is not only a list of deficits." },
+      { ...COMMON_CHILD_VOICE, prompt: "What does the child say about the risk and what keeps them safe? Record their voice and wishes." },
+      { element: "what protective adults will do", cues: ["staff will", "we will", "plan", "support", "reduce", "safety plan", "protective"], prompt: "Record what adults will do to reduce the risk — not only what the child must do differently." },
+      { element: "how it will be shared with the child", cues: ["explained", "shared with", "the child understands", "in a way they"], prompt: "How will this assessment be explained to the child in a way they can understand and contribute to?" },
+    ],
+    avoid: ["puts themselves at risk", "risky lifestyle", "challenging behaviour", "non-compliant"],
+  },
+  {
     type: "professional_meeting",
     label: "Professional meeting",
     focus: "Whether the child's voice was represented, the decisions made, and how they will be explained to the child.",

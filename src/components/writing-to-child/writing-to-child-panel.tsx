@@ -25,6 +25,7 @@ const RECORD_TYPES: { value: WritingRecordType; label: string }[] = [
   { value: "health", label: "Health" },
   { value: "medication", label: "Medication" },
   { value: "exploitation", label: "Exploitation concern" },
+  { value: "risk_assessment", label: "Risk assessment" },
   { value: "manager_oversight", label: "Manager oversight" },
   { value: "professional_meeting", label: "Professional meeting" },
 ];

@@ -28,7 +28,7 @@ describe("writing-to-child — knowledge & language bank", () => {
 
   it("covers the core record types", () => {
     const types = RECORD_TYPE_INTELLIGENCE.map((r) => r.type);
-    expect(types).toEqual(expect.arrayContaining(["missing_episode", "incident", "room_search", "family_time", "education", "exploitation", "health", "medication"]));
+    expect(types).toEqual(expect.arrayContaining(["missing_episode", "incident", "room_search", "family_time", "education", "exploitation", "health", "medication", "risk_assessment"]));
   });
 });
 

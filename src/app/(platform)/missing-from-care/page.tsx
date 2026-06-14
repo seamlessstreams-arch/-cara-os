@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1096,6 +1097,9 @@ export default function MissingFromCarePage() {
         days={90}
         defaultCollapsed
       />
+      <div className="mt-4">
+        <WritingToChildPanel defaultRecordType="missing_episode" showRecordTypeSelect={false} showAdvanced={false} title="Writing to the Child — check this return record" />
+      </div>
     </PageShell>
   );
 }
