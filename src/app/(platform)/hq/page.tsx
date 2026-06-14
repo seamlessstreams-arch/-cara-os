@@ -169,6 +169,58 @@ export default function HqOverviewPage() {
           </Card>
         </div>
 
+        <div className="grid gap-4 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Top API routes (30 days)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {o && o.api_calls.by_feature_30d.length > 0 ? (
+                <ul className="space-y-1.5 text-sm">
+                  {o.api_calls.by_feature_30d.map((f) => (
+                    <li key={f.feature} className="flex items-center justify-between gap-2">
+                      <span className="text-[var(--cs-text-secondary)]">
+                        {f.feature.replaceAll("-", " ")}
+                        {f.intelligence && (
+                          <span className="ml-1.5 text-[10px] font-semibold uppercase text-[var(--cs-teal)]">· intel</span>
+                        )}
+                      </span>
+                      <span className="font-semibold text-[var(--cs-navy)]">{f.count.toLocaleString()}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-[var(--cs-text-muted)]">No API calls recorded yet.</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Decisions by feature (30 days)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {o && o.decisions.by_feature_30d.length > 0 ? (
+                <ul className="space-y-1.5 text-sm">
+                  {o.decisions.by_feature_30d.map((f) => (
+                    <li key={f.feature} className="flex items-center justify-between gap-2">
+                      <span className="text-[var(--cs-text-secondary)]">{f.feature.replaceAll("-", " ")}</span>
+                      <span className="font-semibold text-[var(--cs-navy)]">
+                        {(f.deterministic + f.ai).toLocaleString()}
+                        {f.ai > 0 && (
+                          <span className="ml-1 text-[11px] font-normal text-[var(--cs-text-muted)]">({f.ai} AI)</span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-[var(--cs-text-muted)]">No decisions recorded yet.</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="flex flex-wrap gap-3">
           <Link
             href="/hq/customers"
