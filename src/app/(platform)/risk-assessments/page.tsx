@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
+import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -384,6 +385,9 @@ export default function RiskAssessmentsPage() {
         defaultCollapsed
       />
       <CaraPracticePanel sourceType="risk_assessment" homeId="home_oak" title="Run Cara on this assessment" />
+      <div className="mt-4">
+        <WritingToChildPanel defaultRecordType="risk_assessment" showRecordTypeSelect={false} showAdvanced={false} title="Writing to the Child — check this assessment" />
+      </div>
     </PageShell>
   );
 }

@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1050,6 +1051,9 @@ export default function FamilyContactPage() {
         days={28}
         defaultCollapsed
       />
+      <div className="mt-4">
+        <WritingToChildPanel defaultRecordType="family_time" showRecordTypeSelect={false} showAdvanced={false} title="Writing to the Child — check this family-time record" />
+      </div>
     </PageShell>
   );
 }

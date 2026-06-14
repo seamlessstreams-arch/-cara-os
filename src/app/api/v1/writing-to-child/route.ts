@@ -19,7 +19,7 @@ export const dynamic = "force-dynamic";
 const RECORD_TYPES: WritingRecordType[] = [
   "daily_log", "incident", "missing_episode", "key_work", "manager_oversight",
   "room_search", "education", "family_time", "health", "medication",
-  "exploitation", "professional_meeting",
+  "exploitation", "risk_assessment", "professional_meeting",
 ];
 
 function strArr(v: unknown): string[] | undefined {

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
+import { WritingToChildPanel } from "@/components/writing-to-child/writing-to-child-panel";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -492,6 +493,9 @@ export default function EducationPage() {
         days={28}
         defaultCollapsed
       />
+      <div className="mt-4">
+        <WritingToChildPanel defaultRecordType="education" showRecordTypeSelect={false} showAdvanced={false} title="Writing to the Child — check this education record" />
+      </div>
     </PageShell>
   );
 }
