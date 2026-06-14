@@ -71,6 +71,31 @@ export type AriaFlagType =
   | "culture_drift"
   | "adult_centred_drift";
 
+/**
+ * Flag types that represent a safeguarding / escalation concern — they earn the
+ * shield treatment in the panel and belong on the manager-oversight threshold
+ * watchlist. Single source of truth so the list cannot drift across surfaces.
+ */
+export const SAFEGUARDING_FLAG_TYPES: AriaFlagType[] = [
+  "safeguarding_threshold",
+  "immediate_safety",
+  "lado_consideration",
+  "extra_familial_harm",
+  "nrm_consideration",
+];
+
+/**
+ * Child-safety risk signals for the "risk may be normalising" culture radar.
+ * Excludes LADO (that concerns adult conduct, not the normalisation of risk to
+ * a child) but includes extra-familial harm and NRM/modern-slavery concerns.
+ */
+export const CHILD_SAFEGUARDING_RISK_FLAG_TYPES: AriaFlagType[] = [
+  "safeguarding_threshold",
+  "immediate_safety",
+  "extra_familial_harm",
+  "nrm_consideration",
+];
+
 // The fourteen developmental domains a childhood reasonably requires.
 export const DEVELOPMENTAL_DOMAINS = [
   "safety",

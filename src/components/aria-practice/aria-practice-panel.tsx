@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Sparkles, AlertTriangle, ShieldAlert, HelpCircle, ListChecks, Loader2, ClipboardCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAriaPracticeAnalyse, type AnalyseInput } from "@/hooks/use-aria-practice";
+import { SAFEGUARDING_FLAG_TYPES } from "@/lib/aria-practice/types";
 import type { AriaSeverity, PracticeSourceType } from "@/lib/aria-practice/types";
 
 const SEV_STYLE: Record<AriaSeverity, string> = {
@@ -103,7 +104,7 @@ export function AriaPracticePanel(props: AriaPracticePanelProps) {
                   {out.flags.map((f, i) => (
                     <li key={i} className={cn("rounded-md border p-2 text-sm", SEV_STYLE[f.severity])}>
                       <div className="flex items-center gap-2">
-                        {(f.flagType === "safeguarding_threshold" || f.flagType === "immediate_safety" || f.flagType === "lado_consideration") && (
+                        {SAFEGUARDING_FLAG_TYPES.includes(f.flagType) && (
                           <ShieldAlert className="h-3.5 w-3.5" />
                         )}
                         <span className="font-semibold">{f.title}</span>

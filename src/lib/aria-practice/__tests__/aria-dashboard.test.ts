@@ -73,6 +73,37 @@ describe("buildPracticeDashboard", () => {
     expect(item.strategyDiscussion).toBe(true);
   });
 
+  it("surfaces extra-familial harm and NRM flags on the threshold watchlist (capture-once, surface-everywhere)", () => {
+    const d = buildPracticeDashboard(emptyInput({
+      flags: [
+        flag("extra_familial_harm", { id: "f_efh", severity: "high", title: "EFH" }),
+        flag("nrm_consideration", { id: "f_nrm", severity: "high", title: "NRM" }),
+        flag("lado_consideration", { id: "f_lado", severity: "high" }),
+        flag("vague_recording"), // not a safeguarding flag — excluded from the watchlist
+      ],
+    }));
+    const kinds = d.thresholdWatchlist.map((w) => w.kind);
+    expect(kinds).toEqual(expect.arrayContaining(["extra_familial_harm", "nrm_consideration", "lado_consideration"]));
+    expect(kinds).not.toContain("vague_recording");
+  });
+
+  it("counts EFH and NRM as safeguarding-normalisation signals, but not LADO (adult conduct)", () => {
+    // The 'risk may be normalising' radar triggers at >=3 child-safeguarding-risk
+    // signals. Three qualifying flags (threshold + EFH + NRM) reach it; the LADO
+    // flag is an adult-conduct concern and must NOT be counted.
+    const d = buildPracticeDashboard(emptyInput({
+      flags: [
+        flag("safeguarding_threshold", { id: "f_thr", severity: "high" }),
+        flag("extra_familial_harm", { id: "f_efh", severity: "high" }),
+        flag("nrm_consideration", { id: "f_nrm", severity: "high" }),
+        flag("lado_consideration", { id: "f_lado", severity: "high" }),
+      ],
+    }));
+    const normalised = d.cultureRadar.find((r) => r.key === "normalised_risk");
+    expect(normalised).toBeDefined();
+    expect(normalised!.count).toBe(3); // threshold + EFH + NRM; LADO excluded
+  });
+
   it("restricts wellbeing signals by role", () => {
     const w: AriaStaffWellbeingSignal = {
       id: "aws_1", tenant_id: null, staff_id: "staff_ryan", home_id: "home_oak", signal_type: "burnout",

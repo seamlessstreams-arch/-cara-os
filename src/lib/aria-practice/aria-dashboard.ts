@@ -17,6 +17,7 @@ import type {
   AriaPracticeAssessment,
   AriaSeverity,
 } from "./types";
+import { SAFEGUARDING_FLAG_TYPES, CHILD_SAFEGUARDING_RISK_FLAG_TYPES } from "./types";
 
 export interface PracticeDashboardInput {
   flags: AriaPracticeFlag[];
@@ -111,7 +112,7 @@ export function buildPracticeDashboard(input: PracticeDashboardInput): PracticeD
   // Threshold / LADO watchlist.
   const thresholdWatchlist = [
     ...open
-      .filter((f) => ["safeguarding_threshold", "immediate_safety", "lado_consideration"].includes(f.flag_type as string))
+      .filter((f) => (SAFEGUARDING_FLAG_TYPES as string[]).includes(f.flag_type as string))
       .map((f) => ({ id: f.id, childId: f.child_id, kind: f.flag_type as string, severity: f.severity, title: f.title })),
     ...input.thresholdConsultations
       .filter((c) => !c.manager_decision)
@@ -133,7 +134,7 @@ export function buildPracticeDashboard(input: PracticeDashboardInput): PracticeD
 
   // Culture radar — derived from flag patterns.
   const driftCount = practiceDriftWarnings.length;
-  const sgCount = open.filter((f) => ["safeguarding_threshold", "immediate_safety"].includes(f.flag_type as string)).length;
+  const sgCount = open.filter((f) => (CHILD_SAFEGUARDING_RISK_FLAG_TYPES as string[]).includes(f.flag_type as string)).length;
   const vagueCount = open.filter((f) => f.flag_type === "vague_recording").length;
   const cultureRadar: CultureRadarIndicator[] = [];
   if (driftCount > 0)
