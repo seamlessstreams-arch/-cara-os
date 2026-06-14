@@ -108,6 +108,23 @@ export const CORE_ETHICAL_PILLARS: EthicalPillar[] = [
   { key: "ethic_of_care", name: "Ethic of care", principle: "Relationships with trusted, invested adults are the mechanism of safety — not monitoring, exclusion or control." },
 ];
 
+// ── 3b. THE FOUR CONTEXTUAL SAFEGUARDING DOMAINS ──────────────────────────────
+// The canonical framework (Durham University Contextual Safeguarding Research
+// Programme). A system is contextual when it works across all four domains.
+
+export interface ContextualDomain {
+  domain: 1 | 2 | 3 | 4;
+  name: string;
+  goal: string;
+}
+
+export const CONTEXTUAL_SAFEGUARDING_DOMAINS: ContextualDomain[] = [
+  { domain: 1, name: "Target", goal: "Prevent, identify, assess and intervene with the social conditions of abuse — the contexts, not only the individual child." },
+  { domain: 2, name: "Legislative framework", goal: "Incorporate extra-familial contexts into child-protection frameworks and decision-making." },
+  { domain: 3, name: "Partnerships", goal: "Develop partnerships with the individuals and agencies responsible for the extra-familial contexts (schools, transport, businesses, residents)." },
+  { domain: 4, name: "Outcomes", goal: "Monitor success against contextual change, not only individual change — is the space safer, not just the child 'compliant'?" },
+];
+
 // ── 4. EXTRA-FAMILIAL HARM (EFH) — contexts + sign-spotting cues ───────────────
 // Where extra-familial harm shows up, and the cues that should prompt a
 // contextual lens. These cues drive deterministic sign-spotting in the engines.
@@ -231,6 +248,9 @@ export const GUARDIANSHIP_VS_SURVEILLANCE: GuardianshipDimension[] = [
 
 export const GUARDIANSHIP_NOT_SURVEILLANCE_PRINCIPLE =
   "Guardianship, not surveillance. Safety for young people comes from trusted, invested adults and inclusive spaces — not from monitoring, exclusion or control. The same intelligence can protect a child or be turned against them; the test is always whether it increases a child's access to safe relationships and safe spaces (guardianship) or merely increases the watching, listing and exclusion of that child (surveillance). Cara exists to inform guardianship.";
+
+export const BEHAVIOURAL_VS_ECOLOGICAL_PRINCIPLE =
+  "Behavioural vs ecological responses. A 'behavioural' response changes the child (don't go out, carry keys, dress differently, comply) and quietly places responsibility for the harm on them; an 'ecological' response changes the context (safer transport, lighting, safe-space businesses, working with the people who hold the space, educating those who cause harm). Contextual safeguarding leans to the ecological wherever possible — and notices when a plan has drifted into asking the child to absorb a risk that belongs to the environment.";
 
 export const BIAS_RATCHET_PRINCIPLE =
   "The bias ratchet — the myth of neutrality. Data-driven risk tools are trained on historical records of where the system acted (where police patrolled, who was screened), not on where harm actually occurred. Acting on those predictions sends attention back to the same over-watched children and places, generating new records that 'confirm' the model — hardwiring discrimination a little more each cycle. In London 78% of those on the police Gangs Matrix were Black despite Black youth being responsible for 27% of serious youth violence, and 40% of those listed had a violence-risk score of zero. Technology is not neutral: a risk flag records who was looked at, not who is dangerous.";

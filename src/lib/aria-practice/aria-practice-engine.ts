@@ -28,6 +28,8 @@ import {
 } from "./types";
 import { BEHAVIOUR_DRIVERS } from "@/lib/aria/practice-frameworks";
 import { efhSignSpotting } from "@/lib/aria/contextual-safeguarding";
+import { suggestSafetyPlanComponents } from "@/lib/aria/safety-planning";
+import { assessNRMIndicators } from "@/lib/aria/nrm-modern-slavery";
 
 // ── Lexicons ──────────────────────────────────────────────────────────────────
 
@@ -509,6 +511,44 @@ export function analyzePractice(input: AriaPracticeInput): AriaPracticeOutput {
     recommendations.push({
       title: "Apply the contextual-safeguarding lens",
       detail: "Map the context(s) of harm, consider exploitation screening, and treat survival strategies as safeguarding concerns, not offences.",
+      urgency: "soon",
+    });
+    // Safety planning — co-create (never impose) a plan covering the relevant
+    // components for these context(s). Advice only; the young person decides.
+    const planComponents = suggestSafetyPlanComponents(efhSigns.map((s) => s.key));
+    if (planComponents.length > 0) {
+      recommendations.push({
+        title: "Co-create an extra-familial safety plan with the young person",
+        detail:
+          "With the young person (not done to them), build a safety plan across the relevant typologies of safety. Relevant components include: " +
+          planComponents.slice(0, 6).map((c) => c.text.replace(/\.$/, "")).join("; ") +
+          ". Plan for the trauma response in the moment, review regularly, and keep it the young person's — never a way of surveilling them.",
+        urgency: "soon",
+      });
+    }
+  }
+
+  // 4c. Modern slavery / NRM consideration (advice only — never a decision)
+  // A child who is exploited is a victim, not an offender; for a child no consent
+  // is needed to refer and the 'means' need not be proven. Cara ADVISES the
+  // manager / DSL to CONSIDER an NRM referral — it never states one is required.
+  const nrm = assessNRMIndicators(text);
+  if (nrm.adviseConsiderReferral) {
+    modes.add("recognises");
+    flags.push({
+      flagType: "nrm_consideration",
+      severity: "high",
+      title: "Consider a National Referral Mechanism (NRM) referral",
+      description: `${nrm.rationale} ${nrm.advice}`,
+      evidence: nrm.indicators.map((i) => `${i.label}: "${i.cue}"`),
+      recommendedAction:
+        "Manager / DSL to consider an NRM referral for suspected modern slavery or trafficking, alongside the usual safeguarding referrals — Cara advises, the manager decides. Recognise the child as a victim (Section 45 defence may apply) and guard against adultification bias.",
+      requiresManagerReview: true,
+      requiresRiReview: false,
+    });
+    recommendations.push({
+      title: "Consider an NRM referral (manager / DSL decision)",
+      detail: nrm.advice,
       urgency: "soon",
     });
   }

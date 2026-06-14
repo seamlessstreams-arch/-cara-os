@@ -62,6 +62,7 @@ export type AriaFlagType =
   | "overstated_protective_factor"
   | "safeguarding_threshold"
   | "extra_familial_harm"
+  | "nrm_consideration"
   | "immediate_safety"
   | "lado_consideration"
   | "staff_wellbeing"

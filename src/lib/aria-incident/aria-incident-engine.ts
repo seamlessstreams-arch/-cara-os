@@ -20,6 +20,8 @@ import {
   contextualSafeguardingReflections,
   guardianshipNotSurveillanceChecks,
 } from "@/lib/aria/contextual-safeguarding";
+import { NRM_GUIDANCE_BLOCK, NRM_WORDING, assessNRMIndicators } from "@/lib/aria/nrm-modern-slavery";
+import { safetyPlanComponentPrompts, safetyTypologyPrompts } from "@/lib/aria/safety-planning";
 
 export const INCIDENT_DISCLAIMER =
   "Cara suggests — staff decide, the manager reviews, the system audits. Cara supports recording and practice; it never replaces professional judgement and never makes safeguarding decisions.";
@@ -364,12 +366,22 @@ export function buildDeterministicDraft(input: {
   lines.push(session.manager_notified ? "Manager notified during the incident." : `Manager notification: not recorded. ${REG40_WORDING}`);
   // Contextual safeguarding — flag (but never decide) where the harm may sit in a
   // context beyond the home, so the record carries the contextual lens.
-  const efhSigns = efhSignSpotting([child_name, ...sorted.map((e) => e.raw_text)].join(" "));
+  const fullText = [child_name, ...sorted.map((e) => e.raw_text)].join(" ");
+  const efhSigns = efhSignSpotting(fullText);
   if (efhSigns.length > 0) {
     lines.push("");
     lines.push(
       `Contextual safeguarding (for the manager to consider): the account mentions ${efhSigns.map((s) => `${s.context.toLowerCase()} ("${s.cue}")`).join(", ")}. Consider the extra-familial context — peers, places, transport, online — not only ${child_name}'s behaviour, and whether exploitation screening or a contextual referral is warranted. A survival strategy inside an unsafe context is a safeguarding concern to understand, not an offence to record against the child.`,
     );
+    lines.push(
+      `Safety planning: consider co-creating an extra-familial safety plan WITH ${child_name} (not done to them) across physical, emotional, financial and community safety — e.g. trusted adults and contacts, a code word, safe places and routes, grounding strategies, and online safety — and review it regularly.`,
+    );
+  }
+  // Modern slavery / NRM — advise consideration only; never a decision.
+  const nrm = assessNRMIndicators(fullText);
+  if (nrm.adviseConsiderReferral) {
+    lines.push("");
+    lines.push(`Modern slavery / NRM (for the manager / DSL to consider): ${nrm.rationale} ${nrm.advice}`);
   }
   lines.push("");
   lines.push("This draft re-presents only the facts staff recorded. Staff must review, complete and confirm accuracy before saving.");
@@ -410,6 +422,11 @@ export function defaultPromptBank(): PromptBankEntry[] {
   // guardianship-not-surveillance ethic, in the knowledge bank for live mode.
   contextualSafeguardingReflections().forEach((p, i) => add(`pb_efh_${i + 1}`, "contextual_safeguarding", p, { title: "Contextual lens" }));
   guardianshipNotSurveillanceChecks().forEach((p, i) => add(`pb_guardianship_${i + 1}`, "contextual_safeguarding", p, { title: "Guardianship, not surveillance" }));
+  // Safety planning — co-design prompts across the typologies of safety + plan
+  // components, and the NRM consideration (advice only) — in the knowledge bank.
+  safetyTypologyPrompts().forEach((p, i) => add(`pb_safetyplan_typ_${i + 1}`, "safety_planning", p, { title: "Co-design a safety plan" }));
+  safetyPlanComponentPrompts().forEach((p, i) => add(`pb_safetyplan_cmp_${i + 1}`, "safety_planning", p, { title: "Safety-plan component" }));
+  add("pb_nrm_consider", "safety_planning", NRM_WORDING, { title: "Modern slavery / NRM — consider (manager decides)" });
   return rows;
 }
 
@@ -419,6 +436,7 @@ You must: use factual language; avoid judgemental language and labels; support c
 Use phrases such as "staff observed", "the young person appeared", "the young person stated", "staff offered", "staff supported". Avoid certainty where there is uncertainty. Tone: calm, professional, trauma-informed, non-blaming, concise, relational, restorative.
 ${FRAMEWORK_GUIDANCE_BLOCK}
 ${CONTEXTUAL_SAFEGUARDING_GUIDANCE_BLOCK}
+${NRM_GUIDANCE_BLOCK}
 Output EXACTLY these five numbered sections:
 1. Improved professional record
 2. Missing information
