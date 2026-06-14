@@ -638,6 +638,16 @@ function serverError(err: unknown) {
   return json({ error: message }, 500);
 }
 
+// HQ API-call meter — records request volume across the main API surface for the
+// platform-owner cockpit. Metadata only (route family + method); best-effort,
+// never blocks or fails the request. `intelligence` flags decision endpoints.
+function meterApiCall(slugKey: string, method: string): void {
+  const intelligence = /intelligence|briefing|readiness|analysis|oversight|composite|score|360/.test(slugKey);
+  void import("@/lib/hq/usage-meter")
+    .then((m) => m.recordApiCall({ feature: slugKey, method, intelligence }))
+    .catch(() => {});
+}
+
 // ---------------------------------------------------------------------------
 // GET /api/v1/[slug]
 // ---------------------------------------------------------------------------
@@ -645,6 +655,7 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   try {
     const { slug } = await ctx.params;
     const slugKey = slug[0];
+    meterApiCall(slugKey, req.method);
     const collection = resolveAccessor(slugKey);
     if (!collection) return notFound(slugKey);
 
@@ -677,6 +688,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
   try {
     const { slug } = await ctx.params;
     const slugKey = slug[0];
+    meterApiCall(slugKey, req.method);
     const collection = resolveAccessor(slugKey);
     if (!collection) return notFound(slugKey);
 
@@ -715,6 +727,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
   try {
     const { slug } = await ctx.params;
     const slugKey = slug[0];
+    meterApiCall(slugKey, req.method);
     const collection = resolveAccessor(slugKey);
     if (!collection) return notFound(slugKey);
 
@@ -747,6 +760,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
   try {
     const { slug } = await ctx.params;
     const slugKey = slug[0];
+    meterApiCall(slugKey, req.method);
     const collection = resolveAccessor(slugKey);
     if (!collection) return notFound(slugKey);
 

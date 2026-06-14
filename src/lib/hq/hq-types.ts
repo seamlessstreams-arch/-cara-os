@@ -46,6 +46,26 @@ export interface HqAiUsageRow {
   estimated: boolean;
 }
 
+export interface HqApiCallRow {
+  id: string;
+  at: string;
+  org_id: string | null;
+  /** Route family (the first /api/v1 slug segment, e.g. "incidents"). */
+  feature: string;
+  method: string;
+  /** True when the route serves an intelligence / decision endpoint. */
+  intelligence: boolean;
+}
+
+export interface HqDecisionRow {
+  id: string;
+  at: string;
+  org_id: string | null;
+  feature: string;
+  /** "deterministic" = produced with no model call; "ai" = a model was used. */
+  mode: "deterministic" | "ai";
+}
+
 export interface HqBreakGlassGrant {
   id: string;
   admin_label: string;

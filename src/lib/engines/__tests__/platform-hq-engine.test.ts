@@ -3,13 +3,17 @@ import {
   computeHqOverview,
   isBreakGlassOpen,
   summariseAiUsage,
+  summariseApiCalls,
   summariseBreakGlass,
   summariseCustomers,
+  summariseDecisions,
   summariseUsage,
 } from "../platform-hq-engine";
 import type {
   HqAiUsageRow,
+  HqApiCallRow,
   HqBreakGlassGrant,
+  HqDecisionRow,
   HqOrganisation,
   HqUsageEvent,
 } from "@/lib/hq/hq-types";
@@ -48,6 +52,14 @@ function aiRow(over: Partial<HqAiUsageRow> = {}): HqAiUsageRow {
     estimated: true,
     ...over,
   };
+}
+
+function apiCall(at: string, over: Partial<HqApiCallRow> = {}): HqApiCallRow {
+  return { id: `api_${at}`, at, org_id: "org_1", feature: "incidents", method: "GET", intelligence: false, ...over };
+}
+
+function decision(at: string, mode: "deterministic" | "ai" = "deterministic", over: Partial<HqDecisionRow> = {}): HqDecisionRow {
+  return { id: `dec_${at}_${mode}`, at, org_id: "org_1", feature: "incident-draft", mode, ...over };
 }
 
 function grant(over: Partial<HqBreakGlassGrant> = {}): HqBreakGlassGrant {
@@ -139,6 +151,8 @@ describe("platform-hq-engine", () => {
       organisations: [org(), org({ id: "org_2", status: "suspended" })],
       usageEvents: [event("2026-06-12T08:00:00.000Z")],
       aiUsage: [],
+      apiCalls: [],
+      decisions: [],
       breakGlass: [grant()],
       now: NOW,
     });
@@ -153,6 +167,8 @@ describe("platform-hq-engine", () => {
       organisations: [org()],
       usageEvents: [event("2026-05-01T08:00:00.000Z")],
       aiUsage: [],
+      apiCalls: [],
+      decisions: [],
       breakGlass: [],
       now: NOW,
     });
@@ -164,10 +180,52 @@ describe("platform-hq-engine", () => {
       organisations: [org()],
       usageEvents: [event("2026-06-12T08:00:00.000Z")],
       aiUsage: [aiRow()],
+      apiCalls: [apiCall("2026-06-12T08:00:00.000Z")],
+      decisions: [decision("2026-06-12T08:00:00.000Z")],
       breakGlass: [grant({ revoked_at: "2026-06-12T10:00:00.000Z" })],
       now: NOW,
     });
     expect(o.attention).toHaveLength(0);
     expect(o.ai.cost_30d_gbp).toBeGreaterThan(0);
+  });
+
+  it("buckets API calls into windows and counts intelligence endpoints", () => {
+    const s = summariseApiCalls(
+      [
+        apiCall("2026-06-12T08:00:00.000Z"), // 4h
+        apiCall("2026-06-10T08:00:00.000Z", { feature: "home-safeguarding-intelligence", intelligence: true }), // 2d
+        apiCall("2026-05-20T08:00:00.000Z"), // 23d
+        apiCall("2026-04-01T08:00:00.000Z"), // outside 30d
+      ],
+      NOW,
+    );
+    expect(s.calls_24h).toBe(1);
+    expect(s.calls_7d).toBe(2);
+    expect(s.calls_30d).toBe(3);
+    expect(s.intelligence_30d).toBe(1);
+    expect(s.by_feature_30d.find((f) => f.feature === "incidents")?.count).toBe(2);
+  });
+
+  it("splits decisions into deterministic vs AI with a percentage", () => {
+    const s = summariseDecisions(
+      [
+        decision("2026-06-12T08:00:00.000Z"),
+        decision("2026-06-11T08:00:00.000Z"),
+        decision("2026-06-10T08:00:00.000Z"),
+        decision("2026-06-12T09:00:00.000Z", "ai"),
+        decision("2026-04-01T08:00:00.000Z"), // outside 30d
+      ],
+      NOW,
+    );
+    expect(s.total_30d).toBe(4);
+    expect(s.deterministic_30d).toBe(3);
+    expect(s.ai_30d).toBe(1);
+    expect(s.deterministic_pct).toBe(75);
+  });
+
+  it("reports 100% deterministic when there are no decisions (honest default)", () => {
+    const s = summariseDecisions([], NOW);
+    expect(s.total_30d).toBe(0);
+    expect(s.deterministic_pct).toBe(100);
   });
 });

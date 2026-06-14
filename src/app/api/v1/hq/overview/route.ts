@@ -18,6 +18,8 @@ export async function GET(req: Request) {
     organisations: store.hqOrganisations,
     usageEvents: store.hqUsageEvents,
     aiUsage: store.hqAiUsage,
+    apiCalls: store.hqApiCalls,
+    decisions: store.hqDecisions,
     breakGlass: store.hqBreakGlassGrants,
     now: new Date().toISOString(),
   });

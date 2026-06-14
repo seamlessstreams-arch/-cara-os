@@ -8,7 +8,9 @@
 
 import type {
   HqAiUsageRow,
+  HqApiCallRow,
   HqBreakGlassGrant,
+  HqDecisionRow,
   HqOrganisation,
   HqUsageEvent,
 } from "@/lib/hq/hq-types";
@@ -17,6 +19,8 @@ export interface HqEngineInput {
   organisations: HqOrganisation[];
   usageEvents: HqUsageEvent[];
   aiUsage: HqAiUsageRow[];
+  apiCalls: HqApiCallRow[];
+  decisions: HqDecisionRow[];
   breakGlass: HqBreakGlassGrant[];
   now: string;
 }
@@ -45,6 +49,24 @@ export interface HqAiSummary {
   estimated: boolean;
 }
 
+export interface HqApiCallSummary {
+  calls_24h: number;
+  calls_7d: number;
+  calls_30d: number;
+  /** Intelligence/decision endpoint calls in the last 30d. */
+  intelligence_30d: number;
+  by_feature_30d: { feature: string; count: number; intelligence: boolean }[];
+}
+
+export interface HqDecisionSummary {
+  total_30d: number;
+  deterministic_30d: number;
+  ai_30d: number;
+  /** Share of decisions made with no model call (0–100). */
+  deterministic_pct: number;
+  by_feature_30d: { feature: string; deterministic: number; ai: number }[];
+}
+
 export interface HqBreakGlassSummary {
   open: HqBreakGlassGrant[];
   open_count: number;
@@ -55,6 +77,8 @@ export interface HqOverview {
   customers: HqCustomerSummary;
   usage: HqUsageSummary;
   ai: HqAiSummary;
+  api_calls: HqApiCallSummary;
+  decisions: HqDecisionSummary;
   break_glass: HqBreakGlassSummary;
   attention: string[];
 }
@@ -133,6 +157,50 @@ export function summariseAiUsage(rows: HqAiUsageRow[], now: string): HqAiSummary
   };
 }
 
+export function summariseApiCalls(rows: HqApiCallRow[], now: string): HqApiCallSummary {
+  const in30 = rows.filter((r) => withinDays(r.at, now, 30));
+  const byFeature = new Map<string, { count: number; intelligence: boolean }>();
+  for (const r of in30) {
+    const f = byFeature.get(r.feature) ?? { count: 0, intelligence: r.intelligence };
+    f.count += 1;
+    f.intelligence = f.intelligence || r.intelligence;
+    byFeature.set(r.feature, f);
+  }
+  return {
+    calls_24h: rows.filter((r) => withinDays(r.at, now, 1)).length,
+    calls_7d: rows.filter((r) => withinDays(r.at, now, 7)).length,
+    calls_30d: in30.length,
+    intelligence_30d: in30.filter((r) => r.intelligence).length,
+    by_feature_30d: [...byFeature.entries()]
+      .map(([feature, v]) => ({ feature, count: v.count, intelligence: v.intelligence }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 10),
+  };
+}
+
+export function summariseDecisions(rows: HqDecisionRow[], now: string): HqDecisionSummary {
+  const in30 = rows.filter((r) => withinDays(r.at, now, 30));
+  const deterministic = in30.filter((r) => r.mode === "deterministic").length;
+  const ai = in30.filter((r) => r.mode === "ai").length;
+  const total = in30.length;
+  const byFeature = new Map<string, { deterministic: number; ai: number }>();
+  for (const r of in30) {
+    const f = byFeature.get(r.feature) ?? { deterministic: 0, ai: 0 };
+    if (r.mode === "ai") f.ai += 1; else f.deterministic += 1;
+    byFeature.set(r.feature, f);
+  }
+  return {
+    total_30d: total,
+    deterministic_30d: deterministic,
+    ai_30d: ai,
+    deterministic_pct: total === 0 ? 100 : Math.round((deterministic / total) * 100),
+    by_feature_30d: [...byFeature.entries()]
+      .map(([feature, v]) => ({ feature, deterministic: v.deterministic, ai: v.ai }))
+      .sort((a, b) => b.deterministic + b.ai - (a.deterministic + a.ai))
+      .slice(0, 10),
+  };
+}
+
 export function summariseBreakGlass(
   grants: HqBreakGlassGrant[],
   now: string,
@@ -150,6 +218,8 @@ export function computeHqOverview(input: HqEngineInput): HqOverview {
   const customers = summariseCustomers(input.organisations);
   const usage = summariseUsage(input.usageEvents, input.now);
   const ai = summariseAiUsage(input.aiUsage, input.now);
+  const apiCalls = summariseApiCalls(input.apiCalls, input.now);
+  const decisions = summariseDecisions(input.decisions, input.now);
   const breakGlass = summariseBreakGlass(input.breakGlass, input.now);
 
   const attention: string[] = [];
@@ -163,5 +233,5 @@ export function computeHqOverview(input: HqEngineInput): HqOverview {
     attention.push("No recorded activity in the last 24h across active customers");
   }
 
-  return { customers, usage, ai, break_glass: breakGlass, attention };
+  return { customers, usage, ai, api_calls: apiCalls, decisions, break_glass: breakGlass, attention };
 }

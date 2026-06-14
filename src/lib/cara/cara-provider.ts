@@ -93,6 +93,24 @@ export interface CaraTextGenerationResult {
 export async function generateText(
   input: CaraTextGenerationInput,
 ): Promise<CaraTextGenerationResult> {
+  const result = await generateTextInner(input);
+  // HQ decision meter — each generation is one decision: deterministic (no model
+  // call / no-key fallback) or ai (a model produced the output). Best-effort,
+  // never blocks or fails the call. Dynamic import keeps the meter out of graph.
+  void import("@/lib/hq/usage-meter")
+    .then((m) =>
+      m.recordDecision({
+        feature: input.feature ?? "cara_text",
+        mode: result.llmUsed ? "ai" : "deterministic",
+      }),
+    )
+    .catch(() => {});
+  return result;
+}
+
+async function generateTextInner(
+  input: CaraTextGenerationInput,
+): Promise<CaraTextGenerationResult> {
   const config = getCaraProviderConfig();
   if (!config.configured) {
     return {

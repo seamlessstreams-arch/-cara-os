@@ -78,6 +78,31 @@ export default function HqOverviewPage() {
           </div>
         </CardErrorBoundary>
 
+        <CardErrorBoundary>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <HqStat
+              label="API calls (24h)"
+              value={isLoading ? "—" : (o?.api_calls.calls_24h ?? 0).toLocaleString()}
+              hint={o ? `${o.api_calls.calls_7d.toLocaleString()} · 7d   ${o.api_calls.calls_30d.toLocaleString()} · 30d` : undefined}
+            />
+            <HqStat
+              label="Intelligence calls (30d)"
+              value={isLoading ? "—" : (o?.api_calls.intelligence_30d ?? 0).toLocaleString()}
+              hint="decision / engine endpoints"
+            />
+            <HqStat
+              label="Decisions (30d)"
+              value={isLoading ? "—" : (o?.decisions.total_30d ?? 0).toLocaleString()}
+              hint={o ? `${o.decisions.deterministic_30d.toLocaleString()} deterministic · ${o.decisions.ai_30d.toLocaleString()} AI` : undefined}
+            />
+            <HqStat
+              label="Deterministic"
+              value={isLoading ? "—" : `${o?.decisions.deterministic_pct ?? 100}%`}
+              hint="of decisions made with no AI"
+            />
+          </div>
+        </CardErrorBoundary>
+
         {o && o.attention.length > 0 && (
           <Card>
             <CardHeader>

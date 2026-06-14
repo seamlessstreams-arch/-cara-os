@@ -11,8 +11,18 @@ import "server-only";
 
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
-import type { HqAiUsageRow } from "./hq-types";
+import type { HqAiUsageRow, HqApiCallRow, HqDecisionRow } from "./hq-types";
 import { persistHqAiUsage } from "@/lib/supabase/hq-persist";
+
+// Keep the in-memory call/decision logs bounded — these are high-frequency and
+// the store is long-lived per serverless instance. Durable history (when
+// Supabase is active) is unaffected; this only trims the in-process ring.
+const RING_CAP = 5000;
+function pushCapped<T>(arr: T[], row: T): T[] {
+  arr.push(row);
+  if (arr.length > RING_CAP) arr.splice(0, arr.length - RING_CAP);
+  return arr;
+}
 
 // £ per million tokens by model family — adjust as pricing moves.
 const RATES_GBP_PER_MTOK: { match: string; input: number; output: number }[] = [
@@ -58,5 +68,51 @@ export function recordAiUsage(input: AiUsageInput): HqAiUsageRow {
   };
   store.hqAiUsage.push(row);
   void persistHqAiUsage(row);
+  return row;
+}
+
+// ── API-call volume meter ─────────────────────────────────────────────────────
+// Called from the main API surface (the /api/v1 catch-all) so request volume
+// fills in organically. `intelligence` marks decision/intelligence endpoints.
+export interface ApiCallInput {
+  feature: string;
+  method: string;
+  intelligence?: boolean;
+}
+
+export function recordApiCall(input: ApiCallInput): HqApiCallRow {
+  const store = getStore();
+  const row: HqApiCallRow = {
+    id: generateId("api"),
+    at: new Date().toISOString(),
+    org_id: store.hqOrganisations[0]?.id ?? null,
+    feature: input.feature,
+    method: input.method,
+    intelligence: input.intelligence ?? false,
+  };
+  pushCapped(store.hqApiCalls, row);
+  return row;
+}
+
+// ── Decision meter (deterministic vs AI) ──────────────────────────────────────
+// Called from the provider seam on every intelligence generation: mode is
+// "ai" when a model produced the output and "deterministic" when the pure
+// engine / no-key fallback did. This is the headline "how much runs with no
+// AI" signal for the platform owner.
+export interface DecisionInput {
+  feature: string;
+  mode: "deterministic" | "ai";
+}
+
+export function recordDecision(input: DecisionInput): HqDecisionRow {
+  const store = getStore();
+  const row: HqDecisionRow = {
+    id: generateId("dec"),
+    at: new Date().toISOString(),
+    org_id: store.hqOrganisations[0]?.id ?? null,
+    feature: input.feature,
+    mode: input.mode,
+  };
+  pushCapped(store.hqDecisions, row);
   return row;
 }
