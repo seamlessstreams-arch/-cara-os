@@ -85,6 +85,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Safeguarding Overview", href: "/safeguarding-overview", icon: "ShieldAlert",   module: "safeguarding"  },
       { label: "Cara Practice",    href: "/cara-practice",             icon: "Sparkles",       module: "safeguarding"  },
       { label: "PACE Intelligence", href: "/pace",                    icon: "Heart",          module: "safeguarding"  },
+      { label: "Writing to the Child", href: "/writing-to-child",     icon: "FileSignature",  module: "safeguarding"  },
       { label: "Risk Register",   href: "/risk-register",             icon: "ShieldAlert",    module: "safeguarding"  },
       { label: "Welfare Checks",  href: "/welfare-checks",            icon: "Moon",           module: "safeguarding"  },
       { label: "Night Checks",   href: "/night-checks",              icon: "CloudMoon",      module: "safeguarding"  },
