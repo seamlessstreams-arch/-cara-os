@@ -50,3 +50,6 @@ export async function PUT(req: Request) {
   const saved = db.childPaceProfiles.upsert(profile);
   return NextResponse.json({ data: saved }, { status: existing ? 200 : 201 });
 }
+
+// PATCH behaves identically to PUT (upsert) — the app's api client uses PATCH.
+export const PATCH = PUT;
