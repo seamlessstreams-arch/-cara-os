@@ -10,7 +10,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   LayoutDashboard, Radar, Sunrise, CalendarCheck, ShieldCheck, LineChart, Siren,
-  ArrowRight, ArrowUpRight, CheckCircle2,
+  ArrowRight, ArrowUpRight, CheckCircle2, PenLine,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
@@ -46,6 +46,12 @@ const STEPS = [
     title: "Live support while an incident is happening.",
     body: "When things escalate, open a live session — pick the child, what's happening and the risk level, and Cara stays alongside you: co-regulation prompts, the right workflow checklist, a timestamped timeline you can dictate to, and a quality-checked draft record at the end. Cara suggests; staff decide; the manager reviews.",
     points: ["Guided start: who, what, risk level", "Live timeline with voice dictation", "Draft record held for manager review"],
+  },
+  {
+    Icon: PenLine, eyebrow: "Writing to the Child", href: "/writing-to-child", img: "/tour/writing-to-child.jpg",
+    title: "A critical friend for every record.",
+    body: "Paste a draft and Cara challenges it the way a great supervisor would — flagging shaming or institutional language (“refused to engage”, “returned safe and well”), checking the child’s voice is there, and offering careful, child-readable wording that keeps the risk clear. Write the record as evidence for professionals, but as memory for the child.",
+    points: ["Child-readable score & language flags", "Reflective questions before you record", "PACE & contextual-safeguarding lenses built in"],
   },
   {
     Icon: CalendarCheck, eyebrow: "Plan Currency", href: "/plan-currency", img: "/tour/plan-currency.jpg",

@@ -47,6 +47,8 @@ const COMPARISON: { group: string; rows: { label: string; v: (boolean | string)[
       { label: "Workforce & safe access", v: [true, true, true] },
       { label: "Cara assistant (human-in-the-loop)", v: [true, true, true] },
       { label: "Cara Practice Assistant — incident support & recording quality", v: [true, true, true] },
+      { label: "Contextual safeguarding, safety planning & NRM support", v: [true, true, true] },
+      { label: "Writing to the Child — child-readable recording & PACE", v: [true, true, true] },
       { label: "Mobile, installable & offline-ready", v: [true, true, true] },
     ],
   },
