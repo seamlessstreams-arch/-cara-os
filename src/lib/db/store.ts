@@ -37,6 +37,8 @@ import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from
 import type { AlertStateRecord } from "@/lib/cara-incident/manager-oversight-engine";
 import type { HqOrganisation, HqUsageEvent, HqAiUsageRow, HqBreakGlassGrant, HqApiCallRow, HqDecisionRow } from "@/lib/hq/hq-types";
 import { seedHqOrganisations, seedHqUsageEvents, seedHqApiCalls, seedHqDecisions } from "@/lib/hq/hq-seeds";
+import type { PaceAnalysisRecord, WritingReviewRecord } from "@/lib/practice-history/types";
+import { seedPaceAnalyses, seedWritingReviews } from "@/lib/practice-history/seeds";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
 import { seedCalendarEvents } from "@/lib/calendar/calendar-seeds";
 import { seedStaffSicknessRecords } from "@/lib/workforce/absence-seeds";
@@ -781,6 +783,9 @@ const store = {
   hqApiCalls: seedHqApiCalls() as HqApiCallRow[],
   hqDecisions: seedHqDecisions() as HqDecisionRow[],
   hqBreakGlassGrants: [] as HqBreakGlassGrant[],
+  // Practice analysis history (metadata only) — powers the recording-quality trend.
+  caraPaceAnalyses: seedPaceAnalyses() as PaceAnalysisRecord[],
+  caraWritingReviews: seedWritingReviews() as WritingReviewRecord[],
   // Calendar — ONE editable collection; everything else is projected live
   calendarEvents: seedCalendarEvents() as CalendarEvent[],
   // Rota — shift patterns, the home staffing policy (singleton), and over-cover reason notes
