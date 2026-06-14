@@ -64,5 +64,17 @@ export async function POST(req: Request) {
     childPreferredName: typeof body.childPreferredName === "string" ? body.childPreferredName : undefined,
   });
 
+  // Best-effort metadata-only history → powers the recording-quality trend.
+  // Never blocks; no record content is stored.
+  void import("@/lib/practice-history/record")
+    .then((m) => m.recordWritingReview({
+      homeId: typeof body.homeId === "string" ? body.homeId : null,
+      staffId: auth.userId,
+      recordType,
+      overallScore: review.overallScore,
+      flagCount: review.flaggedLanguage.length,
+    }))
+    .catch(() => {});
+
   return NextResponse.json({ data: review });
 }

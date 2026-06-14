@@ -37,5 +37,15 @@ export async function POST(req: Request) {
   if (url.searchParams.get("mode") === "recording") {
     return NextResponse.json({ data: assistRecording(input) });
   }
-  return NextResponse.json({ data: analyzePACE(input) });
+  const result = analyzePACE(input);
+  // Best-effort metadata-only history → powers the recording-quality trend.
+  // Never blocks or fails the call; no record content is stored.
+  void import("@/lib/practice-history/record")
+    .then((m) => m.recordPaceAnalysis({
+      homeId: input.homeId, childId: input.childId, staffId: input.staffId,
+      context, score: result.score.overall, band: result.score.band,
+      flagCount: result.flags.length, managerReviewRequired: result.managerReviewRequired,
+    }))
+    .catch(() => {});
+  return NextResponse.json({ data: result });
 }

@@ -26,6 +26,7 @@ import { RiskIntelligenceCard } from "@/components/dashboard/risk-intelligence-c
 import { IncidentAnalyticsCard } from "@/components/dashboard/incident-analytics-card";
 import { RecordingQualityCard } from "@/components/dashboard/recording-quality-card";
 import { RecordingCultureCard } from "@/components/dashboard/recording-culture-card";
+import { RecordingTrendCard } from "@/components/dashboard/recording-trend-card";
 import { SafeguardingIntelligenceCard } from "@/components/dashboard/safeguarding-intelligence-card";
 import { MedicationIntelligenceCard } from "@/components/dashboard/medication-intelligence-card";
 import { ContactEngagementCard } from "@/components/dashboard/contact-engagement-card";
@@ -1129,6 +1130,7 @@ export default function ManagerControlCentrePage() {
         <CardErrorBoundary><IncidentAnalyticsCard /></CardErrorBoundary>
         <CardErrorBoundary><RecordingQualityCard /></CardErrorBoundary>
         <CardErrorBoundary><RecordingCultureCard /></CardErrorBoundary>
+        <CardErrorBoundary><RecordingTrendCard /></CardErrorBoundary>
         <CardErrorBoundary><SafeguardingIntelligenceCard /></CardErrorBoundary>
         <CardErrorBoundary><MedicationIntelligenceCard /></CardErrorBoundary>
         <CardErrorBoundary><ContactEngagementCard /></CardErrorBoundary>
