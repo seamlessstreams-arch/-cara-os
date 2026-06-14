@@ -16,3 +16,8 @@ export { analyzePACE } from "./paceAnalyzer";
 export { scorePACE, type PACEScoreSignals } from "./paceQualityAssurance";
 export { getPACEGuidance } from "./paceGuidanceEngine";
 export { assistRecording } from "./paceRecordingAssistant";
+export { buildPACESupervisionInsight } from "./paceSupervisionEngine";
+export { buildPACEReflection, type PACEReflection } from "./paceReflectionEngine";
+export {
+  PACE_TRAINING_MODULES, getPACETrainingModules, getPACETrainingForContext, getPACETrainingModule,
+} from "./paceTrainingEngine";
