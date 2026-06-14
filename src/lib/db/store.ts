@@ -43,6 +43,7 @@ import { seedStaffSicknessRecords } from "@/lib/workforce/absence-seeds";
 import type { ShiftPattern } from "@/lib/rota/shift-patterns";
 import type { StaffingPolicy } from "@/lib/rota/staffing-cover-engine";
 import { seedShiftPatterns, seedStaffingPolicy, seedShiftCoverNotes, type ShiftCoverNote } from "@/lib/rota/rota-seeds";
+import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
 import type {
   Building, BuildingCheck, Vehicle, VehicleCheck,
   MissingEpisode, ChronologyEntry, HandoverEntry,
@@ -784,6 +785,23 @@ const store = {
   shiftPatterns: seedShiftPatterns() as ShiftPattern[],
   staffingPolicy: seedStaffingPolicy() as StaffingPolicy,
   shiftCoverNotes: seedShiftCoverNotes() as ShiftCoverNote[],
+  // PACE — child-specific "what works for this child" profiles (permission-controlled, auditable)
+  childPaceProfiles: [
+    {
+      childId: "yp_alex", homeId: "home_oak",
+      knownTriggers: ["Family contact being cancelled", "Being told 'no' in front of peers", "Sudden changes to plans"],
+      calmingApproaches: ["Time in his room with music", "A walk in the garden", "Kicking a ball with a trusted adult"],
+      trustedAdults: ["Olivia (RM)", "Marcus (key worker)"],
+      phrasesThatHelp: ["I'm here when you're ready.", "It makes sense this feels hard.", "We'll sort this out together."],
+      phrasesThatEscalate: ["Calm down.", "Why did you do that?", "You've lost your privileges."],
+      sensoryNeeds: ["Sensitive to noise in the evenings — offer a quiet space"],
+      repairApproaches: ["Give space first, then return with something ordinary (a snack, a game)"],
+      preferredDebriefStyle: "Side-by-side, not face-to-face; short and low-pressure",
+      traumaInformedStrategies: ["Predictable routines", "Name the feeling, hold the boundary", "Co-regulate before problem-solving"],
+      riskLinkedEscalationRules: ["If he leaves the home, follow the missing-from-care plan and notify the manager"],
+      updatedBy: "staff_darren", updatedAt: "2026-06-01T09:00:00Z",
+    },
+  ] as ChildPACEProfile[],
   candidateChecks: [] as CandidateCheck[],
   candidateReferences: [] as CandidateReference[],
   employmentHistory: [] as EmploymentHistoryEntry[],
@@ -11862,6 +11880,18 @@ export const db = {
   },
 
   // ── Document Intelligence ─────────────────────────────────────────────────
+  childPaceProfiles: {
+    findAll: () => store.childPaceProfiles,
+    findByChild: (childId: string) => store.childPaceProfiles.find((p) => p.childId === childId),
+    upsert: (data: ChildPACEProfile): ChildPACEProfile => {
+      const idx = store.childPaceProfiles.findIndex((p) => p.childId === data.childId);
+      const next = { ...data, updatedAt: new Date().toISOString() };
+      if (idx === -1) store.childPaceProfiles.push(next);
+      else store.childPaceProfiles[idx] = { ...store.childPaceProfiles[idx], ...next };
+      return next;
+    },
+  },
+
   uploadedDocuments: {
     findAll: () => store.uploadedDocuments,
     findById: (id: string) => store.uploadedDocuments.find((d) => d.id === id),
