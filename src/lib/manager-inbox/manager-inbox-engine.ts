@@ -53,7 +53,7 @@ export interface ManagerInboxOverview {
   overdue: number;
 }
 
-export interface AriaInboxInsight {
+export interface CaraInboxInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -61,7 +61,7 @@ export interface AriaInboxInsight {
 export interface ManagerInboxResult {
   overview: ManagerInboxOverview;
   items: InboxItem[];
-  insights: AriaInboxInsight[];
+  insights: CaraInboxInsight[];
 }
 
 export interface ManagerInboxInput {
@@ -91,7 +91,7 @@ function isSafeguarding(e: CornerstoneEvent): boolean {
 // ── Build one inbox item from an event (or null if no action needed) ────────────
 
 function toItem(e: CornerstoneEvent, today: string): InboxItem | null {
-  const flags = e.ariaAnalysis?.complianceFlags ?? [];
+  const flags = e.caraAnalysis?.complianceFlags ?? [];
   const safeguarding = isSafeguarding(e);
   const highRisk = e.riskLevel === "high" || e.riskLevel === "critical";
 
@@ -144,7 +144,7 @@ function toItem(e: CornerstoneEvent, today: string): InboxItem | null {
     staff_id: e.staffId,
     required_action,
     approval_level: e.approvalLevel,
-    aria_suggested_response: e.ariaAnalysis?.suggestedActions?.[0] ?? null,
+    aria_suggested_response: e.caraAnalysis?.suggestedActions?.[0] ?? null,
     evidence_categories: e.evidenceCategories ?? [],
     occurred_at: e.occurredAt,
     deadline,
@@ -187,8 +187,8 @@ export function computeManagerInbox(input: ManagerInboxInput): ManagerInboxResul
 
 // ── Insights ──────────────────────────────────────────────────────────────────
 
-function buildInsights(items: InboxItem[], overview: ManagerInboxOverview): AriaInboxInsight[] {
-  const insights: AriaInboxInsight[] = [];
+function buildInsights(items: InboxItem[], overview: ManagerInboxOverview): CaraInboxInsight[] {
+  const insights: CaraInboxInsight[] = [];
 
   if (overview.safeguarding_alerts > 0 || overview.by_priority.critical > 0) {
     const top = items.find((i) => i.priority === "critical");

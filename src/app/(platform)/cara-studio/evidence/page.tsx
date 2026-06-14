@@ -98,10 +98,10 @@ export default function EvidencePage() {
       <div className="space-y-6 pb-12">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Database className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Database className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Evidence Sources</h2>
@@ -152,18 +152,18 @@ export default function EvidencePage() {
               type="text" value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search evidence..."
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-white pl-10 pr-4 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full rounded-xl border border-[var(--cs-border)] bg-white pl-10 pr-4 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             />
           </div>
           <select value={typeFilter ?? ""} onChange={(e) => setTypeFilter(e.target.value || null)}
-            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]">
+            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]">
             <option value="">All types</option>
             {Object.entries(typeCounts).map(([type, count]) => (
               <option key={type} value={type}>{SOURCE_LABELS[type] ?? type} ({count})</option>
             ))}
           </select>
           <select value={childFilter ?? ""} onChange={(e) => setChildFilter(e.target.value || null)}
-            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]">
+            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]">
             <option value="">All children</option>
             {DEMO_CHILDREN.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -182,9 +182,9 @@ export default function EvidencePage() {
             filtered.map((source) => {
               const Icon = SOURCE_ICONS[source.sourceType] ?? FileText;
               return (
-                <div key={source.id} className="rounded-xl border border-[var(--cs-border)] bg-white p-4 hover:border-[var(--cs-aria-gold-soft)] transition-all">
+                <div key={source.id} className="rounded-xl border border-[var(--cs-border)] bg-white p-4 hover:border-[var(--cs-cara-gold-soft)] transition-all">
                   <div className="flex items-start gap-3">
-                    <Icon className="h-5 w-5 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
+                    <Icon className="h-5 w-5 text-[var(--cs-cara-gold)] shrink-0 mt-0.5" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-semibold text-[var(--cs-navy)]">{source.title}</span>

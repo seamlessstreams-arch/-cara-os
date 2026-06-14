@@ -30,7 +30,7 @@ import {
   REGISTRATION_STATUSES,
 } from "../staff-professional-registration-service";
 
-const { computeRegistrationMetrics, computeRegistrationAlerts, generateRegistrationAriaInsights } = _testing;
+const { computeRegistrationMetrics, computeRegistrationAlerts, generateRegistrationCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -909,69 +909,69 @@ describe("computeRegistrationAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// generateRegistrationAriaInsights
+// generateRegistrationCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateRegistrationAriaInsights", () => {
+describe("generateRegistrationCaraInsights", () => {
   // ── Structure ──────────────────────────────────────────────────────────
 
   it("returns exactly 3 insights", () => {
-    expect(generateRegistrationAriaInsights([makeRow()])).toHaveLength(3);
+    expect(generateRegistrationCaraInsights([makeRow()])).toHaveLength(3);
   });
 
   it("returns 3 insights for empty array", () => {
-    expect(generateRegistrationAriaInsights([])).toHaveLength(3);
+    expect(generateRegistrationCaraInsights([])).toHaveLength(3);
   });
 
   it("all insights are strings", () => {
-    const insights = generateRegistrationAriaInsights([makeRow()]);
+    const insights = generateRegistrationCaraInsights([makeRow()]);
     for (const insight of insights) expect(typeof insight).toBe("string");
   });
 
   it("all insights are non-empty strings", () => {
-    const insights = generateRegistrationAriaInsights([makeRow()]);
+    const insights = generateRegistrationCaraInsights([makeRow()]);
     for (const insight of insights) expect(insight.length).toBeGreaterThan(0);
   });
 
   // ── Insight 1: purple-themed summary ───────────────────────────────────
 
   it("first insight starts with [purple]", () => {
-    const insights = generateRegistrationAriaInsights([makeRow()]);
+    const insights = generateRegistrationCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[purple\]/);
   });
 
   it("first insight includes total registration count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight uses singular registration for 1 record", () => {
-    const insights = generateRegistrationAriaInsights([makeRow()]);
+    const insights = generateRegistrationCaraInsights([makeRow()]);
     expect(insights[0]).toContain("registration");
     expect(insights[0]).not.toContain("registrations");
   });
 
   it("first insight uses plural registrations for 2+ records", () => {
     const rows = [makeRow(), makeRow()];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[0]).toContain("registrations");
   });
 
   it("first insight uses singular member for 1 staff", () => {
-    const insights = generateRegistrationAriaInsights([makeRow()]);
+    const insights = generateRegistrationCaraInsights([makeRow()]);
     expect(insights[0]).toContain("member");
     expect(insights[0]).not.toContain("members");
   });
 
   it("first insight uses plural members for 2+ staff", () => {
     const rows = [makeRow({ staff_name: "Alice" }), makeRow({ staff_name: "Bob" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[0]).toContain("members");
   });
 
   it("first insight uses singular body for 1 body", () => {
-    const insights = generateRegistrationAriaInsights([makeRow()]);
+    const insights = generateRegistrationCaraInsights([makeRow()]);
     expect(insights[0]).toContain("body");
     expect(insights[0]).not.toContain("bodies");
   });
@@ -981,36 +981,36 @@ describe("generateRegistrationAriaInsights", () => {
       makeRow({ professional_body: "Social Work England" }),
       makeRow({ professional_body: "HCPC" }),
     ];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[0]).toContain("bodies");
   });
 
   it("first insight includes active count", () => {
     const rows = [makeRow({ registration_status: "Active" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[0]).toContain("1 active");
   });
 
   it("first insight includes expired count", () => {
     const rows = [makeRow({ registration_status: "Expired" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[0]).toContain("1 expired");
   });
 
   it("first insight includes lapsed count", () => {
     const rows = [makeRow({ registration_status: "Lapsed" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[0]).toContain("1 lapsed");
   });
 
   it("first insight includes suspended count", () => {
     const rows = [makeRow({ registration_status: "Suspended" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[0]).toContain("1 suspended");
   });
 
   it("first insight handles empty data gracefully", () => {
-    const insights = generateRegistrationAriaInsights([]);
+    const insights = generateRegistrationCaraInsights([]);
     expect(insights[0]).toContain("0 professional");
     expect(insights[0]).toContain("0 staff");
   });
@@ -1018,25 +1018,25 @@ describe("generateRegistrationAriaInsights", () => {
   // ── Insight 2: amber-themed priorities ──────────────────────────────────
 
   it("second insight starts with [amber]", () => {
-    const insights = generateRegistrationAriaInsights([makeRow()]);
+    const insights = generateRegistrationCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("second insight mentions alerts when critical alerts exist", () => {
     const rows = [makeRow({ registration_status: "Expired" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 
   it("second insight mentions no alerts when all compliant", () => {
     const rows = [makeRow()];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[1]).toMatch(/[Nn]o critical/);
   });
 
   it("second insight includes PIN verified rate", () => {
     const rows = [makeRow({ pin_verified: true }), makeRow({ pin_verified: false })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
@@ -1045,7 +1045,7 @@ describe("generateRegistrationAriaInsights", () => {
       makeRow({ cpd_hours_completed: 30, cpd_hours_required: 30 }),
       makeRow({ cpd_hours_completed: 10, cpd_hours_required: 30 }),
     ];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
@@ -1054,39 +1054,39 @@ describe("generateRegistrationAriaInsights", () => {
       makeRow({ fitness_to_practise_clear: true }),
       makeRow({ fitness_to_practise_clear: false }),
     ];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   it("second insight mentions Reg 32 when no alerts", () => {
     const rows = [makeRow()];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[1]).toContain("Reg 32");
   });
 
   it("second insight counts high-priority alerts", () => {
     const rows = [makeRow({ pin_verified: false, registration_status: "Suspended" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[1]).toContain("high-priority");
   });
 
   // ── Insight 3: reflect-themed question ──────────────────────────────────
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateRegistrationAriaInsights([makeRow()]);
+    const insights = generateRegistrationCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions expired count when present", () => {
     const rows = [makeRow({ registration_status: "Expired" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("1");
     expect(insights[2]).toContain("expired");
   });
 
   it("third insight uses singular when 1 expired", () => {
     const rows = [makeRow({ registration_status: "Expired" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("registration has");
   });
 
@@ -1095,7 +1095,7 @@ describe("generateRegistrationAriaInsights", () => {
       makeRow({ registration_status: "Expired", staff_name: "Alice" }),
       makeRow({ registration_status: "Expired", staff_name: "Bob" }),
     ];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("registrations have");
   });
 
@@ -1103,7 +1103,7 @@ describe("generateRegistrationAriaInsights", () => {
     const rows = [
       makeRow({ registration_status: "Active", cpd_hours_completed: 10, cpd_hours_required: 30 }),
     ];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("CPD");
   });
 
@@ -1112,7 +1112,7 @@ describe("generateRegistrationAriaInsights", () => {
       makeRow({ cpd_hours_completed: 30, cpd_hours_required: 30 }),
       makeRow({ cpd_hours_completed: 10, cpd_hours_required: 30 }),
     ];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("50%");
   });
 
@@ -1120,26 +1120,26 @@ describe("generateRegistrationAriaInsights", () => {
     const rows = [
       makeRow({ registration_status: "Active", cpd_hours_completed: 30, cpd_hours_required: 30 }),
     ];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("current");
     expect(insights[2]).toContain("CPD");
   });
 
   it("third insight references CHR 2015 when CPD not met", () => {
     const rows = [makeRow({ cpd_hours_completed: 10, cpd_hours_required: 30 })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("CHR 2015");
   });
 
   it("third insight references CHR 2015 when fully compliant", () => {
     const rows = [makeRow()];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("CHR 2015");
   });
 
   it("third insight mentions Reg 32 when expired", () => {
     const rows = [makeRow({ registration_status: "Expired" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("Reg 32");
   });
 });
@@ -1280,7 +1280,7 @@ describe("edge cases", () => {
   });
 
   it("insights handle empty data gracefully", () => {
-    const insights = generateRegistrationAriaInsights([]);
+    const insights = generateRegistrationCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 professional");
     expect(insights[0]).toContain("0 staff");
@@ -1375,7 +1375,7 @@ describe("edge cases", () => {
 
   it("insights with only Revoked records mention critical alerts", () => {
     const rows = [makeRow({ registration_status: "Revoked" })];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 
@@ -1385,7 +1385,7 @@ describe("edge cases", () => {
       makeRow({ cpd_hours_completed: 30, cpd_hours_required: 30 }),
       makeRow({ cpd_hours_completed: 10, cpd_hours_required: 30 }),
     ];
-    const insights = generateRegistrationAriaInsights(rows);
+    const insights = generateRegistrationCaraInsights(rows);
     expect(insights[2]).toContain("66.7%");
   });
 

@@ -42,7 +42,7 @@ export interface RecordingQualityIntelligenceResult {
   staff_profiles: StaffRecordingProfile[];
   child_coverage: ChildRecordingCoverage[];
   alerts: RecordingAlert[];
-  insights: AriaRecordingInsight[];
+  insights: CaraRecordingInsight[];
 }
 
 export interface RecordingOverview {
@@ -87,7 +87,7 @@ export interface RecordingAlert {
   message: string;
 }
 
-export interface AriaRecordingInsight {
+export interface CaraRecordingInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -356,7 +356,7 @@ export function computeRecordingQualityIntelligence(input: {
   }
 
   // ── Insights ─────────────────────────────────────────────────────────
-  const insights: AriaRecordingInsight[] = [];
+  const insights: CaraRecordingInsight[] = [];
 
   // Critical: child with no entries in 7 days
   for (const cc of childCoverage) {

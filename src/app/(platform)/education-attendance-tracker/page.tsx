@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -174,12 +174,12 @@ export default function EducationAttendanceTrackerPage() {
     <PageShell
       title="Education Attendance Tracker"
       subtitle="Quality Standard 8 (Education) · Virtual School Oversight · Daily Attendance Monitoring"
-      ariaContext={{ pageTitle: "Education Attendance Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Education Attendance Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Education Attendance Tracker" />
           <ExportButton data={filtered} columns={exportCols} filename="education-attendance-tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

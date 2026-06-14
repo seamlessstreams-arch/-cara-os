@@ -88,10 +88,10 @@ export default function ContradictionsPage() {
     <PageShell title="Contradictions" subtitle="Cross-record conflict detection">
       <div className="space-y-6 pb-12">
 
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <AlertOctagon className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <AlertOctagon className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Contradictions</h2>
@@ -124,7 +124,7 @@ export default function ContradictionsPage() {
           {["unresolved", "acknowledged", "resolved"].map((s) => (
             <button key={s} onClick={() => setStatusFilter(statusFilter === s ? null : s)}
               className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
-                statusFilter === s ? "ring-1 ring-[var(--cs-aria-gold-soft)]" : "", STATUS_STYLES[s])}
+                statusFilter === s ? "ring-1 ring-[var(--cs-cara-gold-soft)]" : "", STATUS_STYLES[s])}
             >
               {s.charAt(0).toUpperCase() + s.slice(1)} ({items.filter((c) => c.status === s).length})
             </button>

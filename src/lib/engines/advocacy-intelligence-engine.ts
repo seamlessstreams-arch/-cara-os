@@ -67,7 +67,7 @@ export interface AdvocacyAlert {
   message: string;
 }
 
-export interface AriaAdvocacyInsight {
+export interface CaraAdvocacyInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -77,7 +77,7 @@ export interface AdvocacyIntelligenceResult {
   referral_breakdown: ReferralTypeBreakdown[];
   child_advocacy_profiles: ChildAdvocacyProfile[];
   alerts: AdvocacyAlert[];
-  insights: AriaAdvocacyInsight[];
+  insights: CaraAdvocacyInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -318,7 +318,7 @@ export function computeAdvocacyIntelligence(input: {
 
   // ── Insights ───────────────────────────────────────────────────────────
 
-  const insights: AriaAdvocacyInsight[] = [];
+  const insights: CaraAdvocacyInsight[] = [];
 
   // critical: child with no advocacy access ever
   for (const c of childrenWithoutReferral) {

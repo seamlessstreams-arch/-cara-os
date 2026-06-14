@@ -11,7 +11,7 @@ import {
 const {
   computeSleepDisturbanceMetrics,
   computeSleepDisturbanceAlerts,
-  generateSleepDisturbanceAriaInsights,
+  generateSleepDisturbanceCaraInsights,
 } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
@@ -584,129 +584,129 @@ describe("sleep-disturbance-intervention-service", () => {
     });
   });
 
-  // ── generateSleepDisturbanceAriaInsights ──────────────────────────────
+  // ── generateSleepDisturbanceCaraInsights ──────────────────────────────
 
-  describe("generateSleepDisturbanceAriaInsights", () => {
+  describe("generateSleepDisturbanceCaraInsights", () => {
     it("returns exactly 3 insights for empty data", () => {
-      const insights = generateSleepDisturbanceAriaInsights([]);
+      const insights = generateSleepDisturbanceCaraInsights([]);
       expect(insights).toHaveLength(3);
     });
     it("returns exactly 3 insights for populated data", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow(), makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow(), makeRow()]);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [indigo]", () => {
-      expect(generateSleepDisturbanceAriaInsights([])[0]).toMatch(/^\[indigo\]/);
+      expect(generateSleepDisturbanceCaraInsights([])[0]).toMatch(/^\[indigo\]/);
     });
     it("insight 2 starts with [amber]", () => {
-      expect(generateSleepDisturbanceAriaInsights([])[1]).toMatch(/^\[amber\]/);
+      expect(generateSleepDisturbanceCaraInsights([])[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
-      expect(generateSleepDisturbanceAriaInsights([])[2]).toMatch(/^\[reflect\]/);
+      expect(generateSleepDisturbanceCaraInsights([])[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total incidents count", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow(), makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow(), makeRow()]);
       expect(insights[0]).toContain("2 sleep disturbance incidents");
     });
     it("insight 1 contains unique children count", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ child_name: "A" }),
         makeRow({ child_name: "B" }),
       ]);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow()]);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains severe count", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ severity_level: "severe" }),
       ]);
       expect(insights[0]).toContain("1 severe");
     });
     it("insight 1 contains crisis count", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ severity_level: "crisis" }),
       ]);
       expect(insights[0]).toContain("1 crisis");
     });
     it("insight 1 contains trauma-linked count", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ trauma_link_identified: true }),
       ]);
       expect(insights[0]).toContain("1 trauma-linked");
     });
     it("insight 1 contains settled within hour rate", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow()]);
       expect(insights[0]).toContain("100%");
     });
 
     // Insight 2 with alerts
     it("insight 2 mentions critical and high counts when present", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ severity_level: "crisis", clinical_referral_made: false }),
       ]);
       expect(insights[1]).toContain("1 critical");
     });
     it("insight 2 says no alerts when clean", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow()]);
       expect(insights[1]).toContain("No critical or high-priority alerts");
     });
     it("insight 2 includes sleep plan rate", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Sleep plan rate");
     });
     it("insight 2 includes clinical referral rate", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Clinical referral rate");
     });
 
     // Insight 3 branches
     it("insight 3 mentions trauma when trauma_linked > 0", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ trauma_link_identified: true }),
       ]);
       expect(insights[2]).toContain("trauma link");
     });
     it("insight 3 mentions ongoing when ongoing > 0 and no trauma", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ outcome_status: "ongoing", trauma_link_identified: false }),
       ]);
       expect(insights[2]).toContain("ongoing");
     });
     it("insight 3 uses singular for 1 trauma-linked incident", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ trauma_link_identified: true }),
       ]);
       expect(insights[2]).toContain("1 incident has");
     });
     it("insight 3 uses plural for 2 trauma-linked incidents", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ trauma_link_identified: true }),
         makeRow({ trauma_link_identified: true }),
       ]);
       expect(insights[2]).toContain("2 incidents have");
     });
     it("insight 3 uses singular for 1 ongoing incident", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ outcome_status: "ongoing", trauma_link_identified: false }),
       ]);
       expect(insights[2]).toContain("1 incident remains");
     });
     it("insight 3 uses plural for 2 ongoing incidents", () => {
-      const insights = generateSleepDisturbanceAriaInsights([
+      const insights = generateSleepDisturbanceCaraInsights([
         makeRow({ outcome_status: "ongoing", trauma_link_identified: false }),
         makeRow({ outcome_status: "ongoing", trauma_link_identified: false }),
       ]);
       expect(insights[2]).toContain("2 incidents remain");
     });
     it("insight 3 gives positive message when no trauma or ongoing", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow()]);
       expect(insights[2]).toContain("No trauma-linked or ongoing");
     });
     it("all insights are non-empty strings", () => {
-      const insights = generateSleepDisturbanceAriaInsights([makeRow()]);
+      const insights = generateSleepDisturbanceCaraInsights([makeRow()]);
       for (const insight of insights) {
         expect(typeof insight).toBe("string");
         expect(insight.length).toBeGreaterThan(0);

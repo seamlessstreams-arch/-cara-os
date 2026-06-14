@@ -24,8 +24,8 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import type { Document, DocumentReadReceipt } from "@/types";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 type Tab = "library" | "read_sign" | "upload";
 type CategoryFilter = "all" | string;
@@ -57,7 +57,7 @@ const CAT_ICONS: Record<string, React.ElementType> = {
 
 const CAT_COLORS: Record<string, string> = {
   policy: "bg-blue-100 text-blue-700",
-  procedure: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  procedure: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   risk_assessment: "bg-red-100 text-red-700",
   care_plan: "bg-emerald-100 text-emerald-700",
   behaviour_support: "bg-amber-100 text-amber-700",
@@ -264,7 +264,7 @@ export default function DocumentsPage() {
     <PageShell
       title="Documents"
       subtitle="Secure document storage, version control, and mandatory read-and-sign"
-      ariaContext={{ pageTitle: "Documents", sourceType: "document" }}
+      caraContext={{ pageTitle: "Documents", sourceType: "document" }}
       quickCreateContext={{ module: "documents", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">
@@ -276,7 +276,7 @@ export default function DocumentsPage() {
           <Button size="sm" onClick={() => setTab("upload")}>
             <Upload className="h-3.5 w-3.5 mr-1" />Upload Document
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -285,7 +285,7 @@ export default function DocumentsPage() {
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
           {[
             { label: "Total Documents", value: stats.total, icon: FileText, color: "text-blue-600", bg: "bg-blue-50" },
-            { label: "Require Sign", value: stats.requireSign, icon: FileCheck, color: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]" },
+            { label: "Require Sign", value: stats.requireSign, icon: FileCheck, color: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)]" },
             { label: "Fully Signed", value: stats.allSigned, icon: CheckSquare, color: "text-emerald-600", bg: "bg-emerald-50" },
             { label: "Expiring Soon", value: stats.expiring, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
             { label: "Expired", value: stats.expired, icon: AlertTriangle, color: "text-red-600", bg: "bg-red-50" },
@@ -588,7 +588,7 @@ export default function DocumentsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Documents — policy documents, risk assessments, care plans, staff records, Ofsted correspondence, meeting minutes, statutory reports, version control, mandatory read-and-sign"
         recordType="uploaded_document"

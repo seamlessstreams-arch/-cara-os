@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeLacHealthAssessmentMetrics,
   computeLacHealthAssessmentAlerts,
-  generateLacHealthAssessmentAriaInsights,
+  generateLacHealthAssessmentCaraInsights,
   type LacHealthAssessmentRow,
 } from "./lac-health-assessment-service";
 
@@ -122,12 +122,12 @@ describe("computeLacHealthAssessmentAlerts", () => {
   });
 });
 
-describe("generateLacHealthAssessmentAriaInsights", () => {
+describe("generateLacHealthAssessmentCaraInsights", () => {
   it("returns 3 insights", () => {
     const rows = [makeRow(), makeRow({ id: "2", child_name: "Bob" })];
     const metrics = computeLacHealthAssessmentMetrics(rows);
     const alerts = computeLacHealthAssessmentAlerts(rows);
-    const insights = generateLacHealthAssessmentAriaInsights(metrics, alerts);
+    const insights = generateLacHealthAssessmentCaraInsights(metrics, alerts);
     expect(insights.length).toBe(3);
     expect(insights[0]).toContain("[pink]");
     expect(insights[1]).toContain("[amber]");

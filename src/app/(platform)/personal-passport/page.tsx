@@ -31,8 +31,8 @@ import type { PersonalPassport } from "@/types/extended";
 import { usePersonalPassports } from "@/hooks/use-personal-passports";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<PersonalPassport>[] = [
   { header: "Young Person", accessor: (r: PersonalPassport) => getYPName(r.child_id) },
@@ -76,12 +76,12 @@ export default function PersonalPassportPage() {
     <PageShell
       title="Personal Passport"
       subtitle="One-page 'all about me' for each child — co-authored, updated regularly, shared with everyone who supports them"
-      ariaContext={{ pageTitle: "Personal Passports", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Personal Passports", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="personal-passports" />
           <PrintButton title="Personal Passports" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -433,7 +433,7 @@ export default function PersonalPassportPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Personal Passports — child's passport document, likes and dislikes, communication needs, sensory needs, daily routines, carer briefing, introduction to new placements, care plan summary"
         recordType="care_plan"

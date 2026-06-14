@@ -34,7 +34,7 @@ function contextDepth(days: number | null): "brief" | "standard" | "comprehensiv
   return "brief";
 }
 
-function buildAriaSummary(
+function buildCaraSummary(
   staffName: string,
   days: number | null,
   sinceDate: string | null,
@@ -199,7 +199,7 @@ export async function GET(req: NextRequest) {
         medication_issues: 0,
         tasks_completed: tasksDone,
       },
-      aria_summary: buildAriaSummary(getStaffName(staffId), daysSince, sinceDate, depth),
+      aria_summary: buildCaraSummary(getStaffName(staffId), daysSince, sinceDate, depth),
     });
   }
 

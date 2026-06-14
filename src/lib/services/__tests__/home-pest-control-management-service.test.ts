@@ -29,7 +29,7 @@ import type {
 const {
   computePestControlManagementMetrics,
   identifyPestControlManagementAlerts,
-  generatePestControlManagementAriaInsights,
+  generatePestControlManagementCaraInsights,
 } = _testing;
 
 // -- Helpers ------------------------------------------------------------------
@@ -1603,42 +1603,42 @@ describe("identifyPestControlManagementAlerts", () => {
 });
 
 // ==============================================================================
-// generatePestControlManagementAriaInsights
+// generatePestControlManagementCaraInsights
 // ==============================================================================
 
-describe("generatePestControlManagementAriaInsights", () => {
+describe("generatePestControlManagementCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const records = [makeRow()];
-    const insights = generatePestControlManagementAriaInsights(records);
+    const insights = generatePestControlManagementCaraInsights(records);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty array", () => {
-    const insights = generatePestControlManagementAriaInsights([]);
+    const insights = generatePestControlManagementCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [lime]", () => {
     const records = [makeRow()];
-    const insights = generatePestControlManagementAriaInsights(records);
+    const insights = generatePestControlManagementCaraInsights(records);
     expect(insights[0]).toMatch(/^\[lime\]/);
   });
 
   it("second insight starts with [amber]", () => {
     const records = [makeRow()];
-    const insights = generatePestControlManagementAriaInsights(records);
+    const insights = generatePestControlManagementCaraInsights(records);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("third insight starts with [reflect]", () => {
     const records = [makeRow()];
-    const insights = generatePestControlManagementAriaInsights(records);
+    const insights = generatePestControlManagementCaraInsights(records);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("all insights are non-empty strings", () => {
     const records = [makeRow()];
-    const insights = generatePestControlManagementAriaInsights(records);
+    const insights = generatePestControlManagementCaraInsights(records);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1648,7 +1648,7 @@ describe("generatePestControlManagementAriaInsights", () => {
   describe("first insight (lime) -- summary stats", () => {
     it("includes total inspection count", () => {
       const records = [makeRow(), makeRow(), makeRow()];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[0]).toContain("3 pest control inspections");
     });
 
@@ -1657,13 +1657,13 @@ describe("generatePestControlManagementAriaInsights", () => {
         makeRow({ location: "Kitchen" }),
         makeRow({ location: "Bathroom 1" }),
       ];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[0]).toContain("2 locations");
     });
 
     it("uses singular location for count of 1", () => {
       const records = [makeRow({ location: "Kitchen" })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[0]).toContain("1 location");
     });
 
@@ -1672,25 +1672,25 @@ describe("generatePestControlManagementAriaInsights", () => {
         makeRow({ inspector_name: "Inspector A" }),
         makeRow({ inspector_name: "Inspector B" }),
       ];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[0]).toContain("2 inspectors");
     });
 
     it("uses singular inspector for count of 1", () => {
       const records = [makeRow({ inspector_name: "Single Inspector" })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[0]).toContain("1 inspector");
     });
 
     it("includes proofing rate", () => {
       const records = [makeRow({ proofing_adequate: true })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[0]).toContain("100%");
     });
 
     it("uses singular inspection for count of 1", () => {
       const records = [makeRow()];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[0]).toContain("1 pest control inspection");
     });
   });
@@ -1698,32 +1698,32 @@ describe("generatePestControlManagementAriaInsights", () => {
   describe("second insight (amber) -- priority concerns", () => {
     it("mentions critical and high alerts when present", () => {
       const records = [makeRow({ severity: "Infestation", hygiene_satisfactory: false })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high");
     });
 
     it("mentions infestation count when alerts present", () => {
       const records = [makeRow({ severity: "Infestation" })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[1]).toContain("infestation");
     });
 
     it("mentions no critical alerts when all clean", () => {
       const records = [makeRow({ severity: "None Found", compliance_status: "Clear", treatment_required: false, hygiene_satisfactory: true, food_storage_adequate: true, proofing_adequate: true, re_inspection_required: false })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[1]).toContain("No critical or high-priority");
     });
 
     it("mentions pest-free premises when no alerts", () => {
       const records = [makeRow({ severity: "None Found", compliance_status: "Clear", treatment_required: false, hygiene_satisfactory: true, food_storage_adequate: true, proofing_adequate: true, re_inspection_required: false })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[1]).toContain("pest-free");
     });
 
     it("uses singular for 1 infestation", () => {
       const records = [makeRow({ severity: "Infestation" })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[1]).toContain("infestation has");
     });
 
@@ -1732,13 +1732,13 @@ describe("generatePestControlManagementAriaInsights", () => {
         makeRow({ severity: "Infestation" }),
         makeRow({ severity: "Infestation" }),
       ];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[1]).toContain("infestations have");
     });
 
     it("uses singular for 1 active issue", () => {
       const records = [makeRow({ compliance_status: "Active Issue", treatment_required: false })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[1]).toContain("active issue remains");
     });
 
@@ -1747,7 +1747,7 @@ describe("generatePestControlManagementAriaInsights", () => {
         makeRow({ compliance_status: "Active Issue", treatment_required: false }),
         makeRow({ compliance_status: "Active Issue", treatment_required: false }),
       ];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[1]).toContain("active issues remain");
     });
   });
@@ -1755,13 +1755,13 @@ describe("generatePestControlManagementAriaInsights", () => {
   describe("third insight (reflect) -- reflective question", () => {
     it("mentions infestations when present", () => {
       const records = [makeRow({ severity: "Infestation" })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[2]).toContain("infestation");
     });
 
     it("uses singular for 1 infestation", () => {
       const records = [makeRow({ severity: "Infestation" })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[2]).toContain("infestation has");
     });
 
@@ -1770,31 +1770,31 @@ describe("generatePestControlManagementAriaInsights", () => {
         makeRow({ severity: "Infestation" }),
         makeRow({ severity: "Infestation" }),
       ];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[2]).toContain("infestations have");
     });
 
     it("asks about active issues and re-inspections when no infestations but issues found", () => {
       const records = [makeRow({ severity: "Low", compliance_status: "Active Issue", treatment_required: false })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[2]).toContain("active");
     });
 
     it("asks about re-inspections when re-inspections due but no infestations", () => {
       const records = [makeRow({ severity: "Low", compliance_status: "Clear", re_inspection_required: true, hygiene_satisfactory: true, food_storage_adequate: true, proofing_adequate: true })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[2]).toContain("re-inspection");
     });
 
     it("provides positive reflection when all clean", () => {
       const records = [makeRow({ severity: "None Found", compliance_status: "Clear", treatment_required: false, hygiene_satisfactory: true, food_storage_adequate: true, proofing_adequate: true, re_inspection_required: false })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[2]).toContain("no infestations");
     });
 
     it("asks about staff awareness in positive reflection", () => {
       const records = [makeRow({ severity: "None Found", compliance_status: "Clear", treatment_required: false, hygiene_satisfactory: true, food_storage_adequate: true, proofing_adequate: true, re_inspection_required: false })];
-      const insights = generatePestControlManagementAriaInsights(records);
+      const insights = generatePestControlManagementCaraInsights(records);
       expect(insights[2]).toContain("staff");
     });
   });

@@ -103,7 +103,7 @@ export interface KeyworkingAlert {
   message: string;
 }
 
-export interface AriaKeyworkingInsight {
+export interface CaraKeyworkingInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -115,7 +115,7 @@ export interface KeyworkingIntelligenceResult {
   session_type_breakdown: SessionTypeBreakdown[];
   follow_up_compliance: FollowUpCompliance;
   alerts: KeyworkingAlert[];
-  insights: AriaKeyworkingInsight[];
+  insights: CaraKeyworkingInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -339,7 +339,7 @@ export function computeKeyworkingIntelligence(input: KeyworkingIntelligenceInput
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaKeyworkingInsight[] = [];
+  const insights: CaraKeyworkingInsight[] = [];
 
   // Critical: overdue children
   if (overdueChildren.length > 0) {

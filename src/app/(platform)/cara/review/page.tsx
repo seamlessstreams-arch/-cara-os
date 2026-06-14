@@ -13,8 +13,8 @@
 import React, { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaHealthPanel } from "@/components/aria/aria-health-panel";
-import { useAriaSuggestions, useUpdateAriaSuggestion } from "@/hooks/use-intelligence-layer";
+import { CaraHealthPanel } from "@/components/cara/cara-health-panel";
+import { useCaraSuggestions, useUpdateCaraSuggestion } from "@/hooks/use-intelligence-layer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -115,10 +115,10 @@ const TYPE_CONFIG: Record<SuggestionType, { label: string; icon: React.ElementTy
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export default function AriaReviewQueuePage() {
+export default function CaraReviewQueuePage() {
   const [items, setItems] = useState<ReviewItem[]>([]);
-  const { data: apiData } = useAriaSuggestions();
-  const updateMutation = useUpdateAriaSuggestion();
+  const { data: apiData } = useCaraSuggestions();
+  const updateMutation = useUpdateCaraSuggestion();
 
   useEffect(() => {
     if (apiData?.persisted && Array.isArray(apiData.items)) {
@@ -192,7 +192,7 @@ export default function AriaReviewQueuePage() {
       subtitle="Every Cara suggestion requires human review. Approve, reject, amend or mark as no action required."
     >
       {/* Cara health diagnostics — visible to managers only */}
-      <AriaHealthPanel
+      <CaraHealthPanel
         userRole="registered_manager"
         userId="current_user"
         className="mb-6"
@@ -321,7 +321,7 @@ function SuggestionRow({
     // If Supabase isn't configured the call will return a graceful error; the
     // optimistic UI update has already happened so the user sees the result.
     try {
-      await fetch("/api/aria/generate", {
+      await fetch("/api/cara/generate", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

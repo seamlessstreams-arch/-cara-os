@@ -3,8 +3,8 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -147,7 +147,7 @@ export default function ChecksPage() {
     <PageShell
       title="Compliance Checks"
       subtitle="Single Central Record — compliance status for all candidates"
-      ariaContext={{ pageTitle: "Single Central Record — Compliance Checks", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Single Central Record — Compliance Checks", sourceType: "staff" }}
       actions={
         <div className="flex gap-2">
           <PrintButton title="Compliance Checks" subtitle="Chamberlain House — Single Central Record" targetId="sr-checks-content" />
@@ -363,7 +363,7 @@ export default function ChecksPage() {
         <strong>Schedule 7 — Children&apos;s Homes Regulations 2015:</strong> All mandatory checks must be completed and verified before a candidate begins employment. Evidence of each check must be retained and available for Ofsted inspection.
       </div>
       </div>{/* close #sr-checks-content */}
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Single Central Record — compliance checks, DBS certificates, references, qualifications, right to work, safer recruitment standards, Ofsted inspection evidence, staff checks tracker"
         recordType="staff_training"

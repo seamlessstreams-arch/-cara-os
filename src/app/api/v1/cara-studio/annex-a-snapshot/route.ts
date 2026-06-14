@@ -1,15 +1,15 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Annex A Live Snapshot
 // GET  → list snapshots for a home (latest first)
-// POST → run snapshot build (RBAC: aria.generate_drafts)
+// POST → run snapshot build (RBAC: cara.generate_drafts)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import {
   loadAnnexASnapshots,
   runAnnexASnapshot,
-} from "@/lib/aria/aria-annex-a-snapshot";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+} from "@/lib/cara/cara-annex-a-snapshot";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -32,8 +32,8 @@ export async function POST(req: NextRequest) {
   const periodStart = typeof body.period_start === "string" ? body.period_start : undefined;
   const periodEnd = typeof body.period_end === "string" ? body.period_end : undefined;
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId,
     intent: "run annex_a_snapshot",
   });

@@ -5,10 +5,10 @@
 // hard-coding the product name in chrome, metadata or templates.
 //
 // History: the product and its AI layer were rebranded to Cara / Cara OS in
-// June 2026. Internal identifiers from the original brand (AriaCommandId,
-// aria_* tables, /api/aria/* endpoints, ARIA_* env vars, the cs-/--cs- CSS
+// June 2026. Internal identifiers from the original brand (CaraCommandId,
+// aria_* tables, /api/cara/* endpoints, CARA_* env vars, the cs-/--cs- CSS
 // prefix) keep their legacy names for stability — they are never user-facing.
-// New env vars use CARA_* with the legacy ARIA_* still honoured as a fallback.
+// New env vars use CARA_* with the legacy CARA_* still honoured as a fallback.
 // ══════════════════════════════════════════════════════════════════════════════
 
 export const BRAND = {

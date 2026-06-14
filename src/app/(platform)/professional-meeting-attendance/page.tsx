@@ -38,8 +38,8 @@ import {
   PROF_MEETING_MODE_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 
@@ -50,7 +50,7 @@ const TYPE_COLOUR: Record<ProfMeetingType, string> = {
   mappa: "bg-purple-100 text-purple-700",
   taf: "bg-teal-100 text-teal-700",
   pep: "bg-indigo-100 text-indigo-700",
-  ehcp_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  ehcp_review: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   health: "bg-emerald-100 text-emerald-700",
   multi_agency: "bg-amber-100 text-amber-700",
   external_consultation: "bg-slate-100 text-[var(--cs-text-secondary)]",
@@ -157,12 +157,12 @@ export default function ProfessionalMeetingAttendancePage() {
     <PageShell
       title="Professional Meeting Attendance"
       subtitle="Home representation at multi-agency professional meetings — Quality Standard 4 & 13, Working Together 2023"
-      ariaContext={{ pageTitle: "Professional Meeting Attendance", sourceType: "contact_log" }}
+      caraContext={{ pageTitle: "Professional Meeting Attendance", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="professional-meeting-attendance" />
           <PrintButton title="Professional Meeting Attendance" />
-          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -412,7 +412,7 @@ export default function ProfessionalMeetingAttendancePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Professional Meeting Attendance — LAC reviews, strategy meetings, child protection conferences, multi-agency meetings, attendance records, apologies, staff representation, Reg 45 evidence"
         recordType="task"

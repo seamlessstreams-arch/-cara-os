@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -38,7 +38,7 @@ const STAGE_COLOURS: Record<PathwayStage, string> = {
   inductee:           "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
   rsw:                "bg-blue-50 text-blue-700 border-blue-200",
   senior_rsw:         "bg-sky-50 text-sky-700 border-sky-200",
-  team_leader:        "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  team_leader:        "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
   deputy_manager:     "bg-amber-50 text-amber-700 border-amber-200",
   registered_manager: "bg-emerald-50 text-emerald-700 border-emerald-200",
   ri:                 "bg-rose-50 text-rose-700 border-rose-200",
@@ -166,7 +166,7 @@ export default function StaffProfilesPage() {
     <PageShell
       title="Staff Competency Profiles"
       subtitle="Individual development profiles — click any staff member for a full deep-dive"
-      ariaContext={{ pageTitle: "Staff Competency Profiles", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Competency Profiles", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -179,7 +179,7 @@ export default function StaffProfilesPage() {
               Workforce Hub
             </button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -296,7 +296,7 @@ export default function StaffProfilesPage() {
                 const hasProfile = !!profile;
 
                 return (
-                  <Link key={member.id} href={hasProfile ? `/workforce/staff/${member.id}` : "/workforce/aria-planner"}>
+                  <Link key={member.id} href={hasProfile ? `/workforce/staff/${member.id}` : "/workforce/cara-planner"}>
                     <div className={cn(
                       "rounded-2xl border bg-white p-4 hover:shadow-sm transition-all cursor-pointer",
                       hasProfile ? "border-[var(--cs-border)] hover:border-indigo-200" : "border-dashed border-[var(--cs-border)] bg-slate-50/50",
@@ -425,7 +425,7 @@ export default function StaffProfilesPage() {
           of children in the home.
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Competency Profiles — individual staff competency assessments, skills profiles, Reg 34 development needs, Reg 5 suitability evidence, ILACS workforce quality, Ofsted inspection evidence"
         recordType="staff_training"

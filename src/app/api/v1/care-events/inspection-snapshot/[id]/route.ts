@@ -4,7 +4,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { getPersistedSnapshot } from "@/lib/care-events/inspection-snapshot";
 
 export async function GET(
@@ -17,8 +17,8 @@ export async function GET(
     return NextResponse.json({ error: "Snapshot not found" }, { status: 404 });
   }
 
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId: snap.home_id,
     intent: "view persisted inspection snapshot",
   });

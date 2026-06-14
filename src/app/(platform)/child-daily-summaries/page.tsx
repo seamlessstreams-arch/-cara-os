@@ -25,8 +25,8 @@ import { useChildDailySummaries, type ChildDailySummaryEnriched } from "@/hooks/
 import { CARE_EVENT_CATEGORY_LABEL } from "@/types/care-events";
 import { formatDate } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Mood indicator ────────────────────────────────────────────────────────────
 
@@ -164,8 +164,8 @@ export default function ChildDailySummariesPage() {
     <PageShell
       title="Child Daily Summaries"
       subtitle="Auto-generated per-child daily summaries from Care Event routing"
-      ariaContext={{ pageTitle: "Child Daily Summaries", sourceType: "child_record" }}
-      actions={<AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />}
+      caraContext={{ pageTitle: "Child Daily Summaries", sourceType: "child_record" }}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />}
     >
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
@@ -266,7 +266,7 @@ export default function ChildDailySummariesPage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Child Daily Summaries — auto-generated per-child daily records from care events, sleep, behaviour, health, education, mood, meals, activities, key worker notes"
         recordType="daily_log"

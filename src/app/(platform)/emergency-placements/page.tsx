@@ -27,8 +27,8 @@ import {
 } from "@/types/extended";
 import { useEmergencyReferrals } from "@/hooks/use-emergency-referrals";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Meta maps ───────────────────────────────────────────────────────────────
 const STATUS_META: Record<EmergencyPlacementStatus, { label: string; color: string }> = {
@@ -129,12 +129,12 @@ export default function EmergencyPlacementsPage() {
     <PageShell
       title="Emergency & Out-of-Hours Placements"
       subtitle="Urgent referrals, emergency admissions, and out-of-hours placement requests"
-      ariaContext={{ pageTitle: "Emergency & Out-of-Hours Placements", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Emergency & Out-of-Hours Placements", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency & Out-of-Hours Placements" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="emergency-placements" />
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -324,7 +324,7 @@ export default function EmergencyPlacementsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Emergency & Out-of-Hours Placements — emergency admissions, out-of-hours referrals, placement matching, placement authority, risk assessment, first night protocol, welfare checks"
         recordType="placement_plan"

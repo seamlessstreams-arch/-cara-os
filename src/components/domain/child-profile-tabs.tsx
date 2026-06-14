@@ -30,7 +30,7 @@ export function ChildProfileTabs({ childId }: ChildProfileTabsProps) {
             className={cn(
               "px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors -mb-px",
               isActive
-                ? "border-[var(--cs-aria-gold)] text-[var(--cs-navy)]"
+                ? "border-[var(--cs-cara-gold)] text-[var(--cs-navy)]"
                 : "border-transparent text-[var(--cs-text-muted)] hover:text-[var(--cs-text)] hover:border-[var(--cs-border)]",
             )}
           >

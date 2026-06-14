@@ -36,8 +36,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import type { UtilityBill } from "@/types/extended";
 import { useUtilityBills } from "@/hooks/use-utility-bills";
@@ -131,12 +131,12 @@ export default function UtilityBillsTrackerPage() {
     <PageShell
       title="Utility Bills Tracker"
       subtitle="Electricity, gas, water, broadband, council tax and business rates — supporting financial governance under Quality Standard 13"
-      ariaContext={{ pageTitle: "Utility Bills Tracker", sourceType: "document" }}
+      caraContext={{ pageTitle: "Utility Bills Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="utility-bills-tracker" />
           <PrintButton title="Utility Bills Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -370,7 +370,7 @@ export default function UtilityBillsTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Utility Bills Tracker — gas, electricity, water, broadband bills, payment records, budget monitoring, premises running costs, Reg 40 premises compliance evidence"
         recordType="management_oversight"

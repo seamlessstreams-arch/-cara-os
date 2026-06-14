@@ -121,7 +121,7 @@ export interface DisruptionIndicator {
   detail: string;
 }
 
-export interface AriaInsight {
+export interface CaraInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -131,7 +131,7 @@ export interface PlacementStabilityResult {
   home_metrics: HomeStabilityMetrics;
   wellbeing_trend: WellbeingDataPoint[];
   disruption_indicators: DisruptionIndicator[];
-  insights: AriaInsight[];
+  insights: CaraInsight[];
 }
 
 export interface PlacementStabilityInput {
@@ -521,7 +521,7 @@ export function computePlacementStability(input: PlacementStabilityInput): Place
   disruptionIndicators.sort((a, b) => (sevOrder[a.severity] ?? 3) - (sevOrder[b.severity] ?? 3));
 
   // ── Cara Intelligence Insights ─────────────────────────────────────────
-  const insights: AriaInsight[] = [];
+  const insights: CaraInsight[] = [];
 
   if (currentChildren.length === 0) {
     insights.push({

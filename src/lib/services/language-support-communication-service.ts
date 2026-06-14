@@ -522,7 +522,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: LanguageSupportRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

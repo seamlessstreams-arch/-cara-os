@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateLanguageSupport,
-  generateAriaInsights,
+  generateCaraInsights,
   type LanguageSupportRow,
 } from "./language-support-communication-service";
 
@@ -191,13 +191,13 @@ describe("validateLanguageSupport", () => {
   });
 });
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [
       makeRow({ id: "1" }),
       makeRow({ id: "2", child_name: "Bob" }),
     ];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights.length).toBe(3);
     expect(insights[0]).toContain("[sky]");
     expect(insights[1]).toContain("[amber]");

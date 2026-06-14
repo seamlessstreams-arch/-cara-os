@@ -37,8 +37,8 @@ import { useStaffCompetencyRecords, useCreateStaffCompetencyRecord } from "@/hoo
 import type { StaffCompetencyRecord, StaffCompetencyLevel } from "@/types/extended";
 import { STAFF_COMPETENCY_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -199,7 +199,7 @@ export default function StaffCompetencyPage() {
     <PageShell
       title="Staff Competency Assessments"
       subtitle="Reg 32/33 — skills sign-offs, practical competency checks, and professional development benchmarks"
-      ariaContext={{ pageTitle: "Staff Competency Assessments", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Competency Assessments", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="staff-competency" />
@@ -207,7 +207,7 @@ export default function StaffCompetencyPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Assessment
           </button>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -519,7 +519,7 @@ export default function StaffCompetencyPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Competency Assessments — workforce competency levels, skills assessments, training completion, development needs, Reg 40 staff qualification evidence, Ofsted workforce evidence, appraisal records"
         recordType="staff_training"

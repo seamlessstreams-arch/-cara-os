@@ -18,8 +18,8 @@ import { useMediaPublicityConsents } from "@/hooks/use-media-publicity-consents"
 import type { MediaPublicityConsent, MediaConsentCategory, ChildConsentResponse } from "@/types/extended";
 import { MEDIA_CONSENT_CATEGORY_LABEL, CHILD_CONSENT_RESPONSE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const consentColour: Record<ChildConsentResponse, string> = {
   yes_explicit: "bg-green-100 text-green-800",
@@ -77,12 +77,12 @@ export default function MediaPublicityConsentPage() {
     <PageShell
       title="Media & Publicity Consent"
       subtitle="Records of consent for photographs, media use, and any external publication involving children"
-      ariaContext={{ pageTitle: "Media & Publicity Consent", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Media & Publicity Consent", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="media-publicity-consent" />
           <PrintButton title="Media & Publicity Consent" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -277,7 +277,7 @@ export default function MediaPublicityConsentPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Media & Publicity Consent — photography consent, social media restrictions, TV/newspaper consent, anonymisation, GDPR, LAC identity protection, information sharing"
         recordType="care_plan"

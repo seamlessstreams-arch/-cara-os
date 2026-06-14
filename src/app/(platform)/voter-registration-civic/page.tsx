@@ -27,8 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const d = (n: number) => {
   const dt = new Date();
@@ -103,12 +103,12 @@ export default function VoterRegistrationCivicPage() {
     <PageShell
       title="Voter Registration & Civic Participation"
       subtitle="Per-young-person civic engagement — voter registration (16+ attainer in some elections), voter ID, elections, contacting representatives, causes of interest, community activities. Children in care vote less than peers — this work changes that."
-      ariaContext={{ pageTitle: "Voter Registration & Civic Participation", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Voter Registration & Civic Participation", sourceType: "care_plan" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="voter-registration-civic" />
           <PrintButton title="Voter Registration & Civic Participation" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -300,7 +300,7 @@ export default function VoterRegistrationCivicPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Voter Registration & Civic Participation — electoral roll registration, citizenship education, civic engagement activities, rights and responsibilities, Reg 45 rights/participation evidence"
         recordType="care_plan"

@@ -3,8 +3,8 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -111,13 +111,13 @@ export default function RestraintLogPage() {
     <PageShell
       title="Restraint Log"
       subtitle="Physical intervention records — Regulation 35 compliance"
-      ariaContext={{ pageTitle: "Care Events — Restraint &amp; Physical Intervention", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Care Events — Restraint &amp; Physical Intervention", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Restraint Log" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="restraint-log" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Restraint</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -127,7 +127,7 @@ export default function RestraintLogPage() {
         </div>
       ) : (
       <div id="print-area" className="space-y-6">
-        <AriaPanel
+        <CaraPanel
           mode="assist"
           pageContext="Restraint Log — physical intervention records, Regulation 35 compliance, debrief"
           recordType="restraint"

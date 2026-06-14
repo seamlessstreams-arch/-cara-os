@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, Briefcase, Heart, Star, Wallet, Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { YpJob } from "@/types/extended";
 import { useYpJobs } from "@/hooks/use-yp-jobs";
 
@@ -54,12 +54,12 @@ export default function YoungPersonJobTrackerPage() {
 
   return (
     <PageShell title="Young Person Job Tracker" subtitle="Part-time work, volunteering, and apprenticeships — supporting independence, identity, and earnings"
-      ariaContext={{ pageTitle: "Young Person Job Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Young Person Job Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="young-person-jobs" />
           <PrintButton title="Young Person Jobs" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }>
       {isLoading ? <div className="p-8 text-center text-muted-foreground">Loading...</div> : (<>
@@ -109,7 +109,7 @@ export default function YoungPersonJobTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Young Person Job Tracker — part-time work, volunteering, apprenticeships, legal checks, work permits, LA consent, earnings, school impact, independence development"
         recordType="direct_work"

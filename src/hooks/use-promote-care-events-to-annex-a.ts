@@ -21,8 +21,8 @@ export function usePromoteCareEventsToAnnexA() {
       api.post<Response>("/care-events/annex-a/promote", payload),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["annex-a-evidence"] });
-      qc.invalidateQueries({ queryKey: ["aria-annex-a-snapshot"] });
-      qc.invalidateQueries({ queryKey: ["aria-audit-trail"] });
+      qc.invalidateQueries({ queryKey: ["cara-annex-a-snapshot"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
     },
   });
 }

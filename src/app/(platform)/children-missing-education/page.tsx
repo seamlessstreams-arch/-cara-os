@@ -32,8 +32,8 @@ import {
   CME_STATUS_LABEL, ATTENDANCE_LEVEL_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── colour maps (snake_case keys — match DB schema) ─────────────────────── */
 
@@ -159,13 +159,13 @@ export default function ChildrenMissingEducationPage() {
     <PageShell
       title="Children Missing Education"
       subtitle="Education Act 1996 · Children Act 2004 · CME Monitoring & Attendance Tracking"
-      ariaContext={{ pageTitle: "Children Missing Education", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Children Missing Education", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Children Missing Education" />
           <ExportButton data={filtered} columns={exportCols} filename="children-missing-education" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Entry</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -402,7 +402,7 @@ export default function ChildrenMissingEducationPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Children Missing Education — school roll, off-roll, EOTAS, EHE, elective home education, exclusion, non-attendance, CME referral, LA education officer, PEP review, urgent action"
         recordType="education"

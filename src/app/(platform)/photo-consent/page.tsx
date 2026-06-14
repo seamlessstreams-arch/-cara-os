@@ -28,8 +28,8 @@ import { PHOTO_CONSENT_CATEGORY_LABEL, PHOTO_CONSENT_STATUS_LABEL } from "@/type
 import { usePhotoConsentRecords, useCreatePhotoConsentRecord } from "@/hooks/use-photo-consent-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -99,8 +99,8 @@ export default function PhotoConsentPage() {
 
   return (
     <PageShell title="Photo & Image Consent" subtitle="Data Protection Act 2018 · GDPR · Delegated Authority · Safeguarding" 
-      ariaContext={{ pageTitle: "Photo & Image Consent", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Photo Consent Records" /><ExportButton data={filtered} columns={exportCols} filename="photo-consent" /><AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Review Consent</Button></div>}>
+      caraContext={{ pageTitle: "Photo & Image Consent", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Photo Consent Records" /><ExportButton data={filtered} columns={exportCols} filename="photo-consent" /><CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Review Consent</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
@@ -211,7 +211,7 @@ export default function PhotoConsentPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Photo & Image Consent — child photo permissions, LA consent, social media restrictions, school photos, GDPR, placement plan consent conditions, evidence photography"
         recordType="child_record"

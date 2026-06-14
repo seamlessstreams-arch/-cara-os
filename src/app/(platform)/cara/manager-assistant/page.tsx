@@ -81,7 +81,7 @@ export default function ManagerAssistantPage() {
     <PageShell
       title="Cara Manager Assistant"
       subtitle="Drafting tools for the jobs managers do every week — job adverts, candidate summaries and action plans. Every output is a draft built from your recorded data: accept it, edit it, or bin it."
-      ariaContext={{ pageTitle: "Cara Manager Assistant", sourceType: "general" }}
+      caraContext={{ pageTitle: "Cara Manager Assistant", sourceType: "general" }}
     >
       <div className="mx-auto max-w-3xl space-y-4 pb-10">
         {isLoading && <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
@@ -138,10 +138,10 @@ export default function ManagerAssistantPage() {
 
             {/* output */}
             {result && (
-              <Card className="border-l-4 border-l-[var(--cs-aria-gold)]">
+              <Card className="border-l-4 border-l-[var(--cs-cara-gold)]">
                 <CardContent className="space-y-3 py-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Draft {result.llmUsed ? "(Cara-polished)" : "(structured from your data)"}</p>
+                    <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Draft {result.llmUsed ? "(Cara-polished)" : "(structured from your data)"}</p>
                     <button onClick={copy} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]">
                       {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />} {copied ? "Copied" : "Copy"}
                     </button>
@@ -173,8 +173,8 @@ export default function ManagerAssistantPage() {
               </CardContent>
             </Card>
 
-            <div className="flex items-start gap-2.5 rounded-2xl border border-[var(--cs-aria-gold)]/40 bg-[var(--cs-aria-gold-bg)]/50 px-4 py-3">
-              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-aria-gold)]" />
+            <div className="flex items-start gap-2.5 rounded-2xl border border-[var(--cs-cara-gold)]/40 bg-[var(--cs-cara-gold-bg)]/50 px-4 py-3">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-cara-gold)]" />
               <p className="text-xs font-medium leading-relaxed text-[var(--cs-navy)]">{data.disclaimer}</p>
             </div>
           </>

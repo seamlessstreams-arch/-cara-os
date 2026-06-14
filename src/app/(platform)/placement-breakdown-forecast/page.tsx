@@ -57,7 +57,7 @@ export default function PlacementBreakdownForecastPage() {
       subtitle="Forward-looking early warning for placement stability — projecting which children are most at risk, and how soon"
       icon={<ShieldAlert className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Placement Breakdown Forecast", sourceType: "general" }}
+      caraContext={{ pageTitle: "Placement Breakdown Forecast", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

@@ -4,7 +4,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { getPersistedReg44Pack } from "@/lib/care-events/reg44-pack";
 
 export async function GET(
@@ -15,8 +15,8 @@ export async function GET(
   const row = getPersistedReg44Pack(id);
   if (!row) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId: row.home_id,
     intent: "view persisted Reg 44 visit evidence pack",
     isSafeguardingSensitive: true,

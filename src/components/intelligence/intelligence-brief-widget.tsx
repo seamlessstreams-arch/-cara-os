@@ -181,15 +181,15 @@ export function IntelligenceBriefWidget() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] via-[var(--cs-aria-gold-bg)] to-blue-50 overflow-hidden">
+    <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] via-[var(--cs-cara-gold-bg)] to-blue-50 overflow-hidden">
       {/* ── Bar row ──────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-3 px-4 py-2.5">
 
         {/* Left: Cara label */}
         <div className="flex items-center gap-2 min-w-0">
-          <Brain className="h-4 w-4 text-[var(--cs-aria-gold)] shrink-0" />
+          <Brain className="h-4 w-4 text-[var(--cs-cara-gold)] shrink-0" />
           <div>
-            <div className="text-[11px] font-semibold text-[var(--cs-aria-gold)] leading-none">
+            <div className="text-[11px] font-semibold text-[var(--cs-cara-gold)] leading-none">
               Cara Intelligence
             </div>
             <div className="text-[10px] text-[var(--cs-text-muted)] leading-none mt-0.5">{todayLabel}</div>
@@ -197,7 +197,7 @@ export function IntelligenceBriefWidget() {
         </div>
 
         {/* Divider */}
-        <div className="h-5 w-px bg-[var(--cs-aria-gold-soft)] hidden sm:block" />
+        <div className="h-5 w-px bg-[var(--cs-cara-gold-soft)] hidden sm:block" />
 
         {/* Middle: stat pills */}
         <div className="flex flex-wrap items-center gap-2">
@@ -250,8 +250,8 @@ export function IntelligenceBriefWidget() {
           variant="outline"
           onClick={handleMorningBrief}
           className={cn(
-            "gap-1.5 text-xs font-semibold border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] hover:border-[var(--cs-aria-gold)]",
-            isOpen && "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold)]"
+            "gap-1.5 text-xs font-semibold border-[var(--cs-cara-gold-soft)] text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)] hover:border-[var(--cs-cara-gold)]",
+            isOpen && "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold)]"
           )}
         >
           {isGenerating ? (
@@ -270,10 +270,10 @@ export function IntelligenceBriefWidget() {
 
       {/* ── Expansion panel ───────────────────────────────────────────────── */}
       {isOpen && (
-        <div className="border-t border-[var(--cs-aria-gold-soft)] bg-white/70 px-4 py-3">
+        <div className="border-t border-[var(--cs-cara-gold-soft)] bg-white/70 px-4 py-3">
           {/* Header row */}
           <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-aria-gold)]">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-cara-gold)]">
               <Sparkles className="h-3.5 w-3.5" />
               Morning Brief
             </div>
@@ -289,7 +289,7 @@ export function IntelligenceBriefWidget() {
           {/* Streaming output */}
           {isGenerating && !output && (
             <div className="flex items-center gap-2 py-4 text-xs text-[var(--cs-text-muted)]">
-              <Loader2 className="h-4 w-4 animate-spin text-[var(--cs-aria-gold)]" />
+              <Loader2 className="h-4 w-4 animate-spin text-[var(--cs-cara-gold)]" />
               Generating morning brief…
             </div>
           )}
@@ -298,7 +298,7 @@ export function IntelligenceBriefWidget() {
             <div className="prose prose-sm max-w-none text-sm whitespace-pre-wrap font-mono text-[var(--cs-text-secondary)] leading-relaxed">
               {output}
               {isGenerating && (
-                <span className="inline-block ml-1 h-3.5 w-0.5 bg-[var(--cs-aria-gold-bg)]0 animate-pulse" />
+                <span className="inline-block ml-1 h-3.5 w-0.5 bg-[var(--cs-cara-gold-bg)]0 animate-pulse" />
               )}
             </div>
           )}

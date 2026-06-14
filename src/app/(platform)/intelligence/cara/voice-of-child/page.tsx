@@ -6,11 +6,11 @@
 //
 // Flow:
 //   1. Identify the child + period; add 1+ records (recordType, date, text)
-//   2. Submit → POST /api/aria/voice-of-child  (analyse + persist)
+//   2. Submit → POST /api/cara/voice-of-child  (analyse + persist)
 //   3. Review themes / quotes / wants / needs / fears / unmet-rights / per-
 //      record voice-capture grades
 //   4. Decide: Approve / Edit & Save / Reject / Request rewrite
-//      → PATCH /api/aria/voice-of-child  (audit-logged)
+//      → PATCH /api/cara/voice-of-child  (audit-logged)
 //   5. Mark "Shared with child" once delivered in age-appropriate form
 //      (UNCRC Art 12 in practice — bespoke audit event type)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -122,7 +122,7 @@ interface VoiceSummary {
   childPseudonym?: string;
   generatedAt: string;
   status: string;
-  ariaLabel: string;
+  caraLabel: string;
   recordsConsidered: number;
   periodStart?: string;
   periodEnd?: string;
@@ -140,7 +140,7 @@ interface VoiceSummary {
   overallVoiceCaptureQuality: VoiceCaptureQuality;
   suggestedActionsToStrengthenVoice: SuggestedAction[];
   regulatoryLinks: string[];
-  ariaConfidence: number;
+  caraConfidence: number;
   llmUsed: boolean;
   engineVersion: string;
 }
@@ -237,7 +237,7 @@ export default function VoiceOfChildPage() {
     setDecisionMessage(null);
     setAuditTrail([]);
     try {
-      const res = await fetch("/api/aria/voice-of-child", {
+      const res = await fetch("/api/cara/voice-of-child", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -269,7 +269,7 @@ export default function VoiceOfChildPage() {
 
   async function loadAudit(summaryId: string) {
     try {
-      const res = await fetch(`/api/aria/voice-of-child?id=${summaryId}`);
+      const res = await fetch(`/api/cara/voice-of-child?id=${summaryId}`);
       if (!res.ok) return;
       const data = await res.json();
       const entries: AuditEntry[] | undefined = data.data?.voice_summary_audit_log;
@@ -302,7 +302,7 @@ export default function VoiceOfChildPage() {
       if (decision === "reject") body.rejectionReason = rejectionReason.trim();
       if (decision === "request_rewrite")
         body.rewriteInstructions = rewriteInstructions.trim();
-      const res = await fetch("/api/aria/voice-of-child", {
+      const res = await fetch("/api/cara/voice-of-child", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -337,8 +337,8 @@ export default function VoiceOfChildPage() {
   return (
     <PageShell title="Cara — Voice of the Child">
       {/* Cara draft banner */}
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
-        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-cara-gold)]" />
         <div>
           <div className="font-semibold">Cara suggested draft — never final</div>
           <p className="text-[var(--cs-navy)]">
@@ -488,7 +488,7 @@ export default function VoiceOfChildPage() {
               <CardContent className="p-4">
                 <div className="text-xs uppercase text-[var(--cs-text-muted)] mb-1">Cara confidence</div>
                 <div className="text-3xl font-semibold text-[var(--cs-navy)]">
-                  {Math.round(summary.ariaConfidence * 100)}%
+                  {Math.round(summary.caraConfidence * 100)}%
                 </div>
                 <div className="text-xs text-[var(--cs-text-muted)] mt-1">
                   {summary.llmUsed ? "LLM-enhanced narrative" : "Deterministic only"}
@@ -630,7 +630,7 @@ export default function VoiceOfChildPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between gap-2 text-base">
                     <span className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Cara narrative draft
+                      <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Cara narrative draft
                     </span>
                     <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)} className="gap-1.5">
                       <Pencil className="h-3.5 w-3.5" /> {editing ? "Stop editing" : "Edit"}
@@ -830,7 +830,7 @@ export default function VoiceOfChildPage() {
                 <Button
                   variant="outline"
                   onClick={markSharedWithChild}
-                  className="gap-1.5 ml-auto border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)]"
+                  className="gap-1.5 ml-auto border-[var(--cs-cara-gold-soft)] text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)]"
                 >
                   <Share2 className="h-4 w-4" />
                   Mark shared with child

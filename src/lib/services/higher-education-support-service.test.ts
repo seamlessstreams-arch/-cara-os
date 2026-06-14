@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateHigherEducationSupport,
-  generateAriaInsights,
+  generateCaraInsights,
   type HigherEducationSupportRow,
 } from "./higher-education-support-service";
 
@@ -189,17 +189,17 @@ describe("validateHigherEducationSupport", () => {
   });
 });
 
-// ── generateAriaInsights ─────────────────────────────────────────────────
+// ── generateCaraInsights ─────────────────────────────────────────────────
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights", () => {
     const rows = [makeRow()];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 });

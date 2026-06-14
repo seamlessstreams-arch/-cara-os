@@ -21,8 +21,8 @@ import {
 import { ChevronDown, ChevronUp, ArrowUpDown, UserCheck, CheckCircle, AlertTriangle, Star, Heart, Loader2, Plus } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
 
 const verdictColour: Record<string, string> = {
@@ -117,12 +117,12 @@ export default function AgencyStaffFeedbackPage() {
 
   return (
     <PageShell title="Agency Staff Feedback" subtitle="Performance feedback after agency staff cover shifts — approval, development, and repeat-booking decisions"
-      ariaContext={{ pageTitle: "Agency Staff Feedback", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Agency Staff Feedback", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="agency-staff-feedback" />
           <PrintButton title="Agency Staff Feedback" />
-          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Log Feedback</Button>
         </div>
       }>
@@ -207,7 +207,7 @@ export default function AgencyStaffFeedbackPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Agency Staff Feedback — performance review after cover shifts, approval decisions, repeat booking, recording quality, relational practice alignment"
         recordType="supervision"

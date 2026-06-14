@@ -35,8 +35,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const statusColour: Record<string, string> = {
   active: "bg-green-100 text-green-800",
@@ -108,12 +108,12 @@ export default function AfterSchoolClubTrackerPage() {
     <PageShell
       title="After-School Club Tracker"
       subtitle="Per-child club and activity engagement — investments in identity, belonging, and skill"
-      ariaContext={{ pageTitle: "After-School Club Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "After-School Club Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="after-school-clubs" />
           <PrintButton title="After-School Club Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -320,7 +320,7 @@ export default function AfterSchoolClubTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="After-School Club Tracker — clubs attended, transport arrangements, permission, cost, participation, enrichment, LAC entitlement, PEP targets, education outcomes"
         recordType="education"

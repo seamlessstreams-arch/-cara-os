@@ -23,8 +23,8 @@ import {
   SERIOUS_INCIDENT_REVIEW_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -102,12 +102,12 @@ export default function SeriousIncidentReviewsPage() {
     <PageShell
       title="Serious Incident Reviews"
       subtitle="Learning reviews, practice analysis, and lessons implemented"
-      ariaContext={{ pageTitle: "Serious Incident Reviews", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Serious Incident Reviews", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Serious Incident Reviews" />
           <ExportButton data={filtered} columns={exportCols} filename="serious-incident-reviews" />
-          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />New Review</Button>
         </div>
       }
@@ -257,7 +257,7 @@ export default function SeriousIncidentReviewsPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Serious Incident Reviews — post-incident learning, root cause analysis, recommendations, action plans, staff learning, regulatory notifications, Reg 40, Ofsted evidence"
         recordType="incident"

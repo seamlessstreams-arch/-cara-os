@@ -5,8 +5,8 @@ import { api } from "@/hooks/use-api";
 import { useQuery } from "@tanstack/react-query";
 import { daysFromNow, todayStr } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -258,8 +258,8 @@ export default function InspectionReadinessPage() {
     <PageShell
       title="Inspection Readiness"
       subtitle="Live connected view of compliance status — Annex A, Regulation 45, Management Oversight, Reg 40, Filing and Saved Time"
-      ariaContext={{ pageTitle: "Inspection Readiness", sourceType: "document" }}
-      actions={<AriaStudioQuickActionButton context={{ record_type: "annex_a", record_id: "home_oak", home_id: "home_oak" }} />}
+      caraContext={{ pageTitle: "Inspection Readiness", sourceType: "document" }}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "annex_a", record_id: "home_oak", home_id: "home_oak" }} />}
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-24 text-slate-400 text-sm">Loading readiness data…</div>
@@ -529,7 +529,7 @@ export default function InspectionReadinessPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Inspection Readiness — Annex A completeness, Reg 45, management oversight, Reg 40, filing, Ofsted evidence, compliance gaps, readiness score, documentation status"
         recordType="annex_a"

@@ -72,7 +72,7 @@ export interface EvidenceBankAlert {
   severity: "critical" | "high" | "medium" | "low";
   message: string;
 }
-export interface AriaEvidenceInsight {
+export interface CaraEvidenceInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -82,7 +82,7 @@ export interface EvidenceBankResult {
   categories: EvidenceCategoryCoverage[];
   gaps: string[];
   alerts: EvidenceBankAlert[];
-  insights: AriaEvidenceInsight[];
+  insights: CaraEvidenceInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -161,8 +161,8 @@ function buildAlerts(categories: EvidenceCategoryCoverage[]): EvidenceBankAlert[
   return alerts;
 }
 
-function buildInsights(categories: EvidenceCategoryCoverage[], overview: EvidenceBankOverview): AriaEvidenceInsight[] {
-  const insights: AriaEvidenceInsight[] = [];
+function buildInsights(categories: EvidenceCategoryCoverage[], overview: EvidenceBankOverview): CaraEvidenceInsight[] {
+  const insights: CaraEvidenceInsight[] = [];
 
   if (overview.gaps > 0) {
     const gapNames = categories.filter((c) => c.status === "gap").map((c) => c.category).slice(0, 4).join(", ");

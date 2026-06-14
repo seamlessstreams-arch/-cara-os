@@ -24,8 +24,8 @@ import {
   STAFF_COMMS_FEEDBACK_STYLE_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ───────────────────────────────────────────────────── */
 
@@ -125,12 +125,12 @@ export default function StaffCommunicationPreferencesPage() {
     <PageShell
       title="Staff Communication Preferences"
       subtitle="Recording individual communication needs and reasonable adjustments for all team members"
-      ariaContext={{ pageTitle: "Staff Communication Preferences", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Communication Preferences", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Communication Preferences" />
           <ExportButton data={filtered} columns={exportCols} filename="staff-communication-preferences" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -221,7 +221,7 @@ export default function StaffCommunicationPreferencesPage() {
                       {STAFF_COMMS_FEEDBACK_STYLE_LABEL[rec.feedback_style]}
                     </Badge>
                     {rec.neurodivergent_needs && (
-                      <Badge className="text-xs bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] hover:bg-[var(--cs-aria-gold-bg)]">
+                      <Badge className="text-xs bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] hover:bg-[var(--cs-cara-gold-bg)]">
                         <Brain className="h-3 w-3 mr-1" />
                         ND adjustments
                       </Badge>
@@ -267,7 +267,7 @@ export default function StaffCommunicationPreferencesPage() {
                     </div>
 
                     {rec.neurodivergent_needs && (
-                      <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] p-3">
+                      <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] p-3">
                         <p className="text-xs font-medium text-[var(--cs-navy)] mb-1">Neurodivergent Needs & Adjustments</p>
                         <p className="text-sm text-[var(--cs-navy)]">{rec.neurodivergent_needs}</p>
                       </div>
@@ -323,7 +323,7 @@ export default function StaffCommunicationPreferencesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Communication Preferences — staff communication styles, preferred contact methods, accessibility requirements, reasonable adjustments, HR records, staff wellbeing, Reg 40 workforce evidence"
         recordType="staff_training"

@@ -16,8 +16,8 @@ import type { BehaviourMappingType, BMIntensity, BMTimeOfDay, BehaviourMapEntry 
 import { useBehaviourMapEntries } from "@/hooks/use-behaviour-map-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -124,12 +124,12 @@ export default function BehaviourMappingPage() {
     <PageShell
       title="Behaviour Mapping"
       subtitle="ABC Analysis · Trigger Patterns · De-Escalation · Antecedent–Behaviour–Consequence"
-      ariaContext={{ pageTitle: "Behaviour Mapping", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Behaviour Mapping", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Behaviour Mapping" />
           <ExportButton data={exportData} columns={exportCols} filename="behaviour-mapping" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -283,7 +283,7 @@ export default function BehaviourMappingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Behaviour Mapping — ABC charts, antecedents, triggers, patterns, trauma responses, time-of-day analysis, escalation sequences, de-escalation, PBS, behaviour support plan links"
         recordType="care_plan"

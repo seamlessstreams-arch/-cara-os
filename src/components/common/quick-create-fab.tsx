@@ -733,7 +733,7 @@ export function QuickCreateFab() {
                   onClick={closeModal}
                   className="flex items-center gap-2.5 rounded-xl px-4 py-3 bg-[var(--cs-navy,#0f1e36)] text-white hover:opacity-95 transition-opacity"
                 >
-                  <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold,#c89b3c)] shrink-0" />
+                  <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold,#c89b3c)] shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">Record anything</p>
                     <p className="text-[11px] text-white/60 leading-tight">
@@ -752,7 +752,7 @@ export function QuickCreateFab() {
                   onClick={closeModal}
                   className="flex items-center gap-2.5 rounded-xl px-4 py-3 bg-[var(--cs-navy,#0f1e36)] text-white hover:opacity-95 transition-opacity"
                 >
-                  <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold,#c89b3c)] shrink-0" />
+                  <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold,#c89b3c)] shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">Record anything</p>
                     <p className="text-[11px] text-white/60 leading-tight">
@@ -771,7 +771,7 @@ export function QuickCreateFab() {
                   onClick={closeModal}
                   className="flex items-center gap-2.5 rounded-xl px-4 py-3 bg-[var(--cs-navy,#0f1e36)] text-white hover:opacity-95 transition-opacity"
                 >
-                  <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold,#c89b3c)] shrink-0" />
+                  <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold,#c89b3c)] shrink-0" />
                   <div className="min-w-0">
                     <p className="text-sm font-semibold leading-tight">Record anything</p>
                     <p className="text-[11px] text-white/60 leading-tight">

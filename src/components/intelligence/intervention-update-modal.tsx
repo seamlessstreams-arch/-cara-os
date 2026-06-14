@@ -31,7 +31,7 @@ const STATUS_OPTIONS: {
 }[] = [
   { value: "active",       label: "Active",       color: "border-emerald-400 text-emerald-700 bg-emerald-50"  },
   { value: "paused",       label: "Paused",       color: "border-amber-400 text-amber-700 bg-amber-50"        },
-  { value: "under_review", label: "Under Review", color: "border-[var(--cs-aria-gold)] text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]"     },
+  { value: "under_review", label: "Under Review", color: "border-[var(--cs-cara-gold)] text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]"     },
   { value: "completed",    label: "Completed",    color: "border-blue-400 text-blue-700 bg-blue-50"           },
   { value: "stopped",      label: "Stopped",      color: "border-[var(--cs-border)] text-[var(--cs-text-secondary)] bg-[var(--cs-surface)]"        },
 ];
@@ -205,7 +205,7 @@ export function InterventionUpdateModal({
                     onChange={(e) => setOutcomeNotes(e.target.value)}
                     rows={3}
                     placeholder="What evidence do you have? What has changed for this young person?"
-                    className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] transition-colors"
+                    className="w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-cara-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-bg)] transition-colors"
                   />
                   <div className="absolute right-2 top-2">
                     <DictationButton
@@ -230,7 +230,7 @@ export function InterventionUpdateModal({
                   type="date"
                   value={reviewDate}
                   onChange={(e) => setReviewDate(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)] focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)] transition-colors"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)] focus:border-[var(--cs-cara-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-bg)] transition-colors"
                 />
               </div>
 

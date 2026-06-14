@@ -4,7 +4,7 @@ import { getStore } from "@/lib/db/store";
 import { computeHqOverview } from "@/lib/engines/platform-hq-engine";
 import { hqActorFromHeaders, isPlatformAdmin } from "@/lib/hq/hq-service";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
-import { getAriaProviderConfig } from "@/lib/aria/aria-provider";
+import { getCaraProviderConfig } from "@/lib/cara/cara-provider";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export async function GET(req: Request) {
       overview,
       mode: {
         durable: isSupabaseEnabled(),
-        ai_configured: getAriaProviderConfig().configured,
+        ai_configured: getCaraProviderConfig().configured,
       },
     },
   });

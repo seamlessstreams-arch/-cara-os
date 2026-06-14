@@ -742,7 +742,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: FamilyReunificationRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

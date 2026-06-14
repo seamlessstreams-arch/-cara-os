@@ -30,8 +30,8 @@ import type { PlacementEndSummary, PlacementEndReason } from "@/types/extended";
 import { PLACEMENT_END_REASON_LABEL } from "@/types/extended";
 import { usePlacementEndSummaries } from "@/hooks/use-placement-end-summaries";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const reasonColour: Record<PlacementEndReason, string> = {
@@ -120,12 +120,12 @@ export default function PlacementEndSummaryPage() {
     <PageShell
       title="Placement End Summary"
       subtitle="Reflective summaries when placements end — celebrating progress, learning from challenges, honouring the journey"
-      ariaContext={{ pageTitle: "Placement End Summaries", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Placement End Summaries", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={entries} columns={exportCols} filename="placement-end-summaries" />
           <PrintButton title="Placement End Summaries" />
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -352,7 +352,7 @@ export default function PlacementEndSummaryPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Placement End Summaries — leaving placement, reasons for ending, outcomes achieved, transition plan, handover documentation, child's views, next placement, learning from placement, Reg 45"
         recordType="placement_plan"

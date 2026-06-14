@@ -4,11 +4,11 @@ import {
   computePhaseProgress,
   computeChecklistProgress,
   computeMatchingScore,
-  generateAriaMatchingFactors,
+  generateCaraMatchingFactors,
   ADMISSION_PHASES,
   type PreAdmissionItem,
   type MatchingFactor,
-  type AriaMatchingInput,
+  type CaraMatchingInput,
 } from "./yp-admission-service";
 
 // ── Factories ──────────────────────────────────────────────────────────────
@@ -204,10 +204,10 @@ describe("computeMatchingScore", () => {
   });
 });
 
-// ── generateAriaMatchingFactors ────────────────────────────────────────────
+// ── generateCaraMatchingFactors ────────────────────────────────────────────
 
-describe("generateAriaMatchingFactors", () => {
-  const baseInput: AriaMatchingInput = {
+describe("generateCaraMatchingFactors", () => {
+  const baseInput: CaraMatchingInput = {
     incomingChild: {
       age: 14,
       gender: "male",
@@ -221,14 +221,14 @@ describe("generateAriaMatchingFactors", () => {
   };
 
   it("returns factors for empty home", () => {
-    const result = generateAriaMatchingFactors(baseInput);
+    const result = generateCaraMatchingFactors(baseInput);
     expect(result.factors.length).toBeGreaterThanOrEqual(4);
     expect(result.overallRisk).toBeDefined();
     expect(result.summary).toBeTruthy();
   });
 
   it("generates age_compatibility factor with score 8 for empty home", () => {
-    const result = generateAriaMatchingFactors(baseInput);
+    const result = generateCaraMatchingFactors(baseInput);
     const ageFactor = result.factors.find((f) => f.factorType === "age_compatibility");
     expect(ageFactor).toBeDefined();
     expect(ageFactor!.score).toBe(8);
@@ -236,7 +236,7 @@ describe("generateAriaMatchingFactors", () => {
   });
 
   it("scores environmental capacity high when plenty of space", () => {
-    const result = generateAriaMatchingFactors(baseInput);
+    const result = generateCaraMatchingFactors(baseInput);
     const cap = result.factors.find((f) => f.factorType === "environmental_capacity");
     expect(cap).toBeDefined();
     expect(cap!.score).toBe(9);
@@ -244,7 +244,7 @@ describe("generateAriaMatchingFactors", () => {
   });
 
   it("scores environmental capacity low when at capacity", () => {
-    const input: AriaMatchingInput = {
+    const input: CaraMatchingInput = {
       ...baseInput,
       currentYoungPeople: [
         { age: 13, gender: "male", riskFlags: [], status: "current" },
@@ -254,7 +254,7 @@ describe("generateAriaMatchingFactors", () => {
       ],
       homeCapacity: 4,
     };
-    const result = generateAriaMatchingFactors(input);
+    const result = generateCaraMatchingFactors(input);
     const cap = result.factors.find((f) => f.factorType === "environmental_capacity");
     expect(cap).toBeDefined();
     expect(cap!.score).toBe(4);
@@ -262,7 +262,7 @@ describe("generateAriaMatchingFactors", () => {
   });
 
   it("flags high risk for overlapping risk factors", () => {
-    const input: AriaMatchingInput = {
+    const input: CaraMatchingInput = {
       ...baseInput,
       incomingChild: {
         ...baseInput.incomingChild,
@@ -272,7 +272,7 @@ describe("generateAriaMatchingFactors", () => {
         { age: 14, gender: "female", riskFlags: ["CSE"], status: "current" },
       ],
     };
-    const result = generateAriaMatchingFactors(input);
+    const result = generateCaraMatchingFactors(input);
     const risk = result.factors.find((f) => f.factorType === "risk_compatibility");
     expect(risk).toBeDefined();
     expect(risk!.score).toBe(3);
@@ -280,7 +280,7 @@ describe("generateAriaMatchingFactors", () => {
   });
 
   it("overall risk is high when 2+ factors are high risk", () => {
-    const input: AriaMatchingInput = {
+    const input: CaraMatchingInput = {
       incomingChild: {
         age: 14,
         gender: "male",
@@ -297,7 +297,7 @@ describe("generateAriaMatchingFactors", () => {
       ],
       homeCapacity: 4,
     };
-    const result = generateAriaMatchingFactors(input);
+    const result = generateCaraMatchingFactors(input);
     expect(result.overallRisk).toBe("high");
   });
 });

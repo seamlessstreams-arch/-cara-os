@@ -27,8 +27,8 @@ import { useMedTrainingRecords, useCreateMedTrainingRecord } from "@/hooks/use-m
 import type { MedTrainingRecord, MedCompetencyType, MedCompetencyStatus } from "@/types/extended";
 import { MED_COMPETENCY_TYPE_LABEL, MED_COMPETENCY_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const STATUS_CLR: Record<MedCompetencyStatus, string> = { competent: "bg-green-100 text-green-800", not_yet_competent: "bg-red-100 text-red-800", expired: "bg-amber-100 text-amber-800", in_training: "bg-blue-100 text-blue-800", supervised_only: "bg-purple-100 text-purple-800" };
 const BORDER_ST: Record<MedCompetencyStatus, string> = { competent: "border-l-green-400", not_yet_competent: "border-l-red-500", expired: "border-l-amber-400", in_training: "border-l-blue-400", supervised_only: "border-l-purple-400" };
@@ -108,8 +108,8 @@ export default function MedicationTrainingPage() {
 
   return (
     <PageShell title="Medication Training & Competency" subtitle="Reg 23 · NICE · Safe Medicines Management" 
-      ariaContext={{ pageTitle: "Medication Training & Competency", sourceType: "medication" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Medication Training" /><ExportButton data={filtered} columns={exportCols} filename="medication-training" /><AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Assessment</Button></div>}>
+      caraContext={{ pageTitle: "Medication Training & Competency", sourceType: "medication" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Medication Training" /><ExportButton data={filtered} columns={exportCols} filename="medication-training" /><CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Assessment</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
@@ -219,7 +219,7 @@ export default function MedicationTrainingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Medication Training & Competency — staff competency assessments, MAR chart training, controlled drugs, competency expiry, retraining, regulatory compliance, Reg 44 evidence"
         recordType="medication"

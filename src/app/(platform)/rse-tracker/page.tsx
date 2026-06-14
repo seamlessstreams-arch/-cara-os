@@ -32,8 +32,8 @@ import { useRseTrackerRecords } from "@/hooks/use-rse-tracker-records";
 import type { RseTrackerRecord, RseTrackerTopic, RseTrackerMethod } from "@/types/extended";
 import { RSE_TRACKER_TOPIC_LABEL, RSE_TRACKER_METHOD_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ────────────────────────────────────────────────────── */
 
@@ -115,12 +115,12 @@ export default function RseTrackerPage() {
     <PageShell
       title="RSE Tracker"
       subtitle="Relationships and Sex Education — per-child delivery covering relationships, consent, online safety, healthy bodies"
-      ariaContext={{ pageTitle: "RSE Tracker", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "RSE Tracker", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="rse-tracker" />
           <PrintButton title="RSE Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -328,7 +328,7 @@ export default function RseTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="RSE Tracker — relationships and sex education delivery, age-appropriate RSE, PSHE provision, statutory RSE compliance, care plan education evidence, safeguarding context, Reg 45 education evidence"
         recordType="education"

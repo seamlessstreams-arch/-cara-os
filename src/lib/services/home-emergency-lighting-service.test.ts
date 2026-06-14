@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   type HomeEmergencyLightingRow,
 } from "./home-emergency-lighting-service";
 
@@ -114,14 +114,14 @@ describe("computeAlerts", () => {
   });
 });
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [makeRow()];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
-    expect(generateAriaInsights([])).toHaveLength(3);
+    expect(generateCaraInsights([])).toHaveLength(3);
   });
 });

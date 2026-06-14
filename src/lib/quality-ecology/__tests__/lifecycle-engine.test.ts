@@ -57,7 +57,7 @@ function makeOccurrence(overrides: Partial<ScheduledOccurrence> = {}): Scheduled
     qaRequired: false,
     evidenceTags: ["fire-safety"],
     escalationLevel: 0,
-    ariaReviewed: false,
+    caraReviewed: false,
     ...overrides,
   };
 }
@@ -83,7 +83,7 @@ function makeTemplate(overrides: Partial<TaskTemplate> = {}): TaskTemplate {
     requiresManagerReview: false,
     qaRequired: true,
     qaSamplePercentage: 10,
-    ariaReviewRequired: false,
+    caraReviewRequired: false,
     filingLocation: "Home Compliance > Fire Safety > Daily Checks",
     evidenceTags: ["fire-safety"],
     regulationLinks: ["Reg 25"],

@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { AriaQuickActions } from "@/components/intelligence/cara-quick-actions";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +28,7 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { ShiftSummaryCard } from "@/components/dashboard/shift-summary-card";
-import { AriaHandoverBuilder } from "@/components/handover/aria-handover-builder";
+import { CaraHandoverBuilder } from "@/components/handover/cara-handover-builder";
 import { HandoverPrintContext } from "@/components/handover/handover-print-context";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
@@ -80,7 +80,7 @@ function MoodIcon({ score }: { score: number | null }) {
 // ── Handover child entry with Cara toggle ─────────────────────────────────────
 
 function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
 
   return (
     <div className="rounded-xl bg-slate-50 px-4 py-3 space-y-2">
@@ -94,10 +94,10 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
             </span>
           )}
           <button
-            onClick={() => setShowAria((v) => !v)}
+            onClick={() => setShowCara((v) => !v)}
             className={cn(
               "flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border transition-colors",
-              showAria
+              showCara
                 ? "bg-violet-100 text-violet-700 border-violet-200"
                 : "bg-white text-slate-500 border-slate-200 hover:bg-violet-50 hover:text-violet-600 hover:border-violet-200"
             )}
@@ -116,8 +116,8 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
           ))}
         </div>
       )}
-      {showAria && (
-        <AriaQuickActions
+      {showCara && (
+        <CaraQuickActions
           childId={cu.child_id}
           sourceType="daily_log"
           defaultOpen
@@ -439,12 +439,12 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
   const [alertInputs, setAlertInputs] = useState<Record<string, string>>(
     Object.fromEntries(currentYP.map((yp) => [yp.id, ""]))
   );
-  const [ariaGenerating, setAriaGenerating] = useState(false);
+  const [caraGenerating, setCaraGenerating] = useState(false);
 
   const { data: shiftSummaryData } = useShiftSummary(undefined, shiftFrom);
 
-  async function handleAriaGenerate() {
-    setAriaGenerating(true);
+  async function handleCaraGenerate() {
+    setCaraGenerating(true);
     try {
       const summary = shiftSummaryData?.data;
       if (!summary) return;
@@ -478,7 +478,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
       if (summary.stats.incidents_logged > 0) autoFlags.push("incidents_logged");
       setFlags(autoFlags);
     } finally {
-      setAriaGenerating(false);
+      setCaraGenerating(false);
     }
   }
 
@@ -531,11 +531,11 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
               type="button"
               size="sm"
               variant="outline"
-              onClick={handleAriaGenerate}
-              disabled={ariaGenerating || !shiftSummaryData}
+              onClick={handleCaraGenerate}
+              disabled={caraGenerating || !shiftSummaryData}
               className="border-violet-200 text-violet-700 hover:bg-violet-50"
             >
-              {ariaGenerating ? (
+              {caraGenerating ? (
                 <><Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />Generating...</>
               ) : (
                 <><Sparkles className="h-3.5 w-3.5 mr-1" />Generate with Cara</>
@@ -831,7 +831,7 @@ export default function HandoverPage() {
     <PageShell
       title="Handover"
       subtitle="Shift-to-shift communication, live notes, and evidence-ready records"
-      ariaContext={{ pageTitle: "Handover", sourceType: "general" }}
+      caraContext={{ pageTitle: "Handover", sourceType: "general" }}
       quickCreateContext={{ module: "handover", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">
@@ -842,7 +842,7 @@ export default function HandoverPage() {
             <Plus className="h-3.5 w-3.5 mr-1" />
             {showForm ? "Cancel" : "Write Handover"}
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -919,7 +919,7 @@ export default function HandoverPage() {
       {/* Cara Handover Builder — personalised context per incoming staff */}
       {!isLoading && (
         <div className="mb-6">
-          <AriaHandoverBuilder
+          <CaraHandoverBuilder
             incomingStaffIds={
               latest?.incoming_staff?.length
                 ? latest.incoming_staff

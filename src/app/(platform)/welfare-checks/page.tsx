@@ -32,8 +32,8 @@ import { Input } from "@/components/ui/input";
 import type { WelfareCheckRound, WelfareCheckStatus } from "@/types/extended";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Status config ───────────────────────────────────────────────────────────
 
@@ -222,7 +222,7 @@ function NewCheckForm({
                   ...prev,
                   [child.id]: { ...prev[child.id], notes: e.target.value },
                 }))}
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-xs placeholder:text-[var(--cs-text-gentle)] resize-none h-16 focus:outline-none focus:ring-1 focus:ring-[var(--cs-aria-gold)]/40"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-xs placeholder:text-[var(--cs-text-gentle)] resize-none h-16 focus:outline-none focus:ring-1 focus:ring-[var(--cs-cara-gold)]/40"
               />
 
               {/* Concern details */}
@@ -303,7 +303,7 @@ function NewCheckForm({
           placeholder="Additional notes for this round (optional)..."
           value={additionalNotes}
           onChange={(e) => setAdditionalNotes(e.target.value)}
-          className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-xs placeholder:text-[var(--cs-text-gentle)] resize-none h-16 focus:outline-none focus:ring-1 focus:ring-[var(--cs-aria-gold)]/40"
+          className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-xs placeholder:text-[var(--cs-text-gentle)] resize-none h-16 focus:outline-none focus:ring-1 focus:ring-[var(--cs-cara-gold)]/40"
         />
 
         {/* Submit */}
@@ -542,7 +542,7 @@ export default function WelfareChecksPage() {
     <PageShell
       title="Welfare Checks"
       subtitle="Night-time welfare monitoring — every child, every check, documented"
-      ariaContext={{ pageTitle: "Welfare Checks", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Welfare Checks", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredRounds} columns={WELFARE_EXPORT_COLS} filename="welfare-checks" />
@@ -568,7 +568,7 @@ export default function WelfareChecksPage() {
             <Plus className="h-3.5 w-3.5" />
             New Check
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -761,7 +761,7 @@ export default function WelfareChecksPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Welfare Checks — overnight welfare check rounds, sleep check logs, awake check intervals, safeguarding welfare monitoring, child-specific protocols, Reg 40 safety evidence, Ofsted inspection evidence"
         recordType="daily_log"

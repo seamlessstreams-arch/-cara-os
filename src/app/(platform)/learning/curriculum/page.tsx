@@ -6,8 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +51,7 @@ type CurriculumResult = {
 const CONTENT_TYPE_COLOURS: Record<string, string> = {
   workshop: "bg-blue-100 text-blue-700",
   self_study: "bg-slate-100 text-[var(--cs-text-secondary)]",
-  discussion: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  discussion: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   activity: "bg-amber-100 text-amber-700",
   assessment: "bg-emerald-100 text-emerald-700",
 };
@@ -181,13 +181,13 @@ export default function CurriculumBuilderPage() {
     <PageShell
       title="Curriculum Builder"
       subtitle="Design structured multi-module learning pathways with Cara"
-      ariaContext={{ pageTitle: "Learning Curriculum", sourceType: "document" }}
+      caraContext={{ pageTitle: "Learning Curriculum", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Curriculum Builder" subtitle="Chamberlain House — Learning Curriculum" targetId="curriculum-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Curriculum Builder upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -327,7 +327,7 @@ export default function CurriculumBuilderPage() {
           </div>
         )}
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Learning Curriculum — training curriculum structure, mandatory training topics, care skills modules, safeguarding training, children's rights, therapeutic approaches, workforce development"
         recordType="staff_training"

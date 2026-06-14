@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateArtifact } from "@/lib/aria/aria-studio-service";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import type { AriaGenerationRequest } from "@/types/aria-studio";
+import { generateArtifact } from "@/lib/cara/cara-studio-service";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import type { CaraGenerationRequest } from "@/types/cara-studio";
 
 // POST /api/v1/cara-studio/generate
 // Generates a new Cara Studio artifact using the configured AI provider.
@@ -24,16 +24,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "requested_by is required" }, { status: 400 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId: (body.home_id as string) ?? "home_oak",
     childId: (body.child_id as string) ?? null,
     intent: `generate ${body.artifact_type}`,
   });
   if (!guard.ok) return guard.response;
 
-  const request: AriaGenerationRequest = {
-    artifact_type: body.artifact_type as AriaGenerationRequest["artifact_type"],
+  const request: CaraGenerationRequest = {
+    artifact_type: body.artifact_type as CaraGenerationRequest["artifact_type"],
     title: String(body.title),
     child_id: (body.child_id as string) ?? null,
     home_id: (body.home_id as string) ?? "home_oak",
@@ -41,9 +41,9 @@ export async function POST(req: NextRequest) {
     incident_id: (body.incident_id as string) ?? null,
     linked_record_id: (body.linked_record_id as string) ?? null,
     linked_record_type: (body.linked_record_type as string) ?? null,
-    framework: (body.framework as AriaGenerationRequest["framework"]) ?? "none",
-    tone: (body.tone as AriaGenerationRequest["tone"]) ?? "professional",
-    creative_mode: (body.creative_mode as AriaGenerationRequest["creative_mode"]) ?? "balanced",
+    framework: (body.framework as CaraGenerationRequest["framework"]) ?? "none",
+    tone: (body.tone as CaraGenerationRequest["tone"]) ?? "professional",
+    creative_mode: (body.creative_mode as CaraGenerationRequest["creative_mode"]) ?? "balanced",
     source_ids: (body.source_ids as string[]) ?? [],
     additional_context: (body.additional_context as string) ?? "",
     requested_by: String(body.requested_by),

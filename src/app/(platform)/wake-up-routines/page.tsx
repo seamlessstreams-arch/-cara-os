@@ -27,8 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { WakeUpRoutine } from "@/types/extended";
 import { useWakeUpRoutines } from "@/hooks/use-wake-up-routines";
 
@@ -92,12 +92,12 @@ export default function WakeUpRoutinesPage() {
     <PageShell
       title="Wake-Up Routines"
       subtitle="Personalised morning routines — supporting transitions from sleep, regulation, and a calm start"
-      ariaContext={{ pageTitle: "Wake-Up Routines", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Wake-Up Routines", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="wake-up-routines" />
           <PrintButton title="Wake-Up Routines" />
-          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -320,7 +320,7 @@ export default function WakeUpRoutinesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Wake-Up Routines — morning routines, getting-up protocols, medication times, breakfast routines, school readiness, child-specific wake-up needs, daily structure evidence"
         recordType="daily_log"

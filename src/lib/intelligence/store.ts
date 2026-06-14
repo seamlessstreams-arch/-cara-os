@@ -19,14 +19,14 @@ import type {
   HomeClimateSnapshot,
   DocumentIntelligenceJob,
   ActionOutcome,
-  AriaAssessment,
-  AriaOversight,
+  CaraAssessment,
+  CaraOversight,
   KeyWorkSession,
   ChildResource,
   InteractiveSession,
-  AriaAuditEntry,
-  AriaRecommendation,
-  AriaSafeguardingFlag,
+  CaraAuditEntry,
+  CaraRecommendation,
+  CaraSafeguardingFlag,
   // RI Command Centre
   RiChallengeLog,
   RiGovernanceReport,
@@ -64,14 +64,14 @@ const intelligenceStore = {
   docJobs: [] as DocumentIntelligenceJob[],
   actionOutcomes: [] as ActionOutcome[],
   // Cara Intelligence module
-  ariaAssessments: [] as AriaAssessment[],
-  ariaOversight: [] as AriaOversight[],
+  caraAssessments: [] as CaraAssessment[],
+  caraOversight: [] as CaraOversight[],
   keyWorkSessions: [] as KeyWorkSession[],
   childResources: [] as ChildResource[],
   interactiveSessions: [] as InteractiveSession[],
-  ariaAuditTrail: [] as AriaAuditEntry[],
-  ariaRecommendations: [] as AriaRecommendation[],
-  ariaSafeguardingFlags: [] as AriaSafeguardingFlag[],
+  caraAuditTrail: [] as CaraAuditEntry[],
+  caraRecommendations: [] as CaraRecommendation[],
+  caraSafeguardingFlags: [] as CaraSafeguardingFlag[],
   // RI Command Centre
   riChallengeLogs: [] as RiChallengeLog[],
   riGovernanceReports: [] as RiGovernanceReport[],
@@ -128,7 +128,7 @@ intelligenceStore.childExperience = [
       { type: "daily_log", id: "log_jas_001", date: "2026-04-01", excerpt: "Joined staff in the kitchen unprompted to help with dinner", significance: "belonging indicator" },
       { type: "incident", id: "inc_jas_001", date: "2026-04-03", excerpt: "Distressed by phone call from mother — co-regulation successful", significance: "regulation capacity noted" },
     ],
-    computed_by: "aria",
+    computed_by: "cara",
     reviewed_by: "staff_darren",
     created_at: "2026-04-06T07:00:00Z",
   },
@@ -157,7 +157,7 @@ intelligenceStore.childExperience = [
       { type: "daily_log", id: "log_jas_010", date: "2026-04-09", excerpt: "Casey said 'I actually like it here' to key worker during evening 1:1", significance: "belonging — direct voice evidence" },
       { type: "voice_record", id: "vrc_jas_001", date: "2026-04-10", excerpt: "Wants to start a creative writing club at school", significance: "education engagement and aspirations" },
     ],
-    computed_by: "aria",
+    computed_by: "cara",
     reviewed_by: null,
     created_at: "2026-04-13T07:00:00Z",
   },
@@ -186,7 +186,7 @@ intelligenceStore.childExperience = [
       { type: "incident", id: "inc_mar_001", date: "2026-04-02", excerpt: "Alex left the home for 2 hours without permission following staff redirect", significance: "regulation and boundary difficulties" },
       { type: "daily_log", id: "log_mar_003", date: "2026-04-04", excerpt: "Accepted hot chocolate from Lackson at 22:30 — first positive contact", significance: "early trust indicator" },
     ],
-    computed_by: "aria",
+    computed_by: "cara",
     reviewed_by: "staff_darren",
     created_at: "2026-04-06T07:00:00Z",
   },
@@ -214,7 +214,7 @@ intelligenceStore.childExperience = [
     evidence_refs: [
       { type: "daily_log", id: "log_mar_015", date: "2026-04-11", excerpt: "Alex helped Lackson wash the car — talked about his old dog. First sustained 1:1 conversation.", significance: "relational progress" },
     ],
-    computed_by: "aria",
+    computed_by: "cara",
     reviewed_by: null,
     created_at: "2026-04-13T07:00:00Z",
   },
@@ -243,7 +243,7 @@ intelligenceStore.childExperience = [
       { type: "voice_record", id: "vrc_len_001", date: "2026-04-08", excerpt: "Said she wants to stay at Chamberlain House until she moves into supported living at 18", significance: "stability and future planning" },
       { type: "daily_log", id: "log_len_008", date: "2026-04-10", excerpt: "Received GCSE commendation letter from school — shared it with the team at dinner", significance: "achievement and belonging" },
     ],
-    computed_by: "aria",
+    computed_by: "cara",
     reviewed_by: "staff_darren",
     created_at: "2026-04-13T07:00:00Z",
   },
@@ -773,7 +773,7 @@ intelligenceStore.homeClimate = [
       "A broadly stable week at Chamberlain House. Staffing consistency is the principal risk factor — two agency shifts in the week. Incident frequency is within expected range for a home with a newly placed young person. No complaints. Training compliance remains strong.",
     hotspot_times: ["Tuesday 17:00–19:00", "Thursday 21:00–22:30"],
     risk_flags: [],
-    computed_by: "aria",
+    computed_by: "cara",
     created_at: "2026-03-31T06:00:00Z",
   },
   {
@@ -795,7 +795,7 @@ intelligenceStore.homeClimate = [
       "A more challenging week. Staffing consistency has declined — four agency shifts, three in the evening window. Incident frequency is elevated, driven primarily by Alex's dysregulation pattern. Peer tension between Alex and Casey noted on two occasions. Rear gate latch maintenance issue remains outstanding.",
     hotspot_times: ["Monday 17:30–19:00", "Wednesday 17:00–19:30", "Friday 21:00–22:00"],
     risk_flags: ["agency_staff_evening_pattern", "marcus_dysregulation_peak", "maintenance_gate_outstanding"],
-    computed_by: "aria",
+    computed_by: "cara",
     created_at: "2026-04-07T06:00:00Z",
   },
   {
@@ -817,7 +817,7 @@ intelligenceStore.homeClimate = [
       "Modest recovery this week. The proactive transition support intervention for Alex appears to be having early impact — the 5pm window was calmer on 4 of 5 days. Staffing consistency remains a concern but improved slightly. Rear gate latch resolved. Casey's wellbeing is positive and Jordan continues to thrive.",
     hotspot_times: ["Wednesday 17:30–18:30"],
     risk_flags: ["agency_staff_evening_pattern"],
-    computed_by: "aria",
+    computed_by: "cara",
     created_at: "2026-04-14T06:00:00Z",
   },
 ];
@@ -1071,7 +1071,7 @@ intelligenceStore.actionOutcomes = [
 
 // ── Seed: Cara Assessments ────────────────────────────────────────────────────
 
-intelligenceStore.ariaAssessments = [
+intelligenceStore.caraAssessments = [
   {
     id: "aa_001",
     home_id: "home_oak",
@@ -1133,7 +1133,7 @@ intelligenceStore.keyWorkSessions = [
 
 // ── Seed: Cara Recommendations ─────────────────────────────────────────────────
 
-intelligenceStore.ariaRecommendations = [
+intelligenceStore.caraRecommendations = [
   {
     id: "ar_001",
     home_id: "home_oak",
@@ -1170,7 +1170,7 @@ intelligenceStore.ariaRecommendations = [
 
 // ── Seed: Cara Safeguarding Flags ──────────────────────────────────────────────
 
-intelligenceStore.ariaSafeguardingFlags = [
+intelligenceStore.caraSafeguardingFlags = [
   {
     id: "asf_001",
     home_id: "home_oak",
@@ -1275,7 +1275,7 @@ intelligenceStore.riAlerts = [
     is_resolved: false,
     auto_generated: true,
     linked_challenge_id: "ric_001",
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-14T08:00:00Z",
   },
   {
@@ -1289,7 +1289,7 @@ intelligenceStore.riAlerts = [
     is_resolved: false,
     auto_generated: true,
     linked_challenge_id: "ric_003",
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-12T08:00:00Z",
   },
   {
@@ -1303,7 +1303,7 @@ intelligenceStore.riAlerts = [
     is_resolved: false,
     auto_generated: true,
     linked_challenge_id: "ric_002",
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-13T08:00:00Z",
   },
   {
@@ -1316,7 +1316,7 @@ intelligenceStore.riAlerts = [
     data_evidence: { restraint_count: 3, period_days: 30, de_escalation_training_current: false },
     is_resolved: false,
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-11T08:00:00Z",
   },
   // ── Historically resolved alerts (evidence for Reg 45) ───────────────────
@@ -1332,7 +1332,7 @@ intelligenceStore.riAlerts = [
     resolved_by: "staff_ryan",
     resolution_note: "All three staff completed accredited first aid renewal training on 20 March 2026. Certificates uploaded to compliance records.",
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-03-01T08:00:00Z",
   },
   {
@@ -1347,7 +1347,7 @@ intelligenceStore.riAlerts = [
     resolved_by: "staff_darren",
     resolution_note: "All four overdue supervisions completed by 10 March 2026. Rota adjusted to protect supervision time.",
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-02-28T08:00:00Z",
   },
   // ── Additional alerts for richer dataset ───────────────────────────────────
@@ -1361,7 +1361,7 @@ intelligenceStore.riAlerts = [
     data_evidence: { scheduled_date: "2026-04-18", days_overdue: 12, last_drill: "2026-03-15" },
     is_resolved: false,
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-30T07:00:00Z",
   },
   {
@@ -1375,7 +1375,7 @@ intelligenceStore.riAlerts = [
     is_resolved: false,
     auto_generated: true,
     linked_challenge_id: "ric_002",
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-28T08:00:00Z",
   },
   {
@@ -1388,7 +1388,7 @@ intelligenceStore.riAlerts = [
     data_evidence: { unchecked_entries: 7, period_days: 14, affected_staff: ["staff_anna", "staff_ryan", "staff_lackson"] },
     is_resolved: false,
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-25T09:00:00Z",
   },
   {
@@ -1401,7 +1401,7 @@ intelligenceStore.riAlerts = [
     data_evidence: { incidents: 5, period_days: 10, physical: 1, trend: "escalating" },
     is_resolved: false,
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-27T14:00:00Z",
   },
   // ── More resolved alerts for history ────────────────────────────────────────
@@ -1417,7 +1417,7 @@ intelligenceStore.riAlerts = [
     resolved_by: "staff_darren",
     resolution_note: "Both DBS renewal applications submitted 25 March. Confirmation received 28 March. Certificates uploaded to HR records.",
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-03-15T08:00:00Z",
   },
   {
@@ -1432,7 +1432,7 @@ intelligenceStore.riAlerts = [
     resolved_by: "staff_chervelle",
     resolution_note: "All key work sessions caught up by 20 February. Contingency key work allocation process agreed in team meeting.",
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-02-10T08:00:00Z",
   },
   {
@@ -1447,7 +1447,7 @@ intelligenceStore.riAlerts = [
     resolved_by: "staff_darren",
     resolution_note: "CAMHS referral accepted 1 April. Initial consultation 3 April. Sleep hygiene plan implemented with sensory support. Night waking reduced to 1–2 per week by 5 April.",
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-03-25T08:00:00Z",
   },
   {
@@ -1462,7 +1462,7 @@ intelligenceStore.riAlerts = [
     resolved_by: "staff_darren",
     resolution_note: "Handover template updated with mandatory sections. Team briefed in weekly meeting. Quality of subsequent handovers markedly improved.",
     auto_generated: true,
-    created_by: "aria",
+    created_by: "cara",
     created_at: "2026-04-01T08:00:00Z",
   },
 ];
@@ -3243,74 +3243,74 @@ export const intelligenceDb = {
   },
 
   // ── Cara Assessments ───────────────────────────────────────────────────────
-  ariaAssessments: {
-    findAll: (homeId: string): AriaAssessment[] =>
-      intelligenceStore.ariaAssessments
+  caraAssessments: {
+    findAll: (homeId: string): CaraAssessment[] =>
+      intelligenceStore.caraAssessments
         .filter((a) => a.home_id === homeId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findByChild: (childId: string): AriaAssessment[] =>
-      intelligenceStore.ariaAssessments
+    findByChild: (childId: string): CaraAssessment[] =>
+      intelligenceStore.caraAssessments
         .filter((a) => a.child_id === childId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findById: (id: string): AriaAssessment | null =>
-      intelligenceStore.ariaAssessments.find((a) => a.id === id) ?? null,
+    findById: (id: string): CaraAssessment | null =>
+      intelligenceStore.caraAssessments.find((a) => a.id === id) ?? null,
 
-    create: (data: Omit<AriaAssessment, "id" | "created_at">): AriaAssessment => {
-      const record: AriaAssessment = {
+    create: (data: Omit<CaraAssessment, "id" | "created_at">): CaraAssessment => {
+      const record: CaraAssessment = {
         ...data,
         id: generateId("aa"),
         created_at: new Date().toISOString(),
       };
-      intelligenceStore.ariaAssessments.push(record);
+      intelligenceStore.caraAssessments.push(record);
       return record;
     },
 
-    patch: (id: string, data: Partial<AriaAssessment>): AriaAssessment | null => {
-      const idx = intelligenceStore.ariaAssessments.findIndex((a) => a.id === id);
+    patch: (id: string, data: Partial<CaraAssessment>): CaraAssessment | null => {
+      const idx = intelligenceStore.caraAssessments.findIndex((a) => a.id === id);
       if (idx === -1) return null;
-      intelligenceStore.ariaAssessments[idx] = { ...intelligenceStore.ariaAssessments[idx], ...data };
-      return intelligenceStore.ariaAssessments[idx];
+      intelligenceStore.caraAssessments[idx] = { ...intelligenceStore.caraAssessments[idx], ...data };
+      return intelligenceStore.caraAssessments[idx];
     },
   },
 
   // ── Cara Oversight ─────────────────────────────────────────────────────────
-  ariaOversight: {
-    findAll: (homeId: string): AriaOversight[] =>
-      intelligenceStore.ariaOversight
+  caraOversight: {
+    findAll: (homeId: string): CaraOversight[] =>
+      intelligenceStore.caraOversight
         .filter((o) => o.home_id === homeId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findByChild: (childId: string): AriaOversight[] =>
-      intelligenceStore.ariaOversight
+    findByChild: (childId: string): CaraOversight[] =>
+      intelligenceStore.caraOversight
         .filter((o) => o.child_id === childId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findById: (id: string): AriaOversight | null =>
-      intelligenceStore.ariaOversight.find((o) => o.id === id) ?? null,
+    findById: (id: string): CaraOversight | null =>
+      intelligenceStore.caraOversight.find((o) => o.id === id) ?? null,
 
-    create: (data: Omit<AriaOversight, "id" | "created_at" | "updated_at">): AriaOversight => {
+    create: (data: Omit<CaraOversight, "id" | "created_at" | "updated_at">): CaraOversight => {
       const now = new Date().toISOString();
-      const record: AriaOversight = {
+      const record: CaraOversight = {
         ...data,
         id: generateId("ao"),
         created_at: now,
         updated_at: now,
       };
-      intelligenceStore.ariaOversight.push(record);
+      intelligenceStore.caraOversight.push(record);
       return record;
     },
 
-    patch: (id: string, data: Partial<AriaOversight>): AriaOversight | null => {
-      const idx = intelligenceStore.ariaOversight.findIndex((o) => o.id === id);
+    patch: (id: string, data: Partial<CaraOversight>): CaraOversight | null => {
+      const idx = intelligenceStore.caraOversight.findIndex((o) => o.id === id);
       if (idx === -1) return null;
-      intelligenceStore.ariaOversight[idx] = {
-        ...intelligenceStore.ariaOversight[idx],
+      intelligenceStore.caraOversight[idx] = {
+        ...intelligenceStore.caraOversight[idx],
         ...data,
         updated_at: new Date().toISOString(),
       };
-      return intelligenceStore.ariaOversight[idx];
+      return intelligenceStore.caraOversight[idx];
     },
   },
 
@@ -3414,101 +3414,101 @@ export const intelligenceDb = {
   },
 
   // ── Cara Audit Trail ───────────────────────────────────────────────────────
-  ariaAuditTrail: {
-    findAll: (homeId: string): AriaAuditEntry[] =>
-      intelligenceStore.ariaAuditTrail
+  caraAuditTrail: {
+    findAll: (homeId: string): CaraAuditEntry[] =>
+      intelligenceStore.caraAuditTrail
         .filter((e) => e.home_id === homeId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findByChild: (childId: string): AriaAuditEntry[] =>
-      intelligenceStore.ariaAuditTrail
+    findByChild: (childId: string): CaraAuditEntry[] =>
+      intelligenceStore.caraAuditTrail
         .filter((e) => e.child_id === childId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findById: (id: string): AriaAuditEntry | null =>
-      intelligenceStore.ariaAuditTrail.find((e) => e.id === id) ?? null,
+    findById: (id: string): CaraAuditEntry | null =>
+      intelligenceStore.caraAuditTrail.find((e) => e.id === id) ?? null,
 
-    create: (data: Omit<AriaAuditEntry, "id" | "created_at">): AriaAuditEntry => {
-      const record: AriaAuditEntry = {
+    create: (data: Omit<CaraAuditEntry, "id" | "created_at">): CaraAuditEntry => {
+      const record: CaraAuditEntry = {
         ...data,
         id: generateId("aat"),
         created_at: new Date().toISOString(),
       };
-      intelligenceStore.ariaAuditTrail.push(record);
+      intelligenceStore.caraAuditTrail.push(record);
       return record;
     },
 
-    patch: (id: string, data: Partial<AriaAuditEntry>): AriaAuditEntry | null => {
-      const idx = intelligenceStore.ariaAuditTrail.findIndex((e) => e.id === id);
+    patch: (id: string, data: Partial<CaraAuditEntry>): CaraAuditEntry | null => {
+      const idx = intelligenceStore.caraAuditTrail.findIndex((e) => e.id === id);
       if (idx === -1) return null;
-      intelligenceStore.ariaAuditTrail[idx] = { ...intelligenceStore.ariaAuditTrail[idx], ...data };
-      return intelligenceStore.ariaAuditTrail[idx];
+      intelligenceStore.caraAuditTrail[idx] = { ...intelligenceStore.caraAuditTrail[idx], ...data };
+      return intelligenceStore.caraAuditTrail[idx];
     },
   },
 
   // ── Cara Recommendations ───────────────────────────────────────────────────
-  ariaRecommendations: {
-    findAll: (homeId: string): AriaRecommendation[] =>
-      intelligenceStore.ariaRecommendations
+  caraRecommendations: {
+    findAll: (homeId: string): CaraRecommendation[] =>
+      intelligenceStore.caraRecommendations
         .filter((r) => r.home_id === homeId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findByChild: (childId: string): AriaRecommendation[] =>
-      intelligenceStore.ariaRecommendations
+    findByChild: (childId: string): CaraRecommendation[] =>
+      intelligenceStore.caraRecommendations
         .filter((r) => r.child_id === childId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findById: (id: string): AriaRecommendation | null =>
-      intelligenceStore.ariaRecommendations.find((r) => r.id === id) ?? null,
+    findById: (id: string): CaraRecommendation | null =>
+      intelligenceStore.caraRecommendations.find((r) => r.id === id) ?? null,
 
-    create: (data: Omit<AriaRecommendation, "id" | "created_at">): AriaRecommendation => {
-      const record: AriaRecommendation = {
+    create: (data: Omit<CaraRecommendation, "id" | "created_at">): CaraRecommendation => {
+      const record: CaraRecommendation = {
         ...data,
         id: generateId("ar"),
         created_at: new Date().toISOString(),
       };
-      intelligenceStore.ariaRecommendations.push(record);
+      intelligenceStore.caraRecommendations.push(record);
       return record;
     },
 
-    patch: (id: string, data: Partial<AriaRecommendation>): AriaRecommendation | null => {
-      const idx = intelligenceStore.ariaRecommendations.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraRecommendation>): CaraRecommendation | null => {
+      const idx = intelligenceStore.caraRecommendations.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      intelligenceStore.ariaRecommendations[idx] = { ...intelligenceStore.ariaRecommendations[idx], ...data };
-      return intelligenceStore.ariaRecommendations[idx];
+      intelligenceStore.caraRecommendations[idx] = { ...intelligenceStore.caraRecommendations[idx], ...data };
+      return intelligenceStore.caraRecommendations[idx];
     },
   },
 
   // ── Cara Safeguarding Flags ────────────────────────────────────────────────
-  ariaSafeguardingFlags: {
-    findAll: (homeId: string): AriaSafeguardingFlag[] =>
-      intelligenceStore.ariaSafeguardingFlags
+  caraSafeguardingFlags: {
+    findAll: (homeId: string): CaraSafeguardingFlag[] =>
+      intelligenceStore.caraSafeguardingFlags
         .filter((f) => f.home_id === homeId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findByChild: (childId: string): AriaSafeguardingFlag[] =>
-      intelligenceStore.ariaSafeguardingFlags
+    findByChild: (childId: string): CaraSafeguardingFlag[] =>
+      intelligenceStore.caraSafeguardingFlags
         .filter((f) => f.child_id === childId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at)),
 
-    findById: (id: string): AriaSafeguardingFlag | null =>
-      intelligenceStore.ariaSafeguardingFlags.find((f) => f.id === id) ?? null,
+    findById: (id: string): CaraSafeguardingFlag | null =>
+      intelligenceStore.caraSafeguardingFlags.find((f) => f.id === id) ?? null,
 
-    create: (data: Omit<AriaSafeguardingFlag, "id" | "created_at">): AriaSafeguardingFlag => {
-      const record: AriaSafeguardingFlag = {
+    create: (data: Omit<CaraSafeguardingFlag, "id" | "created_at">): CaraSafeguardingFlag => {
+      const record: CaraSafeguardingFlag = {
         ...data,
         id: generateId("asf"),
         created_at: new Date().toISOString(),
       };
-      intelligenceStore.ariaSafeguardingFlags.push(record);
+      intelligenceStore.caraSafeguardingFlags.push(record);
       return record;
     },
 
-    patch: (id: string, data: Partial<AriaSafeguardingFlag>): AriaSafeguardingFlag | null => {
-      const idx = intelligenceStore.ariaSafeguardingFlags.findIndex((f) => f.id === id);
+    patch: (id: string, data: Partial<CaraSafeguardingFlag>): CaraSafeguardingFlag | null => {
+      const idx = intelligenceStore.caraSafeguardingFlags.findIndex((f) => f.id === id);
       if (idx === -1) return null;
-      intelligenceStore.ariaSafeguardingFlags[idx] = { ...intelligenceStore.ariaSafeguardingFlags[idx], ...data };
-      return intelligenceStore.ariaSafeguardingFlags[idx];
+      intelligenceStore.caraSafeguardingFlags[idx] = { ...intelligenceStore.caraSafeguardingFlags[idx], ...data };
+      return intelligenceStore.caraSafeguardingFlags[idx];
     },
   },
 

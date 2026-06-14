@@ -19,8 +19,8 @@ import { useCulturalVisits } from "@/hooks/use-cultural-visits";
 import type { CulturalVisit, CulturalVisitVenueType } from "@/types/extended";
 import { CULTURAL_VISIT_VENUE_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
@@ -103,12 +103,12 @@ export default function MuseumCulturalVisitsTrackerPage() {
     <PageShell
       title="Museum & Cultural Visits Tracker"
       subtitle="Per-child museum, gallery, theatre, and cultural educational visits — Quality Standards 6 & 8"
-      ariaContext={{ pageTitle: "Museum & Cultural Visits Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Museum & Cultural Visits Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="museum-cultural-visits" />
           <PrintButton title="Museum & Cultural Visits Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -277,7 +277,7 @@ export default function MuseumCulturalVisitsTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Museum & Cultural Visits Tracker — cultural outings, heritage activities, identity development, educational trips, LAC entitlement, diversity, enrichment evidence, Reg 45"
         recordType="direct_work"

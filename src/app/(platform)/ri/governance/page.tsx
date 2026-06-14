@@ -9,8 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,7 +58,7 @@ interface LocalReport extends Omit<RiGovernanceReport, "content"> {
 
 const TYPE_CONFIG: Record<RiReportType, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
   strategic_summary: { label: "Strategic Summary",  icon: BarChart3,  color: "text-indigo-700",  bg: "bg-indigo-50",  border: "border-indigo-200" },
-  reg45_draft:       { label: "Reg 45 Draft",       icon: Gavel,      color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]" },
+  reg45_draft:       { label: "Reg 45 Draft",       icon: Gavel,      color: "text-[var(--cs-cara-gold)]",  bg: "bg-[var(--cs-cara-gold-bg)]",  border: "border-[var(--cs-cara-gold-soft)]" },
   ofsted_readiness:  { label: "Ofsted Readiness",   icon: Award,      color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"  },
   risk_analysis:     { label: "Risk Analysis",      icon: Shield,     color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200"    },
   monthly_overview:  { label: "Monthly Overview",   icon: Calendar,   color: "text-sky-700",     bg: "bg-sky-50",     border: "border-sky-200"    },
@@ -77,7 +77,7 @@ const REPORT_EXPORT_COLS: ExportColumn<LocalReport>[] = [
   { header: "Title",          accessor: (r) => TYPE_CONFIG[r.report_type]?.label ?? r.report_type },
   { header: "Period",         accessor: (r) => r.report_period ?? "" },
   { header: "Status",         accessor: (r) => STATUS_CONFIG[r.status]?.label ?? r.status },
-  { header: "Cara Generated", accessor: (r) => r.generated_by_aria ? "Yes" : "No" },
+  { header: "Cara Generated", accessor: (r) => r.generated_by_cara ? "Yes" : "No" },
   { header: "Summary",        accessor: (r) => r.content.summary ?? "" },
   { header: "Key Findings",   accessor: (r) => (r.content.key_findings ?? []).join("; ") },
   { header: "Strengths",      accessor: (r) => (r.content.strengths ?? []).join("; ") },
@@ -123,8 +123,8 @@ function ReportCard({
             {report.report_period && (
               <span className="text-xs text-[var(--cs-text-muted)]">— {report.report_period}</span>
             )}
-            {report.generated_by_aria && (
-              <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] text-[10px] px-1.5 py-0">
+            {report.generated_by_cara && (
+              <Badge className="bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)] text-[10px] px-1.5 py-0">
                 <Sparkles className="h-2.5 w-2.5 mr-0.5" />
                 Cara
               </Badge>
@@ -303,7 +303,7 @@ function NewReportDialog({
       home_id: "home_oak",
       report_type: reportType,
       report_period: period || undefined,
-      generated_by_aria: false,
+      generated_by_cara: false,
       content: {
         summary: summary.trim(),
         key_findings: findings.split("\n").filter(Boolean),
@@ -491,7 +491,7 @@ export default function GovernanceReportsPage() {
     reviewed:  reports.filter((r) => r.status === "reviewed").length,
     approved:  reports.filter((r) => r.status === "approved").length,
     published: reports.filter((r) => r.status === "published").length,
-    ariaGen:   reports.filter((r) => r.generated_by_aria).length,
+    caraGen:   reports.filter((r) => r.generated_by_cara).length,
   }), [reports]);
 
   const hasFilters = search || typeFilter !== "all";
@@ -530,7 +530,7 @@ export default function GovernanceReportsPage() {
     <PageShell
       title="Governance Reports"
       subtitle="RI oversight reports — strategic summaries, risk analysis, Reg 45 drafts"
-      ariaContext={{ pageTitle: "RI Governance", sourceType: "general" }}
+      caraContext={{ pageTitle: "RI Governance", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={REPORT_EXPORT_COLS} filename="governance-reports" />
@@ -543,7 +543,7 @@ export default function GovernanceReportsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Report
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -554,7 +554,7 @@ export default function GovernanceReportsPage() {
           { label: "Drafts",          value: stats.draft,     color: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-50",   border: "border-[var(--cs-border)]"   },
           { label: "Awaiting Review", value: stats.reviewed,  color: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200"   },
           { label: "Approved",        value: stats.approved,  color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
-          { label: "Cara Generated",  value: stats.ariaGen,   color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]"  },
+          { label: "Cara Generated",  value: stats.caraGen,   color: "text-[var(--cs-cara-gold)]",  bg: "bg-[var(--cs-cara-gold-bg)]",  border: "border-[var(--cs-cara-gold-soft)]"  },
         ].map((s) => (
           <div key={s.label} className={cn("rounded-lg border p-3 text-center", s.bg, s.border)}>
             <div className={cn("text-xl font-bold", s.color)}>{s.value}</div>
@@ -687,7 +687,7 @@ export default function GovernanceReportsPage() {
         onClose={() => setShowNew(false)}
         onSubmit={handleCreate}
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="RI Governance — responsible individual governance reports, oversight visits, management oversight, Reg 45 governance, board reporting, regulatory compliance, Ofsted evidence"
         recordType="management_oversight"

@@ -557,7 +557,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: MusicPerformingArtsRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

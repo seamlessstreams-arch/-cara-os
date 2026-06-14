@@ -35,8 +35,8 @@ import {
   Eye, Zap, Ban, Hand, Mic, Users,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -45,7 +45,7 @@ const TYPE_CONFIG: Record<RelationalRecordType, { label: string; icon: React.Ele
   rupture_repair:       { label: "Rupture & Repair",     icon: Zap,           color: "text-amber-600",    bg: "bg-amber-50",    border: "border-amber-200"   },
   de_escalation:        { label: "De-escalation",        icon: Shield,        color: "text-blue-600",     bg: "bg-blue-50",     border: "border-blue-200"    },
   regulation_strategy:  { label: "Regulation Strategy",  icon: Brain,         color: "text-teal-600",     bg: "bg-teal-50",     border: "border-teal-200"    },
-  preferred_adult:      { label: "Preferred Adult",      icon: Star,          color: "text-[var(--cs-aria-gold)]",   bg: "bg-[var(--cs-aria-gold-bg)]",   border: "border-[var(--cs-aria-gold-soft)]"  },
+  preferred_adult:      { label: "Preferred Adult",      icon: Star,          color: "text-[var(--cs-cara-gold)]",   bg: "bg-[var(--cs-cara-gold-bg)]",   border: "border-[var(--cs-cara-gold-soft)]"  },
   what_helps:           { label: "What Helps",           icon: ThumbsUp,      color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
   what_to_avoid:        { label: "What to Avoid",        icon: Ban,           color: "text-red-600",      bg: "bg-red-50",      border: "border-red-200"     },
   attachment_indicator: { label: "Attachment Indicator",  icon: Hand,          color: "text-pink-600",     bg: "bg-pink-50",     border: "border-pink-200"    },
@@ -367,7 +367,7 @@ export default function RelationalPracticePage() {
     <PageShell
       title="Relational Practice"
       subtitle="Trust moments, regulation strategies, preferred adults, and what works for each young person"
-      ariaContext={{ pageTitle: "Relational Practice", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Relational Practice", sourceType: "care_plan" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">
@@ -377,7 +377,7 @@ export default function RelationalPracticePage() {
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Record Observation
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -390,7 +390,7 @@ export default function RelationalPracticePage() {
             { label: "Positive", value: positiveCount, icon: ThumbsUp, colour: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
             { label: "Caution", value: cautionCount, icon: AlertTriangle, colour: cautionCount > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]", bg: cautionCount > 0 ? "bg-red-50 border-red-100" : "bg-slate-50 border-[var(--cs-border-subtle)]" },
             { label: "Well-Evidenced", value: highConfidenceCount, icon: CheckCircle2, colour: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
-            { label: "Record Types", value: Object.keys(typeCounts).length, icon: Sparkles, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
+            { label: "Record Types", value: Object.keys(typeCounts).length, icon: Sparkles, colour: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]" },
           ].map(({ label, value, icon: Icon, colour, bg }) => (
             <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
               <Icon className={cn("h-4 w-4 mx-auto mb-1", colour)} />
@@ -550,7 +550,7 @@ export default function RelationalPracticePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Relational Practice — staff-child relationships, key working, observations, therapeutic relationships, attachment-informed practice, relational records, Reg 45 outcomes evidence"
         recordType="direct_work"

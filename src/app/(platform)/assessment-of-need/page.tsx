@@ -31,8 +31,8 @@ import { useNeedsAssessments } from "@/hooks/use-needs-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NeedsAssessment, NeedsDomain, NeedsComplexity, NeedsDomainAssessment } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -92,7 +92,7 @@ const DOMAIN_CLR: Record<NeedsDomain, string> = {
   education:              "bg-blue-50 text-blue-700 border-blue-200",
   identity:               "bg-amber-50 text-amber-700 border-amber-200",
   family_social:          "bg-emerald-50 text-emerald-700 border-emerald-200",
-  behavioural_emotional:  "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  behavioural_emotional:  "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
   self_care_practical:    "bg-sky-50 text-sky-700 border-sky-200",
   spiritual_cultural:     "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
 };
@@ -201,12 +201,12 @@ export default function AssessmentOfNeedPage() {
     <PageShell
       title="Assessment of Need"
       subtitle="Care Planning Regulations 2010, Reg 14 (28-day report) · Quality Standard 4 — comprehensive baseline assessment on admission"
-      ariaContext={{ pageTitle: "Assessment of Need", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Assessment of Need", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Assessment of Need" />
           <ExportButton data={filtered} columns={exportCols} filename="assessment-of-need" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -452,7 +452,7 @@ export default function AssessmentOfNeedPage() {
                     </div>
 
                     {/* pedagogical approach */}
-                    <div className="rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-3">
+                    <div className="rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/40 p-3">
                       <p className="font-semibold text-[var(--cs-navy)] flex items-center gap-1 mb-1">
                         <Compass className="h-4 w-4" /> Pedagogical Approach Identified
                       </p>
@@ -509,7 +509,7 @@ export default function AssessmentOfNeedPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Assessment of Need — Section 47, CIN assessment, LAC assessment, needs analysis, developmental domains, strengths and risks, placement matching, care planning"
         recordType="care_plan"

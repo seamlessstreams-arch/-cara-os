@@ -89,7 +89,7 @@ export default function ReflectiveSupervisionPage() {
     <PageShell
       title="Reflective Supervision"
       subtitle="Supervision that's more than tick-box — wellbeing, workload, safeguarding, relationships, reflective & PACE practice, boundaries, confidence and development, with a clear view of who's due and where to offer support."
-      ariaContext={{ pageTitle: "Reflective Supervision", sourceType: "general" }}
+      caraContext={{ pageTitle: "Reflective Supervision", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button onClick={() => setShowForm((s) => !s)} className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-navy)] px-3 py-1.5 text-xs font-semibold text-white hover:bg-[var(--cs-navy-soft)] print:hidden"><Plus className="h-3.5 w-3.5" /> Record supervision</button>
@@ -194,7 +194,7 @@ export default function ReflectiveSupervisionPage() {
             {/* Cara reflective prompts */}
             <Card className="print:hidden">
               <CardContent className="py-4">
-                <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Reflective prompts (Cara)</p>
+                <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Reflective prompts (Cara)</p>
                 <p className="mt-0.5 text-xs text-[var(--cs-text-muted)]">Prepare a conversation. Cara suggests prompts only — it never writes the record or its conclusions.</p>
                 <div className="mt-2 flex flex-wrap items-end gap-2">
                   <input className={cn(inputCls, "max-w-md flex-1")} placeholder="Optional: anything you've noticed to focus on…" value={aiContext} onChange={(e) => setAiContext(e.target.value)} />
@@ -202,7 +202,7 @@ export default function ReflectiveSupervisionPage() {
                 </div>
                 {aiState === "done" && aiPrompts.length > 0 && (
                   <>
-                    <ul className="mt-3 space-y-1.5">{aiPrompts.map((p, i) => <li key={i} className="rounded-lg border border-[var(--cs-aria-gold)]/30 bg-[var(--cs-aria-gold-bg)]/40 px-3 py-2 text-sm">{p}</li>)}</ul>
+                    <ul className="mt-3 space-y-1.5">{aiPrompts.map((p, i) => <li key={i} className="rounded-lg border border-[var(--cs-cara-gold)]/30 bg-[var(--cs-cara-gold-bg)]/40 px-3 py-2 text-sm">{p}</li>)}</ul>
                     <p className="mt-2 text-[11px] italic text-[var(--cs-text-muted)]">AI suggests reflective prompts only — the manager leads the conversation and records it. Requires professional judgement and manager approval.</p>
                   </>
                 )}

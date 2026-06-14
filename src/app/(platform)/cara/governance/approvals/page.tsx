@@ -5,12 +5,12 @@
 "use client";
 
 import { useState } from "react";
-import { AriaApprovalQueue } from "@/components/aria/AriaApprovalQueue";
-import { AriaHumanApprovalBanner } from "@/components/aria/AriaHumanApprovalBanner";
-import type { AriaApprovalRecord } from "@/lib/aria/core/types";
+import { CaraApprovalQueue } from "@/components/cara/CaraApprovalQueue";
+import { CaraHumanApprovalBanner } from "@/components/cara/CaraHumanApprovalBanner";
+import type { CaraApprovalRecord } from "@/lib/cara/core/types";
 
 // Demo data
-const DEMO_APPROVALS: AriaApprovalRecord[] = [
+const DEMO_APPROVALS: CaraApprovalRecord[] = [
   {
     id: "appr-001",
     taskResultId: "result-001",
@@ -61,9 +61,9 @@ const DEMO_APPROVALS: AriaApprovalRecord[] = [
   },
 ];
 
-export default function AriaApprovalsPage() {
+export default function CaraApprovalsPage() {
   const [items, setItems] = useState(DEMO_APPROVALS);
-  const [selected, setSelected] = useState<AriaApprovalRecord | null>(null);
+  const [selected, setSelected] = useState<CaraApprovalRecord | null>(null);
 
   const handleApprove = (id: string, notes: string) => {
     setItems(prev => prev.map(item =>
@@ -110,7 +110,7 @@ export default function AriaApprovalsPage() {
       </div>
 
       {/* Queue */}
-      <AriaApprovalQueue
+      <CaraApprovalQueue
         items={pending}
         onSelect={setSelected}
         onApprove={handleApprove}
@@ -129,7 +129,7 @@ export default function AriaApprovalsPage() {
             <div><span className="font-medium">Sensitivity:</span> {selected.sensitivityLevel.replace(/_/g, " ")}</div>
             <div><span className="font-medium">Redacted:</span> {selected.redactionApplied ? "Yes" : "No"}</div>
           </div>
-          <AriaHumanApprovalBanner
+          <CaraHumanApprovalBanner
             approvalId={selected.id}
             taskType={selected.taskType}
             riskLevel={selected.riskLevel}

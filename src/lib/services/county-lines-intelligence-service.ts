@@ -503,7 +503,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: CountyLinesIntelligenceRow[],
 ): string[] {
   const metrics = computeMetrics(rows);
@@ -822,6 +822,6 @@ export async function deleteCountyLinesIntelligence(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   validateCountyLinesIntelligence,
 };

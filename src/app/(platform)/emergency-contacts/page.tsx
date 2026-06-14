@@ -39,8 +39,8 @@ import {
 import { useHomeEmergencyContacts } from "@/hooks/use-home-emergency-contacts";
 import type { HomeEmergencyContact } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -276,11 +276,11 @@ export default function EmergencyContactsPage() {
     <PageShell
       title="Emergency Contacts Board"
       subtitle="Key contacts for Chamberlain House — print and display in office"
-      ariaContext={{ pageTitle: "Emergency Contacts Board", sourceType: "contact_log" }}
+      caraContext={{ pageTitle: "Emergency Contacts Board", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Contacts Board" subtitle="Chamberlain House" targetId="emergency-board" />
-          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
       showQuickCreate={false}
@@ -598,7 +598,7 @@ export default function EmergencyContactsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Emergency Contacts Board — out of hours, on-call manager, LA duty team, LADO, police, ambulance, hospital, GP, local authority emergency duty, social worker, IRO contacts"
         recordType="task"

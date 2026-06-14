@@ -221,7 +221,7 @@ export function computeEmotionalWellbeingAlerts(
   return alerts;
 }
 
-export function generateEmotionalWellbeingAriaInsights(
+export function generateEmotionalWellbeingCaraInsights(
   metrics: ReturnType<typeof computeEmotionalWellbeingMetrics>,
   alerts: ReturnType<typeof computeEmotionalWellbeingAlerts>,
 ): string[] {
@@ -341,5 +341,5 @@ export async function createEmotionalWellbeingOutcome(payload: {
 export const _testing = {
   computeEmotionalWellbeingMetrics,
   computeEmotionalWellbeingAlerts,
-  generateEmotionalWellbeingAriaInsights,
+  generateEmotionalWellbeingCaraInsights,
 };

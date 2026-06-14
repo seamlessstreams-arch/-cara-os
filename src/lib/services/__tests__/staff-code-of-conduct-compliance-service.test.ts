@@ -25,7 +25,7 @@ import type {
 const {
   computeCodeOfConductMetrics,
   computeCodeOfConductAlerts,
-  generateCodeOfConductAriaInsights,
+  generateCodeOfConductCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -924,51 +924,51 @@ describe("computeCodeOfConductAlerts", () => {
   });
 });
 
-// ── generateCodeOfConductAriaInsights ───────────────────────────────────
+// ── generateCodeOfConductCaraInsights ───────────────────────────────────
 
-describe("generateCodeOfConductAriaInsights", () => {
+describe("generateCodeOfConductCaraInsights", () => {
   it("returns exactly 3 insights", () => {
-    const insights = generateCodeOfConductAriaInsights([]);
+    const insights = generateCodeOfConductCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [emerald]", () => {
-    const insights = generateCodeOfConductAriaInsights([makeRow()]);
+    const insights = generateCodeOfConductCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[emerald\]/);
   });
 
   it("first insight includes total reviews count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes code_acknowledged_rate", () => {
     const rows = [makeRow({ code_acknowledged: true }), makeRow({ code_acknowledged: false })];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("first insight includes training_completed_rate", () => {
     const rows = [makeRow({ training_completed: true }), makeRow({ training_completed: false })];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("uses singular member wording when unique_staff is 1", () => {
     const rows = [makeRow({ staff_name: "Alice" })];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[0]).toContain("1 staff member");
   });
 
   it("uses plural members wording when unique_staff > 1", () => {
     const rows = [makeRow({ staff_name: "Alice" }), makeRow({ staff_name: "Bob" })];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[0]).toContain("2 staff members");
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateCodeOfConductAriaInsights([makeRow()]);
+    const insights = generateCodeOfConductCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -976,14 +976,14 @@ describe("generateCodeOfConductAriaInsights", () => {
     const rows = [
       makeRow({ compliance_status: "breach_identified", investigation_completed: false, code_acknowledged: false, training_completed: false }),
     ];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
 
   it("second insight mentions no alerts when none present", () => {
     const rows = [makeRow({ compliance_status: "fully_compliant", code_acknowledged: true, training_completed: true, supervision_discussed: true, review_type: "annual_acknowledgement" })];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
@@ -991,18 +991,18 @@ describe("generateCodeOfConductAriaInsights", () => {
     const rows = [
       makeRow({ compliance_status: "breach_identified", investigation_completed: true, code_acknowledged: true, training_completed: true, supervision_discussed: true, review_type: "annual_acknowledgement" }),
     ];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[1]).toContain("1 breach");
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateCodeOfConductAriaInsights([makeRow()]);
+    const insights = generateCodeOfConductCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions breaches when some are identified", () => {
     const rows = [makeRow({ compliance_status: "breach_identified" })];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[2]).toContain("breach");
   });
 
@@ -1011,7 +1011,7 @@ describe("generateCodeOfConductAriaInsights", () => {
       makeRow({ compliance_status: "fully_compliant", code_acknowledged: false }),
       makeRow({ compliance_status: "fully_compliant", code_acknowledged: true }),
     ];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[2]).toContain("acknowledged the code of conduct");
   });
 
@@ -1020,13 +1020,13 @@ describe("generateCodeOfConductAriaInsights", () => {
       makeRow({ compliance_status: "fully_compliant", code_acknowledged: true }),
       makeRow({ compliance_status: "fully_compliant", code_acknowledged: true }),
     ];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[2]).toContain("acknowledged the code of conduct and no breaches");
   });
 
   it("uses singular breach wording when 1 breach", () => {
     const rows = [makeRow({ compliance_status: "breach_identified" })];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[2]).toContain("breach has");
   });
 
@@ -1035,12 +1035,12 @@ describe("generateCodeOfConductAriaInsights", () => {
       makeRow({ compliance_status: "breach_identified" }),
       makeRow({ compliance_status: "breach_identified" }),
     ];
-    const insights = generateCodeOfConductAriaInsights(rows);
+    const insights = generateCodeOfConductCaraInsights(rows);
     expect(insights[2]).toContain("breaches have");
   });
 
   it("all insights are non-empty strings", () => {
-    const insights = generateCodeOfConductAriaInsights([makeRow()]);
+    const insights = generateCodeOfConductCaraInsights([makeRow()]);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1048,7 +1048,7 @@ describe("generateCodeOfConductAriaInsights", () => {
   });
 
   it("returns 3 insights even with empty array", () => {
-    const insights = generateCodeOfConductAriaInsights([]);
+    const insights = generateCodeOfConductCaraInsights([]);
     expect(insights).toHaveLength(3);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");

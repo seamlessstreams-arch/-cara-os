@@ -4,8 +4,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useVoiceEntries, useCreateVoiceEntry } from "@/hooks/use-intelligence-layer";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,7 +95,7 @@ const CATEGORY_META: Record<VoiceCategory, { label: string; color: string; icon:
   health: { label: "Health", color: "bg-emerald-100 text-emerald-800", icon: <Activity className="h-3.5 w-3.5" /> },
   safety: { label: "Safety", color: "bg-rose-100 text-rose-800", icon: <Shield className="h-3.5 w-3.5" /> },
   relationship_with_staff: { label: "Staff Relationship", color: "bg-teal-100 text-teal-800", icon: <Users className="h-3.5 w-3.5" /> },
-  general_wellbeing: { label: "General Wellbeing", color: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]", icon: <Smile className="h-3.5 w-3.5" /> },
+  general_wellbeing: { label: "General Wellbeing", color: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]", icon: <Smile className="h-3.5 w-3.5" /> },
 };
 
 const CHILDREN = [
@@ -163,8 +163,8 @@ export default function VoiceOfTheChildPage() {
     <PageShell
       title="Voice of the Child"
       subtitle="Capturing what matters most — in their own words"
-      ariaContext={{ pageTitle: "Voice of the Child", sourceType: "care_plan" }}
-      actions={<AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />}
+      caraContext={{ pageTitle: "Voice of the Child", sourceType: "care_plan" }}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />}
     >
       <div className="space-y-6">
         {/* Child Selector */}
@@ -234,7 +234,7 @@ export default function VoiceOfTheChildPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Child&apos;s Words</label>
                 <textarea
-                  className="w-full min-h-[80px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/30"
+                  className="w-full min-h-[80px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
                   placeholder="Record exactly what the child said, in their own words..."
                   value={newChildWords}
                   onChange={(e) => setNewChildWords(e.target.value)}
@@ -243,7 +243,7 @@ export default function VoiceOfTheChildPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Summary</label>
                 <textarea
-                  className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/30"
+                  className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
                   placeholder="Brief summary for records..."
                   value={newSummary}
                   onChange={(e) => setNewSummary(e.target.value)}
@@ -252,7 +252,7 @@ export default function VoiceOfTheChildPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Action Taken</label>
                 <textarea
-                  className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/30"
+                  className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
                   placeholder="What was done in response..."
                   value={newActionTaken}
                   onChange={(e) => setNewActionTaken(e.target.value)}
@@ -261,7 +261,7 @@ export default function VoiceOfTheChildPage() {
               <div className="space-y-2">
                 <label className="text-sm font-medium">Staff Response (shared with child)</label>
                 <textarea
-                  className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/30"
+                  className="w-full min-h-[60px] p-3 text-sm border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
                   placeholder="Your response to the child..."
                   value={newStaffResponse}
                   onChange={(e) => setNewStaffResponse(e.target.value)}
@@ -440,7 +440,7 @@ export default function VoiceOfTheChildPage() {
           </CardContent>
         </Card>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Voice of the Child — children's wishes and feelings, direct work records, child consultations, participation activities, complaints, advocacy, Reg 45 children's views evidence"
         recordType="direct_work"

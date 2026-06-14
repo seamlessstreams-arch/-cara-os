@@ -351,7 +351,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: HomeEmergencyLightingRow[],
 ): string[] {
   const metrics = computeMetrics(rows);
@@ -522,5 +522,5 @@ export async function deleteHomeEmergencyLighting(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
 };

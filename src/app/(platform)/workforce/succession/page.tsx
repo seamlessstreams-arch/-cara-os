@@ -15,8 +15,8 @@ import { Button } from "@/components/ui/button";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { cn } from "@/lib/utils";
 import {
   GitBranch, Sparkles, CheckCircle2, Clock, AlertTriangle,
@@ -141,7 +141,7 @@ function CoverageRisk({
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function SuccessionBoardPage() {
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
   const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -207,7 +207,7 @@ export default function SuccessionBoardPage() {
     <PageShell
       title="Succession Planning Board"
       subtitle="Role coverage, internal readiness & Cara gap analysis"
-      ariaContext={{ pageTitle: "Succession Planning Board", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Succession Planning Board", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -222,7 +222,7 @@ export default function SuccessionBoardPage() {
           <Button
             size="sm"
             className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
-            onClick={() => setShowAria((p) => !p)}
+            onClick={() => setShowCara((p) => !p)}
           >
             <Sparkles className="h-3.5 w-3.5" />
             Cara Analysis
@@ -230,17 +230,17 @@ export default function SuccessionBoardPage() {
           <Link href="/workforce">
             <Button variant="outline" size="sm">Workforce Hub</Button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="succession-content" className="space-y-4 animate-fade-in">
 
         {/* ── Cara Panel ──────────────────────────────────────────────────── */}
-        {showAria && (
+        {showCara && (
           <div className="relative">
-            <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
-            <AriaPanel
+            <button onClick={() => setShowCara(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
+            <CaraPanel
               mode="staff_development_summary"
               pageContext={`Succession board: ${plans.length} active succession plans. ${plans.map((p) => `${p.role_title}: ${p.candidates.length} candidates, urgency ${p.urgency}`).join(". ")}`}
             />
@@ -409,7 +409,7 @@ export default function SuccessionBoardPage() {
                                   </span>
                                 )}
                                 {candidate.development_plan_id && (
-                                  <Link href="/workforce/aria-planner" className="text-indigo-600 hover:underline flex items-center gap-0.5">
+                                  <Link href="/workforce/cara-planner" className="text-indigo-600 hover:underline flex items-center gap-0.5">
                                     <TrendingUp className="h-2.5 w-2.5" />
                                     Dev plan →
                                   </Link>

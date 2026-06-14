@@ -9,8 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -225,7 +225,7 @@ export default function MedicationErrorsPage() {
     <PageShell
       title="Medication Errors & Near-Misses"
       subtitle="Regulation 23 — Medication error reporting and learning"
-      ariaContext={{ pageTitle: "Medication Errors & Near-Misses", sourceType: "medication" }}
+      caraContext={{ pageTitle: "Medication Errors & Near-Misses", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Errors Register" />
@@ -238,7 +238,7 @@ export default function MedicationErrorsPage() {
             <Plus className="h-3.5 w-3.5" />
             Report Error
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -460,7 +460,7 @@ export default function MedicationErrorsPage() {
                       </Badge>
                     )}
                     {error.duty_of_candour && (
-                      <Badge className="text-[9px] px-1.5 py-0 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border border-[var(--cs-aria-gold-soft)]">
+                      <Badge className="text-[9px] px-1.5 py-0 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border border-[var(--cs-cara-gold-soft)]">
                         Duty of Candour
                       </Badge>
                     )}
@@ -584,8 +584,8 @@ export default function MedicationErrorsPage() {
 
                   {/* Duty of candour */}
                   {error.duty_of_candour && (
-                    <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
-                      <h4 className="text-[11px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wide mb-1">Duty of Candour</h4>
+                    <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
+                      <h4 className="text-[11px] font-semibold text-[var(--cs-cara-gold)] uppercase tracking-wide mb-1">Duty of Candour</h4>
                       <div className="flex items-center gap-2 text-xs">
                         {error.duty_of_candour_completed ? (
                           <>

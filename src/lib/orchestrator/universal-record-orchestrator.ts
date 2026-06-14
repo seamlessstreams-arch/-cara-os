@@ -23,7 +23,7 @@ import { db } from "@/lib/db/store";
 import { createTaskRecord } from "@/lib/supabase/care-records";
 import { generateId } from "@/lib/utils";
 import { recordEvent } from "@/lib/timeline/timeline-service";
-import { logInteraction } from "@/lib/aria/aria-config";
+import { logInteraction } from "@/lib/cara/cara-config";
 import { createIncident } from "@/lib/incidents/incident-orchestrator";
 import { createDailyLog } from "@/lib/daily-log/daily-log-orchestrator";
 import type { Task } from "@/types";

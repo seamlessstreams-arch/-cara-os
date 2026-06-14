@@ -23,14 +23,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import type { ChildReport, ReportType, ReportStatus } from "@/types/aria-reports";
+import type { ChildReport, ReportType, ReportStatus } from "@/types/cara-reports";
 import {
   REPORT_TYPES,
   REPORT_TYPE_LABELS,
   REPORT_STATUSES,
   REPORT_STATUS_LABELS,
   REPORT_AUDIENCE_LABELS,
-} from "@/types/aria-reports";
+} from "@/types/cara-reports";
 import {
   Sparkles,
   FileText,
@@ -78,7 +78,7 @@ function statusBadgeVariant(status: string) {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
-export default function AriaReportsListPage() {
+export default function CaraReportsListPage() {
   const [reports, setReports] = useState<ChildReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState<ReportType | "all">("all");
@@ -89,12 +89,12 @@ export default function AriaReportsListPage() {
     async function fetchReports() {
       try {
         const res = await fetch(
-          `/api/aria/reports/list?homeId=${DEFAULT_HOME_ID}`,
+          `/api/cara/reports/list?homeId=${DEFAULT_HOME_ID}`,
         );
         const json = await res.json();
         if (json.ok) setReports(json.data);
       } catch (err) {
-        console.error("[aria/reports] Failed to fetch reports:", err);
+        console.error("[cara/reports] Failed to fetch reports:", err);
       } finally {
         setLoading(false);
       }
@@ -229,7 +229,7 @@ export default function AriaReportsListPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                      <Badge variant="aria" className="text-[10px]">
+                      <Badge variant="cara" className="text-[10px]">
                         {REPORT_TYPE_LABELS[report.report_type]}
                       </Badge>
                       <Badge

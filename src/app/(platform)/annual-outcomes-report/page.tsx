@@ -20,8 +20,8 @@ import type { AnnualOutcome, AnnualOutcomeDomain } from "@/types/extended";
 import { useAnnualOutcomes } from "@/hooks/use-annual-outcomes";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -108,12 +108,12 @@ export default function AnnualOutcomesReportPage() {
     <PageShell
       title="Annual Outcomes Report"
       subtitle="Year-End Progress · Care Plan Goals · Quality of Care Indicators"
-      ariaContext={{ pageTitle: "Annual Outcomes Report", sourceType: "general" }}
+      caraContext={{ pageTitle: "Annual Outcomes Report", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Annual Outcomes Report" />
           <ExportButton data={data} columns={exportCols} filename="annual-outcomes-report" />
-          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -287,7 +287,7 @@ export default function AnnualOutcomesReportPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Annual Outcomes Report — year-end outcomes analysis, permanence, education, health, wellbeing, placement stability, Reg 45, Annex A themes, Ofsted judgement evidence"
         recordType="reg45"

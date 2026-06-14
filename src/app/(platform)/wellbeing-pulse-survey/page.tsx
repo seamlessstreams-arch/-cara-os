@@ -32,8 +32,8 @@ import {
   WELLBEING_PULSE_DIMENSION_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 const d = (n: number) => {
@@ -166,12 +166,12 @@ export default function WellbeingPulseSurveyPage() {
     <PageShell
       title="Wellbeing Pulse Survey"
       subtitle="Short, frequent check-ins capturing each child's voice — distinct from full assessments"
-      ariaContext={{ pageTitle: "Wellbeing Pulse Survey", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Wellbeing Pulse Survey", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Wellbeing Pulse Survey" />
           <ExportButton data={filtered} columns={exportCols} filename="wellbeing-pulse-survey" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -456,7 +456,7 @@ export default function WellbeingPulseSurveyPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Wellbeing Pulse Survey — child wellbeing surveys, staff wellbeing, emotional health tracking, pulse check results, wellbeing trends, Reg 45 children's views evidence"
         recordType="care_plan"

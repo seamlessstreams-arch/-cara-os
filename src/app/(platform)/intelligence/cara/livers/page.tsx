@@ -81,7 +81,7 @@ const DOMAIN_META: Array<{
     label: "Relational & Psychological Drivers",
     letter: "R",
     icon: Eye,
-    colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]",
+    colour: "text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]",
   },
   {
     key: "sustainability_independence_safety",
@@ -127,7 +127,7 @@ const CONFIDENCE_COLOURS = {
 
 const STATUS_COLOURS: Record<LiversStatus | InterventionSessionStatus, string> = {
   draft: "bg-slate-100 text-[var(--cs-text-secondary)]",
-  reviewed: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  reviewed: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   approved: "bg-emerald-100 text-emerald-700",
   archived: "bg-slate-200 text-[var(--cs-text-muted)]",
   in_progress: "bg-blue-100 text-blue-800",
@@ -351,8 +351,8 @@ function AnalysisCard({
 
         {/* Cara Summary */}
         {analysis.aria_summary && (
-          <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
-            <Label className="text-[var(--cs-aria-gold)]">Cara Summary</Label>
+          <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
+            <Label className="text-[var(--cs-cara-gold)]">Cara Summary</Label>
             <p className="text-sm text-[var(--cs-navy)] mt-1 leading-relaxed">{analysis.aria_summary}</p>
           </div>
         )}
@@ -476,7 +476,7 @@ function AnalysisCard({
               value={auditComment}
               onChange={(e) => setAuditComment(e.target.value)}
               placeholder="Add audit observation or challenge..."
-              className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2 resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2 resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             />
             <Button
               size="sm"
@@ -580,7 +580,7 @@ function SessionCard({ session, canRecordOutcome }: { session: InterventionSessi
                     </p>
                     <p className="text-sm text-[var(--cs-text-secondary)] mt-1">{step.description}</p>
                     {step.facilitator_prompt && (
-                      <p className="text-xs text-[var(--cs-aria-gold)] mt-1 italic">Prompt: {step.facilitator_prompt}</p>
+                      <p className="text-xs text-[var(--cs-cara-gold)] mt-1 italic">Prompt: {step.facilitator_prompt}</p>
                     )}
                     {step.child_activity && (
                       <p className="text-xs text-sky-700 mt-1">Activity: {step.child_activity}</p>
@@ -638,7 +638,7 @@ function SessionCard({ session, canRecordOutcome }: { session: InterventionSessi
                     rows={2}
                     value={outcomeForm[key]}
                     onChange={(e) => setOutcomeForm((f) => ({ ...f, [key]: e.target.value }))}
-                    className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2 resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                    className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2 resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                   />
                 </div>
               ))}
@@ -651,7 +651,7 @@ function SessionCard({ session, canRecordOutcome }: { session: InterventionSessi
                     <select
                       value={outcomeForm[field]}
                       onChange={(e) => setOutcomeForm((f) => ({ ...f, [field]: e.target.value }))}
-                      className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2 focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                      className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2 focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                     >
                       <option value="unknown">Unknown</option>
                       <option value="improved">Improved</option>
@@ -679,7 +679,7 @@ function SessionCard({ session, canRecordOutcome }: { session: InterventionSessi
                   placeholder="Describe further action needed..."
                   value={outcomeForm.further_action_notes}
                   onChange={(e) => setOutcomeForm((f) => ({ ...f, further_action_notes: e.target.value }))}
-                  className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2 resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                  className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2 resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                 />
               )}
               <Button
@@ -989,7 +989,7 @@ export default function LiversPage() {
                 setSelectedChildId(e.target.value);
                 setRecordsInput("");
               }}
-              className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2.5 focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             >
               <option value="">— Select a young person —</option>
               {youngPeople.map((yp) => (
@@ -1010,7 +1010,7 @@ export default function LiversPage() {
                     placeholder="Paste key work notes, incident records, missing episode details, risk assessment extracts, chronology entries..."
                     value={recordsInput}
                     onChange={(e) => setRecordsInput(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2.5 resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                    className="w-full rounded-lg border border-[var(--cs-border)] text-sm p-2.5 resize-y focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                   />
                   <p className="text-xs text-[var(--cs-text-muted)] mt-1">
                     Cara will use this alongside any existing analysis. The more context, the more accurate the output.
@@ -1035,7 +1035,7 @@ export default function LiversPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-[var(--cs-text-secondary)] flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-[var(--cs-aria-gold)]" />
+                <BookOpen className="w-4 h-4 text-[var(--cs-cara-gold)]" />
                 Analyses ({analyses.length})
                 {selectedChildId && youngPersonName && (
                   <span className="text-[var(--cs-text-muted)] font-normal">— {youngPersonName}</span>
@@ -1055,7 +1055,7 @@ export default function LiversPage() {
 
                 {/* Sessions linked to this analysis */}
                 {(sessionsByAnalysis[analysis.id]?.length ?? 0) > 0 && (
-                  <div className="pl-4 border-l-2 border-[var(--cs-aria-gold-soft)] space-y-2">
+                  <div className="pl-4 border-l-2 border-[var(--cs-cara-gold-soft)] space-y-2">
                     <p className="text-xs font-semibold text-[var(--cs-text-muted)] flex items-center gap-1.5">
                       <ArrowUpRight className="w-3 h-3" />
                       Intervention Sessions ({sessionsByAnalysis[analysis.id].length})

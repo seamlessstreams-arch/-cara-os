@@ -27,8 +27,8 @@ import { useLoneWorkingRecords, useCreateLoneWorkingRecord } from "@/hooks/use-l
 import type { LoneWorkingRecord, LoneWorkingScenario, LoneWorkingRiskLevel, LoneWorkingAssessmentStatus } from "@/types/extended";
 import { LONE_WORKING_SCENARIO_LABEL, LONE_WORKING_RISK_LEVEL_LABEL, LONE_WORKING_ASSESSMENT_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -101,8 +101,8 @@ export default function LoneWorkingPage() {
 
   return (
     <PageShell title="Lone Working Assessments" subtitle="Health & Safety at Work Act 1974 · Management of H&S at Work Regs 1999" 
-      ariaContext={{ pageTitle: "Lone Working Assessments", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Lone Working" /><ExportButton data={filtered} columns={exportCols} filename="lone-working" /><AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button></div>}>
+      caraContext={{ pageTitle: "Lone Working Assessments", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Lone Working" /><ExportButton data={filtered} columns={exportCols} filename="lone-working" /><CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
@@ -176,7 +176,7 @@ export default function LoneWorkingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Lone Working Assessments — solo staff risk, emergency procedures, check-in systems, hazards, control measures, review dates, regulatory compliance"
         recordType="risk_assessment"

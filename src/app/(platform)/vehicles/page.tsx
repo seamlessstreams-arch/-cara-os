@@ -18,8 +18,8 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -826,8 +826,8 @@ function TransportComplianceTab({ data }: { data: VehiclesData }) {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
-            <div className="rounded-lg p-1.5 bg-[var(--cs-aria-gold-bg)]">
-              <Calendar className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+            <div className="rounded-lg p-1.5 bg-[var(--cs-cara-gold-bg)]">
+              <Calendar className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
             </div>
             Renewal Reminders
           </CardTitle>
@@ -933,7 +933,7 @@ export default function VehiclesPage() {
     <PageShell
       title="Vehicle Compliance"
       subtitle="Fleet management, vehicle checks, and transport compliance"
-      ariaContext={{ pageTitle: "Vehicle Fleet Management", sourceType: "document" }}
+      caraContext={{ pageTitle: "Vehicle Fleet Management", sourceType: "document" }}
       quickCreateContext={{ module: "vehicles", defaultTaskCategory: "maintenance" }}
       actions={
         <div className="flex items-center gap-2">
@@ -943,7 +943,7 @@ export default function VehiclesPage() {
           <Button size="sm" onClick={() => setShowCheckForm(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Log Check
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -1017,7 +1017,7 @@ export default function VehiclesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Vehicle Fleet Management — vehicle register, MOT/service records, insurance, pre-use checks, driver records, transport safety, Reg 40 premises/transport compliance evidence"
         recordType="risk_assessment"

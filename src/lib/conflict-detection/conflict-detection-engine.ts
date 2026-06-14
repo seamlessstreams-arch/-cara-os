@@ -55,7 +55,7 @@ export interface ConflictEventRef {
 }
 
 /** Cara's advisory view — never changes data, always carries uncertainty. */
-export interface AriaConflictAssessment {
+export interface CaraConflictAssessment {
   /** Which record Cara judges more likely accurate (advisory only). null = genuinely unclear. */
   likely_accurate_event_id: string | null;
   reasoning: string;
@@ -77,7 +77,7 @@ export interface ConflictFinding {
   event_b: ConflictEventRef;
   description: string;
   recommended_action: string;
-  aria_assessment: AriaConflictAssessment;
+  aria_assessment: CaraConflictAssessment;
   /** Safeguard: every conflict is surfaced for a human and never auto-resolved. */
   status: "needs_human_review";
   auto_resolved: false;
@@ -100,7 +100,7 @@ export interface ConflictAlert {
   category?: ConflictCategory;
 }
 
-export interface AriaConflictInsight {
+export interface CaraConflictInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -109,7 +109,7 @@ export interface ConflictDetectionResult {
   overview: ConflictOverview;
   conflicts: ConflictFinding[];
   alerts: ConflictAlert[];
-  insights: AriaConflictInsight[];
+  insights: CaraConflictInsight[];
 }
 
 // ── Input ─────────────────────────────────────────────────────────────────────
@@ -473,8 +473,8 @@ function labelFor(category: ConflictCategory): string {
 
 // ── Cara insights ─────────────────────────────────────────────────────────────
 
-function buildInsights(overview: ConflictOverview, conflicts: ConflictFinding[]): AriaConflictInsight[] {
-  const insights: AriaConflictInsight[] = [];
+function buildInsights(overview: ConflictOverview, conflicts: ConflictFinding[]): CaraConflictInsight[] {
+  const insights: CaraConflictInsight[] = [];
 
   if (overview.conflicts_found === 0) {
     insights.push({

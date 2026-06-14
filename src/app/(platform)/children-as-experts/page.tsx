@@ -25,8 +25,8 @@ import { EXPERTISE_TYPE_LABEL } from "@/types/extended";
 import { useChildExpertEntries } from "@/hooks/use-child-expert-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -138,12 +138,12 @@ export default function ChildrenAsExpertsPage() {
     <PageShell
       title="Children as Experts by Experience"
       subtitle="UNCRC Article 12 · Quality Standard 1 — children advising the home, shaping policy, training staff, recruiting"
-      ariaContext={{ pageTitle: "Children as Experts", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Children as Experts", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="children-as-experts" />
           <PrintButton title="Children as Experts by Experience" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -337,7 +337,7 @@ export default function ChildrenAsExpertsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Children as Experts — participation, child voice, lived experience, peer mentoring, expert by experience, review contributions, co-production, advocacy, rights"
         recordType="care_plan"

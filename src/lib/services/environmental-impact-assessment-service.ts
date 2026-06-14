@@ -273,7 +273,7 @@ export function computeEnvironmentalImpactAlerts(
   return alerts;
 }
 
-export function generateEnvironmentalImpactAriaInsights(
+export function generateEnvironmentalImpactCaraInsights(
   metrics: ReturnType<typeof computeEnvironmentalImpactMetrics>,
   alerts: ReturnType<typeof computeEnvironmentalImpactAlerts>,
 ): string[] {
@@ -332,5 +332,5 @@ export function generateEnvironmentalImpactAriaInsights(
 export const _testing = {
   computeEnvironmentalImpactMetrics,
   computeEnvironmentalImpactAlerts,
-  generateEnvironmentalImpactAriaInsights,
+  generateEnvironmentalImpactCaraInsights,
 };

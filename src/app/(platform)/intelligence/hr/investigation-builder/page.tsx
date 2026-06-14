@@ -234,7 +234,7 @@ export default function InvestigationBuilderPage() {
   async function handleGenerateReport() {
     setGenerating(true);
     try {
-      const res = await fetch("/api/aria/generate", {
+      const res = await fetch("/api/cara/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -880,7 +880,7 @@ gathered during the investigation.
           <Card>
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] text-[10px]">Cara suggested draft</Badge>
+                <Badge className="bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] text-[10px]">Cara suggested draft</Badge>
                 <span className="text-xs text-[var(--cs-text-muted)]">Requires investigating officer review before finalising</span>
               </div>
             </CardHeader>
@@ -905,7 +905,7 @@ gathered during the investigation.
       title="Investigation Builder"
       subtitle="Structured HR investigation tool — guided by Cara"
       actions={
-        <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">
+        <Badge className="bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">
           <Sparkles className="h-3 w-3 mr-1" />Cara Guided
         </Badge>
       }
@@ -920,7 +920,7 @@ gathered during the investigation.
           </div>
           <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
             <div
-              className="h-full rounded-full bg-[var(--cs-aria-gold-bg)]0 transition-all duration-500"
+              className="h-full rounded-full bg-[var(--cs-cara-gold-bg)]0 transition-all duration-500"
               style={{ width: `${(completedStages / STAGES.length) * 100}%` }}
             />
           </div>

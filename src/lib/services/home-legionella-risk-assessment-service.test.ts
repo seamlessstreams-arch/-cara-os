@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
   type HomeLegionellaRiskAssessmentRow,
 } from "./home-legionella-risk-assessment-service";
 
@@ -130,16 +130,16 @@ describe("computeAlerts", () => {
   });
 });
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const metrics = computeMetrics([makeRow()]);
-    const insights = computeAriaInsights(metrics);
+    const insights = computeCaraInsights(metrics);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
     const metrics = computeMetrics([]);
-    const insights = computeAriaInsights(metrics);
+    const insights = computeCaraInsights(metrics);
     expect(insights).toHaveLength(3);
   });
 });

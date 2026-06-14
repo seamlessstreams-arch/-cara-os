@@ -19,17 +19,17 @@ import {
   useRunSafeguardingScan,
   useUpdateSafeguardingPattern,
   useUpdateEarlyWarning,
-} from "@/hooks/use-aria-safeguarding-patterns";
+} from "@/hooks/use-cara-safeguarding-patterns";
 import { useAuthContext } from "@/contexts/auth-context";
 import type {
-  AriaPatternSeverity,
-  AriaSafeguardingPattern,
-  AriaEarlyWarning,
-} from "@/types/aria-studio";
+  CaraPatternSeverity,
+  CaraSafeguardingPattern,
+  CaraEarlyWarning,
+} from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const SEVERITY_TONE: Record<AriaPatternSeverity, string> = {
+const SEVERITY_TONE: Record<CaraPatternSeverity, string> = {
   critical: "bg-rose-50 text-rose-800 border-rose-300",
   high: "bg-orange-50 text-orange-800 border-orange-300",
   medium: "bg-amber-50 text-amber-800 border-amber-300",
@@ -40,7 +40,7 @@ function PatternCard({
   pattern,
   onAction,
 }: {
-  pattern: AriaSafeguardingPattern;
+  pattern: CaraSafeguardingPattern;
   onAction: (id: string, status: "acknowledged" | "actioned" | "dismissed") => void;
 }) {
   return (
@@ -103,7 +103,7 @@ function WarningCard({
   warning,
   onAction,
 }: {
-  warning: AriaEarlyWarning;
+  warning: CaraEarlyWarning;
   onAction: (id: string, status: "acknowledged" | "escalated" | "closed") => void;
 }) {
   return (

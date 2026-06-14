@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  ARIA_WRITING_STYLE_PROMPT,
-  applyAriaPostprocessor,
-} from "@/lib/aria/writingStyleRules";
+  CARA_WRITING_STYLE_PROMPT,
+  applyCaraPostprocessor,
+} from "@/lib/cara/writingStyleRules";
 import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropicClient } from "@/lib/anthropic-client";
 
@@ -16,7 +16,7 @@ const DEFAULT_MAX_TOKENS = 4096;
 
 // ─── Cara System Prompt (cache-controlled) ────────────────────────────────────
 
-const ARIA_SYSTEM_PROMPT = `You are Cara — the Advanced Residential Intelligence Assistant built into Cara, the operating system for children's homes.
+const CARA_SYSTEM_PROMPT = `You are Cara — the Advanced Residential Intelligence Assistant built into Cara, the operating system for children's homes.
 
 You are a composite expert persona representing the collective wisdom of a highly experienced UK residential childcare professional with approximately 40 years of combined experience spanning every level of the sector:
 
@@ -752,7 +752,7 @@ Use only the evidence provided. Be specific, evaluative and honest about both st
       "title": string,
       "description": string,
       "priority": string (one of: urgent/high/medium/low),
-      "identified_by": string (one of: aria/incident/supervision/audit/ri_challenge/reg45),
+      "identified_by": string (one of: cara/incident/supervision/audit/ri_challenge/reg45),
       "affected_roles": string[],
       "aria_evidence": string,
       "recommended_approach": string,
@@ -1131,13 +1131,13 @@ export async function POST(req: NextRequest) {
 
   // Append the Cara writing-style rules to the system block so every mode in
   // this route inherits the same UK English, child-centred, trauma-informed
-  // tone as the standalone Cara engines in src/lib/aria/*. The combined block
+  // tone as the standalone Cara engines in src/lib/cara/*. The combined block
   // is still cache-controlled, so prompt cache reads still apply.
   const systemBlock: Anthropic.TextBlockParam & {
     cache_control: { type: "ephemeral" };
   } = {
     type: "text",
-    text: `${ARIA_SYSTEM_PROMPT}\n\n${ARIA_WRITING_STYLE_PROMPT}`,
+    text: `${CARA_SYSTEM_PROMPT}\n\n${CARA_WRITING_STYLE_PROMPT}`,
     cache_control: { type: "ephemeral" },
   };
 
@@ -1266,7 +1266,7 @@ export async function POST(req: NextRequest) {
     // JSON narrative fields.
     const responseText = isJsonMode
       ? rawResponseText
-      : applyAriaPostprocessor(rawResponseText);
+      : applyCaraPostprocessor(rawResponseText);
 
     return NextResponse.json({
       data: {
@@ -1307,7 +1307,7 @@ export async function POST(req: NextRequest) {
         { status: err.status ?? 500 }
       );
     }
-    console.error("[aria] Unexpected error:", err);
+    console.error("[cara] Unexpected error:", err);
     return NextResponse.json(
       { error: "An unexpected error occurred", detail: err instanceof Error ? err.message : String(err) },
       { status: 500 }

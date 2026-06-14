@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeCctvComplianceMetrics,
   identifyCctvComplianceAlerts,
-  generateCctvComplianceAriaInsights,
+  generateCctvComplianceCaraInsights,
   type HomeCctvComplianceRow,
 } from "./home-cctv-compliance-service";
 
@@ -154,16 +154,16 @@ describe("identifyCctvComplianceAlerts", () => {
   });
 });
 
-// ── generateCctvComplianceAriaInsights ───────────────────────────────────
+// ── generateCctvComplianceCaraInsights ───────────────────────────────────
 
-describe("generateCctvComplianceAriaInsights", () => {
+describe("generateCctvComplianceCaraInsights", () => {
   it("returns 3 insights", () => {
-    const insights = generateCctvComplianceAriaInsights([makeRow()]);
+    const insights = generateCctvComplianceCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
-    const insights = generateCctvComplianceAriaInsights([]);
+    const insights = generateCctvComplianceCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 });

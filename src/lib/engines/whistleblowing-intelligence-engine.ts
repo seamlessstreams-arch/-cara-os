@@ -61,7 +61,7 @@ export interface WhistleblowingAlert {
   message: string;
 }
 
-export interface AriaWhistleblowingInsight {
+export interface CaraWhistleblowingInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -71,7 +71,7 @@ export interface WhistleblowingIntelligenceResult {
   category_breakdown: CategoryBreakdown[];
   open_cases: OpenCase[];
   alerts: WhistleblowingAlert[];
-  insights: AriaWhistleblowingInsight[];
+  insights: CaraWhistleblowingInsight[];
 }
 
 // -- Helpers ------------------------------------------------------------------
@@ -272,7 +272,7 @@ export function computeWhistleblowingIntelligence(input: {
 
   // -- Insights ---------------------------------------------------------------
 
-  const insights: AriaWhistleblowingInsight[] = [];
+  const insights: CaraWhistleblowingInsight[] = [];
 
   // critical: critical severity open
   for (const oc of open_cases) {

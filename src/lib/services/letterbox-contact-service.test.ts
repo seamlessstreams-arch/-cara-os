@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateLetterboxContact,
-  generateAriaInsights,
+  generateCaraInsights,
   type LetterboxContactRow,
 } from "./letterbox-contact-service";
 
@@ -195,13 +195,13 @@ describe("validateLetterboxContact", () => {
   });
 });
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [
       makeRow({ id: "1" }),
       makeRow({ id: "2", child_name: "Child B" }),
     ];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[sky]");
   });

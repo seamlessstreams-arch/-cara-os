@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeEnergyEfficiencyMetrics,
   computeEnergyEfficiencyAlerts,
-  generateEnergyEfficiencyAriaInsights,
+  generateEnergyEfficiencyCaraInsights,
   type HomeEnergyEfficiencyRow,
 } from "./home-energy-efficiency-service";
 
@@ -120,13 +120,13 @@ describe("computeEnergyEfficiencyAlerts", () => {
   });
 });
 
-describe("generateEnergyEfficiencyAriaInsights", () => {
+describe("generateEnergyEfficiencyCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
-    const insights = generateEnergyEfficiencyAriaInsights([makeRow()]);
+    const insights = generateEnergyEfficiencyCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
-    expect(generateEnergyEfficiencyAriaInsights([])).toHaveLength(3);
+    expect(generateEnergyEfficiencyCaraInsights([])).toHaveLength(3);
   });
 });

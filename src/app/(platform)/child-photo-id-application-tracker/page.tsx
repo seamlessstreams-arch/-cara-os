@@ -21,8 +21,8 @@ import { PHOTO_ID_TYPE_LABEL, PHOTO_ID_STATUS_LABEL } from "@/types/extended";
 import { usePhotoIdRecords } from "@/hooks/use-photo-id-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── colour maps ──────────────────────────────────────────────────────────── */
 
@@ -155,11 +155,11 @@ export default function ChildPhotoIdApplicationTrackerPage() {
     <PageShell
       title="Child Photo ID Application Tracker"
       subtitle="Passport, provisional licence, Citizen Card, voter ID and under-16 photo ID applications, renewals and storage — Care Leavers (England) Regulations 2010 and s.23B(8) Children Act 1989"
-      ariaContext={{ pageTitle: "Photo ID Applications", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Photo ID Applications", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Photo ID Applications" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="child-photo-id-application-tracker" />,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -343,7 +343,7 @@ export default function ChildPhotoIdApplicationTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Photo ID Applications — passport application, NI number, driving licence, PASS card, proof of identity, application status, birth certificate, leaving care ID pack, key documents"
         recordType="care_plan"

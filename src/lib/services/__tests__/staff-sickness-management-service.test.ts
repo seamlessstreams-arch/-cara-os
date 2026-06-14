@@ -35,7 +35,7 @@ import type {
 const {
   computeSicknessMetrics,
   computeSicknessAlerts,
-  generateSicknessAriaInsights,
+  generateSicknessCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -736,87 +736,87 @@ describe("computeSicknessAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 4. generateSicknessAriaInsights
+// 4. generateSicknessCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateSicknessAriaInsights", () => {
+describe("generateSicknessCaraInsights", () => {
   it("returns exactly 3 strings", () => {
-    const insights = generateSicknessAriaInsights([]);
+    const insights = generateSicknessCaraInsights([]);
     expect(insights).toHaveLength(3);
     for (const i of insights) expect(typeof i).toBe("string");
   });
 
   it("first insight starts with [cyan]", () => {
-    const insights = generateSicknessAriaInsights([makeRow()]);
+    const insights = generateSicknessCaraInsights([makeRow()]);
     expect(insights[0].startsWith("[cyan]")).toBe(true);
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateSicknessAriaInsights([makeRow()]);
+    const insights = generateSicknessCaraInsights([makeRow()]);
     expect(insights[1].startsWith("[amber]")).toBe(true);
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateSicknessAriaInsights([makeRow()]);
+    const insights = generateSicknessCaraInsights([makeRow()]);
     expect(insights[2].startsWith("[reflect]")).toBe(true);
   });
 
   it("first insight includes total absences count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    expect(generateSicknessAriaInsights(rows)[0]).toContain("3 sickness absence");
+    expect(generateSicknessCaraInsights(rows)[0]).toContain("3 sickness absence");
   });
 
   it("first insight uses singular 'record' for 1 absence", () => {
-    expect(generateSicknessAriaInsights([makeRow()])[0]).toContain("1 sickness absence record");
+    expect(generateSicknessCaraInsights([makeRow()])[0]).toContain("1 sickness absence record");
   });
 
   it("first insight uses plural 'records' for multiple", () => {
-    expect(generateSicknessAriaInsights([makeRow(), makeRow()])[0]).toContain("records");
+    expect(generateSicknessCaraInsights([makeRow(), makeRow()])[0]).toContain("records");
   });
 
   it("first insight includes unique staff count", () => {
     const rows = [makeRow({ staff_name: "A" }), makeRow({ staff_name: "B" })];
-    expect(generateSicknessAriaInsights(rows)[0]).toContain("2 staff members");
+    expect(generateSicknessCaraInsights(rows)[0]).toContain("2 staff members");
   });
 
   it("first insight uses singular 'staff member' for 1", () => {
     const rows = [makeRow({ staff_name: "A" })];
-    expect(generateSicknessAriaInsights(rows)[0]).toContain("1 staff member");
+    expect(generateSicknessCaraInsights(rows)[0]).toContain("1 staff member");
   });
 
   it("second insight shows alerts when present", () => {
     const rows = [makeRow({ trigger_level: "stage_3", management_status: "ongoing" })];
-    const insight = generateSicknessAriaInsights(rows)[1];
+    const insight = generateSicknessCaraInsights(rows)[1];
     expect(insight).toContain("[amber]");
     expect(insight).toContain("critical");
   });
 
   it("second insight mentions Reg 33 when no alerts", () => {
     const rows = [makeRow()];
-    const insight = generateSicknessAriaInsights(rows)[1];
+    const insight = generateSicknessCaraInsights(rows)[1];
     expect(insight).toContain("Reg 33");
   });
 
   it("third insight reflects on mental health when present with incomplete checks", () => {
     const rows = [makeRow({ absence_type: "mental_health", wellbeing_check_completed: false })];
-    const insight = generateSicknessAriaInsights(rows)[2];
+    const insight = generateSicknessCaraInsights(rows)[2];
     expect(insight).toContain("mental health");
   });
 
   it("third insight reflects on RTW rate when no mental health but incomplete RTW", () => {
     const rows = [makeRow({ return_to_work_completed: false })];
-    const insight = generateSicknessAriaInsights(rows)[2];
+    const insight = generateSicknessCaraInsights(rows)[2];
     expect(insight).toContain("Return-to-work");
   });
 
   it("third insight provides positive reflection when everything is well", () => {
     const rows = [makeRow()];
-    const insight = generateSicknessAriaInsights(rows)[2];
+    const insight = generateSicknessCaraInsights(rows)[2];
     expect(insight).toContain("well maintained");
   });
 
   it("handles empty input gracefully", () => {
-    const insights = generateSicknessAriaInsights([]);
+    const insights = generateSicknessCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 sickness absence");
     expect(insights[2]).toContain("well maintained");

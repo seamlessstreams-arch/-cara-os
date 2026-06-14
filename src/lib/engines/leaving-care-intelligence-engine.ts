@@ -103,7 +103,7 @@ export interface LeavingCareAlert {
   message: string;
 }
 
-export interface AriaLeavingCareInsight {
+export interface CaraLeavingCareInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -113,7 +113,7 @@ export interface LeavingCareIntelligenceResult {
   child_readiness: ChildReadinessProfile[];
   skills_summary: SkillAreaSummary[];
   alerts: LeavingCareAlert[];
-  insights: AriaLeavingCareInsight[];
+  insights: CaraLeavingCareInsight[];
 }
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -418,7 +418,7 @@ export function computeLeavingCareIntelligence(
   }
 
   // ── Insights ────────────────────────────────────────────────────────────
-  const insights: AriaLeavingCareInsight[] = [];
+  const insights: CaraLeavingCareInsight[] = [];
 
   // Critical: Child(ren) approaching 18 (within 6 months) without secured accommodation
   const approachingEighteen = children.filter((c) => {

@@ -9,8 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,7 @@ const INDUCTION_EXPORT_COLS: ExportColumn<InductionRecord>[] = [
 const PHASES = [
   { key: "day1",    label: "Day 1",     maxDay: 1,   icon: Rocket,   color: "text-blue-600",    bgColor: "bg-blue-100" },
   { key: "week1",   label: "Week 1",    maxDay: 7,   icon: Flag,     color: "text-indigo-600",  bgColor: "bg-indigo-100" },
-  { key: "month1",  label: "Month 1",   maxDay: 30,  icon: BookOpen, color: "text-[var(--cs-aria-gold)]",  bgColor: "bg-[var(--cs-aria-gold-bg)]" },
+  { key: "month1",  label: "Month 1",   maxDay: 30,  icon: BookOpen, color: "text-[var(--cs-cara-gold)]",  bgColor: "bg-[var(--cs-cara-gold-bg)]" },
   { key: "month3",  label: "Month 3",   maxDay: 90,  icon: Shield,   color: "text-emerald-600", bgColor: "bg-emerald-100" },
   { key: "month6",  label: "Month 6",   maxDay: 180, icon: Award,    color: "text-amber-600",   bgColor: "bg-amber-100" },
   { key: "ongoing", label: "Ongoing",   maxDay: 999, icon: Star,     color: "text-pink-600",    bgColor: "bg-pink-100" },
@@ -399,7 +399,7 @@ export default function InductionTrackerPage() {
     <PageShell
       title="Induction Tracker"
       subtitle="From Day 1 to probation completion — structured staff onboarding"
-      ariaContext={{ pageTitle: "Staff Induction Tracker", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Induction Tracker", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -414,7 +414,7 @@ export default function InductionTrackerPage() {
             <Plus className="h-3.5 w-3.5" />
             New Induction
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -554,7 +554,7 @@ export default function InductionTrackerPage() {
           and during Reg 44 visits. A clear timeline with signed-off milestones demonstrates compliance.
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Induction Tracker — new staff induction records, induction milestones, safeguarding training, medication training, Reg 33 induction compliance, Reg 40 safer recruitment, Ofsted workforce evidence"
         recordType="staff_training"

@@ -11,10 +11,10 @@ interface GuidanceNoteProps {
   title: string;
   description: string;
   evidenceTip?: string;
-  ariaTip?: string;
+  caraTip?: string;
   regulationRef?: string;
   dismissible?: boolean;
-  variant?: "default" | "aria" | "compliance" | "safeguarding";
+  variant?: "default" | "cara" | "compliance" | "safeguarding";
   className?: string;
 }
 
@@ -25,11 +25,11 @@ const VARIANT_STYLES = {
     icon: Lightbulb,
     iconColor: "text-[var(--cs-info)]",
   },
-  aria: {
-    bg: "bg-[var(--cs-aria-gold-bg)]",
-    border: "border-[var(--cs-aria-gold-soft)]",
+  cara: {
+    bg: "bg-[var(--cs-cara-gold-bg)]",
+    border: "border-[var(--cs-cara-gold-soft)]",
     icon: Sparkles,
-    iconColor: "text-[var(--cs-aria-gold)]",
+    iconColor: "text-[var(--cs-cara-gold)]",
   },
   compliance: {
     bg: "bg-blue-50/60",
@@ -49,7 +49,7 @@ export function GuidanceNote({
   title,
   description,
   evidenceTip,
-  ariaTip,
+  caraTip,
   regulationRef,
   dismissible = true,
   variant = "default",
@@ -62,7 +62,7 @@ export function GuidanceNote({
 
   const v = VARIANT_STYLES[variant];
   const Icon = v.icon;
-  const hasMore = !!(evidenceTip || ariaTip || regulationRef);
+  const hasMore = !!(evidenceTip || caraTip || regulationRef);
 
   return (
     <div
@@ -124,12 +124,12 @@ export function GuidanceNote({
                   </p>
                 </div>
               )}
-              {ariaTip && (
+              {caraTip && (
                 <div className="flex items-start gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)] mt-0.5 shrink-0" />
+                  <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)] mt-0.5 shrink-0" />
                   <p className="text-xs text-[var(--cs-text-muted)] leading-relaxed">
-                    <span className="font-medium text-[var(--cs-aria-gold)]">Cara can help:</span>{" "}
-                    {ariaTip}
+                    <span className="font-medium text-[var(--cs-cara-gold)]">Cara can help:</span>{" "}
+                    {caraTip}
                   </p>
                 </div>
               )}

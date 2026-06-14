@@ -35,8 +35,8 @@ import {
 } from "@/types/extended";
 import { useDentalRecords } from "@/hooks/use-dental-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -130,12 +130,12 @@ export default function DentalRecordsPage() {
     <PageShell
       title="Dental Records"
       subtitle="Registrations, check-ups, and treatment for each child"
-      ariaContext={{ pageTitle: "Dental Records", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Dental Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Dental Records" />
           <ExportButton data={filtered} columns={exportCols} filename="dental-records" />
-          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -402,7 +402,7 @@ export default function DentalRecordsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Dental Records — dental appointments, dentist name, treatments, NHS/private, x-rays, decay, fillings, extractions, orthodontics, AHA dental health, consent, LAC health"
         recordType="health"

@@ -9,7 +9,7 @@
 
 import { getStore } from "@/lib/db/store";
 import { recordEvent } from "@/lib/timeline/timeline-service";
-import { logInteraction } from "@/lib/aria/aria-config";
+import { logInteraction } from "@/lib/cara/cara-config";
 import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

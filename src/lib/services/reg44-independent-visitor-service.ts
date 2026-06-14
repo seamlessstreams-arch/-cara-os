@@ -334,7 +334,7 @@ export function computeReg44IndependentVisitorAlerts(
 /**
  * Generate Cara intelligence insights for Reg 44 independent visitor reports.
  */
-export function generateReg44IndependentVisitorAriaInsights(
+export function generateReg44IndependentVisitorCaraInsights(
   metrics: ReturnType<typeof computeReg44IndependentVisitorMetrics>,
   alerts: ReturnType<typeof computeReg44IndependentVisitorAlerts>,
 ): string[] {
@@ -479,5 +479,5 @@ export async function createReg44IndependentVisitorReport(input: {
 export const _testing = {
   computeReg44IndependentVisitorMetrics,
   computeReg44IndependentVisitorAlerts,
-  generateReg44IndependentVisitorAriaInsights,
+  generateReg44IndependentVisitorCaraInsights,
 };

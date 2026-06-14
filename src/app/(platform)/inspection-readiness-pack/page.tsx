@@ -22,8 +22,8 @@ import { useReadinessItems } from "@/hooks/use-readiness-items";
 import type { ReadinessItem, SccifJudgementArea, ReadinessCategory, InPackStatus } from "@/types/extended";
 import { SCCIF_JUDGEMENT_AREA_LABEL, READINESS_CATEGORY_LABEL, IN_PACK_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -58,7 +58,7 @@ const STATUS_ICON_COLOUR: Record<InPackStatus, string> = {
 const SCCIF_COLOUR: Record<SccifJudgementArea, string> = {
   overall_experiences: "bg-indigo-50 text-indigo-700 border-indigo-200",
   helped_and_protected: "bg-rose-50 text-rose-700 border-rose-200",
-  leaders_and_managers: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  leaders_and_managers: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
 };
 
 const CATEGORY_COLOUR: Record<ReadinessCategory, string> = {
@@ -68,7 +68,7 @@ const CATEGORY_COLOUR: Record<ReadinessCategory, string> = {
   outcome_data: "bg-teal-50 text-teal-700 border-teal-200",
   workforce: "bg-amber-50 text-amber-700 border-amber-200",
   environment: "bg-lime-50 text-lime-700 border-lime-200",
-  quality_assurance: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  quality_assurance: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
 };
 
 /* ── component ───────────────────────────────────────────────────────── */
@@ -155,12 +155,12 @@ export default function InspectionReadinessPackPage() {
     <PageShell
       title="Inspection Readiness Pack"
       subtitle="Curated documents and evidence prepared for Ofsted inspection — readiness pack contents and currency"
-      ariaContext={{ pageTitle: "Inspection Readiness Pack", sourceType: "document" }}
+      caraContext={{ pageTitle: "Inspection Readiness Pack", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Inspection Readiness Pack" />
           <ExportButton data={filtered} columns={exportCols} filename="inspection-readiness-pack" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -171,7 +171,7 @@ export default function InspectionReadinessPackPage() {
             { label: "Total Items", value: totalItems, icon: Folder, colour: "text-indigo-600" },
             { label: "Ready %", value: `${readyPct}%`, icon: CheckCircle2, colour: "text-emerald-600" },
             { label: "Needs Refresh", value: needsRefreshCount, icon: RefreshCw, colour: "text-amber-600" },
-            { label: "Avg Quality (1-5)", value: avgQuality, icon: Star, colour: "text-[var(--cs-aria-gold)]" },
+            { label: "Avg Quality (1-5)", value: avgQuality, icon: Star, colour: "text-[var(--cs-cara-gold)]" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">
               <s.icon className={cn("h-5 w-5", s.colour)} />
@@ -294,7 +294,7 @@ export default function InspectionReadinessPackPage() {
                           {READINESS_CATEGORY_LABEL[item.category]}
                         </Badge>
                         <span className="text-xs text-muted-foreground inline-flex items-center gap-1">
-                          <Star className="h-3 w-3 text-[var(--cs-aria-gold)]" />
+                          <Star className="h-3 w-3 text-[var(--cs-cara-gold)]" />
                           {item.evidence_quality_rating}/5
                         </span>
                       </div>
@@ -364,7 +364,7 @@ export default function InspectionReadinessPackPage() {
                             </div>
                           </div>
                           <div className="flex items-start gap-2">
-                            <Star className="h-3.5 w-3.5 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
+                            <Star className="h-3.5 w-3.5 text-[var(--cs-cara-gold)] shrink-0 mt-0.5" />
                             <div>
                               <p className="text-xs text-muted-foreground">Evidence Quality</p>
                               <p className="text-[var(--cs-text-secondary)] font-medium">{item.evidence_quality_rating} / 5</p>
@@ -497,7 +497,7 @@ export default function InspectionReadinessPackPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Inspection Readiness Pack — Ofsted preparation, ILACS, Annex A, Reg 45, management oversight, evidence bundles, outstanding practice, areas for development, inspection history"
         recordType="ofsted_evidence"

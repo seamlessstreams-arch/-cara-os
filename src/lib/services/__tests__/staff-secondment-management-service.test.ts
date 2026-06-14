@@ -29,7 +29,7 @@ import {
   SECONDMENT_STATUSES,
 } from "../staff-secondment-management-service";
 
-const { computeMetrics, computeAlerts, computeAriaInsights } = _testing;
+const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -682,48 +682,48 @@ describe("computeAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// computeAriaInsights
+// computeCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   // ── Structure ──────────────────────────────────────────────────────────
 
   it("returns exactly 3 insights for empty array", () => {
-    const insights = computeAriaInsights([]);
+    const insights = computeCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for single record", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for multiple records", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights).toHaveLength(3);
   });
 
   it("all insights are strings", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     for (const i of insights) expect(typeof i).toBe("string");
   });
 
   it("all insights are non-empty", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     for (const i of insights) expect(i.length).toBeGreaterThan(0);
   });
 
   // ── Insight 1: purple-themed summary ──────────────────────────────────
 
   it("first insight starts with [purple]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[purple\]/);
   });
 
   it("first insight includes total secondment count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
@@ -732,7 +732,7 @@ describe("computeAriaInsights", () => {
       makeRow({ staff_name: "Alice" }),
       makeRow({ staff_name: "Bob" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
@@ -741,74 +741,74 @@ describe("computeAriaInsights", () => {
       makeRow({ status: "Active" }),
       makeRow({ status: "Completed" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("1 active");
   });
 
   it("first insight includes completed count", () => {
     const rows = [makeRow({ status: "Completed" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("1 completed");
   });
 
   it("first insight includes pending count", () => {
     const rows = [makeRow({ status: "Pending" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("1 pending");
   });
 
   it("first insight uses singular arrangement for 1 record", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toContain("1 secondment arrangement");
     expect(insights[0]).not.toContain("arrangements tracked");
   });
 
   it("first insight uses plural arrangements for 2+ records", () => {
     const rows = [makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("arrangements");
   });
 
   it("first insight uses singular staff member for 1 staff", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toContain("staff member");
     expect(insights[0]).not.toContain("staff members.");
   });
 
   it("first insight uses plural staff members for 2+ staff", () => {
     const rows = [makeRow({ staff_name: "Alice" }), makeRow({ staff_name: "Bob" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("staff members");
   });
 
   // ── Insight 2: amber-themed priorities ─────────────────────────────────
 
   it("second insight starts with [amber]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("second insight mentions alerts when critical alerts exist", () => {
     const rows = [makeRow({ status: "Active", agreement_signed: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 
   it("second insight mentions no alerts when all compliant", () => {
     const rows = [makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/[Nn]o critical/);
   });
 
   it("second insight includes agreement rate", () => {
     const rows = [makeRow({ status: "Active", agreement_signed: false }), makeRow({ agreement_signed: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   it("second insight includes induction rate", () => {
     const rows = [makeRow({ status: "Active", induction_completed: false }), makeRow({ induction_completed: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
@@ -817,38 +817,38 @@ describe("computeAriaInsights", () => {
       makeRow({ status: "Active", agreement_signed: false, dbs_transferred: true }),
       makeRow({ dbs_transferred: false }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   it("second insight mentions high-priority count when present", () => {
     const rows = [makeRow({ status: "Active", induction_completed: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("high-priority");
   });
 
   it("second insight mentions Reg 32 when no alerts", () => {
     const rows = [makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("Reg 32");
   });
 
   // ── Insight 3: reflect-themed question ─────────────────────────────────
 
   it("third insight starts with [reflect]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions critical alerts when present", () => {
     const rows = [makeRow({ status: "Active", agreement_signed: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("critical");
   });
 
   it("third insight uses singular for 1 critical alert", () => {
     const rows = [makeRow({ status: "Active", agreement_signed: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("alert requires");
   });
 
@@ -857,7 +857,7 @@ describe("computeAriaInsights", () => {
       makeRow({ status: "Active", agreement_signed: false, staff_name: "Alice" }),
       makeRow({ status: "Active", dbs_transferred: false, staff_name: "Bob" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("alerts require");
   });
 
@@ -865,7 +865,7 @@ describe("computeAriaInsights", () => {
     const rows = [
       makeRow({ status: "Active", supervision_arranged: false, agreement_signed: true, dbs_transferred: true, induction_completed: true }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("supervision");
   });
 
@@ -873,20 +873,20 @@ describe("computeAriaInsights", () => {
     const rows = [
       makeRow({ status: "Active", supervision_arranged: true }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("compliant");
     expect(insights[2]).toContain("supervision");
   });
 
   it("third insight references CHR 2015 when fully compliant", () => {
     const rows = [makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("CHR 2015");
   });
 
   it("third insight references Reg 32 when critical alerts present", () => {
     const rows = [makeRow({ status: "Active", agreement_signed: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("Reg 32");
   });
 });
@@ -1030,7 +1030,7 @@ describe("edge cases", () => {
   });
 
   it("insights handle empty data gracefully", () => {
-    const insights = computeAriaInsights([]);
+    const insights = computeCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 secondment");
     expect(insights[0]).toContain("0 staff");
@@ -1075,19 +1075,19 @@ describe("edge cases", () => {
 
   it("insights with only critical alerts show correct count", () => {
     const rows = [makeRow({ status: "Active", agreement_signed: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/\d+ critical/);
   });
 
   it("insights with only high alerts show correct count", () => {
     const rows = [makeRow({ status: "Active", induction_completed: false, agreement_signed: true, dbs_transferred: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/\d+ high-priority/);
   });
 
   it("insights reflect question path for supervision < 100%", () => {
     const rows = [makeRow({ status: "Active", supervision_arranged: false, agreement_signed: true, dbs_transferred: true, induction_completed: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("supervision");
     expect(insights[2]).toContain("0%");
   });

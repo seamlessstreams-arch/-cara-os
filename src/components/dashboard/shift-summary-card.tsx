@@ -66,7 +66,7 @@ function EventRow({ event }: { event: ShiftSummaryEvent }) {
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-[10px] text-[var(--cs-text-muted)] tabular-nums">{event.time}</span>
           {event.child_name && (
-            <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-0.5">
+            <span className="text-[10px] text-[var(--cs-cara-gold)] flex items-center gap-0.5">
               <Heart className="h-2.5 w-2.5" /> {event.child_name}
             </span>
           )}

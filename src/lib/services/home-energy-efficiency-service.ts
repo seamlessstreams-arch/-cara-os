@@ -323,7 +323,7 @@ export function computeEnergyEfficiencyAlerts(
   return alerts;
 }
 
-export function generateEnergyEfficiencyAriaInsights(
+export function generateEnergyEfficiencyCaraInsights(
   rows: HomeEnergyEfficiencyRow[],
 ): string[] {
   const metrics = computeEnergyEfficiencyMetrics(rows);
@@ -383,5 +383,5 @@ export function generateEnergyEfficiencyAriaInsights(
 export const _testing = {
   computeEnergyEfficiencyMetrics,
   computeEnergyEfficiencyAlerts,
-  generateEnergyEfficiencyAriaInsights,
+  generateEnergyEfficiencyCaraInsights,
 };

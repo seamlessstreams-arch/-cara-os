@@ -9,10 +9,10 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  useAriaAssessments,
+  useCaraAssessments,
   useKeyWorkSessions,
-  useAriaSafeguardingFlags,
-  useAriaRecommendations,
+  useCaraSafeguardingFlags,
+  useCaraRecommendations,
 } from "@/hooks/use-intelligence";
 import { cn } from "@/lib/utils";
 import { useYoungPeople } from "@/hooks/use-young-people";
@@ -183,10 +183,10 @@ export default function OversightRadarPage() {
 
   // Data hooks to build source context
   const childId = selectedChild === "all" ? undefined : selectedChild;
-  const { data: assessData } = useAriaAssessments({ childId, homeId });
+  const { data: assessData } = useCaraAssessments({ childId, homeId });
   const { data: kwData } = useKeyWorkSessions({ childId, homeId });
-  const { data: flagData } = useAriaSafeguardingFlags({ childId, homeId });
-  const { data: recData } = useAriaRecommendations({ childId, homeId });
+  const { data: flagData } = useCaraSafeguardingFlags({ childId, homeId });
+  const { data: recData } = useCaraRecommendations({ childId, homeId });
 
   const filteredItems = useMemo(() => {
     if (!radarItems) return [];

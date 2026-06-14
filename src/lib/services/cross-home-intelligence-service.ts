@@ -39,13 +39,13 @@ export interface CrossHomeSnapshot {
   ofsted_readiness_score: number;
   reg45_due_date: string | null;
   reg44_due_date: string | null;
-  aria_alerts: AriaAlert[];
-  aria_risk_factors: AriaRiskFactor[];
-  aria_recommendations: AriaRecommendation[];
+  aria_alerts: CaraAlert[];
+  aria_risk_factors: CaraRiskFactor[];
+  aria_recommendations: CaraRecommendation[];
   created_at: string;
 }
 
-export interface AriaAlert {
+export interface CaraAlert {
   id: string;
   severity: "critical" | "high" | "medium" | "low";
   message: string;
@@ -55,13 +55,13 @@ export interface AriaAlert {
   created_at: string;
 }
 
-export interface AriaRiskFactor {
+export interface CaraRiskFactor {
   factor: string;
   severity: "critical" | "high" | "medium" | "low";
   trend: "improving" | "worsening" | "stable";
 }
 
-export interface AriaRecommendation {
+export interface CaraRecommendation {
   recommendation: string;
   priority: "immediate" | "this_week" | "this_month";
   home_id: string;

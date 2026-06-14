@@ -22,8 +22,8 @@ import { useLessonsLearned } from "@/hooks/use-lessons-learned";
 import type { LessonLearned, LessonSource, LessonThemeArea, LessonStatus } from "@/types/extended";
 import { LESSON_SOURCE_LABEL, LESSON_THEME_AREA_LABEL, LESSON_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -128,12 +128,12 @@ export default function LessonsLearnedRegisterPage() {
     <PageShell
       title="Lessons Learned Register"
       subtitle="Cross-cutting organisational learning · Quality Standard 13 · Reg 45"
-      ariaContext={{ pageTitle: "Lessons Learned Register", sourceType: "general" }}
+      caraContext={{ pageTitle: "Lessons Learned Register", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Lessons Learned Register" />
           <ExportButton data={data} columns={exportCols} filename="lessons-learned-register" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -394,7 +394,7 @@ export default function LessonsLearnedRegisterPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Lessons Learned Register — incident reviews, near misses, practice improvements, learning from events, care quality themes, Reg 45 quality improvement evidence, management oversight"
         recordType="management_oversight"

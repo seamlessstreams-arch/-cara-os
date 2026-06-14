@@ -3,13 +3,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara — ROOT REDIRECT
 //
-// Redirects /aria to /aria/dashboard so the dashboard is the default landing.
+// Redirects /cara to /cara/dashboard so the dashboard is the default landing.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function AriaRootPage() {
+export default function CaraRootPage() {
   const router = useRouter();
 
   useEffect(() => {

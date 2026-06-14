@@ -141,7 +141,7 @@ export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Chamberlai
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Record anything about the home — a fire drill, a health & safety check, a repair needed, a vehicle check, or an audit..."
-          className="w-full rounded-2xl border-2 border-[var(--cs-border)] bg-white p-4 pr-12 text-sm text-[var(--cs-text)] placeholder:text-[var(--cs-text-gentle)] resize-none focus:border-[var(--cs-aria-gold)] focus:outline-none transition-colors min-h-[120px]"
+          className="w-full rounded-2xl border-2 border-[var(--cs-border)] bg-white p-4 pr-12 text-sm text-[var(--cs-text)] placeholder:text-[var(--cs-text-gentle)] resize-none focus:border-[var(--cs-cara-gold)] focus:outline-none transition-colors min-h-[120px]"
           autoFocus
         />
         <div className="absolute bottom-3 right-3 text-[10px] text-[var(--cs-text-gentle)] tabular-nums">{text.length} chars</div>
@@ -162,7 +162,7 @@ export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Chamberlai
                 <p className="text-[10px] text-[var(--cs-text-muted)]">Confidence: {classification.confidence}{overrideType ? " (overridden)" : ""}</p>
               </div>
             </div>
-            <button onClick={() => setShowTypeSelector(!showTypeSelector)} className="text-[10px] text-[var(--cs-aria-gold)] hover:underline flex items-center gap-0.5">
+            <button onClick={() => setShowTypeSelector(!showTypeSelector)} className="text-[10px] text-[var(--cs-cara-gold)] hover:underline flex items-center gap-0.5">
               Change <ChevronDown className="h-3 w-3" />
             </button>
           </div>
@@ -175,10 +175,10 @@ export function UniversalHomeEntry({ homeId = "home_oak", homeName = "Chamberlai
                 return (
                   <button key={type} onClick={() => { setOverrideType(type); setShowTypeSelector(false); }}
                     className={cn("flex items-center gap-2 rounded-lg border px-2.5 py-2 text-xs transition-all text-left",
-                      isSelected ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] font-medium" : "border-[var(--cs-border-subtle)] hover:border-[var(--cs-border)]")}>
+                      isSelected ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] font-medium" : "border-[var(--cs-border-subtle)] hover:border-[var(--cs-border)]")}>
                     <Icon className={cn("h-3.5 w-3.5 shrink-0", isSelected ? m.color : "text-[var(--cs-text-gentle)]")} />
                     <span className="truncate">{m.label}</span>
-                    {isSelected && <Check className="h-3 w-3 text-[var(--cs-aria-gold)] ml-auto shrink-0" />}
+                    {isSelected && <Check className="h-3 w-3 text-[var(--cs-cara-gold)] ml-auto shrink-0" />}
                   </button>
                 );
               })}

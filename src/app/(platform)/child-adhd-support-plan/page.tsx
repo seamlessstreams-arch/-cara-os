@@ -33,8 +33,8 @@ import type {
 import { useADHDPlans } from "@/hooks/use-adhd-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── label maps ───────────────────────────────────────────────────────── */
 
@@ -163,7 +163,7 @@ export default function ChildADHDSupportPlanPage() {
     <PageShell
       title="ADHD Support Plans"
       subtitle="Per-child, strength-based ADHD support planning — neurodiversity-affirming, NICE NG87 aligned"
-      ariaContext={{ pageTitle: "ADHD Support Plans", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "ADHD Support Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="ADHD Support Plans" />
@@ -172,7 +172,7 @@ export default function ChildADHDSupportPlanPage() {
             columns={EXPORT_COLS}
             filename="adhd-support-plans"
           />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -259,7 +259,7 @@ export default function ChildADHDSupportPlanPage() {
                   >
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                        <Brain className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                         <h3 className="font-semibold">
                           {getYPName(r.child_id)}
                         </h3>
@@ -600,7 +600,7 @@ export default function ChildADHDSupportPlanPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="ADHD Support Plans — ADHD diagnosis, medication, coping strategies, school liaison, attention support, impulsivity strategies, reward systems, EHCP, key worker support"
         recordType="care_plan"

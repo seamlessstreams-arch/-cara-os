@@ -4,8 +4,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useReg44Visits, useCreateReg44Visit, useReg44Actions } from "@/hooks/use-intelligence-layer";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -202,7 +202,7 @@ export default function Reg44Page() {
     <PageShell
       title="Regulation 44 — Independent Visits"
       subtitle="Quality Assurance  ·  Monthly Independent Visitor Reports & Actions"
-      ariaContext={{ pageTitle: "Regulation 44 Reports", sourceType: "reg45" }}
+      caraContext={{ pageTitle: "Regulation 44 Reports", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" className="gap-1.5">
@@ -223,7 +223,7 @@ export default function Reg44Page() {
             <Plus className="h-3.5 w-3.5" />
             {createVisit.isPending ? "Creating..." : "Add Visit"}
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -622,7 +622,7 @@ export default function Reg44Page() {
           and prepares a written report. Reports must be provided to Ofsted, the placing authority, and the Responsible
           Individual. The RI must ensure any actions arising are addressed promptly and documented.
         </p>
-      </div>      <AriaPanel
+      </div>      <CaraPanel
         mode="assist"
         pageContext="Regulation 44 Reports — independent visitor reports, monthly visits, children's views, staff interviews, premises inspection, action plans, RI responses, statutory compliance, Ofsted evidence"
         recordType="reg45"

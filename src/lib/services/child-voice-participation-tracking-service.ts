@@ -257,7 +257,7 @@ export function computeVoiceParticipationAlerts(
   return alerts;
 }
 
-export function generateVoiceParticipationAriaInsights(
+export function generateVoiceParticipationCaraInsights(
   rows: ChildVoiceParticipationTrackingRow[],
 ): string[] {
   const metrics = computeVoiceParticipationMetrics(rows);
@@ -380,5 +380,5 @@ export async function createChildVoiceParticipation(input: {
 export const _testing = {
   computeVoiceParticipationMetrics,
   computeVoiceParticipationAlerts,
-  generateVoiceParticipationAriaInsights,
+  generateVoiceParticipationCaraInsights,
 };

@@ -25,7 +25,7 @@ import type {
 const {
   computeComplianceCertificateMetrics,
   computeComplianceCertificateAlerts,
-  generateComplianceCertificateAriaInsights,
+  generateComplianceCertificateCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -767,20 +767,20 @@ describe("computeComplianceCertificateAlerts", () => {
   });
 });
 
-// ── generateComplianceCertificateAriaInsights ────────────────────────────
+// ── generateComplianceCertificateCaraInsights ────────────────────────────
 
-describe("generateComplianceCertificateAriaInsights", () => {
+describe("generateComplianceCertificateCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeComplianceCertificateMetrics([]);
     const alerts = computeComplianceCertificateAlerts([]);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const metrics = computeComplianceCertificateMetrics([makeRow()]);
     const alerts = computeComplianceCertificateAlerts([makeRow()]);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
@@ -788,7 +788,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -796,14 +796,14 @@ describe("generateComplianceCertificateAriaInsights", () => {
     const rows = [makeRow({ compliance_status: "valid" }), makeRow({ compliance_status: "expired" })];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computeComplianceCertificateMetrics([makeRow()]);
     const alerts = computeComplianceCertificateAlerts([makeRow()]);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -813,7 +813,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     ];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -822,14 +822,14 @@ describe("generateComplianceCertificateAriaInsights", () => {
     const rows = [makeRow({ compliance_status: "valid", remedial_actions_required: false, digital_copy_stored: true })];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computeComplianceCertificateMetrics([makeRow()]);
     const alerts = computeComplianceCertificateAlerts([makeRow()]);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -837,7 +837,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     const rows = [makeRow({ compliance_status: "expired" })];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("expired");
   });
 
@@ -848,7 +848,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     ];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("digital copies");
   });
 
@@ -859,7 +859,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     ];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("current and digitally stored");
   });
 
@@ -867,7 +867,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     const rows = [makeRow({ issuing_body: "gas_safe_register" })];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 issuing body");
   });
 
@@ -878,14 +878,14 @@ describe("generateComplianceCertificateAriaInsights", () => {
     ];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 issuing bodies");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computeComplianceCertificateMetrics([makeRow()]);
     const alerts = computeComplianceCertificateAlerts([makeRow()]);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -896,7 +896,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     const rows = [makeRow({ compliance_status: "expired" })];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("certificate has");
   });
 
@@ -907,7 +907,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     ];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("certificates have");
   });
 });

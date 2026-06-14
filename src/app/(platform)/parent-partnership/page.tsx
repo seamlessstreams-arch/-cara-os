@@ -41,8 +41,8 @@ import {
 } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -156,12 +156,12 @@ export default function ParentPartnershipPage() {
     <PageShell
       title="Parent &amp; Carer Partnership"
       subtitle="Family engagement, contact quality and partnership working — Children Act 1989"
-      ariaContext={{ pageTitle: "Parent Partnership Log", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Parent Partnership Log", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Parent Partnership Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="parent-partnership-log" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Log Contact</Button>,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -478,7 +478,7 @@ export default function ParentPartnershipPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Parent Partnership Log — family contact records, parental involvement, parent meetings, family relationships, care planning with parents, contact frequency, family support, Reg 45 evidence"
         recordType="direct_work"

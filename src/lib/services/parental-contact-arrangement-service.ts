@@ -237,7 +237,7 @@ export function computeParentalContactAlerts(
   return alerts;
 }
 
-export function generateParentalContactAriaInsights(
+export function generateParentalContactCaraInsights(
   metrics: ReturnType<typeof computeParentalContactMetrics>,
   alerts: ReturnType<typeof computeParentalContactAlerts>,
 ): string[] {
@@ -361,5 +361,5 @@ export async function createParentalContactArrangement(payload: {
 export const _testing = {
   computeParentalContactMetrics,
   computeParentalContactAlerts,
-  generateParentalContactAriaInsights,
+  generateParentalContactCaraInsights,
 };

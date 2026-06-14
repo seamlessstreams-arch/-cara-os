@@ -89,7 +89,7 @@ export interface EmergencyAlert {
   message: string;
 }
 
-export interface AriaEmergencyInsight {
+export interface CaraEmergencyInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -100,7 +100,7 @@ export interface EmergencyIntelligenceResult {
   recent_drills: RecentDrill[];
   plan_coverage: PlanCoverage;
   alerts: EmergencyAlert[];
-  insights: AriaEmergencyInsight[];
+  insights: CaraEmergencyInsight[];
 }
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -351,7 +351,7 @@ export function computeEmergencyIntelligence(input: {
 
   // ── Cara Insights ─────────────────────────────────────────────────────
 
-  const insights: AriaEmergencyInsight[] = [];
+  const insights: CaraEmergencyInsight[] = [];
 
   // Critical: drill type never conducted
   const neverConducted = drill_types.filter((dt) => dt.drill_count === 0);

@@ -9,12 +9,14 @@ const nextConfig: NextConfig = {
   // Note: the `eslint` config key was removed in Next.js 16 (ESLint no longer
   // runs during `next build`), so it is intentionally omitted here.
 
-  // Cara OS rebrand — legacy URL compatibility. The aria page routes were
-  // renamed to cara; permanent redirects keep old bookmarks, PWA shortcuts and
-  // deep links working. API routes under /api/aria* intentionally keep their
-  // legacy paths (internal, not user-facing) and are NOT redirected.
+  // Cara OS rebrand — legacy URL compatibility. The aria routes (pages AND
+  // API) were fully renamed to cara; permanent (308) redirects keep old
+  // bookmarks, PWA shortcuts, deep links and any cached/external API callers
+  // working (308 preserves method + body, so POSTs survive). More specific
+  // sources are listed before their wildcards.
   async redirects() {
     return [
+      // ── pages ──
       { source: "/aria", destination: "/cara", permanent: true },
       { source: "/aria/:path*", destination: "/cara/:path*", permanent: true },
       { source: "/aria-practice", destination: "/cara-practice", permanent: true },
@@ -25,6 +27,22 @@ const nextConfig: NextConfig = {
       { source: "/intelligence/aria/:path*", destination: "/intelligence/cara/:path*", permanent: true },
       { source: "/aria-intelligence", destination: "/intelligence/cara", permanent: true },
       { source: "/aria-insights", destination: "/intelligence/cara", permanent: true },
+      { source: "/dashboard/aria", destination: "/dashboard/cara", permanent: true },
+      { source: "/dashboard/aria-intelligence", destination: "/dashboard/cara-intelligence", permanent: true },
+      { source: "/management/aria", destination: "/management/cara", permanent: true },
+      { source: "/workforce/aria-planner", destination: "/workforce/cara-planner", permanent: true },
+      // ── API (specific leaf clash first) ──
+      { source: "/api/aria/review", destination: "/api/cara/ai-review", permanent: true },
+      { source: "/api/aria/:path*", destination: "/api/cara/:path*", permanent: true },
+      { source: "/api/aria-studio/:path*", destination: "/api/cara-studio/:path*", permanent: true },
+      { source: "/api/aria-learning-intelligence/:path*", destination: "/api/cara-learning-intelligence/:path*", permanent: true },
+      { source: "/api/aria-learning/:path*", destination: "/api/cara-learning/:path*", permanent: true },
+      { source: "/api/v1/aria-incident/:path*", destination: "/api/v1/cara-incident/:path*", permanent: true },
+      { source: "/api/v1/aria-manager-oversight/:path*", destination: "/api/v1/cara-manager-oversight/:path*", permanent: true },
+      { source: "/api/v1/aria-prompt-bank/:path*", destination: "/api/v1/cara-prompt-bank/:path*", permanent: true },
+      { source: "/api/v1/aria-recording-assistant/:path*", destination: "/api/v1/cara-recording-assistant/:path*", permanent: true },
+      { source: "/api/v1/home-aria-content-quality-intelligence/:path*", destination: "/api/v1/home-cara-content-quality-intelligence/:path*", permanent: true },
+      // ── legacy product name ──
       { source: "/cornerstone", destination: "/", permanent: true },
       { source: "/cornerstone-os", destination: "/", permanent: true },
     ];

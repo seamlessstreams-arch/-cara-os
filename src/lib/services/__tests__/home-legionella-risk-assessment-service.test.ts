@@ -25,7 +25,7 @@ import type {
 const {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1269,18 +1269,18 @@ describe("computeAlerts", () => {
   });
 });
 
-// ── computeAriaInsights ────────────────────────────────────────────────
+// ── computeCaraInsights ────────────────────────────────────────────────
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const m = computeMetrics([]);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights).toHaveLength(3);
   });
 
   it("all insights are non-empty strings", () => {
     const m = computeMetrics([makeRow()]);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1290,28 +1290,28 @@ describe("computeAriaInsights", () => {
   it("first insight includes total_assessments count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes temperature_compliance_rate", () => {
     const rows = [makeRow({ temperature_compliant: true }), makeRow({ temperature_compliant: false })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("50%");
   });
 
   it("first insight includes flushing_compliance_rate", () => {
     const rows = [makeRow({ flushing_regime_compliant: true }), makeRow({ flushing_regime_compliant: false })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("50%");
   });
 
   it("first insight includes legionella_test_rate", () => {
     const rows = [makeRow({ legionella_test_completed: true }), makeRow({ legionella_test_completed: false })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("50%");
   });
 
@@ -1321,7 +1321,7 @@ describe("computeAriaInsights", () => {
       makeRow({ risk_level: "High" }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("intolerable");
     expect(insights[1]).toContain("high-risk");
   });
@@ -1334,7 +1334,7 @@ describe("computeAriaInsights", () => {
       flushing_regime_compliant: true,
     })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("No intolerable or high-risk findings");
   });
 
@@ -1344,21 +1344,21 @@ describe("computeAriaInsights", () => {
       makeRow({ remedial_action_required: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("2 remedial");
   });
 
   it("second insight mentions ACOP L8 when no alerts", () => {
     const rows = [makeRow({ risk_level: "Low" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("ACOP L8");
   });
 
   it("third insight mentions intolerable or high when some have those levels", () => {
     const rows = [makeRow({ risk_level: "Intolerable" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("intolerable or high legionella risk");
   });
 
@@ -1368,7 +1368,7 @@ describe("computeAriaInsights", () => {
       makeRow({ risk_level: "Low", temperature_compliant: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("ACOP L8");
   });
 
@@ -1378,14 +1378,14 @@ describe("computeAriaInsights", () => {
       makeRow({ risk_level: "Low", temperature_compliant: true, flushing_regime_compliant: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("All assessments show compliant");
   });
 
   it("uses singular assessor wording when unique_assessors is 1", () => {
     const rows = [makeRow({ assessor_name: "D. Laville" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("1 assessor");
   });
 
@@ -1395,14 +1395,14 @@ describe("computeAriaInsights", () => {
       makeRow({ assessor_name: "Staff B" }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("2 assessors");
   });
 
   it("uses singular assessment wording when 1 intolerable/high", () => {
     const rows = [makeRow({ risk_level: "High" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("assessment has");
   });
 
@@ -1412,56 +1412,56 @@ describe("computeAriaInsights", () => {
       makeRow({ risk_level: "Intolerable" }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("assessments have");
   });
 
   it("uses singular assessment wording for first insight with 1 row", () => {
     const rows = [makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("1 legionella risk assessment");
   });
 
   it("uses plural assessments wording for first insight with multiple rows", () => {
     const rows = [makeRow(), makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("2 legionella risk assessments");
   });
 
   it("uses singular finding wording for second insight with 1 high-risk", () => {
     const rows = [makeRow({ risk_level: "High" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("1 high-risk finding");
   });
 
   it("uses plural findings wording for second insight with multiple high-risk", () => {
     const rows = [makeRow({ risk_level: "High" }), makeRow({ risk_level: "High" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("2 high-risk findings");
   });
 
   it("uses singular action wording for second insight with 1 remedial", () => {
     const rows = [makeRow({ remedial_action_required: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("1 remedial action");
   });
 
   it("third insight mentions ACOP L8 when high/intolerable present", () => {
     const rows = [makeRow({ risk_level: "High" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("ACOP L8");
   });
 
   it("third insight mentions ACOP L8 when fully compliant", () => {
     const rows = [makeRow({ risk_level: "Low", temperature_compliant: true, flushing_regime_compliant: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("ACOP L8");
   });
 
@@ -1470,7 +1470,7 @@ describe("computeAriaInsights", () => {
       makeRow({ risk_level: "Low", temperature_compliant: true, flushing_regime_compliant: false }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("flushing compliance");
   });
 });

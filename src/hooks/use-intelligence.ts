@@ -12,14 +12,14 @@ import type {
   HomeClimateSnapshot,
   ActionOutcome,
   DocumentIntelligenceJob,
-  AriaAssessment,
-  AriaOversight,
+  CaraAssessment,
+  CaraOversight,
   KeyWorkSession,
   ChildResource,
   InteractiveSession,
-  AriaAuditEntry,
-  AriaRecommendation,
-  AriaSafeguardingFlag,
+  CaraAuditEntry,
+  CaraRecommendation,
+  CaraSafeguardingFlag,
 } from "@/types/extended";
 
 
@@ -447,73 +447,73 @@ export function useCreateChildExperienceSnapshot() {
 
 // ── Assessments ───────────────────────────────────────────────────────────────
 
-export function useAriaAssessments(params?: { childId?: string; homeId?: string }) {
+export function useCaraAssessments(params?: { childId?: string; homeId?: string }) {
   const query = new URLSearchParams();
   if (params?.childId) query.set("child_id", params.childId);
   if (params?.homeId) query.set("home_id", params.homeId);
   return useQuery({
-    queryKey: ["aria-intelligence", "assessments", params],
+    queryKey: ["cara-intelligence", "assessments", params],
     queryFn: () =>
-      api.get<ListResponse<AriaAssessment>>(`/cara-intelligence/assessments?${query}`),
+      api.get<ListResponse<CaraAssessment>>(`/cara-intelligence/assessments?${query}`),
   });
 }
 
-export function useCreateAriaAssessment() {
+export function useCreateCaraAssessment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<AriaAssessment>) =>
-      api.post<SingleResponse<AriaAssessment>>("/cara-intelligence/assessments", data),
+    mutationFn: (data: Partial<CaraAssessment>) =>
+      api.post<SingleResponse<CaraAssessment>>("/cara-intelligence/assessments", data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "assessments"] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "assessments"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }
 
-export function useUpdateAriaAssessment() {
+export function useUpdateCaraAssessment() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Partial<AriaAssessment>) =>
-      api.patch<SingleResponse<AriaAssessment>>(`/cara-intelligence/assessments/${id}`, data),
+    mutationFn: ({ id, ...data }: { id: string } & Partial<CaraAssessment>) =>
+      api.patch<SingleResponse<CaraAssessment>>(`/cara-intelligence/assessments/${id}`, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "assessments"] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "assessments"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }
 
 // ── Oversight ─────────────────────────────────────────────────────────────────
 
-export function useAriaOversight(params?: { childId?: string; homeId?: string }) {
+export function useCaraOversight(params?: { childId?: string; homeId?: string }) {
   const query = new URLSearchParams();
   if (params?.childId) query.set("child_id", params.childId);
   if (params?.homeId) query.set("home_id", params.homeId);
   return useQuery({
-    queryKey: ["aria-intelligence", "oversight", params],
+    queryKey: ["cara-intelligence", "oversight", params],
     queryFn: () =>
-      api.get<ListResponse<AriaOversight>>(`/cara-intelligence/oversight?${query}`),
+      api.get<ListResponse<CaraOversight>>(`/cara-intelligence/oversight?${query}`),
   });
 }
 
-export function useCreateAriaOversight() {
+export function useCreateCaraOversight() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<AriaOversight>) =>
-      api.post<SingleResponse<AriaOversight>>("/cara-intelligence/oversight", data),
+    mutationFn: (data: Partial<CaraOversight>) =>
+      api.post<SingleResponse<CaraOversight>>("/cara-intelligence/oversight", data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "oversight"] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "oversight"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }
 
-export function useUpdateAriaOversight() {
+export function useUpdateCaraOversight() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Partial<AriaOversight>) =>
-      api.patch<SingleResponse<AriaOversight>>(`/cara-intelligence/oversight/${id}`, data),
+    mutationFn: ({ id, ...data }: { id: string } & Partial<CaraOversight>) =>
+      api.patch<SingleResponse<CaraOversight>>(`/cara-intelligence/oversight/${id}`, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "oversight"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "oversight"] });
     },
   });
 }
@@ -526,7 +526,7 @@ export function useKeyWorkSessions(params?: { childId?: string; homeId?: string;
   if (params?.homeId) query.set("home_id", params.homeId);
   if (params?.status) query.set("status", params.status);
   return useQuery({
-    queryKey: ["aria-intelligence", "keywork", params],
+    queryKey: ["cara-intelligence", "keywork", params],
     queryFn: () =>
       api.get<ListResponse<KeyWorkSession>>(`/cara-intelligence/keywork?${query}`),
   });
@@ -538,8 +538,8 @@ export function useCreateKeyWorkSession() {
     mutationFn: (data: Partial<KeyWorkSession>) =>
       api.post<SingleResponse<KeyWorkSession>>("/cara-intelligence/keywork", data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "keywork"] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "keywork"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }
@@ -550,7 +550,7 @@ export function useUpdateKeyWorkSession() {
     mutationFn: ({ id, ...data }: { id: string } & Partial<KeyWorkSession>) =>
       api.patch<SingleResponse<KeyWorkSession>>(`/cara-intelligence/keywork/${id}`, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "keywork"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "keywork"] });
     },
   });
 }
@@ -563,7 +563,7 @@ export function useChildResources(params?: { childId?: string; homeId?: string; 
   if (params?.homeId) query.set("home_id", params.homeId);
   if (params?.status) query.set("status", params.status);
   return useQuery({
-    queryKey: ["aria-intelligence", "resources", params],
+    queryKey: ["cara-intelligence", "resources", params],
     queryFn: () =>
       api.get<ListResponse<ChildResource>>(`/cara-intelligence/resources?${query}`),
   });
@@ -575,8 +575,8 @@ export function useCreateChildResource() {
     mutationFn: (data: Partial<ChildResource>) =>
       api.post<SingleResponse<ChildResource>>("/cara-intelligence/resources", data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "resources"] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "resources"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }
@@ -587,7 +587,7 @@ export function useUpdateChildResource() {
     mutationFn: ({ id, ...data }: { id: string } & Partial<ChildResource>) =>
       api.patch<SingleResponse<ChildResource>>(`/cara-intelligence/resources/${id}`, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "resources"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "resources"] });
     },
   });
 }
@@ -596,7 +596,7 @@ export function useUpdateChildResource() {
 
 export function useInteractiveSessions(childId: string) {
   return useQuery({
-    queryKey: ["aria-intelligence", "interactive", childId],
+    queryKey: ["cara-intelligence", "interactive", childId],
     queryFn: () =>
       api.get<ListResponse<InteractiveSession>>(
         `/cara-intelligence/interactive?child_id=${childId}`
@@ -611,7 +611,7 @@ export function useCreateInteractiveSession() {
     mutationFn: (data: Partial<InteractiveSession>) =>
       api.post<SingleResponse<InteractiveSession>>("/cara-intelligence/interactive", data),
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "interactive", vars.child_id] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "interactive", vars.child_id] });
     },
   });
 }
@@ -622,109 +622,109 @@ export function useUpdateInteractiveSession() {
     mutationFn: ({ id, childId, ...data }: { id: string; childId: string } & Partial<InteractiveSession>) =>
       api.patch<SingleResponse<InteractiveSession>>(`/cara-intelligence/interactive/${id}`, data),
     onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "interactive", vars.childId] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "interactive", vars.childId] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }
 
 // ── Audit Trail ───────────────────────────────────────────────────────────────
 
-export function useAriaAuditTrail(params?: { childId?: string; homeId?: string }) {
+export function useCaraAuditTrail(params?: { childId?: string; homeId?: string }) {
   const query = new URLSearchParams();
   if (params?.childId) query.set("child_id", params.childId);
   if (params?.homeId) query.set("home_id", params.homeId);
   return useQuery({
-    queryKey: ["aria-intelligence", "audit", params],
+    queryKey: ["cara-intelligence", "audit", params],
     queryFn: () =>
-      api.get<ListResponse<AriaAuditEntry>>(`/cara-intelligence/audit?${query}`),
+      api.get<ListResponse<CaraAuditEntry>>(`/cara-intelligence/audit?${query}`),
   });
 }
 
-export function useCreateAriaAuditEntry() {
+export function useCreateCaraAuditEntry() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<AriaAuditEntry>) =>
-      api.post<SingleResponse<AriaAuditEntry>>("/cara-intelligence/audit", data),
+    mutationFn: (data: Partial<CaraAuditEntry>) =>
+      api.post<SingleResponse<CaraAuditEntry>>("/cara-intelligence/audit", data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }
 
 // ── Recommendations ───────────────────────────────────────────────────────────
 
-export function useAriaRecommendations(params?: { childId?: string; homeId?: string; status?: string }) {
+export function useCaraRecommendations(params?: { childId?: string; homeId?: string; status?: string }) {
   const query = new URLSearchParams();
   if (params?.childId) query.set("child_id", params.childId);
   if (params?.homeId) query.set("home_id", params.homeId);
   if (params?.status) query.set("status", params.status);
   return useQuery({
-    queryKey: ["aria-intelligence", "recommendations", params],
+    queryKey: ["cara-intelligence", "recommendations", params],
     queryFn: () =>
-      api.get<ListResponse<AriaRecommendation>>(`/cara-intelligence/recommendations?${query}`),
+      api.get<ListResponse<CaraRecommendation>>(`/cara-intelligence/recommendations?${query}`),
   });
 }
 
-export function useCreateAriaRecommendation() {
+export function useCreateCaraRecommendation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<AriaRecommendation>) =>
-      api.post<SingleResponse<AriaRecommendation>>("/cara-intelligence/recommendations", data),
+    mutationFn: (data: Partial<CaraRecommendation>) =>
+      api.post<SingleResponse<CaraRecommendation>>("/cara-intelligence/recommendations", data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "recommendations"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "recommendations"] });
     },
   });
 }
 
-export function useUpdateAriaRecommendation() {
+export function useUpdateCaraRecommendation() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Partial<AriaRecommendation>) =>
-      api.patch<SingleResponse<AriaRecommendation>>(`/cara-intelligence/recommendations/${id}`, data),
+    mutationFn: ({ id, ...data }: { id: string } & Partial<CaraRecommendation>) =>
+      api.patch<SingleResponse<CaraRecommendation>>(`/cara-intelligence/recommendations/${id}`, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "recommendations"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "recommendations"] });
     },
   });
 }
 
 // ── Safeguarding Flags ────────────────────────────────────────────────────────
 
-export function useAriaSafeguardingFlags(params?: { childId?: string; homeId?: string; status?: string }) {
+export function useCaraSafeguardingFlags(params?: { childId?: string; homeId?: string; status?: string }) {
   const query = new URLSearchParams();
   if (params?.childId) query.set("child_id", params.childId);
   if (params?.homeId) query.set("home_id", params.homeId);
   if (params?.status) query.set("status", params.status);
   return useQuery({
-    queryKey: ["aria-intelligence", "safeguarding-flags", params],
+    queryKey: ["cara-intelligence", "safeguarding-flags", params],
     queryFn: () =>
-      api.get<ListResponse<AriaSafeguardingFlag> & { meta: { open: number; critical: number } }>(
+      api.get<ListResponse<CaraSafeguardingFlag> & { meta: { open: number; critical: number } }>(
         `/cara-intelligence/safeguarding-flags?${query}`
       ),
   });
 }
 
-export function useCreateAriaSafeguardingFlag() {
+export function useCreateCaraSafeguardingFlag() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<AriaSafeguardingFlag>) =>
-      api.post<SingleResponse<AriaSafeguardingFlag>>("/cara-intelligence/safeguarding-flags", data),
+    mutationFn: (data: Partial<CaraSafeguardingFlag>) =>
+      api.post<SingleResponse<CaraSafeguardingFlag>>("/cara-intelligence/safeguarding-flags", data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "safeguarding-flags"] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "recommendations"] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "safeguarding-flags"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "recommendations"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }
 
-export function useUpdateAriaSafeguardingFlag() {
+export function useUpdateCaraSafeguardingFlag() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, ...data }: { id: string } & Partial<AriaSafeguardingFlag>) =>
-      api.patch<SingleResponse<AriaSafeguardingFlag>>(`/cara-intelligence/safeguarding-flags/${id}`, data),
+    mutationFn: ({ id, ...data }: { id: string } & Partial<CaraSafeguardingFlag>) =>
+      api.patch<SingleResponse<CaraSafeguardingFlag>>(`/cara-intelligence/safeguarding-flags/${id}`, data),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "safeguarding-flags"] });
-      qc.invalidateQueries({ queryKey: ["aria-intelligence", "audit"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "safeguarding-flags"] });
+      qc.invalidateQueries({ queryKey: ["cara-intelligence", "audit"] });
     },
   });
 }

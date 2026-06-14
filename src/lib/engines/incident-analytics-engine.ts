@@ -85,7 +85,7 @@ export interface OversightCompliance {
   compliance_rate: number; // percentage
 }
 
-export interface AriaInsight {
+export interface CaraInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -98,7 +98,7 @@ export interface IncidentAnalyticsResult {
   day_patterns: DayPattern[];
   child_profiles: ChildIncidentProfile[];
   oversight: OversightCompliance;
-  insights: AriaInsight[];
+  insights: CaraInsight[];
 }
 
 export interface IncidentAnalyticsInput {
@@ -338,7 +338,7 @@ export function computeIncidentAnalytics(
 
   // ── Cara Pattern Insights ─────────────────────────────────────────────
 
-  const insights: AriaInsight[] = [];
+  const insights: CaraInsight[] = [];
 
   // 1. Critical incidents need immediate attention
   if (severity.critical > 0) {

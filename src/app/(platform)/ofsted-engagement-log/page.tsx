@@ -29,8 +29,8 @@ import {
   OFSTED_ENGAGEMENT_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── derived constants ──────────────────────────────────────────────── */
 const ENGAGEMENT_TYPES = Object.entries(OFSTED_ENGAGEMENT_TYPE_LABEL) as [OfstedEngagementType, string][];
@@ -182,12 +182,12 @@ export default function OfstedEngagementLogPage() {
     <PageShell
       title="Ofsted Engagement Log"
       subtitle="All contact with Ofsted between full inspections — notifications, calls, emails, monitoring visits and statutory submissions"
-      ariaContext={{ pageTitle: "Ofsted Engagement Log", sourceType: "general" }}
+      caraContext={{ pageTitle: "Ofsted Engagement Log", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Ofsted Engagement Log" />
           <ExportButton data={filtered} columns={exportCols} filename="ofsted-engagement-log" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -545,7 +545,7 @@ export default function OfstedEngagementLogPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Ofsted Engagement Log — inspector visits, monitoring visits, Reg 44 visits, Reg 45 reports, Ofsted correspondence, self-referrals, notifications, grade history, ILACS preparation"
         recordType="ofsted_evidence"

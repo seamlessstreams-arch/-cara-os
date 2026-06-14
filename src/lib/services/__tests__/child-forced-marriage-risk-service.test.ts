@@ -12,7 +12,7 @@ import type {
 const {
   computeForcedMarriageRiskMetrics,
   computeForcedMarriageRiskAlerts,
-  generateForcedMarriageRiskAriaInsights,
+  generateForcedMarriageRiskCaraInsights,
 } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
@@ -659,65 +659,65 @@ describe("child-forced-marriage-risk-service", () => {
     });
   });
 
-  // ── generateForcedMarriageRiskAriaInsights ────────────────────────────
-  describe("generateForcedMarriageRiskAriaInsights", () => {
+  // ── generateForcedMarriageRiskCaraInsights ────────────────────────────
+  describe("generateForcedMarriageRiskCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights).toHaveLength(3);
     });
     it("returns 3 insights for populated data", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow(), makeRow()]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow(), makeRow()]);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [red]", () => {
-      expect(generateForcedMarriageRiskAriaInsights([])[0]).toMatch(/^\[red\]/);
+      expect(generateForcedMarriageRiskCaraInsights([])[0]).toMatch(/^\[red\]/);
     });
     it("insight 2 starts with [amber]", () => {
-      expect(generateForcedMarriageRiskAriaInsights([])[1]).toMatch(/^\[amber\]/);
+      expect(generateForcedMarriageRiskCaraInsights([])[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
-      expect(generateForcedMarriageRiskAriaInsights([])[2]).toMatch(/^\[reflect\]/);
+      expect(generateForcedMarriageRiskCaraInsights([])[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total assessments count", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow(), makeRow()]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow(), makeRow()]);
       expect(insights[0]).toContain("2 forced marriage risk assessments");
     });
     it("insight 1 uses singular assessment for 1", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow()]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow()]);
       expect(insights[0]).toContain("1 forced marriage risk assessment ");
     });
     it("insight 1 contains unique children count", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow()]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow()]);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains high risk count", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([
+      const insights = generateForcedMarriageRiskCaraInsights([
         makeRow({ risk_level: "High" }),
         makeRow({ risk_level: "Immediate" }),
       ]);
       expect(insights[0]).toContain("2 at High or Immediate risk level");
     });
     it("insight 1 contains FMPO count", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow({ fmpo_in_place: true })]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow({ fmpo_in_place: true })]);
       expect(insights[0]).toContain("1 FMPO in place");
     });
     it("insight 1 uses plural FMPOs for multiple", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([
+      const insights = generateForcedMarriageRiskCaraInsights([
         makeRow({ fmpo_in_place: true }),
         makeRow({ fmpo_in_place: true }),
       ]);
       expect(insights[0]).toContain("2 FMPOs in place");
     });
     it("insight 1 contains FMU contact count", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow({ forced_marriage_unit_contacted: true })]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow({ forced_marriage_unit_contacted: true })]);
       expect(insights[0]).toContain("1 Forced Marriage Unit contact made");
     });
     it("insight 1 uses plural contacts for multiple", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([
+      const insights = generateForcedMarriageRiskCaraInsights([
         makeRow({ forced_marriage_unit_contacted: true }),
         makeRow({ forced_marriage_unit_contacted: true }),
       ]);
@@ -727,92 +727,92 @@ describe("child-forced-marriage-risk-service", () => {
       const rows = [
         makeRow({ risk_level: "Immediate", fmpo_in_place: false, forced_marriage_unit_contacted: false }),
       ];
-      const insights = generateForcedMarriageRiskAriaInsights(rows);
+      const insights = generateForcedMarriageRiskCaraInsights(rows);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high-priority");
     });
     it("insight 2 shows no concerns when none", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow({ risk_level: "No Identified Risk" })]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow({ risk_level: "No Identified Risk" })]);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 2 contains safety plan rate", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow()]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Safety plan rate");
     });
     it("insight 2 contains multi-agency rate", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow()]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Multi-agency rate");
     });
     it("insight 2 contains passport secured rate", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow()]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Passport secured rate");
     });
     it("insight 3 contains reflective question about forced marriage risk assessments", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[2]).toContain("forced marriage risk assessments");
     });
     it("insight 3 mentions multi-agency", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[2]).toContain("multi-agency");
     });
     it("insight 3 mentions Forced Marriage Unit", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[2]).toContain("Forced Marriage Unit");
     });
     it("insight 3 mentions travel restrictions", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[2]).toContain("travel restrictions");
     });
     it("insight 3 mentions passport security", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[2]).toContain("passport security");
     });
     it("insight 3 mentions specialist service", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[2]).toContain("specialist service");
     });
     it("all insights are strings", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow()]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow()]);
       for (const i of insights) expect(typeof i).toBe("string");
     });
     it("empty array still produces meaningful content", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[0]).toContain("0 forced marriage risk assessments");
       expect(insights[0]).toContain("0 children");
     });
     it("insight 1 for zero assessments shows 0 at High or Immediate", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[0]).toContain("0 at High or Immediate risk level");
     });
     it("insight 1 for zero assessments shows 0 FMPOs", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[0]).toContain("0 FMPOs in place");
     });
     it("insight 1 for zero assessments shows 0 FMU contacts", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[0]).toContain("0 Forced Marriage Unit contacts made");
     });
     it("insight 2 with only medium alerts shows no critical or high", () => {
       const rows = [makeRow({ risk_level: "Low", multi_agency_referral: false })];
-      const insights = generateForcedMarriageRiskAriaInsights(rows);
+      const insights = generateForcedMarriageRiskCaraInsights(rows);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 2 with critical alerts shows count", () => {
       const rows = [makeRow({ risk_level: "Immediate", fmpo_in_place: false })];
-      const insights = generateForcedMarriageRiskAriaInsights(rows);
+      const insights = generateForcedMarriageRiskCaraInsights(rows);
       expect(insights[1]).toMatch(/1 critical/);
     });
     it("insight 2 with high alerts shows count", () => {
       const rows = [makeRow({ risk_level: "High", forced_marriage_unit_contacted: false })];
-      const insights = generateForcedMarriageRiskAriaInsights(rows);
+      const insights = generateForcedMarriageRiskCaraInsights(rows);
       expect(insights[1]).toMatch(/1 high-priority/);
     });
     it("insight 2 safety plan rate value is correct", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow({ safety_plan_in_place: true })]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow({ safety_plan_in_place: true })]);
       expect(insights[1]).toContain("100%");
     });
     it("insight 3 is a reflective question", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([]);
+      const insights = generateForcedMarriageRiskCaraInsights([]);
       expect(insights[2]).toContain("?");
     });
     it("insight 2 with multiple critical alerts shows correct count", () => {
@@ -820,7 +820,7 @@ describe("child-forced-marriage-risk-service", () => {
         makeRow({ risk_level: "Immediate", fmpo_in_place: false }),
         makeRow({ risk_level: "High", safety_plan_in_place: false }),
       ];
-      const insights = generateForcedMarriageRiskAriaInsights(rows);
+      const insights = generateForcedMarriageRiskCaraInsights(rows);
       expect(insights[1]).toMatch(/2 critical/);
     });
     it("insight 2 with multiple high alerts shows correct count", () => {
@@ -828,16 +828,16 @@ describe("child-forced-marriage-risk-service", () => {
         makeRow({ risk_level: "High", forced_marriage_unit_contacted: false }),
         makeRow({ risk_level: "Immediate", forced_marriage_unit_contacted: false, fmpo_in_place: true }),
       ];
-      const insights = generateForcedMarriageRiskAriaInsights(rows);
+      const insights = generateForcedMarriageRiskCaraInsights(rows);
       expect(insights[1]).toMatch(/2 high-priority/);
     });
     it("insight 1 with single FMPO uses singular", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow({ fmpo_in_place: true })]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow({ fmpo_in_place: true })]);
       expect(insights[0]).toContain("1 FMPO in place");
       expect(insights[0]).not.toContain("1 FMPOs");
     });
     it("insight 1 with single FMU contact uses singular", () => {
-      const insights = generateForcedMarriageRiskAriaInsights([makeRow({ forced_marriage_unit_contacted: true })]);
+      const insights = generateForcedMarriageRiskCaraInsights([makeRow({ forced_marriage_unit_contacted: true })]);
       expect(insights[0]).toContain("1 Forced Marriage Unit contact made");
       expect(insights[0]).not.toContain("1 Forced Marriage Unit contacts");
     });

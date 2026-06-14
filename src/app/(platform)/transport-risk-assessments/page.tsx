@@ -31,8 +31,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 import type { TransportRA, JourneyType } from "@/types/extended";
 import { useTransportRAs } from "@/hooks/use-transport-ras";
@@ -127,12 +127,12 @@ export default function TransportRiskAssessmentsPage() {
     <PageShell
       title="Transport Risk Assessments"
       subtitle="Per-route, per-child, per-purpose journey risk assessments"
-      ariaContext={{ pageTitle: "Transport Risk Assessments", sourceType: "document" }}
+      caraContext={{ pageTitle: "Transport Risk Assessments", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="transport-risk-assessments" />
           <PrintButton title="Transport Risk Assessments" />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -395,7 +395,7 @@ export default function TransportRiskAssessmentsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Transport Risk Assessments — vehicle safety checks, driver competency, journey risk assessments, child-specific transport risks, safeguarding during transport, Reg 45 safety evidence"
         recordType="risk_assessment"

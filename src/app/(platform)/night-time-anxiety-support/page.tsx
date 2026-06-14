@@ -29,8 +29,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { NightAnxietySupportRecord, AnxietyLevel, NightmareFrequency } from "@/types/extended";
 import { ANXIETY_LEVEL_LABEL, NIGHTMARE_FREQUENCY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 const d = (n: number) => {
@@ -171,7 +171,7 @@ export default function NightTimeAnxietySupportPage() {
     <PageShell
       title="Night-time Anxiety Support"
       subtitle="Per-child plans for bedtime fears, separation anxiety, trauma-related sleep difficulty, nightmares and hypervigilance. Captures triggers, soothing strategies, what works, what to avoid, and the child's own voice on what helps."
-      ariaContext={{ pageTitle: "Night-time Anxiety Support", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Night-time Anxiety Support", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -180,7 +180,7 @@ export default function NightTimeAnxietySupportPage() {
             filename="night-time-anxiety-support"
           />
           <PrintButton title="Night-time Anxiety Support" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -249,7 +249,7 @@ export default function NightTimeAnxietySupportPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by child, trigger, or note…"
-            className="w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[var(--cs-text-muted)] focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/30"
+            className="w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm placeholder:text-[var(--cs-text-muted)] focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/30"
           />
         </div>
 
@@ -523,7 +523,7 @@ export default function NightTimeAnxietySupportPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Night-time Anxiety Support — bedtime anxiety, sleep disturbance, nightmares, night terrors, soothing strategies, settling routines, trauma-informed approaches, care plan evidence"
         recordType="care_plan"

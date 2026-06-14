@@ -15,7 +15,7 @@ import {
   RECORDING_PROMPTS, STAFF_REGULATION_REMINDERS,
 } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
-import { safetyPlanConversationPrompts } from "@/lib/aria/practice-frameworks";
+import { safetyPlanConversationPrompts } from "@/lib/cara/practice-frameworks";
 
 const SAFETY_THEME_RE = /safe|calm|regulat|crisis|overwhelm|missing|self.?harm|de-?escalat|melt ?down|big feelings|anger/i;
 

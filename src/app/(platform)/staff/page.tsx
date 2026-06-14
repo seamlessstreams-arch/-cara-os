@@ -24,8 +24,8 @@ import { PageGuidance } from "@/components/ui/page-guidance";
 import { cn, todayStr, formatDate } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/constants";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const STAFF_EXPORT_COLS: ExportColumn<StaffEnriched>[] = [
   { header: "Name", accessor: (s) => s.full_name },
@@ -94,7 +94,7 @@ export default function StaffPage() {
     <PageShell
       title="Staff"
       subtitle={meta ? `${meta.total} active team members · ${meta.on_shift} on shift today` : "Loading…"}
-      ariaContext={{ pageTitle: "Staff", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff", sourceType: "staff" }}
       quickCreateContext={{ module: "staff", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">
@@ -104,7 +104,7 @@ export default function StaffPage() {
           <Button size="sm" disabled title="Staff records are managed in your HR system.">
             <Plus className="h-3.5 w-3.5" /> Add Staff Member
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -114,7 +114,7 @@ export default function StaffPage() {
           title="Team management"
           description="Staff directory, supervision tracking, training compliance, and shift management. Click any team member to see their full profile and compliance status."
           evidenceTip="Reg 44 visitors check that staff have up-to-date DBS, training, and regular supervision. Keep profiles current to demonstrate compliance."
-          ariaTip="Cara tracks supervision frequency and training expiry across your team, alerting you before deadlines are missed."
+          caraTip="Cara tracks supervision frequency and training expiry across your team, alerting you before deadlines are missed."
           regulationRef="Children's Homes Regulations 2015, Reg 33 — Employment of staff"
           variant="compliance"
         />
@@ -201,7 +201,7 @@ export default function StaffPage() {
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
-              className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-aria-gold)] focus:ring-1 focus:ring-[var(--cs-aria-gold)]/30 outline-none"
+              className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-cara-gold)] focus:ring-1 focus:ring-[var(--cs-cara-gold)]/30 outline-none"
             >
               <option value="name">Name A-Z</option>
               <option value="tasks">Most tasks</option>
@@ -456,7 +456,7 @@ export default function StaffPage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Register — staff records, roles, qualifications, DBS status, training compliance, supervision records, Reg 40 workforce evidence, Ofsted staffing inspection evidence"
         recordType="staff_training"

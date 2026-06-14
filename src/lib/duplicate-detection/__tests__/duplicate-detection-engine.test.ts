@@ -30,7 +30,7 @@ function ev(o: {
     linkedTasks: [],
     linkedRisks: [],
     linkedNotifications: [],
-    ariaAnalysis: { themes: [], suggestedActions: [], complianceFlags: [], missingInformation: [], confidenceScore: 1 },
+    caraAnalysis: { themes: [], suggestedActions: [], complianceFlags: [], missingInformation: [], confidenceScore: 1 },
     audit: { createdAt: o.occurredAt ?? "2026-06-01T10:00:00.000Z", updatedAt: o.occurredAt ?? "2026-06-01T10:00:00.000Z", version: 1, changeHistory: [] },
   };
 }

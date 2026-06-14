@@ -9,8 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -327,7 +327,7 @@ export default function TrainingMatrixPage() {
     <PageShell
       title="Training Matrix"
       subtitle="Team-wide mandatory and CPD training coverage at a glance"
-      ariaContext={{ pageTitle: "Training Compliance Matrix", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Training Compliance Matrix", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -345,7 +345,7 @@ export default function TrainingMatrixPage() {
               Qualifications
             </button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -574,7 +574,7 @@ export default function TrainingMatrixPage() {
           training gaps are a regulatory risk.
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Training Compliance Matrix — mandatory training compliance, training gaps, Reg 32/33/34 training requirements, fire safety, safeguarding, medication, moving and handling training, Ofsted workforce evidence"
         recordType="staff_training"

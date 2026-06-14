@@ -14,7 +14,7 @@ import {
   AVOID_PHRASES, STAFF_REGULATION_REMINDERS, SHUTDOWN_RESPONSES, RECORDING_PROMPTS,
 } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
-import { safetyPlanConversationPrompts } from "@/lib/aria/practice-frameworks";
+import { safetyPlanConversationPrompts } from "@/lib/cara/practice-frameworks";
 
 const SAFETY_TOPIC_RE = /safe|calm|regulat|upset|angr|overwhelm|crisis|missing|self.?harm|hurt|de-?escalat|melt ?down/i;
 

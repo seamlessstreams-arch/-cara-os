@@ -1069,7 +1069,7 @@ export const providerHomeSummaries: IntelligenceProviderHomeSummary[] = [
     overdueActions: 3,
     complaints: 1,
     missingEpisodes: 1,
-    ariaRiskFlags: ["Staff supervision gap detected for 1 night worker"],
+    caraRiskFlags: ["Staff supervision gap detected for 1 night worker"],
     lastReviewed: "2026-05-01",
   },
   {
@@ -1090,7 +1090,7 @@ export const providerHomeSummaries: IntelligenceProviderHomeSummary[] = [
     overdueActions: 11,
     complaints: 3,
     missingEpisodes: 4,
-    ariaRiskFlags: [
+    caraRiskFlags: [
       "Pattern of missing episodes detected - 4 in 30 days",
       "Supervision compliance below 70% threshold",
       "3 staff have expired mandatory training",
@@ -1116,7 +1116,7 @@ export const providerHomeSummaries: IntelligenceProviderHomeSummary[] = [
     overdueActions: 1,
     complaints: 0,
     missingEpisodes: 0,
-    ariaRiskFlags: [],
+    caraRiskFlags: [],
     lastReviewed: "2026-05-03",
   },
 ];
@@ -1174,13 +1174,13 @@ export const attentionItems: IntelligenceAttentionItemRow[] = [
   { id: "att_011", home_id: "home_oak", title: "Reg 44 visit action overdue", category: "reg44_action_overdue", urgency: "medium", status: "open", child_id: null, staff_id: null, source_record_type: "reg44_action", source_record_id: null, reason: "An action from the last Reg 44 independent visitor's report (dated " + _dRel2(-30) + ") regarding fire evacuation drill frequency remains incomplete. The action was due " + _dRel2(-7) + ".", suggested_action: "Complete the outstanding action or provide a written update to the independent visitor explaining the delay and revised timescale. Record completion evidence in the Reg 44 action tracker.", due_date: _dRel2(-7), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-14), updated_at: _dRel2(-14) },
   { id: "att_012", home_id: "home_oak", title: "Training gap — physical intervention refresher", category: "training_gap", urgency: "medium", status: "open", child_id: null, staff_id: "Staff Member C", source_record_type: "training", source_record_id: null, reason: "Staff Member C's physical intervention certification expired 2 weeks ago. They must not be involved in any physical intervention until the refresher is completed. This affects shift planning.", suggested_action: "Book the next available physical intervention refresher course. Update the rota to ensure Staff Member C is always paired with a certified colleague until recertification. Notify Staff Member C in writing.", due_date: null, reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-14), updated_at: _dRel2(-14) },
   { id: "att_013", home_id: "home_oak", title: "Complaint from placing authority — response due", category: "complaint_open", urgency: "high", status: "in_progress", child_id: "Child B", staff_id: null, source_record_type: "complaint", source_record_id: null, reason: "A formal complaint was received from the placing authority for Child B regarding communication about a recent incident. The complaints procedure requires an initial response within 5 working days.", suggested_action: "Draft a response to the complaint. Review the incident communication timeline. Identify any gaps in the notification process and outline corrective steps. Log on the complaints register.", due_date: _dRel2(2), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-3), updated_at: _dRel2(-3) },
-  { id: "att_014", home_id: "home_oak", title: "Cara has detected a pattern — escalating behaviour", category: "aria_pattern", urgency: "medium", status: "open", child_id: "Child A", staff_id: null, source_record_type: "aria", source_record_id: null, reason: "Cara has identified a pattern of escalating behaviour incidents involving Child A over the past 14 days. The frequency has increased from 1 per week to 3 per week, with increasing severity. This may correlate with reduced family contact during the same period.", suggested_action: "Review the behaviour trend analysis. Consider whether the behaviour support plan needs updating. Explore the link to family contact patterns. Discuss with the team and consider a multi-agency strategy meeting.", due_date: null, reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-1), updated_at: _dRel2(-1) },
+  { id: "att_014", home_id: "home_oak", title: "Cara has detected a pattern — escalating behaviour", category: "aria_pattern", urgency: "medium", status: "open", child_id: "Child A", staff_id: null, source_record_type: "cara", source_record_id: null, reason: "Cara has identified a pattern of escalating behaviour incidents involving Child A over the past 14 days. The frequency has increased from 1 per week to 3 per week, with increasing severity. This may correlate with reduced family contact during the same period.", suggested_action: "Review the behaviour trend analysis. Consider whether the behaviour support plan needs updating. Explore the link to family contact patterns. Discuss with the team and consider a multi-agency strategy meeting.", due_date: null, reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-1), updated_at: _dRel2(-1) },
   { id: "att_015", home_id: "home_oak", title: "Reg 45 report — evidence gap in quality of care", category: "reg45_evidence_gap", urgency: "low", status: "open", child_id: null, staff_id: null, source_record_type: "reg45", source_record_id: null, reason: "The upcoming Reg 45 half-yearly report has a gap in evidencing quality of care outcomes for the current period. Specifically, there are limited recorded examples of how the home has responded to children's individual needs.", suggested_action: "Gather evidence from key work records, daily logs, and activity records that demonstrate individualised care. Ask staff to provide specific examples for each child. Compile into the evidence folder.", due_date: _dRel2(14), reviewed_by: null, reviewed_at: null, escalated_to: null, escalated_at: null, created_by: null, created_at: _dRel2(-7), updated_at: _dRel2(-7) },
 ];
 
 // ─── Cara suggestions (review queue + detail) ────────────────────────────────
 
-export interface AriaSuggestionLinkedRecord {
+export interface CaraSuggestionLinkedRecord {
   id: string;
   linked_record_type: string;
   reason: string;
@@ -1188,7 +1188,7 @@ export interface AriaSuggestionLinkedRecord {
   risk_level: string;
 }
 
-export interface AriaSuggestionAuditEntry {
+export interface CaraSuggestionAuditEntry {
   id: string;
   action: string;
   actor_role: string;
@@ -1196,7 +1196,7 @@ export interface AriaSuggestionAuditEntry {
   created_at: string;
 }
 
-export interface AriaSuggestionRow {
+export interface CaraSuggestionRow {
   id: string;
   home_id: string;
   title: string;
@@ -1218,8 +1218,8 @@ export interface AriaSuggestionRow {
   rejected_at: string | null;
   committed_at: string | null;
   mock_mode: boolean;
-  linked_records: AriaSuggestionLinkedRecord[];
-  audit_timeline: AriaSuggestionAuditEntry[];
+  linked_records: CaraSuggestionLinkedRecord[];
+  audit_timeline: CaraSuggestionAuditEntry[];
 }
 
 const _draft1 = `Cara suggested draft — requires manager review before saving.
@@ -1260,7 +1260,7 @@ Next actions:
 Review timeframe:
 Next review within 48 hours to confirm actions have been progressed.`;
 
-const _ariaBase = (overrides: Partial<AriaSuggestionRow>): AriaSuggestionRow => ({
+const _caraBase = (overrides: Partial<CaraSuggestionRow>): CaraSuggestionRow => ({
   id: overrides.id ?? "as_x",
   home_id: "home_oak",
   title: "",
@@ -1287,8 +1287,8 @@ const _ariaBase = (overrides: Partial<AriaSuggestionRow>): AriaSuggestionRow => 
   ...overrides,
 });
 
-export const ariaSuggestions: AriaSuggestionRow[] = [
-  _ariaBase({
+export const caraSuggestions: CaraSuggestionRow[] = [
+  _caraBase({
     id: "as_001",
     title: "Management oversight required — physical intervention incident",
     summary: "A physical intervention was recorded. The Registered Manager should review the response, consider whether the intervention was proportionate, check that the child's voice has been captured, and record oversight.",
@@ -1314,14 +1314,14 @@ export const ariaSuggestions: AriaSuggestionRow[] = [
       { id: "aud_004", action: "suggestion_viewed", actor_role: "registered_manager", created_at: "2026-05-05T09:30:00Z" },
     ],
   }),
-  _ariaBase({ id: "as_002", title: "Risk assessment review — escalating behaviour pattern", summary: "Three incidents involving similar behaviour within 14 days. The current risk assessment may not reflect the child's present needs.", reason: "Pattern of three incidents in 14 days suggests the risk assessment requires review to ensure it reflects the child's current presentation.", suggestion_type: "risk_review", related_record_id: "inc_042", child_name: "Alex W", risk_level: "high", confidence_level: "high", reviewer_role: "Registered Manager", created_at: "2026-05-05T08:15:00Z" }),
-  _ariaBase({ id: "as_003", title: "Safeguarding review — consider whether threshold for LADO is met", summary: "The incident involves a staff member and a child. The manager should consider whether the threshold for LADO consultation has been met.", reason: "Any incident involving physical contact between staff and a child should be considered against the LADO threshold, even where the intervention was proportionate.", suggestion_type: "safeguarding_review", related_record_id: "inc_042", child_name: "Alex W", risk_level: "high", confidence_level: "medium", reviewer_role: "Registered Manager", created_at: "2026-05-05T08:15:00Z" }),
-  _ariaBase({ id: "as_004", title: "Staff debrief recommended — emotional incident", summary: "Staff involved in the incident should be offered a debrief to reflect on practice, consider what went well, what could be different, and whether support is needed.", reason: "Staff involved in emotional or high-intensity incidents benefit from structured debrief. This supports wellbeing and reflective practice.", suggestion_type: "staff_debrief", related_record_id: "inc_039", child_name: "Jordan M", risk_level: "medium", confidence_level: "high", reviewer_role: "Registered Manager", created_at: "2026-05-04T16:30:00Z" }),
-  _ariaBase({ id: "as_005", title: "Key work session — capture child's wishes and feelings", summary: "Following this incident, a key work session should be offered to the child to explore how they are feeling and what they need.", reason: "The child's voice is not yet visible in the post-incident records. A key work session provides the opportunity to capture wishes and feelings.", suggestion_type: "key_work", related_record_id: "inc_038", child_name: "Casey T", risk_level: "medium", confidence_level: "high", reviewer_role: "Registered Manager", created_at: "2026-05-04T14:00:00Z" }),
-  _ariaBase({ id: "as_006", title: "Behaviour support plan review — changed presentation", summary: "The child's recent behaviour pattern differs from what the current behaviour support plan describes. The plan may need updating.", reason: "When a child's presentation changes, the behaviour support plan should be reviewed to ensure strategies remain appropriate and trauma-informed.", suggestion_type: "behaviour_support_review", related_record_id: "inc_038", child_name: "Casey T", risk_level: "medium", confidence_level: "medium", created_at: "2026-05-04T14:00:00Z" }),
-  _ariaBase({ id: "as_007", title: "Placement plan review — changed presentation", summary: "Following the pattern of incidents, the placement plan should be reviewed to ensure it reflects the child's current needs and that support is appropriate.", reason: "Placement stability review should be considered where incident patterns suggest changed need.", suggestion_type: "plan_review", related_record_id: "inc_042", child_name: "Alex W", risk_level: "high", confidence_level: "medium", status: "approved", created_at: "2026-05-03T10:00:00Z" }),
-  _ariaBase({ id: "as_008", title: "Notification consideration — repeated incidents", summary: "Three incidents involving the same child in two weeks. Consider whether the social worker and placing authority should be updated.", reason: "Repeated incidents may require notification under Regulation 40. The social worker should be kept informed of patterns, not just individual events.", suggestion_type: "notification", related_record_id: "inc_040", child_name: "Jordan M", risk_level: "high", confidence_level: "high", status: "rejected", created_at: "2026-05-02T11:00:00Z" }),
-  _ariaBase({ id: "as_009", title: "Management oversight — minor damage incident", summary: "A minor damage incident was recorded. Management oversight should confirm the response was proportionate and the child was supported.", reason: "All incidents benefit from management oversight, even where severity is low.", suggestion_type: "management_oversight", related_record_id: "inc_037", child_name: "Casey T", risk_level: "low", confidence_level: "high", status: "committed", created_at: "2026-05-01T09:00:00Z" }),
+  _caraBase({ id: "as_002", title: "Risk assessment review — escalating behaviour pattern", summary: "Three incidents involving similar behaviour within 14 days. The current risk assessment may not reflect the child's present needs.", reason: "Pattern of three incidents in 14 days suggests the risk assessment requires review to ensure it reflects the child's current presentation.", suggestion_type: "risk_review", related_record_id: "inc_042", child_name: "Alex W", risk_level: "high", confidence_level: "high", reviewer_role: "Registered Manager", created_at: "2026-05-05T08:15:00Z" }),
+  _caraBase({ id: "as_003", title: "Safeguarding review — consider whether threshold for LADO is met", summary: "The incident involves a staff member and a child. The manager should consider whether the threshold for LADO consultation has been met.", reason: "Any incident involving physical contact between staff and a child should be considered against the LADO threshold, even where the intervention was proportionate.", suggestion_type: "safeguarding_review", related_record_id: "inc_042", child_name: "Alex W", risk_level: "high", confidence_level: "medium", reviewer_role: "Registered Manager", created_at: "2026-05-05T08:15:00Z" }),
+  _caraBase({ id: "as_004", title: "Staff debrief recommended — emotional incident", summary: "Staff involved in the incident should be offered a debrief to reflect on practice, consider what went well, what could be different, and whether support is needed.", reason: "Staff involved in emotional or high-intensity incidents benefit from structured debrief. This supports wellbeing and reflective practice.", suggestion_type: "staff_debrief", related_record_id: "inc_039", child_name: "Jordan M", risk_level: "medium", confidence_level: "high", reviewer_role: "Registered Manager", created_at: "2026-05-04T16:30:00Z" }),
+  _caraBase({ id: "as_005", title: "Key work session — capture child's wishes and feelings", summary: "Following this incident, a key work session should be offered to the child to explore how they are feeling and what they need.", reason: "The child's voice is not yet visible in the post-incident records. A key work session provides the opportunity to capture wishes and feelings.", suggestion_type: "key_work", related_record_id: "inc_038", child_name: "Casey T", risk_level: "medium", confidence_level: "high", reviewer_role: "Registered Manager", created_at: "2026-05-04T14:00:00Z" }),
+  _caraBase({ id: "as_006", title: "Behaviour support plan review — changed presentation", summary: "The child's recent behaviour pattern differs from what the current behaviour support plan describes. The plan may need updating.", reason: "When a child's presentation changes, the behaviour support plan should be reviewed to ensure strategies remain appropriate and trauma-informed.", suggestion_type: "behaviour_support_review", related_record_id: "inc_038", child_name: "Casey T", risk_level: "medium", confidence_level: "medium", created_at: "2026-05-04T14:00:00Z" }),
+  _caraBase({ id: "as_007", title: "Placement plan review — changed presentation", summary: "Following the pattern of incidents, the placement plan should be reviewed to ensure it reflects the child's current needs and that support is appropriate.", reason: "Placement stability review should be considered where incident patterns suggest changed need.", suggestion_type: "plan_review", related_record_id: "inc_042", child_name: "Alex W", risk_level: "high", confidence_level: "medium", status: "approved", created_at: "2026-05-03T10:00:00Z" }),
+  _caraBase({ id: "as_008", title: "Notification consideration — repeated incidents", summary: "Three incidents involving the same child in two weeks. Consider whether the social worker and placing authority should be updated.", reason: "Repeated incidents may require notification under Regulation 40. The social worker should be kept informed of patterns, not just individual events.", suggestion_type: "notification", related_record_id: "inc_040", child_name: "Jordan M", risk_level: "high", confidence_level: "high", status: "rejected", created_at: "2026-05-02T11:00:00Z" }),
+  _caraBase({ id: "as_009", title: "Management oversight — minor damage incident", summary: "A minor damage incident was recorded. Management oversight should confirm the response was proportionate and the child was supported.", reason: "All incidents benefit from management oversight, even where severity is low.", suggestion_type: "management_oversight", related_record_id: "inc_037", child_name: "Casey T", risk_level: "low", confidence_level: "high", status: "committed", created_at: "2026-05-01T09:00:00Z" }),
 ];
 
 // ─── HR Risk Command Centre ──────────────────────────────────────────────────

@@ -26,7 +26,7 @@ import type {
 const {
   computeWaterHygieneManagementMetrics,
   identifyWaterHygieneManagementAlerts,
-  generateWaterHygieneManagementAriaInsights,
+  generateWaterHygieneManagementCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1615,42 +1615,42 @@ describe("identifyWaterHygieneManagementAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// generateWaterHygieneManagementAriaInsights
+// generateWaterHygieneManagementCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateWaterHygieneManagementAriaInsights", () => {
+describe("generateWaterHygieneManagementCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const records = [makeRow()];
-    const insights = generateWaterHygieneManagementAriaInsights(records);
+    const insights = generateWaterHygieneManagementCaraInsights(records);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty array", () => {
-    const insights = generateWaterHygieneManagementAriaInsights([]);
+    const insights = generateWaterHygieneManagementCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const records = [makeRow()];
-    const insights = generateWaterHygieneManagementAriaInsights(records);
+    const insights = generateWaterHygieneManagementCaraInsights(records);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
   it("second insight starts with [amber]", () => {
     const records = [makeRow()];
-    const insights = generateWaterHygieneManagementAriaInsights(records);
+    const insights = generateWaterHygieneManagementCaraInsights(records);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("third insight starts with [reflect]", () => {
     const records = [makeRow()];
-    const insights = generateWaterHygieneManagementAriaInsights(records);
+    const insights = generateWaterHygieneManagementCaraInsights(records);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("all insights are non-empty strings", () => {
     const records = [makeRow()];
-    const insights = generateWaterHygieneManagementAriaInsights(records);
+    const insights = generateWaterHygieneManagementCaraInsights(records);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1660,7 +1660,7 @@ describe("generateWaterHygieneManagementAriaInsights", () => {
   describe("first insight (cyan) — summary stats", () => {
     it("includes total check count", () => {
       const records = [makeRow(), makeRow(), makeRow()];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[0]).toContain("3 water hygiene checks");
     });
 
@@ -1669,13 +1669,13 @@ describe("generateWaterHygieneManagementAriaInsights", () => {
         makeRow({ location: "Kitchen" }),
         makeRow({ location: "Bathroom 1" }),
       ];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[0]).toContain("2 locations");
     });
 
     it("uses singular location for count of 1", () => {
       const records = [makeRow({ location: "Kitchen" })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[0]).toContain("1 location");
     });
 
@@ -1684,31 +1684,31 @@ describe("generateWaterHygieneManagementAriaInsights", () => {
         makeRow({ checker_name: "Checker A" }),
         makeRow({ checker_name: "Checker B" }),
       ];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[0]).toContain("2 checkers");
     });
 
     it("uses singular checker for count of 1", () => {
       const records = [makeRow({ checker_name: "Single Checker" })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[0]).toContain("1 checker");
     });
 
     it("includes hot water compliance rate", () => {
       const records = [makeRow({ hot_temp_compliant: true })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[0]).toContain("100%");
     });
 
     it("includes average hot water temperature", () => {
       const records = [makeRow({ hot_water_temp: 60 })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[0]).toContain("60");
     });
 
     it("includes average cold water temperature", () => {
       const records = [makeRow({ cold_water_temp: 15 })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[0]).toContain("15");
     });
   });
@@ -1716,33 +1716,33 @@ describe("generateWaterHygieneManagementAriaInsights", () => {
   describe("second insight (amber) — priority concerns", () => {
     it("mentions critical and high alerts when present", () => {
       const records = [makeRow({ sample_result: "Legionella Detected", compliance_status: "Non-Compliant" })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high");
     });
 
     it("mentions Legionella detection count when alerts present", () => {
       const records = [makeRow({ sample_result: "Legionella Detected" })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[1]).toContain("Legionella");
     });
 
     it("mentions no critical alerts when all clean", () => {
       const records = [makeRow({ sample_result: null, hot_water_temp: 60, cold_water_temp: 15, compliance_status: "Compliant", flushing_completed: true, dead_legs_identified: false })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[1]).toContain("No critical or high-priority");
     });
 
     it("mentions HSG274 and ACOP L8 when no alerts", () => {
       const records = [makeRow({ sample_result: null, hot_water_temp: 60, cold_water_temp: 15, compliance_status: "Compliant", flushing_completed: true, dead_legs_identified: false })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[1]).toContain("HSG274");
       expect(insights[1]).toContain("ACOP L8");
     });
 
     it("uses singular for 1 Legionella sample", () => {
       const records = [makeRow({ sample_result: "Legionella Detected" })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[1]).toContain("sample has");
     });
 
@@ -1751,13 +1751,13 @@ describe("generateWaterHygieneManagementAriaInsights", () => {
         makeRow({ sample_result: "Legionella Detected" }),
         makeRow({ sample_result: "Legionella Detected" }),
       ];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[1]).toContain("samples have");
     });
 
     it("uses singular for 1 non-compliant check", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[1]).toContain("check is");
     });
 
@@ -1766,7 +1766,7 @@ describe("generateWaterHygieneManagementAriaInsights", () => {
         makeRow({ compliance_status: "Non-Compliant" }),
         makeRow({ compliance_status: "Non-Compliant" }),
       ];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[1]).toContain("checks are");
     });
   });
@@ -1774,13 +1774,13 @@ describe("generateWaterHygieneManagementAriaInsights", () => {
   describe("third insight (reflect) — reflective question", () => {
     it("mentions Legionella detections when present", () => {
       const records = [makeRow({ sample_result: "Legionella Detected" })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[2]).toContain("Legionella");
     });
 
     it("uses singular for 1 detection", () => {
       const records = [makeRow({ sample_result: "Legionella Detected" })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[2]).toContain("detection has");
     });
 
@@ -1789,31 +1789,31 @@ describe("generateWaterHygieneManagementAriaInsights", () => {
         makeRow({ sample_result: "Legionella Detected" }),
         makeRow({ sample_result: "Legionella Detected" }),
       ];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[2]).toContain("detections have");
     });
 
     it("asks about dead legs and compliance when no Legionella but issues found", () => {
       const records = [makeRow({ sample_result: null, hot_water_temp: 60, cold_water_temp: 15, dead_legs_identified: true, compliance_status: "Compliant", flushing_completed: true })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[2]).toContain("dead");
     });
 
     it("asks about dead legs when non-compliant but no legionella", () => {
       const records = [makeRow({ sample_result: null, hot_water_temp: 60, cold_water_temp: 15, dead_legs_identified: false, compliance_status: "Non-Compliant", flushing_completed: true })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[2]).toContain("Non-Compliant");
     });
 
     it("provides positive reflection when all clean", () => {
       const records = [makeRow({ sample_result: null, hot_water_temp: 60, cold_water_temp: 15, dead_legs_identified: false, compliance_status: "Compliant", flushing_completed: true })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[2]).toContain("no Legionella detections");
     });
 
     it("asks about staff awareness in positive reflection", () => {
       const records = [makeRow({ sample_result: null, hot_water_temp: 60, cold_water_temp: 15, dead_legs_identified: false, compliance_status: "Compliant", flushing_completed: true })];
-      const insights = generateWaterHygieneManagementAriaInsights(records);
+      const insights = generateWaterHygieneManagementCaraInsights(records);
       expect(insights[2]).toContain("staff");
     });
   });

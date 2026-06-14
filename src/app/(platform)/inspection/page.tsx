@@ -22,8 +22,8 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Static data ───────────────────────────────────────────────────────────────
 
@@ -818,7 +818,7 @@ export default function InspectionPage() {
     <PageShell
       title="Inspection Readiness"
       subtitle="Ofsted inspection tracker, readiness scoring, and evidence preparation"
-      ariaContext={{ pageTitle: "Inspection Readiness", sourceType: "general" }}
+      caraContext={{ pageTitle: "Inspection Readiness", sourceType: "general" }}
       quickCreateContext={{ module: "inspection", defaultTaskCategory: "inspection", defaultFormType: "review_meeting_notes" }}
       actions={
         <div className="flex gap-2">
@@ -839,7 +839,7 @@ export default function InspectionPage() {
           >
             Prepare for Inspection
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -1039,7 +1039,7 @@ export default function InspectionPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Inspection Readiness — Ofsted ILACS preparation, Annex A, Reg 45, management oversight, grade judgements, quality of care, evidence bundles, outstanding practice, areas for development"
         recordType="ofsted_evidence"

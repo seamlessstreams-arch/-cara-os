@@ -32,7 +32,7 @@ import type {
 const {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
 } = _testing;
 
 // -- Helpers ------------------------------------------------------------------
@@ -1896,42 +1896,42 @@ describe("computeAlerts", () => {
 });
 
 // ==============================================================================
-// generateAriaInsights
+// generateCaraInsights
 // ==============================================================================
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const records = [makeRow()];
-    const insights = generateAriaInsights(records);
+    const insights = generateCaraInsights(records);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty array", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [yellow]", () => {
     const records = [makeRow()];
-    const insights = generateAriaInsights(records);
+    const insights = generateCaraInsights(records);
     expect(insights[0]).toMatch(/^\[yellow\]/);
   });
 
   it("second insight starts with [amber]", () => {
     const records = [makeRow()];
-    const insights = generateAriaInsights(records);
+    const insights = generateCaraInsights(records);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("third insight starts with [reflect]", () => {
     const records = [makeRow()];
-    const insights = generateAriaInsights(records);
+    const insights = generateCaraInsights(records);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("all insights are non-empty strings", () => {
     const records = [makeRow()];
-    const insights = generateAriaInsights(records);
+    const insights = generateCaraInsights(records);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1941,7 +1941,7 @@ describe("generateAriaInsights", () => {
   describe("first insight (yellow) -- summary stats", () => {
     it("includes total test count", () => {
       const records = [makeRow(), makeRow(), makeRow()];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[0]).toContain("3 emergency lighting tests");
     });
 
@@ -1950,13 +1950,13 @@ describe("generateAriaInsights", () => {
         makeRow({ location: "Main Hallway" }),
         makeRow({ location: "Stairwell A" }),
       ];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[0]).toContain("2 locations");
     });
 
     it("uses singular location for count of 1", () => {
       const records = [makeRow({ location: "Main Hallway" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[0]).toContain("1 location");
     });
 
@@ -1965,25 +1965,25 @@ describe("generateAriaInsights", () => {
         makeRow({ tester_name: "Tester A" }),
         makeRow({ tester_name: "Tester B" }),
       ];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[0]).toContain("2 testers");
     });
 
     it("uses singular tester for count of 1", () => {
       const records = [makeRow({ tester_name: "Single Tester" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[0]).toContain("1 tester");
     });
 
     it("includes pass rate", () => {
       const records = [makeRow({ test_result: "Pass" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[0]).toContain("100%");
     });
 
     it("uses singular test for count of 1", () => {
       const records = [makeRow()];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[0]).toContain("1 emergency lighting test");
     });
   });
@@ -1991,32 +1991,32 @@ describe("generateAriaInsights", () => {
   describe("second insight (amber) -- priority concerns", () => {
     it("mentions critical and high alerts when present", () => {
       const records = [makeRow({ test_result: "Fail", escape_route_covered: false, compliance_status: "Non-Compliant" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high");
     });
 
     it("mentions non-compliant count when alerts present", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[1]).toContain("non-compliant");
     });
 
     it("mentions no critical alerts when all clean", () => {
       const records = [makeRow({ test_result: "Pass", escape_route_covered: true, battery_condition: "Good", compliance_status: "Compliant", fault_identified: false, illumination_adequate: true })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[1]).toContain("No critical or high-priority");
     });
 
     it("mentions fire safety standards when no alerts", () => {
       const records = [makeRow({ test_result: "Pass", escape_route_covered: true, battery_condition: "Good", compliance_status: "Compliant", fault_identified: false, illumination_adequate: true })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[1]).toContain("fire safety");
     });
 
     it("uses singular for 1 non-compliant test", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[1]).toContain("test is");
     });
 
@@ -2025,13 +2025,13 @@ describe("generateAriaInsights", () => {
         makeRow({ compliance_status: "Non-Compliant" }),
         makeRow({ compliance_status: "Non-Compliant" }),
       ];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[1]).toContain("tests are");
     });
 
     it("uses singular for 1 test requiring remedial action", () => {
       const records = [makeRow({ compliance_status: "Remedial Required", battery_condition: "Failed" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[1]).toContain("test requires");
     });
 
@@ -2040,7 +2040,7 @@ describe("generateAriaInsights", () => {
         makeRow({ compliance_status: "Remedial Required", battery_condition: "Failed" }),
         makeRow({ compliance_status: "Remedial Required", battery_condition: "Failed" }),
       ];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[1]).toContain("tests require");
     });
   });
@@ -2048,13 +2048,13 @@ describe("generateAriaInsights", () => {
   describe("third insight (reflect) -- reflective question", () => {
     it("mentions non-compliant when present", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[2]).toContain("non-compliant");
     });
 
     it("uses singular for 1 non-compliant test", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[2]).toContain("test has");
     });
 
@@ -2063,31 +2063,31 @@ describe("generateAriaInsights", () => {
         makeRow({ compliance_status: "Non-Compliant" }),
         makeRow({ compliance_status: "Non-Compliant" }),
       ];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[2]).toContain("tests have");
     });
 
     it("asks about remedial action and faults when no non-compliant but issues found", () => {
       const records = [makeRow({ compliance_status: "Remedial Required", fault_identified: true, fault_rectified: false, battery_condition: "Failed" })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[2]).toContain("remedial");
     });
 
     it("asks about faults when faults identified but no non-compliant", () => {
       const records = [makeRow({ compliance_status: "Compliant", fault_identified: true, fault_rectified: true, test_result: "Pass", escape_route_covered: true, battery_condition: "Good", illumination_adequate: true })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[2]).toContain("fault");
     });
 
     it("provides positive reflection when all clean", () => {
       const records = [makeRow({ compliance_status: "Compliant", fault_identified: false, test_result: "Pass", escape_route_covered: true, battery_condition: "Good", illumination_adequate: true })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[2]).toContain("no non-compliant");
     });
 
     it("asks about staff awareness in positive reflection", () => {
       const records = [makeRow({ compliance_status: "Compliant", fault_identified: false, test_result: "Pass", escape_route_covered: true, battery_condition: "Good", illumination_adequate: true })];
-      const insights = generateAriaInsights(records);
+      const insights = generateCaraInsights(records);
       expect(insights[2]).toContain("staff");
     });
   });

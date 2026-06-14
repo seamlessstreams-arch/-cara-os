@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeGasSafetyMetrics,
   identifyGasSafetyAlerts,
-  generateGasSafetyAriaInsights,
+  generateGasSafetyCaraInsights,
   type HomeGasSafetyRow,
 } from "./home-gas-safety-service";
 
@@ -116,13 +116,13 @@ describe("identifyGasSafetyAlerts", () => {
   });
 });
 
-describe("generateGasSafetyAriaInsights", () => {
+describe("generateGasSafetyCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
-    const insights = generateGasSafetyAriaInsights([makeRow()]);
+    const insights = generateGasSafetyCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
-    expect(generateGasSafetyAriaInsights([])).toHaveLength(3);
+    expect(generateGasSafetyCaraInsights([])).toHaveLength(3);
   });
 });

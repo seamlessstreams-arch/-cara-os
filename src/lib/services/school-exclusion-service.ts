@@ -531,7 +531,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: SchoolExclusionRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

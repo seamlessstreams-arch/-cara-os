@@ -37,8 +37,8 @@ import {
   TrendingUp, Zap, Heart, Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -192,7 +192,7 @@ export default function BehaviourLogPage() {
     <PageShell
       title="Behaviour Log"
       subtitle="ABC observations — antecedent, behaviour, consequence"
-      ariaContext={{ pageTitle: "Behaviour Log", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Behaviour Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Behaviour Log" subtitle="Chamberlain House — Behaviour Management" />
@@ -200,10 +200,10 @@ export default function BehaviourLogPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Log Behaviour
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
-    >      <AriaPanel mode="assist" pageContext="Behaviour Log — ABC observations, antecedent-behaviour-consequence, intensity tracking, positive behaviour support" recordType="behaviour_log" userRole="registered_manager" className="mb-2" />      {/* ── Stats ────────────────────────────────────────────────────────────── */}
+    >      <CaraPanel mode="assist" pageContext="Behaviour Log — ABC observations, antecedent-behaviour-consequence, intensity tracking, positive behaviour support" recordType="behaviour_log" userRole="registered_manager" className="mb-2" />      {/* ── Stats ────────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
           { label: "Total Entries", value: stats.total, icon: Activity, c: "text-blue-600" },

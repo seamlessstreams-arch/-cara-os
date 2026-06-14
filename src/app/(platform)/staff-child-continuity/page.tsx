@@ -47,7 +47,7 @@ export default function StaffChildContinuityPage() {
       subtitle="Does every child have a consistent, trusted adult — and is their key worker actually the one building the relationship?"
       icon={<HeartHandshake className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Staff–Child Continuity of Care", sourceType: "general" }}
+      caraContext={{ pageTitle: "Staff–Child Continuity of Care", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

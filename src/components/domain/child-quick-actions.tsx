@@ -22,7 +22,7 @@ export function ChildQuickActions({ childId, className }: ChildQuickActionsProps
         href={`/record/${childId}`}
         className="flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold whitespace-nowrap transition-all hover:shadow-md active:scale-95 min-h-[40px] bg-[var(--cs-navy)] text-white shrink-0"
       >
-        <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+        <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
         Record anything
       </Link>
 

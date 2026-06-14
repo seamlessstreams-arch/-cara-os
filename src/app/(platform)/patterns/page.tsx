@@ -38,8 +38,8 @@ import {
   TrendingDown, Zap, BookOpen, RefreshCw, X,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -199,10 +199,10 @@ function PatternCard({
           </div>
 
           {/* Reflective Prompt */}
-          <div className={cn("rounded-lg p-3 border", isPositive ? "bg-emerald-50 border-emerald-200" : "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]")}>
+          <div className={cn("rounded-lg p-3 border", isPositive ? "bg-emerald-50 border-emerald-200" : "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]")}>
             <div className="flex items-center gap-2 mb-1.5">
-              <Brain className={cn("h-4 w-4", isPositive ? "text-emerald-600" : "text-[var(--cs-aria-gold)]")} />
-              <h4 className={cn("text-[11px] font-semibold uppercase tracking-wide", isPositive ? "text-emerald-700" : "text-[var(--cs-aria-gold)]")}>
+              <Brain className={cn("h-4 w-4", isPositive ? "text-emerald-600" : "text-[var(--cs-cara-gold)]")} />
+              <h4 className={cn("text-[11px] font-semibold uppercase tracking-wide", isPositive ? "text-emerald-700" : "text-[var(--cs-cara-gold)]")}>
                 Reflective Prompt
               </h4>
             </div>
@@ -447,7 +447,7 @@ export default function PatternAlertsPage() {
     <PageShell
       title="Pattern Alerts"
       subtitle="Cara-detected behavioural & environmental patterns"
-      ariaContext={{ pageTitle: "Pattern Alerts", sourceType: "general" }}
+      caraContext={{ pageTitle: "Pattern Alerts", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <Button
@@ -461,7 +461,7 @@ export default function PatternAlertsPage() {
           </Button>
           <ExportButton data={filtered} columns={PATTERN_EXPORT_COLS} filename="pattern-alerts" />
           <PrintButton title="Pattern Alerts" subtitle="Chamberlain House — Cara Pattern Detection" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -626,7 +626,7 @@ export default function PatternAlertsPage() {
       {/* ── Regulatory Note ───────────────────────────────────────────────── */}
       <div className="mt-8 rounded-lg bg-slate-50 border border-[var(--cs-border)] p-4">
         <div className="flex items-start gap-3">
-          <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)] mt-0.5 flex-shrink-0" />
+          <Sparkles className="h-5 w-5 text-[var(--cs-cara-gold)] mt-0.5 flex-shrink-0" />
           <div>
             <h4 className="text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">About Pattern Alerts</h4>
             <p className="text-[11px] text-[var(--cs-text-muted)] leading-relaxed">
@@ -645,7 +645,7 @@ export default function PatternAlertsPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Pattern Alerts — Cara pattern detection, behaviour trends, incident patterns, missing episodes patterns, safeguarding themes, risk escalation signals, Reg 45 intelligence evidence"
         recordType="management_oversight"

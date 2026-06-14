@@ -17,8 +17,8 @@ import { useReg22Records } from "@/hooks/use-reg22-records";
 import type { Reg22Record, Reg22ComplianceStatus } from "@/types/extended";
 import { REG22_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 
@@ -84,11 +84,11 @@ export default function Reg22RecordsPage() {
     <PageShell
       title="Regulation 22 Records"
       subtitle="Schedule 3 statutory records — compliance tracker"
-      ariaContext={{ pageTitle: "Regulation 22 Records", sourceType: "document" }}
+      caraContext={{ pageTitle: "Regulation 22 Records", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Regulation 22 Records" subtitle="Chamberlain House — Schedule 3 Compliance" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -288,7 +288,7 @@ export default function Reg22RecordsPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Regulation 22 Records — Schedule 3 statutory records, care planning documents, placement decisions, permanence, CLA statutory reviews, LAC guidance compliance evidence"
         recordType="ofsted_evidence"

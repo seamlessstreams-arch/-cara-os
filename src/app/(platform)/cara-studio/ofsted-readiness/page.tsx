@@ -11,10 +11,10 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import type {
-  AriaStudioGap,
-  AriaStudioEarlyWarning,
-  AriaStudioContradiction,
-} from "@/types/aria-studio";
+  CaraStudioGap,
+  CaraStudioEarlyWarning,
+  CaraStudioContradiction,
+} from "@/types/cara-studio";
 
 // ── Regulation mapping ──────────────────────────────────────────────────────
 
@@ -48,18 +48,18 @@ const REGULATION_AREAS: RegulationArea[] = [
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function OfstedReadinessDashboard() {
-  const [gaps, setGaps] = useState<AriaStudioGap[]>([]);
-  const [warnings, setWarnings] = useState<AriaStudioEarlyWarning[]>([]);
-  const [contradictions, setContradictions] = useState<AriaStudioContradiction[]>([]);
+  const [gaps, setGaps] = useState<CaraStudioGap[]>([]);
+  const [warnings, setWarnings] = useState<CaraStudioEarlyWarning[]>([]);
+  const [contradictions, setContradictions] = useState<CaraStudioContradiction[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [gapRes, warnRes, contraRes] = await Promise.all([
-        fetch("/api/aria-studio/gaps").then((r) => r.json()),
-        fetch("/api/aria-studio/early-warnings").then((r) => r.json()),
-        fetch("/api/aria-studio/contradictions").then((r) => r.json()),
+        fetch("/api/cara-studio/gaps").then((r) => r.json()),
+        fetch("/api/cara-studio/early-warnings").then((r) => r.json()),
+        fetch("/api/cara-studio/contradictions").then((r) => r.json()),
       ]);
       setGaps(gapRes.data ?? []);
       setWarnings(warnRes.data ?? []);
@@ -88,7 +88,7 @@ export default function OfstedReadinessDashboard() {
     <PageShell title="Ofsted Readiness" subtitle="Cara Studio Compliance Intelligence">
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent" style={{ borderColor: "var(--cs-aria-gold)" }} />
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent" style={{ borderColor: "var(--cs-cara-gold)" }} />
         </div>
       ) : (
         <div className="space-y-6">
@@ -141,7 +141,7 @@ export default function OfstedReadinessDashboard() {
                     <div className={`w-3 h-3 rounded-full flex-shrink-0 ${status === "ok" ? "bg-emerald-400" : "bg-amber-400"}`} />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium" style={{ color: "var(--cs-text-primary)" }}>
-                        <span style={{ color: "var(--cs-aria-gold)" }}>{area.reg}</span> — {area.title}
+                        <span style={{ color: "var(--cs-cara-gold)" }}>{area.reg}</span> — {area.title}
                       </p>
                       <p className="text-xs" style={{ color: "var(--cs-text-secondary)" }}>{area.description}</p>
                     </div>
@@ -156,8 +156,8 @@ export default function OfstedReadinessDashboard() {
 
           {/* ── Recording Quality ─────────────────────────────────────── */}
           {recordingWarnings.length > 0 && (
-            <div className="rounded-xl border-l-4 p-5" style={{ borderColor: "var(--cs-aria-gold)", backgroundColor: "var(--cs-surface)" }}>
-              <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--cs-aria-gold)" }}>
+            <div className="rounded-xl border-l-4 p-5" style={{ borderColor: "var(--cs-cara-gold)", backgroundColor: "var(--cs-surface)" }}>
+              <h3 className="text-sm font-semibold mb-3" style={{ color: "var(--cs-cara-gold)" }}>
                 Recording Quality Concerns
               </h3>
               <div className="space-y-2">

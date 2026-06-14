@@ -107,7 +107,7 @@ export interface TaskTemplate {
   requiresManagerReview: boolean;
   qaRequired: boolean;
   qaSamplePercentage?: number;      // 0-100
-  ariaReviewRequired: boolean;
+  caraReviewRequired: boolean;
 
   // Filing
   filingLocation: string;           // e.g. "Home Compliance > Fire Safety > Daily Checks"
@@ -197,9 +197,9 @@ export interface ScheduledOccurrence {
   escalationReason?: string;
 
   // Cara
-  ariaReviewed: boolean;
-  ariaQualityScore?: number;
-  ariaSuggestions?: string[];
+  caraReviewed: boolean;
+  caraQualityScore?: number;
+  caraSuggestions?: string[];
 }
 
 // ── Status Transition ───────────────────────────────────────────────────────

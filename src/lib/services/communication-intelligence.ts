@@ -407,8 +407,8 @@ export async function createDraft(input: {
   linkedEntityType?: string;
   linkedEntityId?: string;
   recipientContext?: string;
-  ariaGenerated?: boolean;
-  ariaPromptUsed?: string;
+  caraGenerated?: boolean;
+  caraPromptUsed?: string;
 }): Promise<ServiceResult<CommunicationDraft>> {
   const s = sb();
   if (!s) return { ok: false, error: "Supabase not configured" };
@@ -425,8 +425,8 @@ export async function createDraft(input: {
       linked_entity_type: input.linkedEntityType ?? null,
       linked_entity_id: input.linkedEntityId ?? null,
       recipient_context: input.recipientContext ?? null,
-      aria_generated: input.ariaGenerated ?? false,
-      aria_prompt_used: input.ariaPromptUsed ?? null,
+      aria_generated: input.caraGenerated ?? false,
+      aria_prompt_used: input.caraPromptUsed ?? null,
       status: "draft",
     })
     .select()

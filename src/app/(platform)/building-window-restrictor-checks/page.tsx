@@ -33,8 +33,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const outcomeColour: Record<string, string> = {
   pass: "bg-emerald-100 text-emerald-800 border-emerald-200",
@@ -47,7 +47,7 @@ const restrictorColour: Record<string, string> = {
   cable_key: "bg-sky-100 text-sky-800 border-sky-200",
   permanent_fixed: "bg-teal-100 text-teal-800 border-teal-200",
   pin_lock: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  combination: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
+  combination: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]",
   standard_window_lock: "bg-slate-100 text-[var(--cs-navy)] border-[var(--cs-border)]",
   none_child_accessible: "bg-red-100 text-red-900 border-red-300",
 };
@@ -128,12 +128,12 @@ export default function BuildingWindowRestrictorChecksPage() {
     <PageShell
       title="Building — Window Restrictor & High-Window Safety Checks"
       subtitle="Quarterly inspection of all upstairs and at-height windows. Restrictor functioning, key location, child awareness, no-tampering signage, school-age-appropriate locks. RoSPA falls-from-windows guidance and the 100mm aperture rule applied throughout."
-      ariaContext={{ pageTitle: "Window Restrictor Checks", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Window Restrictor Checks", sourceType: "home_check" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="building-window-restrictor-checks" />
           <PrintButton title="Window Restrictor Checks" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -329,7 +329,7 @@ export default function BuildingWindowRestrictorChecksPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Window Restrictor Checks — FENSA compliance, window restrictor testing, safe opening limits, first-floor and above checks, fall prevention, HSE guidance, Reg 44 evidence"
         recordType="ofsted_evidence"

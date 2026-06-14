@@ -292,7 +292,7 @@ export function DictationButton({
           "inline-flex items-center justify-center rounded-lg border transition-colors",
           error
             ? "border-amber-200 bg-amber-50 text-amber-600 hover:bg-amber-100"
-            : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-muted)] hover:bg-[var(--cs-aria-gold-bg)] hover:border-[var(--cs-aria-gold-soft)] hover:text-[var(--cs-aria-gold)]",
+            : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-muted)] hover:bg-[var(--cs-cara-gold-bg)] hover:border-[var(--cs-cara-gold-soft)] hover:text-[var(--cs-cara-gold)]",
           disabled && "opacity-40 cursor-not-allowed pointer-events-none",
           SIZE_BTN[size]
         )}

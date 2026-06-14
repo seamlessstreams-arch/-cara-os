@@ -118,7 +118,7 @@ function MoreOverlay({ onClose }: { onClose: () => void }) {
                 <div className="flex items-center gap-2 px-3 py-2 mb-0.5">
                   <GroupIcon className={cn(
                     "h-4 w-4",
-                    isGroupActive ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-gentle)]"
+                    isGroupActive ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-gentle)]"
                   )} />
                   <span className={cn(
                     "text-xs font-semibold uppercase tracking-wider",
@@ -144,17 +144,17 @@ function MoreOverlay({ onClose }: { onClose: () => void }) {
                         className={cn(
                           "flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all",
                           isActive
-                            ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] font-medium"
+                            ? "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] font-medium"
                             : "text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] hover:text-[var(--cs-navy)]"
                         )}
                       >
                         <ChildIcon className={cn(
                           "h-4 w-4 shrink-0",
-                          isActive ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-gentle)]"
+                          isActive ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-gentle)]"
                         )} />
                         <span className="flex-1">{child.label}</span>
                         {isActive && (
-                          <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)]" />
+                          <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-cara-gold)]" />
                         )}
                       </Link>
                     );
@@ -219,7 +219,7 @@ export function BottomNav() {
                   {label}
                 </span>
                 {isActive && (
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-b-full bg-[var(--cs-aria-gold)]" />
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 h-0.5 w-8 rounded-b-full bg-[var(--cs-cara-gold)]" />
                 )}
               </Link>
             );

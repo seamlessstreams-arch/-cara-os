@@ -75,7 +75,7 @@ export interface MeetingsAlert {
   message: string;
 }
 
-export interface AriaMeetingsInsight {
+export interface CaraMeetingsInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -85,7 +85,7 @@ export interface MeetingsIntelligenceResult {
   type_breakdown: MeetingTypeBreakdown[];
   child_participation: ChildParticipationProfile[];
   alerts: MeetingsAlert[];
-  insights: AriaMeetingsInsight[];
+  insights: CaraMeetingsInsight[];
 }
 
 interface EngineInput {
@@ -299,7 +299,7 @@ export function computeMeetingsIntelligence(input: EngineInput): MeetingsIntelli
   }
 
   // ── Cara Insights ──────────────────────────────────────────────────────
-  const insights: AriaMeetingsInsight[] = [];
+  const insights: CaraMeetingsInsight[] = [];
 
   // Warning: children never attended
   if (neverAttended.length > 0) {

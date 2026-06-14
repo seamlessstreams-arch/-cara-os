@@ -22,14 +22,14 @@ import { useMenstrualHealthPlans } from "@/hooks/use-menstrual-health-plans";
 import type { MenstrualHealthPlan, MenstrualStage, MenstrualComfortLevel } from "@/types/extended";
 import { MENSTRUAL_STAGE_LABEL, MENSTRUAL_COMFORT_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
 const STAGE_CLR: Record<MenstrualStage, string> = {
   pre_puberty_awareness: "bg-sky-100 text-sky-800",
-  early_signs_noted: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  early_signs_noted: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   started_menstruating: "bg-rose-100 text-rose-800",
   established: "bg-pink-100 text-pink-800",
   na_not_menstruating: "bg-slate-100 text-[var(--cs-text-secondary)]",
@@ -37,7 +37,7 @@ const STAGE_CLR: Record<MenstrualStage, string> = {
 
 const STAGE_BORDER: Record<MenstrualStage, string> = {
   pre_puberty_awareness: "border-l-sky-300",
-  early_signs_noted: "border-l-[var(--cs-aria-gold)]",
+  early_signs_noted: "border-l-[var(--cs-cara-gold)]",
   started_menstruating: "border-l-rose-400",
   established: "border-l-pink-400",
   na_not_menstruating: "border-l-slate-300",
@@ -150,12 +150,12 @@ export default function MenstrualHealthTrackerPage() {
     <PageShell
       title="Menstrual Health Tracker"
       subtitle="Quality Standard 7 (Health & wellbeing) · Period Products (Free Provision) Scotland Act principles applied as best practice · Sensitive record"
-      ariaContext={{ pageTitle: "Menstrual Health Tracker", sourceType: "medication" }}
+      caraContext={{ pageTitle: "Menstrual Health Tracker", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Menstrual Health Tracker" />
           <ExportButton data={filtered} columns={exportCols} filename="menstrual-health-tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -163,7 +163,7 @@ export default function MenstrualHealthTrackerPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           {[
             { label: "Active Plans", value: activePlans, icon: Heart, clr: "text-rose-600" },
-            { label: "Education Delivered", value: educationDelivered, icon: GraduationCap, clr: "text-[var(--cs-aria-gold)]" },
+            { label: "Education Delivered", value: educationDelivered, icon: GraduationCap, clr: "text-[var(--cs-cara-gold)]" },
             { label: "Plans Reviewed (90d)", value: reviewedIn90d, icon: CheckCircle2, clr: "text-emerald-600" },
           ].map((s) => (
             <Card key={s.label}>
@@ -327,7 +327,7 @@ export default function MenstrualHealthTrackerPage() {
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {r.education_delivered.map((e: string, i: number) => (
-                            <Badge key={i} variant="outline" className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">
+                            <Badge key={i} variant="outline" className="bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">
                               {e}
                             </Badge>
                           ))}
@@ -394,7 +394,7 @@ export default function MenstrualHealthTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Menstrual Health Tracker — period tracking, cycle records, health concerns, GP appointments, contraception records, PCOS, endometriosis, sanitary provision, health care plans"
         recordType="health"

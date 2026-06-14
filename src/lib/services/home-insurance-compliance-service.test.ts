@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeInsuranceMetrics,
   computeInsuranceAlerts,
-  generateInsuranceAriaInsights,
+  generateInsuranceCaraInsights,
   type HomeInsuranceComplianceRow,
 } from "./home-insurance-compliance-service";
 
@@ -139,13 +139,13 @@ describe("computeInsuranceAlerts", () => {
   });
 });
 
-describe("generateInsuranceAriaInsights", () => {
+describe("generateInsuranceCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
-    const insights = generateInsuranceAriaInsights([makeRow()]);
+    const insights = generateInsuranceCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
-    expect(generateInsuranceAriaInsights([])).toHaveLength(3);
+    expect(generateInsuranceCaraInsights([])).toHaveLength(3);
   });
 });

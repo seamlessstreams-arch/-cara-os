@@ -119,7 +119,7 @@ const STATUS_COLOURS: Record<InteractiveSessionStatus, string> = {
   active: "bg-blue-100 text-blue-800",
   paused: "bg-amber-100 text-amber-700",
   completed: "bg-green-100 text-green-700",
-  reviewed: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  reviewed: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
 };
 
 // ── Safety notice (always visible) ───────────────────────────────────────────
@@ -328,7 +328,7 @@ function SessionSummary({
   onSave: () => void;
 }) {
   const [generatingSummary, setGeneratingSummary] = useState(false);
-  const [ariaSummary, setAriaSummary] = useState<{
+  const [caraSummary, setCaraSummary] = useState<{
     child_friendly?: string;
     professional?: string;
     child_voice?: string;
@@ -355,7 +355,7 @@ function SessionSummary({
       const json = await res.json();
       const parsed = json?.data?.parsed;
       if (parsed && typeof parsed === "object") {
-        setAriaSummary(parsed);
+        setCaraSummary(parsed);
       }
     } finally {
       setGeneratingSummary(false);
@@ -370,9 +370,9 @@ function SessionSummary({
         childId: session.child_id,
         status: "completed",
         responses,
-        aria_summary: ariaSummary ? JSON.stringify(ariaSummary) : undefined,
-        child_voice: ariaSummary?.child_voice,
-        staff_notes: ariaSummary?.staff_reflection,
+        aria_summary: caraSummary ? JSON.stringify(caraSummary) : undefined,
+        child_voice: caraSummary?.child_voice,
+        staff_notes: caraSummary?.staff_reflection,
         safeguarding_flags: [],
         follow_up_actions: [],
         completed_at: new Date().toISOString(),
@@ -410,7 +410,7 @@ function SessionSummary({
         </div>
 
         {/* Cara summary */}
-        {!ariaSummary ? (
+        {!caraSummary ? (
           <Button
             onClick={handleGenerateSummary}
             disabled={generatingSummary}
@@ -422,28 +422,28 @@ function SessionSummary({
           </Button>
         ) : (
           <div className="space-y-3">
-            {ariaSummary.child_friendly && (
+            {caraSummary.child_friendly && (
               <div className="rounded-xl border border-teal-200 bg-teal-50 p-3">
                 <p className="text-[10px] font-semibold text-teal-600 uppercase mb-1">Child-friendly Summary</p>
-                <p className="text-sm text-[var(--cs-navy)]">{ariaSummary.child_friendly}</p>
+                <p className="text-sm text-[var(--cs-navy)]">{caraSummary.child_friendly}</p>
               </div>
             )}
-            {ariaSummary.professional && (
+            {caraSummary.professional && (
               <div className="rounded-xl border border-[var(--cs-border)] bg-slate-50 p-3">
                 <p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase mb-1">Professional Summary</p>
-                <p className="text-sm text-[var(--cs-navy)]">{ariaSummary.professional}</p>
+                <p className="text-sm text-[var(--cs-navy)]">{caraSummary.professional}</p>
               </div>
             )}
-            {ariaSummary.child_voice && (
-              <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3">
-                <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase mb-1">Child&apos;s Voice</p>
-                <p className="text-sm text-[var(--cs-navy)] italic">&ldquo;{ariaSummary.child_voice}&rdquo;</p>
+            {caraSummary.child_voice && (
+              <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-3">
+                <p className="text-[10px] font-semibold text-[var(--cs-cara-gold)] uppercase mb-1">Child&apos;s Voice</p>
+                <p className="text-sm text-[var(--cs-navy)] italic">&ldquo;{caraSummary.child_voice}&rdquo;</p>
               </div>
             )}
-            {ariaSummary.staff_reflection && (
+            {caraSummary.staff_reflection && (
               <div className="rounded-xl border border-[var(--cs-border)] p-3">
                 <p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase mb-1">Staff Reflection</p>
-                <p className="text-sm text-[var(--cs-navy)]">{ariaSummary.staff_reflection}</p>
+                <p className="text-sm text-[var(--cs-navy)]">{caraSummary.staff_reflection}</p>
               </div>
             )}
           </div>

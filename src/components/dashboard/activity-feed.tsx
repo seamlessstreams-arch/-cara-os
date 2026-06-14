@@ -41,7 +41,7 @@ const TYPE_COLOR: Record<FeedItem["type"], string> = {
   medication:   "bg-teal-100 text-teal-600",
   handover:     "bg-amber-100 text-amber-600",
   safeguarding: "bg-red-100 text-red-600",
-  training:     "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  training:     "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   document:     "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
   shift:        "bg-indigo-100 text-indigo-600",
   form:         "bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
@@ -111,7 +111,7 @@ function FeedItemRow({ item }: { item: FeedItem }) {
             </span>
           )}
           {item.child_id && (
-            <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-0.5 font-medium">
+            <span className="text-[10px] text-[var(--cs-cara-gold)] flex items-center gap-0.5 font-medium">
               <Heart className="h-2.5 w-2.5" />
               {getYPName(item.child_id)}
             </span>

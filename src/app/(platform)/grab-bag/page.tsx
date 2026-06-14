@@ -28,8 +28,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── default items per bag ──────────────────────────────────────────── */
 const DEFAULT_ITEMS: Omit<GrabBagItem, "present" | "expiry_date" | "notes">[] = [
@@ -153,13 +153,13 @@ export default function GrabBagPage() {
     <PageShell
       title="Emergency Grab Bags"
       subtitle="Essential documents and supplies for each young person — ready for immediate use"
-      ariaContext={{ pageTitle: "Emergency Grab Bags", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Emergency Grab Bags", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Grab Bags" />
           <ExportButton data={exportData} columns={exportCols} filename="grab-bags" />
           <Button onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />New Bag</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

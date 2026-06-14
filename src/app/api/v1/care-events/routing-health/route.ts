@@ -7,14 +7,14 @@
 //        routes for a care event via the processor
 // POST   { job_id, action: "retry_job" } → mark a failed job pending again
 //
-// Permission: aria.view_audit_logs for read; aria.commit_to_records
+// Permission: cara.view_audit_logs for read; cara.commit_to_records
 // for retry actions (they re-run logic that creates linked records).
 // All retry actions are appended to the live Cara audit tail.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import { loadRoutingHealth, retryJob } from "@/lib/care-events/routing-health";
 import { retryFailedRoutes } from "@/lib/care-events/processor";
 import { db } from "@/lib/db/store";
@@ -24,8 +24,8 @@ const DEFAULT_HOME_ID = "home_oak";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId,
     intent: "view routing health",
   });
@@ -56,8 +56,8 @@ export async function POST(req: NextRequest) {
     const ev = db.careEvents.findById(careEventId);
     if (!ev) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-    const guard = requireAriaStudioPermission(req, body, {
-      permission: "aria.commit_to_records",
+    const guard = requireCaraStudioPermission(req, body, {
+      permission: "cara.commit_to_records",
       homeId: ev.home_id,
       childId: ev.child_id,
       intent: "retry care event routes",
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await appendAriaAudit({
+    await appendCaraAudit({
       homeId: ev.home_id,
       actorId: guard.actor.userId,
       actionType: "artifact_recovered",
@@ -104,8 +104,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const guard = requireAriaStudioPermission(req, body, {
-      permission: "aria.commit_to_records",
+    const guard = requireCaraStudioPermission(req, body, {
+      permission: "cara.commit_to_records",
       homeId: job.home_id,
       intent: `retry job:${job.job_type}`,
     });
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
     }
 
     const j = result as Exclude<typeof result, { code: string }>;
-    await appendAriaAudit({
+    await appendCaraAudit({
       homeId: job.home_id,
       actorId: guard.actor.userId,
       actionType: "artifact_recovered",

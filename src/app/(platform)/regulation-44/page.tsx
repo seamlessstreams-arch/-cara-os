@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -450,13 +450,13 @@ export default function Regulation44Page() {
     <PageShell
       title="Regulation 44 Visits"
       subtitle="Independent visitor reports — Chamberlain House"
-      ariaContext={{ pageTitle: "Regulation 44 — Independent Visiting", sourceType: "reg45" }}
+      caraContext={{ pageTitle: "Regulation 44 — Independent Visiting", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">
           <Button className="bg-slate-900 hover:bg-slate-800 h-9 text-sm" onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4 mr-1.5" />Record Visit
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -562,7 +562,7 @@ export default function Regulation44Page() {
       )}
 
       {showCreate && <CreateVisitModal onClose={() => setShowCreate(false)} />}
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Regulation 44 — Independent Visiting — monthly independent visitor records, children's views, staff interviews, premises checks, recommendations, RI responses, statutory compliance"
         recordType="reg45"

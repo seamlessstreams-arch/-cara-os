@@ -9,13 +9,13 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  useAriaRecommendations,
-  useUpdateAriaRecommendation,
+  useCaraRecommendations,
+  useUpdateCaraRecommendation,
 } from "@/hooks/use-intelligence";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
 import { cn, formatDate } from "@/lib/utils";
-import type { AriaRecommendation } from "@/types/extended";
+import type { CaraRecommendation } from "@/types/extended";
 import {
   Lightbulb, CheckCircle2, X, AlertTriangle, Loader2, ClipboardList,
 } from "lucide-react";
@@ -48,18 +48,18 @@ function RecommendationCard({
   rec,
   ypNameMap,
 }: {
-  rec: AriaRecommendation;
+  rec: CaraRecommendation;
   ypNameMap: Record<string, string>;
 }) {
   const [confirmDismiss, setConfirmDismiss] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const updateRec = useUpdateAriaRecommendation();
+  const updateRec = useUpdateCaraRecommendation();
 
   const childName = rec.child_id ? (ypNameMap[rec.child_id] ?? rec.child_id) : null;
 
   const isOverdue = rec.deadline && new Date(rec.deadline) < new Date() && rec.status === "pending";
 
-  async function handleUpdate(data: Partial<AriaRecommendation>) {
+  async function handleUpdate(data: Partial<CaraRecommendation>) {
     setUpdating(true);
     try {
       await updateRec.mutateAsync({ id: rec.id, ...data });
@@ -177,7 +177,7 @@ export default function RecommendationsPage() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [childFilter, setChildFilter] = useState("all");
 
-  const { data, isLoading } = useAriaRecommendations({ homeId });
+  const { data, isLoading } = useCaraRecommendations({ homeId });
   const { data: ypData, isLoading: ypLoading } = useYoungPeople("current");
 
   const youngPeople = useMemo(() => ypData?.data ?? [], [ypData]);
@@ -199,7 +199,7 @@ export default function RecommendationsPage() {
     });
     return map;
   }, [youngPeople]);
-  const recs: AriaRecommendation[] = useMemo(() => data?.data ?? [], [data]);
+  const recs: CaraRecommendation[] = useMemo(() => data?.data ?? [], [data]);
 
   const pending = useMemo(() => recs.filter((r) => r.status === "pending"), [recs]);
   const urgent = useMemo(() => pending.filter((r) => r.priority === "urgent"), [pending]);

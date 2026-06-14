@@ -12,9 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
-import { StudioQuickActions } from "@/components/aria-studio/studio-quick-actions";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
+import { StudioQuickActions } from "@/components/cara-studio/studio-quick-actions";
 import { useStaffMember } from "@/hooks/use-staff";
 import { StaffComplianceCard } from "@/components/staff/staff-compliance-card";
 import { useTrainingNeeds } from "@/hooks/use-ri-learning";
@@ -90,7 +90,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
   const { id } = use(params);
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("overview");
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
 
@@ -155,7 +155,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
   ];
 
   // Cara context for development summary
-  const ariaContext = [
+  const caraContext = [
     `Staff: ${staff.full_name}, ${staff.job_title}`,
     `Start date: ${formatDate(staff.start_date)}`,
     `Training: ${completedTraining} compliant, ${expiredTraining} expired, ${expiringSoon} expiring`,
@@ -185,17 +185,17 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
             className="gap-1.5 bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
             onClick={() => router.push(`/record-staff/${id}`)}
           >
-            <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+            <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
             Record anything
           </Button>
           <Button
             size="sm"
             variant="outline"
             className="gap-1.5"
-            onClick={() => setShowAria((p) => !p)}
+            onClick={() => setShowCara((p) => !p)}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            {showAria ? "Close Cara" : "Cara Summary"}
+            {showCara ? "Close Cara" : "Cara Summary"}
           </Button>
         </div>
       }
@@ -203,13 +203,13 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
       <div id="staff-detail-content" className="space-y-5 animate-fade-in">
 
         {/* Cara Development Summary Panel */}
-        {showAria && (
+        {showCara && (
           <>
-            <AriaPanel
+            <CaraPanel
               mode="staff_development_summary"
               pageContext="Staff development profile"
               recordType="staff_development"
-              sourceContent={ariaContext}
+              sourceContent={caraContext}
               userRole="registered_manager"
               defaultStyle="concise_manager"
             />
@@ -237,7 +237,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                   <Badge variant="outline" className="text-[10px] rounded-full capitalize">
                     {staff.employment_type}
                   </Badge>
-                  <AriaUsageBadge ariaAssisted={(staff as any).aria_assist_used} sourceTable="staff" recordId={staff.id} />
+                  <CaraUsageBadge caraAssisted={(staff as any).aria_assist_used} sourceTable="staff" recordId={staff.id} />
                   {staff.supervision_overdue && (
                     <Badge variant="destructive" className="text-[10px] rounded-full">
                       Supervision Overdue
@@ -280,7 +280,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
           <StatCard icon={GraduationCap} label="Training Records" value={training.length} colour="bg-blue-100 text-blue-600" />
           <StatCard icon={CheckCircle2} label="Compliant" value={completedTraining} colour="bg-emerald-100 text-emerald-600" />
           <StatCard icon={AlertTriangle} label="Expired / Expiring" value={expiredTraining + expiringSoon} colour={expiredTraining > 0 ? "bg-red-100 text-red-600" : "bg-amber-100 text-amber-600"} alert={expiredTraining > 0} />
-          <StatCard icon={Brain} label="Training Needs" value={staffTrainingNeeds.length} colour="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]" alert={urgentNeeds.length > 0} />
+          <StatCard icon={Brain} label="Training Needs" value={staffTrainingNeeds.length} colour="bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]" alert={urgentNeeds.length > 0} />
         </div>
 
         {/* Tabs */}
@@ -670,9 +670,9 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                   size="sm"
                   variant="outline"
                   className="gap-1.5 w-full"
-                  onClick={() => { setShowAria(true); setTab("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                  onClick={() => { setShowCara(true); setTab("overview"); window.scrollTo({ top: 0, behavior: "smooth" }); }}
                 >
-                  <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                  <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                   Generate Cara Development Summary
                 </Button>
               </CardContent>
@@ -694,7 +694,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
             { key: "health_safety", label: "Health & Safety", icon: HeartPulse, colour: "text-amber-600", bg: "bg-amber-50", categories: ["health_and_safety", "first_aid", "fire_safety", "food_hygiene"] },
             { key: "medication", label: "Medication", icon: FlaskConical, colour: "text-blue-600", bg: "bg-blue-50", categories: ["medication"] },
             { key: "behaviour", label: "Behaviour Support", icon: ShieldCheck, colour: "text-orange-600", bg: "bg-orange-50", categories: ["restraint", "mental_health", "trauma_informed"] },
-            { key: "equality", label: "Equality & Rights", icon: Scale, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]", categories: ["equality_diversity", "data_protection"] },
+            { key: "equality", label: "Equality & Rights", icon: Scale, colour: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)]", categories: ["equality_diversity", "data_protection"] },
             { key: "professional", label: "Professional Development", icon: BookMarked, colour: "text-emerald-600", bg: "bg-emerald-50", categories: ["professional_development"] },
           ];
 
@@ -942,8 +942,8 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
 
             {linkedDocs.length === 0 ? (
               <div className="rounded-2xl border-2 border-dashed border-[var(--cs-border)] p-12 text-center">
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--cs-aria-gold-bg)] mx-auto mb-3">
-                  <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--cs-cara-gold-bg)] mx-auto mb-3">
+                  <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                 </div>
                 <p className="text-sm font-semibold text-[var(--cs-text-secondary)] mb-1">No documents linked</p>
                 <p className="text-xs text-[var(--cs-text-muted)] max-w-xs mx-auto mb-4">
@@ -966,14 +966,14 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                   const statusBadge: Record<string, string> = {
                     review: "bg-amber-100 text-amber-700", approved: "bg-blue-100 text-blue-700",
                     actioned: "bg-emerald-100 text-emerald-700", rejected: "bg-red-100 text-red-700",
-                    analysing: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]", pending: "bg-slate-100 text-[var(--cs-text-secondary)]",
+                    analysing: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]", pending: "bg-slate-100 text-[var(--cs-text-secondary)]",
                     archived: "bg-slate-100 text-[var(--cs-text-muted)]",
                   };
                   return (
                     <div key={doc.id} className={`rounded-2xl border bg-white p-4 border-l-4 ${riskBorder[doc.ai_risk_level ?? "low"] ?? "border-l-slate-200"}`}>
                       <div className="flex items-start gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-aria-gold-bg)]">
-                          <FileText className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-cara-gold-bg)]">
+                          <FileText className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -995,7 +995,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                           <div className="flex items-center gap-3 mt-2 text-[10px] text-[var(--cs-text-muted)]">
                             <span>{formatDate(doc.uploaded_at)}</span>
                             {doc.tasks_created.length > 0 && (
-                              <span className="text-[var(--cs-aria-gold)] font-medium">{doc.tasks_created.length} task{doc.tasks_created.length !== 1 ? "s" : ""} created</span>
+                              <span className="text-[var(--cs-cara-gold)] font-medium">{doc.tasks_created.length} task{doc.tasks_created.length !== 1 ? "s" : ""} created</span>
                             )}
                           </div>
                         </div>

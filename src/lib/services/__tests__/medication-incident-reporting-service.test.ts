@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type MedicationIncidentReportRow } from "../medication-incident-reporting-service";
 
-const { computeMedicationIncidentMetrics, computeMedicationIncidentAlerts, generateMedicationIncidentAriaInsights } = _testing;
+const { computeMedicationIncidentMetrics, computeMedicationIncidentAlerts, generateMedicationIncidentCaraInsights } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
 
@@ -361,63 +361,63 @@ describe("medication-incident-reporting-service", () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════
-  // generateMedicationIncidentAriaInsights
+  // generateMedicationIncidentCaraInsights
   // ═══════════════════════════════════════════════════════════════════════
 
-  describe("generateMedicationIncidentAriaInsights", () => {
+  describe("generateMedicationIncidentCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
       const m = computeMedicationIncidentMetrics([]);
       const a = computeMedicationIncidentAlerts([]);
-      const insights = generateMedicationIncidentAriaInsights(m, a);
+      const insights = generateMedicationIncidentCaraInsights(m, a);
       expect(insights).toHaveLength(3);
     });
 
     it("insight 1 starts with [pink]", () => {
       const m = computeMedicationIncidentMetrics([]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[0]).toMatch(/^\[pink\]/);
+      expect(generateMedicationIncidentCaraInsights(m, a)[0]).toMatch(/^\[pink\]/);
     });
 
     it("insight 2 starts with [amber]", () => {
       const m = computeMedicationIncidentMetrics([]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[1]).toMatch(/^\[amber\]/);
+      expect(generateMedicationIncidentCaraInsights(m, a)[1]).toMatch(/^\[amber\]/);
     });
 
     it("insight 3 starts with [reflect]", () => {
       const m = computeMedicationIncidentMetrics([]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[2]).toMatch(/^\[reflect\]/);
+      expect(generateMedicationIncidentCaraInsights(m, a)[2]).toMatch(/^\[reflect\]/);
     });
 
     it("insight 1 contains total incidents count", () => {
       const m = computeMedicationIncidentMetrics([makeRow(), makeRow()]);
       const a = computeMedicationIncidentAlerts([makeRow(), makeRow()]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[0]).toContain("2 medication incidents");
+      expect(generateMedicationIncidentCaraInsights(m, a)[0]).toContain("2 medication incidents");
     });
 
     it("insight 1 contains unique children count", () => {
       const m = computeMedicationIncidentMetrics([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[0]).toContain("2 children");
+      expect(generateMedicationIncidentCaraInsights(m, a)[0]).toContain("2 children");
     });
 
     it("insight 1 uses singular child for 1", () => {
       const m = computeMedicationIncidentMetrics([makeRow()]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[0]).toContain("1 child");
+      expect(generateMedicationIncidentCaraInsights(m, a)[0]).toContain("1 child");
     });
 
     it("insight 1 contains near miss count", () => {
       const m = computeMedicationIncidentMetrics([makeRow({ incident_type: "near_miss" })]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[0]).toContain("Near misses: 1");
+      expect(generateMedicationIncidentCaraInsights(m, a)[0]).toContain("Near misses: 1");
     });
 
     it("insight 1 contains open investigations count", () => {
       const m = computeMedicationIncidentMetrics([makeRow({ investigation_status: "reported" })]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[0]).toContain("Open investigations: 1");
+      expect(generateMedicationIncidentCaraInsights(m, a)[0]).toContain("Open investigations: 1");
     });
 
     it("insight 2 mentions critical and high alert counts when present", () => {
@@ -427,7 +427,7 @@ describe("medication-incident-reporting-service", () => {
       ];
       const m = computeMedicationIncidentMetrics(rows);
       const a = computeMedicationIncidentAlerts(rows);
-      const i = generateMedicationIncidentAriaInsights(m, a)[1];
+      const i = generateMedicationIncidentCaraInsights(m, a)[1];
       expect(i).toContain("1 critical");
       expect(i).toContain("2 high-priority");
     });
@@ -435,31 +435,31 @@ describe("medication-incident-reporting-service", () => {
     it("insight 2 shows no concerns when none", () => {
       const m = computeMedicationIncidentMetrics([makeRow()]);
       const a = computeMedicationIncidentAlerts([makeRow()]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[1]).toContain("No critical or high-priority concerns");
+      expect(generateMedicationIncidentCaraInsights(m, a)[1]).toContain("No critical or high-priority concerns");
     });
 
     it("insight 2 contains GP notified rate", () => {
       const m = computeMedicationIncidentMetrics([makeRow()]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[1]).toContain("GP notified rate");
+      expect(generateMedicationIncidentCaraInsights(m, a)[1]).toContain("GP notified rate");
     });
 
     it("insight 2 contains parent notified rate", () => {
       const m = computeMedicationIncidentMetrics([makeRow()]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[1]).toContain("Parent notified rate");
+      expect(generateMedicationIncidentCaraInsights(m, a)[1]).toContain("Parent notified rate");
     });
 
     it("insight 2 contains root cause rate", () => {
       const m = computeMedicationIncidentMetrics([makeRow()]);
       const a = computeMedicationIncidentAlerts([]);
-      expect(generateMedicationIncidentAriaInsights(m, a)[1]).toContain("Root cause identified rate");
+      expect(generateMedicationIncidentCaraInsights(m, a)[1]).toContain("Root cause identified rate");
     });
 
     it("insight 3 contains reflective question about incidents", () => {
       const m = computeMedicationIncidentMetrics([]);
       const a = computeMedicationIncidentAlerts([]);
-      const i = generateMedicationIncidentAriaInsights(m, a)[2];
+      const i = generateMedicationIncidentCaraInsights(m, a)[2];
       expect(i).toContain("incident");
       expect(i).toContain("root cause");
     });

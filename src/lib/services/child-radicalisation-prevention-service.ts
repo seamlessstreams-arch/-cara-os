@@ -246,7 +246,7 @@ export function computeRadicalisationAlerts(
   return alerts;
 }
 
-export function generateRadicalisationAriaInsights(
+export function generateRadicalisationCaraInsights(
   rows: ChildRadicalisationPreventionRow[],
 ): string[] {
   const metrics = computeRadicalisationMetrics(rows);
@@ -370,5 +370,5 @@ export async function createChildRadicalisationPrevention(input: {
 export const _testing = {
   computeRadicalisationMetrics,
   computeRadicalisationAlerts,
-  generateRadicalisationAriaInsights,
+  generateRadicalisationCaraInsights,
 };

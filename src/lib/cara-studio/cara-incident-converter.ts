@@ -11,8 +11,8 @@ import type { CaraIncidentLearningOutput } from "./cara-types";
 import type { CaraChildContext } from "./cara-context-builder";
 import { PACE_OPENINGS, PACE_VALIDATIONS, RECORDING_PROMPTS } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
-import { BEHAVIOUR_DRIVERS } from "@/lib/aria/practice-frameworks";
-import { efhSignSpotting } from "@/lib/aria/contextual-safeguarding";
+import { BEHAVIOUR_DRIVERS } from "@/lib/cara/practice-frameworks";
+import { efhSignSpotting } from "@/lib/cara/contextual-safeguarding";
 
 export interface IncidentLearningInput {
   ctx: CaraChildContext;

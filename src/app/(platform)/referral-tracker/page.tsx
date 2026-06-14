@@ -37,8 +37,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local colour map ────────────────────────────────────────────────── */
 
@@ -164,7 +164,7 @@ export default function ReferralTrackerPage() {
     <PageShell
       title="Referral Tracker"
       subtitle="Tracking incoming placement referrals from initial contact through to matching panel decision and outcome"
-      ariaContext={{ pageTitle: "Referral Tracker", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Referral Tracker", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="referral-tracker" />
@@ -172,7 +172,7 @@ export default function ReferralTrackerPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> New Referral
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -409,7 +409,7 @@ export default function ReferralTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Referral Tracker — placement referrals, matching requests, commissioning, referral outcomes, placement decisions, matching criteria, new admissions pipeline, Annex A evidence"
         recordType="placement_plan"

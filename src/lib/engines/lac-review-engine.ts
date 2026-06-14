@@ -107,7 +107,7 @@ export interface LACReviewAlert {
   message: string;
 }
 
-export interface AriaLACReviewInsight {
+export interface CaraLACReviewInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -119,7 +119,7 @@ export interface LACReviewResult {
   participation: ParticipationAnalysis;
   stability: StabilityOverview;
   alerts: LACReviewAlert[];
-  insights: AriaLACReviewInsight[];
+  insights: CaraLACReviewInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -313,7 +313,7 @@ export function computeLACReviewIntelligence(input: LACReviewEngineInput): LACRe
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaLACReviewInsight[] = [];
+  const insights: CaraLACReviewInsight[] = [];
 
   // Critical: overdue reviews
   if (overdueChildren.length > 0) {

@@ -30,8 +30,8 @@ import {
 } from "@/types/extended";
 import { useDataBreachRecords } from "@/hooks/use-data-breach-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -173,12 +173,12 @@ export default function DataBreachLogPage() {
     <PageShell
       title="Data Breach Log"
       subtitle="Breach and near-miss register — GDPR Article 33-34 incident management (Data Protection Act 2018, UK GDPR)"
-      ariaContext={{ pageTitle: "Data Breach Log", sourceType: "document" }}
+      caraContext={{ pageTitle: "Data Breach Log", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Data Breach Log" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="data-breach-log" />
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -401,7 +401,7 @@ export default function DataBreachLogPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Data Breach Log — GDPR, ICO notification, personal data incidents, breach reporting, DPO, containment, notification to data subjects, Ofsted, risk rating, remediation"
         recordType="policy"

@@ -15,8 +15,8 @@ import {
 import { cn, formatDate, daysFromNow } from "@/lib/utils";
 import { useStaff } from "@/hooks/use-staff";
 import { useRota } from "@/hooks/use-rota";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import type { Shift } from "@/types";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -43,7 +43,7 @@ function shiftStatusConfig(s: Shift["status"]) {
     case "in_progress": return { label: "In progress", colour: "bg-blue-100 text-blue-700 border-blue-200" };
     case "no_show":     return { label: "No show",     colour: "bg-red-100 text-red-700 border-red-200" };
     case "cancelled":   return { label: "Cancelled",   colour: "bg-slate-100 text-[var(--cs-text-muted)] border-[var(--cs-border)]" };
-    case "confirmed":   return { label: "Confirmed",   colour: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]" };
+    case "confirmed":   return { label: "Confirmed",   colour: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]" };
     default:            return { label: "Scheduled",   colour: "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]" };
   }
 }
@@ -122,7 +122,7 @@ function ShiftRow({ shift }: { shift: Shift }) {
       <Badge className={cn("text-[10px] rounded-full border ml-auto shrink-0", sc.colour)}>
         {sc.label}
       </Badge>
-      <AriaUsageBadge ariaAssisted={(shift as any).aria_assist_used} sourceTable="timesheets" recordId={shift.id} />
+      <CaraUsageBadge caraAssisted={(shift as any).aria_assist_used} sourceTable="timesheets" recordId={shift.id} />
 
       {/* Notes */}
       {shift.notes && (
@@ -143,7 +143,7 @@ export default function TimesheetDetailPage({
 }) {
   const { staffId } = use(params);
   const router = useRouter();
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
 
   const staffQuery = useStaff();
   const staff = useMemo(
@@ -190,7 +190,7 @@ export default function TimesheetDetailPage({
     return { scheduledMins, overtimeMins, completedShifts, noShows, hourlyRate, otPay, regularPay, variance, contractedMins2Wk };
   }, [staffShifts, staff]);
 
-  const ariaContext = staff
+  const caraContext = staff
     ? [
         `Staff member: ${staff.full_name}`,
         `Role: ${staff.job_title}`,
@@ -248,19 +248,19 @@ export default function TimesheetDetailPage({
     >
       <div id="timesheet-detail-content" className="space-y-0">
       {/* Cara Panel */}
-      {showAria && (
+      {showCara && (
         <div className="mb-6 relative">
           <button
-            onClick={() => setShowAria(false)}
+            onClick={() => setShowCara(false)}
             className="absolute top-3 right-3 z-10 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xs"
           >
             ✕ Close
           </button>
-          <AriaPanel
+          <CaraPanel
             mode="oversee"
             pageContext={`Timesheet — ${staff.full_name}`}
             recordType="supervision"
-            sourceContent={ariaContext}
+            sourceContent={caraContext}
           />
         </div>
       )}
@@ -299,9 +299,9 @@ export default function TimesheetDetailPage({
                 size="sm"
                 variant="outline"
                 className="gap-1.5 text-xs"
-                onClick={() => setShowAria((v) => !v)}
+                onClick={() => setShowCara((v) => !v)}
               >
-                <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />Cara Analysis
+                <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />Cara Analysis
               </Button>
               <Button
                 size="sm"
@@ -347,7 +347,7 @@ export default function TimesheetDetailPage({
             value: String(staffShifts.length),
             sub: `${totals.completedShifts} completed`,
             icon: Calendar,
-            colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]",
+            colour: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)]",
           },
           {
             label: "No shows",

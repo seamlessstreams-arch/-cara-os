@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computePestControlManagementMetrics,
   identifyPestControlManagementAlerts,
-  generatePestControlManagementAriaInsights,
+  generatePestControlManagementCaraInsights,
   type HomePestControlManagementRow,
 } from "./home-pest-control-management-service";
 
@@ -136,15 +136,15 @@ describe("identifyPestControlManagementAlerts", () => {
   });
 });
 
-describe("generatePestControlManagementAriaInsights", () => {
+describe("generatePestControlManagementCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generatePestControlManagementAriaInsights([]);
+    const insights = generatePestControlManagementCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights with correct tags for data with alerts", () => {
     const rows = [makeRow({ severity: "Infestation" })];
-    const insights = generatePestControlManagementAriaInsights(rows);
+    const insights = generatePestControlManagementCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[lime]");
     expect(insights[1]).toContain("[amber]");

@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import type { Regulation45EvidenceItem } from "@/types/aria-reports";
+import type { Regulation45EvidenceItem } from "@/types/cara-reports";
 import {
   Scale,
   Search,
@@ -134,7 +134,7 @@ function statusVariant(status: string) {
     case "suggested": return "warning" as const;
     case "accepted": return "success" as const;
     case "rejected": return "destructive" as const;
-    case "included_in_report": return "aria" as const;
+    case "included_in_report": return "cara" as const;
     default: return "secondary" as const;
   }
 }
@@ -151,7 +151,7 @@ function statusLabel(status: string) {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
-export default function AriaReg45Page() {
+export default function CaraReg45Page() {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All Categories");
   const [status, setStatus] = useState("All");
@@ -188,9 +188,9 @@ export default function AriaReg45Page() {
       <div className="mb-6 flex items-center gap-3">
         <div
           className="flex h-10 w-10 items-center justify-center rounded-lg"
-          style={{ backgroundColor: "var(--cs-aria-gold-bg)" }}
+          style={{ backgroundColor: "var(--cs-cara-gold-bg)" }}
         >
-          <Scale className="h-5 w-5" style={{ color: "var(--cs-aria-gold)" }} />
+          <Scale className="h-5 w-5" style={{ color: "var(--cs-cara-gold)" }} />
         </div>
         <div>
           <h1 className="text-xl font-semibold" style={{ color: "var(--cs-navy)" }}>
@@ -306,7 +306,7 @@ export default function AriaReg45Page() {
                         className="absolute left-0 top-0 h-full rounded-full"
                         style={{
                           width: `${item.quality_score}%`,
-                          backgroundColor: item.quality_score >= 80 ? "#22c55e" : item.quality_score >= 60 ? "var(--cs-aria-gold)" : "#ef4444",
+                          backgroundColor: item.quality_score >= 80 ? "#22c55e" : item.quality_score >= 60 ? "var(--cs-cara-gold)" : "#ef4444",
                         }}
                       />
                     </div>
@@ -340,9 +340,9 @@ function StatCard({
       <CardContent className="flex items-center gap-3 py-3">
         <div
           className="flex h-8 w-8 items-center justify-center rounded-lg"
-          style={{ backgroundColor: "var(--cs-aria-gold-bg)" }}
+          style={{ backgroundColor: "var(--cs-cara-gold-bg)" }}
         >
-          <Icon className="h-4 w-4" style={{ color: color ?? "var(--cs-aria-gold)" }} />
+          <Icon className="h-4 w-4" style={{ color: color ?? "var(--cs-cara-gold)" }} />
         </div>
         <div>
           <p className="text-xs" style={{ color: "var(--cs-text-muted)" }}>{label}</p>

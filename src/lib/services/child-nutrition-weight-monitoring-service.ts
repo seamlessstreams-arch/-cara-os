@@ -245,7 +245,7 @@ export function computeNutritionAlerts(
   return alerts;
 }
 
-export function generateNutritionAriaInsights(
+export function generateNutritionCaraInsights(
   rows: ChildNutritionWeightMonitoringRow[],
 ): string[] {
   const metrics = computeNutritionMetrics(rows);
@@ -368,5 +368,5 @@ export async function createChildNutritionWeightMonitoring(input: {
 export const _testing = {
   computeNutritionMetrics,
   computeNutritionAlerts,
-  generateNutritionAriaInsights,
+  generateNutritionCaraInsights,
 };

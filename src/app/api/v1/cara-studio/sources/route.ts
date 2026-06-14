@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
   const sourceType = searchParams.get("source_type");
   const limit = parseInt(searchParams.get("limit") ?? "50");
 
-  let items = db.ariaSources.findAll(homeId);
+  let items = db.caraSources.findAll(homeId);
 
   if (childId) items = items.filter((s) => s.child_id === childId);
   if (sourceType) items = items.filter((s) => s.source_type === sourceType);

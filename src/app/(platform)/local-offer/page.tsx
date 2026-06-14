@@ -15,8 +15,8 @@ import { useLocalOfferSections } from "@/hooks/use-local-offer-sections";
 import type { LocalOfferSection, LocalOfferCategory } from "@/types/extended";
 import { LOCAL_OFFER_CATEGORY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -53,11 +53,11 @@ export default function LocalOfferPage() {
     <PageShell
       title="Local Offer"
       subtitle="What Chamberlain House Offers · Our Strengths · Our Commitments"
-      ariaContext={{ pageTitle: "Local Offer", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Local Offer", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Chamberlain House — Local Offer" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }>
       <div id="print-area">
@@ -187,7 +187,7 @@ export default function LocalOfferPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Local Offer — what Chamberlain House provides to children and families, care commitments, education, health, therapeutic services, activities, community links, independence, workforce"
         recordType="ofsted_evidence"

@@ -23,7 +23,7 @@ export default function ChildTrendsPage() {
     <PageShell
       title="Child Trends"
       subtitle="Per-child direction of travel — is our intervention working? The drill-down from Home Trends."
-      ariaContext={{ pageTitle: "Child Trends", sourceType: "general" }}
+      caraContext={{ pageTitle: "Child Trends", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button

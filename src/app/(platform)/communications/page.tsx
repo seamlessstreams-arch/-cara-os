@@ -162,7 +162,7 @@ export default function CommunicationsPage() {
     drafts: DEMO_DRAFTS.filter((d) => d.status === "draft").length,
     inReview: DEMO_DRAFTS.filter((d) => d.status === "review").length,
     sent: DEMO_DRAFTS.filter((d) => d.status === "sent").length,
-    ariaGenerated: DEMO_DRAFTS.filter((d) => d.aria_generated).length,
+    caraGenerated: DEMO_DRAFTS.filter((d) => d.aria_generated).length,
   };
 
   return (
@@ -174,7 +174,7 @@ export default function CommunicationsPage() {
           <StatCard label="In Progress" value={stats.drafts} icon={Edit3} color="text-gray-600 bg-gray-50" />
           <StatCard label="In Review" value={stats.inReview} icon={Eye} color="text-amber-600 bg-amber-50" />
           <StatCard label="Sent" value={stats.sent} icon={Send} color="text-emerald-600 bg-emerald-50" />
-          <StatCard label="Cara-Generated" value={stats.ariaGenerated} icon={Sparkles} color="text-violet-600 bg-violet-50" />
+          <StatCard label="Cara-Generated" value={stats.caraGenerated} icon={Sparkles} color="text-violet-600 bg-violet-50" />
         </div>
 
         {/* Actions bar */}

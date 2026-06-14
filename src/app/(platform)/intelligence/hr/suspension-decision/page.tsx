@@ -103,7 +103,7 @@ interface Flag {
 interface Analysis {
   generatedAt: string;
   status: string;
-  ariaLabel: string;
+  caraLabel: string;
   overallRiskGrade: RiskRating;
   highestRiskFactor: string;
   rationaleSummary: string;
@@ -120,7 +120,7 @@ interface Analysis {
   writtenReasonsDraft: string;
   reviewSchedule: { reviewNumber: number; expectedDate: string }[];
   regulatoryLinks: string[];
-  ariaConfidence: number;
+  caraConfidence: number;
   engineVersion: string;
 }
 
@@ -260,8 +260,8 @@ export default function SuspensionDecisionPage() {
 
   return (
     <PageShell title="HR — Suspension Decision Tool">
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
-        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-cara-gold)]" />
         <div>
           <div className="font-semibold">Cara suggested draft, never final</div>
           <p className="text-[var(--cs-navy)]">
@@ -277,7 +277,7 @@ export default function SuspensionDecisionPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldCheck className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Identity and concern
+            <ShieldCheck className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Identity and concern
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -559,7 +559,7 @@ export default function SuspensionDecisionPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-xs uppercase text-[var(--cs-text-muted)] mb-1">Cara confidence</div>
-                <div className="text-3xl font-semibold text-[var(--cs-navy)]">{Math.round(analysis.ariaConfidence * 100)}%</div>
+                <div className="text-3xl font-semibold text-[var(--cs-navy)]">{Math.round(analysis.caraConfidence * 100)}%</div>
               </CardContent>
             </Card>
           </div>
@@ -623,7 +623,7 @@ export default function SuspensionDecisionPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-base">
-                    <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Cara suggested draft of written reasons
+                    <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Cara suggested draft of written reasons
                   </CardTitle>
                 </CardHeader>
                 <CardContent>

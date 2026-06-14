@@ -6,8 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -95,7 +95,7 @@ function AccordionSection({ section, index }: { section: ContentSection; index: 
           {section.activity && (
             <div>
               <p className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1">Activity</p>
-              <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
+              <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
                 <p className="text-sm text-[var(--cs-navy)] leading-relaxed">{section.activity}</p>
               </div>
             </div>
@@ -116,7 +116,7 @@ function WorkshopResult({
   saved: boolean;
 }) {
   return (
-    <Card className="border-[var(--cs-aria-gold-soft)]">
+    <Card className="border-[var(--cs-cara-gold-soft)]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
@@ -138,7 +138,7 @@ function WorkshopResult({
             <ul className="space-y-1.5">
               {result.learning_objectives.map((obj, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-[var(--cs-text-secondary)]">
-                  <span className="text-[var(--cs-aria-gold)] font-bold shrink-0">{i + 1}.</span>
+                  <span className="text-[var(--cs-cara-gold)] font-bold shrink-0">{i + 1}.</span>
                   <span>{obj}</span>
                 </li>
               ))}
@@ -210,7 +210,7 @@ function WorkshopResult({
             <ul className="space-y-1.5">
               {result.evaluation_questions.map((q, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-[var(--cs-text-secondary)]">
-                  <span className="text-[var(--cs-aria-gold)] font-semibold shrink-0">{i + 1}.</span>
+                  <span className="text-[var(--cs-cara-gold)] font-semibold shrink-0">{i + 1}.</span>
                   <span>{q}</span>
                 </li>
               ))}
@@ -226,8 +226,8 @@ function WorkshopResult({
 function WorkshopListItem({ resource }: { resource: { id: string; title: string; pathway?: LearningPathway; created_at: string; status: string } }) {
   return (
     <div className="flex items-center gap-3 rounded-xl border border-[var(--cs-border-subtle)] bg-white p-3">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--cs-aria-gold-bg)]">
-        <Presentation className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--cs-cara-gold-bg)]">
+        <Presentation className="h-4 w-4 text-[var(--cs-cara-gold)]" />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-[var(--cs-navy)] truncate">{resource.title}</p>
@@ -318,13 +318,13 @@ export default function WorkshopPlannerPage() {
     <PageShell
       title="Workshop Planner"
       subtitle="Plan structured learning workshops with Cara"
-      ariaContext={{ pageTitle: "Learning Workshops", sourceType: "document" }}
+      caraContext={{ pageTitle: "Learning Workshops", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Workshop Planner" subtitle="Chamberlain House — Learning Workshops" targetId="workshops-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Workshop Planner upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -334,8 +334,8 @@ export default function WorkshopPlannerPage() {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--cs-aria-gold-bg)]">
-                <Presentation className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--cs-cara-gold-bg)]">
+                <Presentation className="h-4 w-4 text-[var(--cs-cara-gold)]" />
               </div>
               Plan a Workshop
             </CardTitle>
@@ -417,7 +417,7 @@ export default function WorkshopPlannerPage() {
           )}
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Learning Workshops — staff training workshops, group learning sessions, therapeutic skills workshops, safeguarding training days, practice development events, CPD evidence"
         recordType="staff_training"

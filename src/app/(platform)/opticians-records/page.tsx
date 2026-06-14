@@ -29,8 +29,8 @@ import type { OpticiansRecord, OpticalStatus, OpticalRecallInterval } from "@/ty
 import { OPTICAL_STATUS_LABEL, OPTICAL_RECALL_INTERVAL_LABEL, GLASSES_TYPE_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const statusColour: Record<OpticalStatus, string> = {
   active_nhs: "bg-green-100 text-green-800",
@@ -88,12 +88,12 @@ export default function OpticiansRecordsPage() {
     <PageShell
       title="Opticians Records"
       subtitle="Per-child eye care — registrations, prescriptions, glasses, and reasonable adjustments"
-      ariaContext={{ pageTitle: "Opticians Records", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Opticians Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="opticians-records" />
           <PrintButton title="Opticians Records" />
-          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -285,7 +285,7 @@ export default function OpticiansRecordsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Opticians Records — eye tests, glasses prescriptions, visual impairment, LAC statutory health checks, AHA, contact lenses, referrals, follow-ups, school vision"
         recordType="health"

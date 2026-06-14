@@ -39,8 +39,8 @@ import {
 } from "@/types/extended";
 import { useDataProtectionRecords, useCreateDataProtectionRecord } from "@/hooks/use-data-protection-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── types ─────────────────────────────────────────────────────────────── */
 
@@ -188,7 +188,7 @@ export default function DataProtectionPage() {
     <PageShell
       title="Data Protection & GDPR"
       subtitle="Subject access requests, breach management, impact assessments and retention schedules"
-      ariaContext={{ pageTitle: "Data Protection Register", sourceType: "document" }}
+      caraContext={{ pageTitle: "Data Protection Register", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Data Protection Register" />
@@ -196,7 +196,7 @@ export default function DataProtectionPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> New Record
           </button>
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -368,7 +368,7 @@ export default function DataProtectionPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Data Protection Register — GDPR compliance, data sharing agreements, privacy notices, subject access requests, retention schedules, lawful basis, DPO, ICO registration"
         recordType="policy"

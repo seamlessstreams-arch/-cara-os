@@ -53,7 +53,7 @@ export default function BehaviourTriggerPatternsPage() {
       subtitle="What sets each child off, whether behaviour is escalating, and whether de-escalation is recorded — the foundation of a good behaviour support plan"
       icon={<Activity className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Behaviour Triggers & Escalation", sourceType: "general" }}
+      caraContext={{ pageTitle: "Behaviour Triggers & Escalation", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

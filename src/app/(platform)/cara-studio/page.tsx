@@ -24,26 +24,26 @@ import {
   Scale, ListChecks, Play, MessageCircle, Settings,
 } from "lucide-react";
 import {
-  ARIA_STUDIO_ARTIFACT_TYPES,
+  CARA_STUDIO_ARTIFACT_TYPES,
   ARTIFACT_TYPE_LABELS,
-  ARIA_STUDIO_FRAMEWORKS,
+  CARA_STUDIO_FRAMEWORKS,
   FRAMEWORK_LABELS,
-  ARIA_STUDIO_TONES,
+  CARA_STUDIO_TONES,
   TONE_LABELS,
-  ARIA_STUDIO_SOURCE_TYPES,
+  CARA_STUDIO_SOURCE_TYPES,
   SOURCE_TYPE_LABELS,
   STATUS_LABELS,
-  type AriaStudioArtifactType,
-  type AriaStudioFramework,
-  type AriaStudioTone,
-  type AriaStudioArtifact,
-  type AriaStudioQualityCheck,
-  type AriaStudioGap,
-} from "@/types/aria-studio";
+  type CaraStudioArtifactType,
+  type CaraStudioFramework,
+  type CaraStudioTone,
+  type CaraStudioArtifact,
+  type CaraStudioQualityCheck,
+  type CaraStudioGap,
+} from "@/types/cara-studio";
 
 // ── Artifact type icons ──────────────────────────────────────────────────────
 
-const ARTIFACT_ICONS: Partial<Record<AriaStudioArtifactType, React.ElementType>> = {
+const ARTIFACT_ICONS: Partial<Record<CaraStudioArtifactType, React.ElementType>> = {
   keywork_session: Heart,
   direct_work_session: Play,
   child_friendly_worksheet: Palette,
@@ -82,27 +82,27 @@ const ARTIFACT_ICONS: Partial<Record<AriaStudioArtifactType, React.ElementType>>
 const ARTIFACT_GROUPS = [
   {
     label: "Children & Care",
-    types: ["keywork_session", "direct_work_session", "child_friendly_worksheet", "child_friendly_explanation", "child_plan", "placement_plan_update", "care_plan_update", "visual_formulation"] as AriaStudioArtifactType[],
+    types: ["keywork_session", "direct_work_session", "child_friendly_worksheet", "child_friendly_explanation", "child_plan", "placement_plan_update", "care_plan_update", "visual_formulation"] as CaraStudioArtifactType[],
   },
   {
     label: "Safeguarding & Risk",
-    types: ["incident_learning_review", "risk_review", "safeguarding_review", "action_plan"] as AriaStudioArtifactType[],
+    types: ["incident_learning_review", "risk_review", "safeguarding_review", "action_plan"] as CaraStudioArtifactType[],
   },
   {
     label: "Management & Oversight",
-    types: ["management_oversight", "supervision_prompt", "team_meeting_discussion", "social_worker_update", "parent_professional_letter"] as AriaStudioArtifactType[],
+    types: ["management_oversight", "supervision_prompt", "team_meeting_discussion", "social_worker_update", "parent_professional_letter"] as CaraStudioArtifactType[],
   },
   {
     label: "Compliance & QA",
-    types: ["reg45_summary", "annex_a_update", "ofsted_readiness_summary", "ri_briefing", "timeline"] as AriaStudioArtifactType[],
+    types: ["reg45_summary", "annex_a_update", "ofsted_readiness_summary", "ri_briefing", "timeline"] as CaraStudioArtifactType[],
   },
   {
     label: "Learning & Training",
-    types: ["staff_training", "quiz", "flashcards", "reflective_workbook", "scenario_simulation"] as AriaStudioArtifactType[],
+    types: ["staff_training", "quiz", "flashcards", "reflective_workbook", "scenario_simulation"] as CaraStudioArtifactType[],
   },
   {
     label: "Creative & Media",
-    types: ["audio_briefing_script", "video_briefing_script", "slide_deck_outline", "mind_map"] as AriaStudioArtifactType[],
+    types: ["audio_briefing_script", "video_briefing_script", "slide_deck_outline", "mind_map"] as CaraStudioArtifactType[],
   },
 ];
 
@@ -122,36 +122,36 @@ const STATUS_STYLES: Record<string, string> = {
 // MAIN COMPONENT
 // ══════════════════════════════════════════════════════════════════════════════
 
-export default function AriaStudioPage() {
+export default function CaraStudioPage() {
   return (
     <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}>
-      <AriaStudioContent />
+      <CaraStudioContent />
     </Suspense>
   );
 }
 
-function AriaStudioContent() {
+function CaraStudioContent() {
   const { currentUser, currentRole } = useAuthContext();
   const staffQuery = useStaff();
   const allStaff = staffQuery.data?.data ?? [];
   const searchParams = useSearchParams();
 
   // ── State ──────────────────────────────────────────────────────────────────
-  const [selectedArtifactType, setSelectedArtifactType] = useState<AriaStudioArtifactType | null>(null);
-  const [selectedFramework, setSelectedFramework] = useState<AriaStudioFramework | undefined>();
-  const [selectedTone, setSelectedTone] = useState<AriaStudioTone>("balanced");
+  const [selectedArtifactType, setSelectedArtifactType] = useState<CaraStudioArtifactType | null>(null);
+  const [selectedFramework, setSelectedFramework] = useState<CaraStudioFramework | undefined>();
+  const [selectedTone, setSelectedTone] = useState<CaraStudioTone>("balanced");
   const [selectedChildId, setSelectedChildId] = useState<string>("");
   const [additionalContext, setAdditionalContext] = useState("");
 
   // ── Read URL params from quick action deep-links ──────────────────────────
   useEffect(() => {
-    const type = searchParams.get("type") as AriaStudioArtifactType | null;
+    const type = searchParams.get("type") as CaraStudioArtifactType | null;
     const childId = searchParams.get("childId");
-    const framework = searchParams.get("framework") as AriaStudioFramework | null;
-    const tone = searchParams.get("tone") as AriaStudioTone | null;
+    const framework = searchParams.get("framework") as CaraStudioFramework | null;
+    const tone = searchParams.get("tone") as CaraStudioTone | null;
     const context = searchParams.get("context");
 
-    if (type && ARIA_STUDIO_ARTIFACT_TYPES.includes(type)) {
+    if (type && CARA_STUDIO_ARTIFACT_TYPES.includes(type)) {
       setSelectedArtifactType(type);
       setShowTypeSelector(true);
     }
@@ -164,9 +164,9 @@ function AriaStudioContent() {
   const [dateTo, setDateTo] = useState("");
 
   const [generating, setGenerating] = useState(false);
-  const [generatedArtifact, setGeneratedArtifact] = useState<AriaStudioArtifact | null>(null);
-  const [qualityCheck, setQualityCheck] = useState<AriaStudioQualityCheck | null>(null);
-  const [gaps, setGaps] = useState<AriaStudioGap[]>([]);
+  const [generatedArtifact, setGeneratedArtifact] = useState<CaraStudioArtifact | null>(null);
+  const [qualityCheck, setQualityCheck] = useState<CaraStudioQualityCheck | null>(null);
+  const [gaps, setGaps] = useState<CaraStudioGap[]>([]);
   const [editableContent, setEditableContent] = useState("");
   const [showTypeSelector, setShowTypeSelector] = useState(true);
 
@@ -184,7 +184,7 @@ function AriaStudioContent() {
     setShowTypeSelector(false);
 
     try {
-      const res = await fetch("/api/aria-studio/generate", {
+      const res = await fetch("/api/cara-studio/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -215,12 +215,12 @@ function AriaStudioContent() {
   const handleWorkflowAction = useCallback(async (action: string) => {
     if (!generatedArtifact) return;
     try {
-      await fetch(`/api/aria-studio/artifacts/${generatedArtifact.id}`, {
+      await fetch(`/api/cara-studio/artifacts/${generatedArtifact.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-      setGeneratedArtifact(prev => prev ? { ...prev, status: action === "submit_for_review" ? "in_review" : action === "approve" ? "approved" : action === "commit" ? "committed" : prev.status } as AriaStudioArtifact : null);
+      setGeneratedArtifact(prev => prev ? { ...prev, status: action === "submit_for_review" ? "in_review" : action === "approve" ? "approved" : action === "commit" ? "committed" : prev.status } as CaraStudioArtifact : null);
     } catch (err) {
       console.error("Workflow action failed:", err);
     }
@@ -245,10 +245,10 @@ function AriaStudioContent() {
         <LearningDesignSection />
 
         {/* ── Hero banner ──────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-6">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-6">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Sparkles className="h-6 w-6 text-[var(--cs-aria-gold)]" />
+              <Sparkles className="h-6 w-6 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-lg font-bold text-[var(--cs-navy)]">Cara Studio</h2>
@@ -256,7 +256,7 @@ function AriaStudioContent() {
                 Create evidence-based key work sessions, management oversight, risk reviews, staff training, child-friendly resources, Ofsted evidence and more — all grounded in your care records.
               </p>
               <div className="flex items-center gap-3 mt-3">
-                <Badge className="text-[10px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">
+                <Badge className="text-[10px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]">
                   Cara drafts · Humans decide
                 </Badge>
                 <Badge className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200">
@@ -287,11 +287,11 @@ function AriaStudioContent() {
                         className={cn(
                           "flex items-start gap-3 rounded-xl border p-3.5 text-left transition-all",
                           isSelected
-                            ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] ring-2 ring-[var(--cs-aria-gold-soft)]"
-                            : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]/30",
+                            ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] ring-2 ring-[var(--cs-cara-gold-soft)]"
+                            : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]/30",
                         )}
                       >
-                        <Icon className={cn("h-4 w-4 shrink-0 mt-0.5", isSelected ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")} />
+                        <Icon className={cn("h-4 w-4 shrink-0 mt-0.5", isSelected ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-muted)]")} />
                         <span className={cn("text-xs font-medium leading-tight", isSelected ? "text-[var(--cs-navy)]" : "text-[var(--cs-text-secondary)]")}>
                           {ARTIFACT_TYPE_LABELS[type]}
                         </span>
@@ -317,7 +317,7 @@ function AriaStudioContent() {
                     <select
                       value={selectedChildId}
                       onChange={(e) => setSelectedChildId(e.target.value)}
-                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                     >
                       <option value="">All children / Not child-specific</option>
                       {children.map((c) => (
@@ -331,11 +331,11 @@ function AriaStudioContent() {
                     <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Therapeutic Framework</label>
                     <select
                       value={selectedFramework ?? ""}
-                      onChange={(e) => setSelectedFramework(e.target.value as AriaStudioFramework || undefined)}
-                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                      onChange={(e) => setSelectedFramework(e.target.value as CaraStudioFramework || undefined)}
+                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                     >
                       <option value="">Auto-select framework</option>
-                      {ARIA_STUDIO_FRAMEWORKS.map((f) => (
+                      {CARA_STUDIO_FRAMEWORKS.map((f) => (
                         <option key={f} value={f}>{FRAMEWORK_LABELS[f]}</option>
                       ))}
                     </select>
@@ -346,10 +346,10 @@ function AriaStudioContent() {
                     <label className="text-xs font-medium text-[var(--cs-text-secondary)] mb-1.5 block">Tone</label>
                     <select
                       value={selectedTone}
-                      onChange={(e) => setSelectedTone(e.target.value as AriaStudioTone)}
-                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                      onChange={(e) => setSelectedTone(e.target.value as CaraStudioTone)}
+                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                     >
-                      {ARIA_STUDIO_TONES.map((t) => (
+                      {CARA_STUDIO_TONES.map((t) => (
                         <option key={t} value={t}>{TONE_LABELS[t]}</option>
                       ))}
                     </select>
@@ -361,7 +361,7 @@ function AriaStudioContent() {
                     <input
                       type="date" value={dateFrom}
                       onChange={(e) => setDateFrom(e.target.value)}
-                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                     />
                   </div>
                   <div>
@@ -369,7 +369,7 @@ function AriaStudioContent() {
                     <input
                       type="date" value={dateTo}
                       onChange={(e) => setDateTo(e.target.value)}
-                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                      className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                     />
                   </div>
                 </div>
@@ -382,7 +382,7 @@ function AriaStudioContent() {
                     onChange={(e) => setAdditionalContext(e.target.value)}
                     placeholder="Add any specific focus, theme, or context for this generation..."
                     rows={3}
-                    className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] resize-none"
+                    className="w-full rounded-lg border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] resize-none"
                   />
                 </div>
 
@@ -411,8 +411,8 @@ function AriaStudioContent() {
 
         {/* ── Loading state ────────────────────────────────────────────────── */}
         {generating && (
-          <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-8 text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-[var(--cs-aria-gold)] mx-auto mb-3" />
+          <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-8 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-[var(--cs-cara-gold)] mx-auto mb-3" />
             <p className="text-sm font-medium text-[var(--cs-navy)]">Cara is generating your {selectedArtifactType ? ARTIFACT_TYPE_LABELS[selectedArtifactType] : "draft"}...</p>
             <p className="text-xs text-[var(--cs-text-muted)] mt-1">Reviewing evidence, applying framework, checking quality</p>
           </div>
@@ -495,7 +495,7 @@ function AriaStudioContent() {
                 {qualityCheck && (
                   <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-3">
                     <h4 className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide flex items-center gap-1.5">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                      <CheckCircle2 className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                       Quality Check
                     </h4>
                     <div className="space-y-2">
@@ -552,13 +552,13 @@ function AriaStudioContent() {
                 {/* Confidence panel */}
                 <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-3">
                   <h4 className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide flex items-center gap-1.5">
-                    <BarChart3 className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                    <BarChart3 className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                     Evidence Confidence
                   </h4>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-2 bg-[var(--cs-surface)] rounded-full overflow-hidden">
-                        <div className="h-full bg-[var(--cs-aria-gold)] rounded-full" style={{ width: `${generatedArtifact.evidence_confidence_score ?? 65}%` }} />
+                        <div className="h-full bg-[var(--cs-cara-gold)] rounded-full" style={{ width: `${generatedArtifact.evidence_confidence_score ?? 65}%` }} />
                       </div>
                       <span className="text-xs font-medium text-[var(--cs-text-secondary)]">{generatedArtifact.evidence_confidence_score ?? 65}%</span>
                     </div>
@@ -575,7 +575,7 @@ function AriaStudioContent() {
                 {/* Regulation mapping */}
                 <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-3">
                   <h4 className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide flex items-center gap-1.5">
-                    <Scale className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                    <Scale className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                     Regulation Relevance
                   </h4>
                   <div className="space-y-1.5">
@@ -592,7 +592,7 @@ function AriaStudioContent() {
                 {/* Audit trail */}
                 <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4">
                   <h4 className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide flex items-center gap-1.5 mb-3">
-                    <History className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                    <History className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                     Audit Trail
                   </h4>
                   <div className="space-y-2">
@@ -603,7 +603,7 @@ function AriaStudioContent() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-xs">
-                      <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)]" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-cara-gold)]" />
                       <span className="text-[var(--cs-text-secondary)]">
                         Status: {STATUS_LABELS[generatedArtifact.status as keyof typeof STATUS_LABELS] ?? generatedArtifact.status}
                       </span>
@@ -618,7 +618,7 @@ function AriaStudioContent() {
         {/* ── Empty state ──────────────────────────────────────────────────── */}
         {!generatedArtifact && !generating && !selectedArtifactType && (
           <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-8 text-center">
-            <Sparkles className="h-10 w-10 text-[var(--cs-aria-gold)] mx-auto mb-3" />
+            <Sparkles className="h-10 w-10 text-[var(--cs-cara-gold)] mx-auto mb-3" />
             <p className="text-sm font-medium text-[var(--cs-navy)]">Select an output type above to begin</p>
             <p className="text-xs text-[var(--cs-text-muted)] mt-1 max-w-md mx-auto">
               Cara Studio creates evidence-based drafts from your care records. Choose what you need, configure the settings, and Cara will generate a professional draft for your review.

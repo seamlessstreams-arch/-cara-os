@@ -609,7 +609,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: UascSupportRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

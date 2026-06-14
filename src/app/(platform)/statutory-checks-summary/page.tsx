@@ -30,8 +30,8 @@ import {
   STATUTORY_CHECK_FREQUENCY_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config (colours / icons not serializable) ────────────────────── */
 
@@ -145,11 +145,11 @@ export default function StatutoryChecksSummaryPage() {
     <PageShell
       title="Statutory Checks Summary"
       subtitle="Compliance overview at a glance — required by Quality Standard 13 and Reg 45"
-      ariaContext={{ pageTitle: "Statutory Checks Summary", sourceType: "document" }}
+      caraContext={{ pageTitle: "Statutory Checks Summary", sourceType: "document" }}
       actions={[
         <PrintButton key="p" title="Statutory Checks Summary" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="statutory-checks-summary" />,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -387,7 +387,7 @@ export default function StatutoryChecksSummaryPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Statutory Checks Summary — DBS checks, references, right to work, pre-employment checks, regulatory compliance, Reg 40 safer recruitment evidence, Ofsted workforce evidence"
         recordType="management_oversight"

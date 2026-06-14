@@ -18,11 +18,11 @@
 import { useState } from "react";
 import { Sparkles, Loader2, Undo2 } from "lucide-react";
 import { DictationButton } from "@/components/common/dictation-button";
-import { useAriaCommand } from "@/hooks/use-aria-command";
-import type { AriaCommandId } from "@/lib/aria/aria-types";
+import { useCaraCommand } from "@/hooks/use-cara-command";
+import type { CaraCommandId } from "@/lib/cara/cara-types";
 import { cn } from "@/lib/utils";
 
-const REWRITES: Array<{ id: AriaCommandId; label: string }> = [
+const REWRITES: Array<{ id: CaraCommandId; label: string }> = [
   { id: "improve_writing", label: "Improve writing" },
   { id: "professionalise_record", label: "Make professional" },
   { id: "simplify_language", label: "Simplify language" },
@@ -46,16 +46,16 @@ export interface EntryAssistProps {
 }
 
 export function EntryAssist({ value, onChange, sourceModule, sourceField, childId, className, disabled, hideMic }: EntryAssistProps) {
-  const aria = useAriaCommand();
+  const cara = useCaraCommand();
   const [open, setOpen] = useState(false);
   const [prev, setPrev] = useState<string | null>(null);
-  const canRewrite = value.trim().length >= MIN_LEN && !disabled && !aria.loading;
+  const canRewrite = value.trim().length >= MIN_LEN && !disabled && !cara.loading;
 
-  async function rewrite(commandId: AriaCommandId) {
+  async function rewrite(commandId: CaraCommandId) {
     setOpen(false);
     if (value.trim().length < MIN_LEN) return;
     const before = value;
-    const res = await aria.invoke({ commandId, inputText: value.trim(), sourceModule, sourceField, childId });
+    const res = await cara.invoke({ commandId, inputText: value.trim(), sourceModule, sourceField, childId });
     if (res?.generatedText) {
       setPrev(before);
       onChange(res.generatedText);
@@ -79,9 +79,9 @@ export function EntryAssist({ value, onChange, sourceModule, sourceField, childI
           disabled={!canRewrite}
           onClick={() => setOpen((o) => !o)}
           title="Rewrite with Cara"
-          className="inline-flex items-center gap-1 rounded-lg border border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] px-2.5 min-h-[34px] text-xs font-medium text-[var(--cs-navy)] transition-colors hover:bg-[var(--cs-aria-gold-bg)]/70 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="inline-flex items-center gap-1 rounded-lg border border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] px-2.5 min-h-[34px] text-xs font-medium text-[var(--cs-navy)] transition-colors hover:bg-[var(--cs-cara-gold-bg)]/70 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {aria.loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />}
+          {cara.loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />}
           Rewrite
         </button>
         {open && (

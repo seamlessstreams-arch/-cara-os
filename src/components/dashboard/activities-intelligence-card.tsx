@@ -63,7 +63,7 @@ export function ActivitiesIntelligenceCard({ childId }: ActivitiesIntelligenceCa
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/aria/activities?childId=${childId}`);
+        const res = await fetch(`/api/cara/activities?childId=${childId}`);
         const json = await res.json();
         if (json.success) setData(json.data);
       } catch (err) {

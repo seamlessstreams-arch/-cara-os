@@ -16,9 +16,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
-  AriaPatternAlert,
-  AriaDailyIntelligence,
-} from "@/components/aria";
+  CaraPatternAlert,
+  CaraDailyIntelligence,
+} from "@/components/cara";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
@@ -115,7 +115,7 @@ function OverviewTab() {
   return (
     <div className="space-y-6">
       {/* Cara Intelligence */}
-      <AriaDailyIntelligence />
+      <CaraDailyIntelligence />
 
       {/* Key Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -126,7 +126,7 @@ function OverviewTab() {
       </div>
 
       {/* Cara Pattern Intelligence */}
-      <AriaPatternAlert homeId="home_oak" />
+      <CaraPatternAlert homeId="home_oak" />
 
       {/* Quick Workflow Status */}
       <div className="rounded-xl border border-[var(--cs-border)] bg-white overflow-hidden">
@@ -251,7 +251,7 @@ function TasksTab() {
                       {task.priority}
                     </span>
                     {task.category === "aria_generated" && (
-                      <span className="flex items-center gap-0.5 text-[10px] text-[var(--cs-aria-gold)]">
+                      <span className="flex items-center gap-0.5 text-[10px] text-[var(--cs-cara-gold)]">
                         <Sparkles className="h-2.5 w-2.5" /> Cara
                       </span>
                     )}
@@ -457,7 +457,7 @@ function OversightTab() {
         <StatCard label="This Month" value={DEMO_OVERSIGHT_STATS.total_this_month} icon={Eye} colour="bg-purple-500" />
         <StatCard label="Avg Quality" value={`${DEMO_OVERSIGHT_STATS.avg_quality_score}/10`} icon={TrendingUp} colour="bg-emerald-500" />
         <StatCard label="Needing Oversight" value={DEMO_OVERSIGHT_STATS.needing_oversight} icon={AlertTriangle} colour="bg-red-500" />
-        <StatCard label="Cara Assisted" value="67%" icon={Sparkles} colour="bg-[var(--cs-aria-gold)]" />
+        <StatCard label="Cara Assisted" value="67%" icon={Sparkles} colour="bg-[var(--cs-cara-gold)]" />
       </div>
 
       {/* Oversight by record type */}
@@ -566,8 +566,8 @@ function ReadinessTab() {
       </div>
 
       {/* Cara note */}
-      <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-aria-gold-bg)] p-3 flex items-start gap-2">
-        <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
+      <div className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-cara-gold-bg)] p-3 flex items-start gap-2">
+        <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)] shrink-0 mt-0.5" />
         <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
           Cara analyses your evidence coverage against each regulation and generates gap recommendations. Run a full scan to identify exactly which evidence is missing for each requirement.
         </p>

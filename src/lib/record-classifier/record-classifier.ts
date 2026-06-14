@@ -62,7 +62,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /trafficking/i,
     ],
     severity_boost: "critical",
-    flows: ["safeguarding_register", "timeline", "tasks", "notifications", "reg_40", "aria", "evidence_pack"],
+    flows: ["safeguarding_register", "timeline", "tasks", "notifications", "reg_40", "cara", "evidence_pack"],
   },
   {
     type: "missing_from_care",
@@ -78,7 +78,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /not\s+(?:returned|come\s+back|home)\s+(?:by|at|since)/i,
     ],
     severity_boost: "high",
-    flows: ["missing_register", "timeline", "tasks", "notifications", "police", "reg_40", "aria"],
+    flows: ["missing_register", "timeline", "tasks", "notifications", "police", "reg_40", "cara"],
   },
   {
     type: "restraint",
@@ -93,7 +93,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /restrictive\s+(?:practice|physical\s+intervention)/i,
     ],
     severity_boost: "high",
-    flows: ["restraint_log", "timeline", "tasks", "debrief", "body_map", "reg_40", "aria", "evidence_pack"],
+    flows: ["restraint_log", "timeline", "tasks", "debrief", "body_map", "reg_40", "cara", "evidence_pack"],
   },
   // HIGH
   {
@@ -116,7 +116,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /bull(?:y|ied|ying|ies)/i,
       /online\s+(?:safety|abuse|exploitation)/i,
     ],
-    flows: ["timeline", "tasks", "oversight_queue", "notifications", "dashboard", "aria", "evidence_pack"],
+    flows: ["timeline", "tasks", "oversight_queue", "notifications", "dashboard", "cara", "evidence_pack"],
   },
   // MEDIUM
   {
@@ -133,7 +133,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /weight\s+(?:gain|loss|concern)/i,
       /immunisation|vaccination/i,
     ],
-    flows: ["timeline", "health_record", "dashboard", "aria"],
+    flows: ["timeline", "health_record", "dashboard", "cara"],
   },
   {
     type: "education_update",
@@ -149,7 +149,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /(?:progress|achievement|grade|result)/i,
       /(?:behaviour|detention|sanction)\s+(?:at|in)\s+school/i,
     ],
-    flows: ["timeline", "education_record", "dashboard", "aria"],
+    flows: ["timeline", "education_record", "dashboard", "cara"],
   },
   {
     type: "family_contact",
@@ -163,7 +163,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /(?:birth|biological)\s+(?:family|parent)/i,
       /(?:letterbox|letter)\s+(?:contact|from|to)/i,
     ],
-    flows: ["timeline", "contact_log", "dashboard", "aria"],
+    flows: ["timeline", "contact_log", "dashboard", "cara"],
   },
   {
     type: "key_work_session",
@@ -178,7 +178,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /wishes\s+(?:and|&)\s+feelings/i,
       /(?:discussed|explored|talked\s+about)\s+(?:feelings|worries|goals|future)/i,
     ],
-    flows: ["timeline", "direct_work_record", "dashboard", "child_impact", "aria"],
+    flows: ["timeline", "direct_work_record", "dashboard", "child_impact", "cara"],
   },
   {
     type: "welfare_check",
@@ -206,7 +206,7 @@ const TYPE_PATTERNS: TypePattern[] = [
       /(?:went\s+to\s+bed|woke\s+up|got\s+up|bath|shower)/i,
       /(?:good\s+day|okay\s+day|difficult\s+day|rough\s+day)/i,
     ],
-    flows: ["timeline", "dashboard", "reports", "aria"],
+    flows: ["timeline", "dashboard", "reports", "cara"],
   },
 ];
 

@@ -516,7 +516,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: CelebrationGiftRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateKnifeWeaponSafety,
-  generateAriaInsights,
+  generateCaraInsights,
   type KnifeWeaponSafetyRow,
 } from "./knife-weapon-safety-service";
 
@@ -226,13 +226,13 @@ describe("validateKnifeWeaponSafety", () => {
   });
 });
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [
       makeRow({ id: "1", record_type: "Kitchen Knife Audit" }),
       makeRow({ id: "2", record_type: "Educational Session", educational_content_delivered: true }),
     ];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights.length).toBe(3);
     expect(insights[0]).toContain("[sky]");
     expect(insights[1]).toContain("[amber]");

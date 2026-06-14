@@ -6,8 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -121,7 +121,7 @@ export default function OfstedReadinessPage() {
     <PageShell
       title="Ofsted Readiness"
       subtitle="ILACS inspection preparation and mock review"
-      ariaContext={{ pageTitle: "Ofsted Readiness", sourceType: "general" }}
+      caraContext={{ pageTitle: "Ofsted Readiness", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -131,16 +131,16 @@ export default function OfstedReadinessPage() {
             targetId="ofsted-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="Ofsted readiness — inspection evidence upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="ofsted-content" className="space-y-5 animate-fade-in">
         {/* Context input */}
-        <Card className="border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30">
+        <Card className="border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/30">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+              <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
               Generate Readiness Review with Cara
             </CardTitle>
           </CardHeader>
@@ -192,7 +192,7 @@ export default function OfstedReadinessPage() {
                   onClick={() => setTab(t)}
                   className={cn(
                     "px-3 py-2 text-xs font-semibold capitalize border-b-2 transition-colors",
-                    tab === t ? "border-[var(--cs-navy)] text-[var(--cs-aria-gold)]" : "border-transparent text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"
+                    tab === t ? "border-[var(--cs-navy)] text-[var(--cs-cara-gold)]" : "border-transparent text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"
                   )}
                 >
                   {t.replace("_", " ")}
@@ -206,7 +206,7 @@ export default function OfstedReadinessPage() {
                 {[
                   { label: "Safeguarding Position", content: result.safeguarding_position, colour: "bg-red-50 border-red-100" },
                   { label: "Children's Experience", content: result.children_experience_evidence, colour: "bg-blue-50 border-blue-100" },
-                  { label: "Leadership & Management", content: result.leaders_and_managers_evidence, colour: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
+                  { label: "Leadership & Management", content: result.leaders_and_managers_evidence, colour: "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]" },
                 ].map(({ label, content, colour }) => (
                   <div key={label}>
                     <p className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-2">{label}</p>
@@ -304,7 +304,7 @@ export default function OfstedReadinessPage() {
           </div>
         )}
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Ofsted Readiness — ILACS inspection preparation, mock review, inspection evidence, judgement prediction, practice evidence, compliance evidence, self-evaluation, Annex A readiness"
         recordType="ofsted_evidence"

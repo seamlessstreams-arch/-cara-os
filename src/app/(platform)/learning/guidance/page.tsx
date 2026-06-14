@@ -6,8 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -201,13 +201,13 @@ export default function GuidanceNotesPage() {
     <PageShell
       title="Guidance Notes"
       subtitle="Generate professional practice guidance for staff or children"
-      ariaContext={{ pageTitle: "Practice Guidance", sourceType: "document" }}
+      caraContext={{ pageTitle: "Practice Guidance", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Guidance Notes" subtitle="Chamberlain House — Practice Guidance" targetId="guidance-content" />
           <SmartUploadButton variant="inline" label="Upload Guidance" uploadContext="Learning — Guidance Notes upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -390,7 +390,7 @@ export default function GuidanceNotesPage() {
           </div>
         )}
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Practice Guidance — care practice notes, procedure guidance, regulatory guidance, safeguarding guidance, therapeutic approaches, PACE, DDP, legislation summaries, Reg 45 practice"
         recordType="policy"

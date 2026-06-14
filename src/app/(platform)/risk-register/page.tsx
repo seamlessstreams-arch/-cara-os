@@ -13,8 +13,8 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { cn, formatDate, todayStr } from "@/lib/utils";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { getStaffName, getYPName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
@@ -370,7 +370,7 @@ export default function RiskRegisterPage() {
     <PageShell
       title="Risk Register"
       subtitle="Live risk tracking — young people, staff, and environment"
-      ariaContext={{ pageTitle: "Risk Register", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Risk Register", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={RISK_EXPORT_COLS} filename="risk-register" />
@@ -379,11 +379,11 @@ export default function RiskRegisterPage() {
             <Plus className="h-3.5 w-3.5" />
             New Risk
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
-      <AriaPanel mode="oversee" pageContext="Risk Register — live risk tracking for young people, staff, and environment, risk levels, review dates, control measures" recordType="risk_register" userRole="registered_manager" className="mb-6" />
+      <CaraPanel mode="oversee" pageContext="Risk Register — live risk tracking for young people, staff, and environment, risk levels, review dates, control measures" recordType="risk_register" userRole="registered_manager" className="mb-6" />
       <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-6">
         {[
           { label: "Total Risks",   value: stats.total,     color: "text-slate-700",   bg: "bg-slate-50",   border: "border-slate-200"   },

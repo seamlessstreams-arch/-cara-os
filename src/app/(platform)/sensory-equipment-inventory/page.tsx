@@ -22,8 +22,8 @@ import {
   SENSORY_EQUIPMENT_USE_FREQUENCY_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
 
 /* ── local config ─────────────────────────────────────────────────────── */
@@ -126,12 +126,12 @@ export default function SensoryEquipmentInventoryPage() {
 
   return (
     <PageShell title="Sensory Equipment Inventory" subtitle="All sensory regulation items — owned, shared, mobile — with condition, replacement, and child assignment"
-      ariaContext={{ pageTitle: "Sensory Equipment Inventory", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Sensory Equipment Inventory", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="sensory-equipment-inventory" />
           <PrintButton title="Sensory Equipment Inventory" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Add Item</Button>
         </div>
       }>
@@ -224,7 +224,7 @@ export default function SensoryEquipmentInventoryPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Sensory Equipment Inventory — sensory regulation items, OT recommendations, child-specific preferences, condition monitoring, replacement scheduling"
         recordType="direct_work"

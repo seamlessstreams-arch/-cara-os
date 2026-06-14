@@ -38,8 +38,8 @@ import {
   ChevronRight, Loader2, Eye, Search, ArrowUpDown,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const OUTCOME_EXPORT_COLS: ExportColumn<OutcomeTarget>[] = [
   { header: "Young Person", accessor: (t) => getYPName(t.child_id) },
@@ -72,7 +72,7 @@ const DOMAIN_ICONS: Record<OutcomeDomain, React.ElementType> = {
 const DOMAIN_COLOURS: Record<OutcomeDomain, { bg: string; text: string; border: string; light: string }> = {
   health:              { bg: "bg-rose-50",    text: "text-rose-600",    border: "border-rose-200",    light: "bg-rose-100"    },
   education:           { bg: "bg-blue-50",    text: "text-blue-600",    border: "border-blue-200",    light: "bg-blue-100"    },
-  emotional_wellbeing: { bg: "bg-[var(--cs-aria-gold-bg)]",  text: "text-[var(--cs-aria-gold)]",  border: "border-[var(--cs-aria-gold-soft)]",  light: "bg-[var(--cs-aria-gold-bg)]"  },
+  emotional_wellbeing: { bg: "bg-[var(--cs-cara-gold-bg)]",  text: "text-[var(--cs-cara-gold)]",  border: "border-[var(--cs-cara-gold-soft)]",  light: "bg-[var(--cs-cara-gold-bg)]"  },
   identity:            { bg: "bg-amber-50",   text: "text-amber-600",   border: "border-amber-200",   light: "bg-amber-100"   },
   family_social:       { bg: "bg-teal-50",    text: "text-teal-600",    border: "border-teal-200",    light: "bg-teal-100"    },
   self_care:           { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200", light: "bg-emerald-100" },
@@ -184,7 +184,7 @@ function ReviewDialog({
                   className={cn(
                     "flex-1 rounded-xl border-2 px-2 py-3 text-center transition-all",
                     newRating === r
-                      ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] shadow-sm"
+                      ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] shadow-sm"
                       : "border-[var(--cs-border)] bg-white hover:border-indigo-200",
                   )}
                 >
@@ -422,7 +422,7 @@ function NewTargetDialog({
                     className={cn(
                       "flex-1 rounded-lg border-2 py-2 text-center transition-all",
                       baselineRating === r
-                        ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]"
+                        ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]"
                         : "border-[var(--cs-border)] hover:border-indigo-200",
                     )}
                   >
@@ -918,7 +918,7 @@ export default function OutcomesPage() {
     <PageShell
       title="Outcomes Tracker"
       subtitle="Are children making progress? — Care plan targets, reviews and voice of the child"
-      ariaContext={{ pageTitle: "Outcomes Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Outcomes Tracker", sourceType: "child_record" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -928,7 +928,7 @@ export default function OutcomesPage() {
             <Plus className="h-3.5 w-3.5" />
             New Target
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -1146,7 +1146,7 @@ export default function OutcomesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Outcomes Tracker — SMART targets, care goals, wellbeing outcomes, education outcomes, health outcomes, independence skills, placement aims, review progress, Reg 45 outcomes evidence"
         recordType="care_plan"

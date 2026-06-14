@@ -41,8 +41,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ─── helpers ─── */
 const ragColours = (rag: RagRating) => {
@@ -179,12 +179,12 @@ export default function BoardReportingPage() {
     <PageShell
       title="Board Reporting"
       subtitle="Formal reports submitted to the Responsible Individual and Cara Care Group Board — required by Quality Standard 13 and Regulation 45"
-      ariaContext={{ pageTitle: "Board Reporting", sourceType: "general" }}
+      caraContext={{ pageTitle: "Board Reporting", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={reports} columns={exportCols} filename="board-reporting" />
           <PrintButton title="Board Reporting" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -566,7 +566,7 @@ export default function BoardReportingPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Board Reporting — governance reports, trustee reports, RI oversight, key performance indicators, incidents, placements, occupancy, staffing, compliance, Reg 45 summary"
         recordType="management_oversight"

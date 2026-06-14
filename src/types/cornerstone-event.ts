@@ -36,7 +36,7 @@ export type CornerstoneEventType =
 export type CornerstoneRiskLevel = "low" | "medium" | "high" | "critical";
 export type CornerstoneApprovalLevel = "team_leader" | "deputy" | "manager" | "ri";
 
-export interface CornerstoneAriaAnalysis {
+export interface CornerstoneCaraAnalysis {
   themes: string[];
   suggestedActions: string[];
   complianceFlags: string[];
@@ -85,7 +85,7 @@ export interface CornerstoneEvent {
   linkedRisks: string[];
   linkedNotifications: string[];
 
-  ariaAnalysis?: CornerstoneAriaAnalysis;
+  caraAnalysis?: CornerstoneCaraAnalysis;
 
   audit: CornerstoneAudit;
 }

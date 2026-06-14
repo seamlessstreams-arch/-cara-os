@@ -15,7 +15,7 @@ export default function HomeTrendsPage() {
     <PageShell
       title="Home Trends"
       subtitle="Direction of travel — are the home's key safety & wellbeing signals improving or worsening over the last 8 weeks?"
-      ariaContext={{ pageTitle: "Home Trends", sourceType: "general" }}
+      caraContext={{ pageTitle: "Home Trends", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <Link

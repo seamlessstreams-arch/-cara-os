@@ -25,7 +25,7 @@ import type {
 const {
   computeHomeAtmosphereMetrics,
   computeHomeAtmosphereAlerts,
-  generateHomeAtmosphereAriaInsights,
+  generateHomeAtmosphereCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -708,20 +708,20 @@ describe("computeHomeAtmosphereAlerts", () => {
   });
 });
 
-// ── generateHomeAtmosphereAriaInsights ──────────────────────────────────
+// ── generateHomeAtmosphereCaraInsights ──────────────────────────────────
 
-describe("generateHomeAtmosphereAriaInsights", () => {
+describe("generateHomeAtmosphereCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeHomeAtmosphereMetrics([]);
     const alerts = computeHomeAtmosphereAlerts([]);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const metrics = computeHomeAtmosphereMetrics([makeRow()]);
     const alerts = computeHomeAtmosphereAlerts([makeRow()]);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
@@ -729,7 +729,7 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -737,14 +737,14 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     const rows = [makeRow({ child_views_included: true }), makeRow({ child_views_included: false })];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computeHomeAtmosphereMetrics([makeRow()]);
     const alerts = computeHomeAtmosphereAlerts([makeRow()]);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -754,7 +754,7 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     ];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -763,14 +763,14 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     const rows = [makeRow({ atmosphere_rating: "good", action_required: "none", child_views_included: true, improvement_actions_identified: false })];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computeHomeAtmosphereMetrics([makeRow()]);
     const alerts = computeHomeAtmosphereAlerts([makeRow()]);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -778,7 +778,7 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     const rows = [makeRow({ atmosphere_rating: "inadequate" })];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("inadequate");
   });
 
@@ -789,7 +789,7 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     ];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("Child views");
   });
 
@@ -800,7 +800,7 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     ];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("child views and no inadequate");
   });
 
@@ -808,7 +808,7 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     const rows = [makeRow({ assessor_name: "Staff A" })];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 assessor");
   });
 
@@ -819,14 +819,14 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     ];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 assessors");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computeHomeAtmosphereMetrics([makeRow()]);
     const alerts = computeHomeAtmosphereAlerts([makeRow()]);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -837,7 +837,7 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     const rows = [makeRow({ atmosphere_rating: "inadequate" })];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("assessment has");
   });
 
@@ -848,7 +848,7 @@ describe("generateHomeAtmosphereAriaInsights", () => {
     ];
     const metrics = computeHomeAtmosphereMetrics(rows);
     const alerts = computeHomeAtmosphereAlerts(rows);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("assessments have");
   });
 });

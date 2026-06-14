@@ -3,8 +3,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — PHYSICAL INTERVENTION DEBRIEF REGISTER
 // Reg 20, Children's Homes (England) Regulations 2015
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useMemo } from "react";
@@ -94,15 +94,15 @@ function PIDebriefCard({
   incident,
   onUpdateDebrief,
   onSignOff,
-  onAriaAnalysis,
-  ariaBusy,
+  onCaraAnalysis,
+  caraBusy,
 }: {
   debrief: PIDebrief;
   incident: Incident | undefined;
   onUpdateDebrief: (id: string, data: Partial<PIDebrief>) => void;
   onSignOff: (debrief: PIDebrief) => void;
-  onAriaAnalysis: (debrief: PIDebrief, incident: Incident | undefined) => void;
-  ariaBusy: string | null;
+  onCaraAnalysis: (debrief: PIDebrief, incident: Incident | undefined) => void;
+  caraBusy: string | null;
 }) {
   const [expanded, setExpanded] = useState(debrief.status !== "rm_signed_off");
   const overdue = debriefOverdue(debrief);
@@ -388,11 +388,11 @@ function PIDebriefCard({
             </div>
           ) : (
             <button
-              onClick={() => onAriaAnalysis(debrief, incident)}
-              disabled={ariaBusy === debrief.id}
+              onClick={() => onCaraAnalysis(debrief, incident)}
+              disabled={caraBusy === debrief.id}
               className="inline-flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 disabled:opacity-50"
             >
-              {ariaBusy === debrief.id ? (
+              {caraBusy === debrief.id ? (
                 <><Sparkles className="h-3.5 w-3.5 animate-spin" />Cara analysing…</>
               ) : (
                 <><Sparkles className="h-3.5 w-3.5" />Generate Cara analysis</>
@@ -454,8 +454,8 @@ export default function PIDebriefsPage() {
   const [sortBy, setSortBy]       = useState<"date" | "duration" | "technique" | "status">("date");
 
   // Cara analysis
-  const [ariaBusy, setAriaBusy]   = useState<string | null>(null);
-  const [ariaError, setAriaError] = useState<string | null>(null);
+  const [caraBusy, setCaraBusy]   = useState<string | null>(null);
+  const [caraError, setCaraError] = useState<string | null>(null);
 
   const handleUpdateDebrief = async (id: string, data: Partial<PIDebrief>) => {
     await updateDebrief.mutateAsync({ id, data });
@@ -481,9 +481,9 @@ export default function PIDebriefsPage() {
     }
   };
 
-  const handleAriaAnalysis = async (debrief: PIDebrief, incident: Incident | undefined) => {
-    setAriaBusy(debrief.id);
-    setAriaError(null);
+  const handleCaraAnalysis = async (debrief: PIDebrief, incident: Incident | undefined) => {
+    setCaraBusy(debrief.id);
+    setCaraError(null);
     try {
       const injurySummary = debrief.injuries.length > 0
         ? debrief.injuries.map((i) => `${i.person_type}: ${i.description}${i.riddor_reportable ? " (RIDDOR reportable)" : ""}`).join("; ")
@@ -514,9 +514,9 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
 
       await updateDebrief.mutateAsync({ id: debrief.id, data: { aria_analysis: analysis } });
     } catch {
-      setAriaError("Cara analysis failed — please try again");
+      setCaraError("Cara analysis failed — please try again");
     } finally {
-      setAriaBusy(null);
+      setCaraBusy(null);
     }
   };
 
@@ -590,7 +590,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
     <PageShell
       title="PI Debrief Register"
       subtitle="Physical intervention debrief tracking — Reg 20 compliance"
-      ariaContext={{ pageTitle: "PI Debrief Register", sourceType: "pi_debrief" }}
+      caraContext={{ pageTitle: "PI Debrief Register", sourceType: "pi_debrief" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -607,7 +607,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
               Incidents
             </button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -709,12 +709,12 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
               incident={getIncident(d.incident_id)}
               onUpdateDebrief={handleUpdateDebrief}
               onSignOff={setSigningOff}
-              onAriaAnalysis={handleAriaAnalysis}
-              ariaBusy={ariaBusy}
+              onCaraAnalysis={handleCaraAnalysis}
+              caraBusy={caraBusy}
             />
           ))}
-          {ariaError && (
-            <p className="text-xs text-red-600 text-right">{ariaError}</p>
+          {caraError && (
+            <p className="text-xs text-red-600 text-right">{caraError}</p>
           )}
         </div>
       )}
@@ -773,7 +773,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
         </DialogContent>
       </Dialog>
       </div>{/* close #pi-debriefs-content */}
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="PI Debrief Register — physical intervention debriefs, Reg 20 compliance, restraint records, body map, staff debrief, child debrief, follow-up actions, Ofsted evidence"
         recordType="incident"

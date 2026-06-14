@@ -28,8 +28,8 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const TASK_EXPORT_COLS: ExportColumn<Task>[] = [
   { header: "Title", accessor: (t) => t.title },
@@ -73,7 +73,7 @@ export default function TasksPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [filterPerson, setFilterPerson] = useState<string | null>(null);
-  const [ariaLinkContext, setAriaLinkContext] = useState<{ childId: string; linkedId: string; sourceType: string } | null>(null);
+  const [caraLinkContext, setCaraLinkContext] = useState<{ childId: string; linkedId: string; sourceType: string } | null>(null);
 
   // Handle Cara "Create Follow-Up Task" quick-action — pre-filter by child and show prompt
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function TasksPage() {
     const sourceType = p.get("source_type") ?? "";
     if (isNew && childId) {
       setFilterPerson(childId);
-      setAriaLinkContext({ childId, linkedId, sourceType });
+      setCaraLinkContext({ childId, linkedId, sourceType });
     }
   }, []);
   const [filterPriority, setFilterPriority] = useState<string | null>(null);
@@ -176,14 +176,14 @@ export default function TasksPage() {
       title="Tasks"
       subtitle={`${filtered.length} task${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
       recordAnything
-      ariaContext={{ pageTitle: "Tasks", sourceType: "general" }}
+      caraContext={{ pageTitle: "Tasks", sourceType: "general" }}
       quickCreateContext={TASKS_QUICK_CREATE_CONTEXT}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={TASK_EXPORT_COLS} filename="tasks" />
           <PrintButton title="Tasks" subtitle="Chamberlain House — Task Management" targetId="tasks-content" />
           <SmartUploadButton variant="inline" label="Upload" uploadContext="Tasks — supporting document upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -225,18 +225,18 @@ export default function TasksPage() {
         )}
 
         {/* ── Cara follow-up task prompt ────────────────────────────────────── */}
-        {ariaLinkContext && (
+        {caraLinkContext && (
           <div className="flex items-start gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-4">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-violet-900">
-                Create a follow-up task for {getYPName(ariaLinkContext.childId)}
+                Create a follow-up task for {getYPName(caraLinkContext.childId)}
               </p>
               <p className="text-xs text-violet-700 mt-0.5 flex items-center gap-1">
                 <Link2 className="h-3 w-3 shrink-0" />
-                Linked from {ariaLinkContext.sourceType.replace(/_/g, " ")} record{ariaLinkContext.linkedId ? ` · ${ariaLinkContext.linkedId}` : ""}
+                Linked from {caraLinkContext.sourceType.replace(/_/g, " ")} record{caraLinkContext.linkedId ? ` · ${caraLinkContext.linkedId}` : ""}
               </p>
               <p className="text-xs text-violet-600 mt-1">
                 Use the <strong>+ New Task</strong> button at the top right to create a task.
@@ -244,7 +244,7 @@ export default function TasksPage() {
               </p>
             </div>
             <button
-              onClick={() => setAriaLinkContext(null)}
+              onClick={() => setCaraLinkContext(null)}
               className="text-violet-400 hover:text-violet-600 shrink-0"
             >
               <X className="h-4 w-4" />
@@ -547,7 +547,7 @@ export default function TasksPage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Tasks — outstanding tasks, follow-up tasks, management tasks, safeguarding tasks, compliance tasks, task assignment, task tracking, care planning tasks, Reg 45 action evidence"
         recordType="task"

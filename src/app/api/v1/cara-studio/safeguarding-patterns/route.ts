@@ -1,16 +1,16 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Safeguarding Patterns
 // GET  → list patterns (filterable by status/severity/child)
-// POST → run scan (RBAC: aria.generate_drafts)
+// POST → run scan (RBAC: cara.generate_drafts)
 // PATCH → update status (acknowledge / dismiss / mark actioned)
-//        (RBAC: aria.approve_outputs)
+//        (RBAC: cara.approve_outputs)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { runSafeguardingScan } from "@/lib/aria/aria-safeguarding-patterns";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import type { AriaSafeguardingPattern } from "@/types/aria-studio";
+import { runSafeguardingScan } from "@/lib/cara/cara-safeguarding-patterns";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import type { CaraSafeguardingPattern } from "@/types/cara-studio";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   const severity = searchParams.get("severity");
   const childId = searchParams.get("child_id");
 
-  let items: AriaSafeguardingPattern[] = db.ariaSafeguardingPatterns.findAll(homeId);
+  let items: CaraSafeguardingPattern[] = db.caraSafeguardingPatterns.findAll(homeId);
   if (status) items = items.filter((p) => p.status === status);
   if (severity) items = items.filter((p) => p.severity === severity);
   if (childId) items = items.filter((p) => p.child_id === childId);
@@ -64,8 +64,8 @@ export async function POST(req: NextRequest) {
     typeof body.lookback_days === "number" ? body.lookback_days : undefined;
   const asOf = typeof body.as_of === "string" ? body.as_of : undefined;
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId,
     intent: "scan safeguarding_patterns",
   });
@@ -97,21 +97,21 @@ export async function PATCH(req: NextRequest) {
   if (!ALLOWED.includes(status as (typeof ALLOWED)[number])) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
-  const existing = db.ariaSafeguardingPatterns.findById(id);
+  const existing = db.caraSafeguardingPatterns.findById(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: existing.home_id,
     intent: `update safeguarding_pattern ${status}`,
     isSafeguardingSensitive: true,
   });
   if (!guard.ok) return guard.response;
 
-  const updated = db.ariaSafeguardingPatterns.patch(id, {
-    status: status as AriaSafeguardingPattern["status"],
+  const updated = db.caraSafeguardingPatterns.patch(id, {
+    status: status as CaraSafeguardingPattern["status"],
     acknowledged_by:
       status === "acknowledged" || status === "actioned"
         ? guard.actor.userId

@@ -39,8 +39,8 @@ import {
   MENTOR_RELATIONSHIP_QUALITY_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<CulturalReligiousMentor>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -72,7 +72,7 @@ const roleColour: Record<CulturalMentorRole, string> = {
   rabbi: "bg-blue-100 text-blue-800 border-blue-200",
   pastor_minister: "bg-red-100 text-red-800 border-red-200",
   cultural_elder: "bg-orange-100 text-orange-800 border-orange-200",
-  community_leader: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
+  community_leader: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]",
   heritage_language_teacher: "bg-teal-100 text-teal-800 border-teal-200",
   faith_aware_therapist: "bg-purple-100 text-purple-800 border-purple-200",
   diaspora_mentor: "bg-pink-100 text-pink-800 border-pink-200",
@@ -122,12 +122,12 @@ export default function ChildCulturalReligiousMentorPage() {
     <PageShell
       title="Cultural & Religious Mentors"
       subtitle="Per-child community-based cultural or religious mentor matching — when staff don't share a child's heritage, identifying an Imam, Pandit, Rabbi, Pastor, elder or community leader for spiritual or cultural guidance. Co-produced with the child, dignifying, never imposed. Distinct from chosen-family-tracker."
-      ariaContext={{ pageTitle: "Cultural & Religious Mentors", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Cultural & Religious Mentors", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-cultural-religious-mentor" />
           <PrintButton title="Cultural & Religious Mentors" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -337,7 +337,7 @@ export default function ChildCulturalReligiousMentorPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Cultural & Religious Mentors — faith community links, cultural role models, mosque, church, temple, language support, identity development, heritage, LAC cultural plan"
         recordType="direct_work"

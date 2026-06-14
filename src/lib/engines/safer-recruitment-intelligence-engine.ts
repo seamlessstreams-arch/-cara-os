@@ -178,7 +178,7 @@ export interface RecruitmentAlert {
   message: string;
 }
 
-export interface AriaRecruitmentInsight {
+export interface CaraRecruitmentInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -188,7 +188,7 @@ export interface SaferRecruitmentIntelligenceResult {
   candidate_profiles: CandidateRecruitmentProfile[];
   check_analysis: CheckTypeAnalysis[];
   alerts: RecruitmentAlert[];
-  insights: AriaRecruitmentInsight[];
+  insights: CaraRecruitmentInsight[];
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────
@@ -616,7 +616,7 @@ export function computeSaferRecruitmentIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaRecruitmentInsight[] = [];
+  const insights: CaraRecruitmentInsight[] = [];
 
   // Critical: any candidate at pre-start or beyond without full Schedule 2
   const advancedNoSchedule2 = candidate_profiles.filter(

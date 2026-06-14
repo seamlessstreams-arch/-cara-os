@@ -105,7 +105,7 @@ export interface EducationAlert {
   message: string;
 }
 
-export interface AriaEducationInsight {
+export interface CaraEducationInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -116,7 +116,7 @@ export interface EducationIntelligenceResult {
   attendance: AttendanceAnalysis;
   activities: ActivityAnalysis;
   alerts: EducationAlert[];
-  insights: AriaEducationInsight[];
+  insights: CaraEducationInsight[];
 }
 
 export interface EducationIntelligenceInput {
@@ -560,7 +560,7 @@ export function computeEducationIntelligence(
 
   // ── Cara Education Insights ──────────────────────────────────────────────
 
-  const insights: AriaEducationInsight[] = [];
+  const insights: CaraEducationInsight[] = [];
 
   // 1. NEET concern
   if (neetCount > 0) {

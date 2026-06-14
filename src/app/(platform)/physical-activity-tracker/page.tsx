@@ -35,8 +35,8 @@ import {
 import { usePhysicalActivityEntries } from "@/hooks/use-physical-activity-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const categoryColour: Record<string, string> = {
   sport: "bg-red-100 text-red-800",
@@ -110,12 +110,12 @@ export default function PhysicalActivityTrackerPage() {
     <PageShell
       title="Physical Activity Tracker"
       subtitle="Per-child physical activity — variety, enjoyment, identity, regulation"
-      ariaContext={{ pageTitle: "Physical Activity Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Physical Activity Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="physical-activity-tracker" />
           <PrintButton title="Physical Activity Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -309,7 +309,7 @@ export default function PhysicalActivityTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Physical Activity Tracker — sport, exercise, gym, swimming, cycling, walks, team sports, leisure activities, fitness goals, health plan evidence, wellbeing, Reg 45 care outcomes"
         recordType="health"

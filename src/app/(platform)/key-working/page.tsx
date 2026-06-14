@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
+import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,8 @@ import {
   AlertTriangle, CheckCircle2, Clock, Calendar, Star, BookOpen,
   Loader2,
 } from "lucide-react";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 // ── Local view-model type (camelCase for the page) ──────────────────────────
@@ -270,18 +270,18 @@ export default function KeyWorkingPage() {
     <PageShell
       title="Key Working Sessions"
       subtitle="Recording meaningful interactions and tracking progress with each young person"
-      ariaContext={{ pageTitle: "Key Working Sessions", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Key Working Sessions", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Key Working Sessions" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="key-working-sessions" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Session</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "keywork", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "keywork", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
-        <AriaPanel
+        <CaraPanel
           mode="assist"
           pageContext="Key Working Sessions — meaningful interactions, goal tracking, child voice"
           recordType="key_work"
@@ -560,7 +560,7 @@ export default function KeyWorkingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPracticePanel sourceType="key_work" homeId="home_oak" title="Run Cara on this session" />
+      <CaraPracticePanel sourceType="key_work" homeId="home_oak" title="Run Cara on this session" />
     </PageShell>
   );
 }

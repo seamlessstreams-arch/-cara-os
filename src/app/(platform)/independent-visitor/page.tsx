@@ -21,8 +21,8 @@ import { useVisitorReports } from "@/hooks/use-visitor-reports";
 import type { VisitorReport, VisitorRecommendation, VisitorChildView } from "@/types/extended";
 import { VISITOR_VISIT_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── component ───────────────────────────────────────────────────────── */
 export default function IndependentVisitorPage() {
@@ -78,12 +78,12 @@ export default function IndependentVisitorPage() {
     <PageShell
       title="Independent Visitor Reports"
       subtitle="Regulation 44 — monthly independent person's visits and reports"
-      ariaContext={{ pageTitle: "Independent Visitor Reports", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Independent Visitor Reports", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Independent Visitor Reports" />
           <ExportButton data={filtered} columns={exportCols} filename="independent-visitor" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -269,7 +269,7 @@ export default function IndependentVisitorPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Independent Visitor Reports — volunteer visits, child relationship building, activities, frequency, DBS, matching, IRO oversight, looked-after child regulation, s23B CA 1989"
         recordType="direct_work"

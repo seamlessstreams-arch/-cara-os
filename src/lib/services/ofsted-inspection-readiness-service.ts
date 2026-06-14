@@ -328,7 +328,7 @@ export function computeOfstedReadinessAlerts(
   return alerts;
 }
 
-export function generateOfstedReadinessAriaInsights(
+export function generateOfstedReadinessCaraInsights(
   rows: OfstedInspectionReadinessRow[],
 ): string[] {
   const insights: string[] = [];
@@ -390,5 +390,5 @@ export function generateOfstedReadinessAriaInsights(
 export const _testing = {
   computeOfstedReadinessMetrics,
   computeOfstedReadinessAlerts,
-  generateOfstedReadinessAriaInsights,
+  generateOfstedReadinessCaraInsights,
 };

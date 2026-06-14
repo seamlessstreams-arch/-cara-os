@@ -74,7 +74,7 @@ export default function IntegrationHubPage() {
       subtitle="Adapter framework — connect Cara to the systems around the home"
       icon={<Plug className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Integration Hub", sourceType: "general" }}
+      caraContext={{ pageTitle: "Integration Hub", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

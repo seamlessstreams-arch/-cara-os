@@ -43,8 +43,8 @@ import type { HandoverAudit, HandoverDomainScore, RagRating } from "@/types/exte
 import { RAG_RATING_LABEL } from "@/types/extended";
 import { useHandoverAudits } from "@/hooks/use-handover-audits";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── RAG colour helpers ───────────────────────────────────────────────────────
 const ragColour = (rag: RagRating): string => {
@@ -212,7 +212,7 @@ export default function HandoverQualityAuditPage() {
     <PageShell
       title="Handover Quality Audit"
       subtitle="Observation-based scoring of shift handovers — required by Quality Standard 13 and Reg 33."
-      ariaContext={{ pageTitle: "Handover Quality Audits", sourceType: "general" }}
+      caraContext={{ pageTitle: "Handover Quality Audits", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -221,7 +221,7 @@ export default function HandoverQualityAuditPage() {
             filename="handover-quality-audits"
           />
           <PrintButton title="Handover Quality Audits" />
-          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -584,7 +584,7 @@ export default function HandoverQualityAuditPage() {
                         </p>
                       )}
                     </div>
-                    <div className="rounded-md border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3">
+                    <div className="rounded-md border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-3">
                       <h4 className="text-sm font-semibold text-[var(--cs-navy)] flex items-center gap-2">
                         <BookOpen className="h-4 w-4" /> Policy arising
                       </h4>
@@ -681,7 +681,7 @@ export default function HandoverQualityAuditPage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Handover Quality Audits — shift handover quality, information completeness, safeguarding alerts, medication records, incident follow-up, audit scores, Reg 45 evidence"
         recordType="handover"

@@ -22,7 +22,7 @@ import type {
   ChildBereavementSupportRow,
 } from "../child-bereavement-support-service";
 
-const { computeMetrics, computeAlerts, computeAriaInsights } = _testing;
+const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -1335,85 +1335,85 @@ describe("child-bereavement-support-service", () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 5. computeAriaInsights
+  // 5. computeCaraInsights
   // ═══════════════════════════════════════════════════════════════════════
 
-  describe("computeAriaInsights", () => {
+  describe("computeCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights).toHaveLength(3);
     });
     it("returns 3 insights for populated data", () => {
       const rows = [makeRow(), makeRow({ id: "r-2" })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [red]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[0]).toMatch(/^\[red\]/);
+      expect(computeCaraInsights(metrics)[0]).toMatch(/^\[red\]/);
     });
     it("insight 2 starts with [amber]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[1]).toMatch(/^\[amber\]/);
+      expect(computeCaraInsights(metrics)[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[2]).toMatch(/^\[reflect\]/);
+      expect(computeCaraInsights(metrics)[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total records count", () => {
       const rows = [makeRow({ id: "1" }), makeRow({ id: "2" })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("2 bereavement support records");
     });
     it("insight 1 uses singular record for 1", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 bereavement support record ");
     });
     it("insight 1 contains unique children count", () => {
       const rows = [makeRow({ id: "1", child_name: "A" }), makeRow({ id: "2", child_name: "B" })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains ongoing support count", () => {
       const rows = [makeRow({ id: "1", ongoing_support_needed: true })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 ongoing support");
     });
     it("insight 1 contains specialist referrals count", () => {
       const rows = [makeRow({ id: "1", specialist_referral_made: true })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 specialist referrals");
     });
     it("insight 1 contains CAMHS involvement count", () => {
       const rows = [makeRow({ id: "1", camhs_involvement: true })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 CAMHS involvement");
     });
     it("insight 1 contains school notification rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("School notification rate");
     });
     it("insight 1 contains social worker rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("Social worker rate");
     });
     it("insight 2 mentions high-priority when present", () => {
@@ -1422,78 +1422,78 @@ describe("child-bereavement-support-service", () => {
       ];
       const metrics = computeMetrics(rows);
       const alerts = computeAlerts(rows);
-      const insights = computeAriaInsights(metrics, alerts);
+      const insights = computeCaraInsights(metrics, alerts);
       expect(insights[1]).toContain("high-priority");
     });
     it("insight 2 shows no concerns when none", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics, []);
+      const insights = computeCaraInsights(metrics, []);
       expect(insights[1]).toContain("No high-priority alerts");
     });
     it("insight 2 contains memorial activity rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[1]).toContain("Memorial activity rate");
     });
     it("insight 2 contains review scheduled rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[1]).toContain("Review scheduled rate");
     });
     it("insight 3 contains reflective question about bereavement", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("bereavement");
     });
     it("insight 3 mentions sensitivity", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("sensitivity");
     });
     it("insight 3 mentions grief journey", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("grief journey");
     });
     it("insight 3 mentions emotions", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("emotions");
     });
     it("all insights are strings", () => {
       const metrics = computeMetrics([makeRow()]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       for (const i of insights) expect(typeof i).toBe("string");
     });
     it("empty array still produces meaningful content", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("0 bereavement support records");
       expect(insights[0]).toContain("0 children");
     });
     it("insight 1 for zero records shows 0 ongoing support", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("0 ongoing support");
     });
     it("insight 1 for zero records shows 0 specialist referrals", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("0 specialist referrals");
     });
     it("insight 1 for zero records shows 0 CAMHS involvement", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("0 CAMHS involvement");
     });
     it("insight 2 with only medium alerts shows no high-priority", () => {
       const rows = [makeRow({ id: "1", school_notified: false, social_worker_notified: true, review_date: "2025-07-01" })];
       const metrics = computeMetrics(rows);
       const alerts = computeAlerts(rows);
-      const insights = computeAriaInsights(metrics, alerts);
+      const insights = computeCaraInsights(metrics, alerts);
       expect(insights[1]).toContain("No high-priority alerts");
     });
     it("insight 2 counts high and medium alerts correctly", () => {
@@ -1502,13 +1502,13 @@ describe("child-bereavement-support-service", () => {
       ];
       const metrics = computeMetrics(rows);
       const alerts = computeAlerts(rows);
-      const insights = computeAriaInsights(metrics, alerts);
+      const insights = computeCaraInsights(metrics, alerts);
       expect(insights[1]).toContain("1 high-priority");
       expect(insights[1]).toContain("2 medium-priority");
     });
     it("insight 3 mentions pace", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("pace");
     });
   });

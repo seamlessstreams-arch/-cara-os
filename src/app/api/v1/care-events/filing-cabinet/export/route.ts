@@ -5,7 +5,7 @@
 //   { home_id, category?, reason? }
 //   → builds a snapshot of the live filing cabinet (optionally filtered to a
 //     single category), records the export in the immutable export history,
-//     and returns the snapshot payload. Permission: aria.export.
+//     and returns the snapshot payload. Permission: cara.export.
 //
 // The Filing Cabinet is a derived live index, so each export is a
 // point-in-time snapshot. The snapshot's "artifact_id" is synthesised from
@@ -13,10 +13,10 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { loadFilingCabinetIndex } from "@/lib/care-events/filing-cabinet-index";
 import { recordExport } from "@/lib/care-events/export-history";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import type { FilingCategory } from "@/types/care-events";
 
 interface Body {
@@ -31,11 +31,11 @@ export async function POST(req: NextRequest) {
 
   const homeId = body.home_id ?? "home_oak";
 
-  const guard = requireAriaStudioPermission(
+  const guard = requireCaraStudioPermission(
     req,
     body as unknown as Record<string, unknown>,
     {
-      permission: "aria.export",
+      permission: "cara.export",
       homeId,
       intent: "export filing cabinet index",
     },
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     reason: body.reason ?? null,
   });
 
-  appendAriaAudit({
+  appendCaraAudit({
     homeId,
     actorId: guard.actor.userId,
     actionType: "artifact_committed",

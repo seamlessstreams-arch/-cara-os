@@ -8,8 +8,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
-import { generateStudioContent } from "@/lib/aria-studio/ai-provider.service";
-import { EXTENDED_FRAMEWORK_PROMPTS, TONE_PROMPTS, ARIA_STUDIO_SYSTEM_PROMPT } from "@/lib/aria-studio/prompts";
+import { generateStudioContent } from "@/lib/cara-studio/ai-provider.service";
+import { EXTENDED_FRAMEWORK_PROMPTS, TONE_PROMPTS, CARA_STUDIO_SYSTEM_PROMPT } from "@/lib/cara-studio/prompts";
 import type {
   LearningResource,
   LearningResourceType,
@@ -131,7 +131,7 @@ export async function generateLearningResource(opts: {
   const tonePrompt = opts.tone ? (TONE_PROMPTS[opts.tone as keyof typeof TONE_PROMPTS] ?? "") : TONE_PROMPTS.training_focused;
 
   const systemPrompt = [
-    ARIA_STUDIO_SYSTEM_PROMPT,
+    CARA_STUDIO_SYSTEM_PROMPT,
     "",
     "--- RESOURCE TYPE ---",
     typeConfig.instruction,

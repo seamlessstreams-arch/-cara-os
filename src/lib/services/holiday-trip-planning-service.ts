@@ -553,7 +553,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: HolidayTripPlanningRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

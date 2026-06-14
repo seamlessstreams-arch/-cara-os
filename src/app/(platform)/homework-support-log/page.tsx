@@ -30,8 +30,8 @@ import { CHILD_INITIATION_LABEL, WORK_QUALITY_LABEL, CHILD_MOOD_DURING_LABEL } f
 import { useHomeworkSessions } from "@/hooks/use-homework-sessions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const moodColour: Record<string, string> = {
   engaged: "bg-green-100 text-green-800",
@@ -103,12 +103,12 @@ export default function HomeworkSupportLogPage() {
     <PageShell
       title="Homework Support Log"
       subtitle="Per-child homework engagement, support strategies, school feedback, and PEP target progress"
-      ariaContext={{ pageTitle: "Homework Support Log", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Homework Support Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="homework-support-log" />
           <PrintButton title="Homework Support Log" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -285,7 +285,7 @@ export default function HomeworkSupportLogPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Homework Support Log — homework completion, subject support, staff help given, tutoring, revision, exam prep, PEP targets, educational attainment, virtual school evidence"
         recordType="education"

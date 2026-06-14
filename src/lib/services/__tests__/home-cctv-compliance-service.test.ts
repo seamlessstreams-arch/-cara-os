@@ -23,7 +23,7 @@ import type {
 const {
   computeCctvComplianceMetrics,
   identifyCctvComplianceAlerts,
-  generateCctvComplianceAriaInsights,
+  generateCctvComplianceCaraInsights,
 } = _testing;
 
 // -- Helpers ------------------------------------------------------------------
@@ -1658,42 +1658,42 @@ describe("identifyCctvComplianceAlerts", () => {
 });
 
 // ==============================================================================
-// generateCctvComplianceAriaInsights
+// generateCctvComplianceCaraInsights
 // ==============================================================================
 
-describe("generateCctvComplianceAriaInsights", () => {
+describe("generateCctvComplianceCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const records = [makeRow()];
-    const insights = generateCctvComplianceAriaInsights(records);
+    const insights = generateCctvComplianceCaraInsights(records);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty array", () => {
-    const insights = generateCctvComplianceAriaInsights([]);
+    const insights = generateCctvComplianceCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [zinc]", () => {
     const records = [makeRow()];
-    const insights = generateCctvComplianceAriaInsights(records);
+    const insights = generateCctvComplianceCaraInsights(records);
     expect(insights[0]).toMatch(/^\[zinc\]/);
   });
 
   it("second insight starts with [amber]", () => {
     const records = [makeRow()];
-    const insights = generateCctvComplianceAriaInsights(records);
+    const insights = generateCctvComplianceCaraInsights(records);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("third insight starts with [reflect]", () => {
     const records = [makeRow()];
-    const insights = generateCctvComplianceAriaInsights(records);
+    const insights = generateCctvComplianceCaraInsights(records);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("all insights are non-empty strings", () => {
     const records = [makeRow()];
-    const insights = generateCctvComplianceAriaInsights(records);
+    const insights = generateCctvComplianceCaraInsights(records);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1703,7 +1703,7 @@ describe("generateCctvComplianceAriaInsights", () => {
   describe("first insight (zinc) -- summary stats", () => {
     it("includes total review count", () => {
       const records = [makeRow(), makeRow(), makeRow()];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[0]).toContain("3 CCTV compliance reviews");
     });
 
@@ -1712,13 +1712,13 @@ describe("generateCctvComplianceAriaInsights", () => {
         makeRow({ camera_location: "Front Entrance" }),
         makeRow({ camera_location: "Rear Garden" }),
       ];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[0]).toContain("2 locations");
     });
 
     it("uses singular location for count of 1", () => {
       const records = [makeRow({ camera_location: "Front Entrance" })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[0]).toContain("1 location");
     });
 
@@ -1727,25 +1727,25 @@ describe("generateCctvComplianceAriaInsights", () => {
         makeRow({ reviewer_name: "Reviewer A" }),
         makeRow({ reviewer_name: "Reviewer B" }),
       ];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[0]).toContain("2 reviewers");
     });
 
     it("uses singular reviewer for count of 1", () => {
       const records = [makeRow({ reviewer_name: "Single Reviewer" })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[0]).toContain("1 reviewer");
     });
 
     it("includes DPIA rate", () => {
       const records = [makeRow({ dpia_completed: true })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[0]).toContain("100%");
     });
 
     it("uses singular review for count of 1", () => {
       const records = [makeRow()];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[0]).toContain("1 CCTV compliance review");
     });
   });
@@ -1753,32 +1753,32 @@ describe("generateCctvComplianceAriaInsights", () => {
   describe("second insight (amber) -- priority concerns", () => {
     it("mentions critical and high alerts when present", () => {
       const records = [makeRow({ dpia_completed: false, signage_in_place: false })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high");
     });
 
     it("mentions non-compliant count when alerts present", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[1]).toContain("non-compliant");
     });
 
     it("mentions no critical alerts when all clean", () => {
       const records = [makeRow({ dpia_completed: true, children_informed: true, signage_in_place: true, compliance_status: "Compliant", footage_encrypted: true, sar_received: false })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[1]).toContain("No critical or high-priority");
     });
 
     it("mentions data protection standards when no alerts", () => {
       const records = [makeRow({ dpia_completed: true, children_informed: true, signage_in_place: true, compliance_status: "Compliant", footage_encrypted: true, sar_received: false })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[1]).toContain("data protection");
     });
 
     it("uses singular for 1 non-compliant camera", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[1]).toContain("camera is");
     });
 
@@ -1787,13 +1787,13 @@ describe("generateCctvComplianceAriaInsights", () => {
         makeRow({ compliance_status: "Non-Compliant" }),
         makeRow({ compliance_status: "Non-Compliant" }),
       ];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[1]).toContain("cameras are");
     });
 
     it("uses singular for 1 review requiring action", () => {
       const records = [makeRow({ compliance_status: "Action Required", dpia_completed: false })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[1]).toContain("review requires");
     });
 
@@ -1802,7 +1802,7 @@ describe("generateCctvComplianceAriaInsights", () => {
         makeRow({ compliance_status: "Action Required", dpia_completed: false }),
         makeRow({ compliance_status: "Action Required", dpia_completed: false }),
       ];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[1]).toContain("reviews require");
     });
   });
@@ -1810,13 +1810,13 @@ describe("generateCctvComplianceAriaInsights", () => {
   describe("third insight (reflect) -- reflective question", () => {
     it("mentions non-compliant when present", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[2]).toContain("non-compliant");
     });
 
     it("uses singular for 1 non-compliant camera", () => {
       const records = [makeRow({ compliance_status: "Non-Compliant" })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[2]).toContain("CCTV camera has");
     });
 
@@ -1825,31 +1825,31 @@ describe("generateCctvComplianceAriaInsights", () => {
         makeRow({ compliance_status: "Non-Compliant" }),
         makeRow({ compliance_status: "Non-Compliant" }),
       ];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[2]).toContain("CCTV cameras have");
     });
 
     it("asks about action required and SARs when no non-compliant but issues found", () => {
       const records = [makeRow({ compliance_status: "Action Required", dpia_completed: false })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[2]).toContain("action");
     });
 
     it("asks about SARs when SARs received but no non-compliant", () => {
       const records = [makeRow({ compliance_status: "Compliant", sar_received: true, sar_responded_in_time: true, dpia_completed: true, children_informed: true, signage_in_place: true, footage_encrypted: true })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[2]).toContain("SAR");
     });
 
     it("provides positive reflection when all clean", () => {
       const records = [makeRow({ compliance_status: "Compliant", dpia_completed: true, children_informed: true, signage_in_place: true, footage_encrypted: true, sar_received: false })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[2]).toContain("no non-compliant");
     });
 
     it("asks about children and staff awareness in positive reflection", () => {
       const records = [makeRow({ compliance_status: "Compliant", dpia_completed: true, children_informed: true, signage_in_place: true, footage_encrypted: true, sar_received: false })];
-      const insights = generateCctvComplianceAriaInsights(records);
+      const insights = generateCctvComplianceCaraInsights(records);
       expect(insights[2]).toContain("children");
       expect(insights[2]).toContain("staff");
     });

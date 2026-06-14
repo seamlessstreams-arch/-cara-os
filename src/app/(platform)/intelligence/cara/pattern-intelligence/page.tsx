@@ -56,9 +56,9 @@ import { useKeyWorkingSessions } from "@/hooks/use-key-working";
 import {
   runProactiveAlertScan,
   type ProactiveAlert,
-} from "@/lib/aria/aria-proactive-alerts";
-import type { IncidentRecord } from "@/lib/aria/aria-pattern-engine";
-import type { ChildRecord, IncidentSummary } from "@/lib/aria/aria-voice-gap-analysis";
+} from "@/lib/cara/cara-proactive-alerts";
+import type { IncidentRecord } from "@/lib/cara/cara-pattern-engine";
+import type { ChildRecord, IncidentSummary } from "@/lib/cara/cara-voice-gap-analysis";
 
 // ── Demo fallback data (shown when no live incidents are available) ────────────
 
@@ -80,7 +80,7 @@ interface PatternItem {
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const SOURCE_CONFIG: Record<PatternItem["source"], { label: string; icon: React.ElementType; colour: string }> = {
-  pattern: { label: "Pattern", icon: Radar, colour: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]" },
+  pattern: { label: "Pattern", icon: Radar, colour: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]" },
   voice_gap: { label: "Voice Gap", icon: Quote, colour: "bg-blue-100 text-blue-800" },
   compliance: { label: "Compliance", icon: Calendar, colour: "bg-amber-100 text-amber-800" },
   regulatory: { label: "Regulatory", icon: Shield, colour: "bg-red-100 text-red-800" },
@@ -169,7 +169,7 @@ export default function PatternIntelligencePage() {
       home_id:            HOME_ID,
     }));
 
-    // ChildRecord (from aria-voice-gap-analysis) = individual record entries per child
+    // ChildRecord (from cara-voice-gap-analysis) = individual record entries per child
     // Map KeyWorkingSessions as child records (they contain child voice data)
     const childRecords: ChildRecord[] = kwSessions.map((s) => ({
       id:             s.id,
@@ -248,7 +248,7 @@ export default function PatternIntelligencePage() {
     <PageShell
       title="Pattern Intelligence"
       subtitle="Cara V2 — proactive pattern detection, voice gap analysis, and compliance monitoring"
-      ariaContext={{ pageTitle: "Pattern Intelligence", sourceType: "general" }}
+      caraContext={{ pageTitle: "Pattern Intelligence", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           {isLive && (
@@ -269,7 +269,7 @@ export default function PatternIntelligencePage() {
               <Radar className="h-3.5 w-3.5" />Pattern Alerts
             </Button>
           </Link>
-          <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">
+          <Badge className="bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">
             <Sparkles className="h-3 w-3 mr-1" />Cara V2
           </Badge>
         </div>
@@ -288,10 +288,10 @@ export default function PatternIntelligencePage() {
         {/* ── Headline stats ──────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
           {[
-            { label: "Active Alerts", value: counts.total, icon: Zap, colour: "text-[var(--cs-aria-gold)]" },
+            { label: "Active Alerts", value: counts.total, icon: Zap, colour: "text-[var(--cs-cara-gold)]" },
             { label: "Urgent", value: counts.urgent, icon: AlertOctagon, colour: "text-red-600" },
             { label: "High", value: counts.high, icon: AlertTriangle, colour: "text-orange-600" },
-            { label: "Patterns", value: counts.patterns, icon: Radar, colour: "text-[var(--cs-aria-gold)]" },
+            { label: "Patterns", value: counts.patterns, icon: Radar, colour: "text-[var(--cs-cara-gold)]" },
             { label: "Voice Gaps", value: counts.voiceGaps, icon: Quote, colour: "text-blue-600" },
             { label: "Compliance", value: counts.compliance, icon: Calendar, colour: "text-amber-600" },
             { label: "Children", value: counts.childrenAffected, icon: Users, colour: "text-[var(--cs-text-secondary)]" },
@@ -409,9 +409,9 @@ export default function PatternIntelligencePage() {
                   <div className="px-5 pb-5 border-t border-[var(--cs-border-subtle)] pt-4 space-y-4">
                     <p className="text-sm text-[var(--cs-text-secondary)]">{alert.description}</p>
 
-                    <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-4">
+                    <div className="rounded-xl bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-4">
                       <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                        <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                         <span className="text-xs font-semibold text-[var(--cs-navy)]">Cara Recommendation</span>
                       </div>
                       <p className="text-sm text-[var(--cs-navy)]">{alert.recommendation}</p>

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeRadicalisationMetrics,
   computeRadicalisationAlerts,
-  generateRadicalisationAriaInsights,
+  generateRadicalisationCaraInsights,
 } from "./child-radicalisation-prevention-service";
 import type { ChildRadicalisationPreventionRow } from "./child-radicalisation-prevention-service";
 
@@ -151,11 +151,11 @@ describe("computeRadicalisationAlerts (prevention)", () => {
   });
 });
 
-// -- generateRadicalisationAriaInsights ---------------------------------------
+// -- generateRadicalisationCaraInsights ---------------------------------------
 
-describe("generateRadicalisationAriaInsights (prevention)", () => {
+describe("generateRadicalisationCaraInsights (prevention)", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateRadicalisationAriaInsights([]);
+    const insights = generateRadicalisationCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[2]).toContain("[reflect]");
@@ -163,7 +163,7 @@ describe("generateRadicalisationAriaInsights (prevention)", () => {
 
   it("shows critical/high counts when alerts present", () => {
     const rows = [makeRow({ vulnerability_level: "high", safety_plan_in_place: false })];
-    const insights = generateRadicalisationAriaInsights(rows);
+    const insights = generateRadicalisationCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 });

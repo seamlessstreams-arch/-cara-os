@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useCompetenceRecords, useCreateCompetenceRecord } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -161,7 +161,7 @@ export default function StaffCompetencePassportPage() {
       <PageShell
         title="Staff Competence Passport"
         subtitle="Competencies, compliance, warnings, and restrictions"
-        ariaContext={{ pageTitle: "Staff Competence Passport", sourceType: "staff" }}
+        caraContext={{ pageTitle: "Staff Competence Passport", sourceType: "staff" }}
       >
         <div className="p-12 text-center text-muted-foreground">Loading staff competence records…</div>
       </PageShell>
@@ -176,8 +176,8 @@ export default function StaffCompetencePassportPage() {
     <PageShell
       title="Staff Competence Passport"
       subtitle="Competencies, compliance, warnings, and restrictions"
-      ariaContext={{ pageTitle: "Staff Competence Passport", sourceType: "staff" }}
-      actions={<AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />}
+      caraContext={{ pageTitle: "Staff Competence Passport", sourceType: "staff" }}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />}
     >
       <div className="space-y-6">
         {/* Staff Selector */}
@@ -420,7 +420,7 @@ export default function StaffCompetencePassportPage() {
           </CardContent>
         </Card>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Competence Passport — individual staff competencies, skills, compliance status, training records, warnings and restrictions, Reg 40 staff qualifications evidence, Ofsted workforce"
         recordType="staff_training"

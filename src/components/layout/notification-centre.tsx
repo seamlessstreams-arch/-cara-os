@@ -42,7 +42,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   incidents:    "bg-orange-50 border-orange-200",
   tasks:        "bg-blue-50 border-blue-200",
   compliance:   "bg-amber-50 border-amber-200",
-  staffing:     "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]",
+  staffing:     "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]",
   environment:  "bg-[var(--cs-surface)] border-[var(--cs-border)]",
   intelligence: "bg-indigo-50 border-indigo-200",
 };

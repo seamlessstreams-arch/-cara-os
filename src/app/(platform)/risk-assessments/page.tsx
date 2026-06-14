@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
+import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,8 +25,8 @@ import {
   Shield, ArrowUp, ArrowDown, Minus, Loader2, ArrowUpRight,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 
 const DOMAIN_META: Record<RiskDomain, { label: string; color: string }> = {
@@ -138,12 +138,12 @@ export default function RiskAssessmentsPage() {
     <PageShell
       title="Risk Assessments"
       subtitle="Individual risk assessments — triggers, mitigations, and contingency plans"
-      ariaContext={{ pageTitle: "Risk Assessments", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Risk Assessments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Risk Assessments" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="risk-assessments" />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Assessment</Button>
         </div>
       }
@@ -152,7 +152,7 @@ export default function RiskAssessmentsPage() {
         <div className="flex items-center justify-center py-20"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
       ) : (
       <div id="print-area" className="space-y-6">
-        <AriaPanel mode="assist" pageContext="Risk Assessments — individual risk assessment, triggers, mitigations, contingency planning, placement risk management" recordType="risk_assessment" userRole="registered_manager" className="mb-2" />
+        <CaraPanel mode="assist" pageContext="Risk Assessments — individual risk assessment, triggers, mitigations, contingency planning, placement risk management" recordType="risk_assessment" userRole="registered_manager" className="mb-2" />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Total Assessments", value: stats.total,     icon: <ShieldAlert className="h-4 w-4" />,    color: "text-blue-600" },
@@ -383,7 +383,7 @@ export default function RiskAssessmentsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPracticePanel sourceType="risk_assessment" homeId="home_oak" title="Run Cara on this assessment" />
+      <CaraPracticePanel sourceType="risk_assessment" homeId="home_oak" title="Run Cara on this assessment" />
     </PageShell>
   );
 }

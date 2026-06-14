@@ -40,8 +40,8 @@ import {
 } from "@/types/extended";
 import { useProtocolDrills } from "@/hooks/use-protocol-drills";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -202,7 +202,7 @@ export default function EmergencyProtocolDrillsPage() {
     <PageShell
       title="Emergency Protocol Drills"
       subtitle="Testing emergency responses beyond fire drills — QS25 & Regulation 22"
-      ariaContext={{ pageTitle: "Emergency Protocol Drills", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Emergency Protocol Drills", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Protocol Drills" />
@@ -211,7 +211,7 @@ export default function EmergencyProtocolDrillsPage() {
             columns={exportColumns}
             filename="emergency-protocol-drills"
           />
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -492,7 +492,7 @@ export default function EmergencyProtocolDrillsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Emergency Protocol Drills — fire drill, lockdown drill, missing from care drill, medical emergency, flood protocol, evacuation, drill records, frequency, Ofsted, Annex A evidence"
         recordType="policy"

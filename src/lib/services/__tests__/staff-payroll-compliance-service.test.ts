@@ -29,7 +29,7 @@ import {
   COMPLIANCE_STATUSES,
 } from "../staff-payroll-compliance-service";
 
-const { computeMetrics, computeAlerts, computeAriaInsights } = _testing;
+const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -690,48 +690,48 @@ describe("computeAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// computeAriaInsights
+// computeCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   // ── Structure ───────────────────────────────────────────────────────────
 
   it("returns exactly 3 insights for empty array", () => {
-    const insights = computeAriaInsights([]);
+    const insights = computeCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for single record", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for multiple records", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights).toHaveLength(3);
   });
 
   it("all insights are strings", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     for (const i of insights) expect(typeof i).toBe("string");
   });
 
   it("all insights are non-empty", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     for (const i of insights) expect(i.length).toBeGreaterThan(0);
   });
 
   // ── Insight 1: purple-themed summary ───────────────────────────────────
 
   it("first insight starts with [purple]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[purple\]/);
   });
 
   it("first insight includes total check count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
@@ -740,7 +740,7 @@ describe("computeAriaInsights", () => {
       makeRow({ staff_name: "Alice" }),
       makeRow({ staff_name: "Bob" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
@@ -749,7 +749,7 @@ describe("computeAriaInsights", () => {
       makeRow({ reviewer_name: "Reviewer A" }),
       makeRow({ reviewer_name: "Reviewer B" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
@@ -758,79 +758,79 @@ describe("computeAriaInsights", () => {
       makeRow({ compliance_status: "Non-Compliant" }),
       makeRow({ compliance_status: "Compliant" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("1 non-compliant");
   });
 
   it("first insight includes action required count", () => {
     const rows = [makeRow({ compliance_status: "Action Required" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("1 action required");
   });
 
   it("first insight uses singular check for 1 record", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toContain("1 payroll compliance check");
     expect(insights[0]).not.toContain("checks recorded");
   });
 
   it("first insight uses plural checks for 2+ records", () => {
     const rows = [makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("checks");
   });
 
   it("first insight uses singular staff member for 1 staff", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toContain("staff member");
     expect(insights[0]).not.toContain("staff members reviewed");
   });
 
   it("first insight uses plural staff members for 2+ staff", () => {
     const rows = [makeRow({ staff_name: "Alice" }), makeRow({ staff_name: "Bob" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("staff members");
   });
 
   it("first insight uses singular reviewer for 1 reviewer", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toContain("reviewer");
   });
 
   it("first insight uses plural reviewers for 2+ reviewers", () => {
     const rows = [makeRow({ reviewer_name: "Reviewer A" }), makeRow({ reviewer_name: "Reviewer B" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("reviewers");
   });
 
   // ── Insight 2: amber-themed priorities ──────────────────────────────────
 
   it("second insight starts with [amber]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("second insight mentions alerts when critical alerts exist", () => {
     const rows = [makeRow({ right_to_work_verified: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 
   it("second insight mentions no alerts when all compliant", () => {
     const rows = [makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/[Nn]o critical/);
   });
 
   it("second insight includes right to work rate", () => {
     const rows = [makeRow({ right_to_work_verified: true }), makeRow({ right_to_work_verified: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   it("second insight includes tax code rate", () => {
     const rows = [makeRow({ tax_code_verified: true }), makeRow({ tax_code_verified: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
@@ -839,39 +839,39 @@ describe("computeAriaInsights", () => {
       makeRow({ pension_enrolled: true, right_to_work_verified: false }),
       makeRow({ pension_enrolled: false }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   it("second insight mentions high-priority count when present", () => {
     const rows = [makeRow({ compliance_status: "Non-Compliant" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("high-priority");
   });
 
   it("second insight mentions HMRC when no alerts", () => {
     const rows = [makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("HMRC");
   });
 
   // ── Insight 3: reflect-themed question ──────────────────────────────────
 
   it("third insight starts with [reflect]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions critical alert count when present", () => {
     const rows = [makeRow({ right_to_work_verified: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("1");
     expect(insights[2]).toMatch(/critical/i);
   });
 
   it("third insight uses singular when 1 critical alert", () => {
     const rows = [makeRow({ right_to_work_verified: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("alert requires");
   });
 
@@ -880,7 +880,7 @@ describe("computeAriaInsights", () => {
       makeRow({ right_to_work_verified: false, staff_name: "Alice" }),
       makeRow({ right_to_work_verified: false, staff_name: "Bob" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("alerts require");
   });
 
@@ -888,13 +888,13 @@ describe("computeAriaInsights", () => {
     const rows = [
       makeRow({ pension_enrolled: false }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("pension");
   });
 
   it("third insight references Pensions Act 2008 when pension rate < 100", () => {
     const rows = [makeRow({ pension_enrolled: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("Pensions Act 2008");
   });
 
@@ -902,14 +902,14 @@ describe("computeAriaInsights", () => {
     const rows = [
       makeRow({ pension_enrolled: true }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("compliance");
     expect(insights[2]).toContain("HMRC");
   });
 
   it("third insight mentions right to work when critical alerts present", () => {
     const rows = [makeRow({ right_to_work_verified: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("right to work");
   });
 });
@@ -1049,7 +1049,7 @@ describe("edge cases", () => {
   });
 
   it("insights handle empty data gracefully", () => {
-    const insights = computeAriaInsights([]);
+    const insights = computeCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 payroll compliance");
     expect(insights[0]).toContain("0 staff");
@@ -1104,19 +1104,19 @@ describe("edge cases", () => {
 
   it("insights with only critical alerts show correct count", () => {
     const rows = [makeRow({ right_to_work_verified: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/\d+ critical/);
   });
 
   it("insights with only high alerts show correct count", () => {
     const rows = [makeRow({ compliance_status: "Non-Compliant" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/\d+ high-priority/);
   });
 
   it("insights reflect question path for pension < 100%", () => {
     const rows = [makeRow({ pension_enrolled: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("pension");
     expect(insights[2]).toContain("0%");
   });
@@ -1172,14 +1172,14 @@ describe("edge cases", () => {
       makeRow({ right_to_work_verified: false }),
       makeRow({ compliance_status: "Non-Compliant" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high-priority");
   });
 
   it("insights third path for full pension enrolment with no critical alerts", () => {
     const rows = [makeRow({ pension_enrolled: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("compliance");
   });
 });

@@ -41,8 +41,8 @@ import {
 } from "@/types/extended";
 import { useSafetyCheckRecords } from "@/hooks/use-safety-check-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -136,12 +136,12 @@ export default function GasElectricalSafetyChecksPage() {
     <PageShell
       title="Gas & Electrical Safety Checks"
       subtitle="Statutory and routine building safety checks — annual gas safety (CP12), boiler service, EICR (5-yearly), PAT testing, weekly smoke and CO alarm tests, emergency lighting. Reg 25 (premises and grounds) compliance evidenced."
-      ariaContext={{ pageTitle: "Gas & Electrical Safety Checks", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Gas & Electrical Safety Checks", sourceType: "home_check" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="gas-electrical-safety-checks" />
           <PrintButton title="Gas & Electrical Safety Checks" />
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -343,7 +343,7 @@ export default function GasElectricalSafetyChecksPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Gas & Electrical Safety Checks — annual gas safety certificate, EICR, boiler service, PAT testing, utility compliance, Reg 31, health and safety, Ofsted, Annex A evidence"
         recordType="policy"

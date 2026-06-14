@@ -26,16 +26,16 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow, format } from "date-fns";
 import {
-  useAriaArtifact, useUpdateAriaArtifact, useAriaQualityCheck,
-} from "@/hooks/use-aria-studio";
-import { AriaStudioEvidencePanel } from "@/components/aria/studio-evidence-panel";
-import { AriaStudioQualityPanel } from "@/components/aria/studio-quality-panel";
-import type { AriaArtifactStatus } from "@/types/aria-studio";
-import { ARIA_ARTIFACT_TYPE_LABELS, ARIA_STATUS_LABELS } from "@/types/aria-studio";
+  useCaraArtifact, useUpdateCaraArtifact, useCaraQualityCheck,
+} from "@/hooks/use-cara-studio";
+import { CaraStudioEvidencePanel } from "@/components/cara/studio-evidence-panel";
+import { CaraStudioQualityPanel } from "@/components/cara/studio-quality-panel";
+import type { CaraArtifactStatus } from "@/types/cara-studio";
+import { CARA_ARTIFACT_TYPE_LABELS, CARA_STATUS_LABELS } from "@/types/cara-studio";
 
 // ── Status badge colours ──────────────────────────────────────────────────────
 
-const STATUS_COLOURS: Record<AriaArtifactStatus, string> = {
+const STATUS_COLOURS: Record<CaraArtifactStatus, string> = {
   draft: "bg-yellow-50 text-yellow-700 border-yellow-200",
   in_review: "bg-blue-50 text-blue-700 border-blue-200",
   changes_requested: "bg-orange-50 text-orange-700 border-orange-200",
@@ -46,7 +46,7 @@ const STATUS_COLOURS: Record<AriaArtifactStatus, string> = {
   deleted_recoverable: "bg-red-50 text-red-600 border-red-200",
 };
 
-const STATUS_ICONS: Record<AriaArtifactStatus, React.ComponentType<{ className?: string }>> = {
+const STATUS_ICONS: Record<CaraArtifactStatus, React.ComponentType<{ className?: string }>> = {
   draft: Clock,
   in_review: Eye,
   changes_requested: RotateCcw,
@@ -59,7 +59,7 @@ const STATUS_ICONS: Record<AriaArtifactStatus, React.ComponentType<{ className?:
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function AriaStudioDetailPage({
+export default function CaraStudioDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -67,9 +67,9 @@ export default function AriaStudioDetailPage({
   const { id } = use(params);
   const router = useRouter();
 
-  const { data, isLoading } = useAriaArtifact(id);
-  const updateMutation = useUpdateAriaArtifact();
-  const qualityCheckMutation = useAriaQualityCheck();
+  const { data, isLoading } = useCaraArtifact(id);
+  const updateMutation = useUpdateCaraArtifact();
+  const qualityCheckMutation = useCaraQualityCheck();
 
   // Editing
   const [editedContent, setEditedContent] = useState<string | null>(null);
@@ -98,7 +98,7 @@ export default function AriaStudioDetailPage({
     ...data!.related,
   };
   const latestQC = qualityChecks?.[0] ?? null;
-  const status = artifact.status as AriaArtifactStatus;
+  const status = artifact.status as CaraArtifactStatus;
   const isEditable = status === "draft" || status === "changes_requested";
   const isCommitted = status === "committed";
   const displayContent = editedContent ?? artifact.generated_content ?? "";
@@ -154,8 +154,8 @@ export default function AriaStudioDetailPage({
   return (
     <PageShell
       title={artifact.title}
-      subtitle={ARIA_ARTIFACT_TYPE_LABELS[artifact.artifact_type as keyof typeof ARIA_ARTIFACT_TYPE_LABELS] ?? artifact.artifact_type}
-      ariaContext={{
+      subtitle={CARA_ARTIFACT_TYPE_LABELS[artifact.artifact_type as keyof typeof CARA_ARTIFACT_TYPE_LABELS] ?? artifact.artifact_type}
+      caraContext={{
         pageTitle: `Cara Studio artifact — ${artifact.title} — status: ${status}`,
         suggestedAction: "Run quality check or approve artifact",
       }}
@@ -178,7 +178,7 @@ export default function AriaStudioDetailPage({
             className={`gap-1.5 ${STATUS_COLOURS[status]}`}
           >
             <StatusIcon className="h-3 w-3" />
-            {ARIA_STATUS_LABELS[status]}
+            {CARA_STATUS_LABELS[status]}
           </Badge>
           {artifact.safeguarding_level && artifact.safeguarding_level !== "none" && (
             <Badge variant="outline" className="gap-1.5 text-amber-700 border-amber-200 bg-amber-50">
@@ -337,7 +337,7 @@ export default function AriaStudioDetailPage({
             <TabsContent value="evidence" className="mt-3">
               <Card>
                 <CardContent className="pt-4">
-                  <AriaStudioEvidencePanel
+                  <CaraStudioEvidencePanel
                     sources={sources ?? []}
                     confidenceScore={artifact.evidence_confidence_score ?? null}
                   />
@@ -371,7 +371,7 @@ export default function AriaStudioDetailPage({
                 </CardHeader>
                 <CardContent className="pt-0 px-4 pb-4">
                   {latestQC ? (
-                    <AriaStudioQualityPanel
+                    <CaraStudioQualityPanel
                       qualityCheck={latestQC}
                       score={artifact.quality_score ?? null}
                     />

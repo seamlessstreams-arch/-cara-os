@@ -1,15 +1,15 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Reg 45 Evidence Item status updates
 // PATCH → accept / defer / reject / include_in_report
-//   RBAC: aria.approve_outputs (safeguarding-sensitive)
+//   RBAC: cara.approve_outputs (safeguarding-sensitive)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import type { AriaReg45EvidenceItem } from "@/types/aria-studio";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import type { CaraReg45EvidenceItem } from "@/types/cara-studio";
 
-const ALLOWED: Array<AriaReg45EvidenceItem["status"]> = [
+const ALLOWED: Array<CaraReg45EvidenceItem["status"]> = [
   "ai_draft",
   "accepted",
   "deferred",
@@ -31,17 +31,17 @@ export async function PATCH(req: NextRequest) {
   if (!id || !status) {
     return NextResponse.json({ error: "id and status are required" }, { status: 400 });
   }
-  if (!ALLOWED.includes(status as AriaReg45EvidenceItem["status"])) {
+  if (!ALLOWED.includes(status as CaraReg45EvidenceItem["status"])) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const existing = db.ariaReg45EvidenceItems.findById(id);
+  const existing = db.caraReg45EvidenceItems.findById(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: existing.home_id,
     intent: `update reg45_evidence ${status}`,
     isSafeguardingSensitive: true,
@@ -49,8 +49,8 @@ export async function PATCH(req: NextRequest) {
   if (!guard.ok) return guard.response;
 
   const decided = status !== "ai_draft";
-  const updated = db.ariaReg45EvidenceItems.patch(id, {
-    status: status as AriaReg45EvidenceItem["status"],
+  const updated = db.caraReg45EvidenceItems.patch(id, {
+    status: status as CaraReg45EvidenceItem["status"],
     decided_by: decided ? guard.actor.userId : existing.decided_by,
     decided_at: decided ? new Date().toISOString() : existing.decided_at,
     decision_note: note ?? existing.decision_note,

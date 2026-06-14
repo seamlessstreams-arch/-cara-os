@@ -623,7 +623,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: HomeWasteManagementRow[],
 ): string[] {
   const metrics = computeMetrics(rows);
@@ -897,6 +897,6 @@ export async function deleteHomeWasteManagement(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   validateHomeWasteManagement,
 };

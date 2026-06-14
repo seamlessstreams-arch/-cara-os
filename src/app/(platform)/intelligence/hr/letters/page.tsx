@@ -95,7 +95,7 @@ interface GuardianReview {
     rationale: string;
   };
   suggestedSaferWording?: string;
-  ariaConfidence: number;
+  caraConfidence: number;
   llmUsed: boolean;
 }
 
@@ -253,8 +253,8 @@ export default function HrLettersPage() {
 
   return (
     <PageShell title="HR — Letter Generator">
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
-        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-cara-gold)]" />
         <div>
           <div className="font-semibold">Cara suggested draft, never final</div>
           <p className="text-[var(--cs-navy)]">
@@ -270,7 +270,7 @@ export default function HrLettersPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Mail className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Letter setup
+            <Mail className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Letter setup
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -399,7 +399,7 @@ export default function HrLettersPage() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-xs uppercase text-[var(--cs-text-muted)] mb-1">Cara confidence</div>
-                  <div className="text-3xl font-semibold text-[var(--cs-navy)]">{Math.round(guardian.ariaConfidence * 100)}%</div>
+                  <div className="text-3xl font-semibold text-[var(--cs-navy)]">{Math.round(guardian.caraConfidence * 100)}%</div>
                   <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{guardian.llmUsed ? "LLM-enhanced" : "Deterministic only"}</div>
                 </CardContent>
               </Card>
@@ -411,7 +411,7 @@ export default function HrLettersPage() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between gap-2 text-base">
                   <span className="flex items-center gap-2">
-                    <Mail className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Draft letter
+                    <Mail className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Draft letter
                   </span>
                   <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)} className="gap-1.5">
                     <Pencil className="h-3.5 w-3.5" /> {editing ? "Stop editing" : "Edit"}

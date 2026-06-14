@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type LacHealthAssessmentRow } from "../lac-health-assessment-service";
 
-const { computeLacHealthAssessmentMetrics, computeLacHealthAssessmentAlerts, generateLacHealthAssessmentAriaInsights } = _testing;
+const { computeLacHealthAssessmentMetrics, computeLacHealthAssessmentAlerts, generateLacHealthAssessmentCaraInsights } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
 
@@ -350,72 +350,72 @@ describe("lac-health-assessment-service", () => {
     });
   });
 
-  describe("generateLacHealthAssessmentAriaInsights", () => {
+  describe("generateLacHealthAssessmentCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
       const m = computeLacHealthAssessmentMetrics([]);
       const a = computeLacHealthAssessmentAlerts([]);
-      const insights = generateLacHealthAssessmentAriaInsights(m, a);
+      const insights = generateLacHealthAssessmentCaraInsights(m, a);
       expect(insights).toHaveLength(3);
     });
 
     it("insight 1 starts with [pink]", () => {
       const m = computeLacHealthAssessmentMetrics([]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[0]).toMatch(/^\[pink\]/);
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[0]).toMatch(/^\[pink\]/);
     });
 
     it("insight 2 starts with [amber]", () => {
       const m = computeLacHealthAssessmentMetrics([]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[1]).toMatch(/^\[amber\]/);
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[1]).toMatch(/^\[amber\]/);
     });
 
     it("insight 3 starts with [reflect]", () => {
       const m = computeLacHealthAssessmentMetrics([]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[2]).toMatch(/^\[reflect\]/);
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[2]).toMatch(/^\[reflect\]/);
     });
 
     it("insight 1 contains total assessments count", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow(), makeRow()]);
       const a = computeLacHealthAssessmentAlerts([makeRow(), makeRow()]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[0]).toContain("2 LAC health assessments");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[0]).toContain("2 LAC health assessments");
     });
 
     it("insight 1 contains unique children count", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[0]).toContain("2 children");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[0]).toContain("2 children");
     });
 
     it("insight 1 uses singular child for 1", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow()]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[0]).toContain("1 child");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[0]).toContain("1 child");
     });
 
     it("insight 1 contains overdue count", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow({ compliance_status: "overdue" })]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[0]).toContain("1 (100%)");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[0]).toContain("1 (100%)");
     });
 
     it("insight 1 contains urgent concerns count", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow({ health_outcome: "urgent_concern" })]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[0]).toContain("1 urgent concerns");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[0]).toContain("1 urgent concerns");
     });
 
     it("insight 1 contains referrals required count", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow({ health_outcome: "referral_required" })]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[0]).toContain("1 referrals required");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[0]).toContain("1 referrals required");
     });
 
     it("insight 1 contains child attendance rate", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow({ child_attended: true })]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[0]).toContain("Child attendance rate: 100%");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[0]).toContain("Child attendance rate: 100%");
     });
 
     it("insight 2 mentions critical and high alert counts", () => {
@@ -425,7 +425,7 @@ describe("lac-health-assessment-service", () => {
       ];
       const m = computeLacHealthAssessmentMetrics(rows);
       const a = computeLacHealthAssessmentAlerts(rows);
-      const i = generateLacHealthAssessmentAriaInsights(m, a)[1];
+      const i = generateLacHealthAssessmentCaraInsights(m, a)[1];
       expect(i).toContain("1 critical");
       expect(i).toContain("1 high-priority");
     });
@@ -433,31 +433,31 @@ describe("lac-health-assessment-service", () => {
     it("insight 2 shows no concerns when none", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow()]);
       const a = computeLacHealthAssessmentAlerts([makeRow()]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[1]).toContain("No critical or high-priority concerns");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[1]).toContain("No critical or high-priority concerns");
     });
 
     it("insight 2 contains child views rate", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow()]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[1]).toContain("Child views captured rate");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[1]).toContain("Child views captured rate");
     });
 
     it("insight 2 contains action plan rate", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow()]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[1]).toContain("Action plan rate");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[1]).toContain("Action plan rate");
     });
 
     it("insight 2 contains shared with SW rate", () => {
       const m = computeLacHealthAssessmentMetrics([makeRow()]);
       const a = computeLacHealthAssessmentAlerts([]);
-      expect(generateLacHealthAssessmentAriaInsights(m, a)[1]).toContain("Shared with social worker rate");
+      expect(generateLacHealthAssessmentCaraInsights(m, a)[1]).toContain("Shared with social worker rate");
     });
 
     it("insight 3 contains reflective question", () => {
       const m = computeLacHealthAssessmentMetrics([]);
       const a = computeLacHealthAssessmentAlerts([]);
-      const i = generateLacHealthAssessmentAriaInsights(m, a)[2];
+      const i = generateLacHealthAssessmentCaraInsights(m, a)[2];
       expect(i).toContain("LAC health assessments");
       expect(i).toContain("health action plans");
     });

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { runQualityCheck } from "@/lib/aria/aria-studio-quality";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { runQualityCheck } from "@/lib/cara/cara-studio-quality";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 
 // POST /api/v1/cara-studio/quality-check
 // Runs a quality check on an artifact by ID
@@ -18,13 +18,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "artifact_id is required" }, { status: 400 });
   }
 
-  const artifact = db.ariaArtifacts.findById(artifactId);
+  const artifact = db.caraArtifacts.findById(artifactId);
   if (!artifact) {
     return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: artifact.home_id,
     childId: artifact.child_id,
     intent: `quality_check ${artifact.id}`,
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   if (!guard.ok) return guard.response;
 
   const check = runQualityCheck(artifact);
-  const refreshed = db.ariaArtifacts.findById(artifactId);
+  const refreshed = db.caraArtifacts.findById(artifactId);
 
   return NextResponse.json({
     data: {

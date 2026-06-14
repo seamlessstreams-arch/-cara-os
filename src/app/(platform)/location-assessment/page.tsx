@@ -15,8 +15,8 @@ import { useLocationAssessmentAreas } from "@/hooks/use-location-assessment-area
 import type { LocationAssessmentArea, LocationRiskLevel } from "@/types/extended";
 import { LOCATION_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -69,11 +69,11 @@ export default function LocationAssessmentPage() {
     <PageShell
       title="Location Assessment"
       subtitle="Regulation 46 — Suitability of the home's location for children's care"
-      ariaContext={{ pageTitle: "Location Assessment", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Location Assessment", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Location Assessment — Chamberlain House" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -184,7 +184,7 @@ export default function LocationAssessmentPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Location Assessment — Regulation 46 suitability of premises and area, neighbourhood risks, transport, education, health services, safety factors, mitigations, monitoring"
         recordType="ofsted_evidence"

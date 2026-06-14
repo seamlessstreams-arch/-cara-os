@@ -49,7 +49,7 @@ const STAFF_TYPE_PATTERNS: StaffTypePattern[] = [
       /probation\s+(?:concern|review|extension|fail)/i,
       /competenc(?:y|ies)\s+(?:concern|gap)/i,
     ],
-    flows: ["staff_record", "timeline", "tasks", "hr", "aria"],
+    flows: ["staff_record", "timeline", "tasks", "hr", "cara"],
   },
   // Wellbeing
   {
@@ -65,7 +65,7 @@ const STAFF_TYPE_PATTERNS: StaffTypePattern[] = [
       /(?:supervision\s+)?support\s+(?:offered|needed|requested)/i,
       /(?:EAP|employee\s+assistance|counselling)/i,
     ],
-    flows: ["staff_record", "timeline", "tasks", "aria"],
+    flows: ["staff_record", "timeline", "tasks", "cara"],
   },
   // Training
   {
@@ -80,7 +80,7 @@ const STAFF_TYPE_PATTERNS: StaffTypePattern[] = [
       /(?:refresher|renewal|expir(?:ed|ing)|due\s+for\s+renewal)/i,
       /(?:e[\s-]?learning|online\s+module)/i,
     ],
-    flows: ["staff_record", "timeline", "training_matrix", "dashboard", "aria"],
+    flows: ["staff_record", "timeline", "training_matrix", "dashboard", "cara"],
   },
   // Observation
   {
@@ -94,7 +94,7 @@ const STAFF_TYPE_PATTERNS: StaffTypePattern[] = [
       /(?:role[\s-]?model(?:led|ling)?|demonstrated\s+(?:good|excellent|poor))/i,
       /(?:handover|key\s+work)\s+(?:quality|observation)/i,
     ],
-    flows: ["staff_record", "timeline", "dashboard", "aria"],
+    flows: ["staff_record", "timeline", "dashboard", "cara"],
   },
   // Supervision — default for general staff notes
   {
@@ -110,7 +110,7 @@ const STAFF_TYPE_PATTERNS: StaffTypePattern[] = [
       /(?:appraisal|development\s+(?:plan|review|goal))/i,
       /(?:catch[\s-]?up|check[\s-]?in)\s+(?:with|meeting)/i,
     ],
-    flows: ["staff_record", "timeline", "dashboard", "aria"],
+    flows: ["staff_record", "timeline", "dashboard", "cara"],
   },
 ];
 

@@ -102,10 +102,10 @@ export default function FormulationsPage() {
     <PageShell title="Formulations" subtitle="Therapeutic formulations for each child">
       <div className="space-y-6 pb-12">
 
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Brain className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Brain className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Therapeutic Formulations</h2>
@@ -114,7 +114,7 @@ export default function FormulationsPage() {
               </p>
             </div>
             <select value={selectedChild} onChange={(e) => setSelectedChild(e.target.value)}
-              className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]">
+              className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]">
               {formulations.map((f) => (
                 <option key={f.childId} value={f.childId}>{f.childName}</option>
               ))}
@@ -149,7 +149,7 @@ export default function FormulationsPage() {
                     <div className="p-4 space-y-2">
                       {items.map((item, i) => (
                         <div key={i} className="flex items-start gap-2">
-                          <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] mt-1.5 shrink-0" />
+                          <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-cara-gold)] mt-1.5 shrink-0" />
                           <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{item}</p>
                         </div>
                       ))}

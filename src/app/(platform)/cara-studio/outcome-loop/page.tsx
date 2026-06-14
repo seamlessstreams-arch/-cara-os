@@ -50,7 +50,7 @@ export default function OutcomeLoopPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/aria-studio/outcome-loop")
+    fetch("/api/cara-studio/outcome-loop")
       .then((r) => r.json())
       .then((data) => setSummary(data))
       .catch(console.error)
@@ -62,10 +62,10 @@ export default function OutcomeLoopPage() {
       <div className="space-y-6 pb-12">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Target className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Target className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Outcome Loop</h2>
@@ -78,7 +78,7 @@ export default function OutcomeLoopPage() {
 
         {loading ? (
           <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-12 text-center">
-            <Sparkles className="h-8 w-8 animate-pulse text-[var(--cs-aria-gold)] mx-auto mb-3" />
+            <Sparkles className="h-8 w-8 animate-pulse text-[var(--cs-cara-gold)] mx-auto mb-3" />
             <p className="text-sm text-[var(--cs-text-muted)]">Loading outcome data...</p>
           </div>
         ) : summary ? (
@@ -94,7 +94,7 @@ export default function OutcomeLoopPage() {
               </div>
               <div className="rounded-xl border border-[var(--cs-border)] bg-white p-4">
                 <div className="flex items-center gap-1.5 mb-2">
-                  <Target className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                  <Target className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                   <span className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide">With Actions</span>
                 </div>
                 <p className="text-2xl font-bold text-[var(--cs-navy)]">{summary.withActions}</p>
@@ -183,9 +183,9 @@ export default function OutcomeLoopPage() {
             </div>
 
             {/* ── Impact insight ───────────────────────────────────────────── */}
-            <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-5">
+            <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-5">
               <div className="flex items-start gap-3">
-                <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
+                <Sparkles className="h-5 w-5 text-[var(--cs-cara-gold)] shrink-0 mt-0.5" />
                 <div>
                   <h3 className="text-sm font-semibold text-[var(--cs-navy)]">Impact Insight</h3>
                   <p className="text-xs text-[var(--cs-text-secondary)] mt-1 leading-relaxed">

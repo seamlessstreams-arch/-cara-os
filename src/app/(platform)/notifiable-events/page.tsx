@@ -9,8 +9,8 @@ import {
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -486,7 +486,7 @@ export default function NotifiableEventsPage() {
     <PageShell
       title="Notifiable Events"
       subtitle="Regulation 40 — events requiring notification to Ofsted and authorities"
-      ariaContext={{ pageTitle: "Notifiable Events", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Notifiable Events", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Notifiable Events" />
@@ -494,12 +494,12 @@ export default function NotifiableEventsPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Event
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
-        <AriaPanel mode="assist" pageContext="Notifiable Events — Regulation 40 events requiring potential Ofsted notification, serious incidents, missing episodes, injuries" recordType="notifiable_event" userRole="registered_manager" className="mb-2" />
+        <CaraPanel mode="assist" pageContext="Notifiable Events — Regulation 40 events requiring potential Ofsted notification, serious incidents, missing episodes, injuries" recordType="notifiable_event" userRole="registered_manager" className="mb-2" />
         {/* ── stats ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[

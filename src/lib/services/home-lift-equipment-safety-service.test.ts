@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeLiftEquipmentSafetyMetrics,
   identifyLiftEquipmentSafetyAlerts,
-  generateLiftEquipmentSafetyAriaInsights,
+  generateLiftEquipmentSafetyCaraInsights,
   type HomeLiftEquipmentSafetyRow,
 } from "./home-lift-equipment-safety-service";
 
@@ -132,9 +132,9 @@ describe("identifyLiftEquipmentSafetyAlerts", () => {
   });
 });
 
-describe("generateLiftEquipmentSafetyAriaInsights", () => {
+describe("generateLiftEquipmentSafetyCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateLiftEquipmentSafetyAriaInsights([]);
+    const insights = generateLiftEquipmentSafetyCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
@@ -142,7 +142,7 @@ describe("generateLiftEquipmentSafetyAriaInsights", () => {
     const rows = [
       makeRow({ result: "Prohibited Use", compliance_status: "Prohibited", defects_found: 1 }),
     ];
-    const insights = generateLiftEquipmentSafetyAriaInsights(rows);
+    const insights = generateLiftEquipmentSafetyCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[1]).toContain("[amber]");

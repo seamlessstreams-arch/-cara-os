@@ -9,8 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -58,7 +58,7 @@ const STAGE_CONFIG: Record<PathwayStage, {
     requirements: ["Level 3 Diploma completed", "Avg competency ≥ 3 all domains", "2+ years experience", "Practice observation: Outstanding/Meets"],
   },
   team_leader: {
-    colour: "text-[var(--cs-aria-gold)]", bgColour: "bg-[var(--cs-aria-gold-bg)]", borderColour: "border-[var(--cs-aria-gold-soft)]", dotColour: "bg-[var(--cs-aria-gold-bg)]0",
+    colour: "text-[var(--cs-cara-gold)]", bgColour: "bg-[var(--cs-cara-gold-bg)]", borderColour: "border-[var(--cs-cara-gold-soft)]", dotColour: "bg-[var(--cs-cara-gold-bg)]0",
     min_score: 60,
     description: "Shift leader responsible for operational oversight, staff support, and quality assurance.",
     requirements: ["Level 3 Diploma (or Level 5 enrolled)", "Leadership competency ≥ 3", "Supervision delivered to ≥ 2 staff", "Appraisal: Good/Outstanding"],
@@ -362,7 +362,7 @@ export default function CareerPathwayPage() {
     <PageShell
       title="Career Pathway Ladder"
       subtitle="Seven-stage progression framework — from Inductee to RI"
-      ariaContext={{ pageTitle: "Career Pathway", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Career Pathway", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -380,7 +380,7 @@ export default function CareerPathwayPage() {
               Workforce Hub
             </button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -392,7 +392,7 @@ export default function CareerPathwayPage() {
             { label: "Team Members", value: profiles.length, colour: "text-indigo-700", icon: <Users className="h-4 w-4 text-indigo-500" /> },
             { label: "Team Avg Readiness", value: `${teamAvg}%`, colour: teamAvg >= 70 ? "text-emerald-700" : "text-amber-700", icon: <BarChart3 className="h-4 w-4 text-indigo-500" /> },
             { label: "Actively Progressing", value: progressingCount, colour: "text-blue-700", icon: <TrendingUp className="h-4 w-4 text-blue-500" /> },
-            { label: "Stages Covered", value: `${new Set(profiles.map((p) => p.current_stage)).size}/7`, colour: "text-[var(--cs-aria-gold)]", icon: <Milestone className="h-4 w-4 text-[var(--cs-aria-gold)]" /> },
+            { label: "Stages Covered", value: `${new Set(profiles.map((p) => p.current_stage)).size}/7`, colour: "text-[var(--cs-cara-gold)]", icon: <Milestone className="h-4 w-4 text-[var(--cs-cara-gold)]" /> },
           ].map(({ label, value, colour, icon }) => (
             <div key={label} className="rounded-xl border border-[var(--cs-border-subtle)] bg-white p-3 text-center">
               <div className="flex justify-center mb-1">{icon}</div>
@@ -568,7 +568,7 @@ export default function CareerPathwayPage() {
           ILACS Quality of Care — workforce capability assessed against this progression framework.
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Career Pathway — staff career progression, qualifications pathway, Reg 29 manager requirements, Reg 32 Level 3 requirements, professional development planning, workforce capability, Ofsted evidence"
         recordType="staff_training"

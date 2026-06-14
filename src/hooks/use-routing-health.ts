@@ -53,7 +53,7 @@ export function useRetryRoutes() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["routing-health"] });
-      qc.invalidateQueries({ queryKey: ["aria-audit-trail"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
     },
   });
 }
@@ -72,7 +72,7 @@ export function useRetryJob() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["routing-health"] });
-      qc.invalidateQueries({ queryKey: ["aria-audit-trail"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
     },
   });
 }

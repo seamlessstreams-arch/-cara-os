@@ -670,7 +670,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: AnimalNatureTherapyRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

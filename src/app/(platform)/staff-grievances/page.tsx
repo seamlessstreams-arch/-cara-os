@@ -34,8 +34,8 @@ import {
   STAFF_GRIEVANCE_SEVERITY_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
@@ -206,7 +206,7 @@ export default function StaffGrievancesPage() {
     <PageShell
       title="Staff Grievances"
       subtitle="Confidential grievance procedure — informal resolution through to formal hearing and appeal"
-      ariaContext={{ pageTitle: "Staff Grievances", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Grievances", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Grievances" />
@@ -214,7 +214,7 @@ export default function StaffGrievancesPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> Log Grievance
           </button>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -423,7 +423,7 @@ export default function StaffGrievancesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Grievances — staff grievance records, investigation outcomes, resolution tracking, HR compliance, management oversight, workforce wellbeing, Reg 40 workforce evidence, Ofsted evidence"
         recordType="staff_training"

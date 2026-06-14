@@ -215,7 +215,7 @@ export function computeDbsAlerts(
 
 // ── Cara Insights ─────────────────────────────────────────────────────────
 
-export function generateDbsAriaInsights(rows: StaffDbsRenewalTrackingRow[]): string[] {
+export function generateDbsCaraInsights(rows: StaffDbsRenewalTrackingRow[]): string[] {
   const metrics = computeDbsMetrics(rows);
   const alerts = computeDbsAlerts(rows);
   const insights: string[] = [];
@@ -357,4 +357,4 @@ export async function updateStaffDbsRenewalTracking(
 
 // ── Testing export ────────────────────────────────────────────────────────
 
-export const _testing = { computeDbsMetrics, computeDbsAlerts, generateDbsAriaInsights };
+export const _testing = { computeDbsMetrics, computeDbsAlerts, generateDbsCaraInsights };

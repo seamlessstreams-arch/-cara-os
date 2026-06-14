@@ -27,8 +27,8 @@ import { useStaffWellbeingRecords, useCreateStaffWellbeingRecord } from "@/hooks
 import type { StaffWellbeingRecord, StaffWellbeingCheckType } from "@/types/extended";
 import { STAFF_WELLBEING_CHECK_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ───────────────────────────────────────────────────── */
 
@@ -129,7 +129,7 @@ export default function StaffWellbeingPage() {
     <PageShell
       title="Staff Wellbeing"
       subtitle="Monitor and support the emotional health and resilience of the team"
-      ariaContext={{ pageTitle: "Staff Wellbeing", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Wellbeing", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Wellbeing" />
@@ -137,7 +137,7 @@ export default function StaffWellbeingPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> New Check-in
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -373,7 +373,7 @@ export default function StaffWellbeingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Wellbeing — staff wellbeing check-ins, stress indicators, burnout prevention, support interventions, workforce health, management oversight, Reg 40 workforce evidence, Ofsted evidence"
         recordType="supervision"

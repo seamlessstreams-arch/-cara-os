@@ -14,7 +14,7 @@ import type {
 const {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
 } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
@@ -695,50 +695,50 @@ describe("child-online-safety-monitoring-service", () => {
     });
   });
 
-  // ── generateAriaInsights ─────────────────────────────────────────────
-  describe("generateAriaInsights", () => {
+  // ── generateCaraInsights ─────────────────────────────────────────────
+  describe("generateCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
-      const insights = generateAriaInsights([]);
+      const insights = generateCaraInsights([]);
       expect(insights).toHaveLength(3);
     });
     it("returns 3 insights for populated data", () => {
-      const insights = generateAriaInsights([makeRow(), makeRow()]);
+      const insights = generateCaraInsights([makeRow(), makeRow()]);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [sky]", () => {
-      expect(generateAriaInsights([])[0]).toMatch(/^\[sky\]/);
+      expect(generateCaraInsights([])[0]).toMatch(/^\[sky\]/);
     });
     it("insight 2 starts with [amber]", () => {
-      expect(generateAriaInsights([])[1]).toMatch(/^\[amber\]/);
+      expect(generateCaraInsights([])[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
-      expect(generateAriaInsights([])[2]).toMatch(/^\[reflect\]/);
+      expect(generateCaraInsights([])[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total checks count", () => {
-      const insights = generateAriaInsights([makeRow(), makeRow()]);
+      const insights = generateCaraInsights([makeRow(), makeRow()]);
       expect(insights[0]).toContain("2 online safety checks");
     });
     it("insight 1 contains unique children count", () => {
-      const insights = generateAriaInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
+      const insights = generateCaraInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
-      const insights = generateAriaInsights([makeRow()]);
+      const insights = generateCaraInsights([makeRow()]);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains high risk count", () => {
-      const insights = generateAriaInsights([
+      const insights = generateCaraInsights([
         makeRow({ risk_level: "High" }),
         makeRow({ risk_level: "Critical" }),
       ]);
       expect(insights[0]).toContain("2 at High or Critical");
     });
     it("insight 1 contains critical count", () => {
-      const insights = generateAriaInsights([makeRow({ risk_level: "Critical" })]);
+      const insights = generateCaraInsights([makeRow({ risk_level: "Critical" })]);
       expect(insights[0]).toContain("1 at Critical risk");
     });
     it("insight 1 contains filtering active rate", () => {
-      const insights = generateAriaInsights([makeRow({ filtering_active: true })]);
+      const insights = generateCaraInsights([makeRow({ filtering_active: true })]);
       expect(insights[0]).toContain("Filtering active rate");
       expect(insights[0]).toContain("100%");
     });
@@ -746,53 +746,53 @@ describe("child-online-safety-monitoring-service", () => {
       const rows = [
         makeRow({ harmful_content_found: true, filtering_active: false }),
       ];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high-priority");
     });
     it("insight 2 shows no concerns when none", () => {
-      const insights = generateAriaInsights([makeRow()]);
+      const insights = generateCaraInsights([makeRow()]);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 2 contains harmful content count", () => {
-      const insights = generateAriaInsights([makeRow()]);
+      const insights = generateCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Harmful content found");
     });
     it("insight 2 contains cyberbullying count", () => {
-      const insights = generateAriaInsights([makeRow()]);
+      const insights = generateCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Cyberbullying identified");
     });
     it("insight 2 contains online contact risks count", () => {
-      const insights = generateAriaInsights([makeRow()]);
+      const insights = generateCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Online contact risks");
     });
     it("insight 3 contains reflective question about filters", () => {
-      const insights = generateAriaInsights([]);
+      const insights = generateCaraInsights([]);
       expect(insights[2]).toContain("internet filters");
     });
     it("insight 3 mentions harmful content", () => {
-      const insights = generateAriaInsights([]);
+      const insights = generateCaraInsights([]);
       expect(insights[2]).toContain("harmful content");
     });
     it("insight 3 mentions cyberbullying", () => {
-      const insights = generateAriaInsights([]);
+      const insights = generateCaraInsights([]);
       expect(insights[2]).toContain("cyberbullying");
     });
     it("insight 3 mentions online contact", () => {
-      const insights = generateAriaInsights([]);
+      const insights = generateCaraInsights([]);
       expect(insights[2]).toContain("online contact");
     });
     it("all insights are strings", () => {
-      const insights = generateAriaInsights([makeRow()]);
+      const insights = generateCaraInsights([makeRow()]);
       for (const i of insights) expect(typeof i).toBe("string");
     });
     it("empty array still produces meaningful content", () => {
-      const insights = generateAriaInsights([]);
+      const insights = generateCaraInsights([]);
       expect(insights[0]).toContain("0 online safety checks");
       expect(insights[0]).toContain("0 children");
     });
     it("single high-risk row produces all 3 insights", () => {
-      const insights = generateAriaInsights([makeRow({ risk_level: "High" })]);
+      const insights = generateCaraInsights([makeRow({ risk_level: "High" })]);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toMatch(/^\[sky\]/);
       expect(insights[1]).toMatch(/^\[amber\]/);
@@ -802,22 +802,22 @@ describe("child-online-safety-monitoring-service", () => {
       const rows = [
         makeRow({ harmful_content_found: true, online_contact_risk: true }),
       ];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights[1]).toContain("2 critical");
     });
     it("insight 2 with alerts shows correct high-priority count", () => {
       const rows = [
         makeRow({ harmful_content_found: true, filtering_active: false }),
       ];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights[1]).toContain("1 high-priority");
     });
     it("insight 1 with zero high risk shows 0", () => {
-      const insights = generateAriaInsights([makeRow({ risk_level: "Low" })]);
+      const insights = generateCaraInsights([makeRow({ risk_level: "Low" })]);
       expect(insights[0]).toContain("0 at High or Critical");
     });
     it("insight 1 with zero critical shows 0", () => {
-      const insights = generateAriaInsights([makeRow({ risk_level: "Low" })]);
+      const insights = generateCaraInsights([makeRow({ risk_level: "Low" })]);
       expect(insights[0]).toContain("0 at Critical risk");
     });
   });
@@ -1046,7 +1046,7 @@ describe("child-online-safety-monitoring-service", () => {
       const rows = Array.from({ length: 3 }, () =>
         makeRow({ risk_level: "Critical", filtering_active: true }),
       );
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toContain("3 at High or Critical");
     });
@@ -1059,7 +1059,7 @@ describe("child-online-safety-monitoring-service", () => {
         makeRow({ risk_level: "High" }),
         makeRow({ risk_level: "Critical" }),
       ];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights[0]).toContain("5 online safety checks");
       expect(insights[0]).toContain("2 at High or Critical");
     });
@@ -1161,7 +1161,7 @@ describe("child-online-safety-monitoring-service", () => {
 
     it("insights with all-Low data set show 0 high risk", () => {
       const rows = Array.from({ length: 4 }, () => makeRow({ risk_level: "Low" }));
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights[0]).toContain("0 at High or Critical");
       expect(insights[0]).toContain("0 at Critical risk");
     });
@@ -1171,7 +1171,7 @@ describe("child-online-safety-monitoring-service", () => {
         makeRow({ filtering_active: true }),
         makeRow({ filtering_active: false }),
       ];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights[0]).toContain("50%");
     });
 

@@ -122,10 +122,10 @@ export default function TrainingCurriculumPage() {
     <PageShell title="Training Curriculum" subtitle="Staff competency & learning pathways">
       <div className="space-y-6 pb-12">
 
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <GraduationCap className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <GraduationCap className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Training & Curriculum</h2>
@@ -173,7 +173,7 @@ export default function TrainingCurriculumPage() {
                   <Badge className={cn("text-[9px] border", PRIORITY_STYLES[gap.priority])}>{gap.priority}</Badge>
                 </div>
                 <p className="text-xs text-[var(--cs-text-secondary)]">{gap.staffCount} staff member{gap.staffCount !== 1 ? "s" : ""} below expected level</p>
-                <div className="flex items-center gap-1.5 text-[10px] text-[var(--cs-aria-gold)]">
+                <div className="flex items-center gap-1.5 text-[10px] text-[var(--cs-cara-gold)]">
                   <Target className="h-3 w-3" />
                   <span className="font-medium">{gap.suggestedAction}</span>
                 </div>

@@ -15,8 +15,8 @@ import {
 import { cn, formatDate } from "@/lib/utils";
 import { useAudit, useUpdateAudit, type AuditFinding } from "@/hooks/use-audits";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -116,7 +116,7 @@ function FindingCard({
         <div className="flex items-center gap-1.5 shrink-0">
           <Badge className={cn("text-[10px] rounded-full border", sc.colour)}>{sc.label}</Badge>
           <Badge className={cn("text-[10px] rounded-full border", fc.colour)}>{fc.label}</Badge>
-          <AriaUsageBadge ariaAssisted={(finding as any).aria_assist_used} sourceTable="audit_findings" recordId={finding.id} />
+          <CaraUsageBadge caraAssisted={(finding as any).aria_assist_used} sourceTable="audit_findings" recordId={finding.id} />
         </div>
       </div>
 
@@ -146,7 +146,7 @@ function FindingCard({
           <button
             onClick={handleCreateNeed}
             disabled={createNeed.isPending}
-            className="inline-flex items-center gap-1 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)] transition-colors disabled:opacity-50"
           >
             <Brain className="h-3 w-3" />Create training need
           </button>
@@ -167,7 +167,7 @@ export default function AuditDetailPage({
   const router = useRouter();
   const { data, isLoading } = useAudit(id);
   const updateAudit = useUpdateAudit();
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
   const [needsCreated, setNeedsCreated] = useState<Set<string>>(new Set());
 
   const audit = data?.data;
@@ -199,7 +199,7 @@ export default function AuditDetailPage({
   const openFindings = audit.findings_detail.filter((f) => f.status !== "resolved").length;
   const resolvedFindings = audit.findings_detail.filter((f) => f.status === "resolved").length;
 
-  const ariaContext = [
+  const caraContext = [
     `Audit: ${audit.title}`,
     `Category: ${CATEGORY_LABELS[audit.category] ?? audit.category}`,
     `Date: ${formatDate(audit.date)}`,
@@ -230,19 +230,19 @@ export default function AuditDetailPage({
     >
       <div id="audit-detail-content">
       {/* Cara Panel */}
-      {showAria && (
+      {showCara && (
         <div className="mb-6 relative">
           <button
-            onClick={() => setShowAria(false)}
+            onClick={() => setShowCara(false)}
             className="absolute top-3 right-3 z-10 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xs"
           >
             ✕ Close
           </button>
-          <AriaPanel
+          <CaraPanel
             mode="oversee"
             pageContext={`Audit detail — ${audit.title}`}
             recordType="audit"
-            sourceContent={ariaContext}
+            sourceContent={caraContext}
           />
         </div>
       )}
@@ -310,9 +310,9 @@ export default function AuditDetailPage({
                 size="sm"
                 variant="outline"
                 className="gap-1.5 text-xs"
-                onClick={() => setShowAria((v) => !v)}
+                onClick={() => setShowCara((v) => !v)}
               >
-                <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                 Cara Analysis
               </Button>
               {audit.status === "in_progress" && (

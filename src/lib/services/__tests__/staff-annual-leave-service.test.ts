@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type StaffAnnualLeaveRow } from "../staff-annual-leave-service";
 
-const { computeStaffAnnualLeaveMetrics, computeStaffAnnualLeaveAlerts, generateStaffAnnualLeaveAriaInsights } = _testing;
+const { computeStaffAnnualLeaveMetrics, computeStaffAnnualLeaveAlerts, generateStaffAnnualLeaveCaraInsights } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
 
@@ -400,69 +400,69 @@ describe("staff-annual-leave-service", () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════
-  // generateStaffAnnualLeaveAriaInsights
+  // generateStaffAnnualLeaveCaraInsights
   // ═══════════════════════════════════════════════════════════════════════
 
-  describe("generateStaffAnnualLeaveAriaInsights", () => {
+  describe("generateStaffAnnualLeaveCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
       const m = computeStaffAnnualLeaveMetrics([]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      const insights = generateStaffAnnualLeaveAriaInsights(m, a);
+      const insights = generateStaffAnnualLeaveCaraInsights(m, a);
       expect(insights).toHaveLength(3);
     });
 
     it("insight 1 starts with [pink]", () => {
       const m = computeStaffAnnualLeaveMetrics([]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[0]).toMatch(/^\[pink\]/);
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[0]).toMatch(/^\[pink\]/);
     });
 
     it("insight 2 starts with [amber]", () => {
       const m = computeStaffAnnualLeaveMetrics([]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[1]).toMatch(/^\[amber\]/);
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[1]).toMatch(/^\[amber\]/);
     });
 
     it("insight 3 starts with [reflect]", () => {
       const m = computeStaffAnnualLeaveMetrics([]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[2]).toMatch(/^\[reflect\]/);
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[2]).toMatch(/^\[reflect\]/);
     });
 
     it("insight 1 contains total request count", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow(), makeRow()]);
       const a = computeStaffAnnualLeaveAlerts([makeRow(), makeRow()]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[0]).toContain("2 leave requests");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[0]).toContain("2 leave requests");
     });
 
     it("insight 1 contains unique staff count", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow({ staff_name: "A" }), makeRow({ staff_name: "B" })]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[0]).toContain("2 staff members");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[0]).toContain("2 staff members");
     });
 
     it("insight 1 uses singular staff member for 1", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow()]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[0]).toContain("1 staff member");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[0]).toContain("1 staff member");
     });
 
     it("insight 1 contains approved rate", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow({ approval_status: "approved" })]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[0]).toContain("Approved rate: 100%");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[0]).toContain("Approved rate: 100%");
     });
 
     it("insight 1 contains cover confirmed rate", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow({ cover_confirmed: true })]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[0]).toContain("Cover confirmed rate: 100%");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[0]).toContain("Cover confirmed rate: 100%");
     });
 
     it("insight 1 contains minimum staffing maintained rate", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow({ minimum_staffing_maintained: true })]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[0]).toContain("Minimum staffing maintained rate: 100%");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[0]).toContain("Minimum staffing maintained rate: 100%");
     });
 
     it("insight 2 mentions critical and high alert counts when present", () => {
@@ -480,7 +480,7 @@ describe("staff-annual-leave-service", () => {
       ];
       const m = computeStaffAnnualLeaveMetrics(rows);
       const a = computeStaffAnnualLeaveAlerts(rows);
-      const i = generateStaffAnnualLeaveAriaInsights(m, a)[1];
+      const i = generateStaffAnnualLeaveCaraInsights(m, a)[1];
       expect(i).toContain("1 critical");
       expect(i).toContain("high-priority");
     });
@@ -488,31 +488,31 @@ describe("staff-annual-leave-service", () => {
     it("insight 2 shows no concerns when none", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow()]);
       const a = computeStaffAnnualLeaveAlerts([makeRow()]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[1]).toContain("No critical or high-priority concerns");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[1]).toContain("No critical or high-priority concerns");
     });
 
     it("insight 2 contains handover completed rate", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow()]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[1]).toContain("Handover completed rate");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[1]).toContain("Handover completed rate");
     });
 
     it("insight 2 contains children informed rate", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow()]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[1]).toContain("Children informed rate");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[1]).toContain("Children informed rate");
     });
 
     it("insight 2 contains critical understaffing count", () => {
       const m = computeStaffAnnualLeaveMetrics([makeRow()]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      expect(generateStaffAnnualLeaveAriaInsights(m, a)[1]).toContain("Critical understaffing count");
+      expect(generateStaffAnnualLeaveCaraInsights(m, a)[1]).toContain("Critical understaffing count");
     });
 
     it("insight 3 contains reflective question about children", () => {
       const m = computeStaffAnnualLeaveMetrics([]);
       const a = computeStaffAnnualLeaveAlerts([]);
-      const i = generateStaffAnnualLeaveAriaInsights(m, a)[2];
+      const i = generateStaffAnnualLeaveCaraInsights(m, a)[2];
       expect(i).toContain("continuity of care");
       expect(i).toContain("children");
     });

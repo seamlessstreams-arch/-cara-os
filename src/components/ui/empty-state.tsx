@@ -22,8 +22,8 @@ interface EmptyStateProps {
   title:        string;
   description:  string;
   actions?:     EmptyStateAction[];
-  ariaPrompt?:  string;   // if set, adds an "Ask Cara" button
-  onAskAria?:   (prompt: string) => void;
+  caraPrompt?:  string;   // if set, adds an "Ask Cara" button
+  onAskCara?:   (prompt: string) => void;
   className?:   string;
   compact?:     boolean;  // smaller padding for inline use
 }
@@ -33,8 +33,8 @@ export function EmptyState({
   title,
   description,
   actions = [],
-  ariaPrompt,
-  onAskAria,
+  caraPrompt,
+  onAskCara,
   className,
   compact = false,
 }: EmptyStateProps) {
@@ -55,7 +55,7 @@ export function EmptyState({
       <h3 className="text-[15px] font-semibold text-[var(--cs-navy)] mb-1">{title}</h3>
       <p className="text-sm text-[var(--cs-text-muted)] max-w-sm leading-relaxed mb-6">{description}</p>
 
-      {(actions.length > 0 || ariaPrompt) && (
+      {(actions.length > 0 || caraPrompt) && (
         <div className="flex flex-wrap items-center justify-center gap-2">
           {actions.map((action, i) => {
             const ActionIcon = action.icon;
@@ -91,12 +91,12 @@ export function EmptyState({
             );
           })}
 
-          {ariaPrompt && onAskAria && (
+          {caraPrompt && onAskCara && (
             <Button
               variant="outline"
               size="sm"
               className="gap-1.5 border-indigo-200 text-indigo-700 hover:bg-indigo-50"
-              onClick={() => onAskAria(ariaPrompt)}
+              onClick={() => onAskCara(caraPrompt)}
             >
               <Sparkles className="h-3.5 w-3.5" />
               Ask Cara

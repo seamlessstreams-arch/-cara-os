@@ -27,8 +27,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { useAbsenceTracking, useCreateAbsence } from "@/hooks/use-absence-tracking";
 import type { AbsenceType, AbsenceSetting, AbsenceRecord } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local label / colour maps ──────────────────────────────────────── */
 const ABSENCE_TYPES: AbsenceType[] = [
@@ -150,12 +150,12 @@ export default function AbsenceTrackingPage() {
     <PageShell
       title="Absence Tracking"
       subtitle="Monitor school and education attendance for all young people"
-      ariaContext={{ pageTitle: "Absence Tracking", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Absence Tracking", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Absence Tracking" />
           <ExportButton data={filtered} columns={exportCols} filename="absence-tracking" />
-          <AriaStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Absence
           </Button>
@@ -397,7 +397,7 @@ export default function AbsenceTrackingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Absence Tracking — staff sickness, annual leave, TOIL, emergency leave, Bradford factor, fit notes, return to work, cover arrangements, safe staffing, Reg 44 evidence"
         recordType="rota"

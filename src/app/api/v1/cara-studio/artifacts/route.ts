@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 
 const HOME_ID = "home_oak";
 
@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   const limit = parseInt(searchParams.get("limit") ?? "50");
   const offset = parseInt(searchParams.get("offset") ?? "0");
 
-  let items = db.ariaArtifacts.findAll(homeId);
+  let items = db.caraArtifacts.findAll(homeId);
 
   if (status) items = items.filter((a) => a.status === status);
   if (artifactType) items = items.filter((a) => a.artifact_type === artifactType);
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
   const paginated = items.slice(offset, offset + limit);
 
-  const stats = db.ariaArtifacts.stats(homeId);
+  const stats = db.caraArtifacts.stats(homeId);
 
   return NextResponse.json({
     data: paginated,
@@ -54,15 +54,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "artifact_type, title and created_by are required" }, { status: 400 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId: (body.home_id as string) ?? HOME_ID,
     childId: (body.child_id as string) ?? null,
     intent: `create draft ${body.artifact_type}`,
   });
   if (!guard.ok) return guard.response;
 
-  const artifact = db.ariaArtifacts.create({
+  const artifact = db.caraArtifacts.create({
     artifact_type: body.artifact_type as never,
     title: String(body.title),
     status: "draft",
@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
     amendment_reason: null,
   });
 
-  db.ariaStudioAuditLog.create({
+  db.caraStudioAuditLog.create({
     home_id: artifact.home_id,
     actor_id: String(body.created_by),
     action_type: "artifact_generated",

@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (!updated) return NextResponse.json({ error: "Resource not found" }, { status: 404 });
 
   if (body.status === "approved") {
-    intelligenceDb.ariaAuditTrail.create({
+    intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
       user_id: (body.approved_by as string) ?? "staff_darren",
       child_id: updated.child_id,

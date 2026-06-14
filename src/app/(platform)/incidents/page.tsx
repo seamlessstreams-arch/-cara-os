@@ -4,17 +4,17 @@ import React, { useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
+import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar } from "@/components/ui/avatar";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaCompose } from "@/components/aria/aria-compose";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
-import { AriaIncidentAnalytics } from "@/components/aria/aria-incident-analytics";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraCompose } from "@/components/cara/cara-compose";
+import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
+import { CaraIncidentAnalytics } from "@/components/cara/cara-incident-analytics";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import {
   AlertTriangle, Shield, Eye, Clock, CheckCircle2, FileText,
   Users, MapPin, Calendar, Plus, Search, Sparkles, Phone,
@@ -27,7 +27,7 @@ import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { PageGuidance } from "@/components/ui/page-guidance";
 import { ApprovalBanner } from "@/components/ui/approval-banner";
@@ -84,8 +84,8 @@ function YPAvatar({ childId, size = "sm" }: { childId: string; size?: "sm" | "md
   const yp = getYPById(childId);
   const name = yp?.preferred_name || yp?.first_name || "?";
   const cls = size === "sm"
-    ? "h-7 w-7 rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] text-xs font-bold flex items-center justify-center shrink-0"
-    : "h-9 w-9 rounded-full bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] text-sm font-bold flex items-center justify-center shrink-0";
+    ? "h-7 w-7 rounded-full bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] text-xs font-bold flex items-center justify-center shrink-0"
+    : "h-9 w-9 rounded-full bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] text-sm font-bold flex items-center justify-center shrink-0";
   return <div className={cls}>{name[0]}</div>;
 }
 
@@ -172,8 +172,8 @@ function IncidentCard({
                 {INCIDENT_TYPE_LABELS[inc.type] || inc.type}
               </span>
               {inc.aria_oversight_used && (
-                <AriaUsageBadge
-                  ariaAssisted
+                <CaraUsageBadge
+                  caraAssisted
                   sourceTable="incidents"
                   recordId={inc.id}
                   size="sm"
@@ -186,7 +186,7 @@ function IncidentCard({
           <div className="mt-2 flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-1.5">
               <YPAvatar childId={inc.child_id} />
-              <span className="text-xs font-semibold text-[var(--cs-aria-gold)]">{getYPName(inc.child_id)}</span>
+              <span className="text-xs font-semibold text-[var(--cs-cara-gold)]">{getYPName(inc.child_id)}</span>
             </div>
             <span className="text-[11px] text-[var(--cs-text-muted)] flex items-center gap-1">
               <Calendar className="h-3 w-3" />
@@ -253,7 +253,7 @@ function IncidentCard({
                 <button
                   onClick={handleCreateNeed}
                   disabled={createNeed.isPending}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors disabled:opacity-50"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)] transition-colors disabled:opacity-50"
                 >
                   {createNeed.isPending
                     ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -439,7 +439,7 @@ function AllIncidentsTab() {
         <select
           value={filterStatus}
           onChange={(e) => setFilterStatus(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
         >
           <option value="all">All statuses</option>
           <option value="open">Open</option>
@@ -450,7 +450,7 @@ function AllIncidentsTab() {
         <select
           value={filterSeverity}
           onChange={(e) => setFilterSeverity(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
         >
           <option value="all">All severities</option>
           {INCIDENT_SEVERITIES.map((s) => (
@@ -461,7 +461,7 @@ function AllIncidentsTab() {
         <select
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
         >
           <option value="all">All types</option>
           {INCIDENT_TYPES.map((t) => <option key={t} value={t}>{INCIDENT_TYPE_LABELS[t]}</option>)}
@@ -470,7 +470,7 @@ function AllIncidentsTab() {
         <select
           value={filterChild}
           onChange={(e) => setFilterChild(e.target.value)}
-          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+          className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
         >
           <option value="all">All young people</option>
           {allYP.map((yp) => (
@@ -483,7 +483,7 @@ function AllIncidentsTab() {
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as "severity" | "date" | "reference")}
-            className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+            className="h-8 rounded-lg border border-[var(--cs-border)] bg-white px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
           >
             <option value="severity">Priority</option>
             <option value="date">Date</option>
@@ -581,7 +581,7 @@ function AllIncidentsTab() {
               </div>
 
               {/* Cara write help */}
-              <AriaPanel
+              <CaraPanel
                 mode="oversee"
                 pageContext="Incidents — oversight queue, management review, safeguarding triage, Regulation 40 notifications, behaviour and physical intervention monitoring"
                 recordType="incident_oversight"
@@ -600,7 +600,7 @@ function AllIncidentsTab() {
                   onChange={(e) => setOversightNote(e.target.value)}
                   rows={5}
                   placeholder="Record your management oversight — what you have considered, any actions agreed, lessons identified…"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
                 />
               </div>
 
@@ -634,7 +634,7 @@ function OversightQueueTab() {
   const addOversight = useAddOversight();
   const [notesById, setNotesById] = useState<Record<string, string>>({});
   const [submittedIds, setSubmittedIds] = useState<Set<string>>(new Set());
-  const [ariaPanelId, setAriaPanelId] = useState<string | null>(null);
+  const [caraPanelId, setCaraPanelId] = useState<string | null>(null);
 
   const queue: Incident[] = (query.data?.data ?? [])
     .filter((i) => i.requires_oversight && !i.oversight_by)
@@ -730,7 +730,7 @@ function OversightQueueTab() {
                   <div className="mt-1.5 flex items-center gap-3">
                     <div className="flex items-center gap-1.5">
                       <YPAvatar childId={inc.child_id} />
-                      <span className="text-xs font-semibold text-[var(--cs-aria-gold)]">{getYPName(inc.child_id)}</span>
+                      <span className="text-xs font-semibold text-[var(--cs-cara-gold)]">{getYPName(inc.child_id)}</span>
                     </div>
                     <span className="text-[11px] text-[var(--cs-text-muted)]">{formatDate(inc.date)} at {inc.time}</span>
                     {inc.location && <span className="text-[11px] text-[var(--cs-text-muted)]">{inc.location}</span>}
@@ -803,16 +803,16 @@ function OversightQueueTab() {
               {/* Cara panel */}
               <div>
                 <button
-                  onClick={() => setAriaPanelId(ariaPanelId === inc.id ? null : inc.id)}
-                  className="flex items-center gap-2 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-3 py-2 text-xs font-semibold text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors"
+                  onClick={() => setCaraPanelId(caraPanelId === inc.id ? null : inc.id)}
+                  className="flex items-center gap-2 rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] px-3 py-2 text-xs font-semibold text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)] transition-colors"
                 >
                   <Sparkles className="h-3.5 w-3.5" />
-                  {ariaPanelId === inc.id ? "Close Cara" : "Ask Cara to help draft oversight"}
+                  {caraPanelId === inc.id ? "Close Cara" : "Ask Cara to help draft oversight"}
                 </button>
 
-                {ariaPanelId === inc.id && (
+                {caraPanelId === inc.id && (
                   <div className="mt-3">
-                    <AriaPanel
+                    <CaraPanel
                       mode="oversee"
                       pageContext="Incidents — oversight queue, management review, safeguarding triage, Regulation 40 notifications, behaviour and physical intervention monitoring"
                       recordType="incident_oversight"
@@ -879,7 +879,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
   const [notifName, setNotifName] = useState("");
   const [notifMethod, setNotifMethod] = useState("Phone");
   const [successResult, setSuccessResult] = useState<{ ref: string; links: string[] } | null>(null);
-  const [ariaOpen, setAriaOpen] = useState(false);
+  const [caraOpen, setCaraOpen] = useState(false);
 
   const createIncident = useCreateIncident();
   const logYpQuery = useYoungPeople();
@@ -987,7 +987,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           <select
             value={form.child_id}
             onChange={(e) => setForm((p) => ({ ...p, child_id: e.target.value }))}
-            className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+            className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
           >
             <option value="">Select young person…</option>
             {logAllYP.map((yp) => (
@@ -1006,7 +1006,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             <select
               value={form.type}
               onChange={(e) => setForm((p) => ({ ...p, type: e.target.value }))}
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             >
               <option value="">Select type…</option>
               {INCIDENT_TYPES.map((t) => <option key={t} value={t}>{INCIDENT_TYPE_LABELS[t]}</option>)}
@@ -1017,7 +1017,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             <select
               value={form.severity}
               onChange={(e) => setForm((p) => ({ ...p, severity: e.target.value }))}
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -1063,16 +1063,16 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
         <div className="flex items-center justify-between">
           <div className="text-sm font-bold text-[var(--cs-navy)]">Description & Actions</div>
           <button
-            onClick={() => setAriaOpen(!ariaOpen)}
-            className="flex items-center gap-1.5 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors"
+            onClick={() => setCaraOpen(!caraOpen)}
+            className="flex items-center gap-1.5 rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)] transition-colors"
           >
             <Sparkles className="h-3.5 w-3.5" />
             Cara Write
           </button>
         </div>
 
-        {ariaOpen && (
-          <AriaPanel
+        {caraOpen && (
+          <CaraPanel
             mode="write"
             pageContext="Log New Incident — describe what happened, who was involved, immediate actions taken, injuries, witnesses, safeguarding indicators, Regulation 40 triggers"
             recordType="incident"
@@ -1081,42 +1081,42 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           />
         )}
 
-        <AriaCompose
+        <CaraCompose
           value={form.description}
           onChange={(text) => setForm((p) => ({ ...p, description: text }))}
           actorUserId={currentUser?.id ?? "staff_darren"}
-          actorRole={appRoleToAriaRole(currentRole)}
+          actorRole={appRoleToCaraRole(currentRole)}
           homeId={currentUser?.home_id ?? "home_oak"}
           childId={form.child_id || undefined}
           sourceModule="incident"
           sourceField="description"
           defaultCommand="draft_incident_record"
           commands={[
-            { id: "draft_incident_record", label: "Draft incident record", permission: "aria.generate_drafts" },
-            { id: "check_incident_chronology", label: "Check chronology", permission: "aria.analyse_risk" },
-            { id: "incident_risk_analysis", label: "Risk analysis", permission: "aria.analyse_risk" },
-            { id: "identify_missing_incident_information", label: "Missing information", permission: "aria.analyse_risk" },
-            { id: "improve_writing", label: "Improve writing", permission: "aria.rewrite" },
+            { id: "draft_incident_record", label: "Draft incident record", permission: "cara.generate_drafts" },
+            { id: "check_incident_chronology", label: "Check chronology", permission: "cara.analyse_risk" },
+            { id: "incident_risk_analysis", label: "Risk analysis", permission: "cara.analyse_risk" },
+            { id: "identify_missing_incident_information", label: "Missing information", permission: "cara.analyse_risk" },
+            { id: "improve_writing", label: "Improve writing", permission: "cara.rewrite" },
           ]}
           label="Description *"
           placeholder="Describe what happened, what was observed, who was involved, any relevant context."
           rows={5}
         />
 
-        <AriaCompose
+        <CaraCompose
           value={form.immediate_action}
           onChange={(text) => setForm((p) => ({ ...p, immediate_action: text }))}
           actorUserId={currentUser?.id ?? "staff_darren"}
-          actorRole={appRoleToAriaRole(currentRole)}
+          actorRole={appRoleToCaraRole(currentRole)}
           homeId={currentUser?.home_id ?? "home_oak"}
           childId={form.child_id || undefined}
           sourceModule="incident"
           sourceField="immediate_action"
           defaultCommand="improve_writing"
           commands={[
-            { id: "improve_writing", label: "Improve writing", permission: "aria.rewrite" },
-            { id: "professionalise_record", label: "Professionalise", permission: "aria.rewrite" },
-            { id: "extract_actions", label: "Extract follow-up actions", permission: "aria.summarise" },
+            { id: "improve_writing", label: "Improve writing", permission: "cara.rewrite" },
+            { id: "professionalise_record", label: "Professionalise", permission: "cara.rewrite" },
+            { id: "extract_actions", label: "Extract follow-up actions", permission: "cara.summarise" },
           ]}
           label="Immediate Action Taken *"
           placeholder="What steps were taken immediately, who was informed, what support was provided."
@@ -1135,7 +1135,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             <select
               value={notifRole}
               onChange={(e) => setNotifRole(e.target.value)}
-              className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             >
               <option value="">Select role…</option>
               {NOTIF_ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -1155,7 +1155,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
             <select
               value={notifMethod}
               onChange={(e) => setNotifMethod(e.target.value)}
-              className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full h-9 rounded-lg border border-[var(--cs-border)] bg-slate-50 px-2.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             >
               <option>Phone</option>
               <option>Email</option>
@@ -1204,7 +1204,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           </button>
         </div>
         {form.body_map_required && (
-          <div className="mt-3 rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3 text-xs text-[var(--cs-aria-gold)]">
+          <div className="mt-3 rounded-xl bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3 text-xs text-[var(--cs-cara-gold)]">
             A body map will need to be completed alongside this incident record. You can upload this once the incident is saved.
           </div>
         )}
@@ -1244,13 +1244,13 @@ export default function IncidentsPage() {
     <PageShell
       title="Incidents"
       subtitle="Log, review, and oversee all incident records"
-      ariaContext={{ pageTitle: "Care Events — Behaviour &amp; Safeguarding", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Care Events — Behaviour &amp; Safeguarding", sourceType: "incident" }}
       quickCreateContext={{ module: "incidents", defaultTaskCategory: "safeguarding", defaultFormType: "safeguarding_referral" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Incident Report" subtitle="Chamberlain House — Incident Records" targetId="incidents-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Incidents — evidence upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
           <Button
             size="sm"
             className="bg-rose-600 hover:bg-rose-700"
@@ -1267,12 +1267,12 @@ export default function IncidentsPage() {
           title="Incident recording & oversight"
           description="Every incident must be logged promptly and reviewed by management within 24 hours. Critical incidents require immediate escalation and statutory notifications."
           evidenceTip="Inspectors assess whether oversight notes demonstrate professional curiosity — not just sign-off but reflective analysis of what happened and what will change."
-          ariaTip="Cara can detect incident patterns across children and time periods, flagging escalation risks before they become critical."
+          caraTip="Cara can detect incident patterns across children and time periods, flagging escalation risks before they become critical."
           regulationRef="Children's Homes Regulations 2015, Reg 40 — Notification of significant events"
           variant="safeguarding"
         />
         {/* Cara Incident Analytics */}
-        <AriaIncidentAnalytics />
+        <CaraIncidentAnalytics />
 
         {/* Tab bar */}
         <div className="flex items-center gap-1 rounded-2xl border bg-white p-1.5">
@@ -1318,7 +1318,7 @@ export default function IncidentsPage() {
           defaultCollapsed
         />
       </div>
-      <AriaPracticePanel sourceType="incident" homeId="home_oak" title="Run Cara on this incident" />
+      <CaraPracticePanel sourceType="incident" homeId="home_oak" title="Run Cara on this incident" />
     </PageShell>
   );
 }

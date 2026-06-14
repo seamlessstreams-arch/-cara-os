@@ -20,7 +20,7 @@ import type {
   CornerstoneEventType,
   CornerstoneRiskLevel,
   CornerstoneApprovalLevel,
-  CornerstoneAriaAnalysis,
+  CornerstoneCaraAnalysis,
 } from "@/types/cornerstone-event";
 
 // ── Source input types (mapped from the store by the route) ───────────────────
@@ -248,12 +248,12 @@ const ACTIONS: Partial<Record<CornerstoneEventType, string[]>> = {
   staff_absence: ["Complete the return-to-work interview where required"],
 };
 
-function buildAria(
+function buildCara(
   eventType: CornerstoneEventType,
   complianceFlags: string[],
   missingInformation: string[],
   risk: CornerstoneRiskLevel,
-): CornerstoneAriaAnalysis {
+): CornerstoneCaraAnalysis {
   const suggestedActions = [...(ACTIONS[eventType] ?? [])];
   if ((risk === "high" || risk === "critical") && !suggestedActions.some((a) => /registered manager|strategy/i.test(a))) {
     suggestedActions.push("Escalate to the registered manager");
@@ -311,7 +311,7 @@ function projectIncident(r: IncidentSource, homeId?: string): CornerstoneEvent {
     summary: `${isSafeguarding ? "Safeguarding" : "Incident"}${r.reference ? ` ${r.reference}` : ""}: ${(r.description ?? r.type).slice(0, 140)}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: r.linked_document_ids ?? [], linkedTasks: r.linked_task_ids ?? [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria(eventType, compliance, missing, risk),
+    caraAnalysis: buildCara(eventType, compliance, missing, risk),
   };
 }
 
@@ -332,7 +332,7 @@ function projectMissing(r: MissingSource, homeId?: string): CornerstoneEvent {
     summary: `Missing episode${r.reference ? ` ${r.reference}` : ""} (${r.risk_level} risk)${r.date_returned ? " — returned" : " — active"}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("missing", compliance, missing, risk),
+    caraAnalysis: buildCara("missing", compliance, missing, risk),
   };
 }
 
@@ -352,7 +352,7 @@ function projectRestraint(r: RestraintSource, homeId?: string): CornerstoneEvent
     summary: `Physical intervention${r.restraint_type ? ` (${r.restraint_type})` : ""}${injuries > 0 ? " — injury recorded" : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("physical_intervention", compliance, [], risk),
+    caraAnalysis: buildCara("physical_intervention", compliance, [], risk),
   };
 }
 
@@ -373,7 +373,7 @@ function projectMedication(r: MedErrorSource, homeId?: string): CornerstoneEvent
     summary: `Medication error (${r.error_type.replace(/_/g, " ")}${r.medication ? `, ${r.medication}` : ""}) — ${r.severity.replace(/_/g, " ")}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("medication", compliance, [], risk),
+    caraAnalysis: buildCara("medication", compliance, [], risk),
   };
 }
 
@@ -392,7 +392,7 @@ function projectDailyLog(r: DailyLogSource, homeId?: string): CornerstoneEvent {
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [],
     linkedNotifications: r.linked_incident_id ? [r.linked_incident_id] : [],
-    ariaAnalysis: buildAria("daily_log", [], [], risk),
+    caraAnalysis: buildCara("daily_log", [], [], risk),
   };
 }
 
@@ -407,7 +407,7 @@ function projectKeywork(r: KeyworkSource, homeId?: string): CornerstoneEvent {
     summary: `Key-working session${r.type ? ` (${r.type.replace(/_/g, " ")})` : ""}${moodDrop ? " — mood declined" : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval: false,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("keywork", [], [], risk),
+    caraAnalysis: buildCara("keywork", [], [], risk),
   };
 }
 
@@ -424,7 +424,7 @@ function projectEducation(r: EducationSource, homeId?: string): CornerstoneEvent
     summary: `Education: ${(r.title ?? r.record_type ?? "record")}${status ? ` (${status.replace(/_/g, " ")})` : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("education", compliance, [], risk),
+    caraAnalysis: buildCara("education", compliance, [], risk),
   };
 }
 
@@ -439,7 +439,7 @@ function projectSupervision(r: SupervisionSource, homeId?: string): CornerstoneE
     summary: `Supervision${r.type ? ` (${r.type.replace(/_/g, " ")})` : ""} — ${r.status ?? "scheduled"}`,
     structuredTags: tags, riskLevel: risk, requiresApproval: false,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("supervision", [], missing, risk),
+    caraAnalysis: buildCara("supervision", [], missing, risk),
   };
 }
 
@@ -455,7 +455,7 @@ function projectOvertime(r: ShiftSource, homeId?: string): CornerstoneEvent {
     structuredTags: tags, riskLevel: "low",
     requiresApproval: significant, approvalLevel: significant ? "team_leader" : undefined,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("overtime", [], [], "low"),
+    caraAnalysis: buildCara("overtime", [], [], "low"),
   };
 }
 
@@ -476,7 +476,7 @@ function projectMaintenance(r: MaintenanceSource, homeId?: string): CornerstoneE
     summary: `Maintenance: ${r.title}${r.status ? ` (${r.status})` : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("maintenance", compliance, [], risk),
+    caraAnalysis: buildCara("maintenance", compliance, [], risk),
   };
 }
 
@@ -494,7 +494,7 @@ function projectAudit(r: AuditSource, homeId?: string): CornerstoneEvent {
     summary: `QA audit: ${r.title}${r.max_score ? ` — ${r.score ?? 0}/${r.max_score}` : ""}${r.status ? ` (${r.status})` : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("qa_check", compliance, [], risk),
+    caraAnalysis: buildCara("qa_check", compliance, [], risk),
   };
 }
 
@@ -512,7 +512,7 @@ function projectReg44(r: Reg44Source, homeId?: string): CornerstoneEvent {
     summary: `Reg 44 visit${r.visitor ? ` by ${r.visitor}` : ""}${r.overall_judgement ? ` — ${r.overall_judgement.replace(/_/g, " ")}` : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("reg44", compliance, [], risk),
+    caraAnalysis: buildCara("reg44", compliance, [], risk),
   };
 }
 
@@ -533,7 +533,7 @@ function projectHealth(r: AppointmentSource, homeId?: string): CornerstoneEvent 
     summary: `Health: ${r.title ?? r.type ?? "appointment"}${r.status ? ` (${r.status})` : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("health", compliance, missing, risk),
+    caraAnalysis: buildCara("health", compliance, missing, risk),
   };
 }
 
@@ -550,7 +550,7 @@ function projectStaffAbsence(r: LeaveSource, homeId?: string): CornerstoneEvent 
     summary: `Staff absence: ${r.leave_type.replace(/_/g, " ")}${r.total_days ? ` (${r.total_days} day${r.total_days === 1 ? "" : "s"})` : ""}${r.status ? ` — ${r.status}` : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval: false,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("staff_absence", compliance, [], risk),
+    caraAnalysis: buildCara("staff_absence", compliance, [], risk),
   };
 }
 
@@ -573,7 +573,7 @@ function projectComplaint(r: ComplaintSource, homeId?: string): CornerstoneEvent
     summary: `Complaint${r.reference ? ` ${r.reference}` : ""}${r.category ? ` (${r.category.replace(/_/g, " ")})` : ""}: ${(r.summary ?? "").slice(0, 120)}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("complaint", compliance, missing, risk),
+    caraAnalysis: buildCara("complaint", compliance, missing, risk),
   };
 }
 
@@ -596,7 +596,7 @@ function projectFamilyContact(r: ContactLogSource, homeId?: string): Cornerstone
     summary: `Family contact${r.contact_type ? ` (${r.contact_type.replace(/_/g, " ")})` : ""}${r.outcome ? ` — ${r.outcome.replace(/_/g, " ")}` : ""}: ${(r.narrative ?? "").slice(0, 110)}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("family_contact", compliance, [], risk),
+    caraAnalysis: buildCara("family_contact", compliance, [], risk),
   };
 }
 
@@ -614,7 +614,7 @@ function projectRiskAssessment(r: RiskAssessmentSource, homeId?: string): Corner
     summary: `Risk assessment${r.domain ? ` (${r.domain.replace(/_/g, " ")})` : ""}: ${r.current_level ?? "?"} risk${r.trend ? `, ${r.trend.replace(/_/g, " ")}` : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [r.id], linkedNotifications: [],
-    ariaAnalysis: buildAria("risk_assessment", compliance, [], risk),
+    caraAnalysis: buildCara("risk_assessment", compliance, [], risk),
   };
 }
 
@@ -635,7 +635,7 @@ function projectLacReview(r: LacReviewSource, homeId?: string): CornerstoneEvent
     summary: `LAC review${r.review_type ? ` (${r.review_type.replace(/_/g, " ")})` : ""}${r.iro ? ` — IRO ${r.iro}` : ""}: ${(r.outcome ?? "").replace(/_/g, " ")}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("lac_review", compliance, [], risk),
+    caraAnalysis: buildCara("lac_review", compliance, [], risk),
   };
 }
 
@@ -654,7 +654,7 @@ function projectNotifiableEvent(r: NotifiableEventSource, homeId?: string): Corn
     summary: `Notifiable event${r.event_type ? ` (${r.event_type.replace(/_/g, " ")})` : ""}: ${(r.summary ?? "").slice(0, 120)}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("notifiable_event", compliance, [], risk),
+    caraAnalysis: buildCara("notifiable_event", compliance, [], risk),
   };
 }
 
@@ -677,7 +677,7 @@ function projectBehaviourSupportPlan(r: BehaviourSupportPlanSource, homeId?: str
     summary: `Behaviour support plan (${r.status ?? "active"}): ${sevs.length} target behaviour${sevs.length === 1 ? "" : "s"}${maxSev !== "low" ? `, up to ${maxSev} severity` : ""}`,
     structuredTags: tags, riskLevel: risk, requiresApproval, approvalLevel,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: buildAria("behaviour_support_plan", compliance, [], risk),
+    caraAnalysis: buildCara("behaviour_support_plan", compliance, [], risk),
   };
 }
 
@@ -773,7 +773,7 @@ export function summariseEvents(events: CornerstoneEvent[]): EventStreamOverview
     by_risk[e.riskLevel] += 1;
     if (e.requiresApproval) pending_approvals += 1;
     if (e.riskLevel === "high" || e.riskLevel === "critical") high_or_critical += 1;
-    compliance_flags += e.ariaAnalysis?.complianceFlags.length ?? 0;
+    compliance_flags += e.caraAnalysis?.complianceFlags.length ?? 0;
   }
 
   return {

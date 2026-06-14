@@ -3,8 +3,8 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useEvidenceItems, useCreateEvidence, useEvidenceGaps } from "@/hooks/use-intelligence-layer";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -105,7 +105,7 @@ const JUDGEMENT_LABELS: Record<JudgementArea, string> = {
 const JUDGEMENT_COLOURS: Record<JudgementArea, string> = {
   overall_experiences_and_progress: "bg-blue-100 text-blue-800",
   help_and_protection: "bg-amber-100 text-amber-800",
-  effectiveness_of_leaders: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  effectiveness_of_leaders: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
 };
 
 const CONFIDENCE_DOT: Record<string, string> = {
@@ -430,7 +430,7 @@ export default function OfstedEvidenceRoomPage() {
     <PageShell
       title="Ofsted Evidence Room"
       subtitle="Organised evidence for inspection readiness"
-      ariaContext={{ pageTitle: "Ofsted Evidence Room", sourceType: "document" }}
+      caraContext={{ pageTitle: "Ofsted Evidence Room", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <Button
@@ -447,7 +447,7 @@ export default function OfstedEvidenceRoomPage() {
             <Plus className="h-3.5 w-3.5" />
             {createEvidence.isPending ? "Adding..." : "Add Evidence"}
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -498,8 +498,8 @@ export default function OfstedEvidenceRoomPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-aria-gold-bg)]">
-                <BookOpen className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-cara-gold-bg)]">
+                <BookOpen className="h-5 w-5 text-[var(--cs-cara-gold)]" />
               </div>
               <div>
                 <p className="text-2xl font-semibold text-[var(--cs-navy)]">{packItems.length > 0 ? 1 : 0}</p>
@@ -693,7 +693,7 @@ export default function OfstedEvidenceRoomPage() {
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-sm">
-                <BookOpen className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                <BookOpen className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                 Evidence Pack
               </CardTitle>
             </CardHeader>
@@ -854,7 +854,7 @@ export default function OfstedEvidenceRoomPage() {
               <div className="flex items-start justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-[var(--cs-navy)] flex items-center gap-2">
-                    <BookOpen className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+                    <BookOpen className="h-5 w-5 text-[var(--cs-cara-gold)]" />
                     Inspection Evidence Pack
                   </h2>
                   <p className="text-sm text-muted-foreground mt-1">
@@ -1003,7 +1003,7 @@ export default function OfstedEvidenceRoomPage() {
           </div>
         </div>
       )}
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Ofsted Evidence Room — inspection evidence packs, evidence categorisation, judgement areas, outstanding practice evidence, Annex A evidence, compliance documents, regulatory submissions"
         recordType="ofsted_evidence"
@@ -1030,7 +1030,7 @@ function EvidenceCard({ item, childName, inPack, onTogglePack }: EvidenceCardPro
   const level = confidenceLevel(item.confidenceScore);
 
   return (
-    <Card className={cn("transition-colors", inPack && "ring-1 ring-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30")}>
+    <Card className={cn("transition-colors", inPack && "ring-1 ring-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/30")}>
       <CardContent className="p-4">
         {/* top row: title + confidence */}
         <div className="flex items-start justify-between gap-3 mb-2">
@@ -1100,7 +1100,7 @@ function EvidenceCard({ item, childName, inPack, onTogglePack }: EvidenceCardPro
             size="sm"
             className={cn(
               "gap-1 text-xs h-7",
-              inPack && "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] hover:bg-[var(--cs-aria-gold-soft)]",
+              inPack && "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] hover:bg-[var(--cs-cara-gold-soft)]",
             )}
             onClick={onTogglePack}
           >

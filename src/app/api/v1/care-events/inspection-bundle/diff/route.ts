@@ -3,11 +3,11 @@
 //
 // GET ?current_id=&previous_id=
 //   previous_id may be omitted ⇒ treat previous as empty baseline.
-// Permission: aria.view_audit_logs (read-only inspector / RI signal).
+// Permission: cara.view_audit_logs (read-only inspector / RI signal).
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { diffInspectionBundles } from "@/lib/care-events/inspection-bundle-diff";
 import { getPersistedInspectionBundle } from "@/lib/care-events/inspection-bundle";
 
@@ -25,8 +25,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "current bundle not found" }, { status: 404 });
   }
 
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId: currentRow.home_id,
     intent: "diff inspection bundles",
     isSafeguardingSensitive: true,

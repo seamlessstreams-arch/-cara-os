@@ -237,7 +237,7 @@ export default function ShiftBriefingPage() {
     <PageShell
       title="Shift Briefing"
       subtitle="What must happen this shift — an auto-generated operational snapshot for staff coming on duty. Who's on, tasks and plan reviews due, active medications, and overnight events. Every item links through to where you act on it."
-      ariaContext={{ pageTitle: "Shift Briefing", sourceType: "general" }}
+      caraContext={{ pageTitle: "Shift Briefing", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 print:hidden">

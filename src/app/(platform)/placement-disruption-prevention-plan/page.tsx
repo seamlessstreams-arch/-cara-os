@@ -23,8 +23,8 @@ import { DISRUPTION_RISK_LEVEL_LABEL } from "@/types/extended";
 import { useDisruptionPreventionPlans } from "@/hooks/use-disruption-prevention-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── constants ──────────────────────────────────────────────────────── */
 const RISK_LEVEL_ORDER: DisruptionRiskLevel[] = ["low", "building", "heightened", "acute"];
@@ -151,12 +151,12 @@ export default function PlacementDisruptionPreventionPlanPage() {
     <PageShell
       title="Placement Disruption Prevention Plan"
       subtitle="Per-child proactive plans to prevent placement breakdown when warning signs emerge"
-      ariaContext={{ pageTitle: "Placement Disruption Prevention Plans", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Placement Disruption Prevention Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Placement Disruption Prevention Plans" />
           <ExportButton data={filtered} columns={exportCols} filename="disruption-prevention-plans" />
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -512,7 +512,7 @@ export default function PlacementDisruptionPreventionPlanPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Placement Disruption Prevention Plans — risk of breakdown, triggers, protective factors, early intervention, placement support, stability actions, team around child, Reg 45 evidence"
         recordType="placement_plan"

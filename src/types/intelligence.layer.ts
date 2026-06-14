@@ -50,7 +50,7 @@ export interface ManagerAttentionItem {
   reviewedAt?: string;
   escalatedTo?: string;
   escalatedAt?: string;
-  ariaDraftId?: string;
+  caraDraftId?: string;
   createdBy?: string;
   createdAt: string;
   updatedAt: string;
@@ -185,7 +185,7 @@ export interface ChildProgressEntry {
   evidenceSourceType?: string;
   evidenceSourceId?: string;
   managerAnalysis?: string;
-  ariaSuggestedAnalysis?: string;
+  caraSuggestedAnalysis?: string;
   approvedBy?: string;
   approvedAt?: string;
   createdBy?: string;
@@ -290,7 +290,7 @@ export interface IncidentLearningReview {
   childId?: string;
   reviewStatus: LearningReviewStatus;
   managerOversight?: string;
-  ariaSuggestedAnalysis?: string;
+  caraSuggestedAnalysis?: string;
   triggerAnalysis?: string;
   whatWorked?: string;
   whatDidNotWork?: string;
@@ -426,7 +426,7 @@ export interface ProviderHomeSummary {
   missingEpisodes: number;
   placementStabilityPct?: number;
   managerOversightPct?: number;
-  ariaRiskFlags: string[];
+  caraRiskFlags: string[];
   riOversightNotes?: string;
   riReviewedAt?: string;
   riReviewedBy?: string;

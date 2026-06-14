@@ -8,8 +8,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate, generateId } from "@/lib/utils";
@@ -72,7 +72,7 @@ const DOMAIN_LABELS: Record<CarePlanDomain, string> = {
 const DOMAIN_COLOUR: Record<CarePlanDomain, string> = {
   health:                "text-rose-600 bg-rose-50 border-rose-200",
   education:             "text-blue-600 bg-blue-50 border-blue-200",
-  emotional_behavioural: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]",
+  emotional_behavioural: "text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]",
   identity:              "text-amber-600 bg-amber-50 border-amber-200",
   family_social:         "text-emerald-600 bg-emerald-50 border-emerald-200",
   independence:          "text-sky-600 bg-sky-50 border-sky-200",
@@ -365,14 +365,14 @@ function NewGoalDialog({
 
 function CarePlanCard({
   plan,
-  onAriaOverview,
-  ariaBusy,
+  onCaraOverview,
+  caraBusy,
   defaultExpanded = true,
   onAddGoal,
 }: {
   plan: CarePlan;
-  onAriaOverview: (p: CarePlan) => void;
-  ariaBusy: string | null;
+  onCaraOverview: (p: CarePlan) => void;
+  caraBusy: string | null;
   defaultExpanded?: boolean;
   onAddGoal: (plan: CarePlan) => void;
 }) {
@@ -506,11 +506,11 @@ function CarePlanCard({
             </div>
           ) : (
             <button
-              onClick={() => onAriaOverview(plan)}
-              disabled={ariaBusy === plan.id}
+              onClick={() => onCaraOverview(plan)}
+              disabled={caraBusy === plan.id}
               className="inline-flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 disabled:opacity-50"
             >
-              {ariaBusy === plan.id
+              {caraBusy === plan.id
                 ? <><Sparkles className="h-3.5 w-3.5 animate-spin" />Cara generating…</>
                 : <><Sparkles className="h-3.5 w-3.5" />Generate Cara overview</>}
             </button>
@@ -555,8 +555,8 @@ export default function CarePlansPage() {
   const plans  = plansQuery.data?.data ?? [];
   const meta   = plansQuery.data?.meta;
 
-  const [ariaBusy, setAriaBusy]   = useState<string | null>(null);
-  const [ariaError, setAriaError] = useState<string | null>(null);
+  const [caraBusy, setCaraBusy]   = useState<string | null>(null);
+  const [caraError, setCaraError] = useState<string | null>(null);
   const [search, setSearch]       = useState("");
   const [ragFilter, setRAGFilter] = useState<RAGFilter>("all");
   const [sortBy, setSortBy]       = useState<"rag" | "name" | "lac" | "goals">("rag");
@@ -576,7 +576,7 @@ export default function CarePlansPage() {
       const d = lacDaysUntil(p.next_lac_review);
       return d !== null && d >= 0 && d <= 30;
     }).length;
-    const withoutAriaOverview = plans.filter((p) => !p.aria_overview).length;
+    const withoutCaraOverview = plans.filter((p) => !p.aria_overview).length;
 
     const redCount   = plans.filter((p) => overallRAG(p) === "red").length;
     const amberCount = plans.filter((p) => overallRAG(p) === "amber").length;
@@ -584,7 +584,7 @@ export default function CarePlansPage() {
 
     return {
       total: plans.length, totalGoals, achievedGoals, totalAttention,
-      lacOverdue, lacDueWithin30, withoutAriaOverview,
+      lacOverdue, lacDueWithin30, withoutCaraOverview,
       redCount, amberCount, greenCount,
     };
   }, [plans]);
@@ -625,9 +625,9 @@ export default function CarePlansPage() {
     });
   }, [plans, search, ragFilter, sortBy]);
 
-  const handleAriaOverview = async (plan: CarePlan) => {
-    setAriaBusy(plan.id);
-    setAriaError(null);
+  const handleCaraOverview = async (plan: CarePlan) => {
+    setCaraBusy(plan.id);
+    setCaraError(null);
     try {
       const ypName = getYPName(plan.child_id);
       const goalSummary = plan.goals
@@ -658,9 +658,9 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
 
       await updatePlan.mutateAsync({ id: plan.id, data: { aria_overview: overview } });
     } catch {
-      setAriaError("Cara generation failed — please try again");
+      setCaraError("Cara generation failed — please try again");
     } finally {
-      setAriaBusy(null);
+      setCaraBusy(null);
     }
   };
 
@@ -684,7 +684,7 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
       title="Care Plans"
       subtitle="Statutory care plan goals, progress and LAC review tracking"
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Care Plans", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Care Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filteredPlans} columns={CARE_PLAN_EXPORT_COLS} filename="care-plans" />
@@ -700,13 +700,13 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
               Young People
             </button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="care-plans-content" className="space-y-5">
 
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Care Plans — Statutory planning"
         recordType="care_plan"
@@ -832,7 +832,7 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
             placeholder="Search by child, key worker, or legal status..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white py-1.5 pl-9 pr-3 text-xs text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:ring-1 focus:ring-[var(--cs-aria-gold)]/30 outline-none transition-all"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white py-1.5 pl-9 pr-3 text-xs text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-cara-gold)] focus:ring-1 focus:ring-[var(--cs-cara-gold)]/30 outline-none transition-all"
           />
         </div>
 
@@ -841,7 +841,7 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="rounded-lg border border-[var(--cs-border)] bg-white px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/40"
+            className="rounded-lg border border-[var(--cs-border)] bg-white px-2 py-1.5 text-xs text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
           >
             <option value="rag">RAG Status</option>
             <option value="name">Child Name</option>
@@ -875,13 +875,13 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
           <CarePlanCard
             key={plan.id}
             plan={plan}
-            onAriaOverview={handleAriaOverview}
-            ariaBusy={ariaBusy}
+            onCaraOverview={handleCaraOverview}
+            caraBusy={caraBusy}
             defaultExpanded={allExpanded}
             onAddGoal={(p) => setGoalDialogPlan(p)}
           />
         ))}
-        {ariaError && <p className="text-xs text-red-600 text-right">{ariaError}</p>}
+        {caraError && <p className="text-xs text-red-600 text-right">{caraError}</p>}
         {filteredPlans.length === 0 && plans.length > 0 && (
           <div className="text-center py-12 text-[var(--cs-text-muted)]">
             <Search className="h-8 w-8 mx-auto mb-2 text-[var(--cs-text-gentle)]" />

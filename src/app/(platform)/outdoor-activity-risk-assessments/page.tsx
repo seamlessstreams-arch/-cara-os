@@ -16,8 +16,8 @@ import { useOutdoorActivityRiskAssessments, useCreateOutdoorActivityRiskAssessme
 import type { OutdoorActivityRiskAssessment, OutdoorActivityType, OutdoorRiskLevel } from "@/types/extended";
 import { OUTDOOR_ACTIVITY_TYPE_LABEL, OUTDOOR_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
 
 const riskColour: Record<string, string> = { low: "bg-green-100 text-green-800", medium: "bg-amber-100 text-amber-800", high: "bg-red-100 text-red-800" };
@@ -100,12 +100,12 @@ export default function OutdoorActivityRiskAssessmentsPage() {
 
   return (
     <PageShell title="Outdoor Activity Risk Assessments" subtitle="Activity-specific RAs — trips, outings, water, climbing, festivals, and city visits"
-      ariaContext={{ pageTitle: "Outdoor Activity Risk Assessments", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Outdoor Activity Risk Assessments", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="outdoor-activity-risk-assessments" />
           <PrintButton title="Outdoor Activity Risk Assessments" />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />New RA</Button>
         </div>
       }>
@@ -184,7 +184,7 @@ export default function OutdoorActivityRiskAssessmentsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Outdoor Activity Risk Assessments — trip planning, hazard identification, child-specific risk, supervision ratios, missing from care risk, signed-off by RM"
         recordType="risk_assessment"

@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   const record = intelligenceDb.riGovernanceReports.create({
     home_id: body.home_id ?? "home_oak",
     report_type: body.report_type ?? "strategic_summary",
-    generated_by_aria: body.generated_by_aria ?? true,
+    generated_by_cara: body.generated_by_cara ?? true,
     content: body.content ?? {},
     status: body.status ?? "draft",
     created_by: body.created_by ?? "staff_darren",

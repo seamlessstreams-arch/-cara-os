@@ -148,7 +148,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                   onChange={(e) => setWhatWasDone(e.target.value)}
                   rows={3}
                   placeholder="Describe specifically what was done..."
-                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] resize-none"
+                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] resize-none"
                 />
               </div>
 
@@ -162,7 +162,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                   onChange={(e) => setWhatChanged(e.target.value)}
                   rows={3}
                   placeholder="What difference did this make for the young person or the home?"
-                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] resize-none"
+                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] resize-none"
                 />
               </div>
 
@@ -199,7 +199,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                   onChange={(e) => setEffNotes(e.target.value)}
                   rows={2}
                   placeholder="Any additional notes on how well this worked..."
-                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] resize-none"
+                  className="w-full rounded-xl border border-[var(--cs-border)] px-3 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] resize-none"
                 />
               </div>
 
@@ -220,7 +220,7 @@ export function ActionOutcomeUpdateModal({ outcome, trigger }: ActionOutcomeUpda
                       className={cn(
                         "flex-1 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all",
                         shouldContinue === opt.value
-                          ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] ring-2 ring-[var(--cs-aria-gold-soft)] ring-offset-1"
+                          ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] ring-2 ring-[var(--cs-cara-gold-soft)] ring-offset-1"
                           : "border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:border-[var(--cs-border)]"
                       )}
                     >

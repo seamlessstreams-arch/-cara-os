@@ -14,7 +14,7 @@ import type {
 const {
   computeModernSlaveryRiskMetrics,
   computeModernSlaveryRiskAlerts,
-  generateModernSlaveryRiskAriaInsights,
+  generateModernSlaveryRiskCaraInsights,
 } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
@@ -599,57 +599,57 @@ describe("child-modern-slavery-risk-service", () => {
     });
   });
 
-  // ── generateModernSlaveryRiskAriaInsights ─────────────────────────────
-  describe("generateModernSlaveryRiskAriaInsights", () => {
+  // ── generateModernSlaveryRiskCaraInsights ─────────────────────────────
+  describe("generateModernSlaveryRiskCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([]);
+      const insights = generateModernSlaveryRiskCaraInsights([]);
       expect(insights).toHaveLength(3);
     });
     it("returns 3 insights for populated data", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow(), makeRow()]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow(), makeRow()]);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [red]", () => {
-      expect(generateModernSlaveryRiskAriaInsights([])[0]).toMatch(/^\[red\]/);
+      expect(generateModernSlaveryRiskCaraInsights([])[0]).toMatch(/^\[red\]/);
     });
     it("insight 2 starts with [amber]", () => {
-      expect(generateModernSlaveryRiskAriaInsights([])[1]).toMatch(/^\[amber\]/);
+      expect(generateModernSlaveryRiskCaraInsights([])[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
-      expect(generateModernSlaveryRiskAriaInsights([])[2]).toMatch(/^\[reflect\]/);
+      expect(generateModernSlaveryRiskCaraInsights([])[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total assessments count", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow(), makeRow()]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow(), makeRow()]);
       expect(insights[0]).toContain("2 modern slavery risk assessments");
     });
     it("insight 1 contains unique children count", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow()]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow()]);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains high risk count", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([
+      const insights = generateModernSlaveryRiskCaraInsights([
         makeRow({ risk_level: "High" }),
         makeRow({ risk_level: "Immediate" }),
       ]);
       expect(insights[0]).toContain("2 at High or Immediate");
     });
     it("insight 1 contains NRM referral count", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow({ nrm_referral_made: true })]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow({ nrm_referral_made: true })]);
       expect(insights[0]).toContain("1 NRM referral");
     });
     it("insight 1 uses plural referrals for multiple", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([
+      const insights = generateModernSlaveryRiskCaraInsights([
         makeRow({ nrm_referral_made: true }),
         makeRow({ nrm_referral_made: true }),
       ]);
       expect(insights[0]).toContain("2 NRM referrals");
     });
     it("insight 1 contains safety plan rate", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow({ safety_plan_in_place: true })]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow({ safety_plan_in_place: true })]);
       expect(insights[0]).toContain("Safety plan rate");
       expect(insights[0]).toContain("100%");
     });
@@ -657,53 +657,53 @@ describe("child-modern-slavery-risk-service", () => {
       const rows = [
         makeRow({ risk_level: "Immediate", nrm_referral_made: false, safety_plan_in_place: false, multi_agency_referral: false }),
       ];
-      const insights = generateModernSlaveryRiskAriaInsights(rows);
+      const insights = generateModernSlaveryRiskCaraInsights(rows);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high-priority");
     });
     it("insight 2 shows no concerns when none", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow()]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 2 contains multi-agency rate", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow()]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Multi-agency rate");
     });
     it("insight 2 contains police notification rate", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow()]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Police notification rate");
     });
     it("insight 2 contains specialist service rate", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow()]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Specialist service rate");
     });
     it("insight 3 contains reflective question about NRM", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([]);
+      const insights = generateModernSlaveryRiskCaraInsights([]);
       expect(insights[2]).toContain("NRM");
     });
     it("insight 3 mentions specialist services", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([]);
+      const insights = generateModernSlaveryRiskCaraInsights([]);
       expect(insights[2]).toContain("specialist services");
     });
     it("insight 3 mentions independent advocacy", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([]);
+      const insights = generateModernSlaveryRiskCaraInsights([]);
       expect(insights[2]).toContain("independent advocacy");
     });
     it("insight 3 mentions multi-agency", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([]);
+      const insights = generateModernSlaveryRiskCaraInsights([]);
       expect(insights[2]).toContain("multi-agency");
     });
     it("all insights are strings", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow()]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow()]);
       for (const i of insights) expect(typeof i).toBe("string");
     });
     it("empty array still produces meaningful content", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([]);
+      const insights = generateModernSlaveryRiskCaraInsights([]);
       expect(insights[0]).toContain("0 modern slavery risk assessments");
       expect(insights[0]).toContain("0 children");
     });
     it("single high-risk row produces all 3 insights", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow({ risk_level: "High" })]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow({ risk_level: "High" })]);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toMatch(/^\[red\]/);
       expect(insights[1]).toMatch(/^\[amber\]/);
@@ -713,22 +713,22 @@ describe("child-modern-slavery-risk-service", () => {
       const rows = [
         makeRow({ risk_level: "Immediate", nrm_referral_made: false, safety_plan_in_place: false }),
       ];
-      const insights = generateModernSlaveryRiskAriaInsights(rows);
+      const insights = generateModernSlaveryRiskCaraInsights(rows);
       expect(insights[1]).toContain("2 critical");
     });
     it("insight 2 with alerts shows correct high-priority count", () => {
       const rows = [
         makeRow({ risk_level: "Immediate", nrm_referral_made: false, safety_plan_in_place: false, multi_agency_referral: false }),
       ];
-      const insights = generateModernSlaveryRiskAriaInsights(rows);
+      const insights = generateModernSlaveryRiskCaraInsights(rows);
       expect(insights[1]).toContain("1 high-priority");
     });
     it("insight 1 with zero high risk shows 0", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow({ risk_level: "Low" })]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow({ risk_level: "Low" })]);
       expect(insights[0]).toContain("0 at High or Immediate");
     });
     it("insight 1 with zero NRM referrals shows 0", () => {
-      const insights = generateModernSlaveryRiskAriaInsights([makeRow({ nrm_referral_made: false })]);
+      const insights = generateModernSlaveryRiskCaraInsights([makeRow({ nrm_referral_made: false })]);
       expect(insights[0]).toContain("0 NRM referrals");
     });
   });
@@ -910,7 +910,7 @@ describe("child-modern-slavery-risk-service", () => {
       const rows = Array.from({ length: 3 }, () =>
         makeRow({ risk_level: "Immediate", nrm_referral_made: true, safety_plan_in_place: true }),
       );
-      const insights = generateModernSlaveryRiskAriaInsights(rows);
+      const insights = generateModernSlaveryRiskCaraInsights(rows);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toContain("3 at High or Immediate");
     });
@@ -923,7 +923,7 @@ describe("child-modern-slavery-risk-service", () => {
         makeRow({ risk_level: "High" }),
         makeRow({ risk_level: "Immediate" }),
       ];
-      const insights = generateModernSlaveryRiskAriaInsights(rows);
+      const insights = generateModernSlaveryRiskCaraInsights(rows);
       expect(insights[0]).toContain("5 modern slavery risk assessments");
       expect(insights[0]).toContain("2 at High or Immediate");
     });

@@ -244,7 +244,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: ChildOnlineSafetyMonitoringRow[],
 ): string[] {
   const metrics = computeMetrics(rows);
@@ -449,5 +449,5 @@ export async function deleteChildOnlineSafetyMonitoring(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
 };

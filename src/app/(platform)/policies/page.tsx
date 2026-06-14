@@ -28,8 +28,8 @@ import {
   BookOpen, Loader2, RefreshCw, Star, Lock, UserCheck, Pencil,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -39,7 +39,7 @@ const CATEGORY_CONFIG: Record<HomePolicyCategory, { label: string; icon: React.E
   health_safety:    { label: "Health & Safety",     icon: CheckCircle2,color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
   workforce:        { label: "Workforce",           icon: Users,       color: "text-teal-600",     bg: "bg-teal-50",     border: "border-teal-200"    },
   behaviour:        { label: "Behaviour Support",   icon: Star,        color: "text-amber-600",    bg: "bg-amber-50",    border: "border-amber-200"   },
-  complaints:       { label: "Complaints",          icon: FileText,    color: "text-[var(--cs-aria-gold)]",   bg: "bg-[var(--cs-aria-gold-bg)]",   border: "border-[var(--cs-aria-gold-soft)]"  },
+  complaints:       { label: "Complaints",          icon: FileText,    color: "text-[var(--cs-cara-gold)]",   bg: "bg-[var(--cs-cara-gold-bg)]",   border: "border-[var(--cs-cara-gold-soft)]"  },
   data_protection:  { label: "Data Protection",     icon: Lock,        color: "text-[var(--cs-text-secondary)]",    bg: "bg-slate-50",    border: "border-[var(--cs-border)]"   },
   admissions:       { label: "Admissions",          icon: UserCheck,   color: "text-blue-600",     bg: "bg-blue-50",     border: "border-blue-200"    },
   missing_persons:  { label: "Missing Persons",     icon: AlertTriangle,color: "text-orange-600",  bg: "bg-orange-50",   border: "border-orange-200"  },
@@ -335,14 +335,14 @@ export default function PoliciesPage() {
     <PageShell
       title="Policies & Procedures"
       subtitle="All home policies — version control, review dates, and staff read-acknowledgements"
-      ariaContext={{ pageTitle: "Policies & Procedures", sourceType: "document" }}
+      caraContext={{ pageTitle: "Policies & Procedures", sourceType: "document" }}
       quickCreateContext={{ module: "compliance", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={POLICY_EXPORT_COLS} filename="policies" />
           <PrintButton title="Policies & Procedures" subtitle="Chamberlain House — Policies Register" targetId="policies-content" />
           <SmartUploadButton variant="inline" label="Upload Policy" uploadContext="Policies & Procedures — policy document upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -421,7 +421,7 @@ export default function PoliciesPage() {
             <select
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-aria-gold)] focus:ring-1 focus:ring-[var(--cs-aria-gold)]/30 outline-none"
+              className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-cara-gold)] focus:ring-1 focus:ring-[var(--cs-cara-gold)]/30 outline-none"
             >
               <option value="all">All categories</option>
               {(Object.entries(CATEGORY_CONFIG) as [HomePolicyCategory, typeof CATEGORY_CONFIG[HomePolicyCategory]][]).map(([key, cfg]) => (
@@ -434,7 +434,7 @@ export default function PoliciesPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-aria-gold)] focus:ring-1 focus:ring-[var(--cs-aria-gold)]/30 outline-none"
+              className="rounded-lg border border-[var(--cs-border)] bg-white px-2.5 py-1 text-[11px] text-[var(--cs-text-secondary)] focus:border-[var(--cs-cara-gold)] focus:ring-1 focus:ring-[var(--cs-cara-gold)]/30 outline-none"
             >
               <option value="review">Review date (soonest first)</option>
               <option value="title">Title A–Z</option>
@@ -483,7 +483,7 @@ export default function PoliciesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Policies & Procedures — home policies, regulatory requirements, review dates, compliance tracking, staff guidance, Ofsted evidence, Regulation 45 compliance, Annex A readiness"
         recordType="policy"

@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     reviewed_at:     body.reviewed_at,
   });
 
-  intelligenceDb.ariaAuditTrail.create({
+  intelligenceDb.caraAuditTrail.create({
     home_id:      session.home_id,
     user_id:      session.created_by,
     child_id:     session.child_id,

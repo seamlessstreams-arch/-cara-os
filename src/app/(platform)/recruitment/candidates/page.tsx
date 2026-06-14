@@ -3,8 +3,8 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,8 +51,8 @@ const STAGE_COLORS: Record<string, string> = {
   application_received: "bg-blue-100 text-blue-700",
   sift: "bg-blue-100 text-blue-700",
   shortlisted: "bg-blue-100 text-blue-700",
-  interview_scheduled: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
-  interview_completed: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  interview_scheduled: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
+  interview_completed: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   references_requested: "bg-amber-100 text-amber-700",
   references_received: "bg-amber-100 text-amber-700",
   dbs_submitted: "bg-orange-100 text-orange-700",
@@ -196,7 +196,7 @@ export default function CandidatesPage() {
     <PageShell
       title="All Candidates"
       subtitle="Manage your recruitment pipeline with full compliance visibility"
-      ariaContext={{ pageTitle: "Recruitment Candidates", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Recruitment Candidates", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="All Candidates" subtitle="Chamberlain House — Recruitment Pipeline" targetId="candidates-content" />
@@ -398,7 +398,7 @@ export default function CandidatesPage() {
         </Card>
       )}
       </div>{/* close #candidates-content */}
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Recruitment Candidates — candidate pipeline, applications, interviews, DBS checks, references, safer recruitment, shortlisting, offer status, HR compliance, staff onboarding"
         recordType="staff_training"

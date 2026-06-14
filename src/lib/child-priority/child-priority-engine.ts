@@ -125,7 +125,7 @@ export interface PriorityOverview {
   top_priority_score: number;
 }
 
-export interface AriaPriorityInsight {
+export interface CaraPriorityInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -133,7 +133,7 @@ export interface AriaPriorityInsight {
 export interface ChildPriorityResult {
   overview: PriorityOverview;
   children: ChildPriority[];
-  insights: AriaPriorityInsight[];
+  insights: CaraPriorityInsight[];
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -387,8 +387,8 @@ function buildOverview(children: ChildPriority[]): PriorityOverview {
   };
 }
 
-function buildInsights(children: ChildPriority[]): AriaPriorityInsight[] {
-  const insights: AriaPriorityInsight[] = [];
+function buildInsights(children: ChildPriority[]): CaraPriorityInsight[] {
+  const insights: CaraPriorityInsight[] = [];
 
   const multi = children.filter((c) => c.multi_domain);
   if (multi.length > 0) {

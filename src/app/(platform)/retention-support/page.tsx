@@ -44,7 +44,7 @@ export default function RetentionSupportPage() {
     <PageShell
       title="Retention & Support Indicators"
       subtitle="A non-clinical view of where your team may need support — so you can offer it early and keep good people. Fans in supervision, wellbeing, training, incidents, overtime and more."
-      ariaContext={{ pageTitle: "Retention & Support Indicators", sourceType: "general" }}
+      caraContext={{ pageTitle: "Retention & Support Indicators", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 print:hidden"><RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} /> Refresh</button>

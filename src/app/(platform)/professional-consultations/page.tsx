@@ -23,8 +23,8 @@ import {
   Calendar, AlertTriangle, Stethoscope, MessageSquare, Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── local colour maps ───────────────────────────────────────────────────────
 const TYPE_COLOR: Record<ProfConsultationType, string> = {
@@ -130,13 +130,13 @@ export default function ProfessionalConsultationsPage() {
     <PageShell
       title="Professional Consultations"
       subtitle="Recording advice, guidance, and discussions with external professionals"
-      ariaContext={{ pageTitle: "Professional Consultations", sourceType: "contact_log" }}
+      caraContext={{ pageTitle: "Professional Consultations", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Professional Consultations" />
           <ExportButton data={filtered} columns={exportCols} filename="professional-consultations" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Log Consultation</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -299,7 +299,7 @@ export default function ProfessionalConsultationsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Professional Consultations — social worker meetings, CAMHS consultations, educational psychologist, health professionals, multi-agency discussions, advice received, action points, Reg 45"
         recordType="task"

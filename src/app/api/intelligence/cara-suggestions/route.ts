@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
-import { ariaSuggestions } from "@/lib/intelligence/fallback-store";
+import { caraSuggestions } from "@/lib/intelligence/fallback-store";
 
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
@@ -10,10 +10,10 @@ export async function GET(request: NextRequest) {
 
   if (!isSupabaseEnabled()) {
     if (id) {
-      const item = ariaSuggestions.find((r) => r.id === id) ?? null;
+      const item = caraSuggestions.find((r) => r.id === id) ?? null;
       return NextResponse.json({ ok: true, item, persisted: true });
     }
-    let rows = [...ariaSuggestions];
+    let rows = [...caraSuggestions];
     if (homeId) rows = rows.filter((r) => r.home_id === homeId);
     if (status && status !== "all") rows = rows.filter((r) => r.status === status);
     rows.sort((a, b) => b.created_at.localeCompare(a.created_at));
@@ -37,10 +37,10 @@ export async function PATCH(request: NextRequest) {
   }
 
   if (!isSupabaseEnabled()) {
-    const idx = ariaSuggestions.findIndex((r) => r.id === id);
+    const idx = caraSuggestions.findIndex((r) => r.id === id);
     if (idx >= 0) {
       const now = new Date().toISOString();
-      const updated = { ...ariaSuggestions[idx], status };
+      const updated = { ...caraSuggestions[idx], status };
       if (status === "approved" || status === "amended_and_approved") {
         updated.approved_at = now;
         if (finalText) updated.final_text = finalText;
@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest) {
           created_at: now,
         },
       ];
-      ariaSuggestions[idx] = updated;
+      caraSuggestions[idx] = updated;
       return NextResponse.json({ ok: true, item: updated, persisted: true });
     }
     return NextResponse.json({ ok: true, item: null, persisted: true });

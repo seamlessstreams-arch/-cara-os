@@ -40,11 +40,11 @@
   --cs-text-gentle:     #94a3b8;
 
   /* Cara Intelligence accent — warm gold */
-  --cs-aria-gold:       #c89b3c;
-  --cs-aria-gold-soft:  #f5e7c6;
-  --cs-aria-gold-bg:    #fdf8ef;
-  --cs-aria-glow:       rgba(200, 155, 60, 0.28);
-  --cs-aria-shimmer:    linear-gradient(135deg, #f5e7c6 0%, #fdf8ef 50%, #f5e7c6 100%);
+  --cs-cara-gold:       #c89b3c;
+  --cs-cara-gold-soft:  #f5e7c6;
+  --cs-cara-gold-bg:    #fdf8ef;
+  --cs-cara-glow:       rgba(200, 155, 60, 0.28);
+  --cs-cara-shimmer:    linear-gradient(135deg, #f5e7c6 0%, #fdf8ef 50%, #f5e7c6 100%);
 
   /* ── Cara teal — signature brand accent (logo growth/plant tone) ── */
   --cs-teal:            #119488;
@@ -102,7 +102,7 @@
   --cs-duration-fast:   120ms;
   --cs-duration-normal: 200ms;
   --cs-duration-slow:   350ms;
-  --cs-duration-aria:   500ms;
+  --cs-duration-cara:   500ms;
 
   /* Spacing scale */
   --cs-space-xs:        0.25rem;
@@ -127,7 +127,7 @@
   --status-overdue:         var(--cs-risk);
   --status-needs-review:    var(--cs-warning);
   --status-oversight:       var(--cs-oversight);
-  --status-aria:            var(--cs-aria-gold);
+  --status-cara:            var(--cs-cara-gold);
   --status-escalated:       #db2777;
   --status-low:             var(--cs-success);
   --status-medium:          var(--cs-warning);
@@ -223,9 +223,9 @@
   --color-cs-text-secondary: var(--cs-text-secondary);
   --color-cs-text-muted: var(--cs-text-muted);
   --color-cs-text-gentle: var(--cs-text-gentle);
-  --color-cs-aria-gold: var(--cs-aria-gold);
-  --color-cs-aria-gold-soft: var(--cs-aria-gold-soft);
-  --color-cs-aria-gold-bg: var(--cs-aria-gold-bg);
+  --color-cs-cara-gold: var(--cs-cara-gold);
+  --color-cs-cara-gold-soft: var(--cs-cara-gold-soft);
+  --color-cs-cara-gold-bg: var(--cs-cara-gold-bg);
   --color-cs-teal: var(--cs-teal);
   --color-cs-teal-strong: var(--cs-teal-strong);
   --color-cs-teal-soft: var(--cs-teal-soft);
@@ -324,35 +324,35 @@ body {
 }
 
 /* ── Cara Magic Animations ────────────────────────────────────────────────── */
-@keyframes ariaShimmer {
+@keyframes caraShimmer {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
-.aria-shimmer {
+.cara-shimmer {
   background: linear-gradient(90deg,
-    var(--cs-aria-gold-bg) 0%,
-    var(--cs-aria-gold-soft) 25%,
-    var(--cs-aria-gold-bg) 50%,
-    var(--cs-aria-gold-soft) 75%,
-    var(--cs-aria-gold-bg) 100%);
+    var(--cs-cara-gold-bg) 0%,
+    var(--cs-cara-gold-soft) 25%,
+    var(--cs-cara-gold-bg) 50%,
+    var(--cs-cara-gold-soft) 75%,
+    var(--cs-cara-gold-bg) 100%);
   background-size: 200% 100%;
-  animation: ariaShimmer 3s ease-in-out infinite;
+  animation: caraShimmer 3s ease-in-out infinite;
 }
 
-@keyframes ariaGlow {
+@keyframes caraGlow {
   0%, 100% { box-shadow: 0 0 12px rgba(200, 155, 60, 0.12); }
   50%      { box-shadow: 0 0 24px rgba(200, 155, 60, 0.22); }
 }
-.aria-glow {
-  animation: ariaGlow 3s ease-in-out infinite;
+.cara-glow {
+  animation: caraGlow 3s ease-in-out infinite;
 }
 
-@keyframes ariaPulse {
+@keyframes caraPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%      { opacity: 0.7; transform: scale(0.96); }
 }
-.aria-pulse {
-  animation: ariaPulse 2s ease-in-out infinite;
+.cara-pulse {
+  animation: caraPulse 2s ease-in-out infinite;
 }
 
 @keyframes gentleFadeUp {
@@ -384,9 +384,9 @@ body {
   box-shadow: var(--cs-shadow-card);
 }
 
-.cs-card-aria {
-  background: var(--cs-aria-gold-bg);
-  border: 1px solid var(--cs-aria-gold-soft);
+.cs-card-cara {
+  background: var(--cs-cara-gold-bg);
+  border: 1px solid var(--cs-cara-gold-soft);
   border-radius: var(--cs-radius-xl);
   box-shadow: var(--cs-shadow-glow-gold);
 }
@@ -411,7 +411,7 @@ body {
 }
 
 .cs-focus-ring {
-  outline: 2px solid var(--cs-aria-gold);
+  outline: 2px solid var(--cs-cara-gold);
   outline-offset: 2px;
 }
 
@@ -433,31 +433,31 @@ body {
 }
 
 /* Cara magic entrance — used when Cara content appears */
-@keyframes ariaMagicIn {
+@keyframes caraMagicIn {
   0%   { opacity: 0; transform: translateY(6px) scale(0.98); filter: blur(2px); }
   60%  { opacity: 1; filter: blur(0); }
   100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
-.aria-magic-in {
-  animation: ariaMagicIn var(--cs-duration-aria) var(--cs-ease-default);
+.cara-magic-in {
+  animation: caraMagicIn var(--cs-duration-cara) var(--cs-ease-default);
 }
 
 /* Cara score reveal — staggered for Child Lens score bars */
-@keyframes ariaScoreReveal {
+@keyframes caraScoreReveal {
   from { width: 0; opacity: 0; }
   to   { opacity: 1; }
 }
-.aria-score-reveal {
-  animation: ariaScoreReveal 0.6s var(--cs-ease-out) forwards;
+.cara-score-reveal {
+  animation: caraScoreReveal 0.6s var(--cs-ease-out) forwards;
 }
 
 /* Reduced motion — respect user preferences */
 @media (prefers-reduced-motion: reduce) {
-  .aria-magic-in,
-  .aria-score-reveal,
-  .aria-shimmer,
-  .aria-glow,
-  .aria-pulse,
+  .cara-magic-in,
+  .cara-score-reveal,
+  .cara-shimmer,
+  .cara-glow,
+  .cara-pulse,
   .animate-gentle-fade-up {
     animation: none !important;
   }
@@ -467,16 +467,16 @@ body {
 }
 
 /* Cara badge — gold intelligence indicator */
-.cs-badge-aria {
+.cs-badge-cara {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   padding: 0.125rem 0.5rem;
   font-size: 0.6875rem;
   font-weight: 500;
-  color: var(--cs-aria-gold);
-  background: var(--cs-aria-gold-bg);
-  border: 1px solid var(--cs-aria-gold-soft);
+  color: var(--cs-cara-gold);
+  background: var(--cs-cara-gold-bg);
+  border: 1px solid var(--cs-cara-gold-soft);
   border-radius: 999px;
 }
 
@@ -494,7 +494,7 @@ body {
   --card-foreground: var(--cs-text);
   --popover: var(--cs-surface-elevated);
   --popover-foreground: var(--cs-text);
-  --primary: var(--cs-aria-gold);
+  --primary: var(--cs-cara-gold);
   --primary-foreground: var(--cs-navy);
   --secondary: var(--cs-surface);
   --secondary-foreground: var(--cs-text);
@@ -566,14 +566,14 @@ body {
 
 /* ── Focus rings — gold, not blue ─────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--cs-aria-gold);
+  outline: 2px solid var(--cs-cara-gold);
   outline-offset: 2px;
   border-radius: var(--cs-radius-sm);
 }
 
 /* ── Text selection — warm gold ───────────────────────────────────────────── */
 ::selection {
-  background: var(--cs-aria-gold-soft);
+  background: var(--cs-cara-gold-soft);
   color: var(--cs-navy);
 }
 
@@ -655,8 +655,8 @@ input:focus,
 textarea:focus,
 select:focus,
 [contenteditable]:focus {
-  box-shadow: 0 0 0 3px var(--cs-aria-glow);
-  border-color: var(--cs-aria-gold) !important;
+  box-shadow: 0 0 0 3px var(--cs-cara-glow);
+  border-color: var(--cs-cara-gold) !important;
   outline: none;
 }
 
@@ -669,8 +669,8 @@ a:not([class]) {
   transition: color var(--cs-duration-fast) ease, text-decoration-color var(--cs-duration-fast) ease;
 }
 a:not([class]):hover {
-  color: var(--cs-aria-gold);
-  text-decoration-color: var(--cs-aria-gold);
+  color: var(--cs-cara-gold);
+  text-decoration-color: var(--cs-cara-gold);
 }
 
 /* ── Cara badge pill — rounded, warm ───────────────────────────────── */
@@ -713,7 +713,7 @@ body::before {
   background: linear-gradient(
     90deg,
     var(--cs-surface) 25%,
-    var(--cs-aria-gold-bg) 50%,
+    var(--cs-cara-gold-bg) 50%,
     var(--cs-surface) 75%
   );
   background-size: 200% 100%;

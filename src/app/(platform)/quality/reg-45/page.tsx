@@ -4,8 +4,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useReg45Reviews, useUpdateReg45Review, useReg45Evidence } from "@/hooks/use-intelligence-layer";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -190,7 +190,7 @@ export default function Reg45Page() {
       <PageShell
         title="Regulation 45 — Quality of Care Review"
         subtitle="Six-Monthly Quality Review  ·  Responsible Individual Oversight"
-        ariaContext={{ pageTitle: "Regulation 45 Reports", sourceType: "reg45" }}
+        caraContext={{ pageTitle: "Regulation 45 Reports", sourceType: "reg45" }}
       >
         <EmptyState
           icon={FileText}
@@ -240,7 +240,7 @@ export default function Reg45Page() {
     <PageShell
       title="Regulation 45 — Quality of Care Review"
       subtitle="Six-Monthly Quality Review  ·  Responsible Individual Oversight"
-      ariaContext={{ pageTitle: "Regulation 45 Reports", sourceType: "reg45" }}
+      caraContext={{ pageTitle: "Regulation 45 Reports", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">
           {isDraft && selectedReview.status === "draft" && (
@@ -278,7 +278,7 @@ export default function Reg45Page() {
               {updateReview.isPending ? "Publishing..." : "Publish"}
             </Button>
           )}
-          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -676,7 +676,7 @@ export default function Reg45Page() {
           made available to Ofsted on request.
         </p>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Regulation 45 Reports — six-monthly quality reviews, responsible individual reports, evidence bank, children's views, outcomes evidence, improvement actions, Ofsted readiness, statutory compliance"
         recordType="reg45"

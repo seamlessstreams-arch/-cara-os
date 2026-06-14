@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateImmigrationLegalSupport,
-  generateAriaInsights,
+  generateCaraInsights,
   type ImmigrationLegalSupportRow,
 } from "./immigration-legal-support-service";
 
@@ -181,15 +181,15 @@ describe("validateImmigrationLegalSupport", () => {
   });
 });
 
-describe("generateAriaInsights (immigration)", () => {
+describe("generateCaraInsights (immigration)", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns insights with correct tags", () => {
     const rows = [makeRow({ record_type: "Appeal Hearing", legal_representation: false, current_immigration_status: "Asylum Seeker" })];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[sky]");
     expect(insights[1]).toContain("[amber]");

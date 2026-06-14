@@ -24,8 +24,8 @@ import {
   useAcknowledgeAmendment,
 } from "@/hooks/use-management-oversight";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
-import type { ManagerOversightItem } from "@/types/aria-studio";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
+import type { ManagerOversightItem } from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
@@ -49,7 +49,7 @@ const KIND_ICON: Record<ManagerOversightItem["kind"], ReactNode> = {
 
 export default function OversightQueuePage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(currentUser?.role ?? "registered_manager");
+  const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
   const { data, isLoading, refetch, isFetching } = useManagementOversight(HOME_ID);
   const acknowledge = useAcknowledgeAmendment();
 
@@ -129,7 +129,7 @@ export default function OversightQueuePage() {
                         acknowledge.mutate({
                           record_id: it.source_id,
                           actor_id: currentUser?.id,
-                          actor_role: ariaRole,
+                          actor_role: caraRole,
                         })
                       }
                       disabled={acknowledge.isPending}

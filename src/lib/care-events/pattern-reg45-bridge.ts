@@ -20,15 +20,15 @@ import {
   type PatternScanOptions,
 } from "@/lib/care-events/pattern-detection";
 import type {
-  AriaReg45EvidenceItem,
-  AriaReg45EvidenceSentiment,
-  AriaReg45Theme,
-  AriaPatternSeverity,
-} from "@/types/aria-studio";
+  CaraReg45EvidenceItem,
+  CaraReg45EvidenceSentiment,
+  CaraReg45Theme,
+  CaraPatternSeverity,
+} from "@/types/cara-studio";
 
 const PATTERN_SOURCE_TABLE = "care_event_patterns";
 
-const TYPE_TO_THEME: Record<CareEventPatternType, AriaReg45Theme> = {
+const TYPE_TO_THEME: Record<CareEventPatternType, CaraReg45Theme> = {
   frequency_cluster:    "quality_of_care",
   safeguarding_spike:   "safeguarding",
   behaviour_escalation: "safeguarding",
@@ -49,18 +49,18 @@ function deterministicSourceId(p: CareEventPattern): string {
   return `${p.type}::${child}::${cat}::${p.period_start}`;
 }
 
-function severityForChip(p: CareEventPattern): AriaPatternSeverity {
-  // CareEventPatternSeverity is low|medium|high; AriaPatternSeverity adds critical.
+function severityForChip(p: CareEventPattern): CaraPatternSeverity {
+  // CareEventPatternSeverity is low|medium|high; CaraPatternSeverity adds critical.
   // Map high→high (we don't escalate to critical without manager review).
   return p.severity === "high" ? "high" : p.severity === "medium" ? "medium" : "low";
 }
 
-function sentimentFor(p: CareEventPattern): AriaReg45EvidenceSentiment {
+function sentimentFor(p: CareEventPattern): CaraReg45EvidenceSentiment {
   // Patterns describe operational concerns or themes worth noting.
   return p.severity === "low" ? "neutral" : "concern";
 }
 
-function themeFor(p: CareEventPattern): AriaReg45Theme {
+function themeFor(p: CareEventPattern): CaraReg45Theme {
   // Allow category-driven overrides for finer-grained Reg 45 themes.
   if (p.category === "education") return "education";
   if (p.category === "health" || p.category === "medication") return "health";
@@ -77,7 +77,7 @@ export interface PromotionResult {
   created: number;
   refreshed: number;
   skipped_locked: number;
-  items: AriaReg45EvidenceItem[];
+  items: CaraReg45EvidenceItem[];
 }
 
 export interface PromoteOptions extends PatternScanOptions {
@@ -104,11 +104,11 @@ export function promoteCareEventPatternsToReg45(
   let created = 0;
   let refreshed = 0;
   let skippedLocked = 0;
-  const items: AriaReg45EvidenceItem[] = [];
+  const items: CaraReg45EvidenceItem[] = [];
 
   for (const p of patterns) {
     const sourceId = deterministicSourceId(p);
-    const existing = db.ariaReg45EvidenceItems.findBySource(homeId, PATTERN_SOURCE_TABLE, sourceId);
+    const existing = db.caraReg45EvidenceItems.findBySource(homeId, PATTERN_SOURCE_TABLE, sourceId);
     const draftPayload = {
       title: p.title,
       summary: `${p.description} Reflective prompt: ${p.reflective_prompt}`,
@@ -127,7 +127,7 @@ export function promoteCareEventPatternsToReg45(
         items.push(existing);
         continue;
       }
-      const patched = db.ariaReg45EvidenceItems.patch(existing.id, draftPayload);
+      const patched = db.caraReg45EvidenceItems.patch(existing.id, draftPayload);
       if (patched) {
         refreshed += 1;
         items.push(patched);
@@ -137,7 +137,7 @@ export function promoteCareEventPatternsToReg45(
       continue;
     }
 
-    const created_item = db.ariaReg45EvidenceItems.create({
+    const created_item = db.caraReg45EvidenceItems.create({
       home_id: homeId,
       child_id: p.child_id,
       theme: themeFor(p),

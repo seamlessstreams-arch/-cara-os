@@ -6,7 +6,7 @@ import { getStore } from "@/lib/db/store";
 import { getStaffName } from "@/lib/seed-data";
 import { getCalendarFeed } from "@/lib/calendar/calendar-service";
 import { computeShiftPlan, type ShiftPeriod, type ShiftPlanChildWatchInput } from "@/lib/engines/shift-plan-engine";
-import { generateReportNarrative } from "@/lib/aria/report-narrative";
+import { generateReportNarrative } from "@/lib/cara/report-narrative";
 
 export const dynamic = "force-dynamic";
 

@@ -31,8 +31,8 @@ import { useDoLRecords, useCreateDoLRecord } from "@/hooks/use-dol-records";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -149,13 +149,13 @@ export default function DeprivationOfLibertyPage() {
     <PageShell
       title="Restrictions & Deprivation of Liberty"
       subtitle="Reg 20 · Restraints & Restrictions · Proportionality · Child's Voice"
-      ariaContext={{ pageTitle: "Restrictions & DoL Register", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Restrictions & DoL Register", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Restrictions & DoL Register" />
           <ExportButton data={records} columns={exportCols} filename="deprivation-of-liberty" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Restriction</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -353,7 +353,7 @@ export default function DeprivationOfLibertyPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Restrictions & DoL Register — deprivation of liberty, Secure Accommodation Order, s25, restrictions, DOLS, Court order, monitoring, rights, proportionality, Reg 40, legal framework"
         recordType="risk_assessment"

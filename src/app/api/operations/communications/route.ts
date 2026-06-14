@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Create draft in DB
     if (action === "create") {
-      const { homeId, type: commType, title, content, createdBy, childId, staffId, linkedEntityType, linkedEntityId, recipientContext, ariaGenerated, ariaPromptUsed } = body;
+      const { homeId, type: commType, title, content, createdBy, childId, staffId, linkedEntityType, linkedEntityId, recipientContext, caraGenerated, caraPromptUsed } = body;
       if (!homeId || !commType || !title || !content || !createdBy) {
         return NextResponse.json({ error: "homeId, type, title, content, createdBy required" }, { status: 400 });
       }
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       const result = await createDraft({
         homeId, type: commType, title, content, createdBy,
         childId, staffId, linkedEntityType, linkedEntityId,
-        recipientContext, ariaGenerated, ariaPromptUsed,
+        recipientContext, caraGenerated, caraPromptUsed,
       });
       if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });
       return NextResponse.json({ ok: true, data: result.data }, { status: 201 });

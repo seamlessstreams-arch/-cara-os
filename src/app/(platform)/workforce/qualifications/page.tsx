@@ -9,8 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -248,12 +248,12 @@ function DBSTrackerCard({
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white overflow-hidden">
       <div className="flex items-center justify-between px-5 py-3 bg-slate-50 border-b border-[var(--cs-border-subtle)]">
         <div className="flex items-center gap-2">
-          <Fingerprint className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+          <Fingerprint className="h-4 w-4 text-[var(--cs-cara-gold)]" />
           <h3 className="text-sm font-bold text-[var(--cs-navy)]">DBS & Right to Work</h3>
         </div>
         <div className="flex items-center gap-3 text-[10px] text-[var(--cs-text-muted)]">
           <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-emerald-500" />{dbsClear}/{activeStaff.length} DBS clear</span>
-          <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-[var(--cs-aria-gold)]" />{updateService} on update service</span>
+          <span className="flex items-center gap-1"><Shield className="h-3 w-3 text-[var(--cs-cara-gold)]" />{updateService} on update service</span>
         </div>
       </div>
       <div className="divide-y divide-slate-50">
@@ -267,7 +267,7 @@ function DBSTrackerCard({
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-[10px] text-[var(--cs-text-muted)] font-mono">{r.dbs_number}</span>
               {r.update_service && (
-                <Badge className="text-[8px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0 rounded-full px-1.5">
+                <Badge className="text-[8px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-0 rounded-full px-1.5">
                   Update service
                 </Badge>
               )}
@@ -460,7 +460,7 @@ export default function QualificationsPage() {
     <PageShell
       title="Qualifications & DBS Tracker"
       subtitle="Regulatory fitness — mandatory qualifications, DBS checks, and compliance matrix"
-      ariaContext={{ pageTitle: "Staff Qualifications Tracker", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Qualifications Tracker", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -471,7 +471,7 @@ export default function QualificationsPage() {
             <Plus className="h-3.5 w-3.5" />
             Add Qualification
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -691,7 +691,7 @@ export default function QualificationsPage() {
           requirements is a regulatory breach.
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Qualifications Tracker — Level 3/5 qualifications, DBS checks, right to work, Reg 5 pre-employment compliance, Reg 32 qualification requirements, mandatory training, Ofsted workforce evidence"
         recordType="staff_training"

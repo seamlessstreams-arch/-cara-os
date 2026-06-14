@@ -38,8 +38,8 @@ import {
   Sparkles, FileText, LinkIcon, Loader2, RefreshCw, X,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -56,7 +56,7 @@ const STATUS_COLOUR: Record<InterventionStatus, string> = {
   paused:       "bg-amber-50 text-amber-700 border-amber-200",
   completed:    "bg-blue-50 text-blue-700 border-blue-200",
   stopped:      "bg-red-50 text-red-700 border-red-200",
-  under_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  under_review: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
 };
 
 const STATUS_ICONS: Record<InterventionStatus, React.ElementType> = {
@@ -315,7 +315,7 @@ function InterventionCard({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-7 text-xs text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
+                    className="h-7 text-xs text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]"
                     onClick={() => onStatusChange(intervention.id, "under_review")}
                     disabled={isBusy}
                   >
@@ -670,7 +670,7 @@ export default function InterventionsPage() {
     <PageShell
       title="Interventions"
       subtitle="Child-centred interventions — tracking what we are doing, why, and whether it is working"
-      ariaContext={{ pageTitle: "Interventions Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Interventions Tracker", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">
@@ -685,7 +685,7 @@ export default function InterventionsPage() {
             <Plus className="h-3.5 w-3.5" />
             New Intervention
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -881,7 +881,7 @@ export default function InterventionsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Interventions Tracker — therapeutic interventions, evidence-based programmes, PACE, DDP, Theraplay, behaviour interventions, outcomes tracking, care plan evidence, Reg 45"
         recordType="direct_work"

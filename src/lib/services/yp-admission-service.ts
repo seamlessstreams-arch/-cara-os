@@ -670,7 +670,7 @@ export function computeMatchingScore(factors: MatchingFactor[]): {
 
 // ── Cara matching intelligence (pure) ──────────────────────────────────────
 
-export interface AriaMatchingInput {
+export interface CaraMatchingInput {
   incomingChild: {
     age: number;
     gender: string;
@@ -688,7 +688,7 @@ export interface AriaMatchingInput {
   homeCapacity: number;
 }
 
-export function generateAriaMatchingFactors(input: AriaMatchingInput): {
+export function generateCaraMatchingFactors(input: CaraMatchingInput): {
   factors: { factorType: MatchingFactorType; score: number; rationale: string; riskLevel: "low" | "medium" | "high" }[];
   overallRisk: "low" | "medium" | "high";
   summary: string;
@@ -895,7 +895,7 @@ export const _testing = {
   computePhaseProgress,
   computeChecklistProgress,
   computeMatchingScore,
-  generateAriaMatchingFactors,
+  generateCaraMatchingFactors,
   ADMISSION_PHASES,
   VALID_TRANSITIONS,
   DEFAULT_CHECKLIST_ITEMS,

@@ -145,7 +145,7 @@ function VoiceIntelligenceContent() {
   const [inputType, setInputType] = useState<InputType>("dictation");
   const [processing, setProcessing] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
-  const [ariaResponse, setAriaResponse] = useState<VoiceProcessResponse | null>(null);
+  const [caraResponse, setCaraResponse] = useState<VoiceProcessResponse | null>(null);
 
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
@@ -164,7 +164,7 @@ function VoiceIntelligenceContent() {
     setHistoryLoading(true);
     try {
       const res = await fetch(
-        `/api/aria/voice-history?homeId=${PLACEHOLDER_HOME_ID}&userId=${PLACEHOLDER_USER_ID}`,
+        `/api/cara/voice-history?homeId=${PLACEHOLDER_HOME_ID}&userId=${PLACEHOLDER_USER_ID}`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -192,7 +192,7 @@ function VoiceIntelligenceContent() {
       form.append("sourceModule", "voice-intelligence");
       form.append("durationMs", String(recorder.durationMs));
 
-      const res = await fetch("/api/aria/transcribe", { method: "POST", body: form });
+      const res = await fetch("/api/cara/transcribe", { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) {
         setTranscriptError(data.error ?? "Transcription failed.");
@@ -213,12 +213,12 @@ function VoiceIntelligenceContent() {
     if (!transcript.trim()) return;
     setProcessing(true);
     setProcessError(null);
-    setAriaResponse(null);
+    setCaraResponse(null);
     setSaveSuccess(null);
     setSaveError(null);
 
     try {
-      const res = await fetch("/api/aria/voice-process", {
+      const res = await fetch("/api/cara/voice-process", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -234,7 +234,7 @@ function VoiceIntelligenceContent() {
       if (!res.ok) {
         setProcessError(data.error ?? "Processing failed.");
       } else {
-        setAriaResponse(data);
+        setCaraResponse(data);
       }
     } catch (e) {
       setProcessError(e instanceof Error ? e.message : String(e));
@@ -246,27 +246,27 @@ function VoiceIntelligenceContent() {
   // ── Save to Record ───────────────────────────────────────────────────────
   const saveToRecord = useCallback(
     async (recordType: VoiceRecordType) => {
-      if (!ariaResponse) return;
+      if (!caraResponse) return;
       setSaving(true);
       setSaveError(null);
       setSaveSuccess(null);
       setSaveDropdownOpen(false);
 
       try {
-        const res = await fetch("/api/aria/voice-save", {
+        const res = await fetch("/api/cara/voice-save", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             recordType,
-            content: ariaResponse.answer,
+            content: caraResponse.answer,
             homeId: PLACEHOLDER_HOME_ID,
             userId: PLACEHOLDER_USER_ID,
-            sessionId: ariaResponse.sessionId,
+            sessionId: caraResponse.sessionId,
             metadata: {
-              riskLevel: ariaResponse.riskLevel,
-              agentUsed: ariaResponse.agentUsed,
+              riskLevel: caraResponse.riskLevel,
+              agentUsed: caraResponse.agentUsed,
               inputType,
-              auditId: ariaResponse.auditId,
+              auditId: caraResponse.auditId,
             },
           }),
         });
@@ -286,7 +286,7 @@ function VoiceIntelligenceContent() {
         setSaving(false);
       }
     },
-    [ariaResponse, inputType],
+    [caraResponse, inputType],
   );
 
   // ── Reset everything ─────────────────────────────────────────────────────
@@ -296,7 +296,7 @@ function VoiceIntelligenceContent() {
     setTranscriptError(null);
     setProcessing(false);
     setProcessError(null);
-    setAriaResponse(null);
+    setCaraResponse(null);
     setSaveSuccess(null);
     setSaveError(null);
   }
@@ -307,7 +307,7 @@ function VoiceIntelligenceContent() {
       {/* Header */}
       <div>
         <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight text-[var(--cs-navy)]">
-          <Mic className="h-6 w-6 text-[var(--cs-aria-gold)]" />
+          <Mic className="h-6 w-6 text-[var(--cs-cara-gold)]" />
           Voice Intelligence
         </h1>
         <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">
@@ -336,7 +336,7 @@ function VoiceIntelligenceContent() {
                     onClick={() => setInputType(opt.value)}
                     className={cn(
                       inputType === opt.value &&
-                        "bg-[var(--cs-aria-gold)] text-[var(--cs-navy)] hover:bg-[var(--cs-aria-gold)]/90",
+                        "bg-[var(--cs-cara-gold)] text-[var(--cs-navy)] hover:bg-[var(--cs-cara-gold)]/90",
                     )}
                   >
                     {opt.label}
@@ -354,7 +354,7 @@ function VoiceIntelligenceContent() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="rounded-md border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-2.5 text-xs text-[var(--cs-navy)]">
+              <div className="rounded-md border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-2.5 text-xs text-[var(--cs-navy)]">
                 Audio stays on your device until transcribed. After transcription the audio is
                 discarded server-side. You can edit the transcript before processing.
               </div>
@@ -533,42 +533,42 @@ function VoiceIntelligenceContent() {
           </Card>
 
           {/* Structured Output Viewer */}
-          {ariaResponse && (
-            <Card className="border-[var(--cs-aria-gold-soft)]">
+          {caraResponse && (
+            <Card className="border-[var(--cs-cara-gold-soft)]">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between">
                   <span className="flex items-center gap-2 text-sm font-medium text-[var(--cs-navy)]">
-                    <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                    <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                     Cara Structured Output
                   </span>
                   <div className="flex items-center gap-2">
                     <Badge
                       className={cn(
                         "text-xs",
-                        riskLevelColor(ariaResponse.riskLevel),
+                        riskLevelColor(caraResponse.riskLevel),
                       )}
                     >
-                      {ariaResponse.riskLevel} risk
+                      {caraResponse.riskLevel} risk
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {ariaResponse.agentUsed?.replace(/_/g, " ")}
+                      {caraResponse.agentUsed?.replace(/_/g, " ")}
                     </Badge>
                     <Badge variant="outline" className="text-xs">
-                      {ariaResponse.confidence}% confidence
+                      {caraResponse.confidence}% confidence
                     </Badge>
                   </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Blocked notice */}
-                {ariaResponse.blocked && (
+                {caraResponse.blocked && (
                   <Notice tone="red" title="Output blocked">
-                    {ariaResponse.blockReason ?? "Safety governor blocked this output."}
+                    {caraResponse.blockReason ?? "Safety governor blocked this output."}
                   </Notice>
                 )}
 
                 {/* Escalation recommendation */}
-                {ariaResponse.escalationRecommended && (
+                {caraResponse.escalationRecommended && (
                   <Notice tone="amber" title="Escalation recommended">
                     Cara recommends this content be reviewed by a manager or safeguarding lead before
                     any action is taken.
@@ -578,18 +578,18 @@ function VoiceIntelligenceContent() {
                 {/* Main content */}
                 <div className="rounded-md border border-[var(--cs-border)] bg-white p-4">
                   <div className="prose prose-sm max-w-none text-[var(--cs-text-secondary)]">
-                    <MarkdownContent content={ariaResponse.answer} />
+                    <MarkdownContent content={caraResponse.answer} />
                   </div>
                 </div>
 
                 {/* Safety flags */}
-                {ariaResponse.safetyNotes.length > 0 && (
+                {caraResponse.safetyNotes.length > 0 && (
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-muted)] uppercase">
                       <Shield className="h-3.5 w-3.5" /> Safety Notes
                     </div>
                     <div className="space-y-1">
-                      {ariaResponse.safetyNotes.map((note, i) => (
+                      {caraResponse.safetyNotes.map((note, i) => (
                         <div
                           key={i}
                           className="flex items-start gap-2 rounded border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900"
@@ -603,13 +603,13 @@ function VoiceIntelligenceContent() {
                 )}
 
                 {/* Suggested actions */}
-                {ariaResponse.suggestedActions.length > 0 && (
+                {caraResponse.suggestedActions.length > 0 && (
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-muted)] uppercase">
                       <Activity className="h-3.5 w-3.5" /> Suggested Actions
                     </div>
                     <div className="space-y-1.5">
-                      {ariaResponse.suggestedActions.map((action, i) => (
+                      {caraResponse.suggestedActions.map((action, i) => (
                         <div
                           key={i}
                           className="flex items-start gap-2 rounded border border-[var(--cs-border)] bg-white p-2.5 text-xs"
@@ -631,13 +631,13 @@ function VoiceIntelligenceContent() {
                 )}
 
                 {/* Evidence trail */}
-                {ariaResponse.evidenceUsed.length > 0 && (
+                {caraResponse.evidenceUsed.length > 0 && (
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-muted)] uppercase">
-                      <FileText className="h-3.5 w-3.5" /> Evidence Used ({ariaResponse.evidenceUsed.length})
+                      <FileText className="h-3.5 w-3.5" /> Evidence Used ({caraResponse.evidenceUsed.length})
                     </div>
                     <div className="space-y-1">
-                      {ariaResponse.evidenceUsed.slice(0, 5).map((ev, i) => (
+                      {caraResponse.evidenceUsed.slice(0, 5).map((ev, i) => (
                         <div
                           key={i}
                           className="rounded border border-[var(--cs-border)] bg-gray-50 p-2 text-xs"
@@ -671,7 +671,7 @@ function VoiceIntelligenceContent() {
                   <div className="relative">
                     <Button
                       onClick={() => setSaveDropdownOpen(!saveDropdownOpen)}
-                      disabled={saving || ariaResponse.blocked}
+                      disabled={saving || caraResponse.blocked}
                       className="gap-1.5 bg-emerald-600 hover:bg-emerald-700"
                       size="sm"
                     >
@@ -721,7 +721,7 @@ function VoiceIntelligenceContent() {
 
                 {/* Audit ID */}
                 <div className="text-[10px] text-[var(--cs-text-muted)]">
-                  Audit: {ariaResponse.auditId} | Session: {ariaResponse.sessionId ?? "none"}
+                  Audit: {caraResponse.auditId} | Session: {caraResponse.sessionId ?? "none"}
                 </div>
               </CardContent>
             </Card>
@@ -753,7 +753,7 @@ function VoiceIntelligenceContent() {
                       entry={entry}
                       onLoadTranscript={(text) => {
                         setTranscript(text);
-                        setAriaResponse(null);
+                        setCaraResponse(null);
                         setSaveSuccess(null);
                       }}
                     />

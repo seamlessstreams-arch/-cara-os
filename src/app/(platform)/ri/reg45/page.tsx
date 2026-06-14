@@ -6,8 +6,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ const STATUS_COLOURS: Record<string, string> = {
   draft: "bg-slate-100 text-[var(--cs-text-secondary)]",
   in_progress: "bg-blue-100 text-blue-700",
   reviewed: "bg-amber-100 text-amber-700",
-  approved: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  approved: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   submitted: "bg-emerald-100 text-emerald-700",
 };
 
@@ -84,7 +84,7 @@ function Reg45Card({ record }: { record: RiReg45Evidence }) {
               { label: "Strengths", content: record.aria_strengths, colour: "bg-emerald-50 border-emerald-100 text-emerald-900" },
               { label: "Weaknesses / Areas for Development", content: record.aria_weaknesses, colour: "bg-amber-50 border-amber-100 text-amber-900" },
               { label: "Improvement Areas", content: record.aria_improvement_areas, colour: "bg-blue-50 border-blue-100 text-blue-900" },
-              { label: "Impact on Children", content: record.aria_child_impact, colour: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)] text-[var(--cs-navy)]" },
+              { label: "Impact on Children", content: record.aria_child_impact, colour: "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)] text-[var(--cs-navy)]" },
               { label: "Action Plan", content: record.aria_action_plan, colour: "bg-slate-50 border-[var(--cs-border)] text-[var(--cs-navy)]" },
               { label: "RI Statement", content: record.aria_ri_statement, colour: "bg-indigo-50 border-indigo-100 text-indigo-900" },
             ].filter((s) => !!s.content).map(({ label, content, colour }) => (
@@ -164,9 +164,9 @@ const REG45_STANDARDS: Reg45Standard[] = [
     label: "Leadership & Management",
     description: "RI oversight, governance, challenge and quality assurance",
     icon: ClipboardCheck,
-    colour: "text-[var(--cs-aria-gold)]",
-    bg: "bg-[var(--cs-aria-gold-bg)]",
-    border: "border-[var(--cs-aria-gold-soft)]",
+    colour: "text-[var(--cs-cara-gold)]",
+    bg: "bg-[var(--cs-cara-gold-bg)]",
+    border: "border-[var(--cs-cara-gold-soft)]",
     sourceCategories: ["Challenges", "Audits"],
   },
 ];
@@ -245,7 +245,7 @@ function LiveEvidencePanel({ onUseContext }: { onUseContext: (text: string) => v
       .forEach((a) =>
         out.push({
           icon: ClipboardCheck,
-          iconColour: "text-[var(--cs-aria-gold)]",
+          iconColour: "text-[var(--cs-cara-gold)]",
           category: ["staffing", "general"].includes(a.category) ? "Challenges" : "Audits",
           title: a.title,
           detail: `Score: ${a.score}/${a.max_score} (${Math.round((a.score / Math.max(a.max_score, 1)) * 100)}%) — ${a.findings} finding${a.findings !== 1 ? "s" : ""}`,
@@ -606,7 +606,7 @@ export default function Reg45Page() {
     <PageShell
       title="Regulation 45 Engine"
       subtitle="Evidence collection and Reg 45 report generation"
-      ariaContext={{ pageTitle: "Regulation 45 Engine", sourceType: "reg45" }}
+      caraContext={{ pageTitle: "Regulation 45 Engine", sourceType: "reg45" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -616,7 +616,7 @@ export default function Reg45Page() {
             targetId="reg45-content"
           />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI — Regulation 45 evidence upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -654,7 +654,7 @@ export default function Reg45Page() {
           )}
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Regulation 45 Engine — RI view of Reg 45 report building, evidence review, quarterly reporting, thematic analysis, quality of care evidence, outcomes evidence, Ofsted readiness"
         recordType="reg45"

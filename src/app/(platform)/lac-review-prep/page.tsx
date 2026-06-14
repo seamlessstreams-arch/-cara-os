@@ -32,8 +32,8 @@ import { useLacReviewPreps } from "@/hooks/use-lac-review-preps";
 import type { LacReviewPrep, LacPrepStatus } from "@/types/extended";
 import { LAC_REVIEW_TYPE_LABEL, LAC_PREP_STATUS_LABEL, CHILD_PREP_STATUS_LABEL, CHILD_ATTENDANCE_CHOICE_LABEL, LAC_PREP_ACTION_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const prepStatusColour: Record<LacPrepStatus, string> = {
   not_started: "bg-slate-100 text-[var(--cs-navy)]",
@@ -95,12 +95,12 @@ export default function LacReviewPrepPage() {
     <PageShell
       title="LAC Review Preparation"
       subtitle="Pre-review work for each child — wishes and feelings, multi-agency reports, action progress"
-      ariaContext={{ pageTitle: "LAC Review Preparation", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "LAC Review Preparation", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="lac-review-prep" />
           <PrintButton title="LAC Review Preparation" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -367,7 +367,7 @@ export default function LacReviewPrepPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="LAC Review Preparation — statutory review preparation, care plan evidence, child consultation, carer report, education report, health report, key worker report, IRO briefing"
         recordType="care_plan"

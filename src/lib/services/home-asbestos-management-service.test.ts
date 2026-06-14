@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
   type HomeAsbestosManagementRow,
 } from "./home-asbestos-management-service";
 
@@ -135,12 +135,12 @@ describe("computeAlerts", () => {
   });
 });
 
-// ── computeAriaInsights ──────────────────────────────────────────────────
+// ── computeCaraInsights ──────────────────────────────────────────────────
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   it("returns 3 insights", () => {
     const metrics = computeMetrics([makeRow()]);
-    const insights = computeAriaInsights(metrics);
+    const insights = computeCaraInsights(metrics);
     expect(insights).toHaveLength(3);
   });
 });

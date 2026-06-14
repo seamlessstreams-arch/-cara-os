@@ -29,8 +29,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependenceLivingAssessment, LivingSkillLevel, LivingSkillsReadiness } from "@/types/extended";
 import { LIVING_SKILL_LEVEL_LABEL, LIVING_SKILLS_READINESS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── constants ───────────────────────────────────────────────────────── */
 
@@ -103,12 +103,12 @@ export default function IndependentLivingSkillsAssessmentPage() {
     <PageShell
       title="Independent Living Skills Assessment"
       subtitle="Skills assessment across life domains — preparing each child for adulthood at their pace"
-      ariaContext={{ pageTitle: "Independent Living Skills Assessment", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Independent Living Skills Assessment", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="independent-living-skills-assessment" />
           <PrintButton title="Independent Living Skills Assessment" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -309,7 +309,7 @@ export default function IndependentLivingSkillsAssessmentPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Independent Living Skills Assessment — ILSA tool, life skills assessment, self-care, cooking, finances, housing, employment, relationships, pathway plan, leaving care"
         recordType="care_plan"

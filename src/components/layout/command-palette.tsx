@@ -103,7 +103,7 @@ function buildItems(): CommandItem[] {
     { id: "action_handover", label: "View handover", href: "/handover", icon: ArrowRight, description: "Review shift handover notes" },
     { id: "action_medication", label: "Administer medication", href: "/medication", icon: Pill, description: "Record medication administration" },
     { id: "action_supervision", label: "Schedule supervision", href: "/supervision", icon: Users, description: "Book a staff supervision session" },
-    { id: "action_aria", label: "Open Cara Intelligence", href: "/intelligence", icon: Sparkles, description: "AI-powered care insights" },
+    { id: "action_cara", label: "Open Cara Intelligence", href: "/intelligence", icon: Sparkles, description: "AI-powered care insights" },
   ];
   actions.forEach((a) => items.push({ ...a, group: "actions" }));
 
@@ -310,12 +310,12 @@ export function CommandPalette() {
                         onMouseEnter={() => setSelectedIndex(idx)}
                         className={cn(
                           "w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors",
-                          isSelected ? "bg-[var(--cs-aria-gold-bg)]" : "hover:bg-[var(--cs-surface)]",
+                          isSelected ? "bg-[var(--cs-cara-gold-bg)]" : "hover:bg-[var(--cs-surface)]",
                         )}
                       >
                         <div className={cn(
                           "flex h-8 w-8 items-center justify-center rounded-xl shrink-0 transition-colors",
-                          isSelected ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]" : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]",
+                          isSelected ? "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]" : "bg-[var(--cs-surface)] text-[var(--cs-text-muted)]",
                         )}>
                           <Icon className="h-4 w-4" />
                         </div>
@@ -332,7 +332,7 @@ export function CommandPalette() {
                         </div>
                         {isSelected && (
                           <div className="flex items-center gap-1 shrink-0">
-                            <CornerDownLeft className="h-3 w-3 text-[var(--cs-aria-gold)]" />
+                            <CornerDownLeft className="h-3 w-3 text-[var(--cs-cara-gold)]" />
                           </div>
                         )}
                       </button>

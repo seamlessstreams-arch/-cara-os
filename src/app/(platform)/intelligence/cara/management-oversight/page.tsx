@@ -6,11 +6,11 @@
 //
 // Flow:
 //   1. Paste / dictate a care record + select record type + child reference
-//   2. Submit → POST /api/aria/management-oversight  (analyse + persist)
+//   2. Submit → POST /api/cara/management-oversight  (analyse + persist)
 //   3. Review the suggested draft, scores, plan links, missing evidence,
 //      suggested actions, regulatory links
 //   4. Decide: Approve / Edit & Approve / Reject / Request Rewrite
-//      → PATCH /api/aria/management-oversight  (audit-logged)
+//      → PATCH /api/cara/management-oversight  (audit-logged)
 //   5. Watch the audit timeline update
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { AriaCompose } from "@/components/aria/aria-compose";
+import { CaraCompose } from "@/components/cara/cara-compose";
 import {
   Sparkles,
   Loader2,
@@ -83,7 +83,7 @@ interface OversightReview {
   recordType: string;
   generatedAt: string;
   status: string;
-  ariaLabel: string;
+  caraLabel: string;
   oversightDraft: string;
   ofstedSummary: string;
   qualityScore: number;
@@ -98,7 +98,7 @@ interface OversightReview {
   strengths: string[];
   suggestedActions: SuggestedAction[];
   regulatoryLinks: string[];
-  ariaConfidence: number;
+  caraConfidence: number;
   llmUsed: boolean;
   engineVersion: string;
 }
@@ -189,7 +189,7 @@ export default function ManagementOversightPage() {
     setDecisionMessage(null);
     setAuditTrail([]);
     try {
-      const res = await fetch("/api/aria/management-oversight", {
+      const res = await fetch("/api/cara/management-oversight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -222,7 +222,7 @@ export default function ManagementOversightPage() {
 
   async function loadAudit(reviewId: string) {
     try {
-      const res = await fetch(`/api/aria/management-oversight?id=${reviewId}`);
+      const res = await fetch(`/api/cara/management-oversight?id=${reviewId}`);
       if (!res.ok) return;
       const data = await res.json();
       const entries: AuditEntry[] | undefined = data.data?.oversight_audit_log;
@@ -259,7 +259,7 @@ export default function ManagementOversightPage() {
       if (decision === "request_rewrite")
         body.rewriteInstructions = rewriteInstructions.trim();
 
-      const res = await fetch("/api/aria/management-oversight", {
+      const res = await fetch("/api/cara/management-oversight", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -283,8 +283,8 @@ export default function ManagementOversightPage() {
   return (
     <PageShell title="Cara — Management Oversight">
       {/* ── Cara draft banner ─────────────────────────────────────────────── */}
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
-        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-cara-gold)]" />
         <div>
           <div className="font-semibold">Cara suggested draft — never final</div>
           <p className="text-[var(--cs-navy)]">
@@ -299,7 +299,7 @@ export default function ManagementOversightPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <ShieldCheck className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+            <ShieldCheck className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             Record under review
           </CardTitle>
         </CardHeader>
@@ -359,7 +359,7 @@ export default function ManagementOversightPage() {
             </div>
           </div>
           <div>
-            <AriaCompose
+            <CaraCompose
               value={recordText}
               onChange={setRecordText}
               actorUserId={actorUserId}
@@ -370,13 +370,13 @@ export default function ManagementOversightPage() {
               sourceField="record_narrative"
               defaultCommand="professionalise_record"
               commands={[
-                { id: "professionalise_record", label: "Professionalise record", permission: "aria.rewrite" },
-                { id: "improve_writing", label: "Improve writing", permission: "aria.rewrite" },
-                { id: "summarise_text", label: "Summarise", permission: "aria.summarise" },
-                { id: "check_missing_information", label: "Check missing information", permission: "aria.summarise" },
-                { id: "check_tone", label: "Check tone", permission: "aria.summarise" },
-                { id: "check_factuality", label: "Check factuality", permission: "aria.summarise" },
-                { id: "draft_child_voice_summary", label: "Surface child voice", permission: "aria.summarise" },
+                { id: "professionalise_record", label: "Professionalise record", permission: "cara.rewrite" },
+                { id: "improve_writing", label: "Improve writing", permission: "cara.rewrite" },
+                { id: "summarise_text", label: "Summarise", permission: "cara.summarise" },
+                { id: "check_missing_information", label: "Check missing information", permission: "cara.summarise" },
+                { id: "check_tone", label: "Check tone", permission: "cara.summarise" },
+                { id: "check_factuality", label: "Check factuality", permission: "cara.summarise" },
+                { id: "draft_child_voice_summary", label: "Surface child voice", permission: "cara.summarise" },
               ]}
               label="Record narrative"
               placeholder="Paste the full record narrative (incident, daily log, complaint, etc.) here for Cara to analyse. Use the mic button to dictate, or run an Cara command to clean up the wording before submitting."
@@ -432,7 +432,7 @@ export default function ManagementOversightPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-xs uppercase text-[var(--cs-text-muted)] mb-1">Cara confidence</div>
-                <div className="text-3xl font-semibold text-[var(--cs-navy)]">{Math.round(review.ariaConfidence * 100)}%</div>
+                <div className="text-3xl font-semibold text-[var(--cs-navy)]">{Math.round(review.caraConfidence * 100)}%</div>
                 <div className="text-xs text-[var(--cs-text-muted)] mt-1">
                   {review.llmUsed ? "LLM-enhanced narrative" : "Deterministic only"}
                 </div>
@@ -551,7 +551,7 @@ export default function ManagementOversightPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between gap-2 text-base">
                     <span className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Cara suggested draft
+                      <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Cara suggested draft
                     </span>
                     <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)} className="gap-1.5">
                       <Pencil className="h-3.5 w-3.5" /> {editing ? "Stop editing" : "Edit"}

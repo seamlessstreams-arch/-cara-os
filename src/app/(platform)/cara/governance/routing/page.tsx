@@ -72,7 +72,7 @@ const RISK_STYLES: Record<string, string> = {
   critical: "bg-red-100 text-red-800",
 };
 
-export default function AriaRoutingPage() {
+export default function CaraRoutingPage() {
   const [filter, setFilter] = useState<string>("all");
 
   const filtered = TASK_TYPES.filter(t => {

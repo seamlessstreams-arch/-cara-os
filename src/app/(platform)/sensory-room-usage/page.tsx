@@ -29,8 +29,8 @@ import { useSensoryRoomUsageRecords } from "@/hooks/use-sensory-room-usage-recor
 import type { SensoryRoomUsageRecord, SensoryRoomInitiatedBy } from "@/types/extended";
 import { SENSORY_ROOM_INITIATED_BY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const initiatedByColour: Record<SensoryRoomInitiatedBy, string> = {
   self: "bg-green-100 text-green-800",
@@ -97,12 +97,12 @@ export default function SensoryRoomUsagePage() {
     <PageShell
       title="Sensory Room Usage"
       subtitle="Records of sensory regulation space use — self-initiated, staff-prompted, scheduled, and crisis"
-      ariaContext={{ pageTitle: "Sensory Room Usage", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Sensory Room Usage", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="sensory-room-usage" />
           <PrintButton title="Sensory Room Usage" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -268,7 +268,7 @@ export default function SensoryRoomUsagePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Sensory Room Usage — sensory regulation space use, self-initiated, staff-prompted, scheduled, crisis sessions, outcomes, behaviour impact, autism, ADHD, trauma response"
         recordType="direct_work"

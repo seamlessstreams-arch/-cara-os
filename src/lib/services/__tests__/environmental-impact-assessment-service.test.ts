@@ -25,7 +25,7 @@ import type {
 const {
   computeEnvironmentalImpactMetrics,
   computeEnvironmentalImpactAlerts,
-  generateEnvironmentalImpactAriaInsights,
+  generateEnvironmentalImpactCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -690,20 +690,20 @@ describe("computeEnvironmentalImpactAlerts", () => {
   });
 });
 
-// ── generateEnvironmentalImpactAriaInsights ──────────────────────────────
+// ── generateEnvironmentalImpactCaraInsights ──────────────────────────────
 
-describe("generateEnvironmentalImpactAriaInsights", () => {
+describe("generateEnvironmentalImpactCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeEnvironmentalImpactMetrics([]);
     const alerts = computeEnvironmentalImpactAlerts([]);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const metrics = computeEnvironmentalImpactMetrics([makeRow()]);
     const alerts = computeEnvironmentalImpactAlerts([makeRow()]);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
@@ -711,7 +711,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -719,14 +719,14 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     const rows = [makeRow({ children_involved: true }), makeRow({ children_involved: false })];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computeEnvironmentalImpactMetrics([makeRow()]);
     const alerts = computeEnvironmentalImpactAlerts([makeRow()]);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -737,7 +737,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     ];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -746,14 +746,14 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     const rows = [makeRow({ performance_rating: "good", improvement_status: "in_progress", action_plan_created: true, progress_monitored: true, children_involved: true })];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computeEnvironmentalImpactMetrics([makeRow()]);
     const alerts = computeEnvironmentalImpactAlerts([makeRow()]);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -761,7 +761,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     const rows = [makeRow({ performance_rating: "poor" })];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("poor");
   });
 
@@ -772,7 +772,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     ];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("Children are involved");
   });
 
@@ -783,7 +783,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     ];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("involve children and no poor");
   });
 
@@ -791,7 +791,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     const rows = [makeRow({ assessor_name: "Staff A" })];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 assessor");
   });
 
@@ -802,14 +802,14 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     ];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 assessors");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computeEnvironmentalImpactMetrics([makeRow()]);
     const alerts = computeEnvironmentalImpactAlerts([makeRow()]);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -820,7 +820,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     const rows = [makeRow({ performance_rating: "poor" })];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("assessment has");
   });
 
@@ -831,7 +831,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     ];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("assessments have");
   });
 });

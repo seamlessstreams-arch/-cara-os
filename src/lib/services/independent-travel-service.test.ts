@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   validateIndependentTravel,
   type IndependentTravelRow,
 } from "./independent-travel-service";
@@ -248,12 +248,12 @@ describe("independent-travel-service", () => {
     });
   });
 
-  // -- generateAriaInsights -----------------------------------------------------
+  // -- generateCaraInsights -----------------------------------------------------
 
-  describe("generateAriaInsights", () => {
+  describe("generateCaraInsights", () => {
     it("returns 3 insights", () => {
       const rows = [makeRow()];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toContain("[sky]");
       expect(insights[1]).toContain("[amber]");

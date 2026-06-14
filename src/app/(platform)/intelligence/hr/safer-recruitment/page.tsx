@@ -86,7 +86,7 @@ interface Evaluation {
   blockingReasons: string[];
   unmetChecks: CheckRowResult[];
   failedChecks: CheckRowResult[];
-  ariaLabel: "Cara suggested draft";
+  caraLabel: "Cara suggested draft";
   rationaleSummary: string;
   regulatoryLinks: string[];
 }
@@ -256,8 +256,8 @@ export default function SaferRecruitmentPage() {
 
   return (
     <PageShell title="HR — Safer Recruitment Gate">
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
-        <ShieldCheck className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <ShieldCheck className="h-5 w-5 mt-0.5 text-[var(--cs-cara-gold)]" />
         <div>
           <div className="font-semibold">Cara suggested draft, never final</div>
           <p className="text-[var(--cs-navy)]">
@@ -273,7 +273,7 @@ export default function SaferRecruitmentPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ClipboardList className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Look up a record
+            <ClipboardList className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Look up a record
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -401,7 +401,7 @@ export default function SaferRecruitmentPage() {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
-                <Stamp className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Sign-off
+                <Stamp className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Sign-off
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">

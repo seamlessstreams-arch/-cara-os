@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
   Building2, AlertTriangle, CheckCircle2, Clock, XCircle,
   Plus, Search, Shield, Flame, Zap, Droplets, Thermometer,
@@ -882,7 +882,7 @@ function HazardsTab({ data }: { data: BuildingsData }) {
     .filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i)
     .filter((c) => !resolvedIds.has(c.id));
 
-  const ariaSrc = hazards
+  const caraSrc = hazards
     .map((h) => `• ${CHECK_TYPE_LABELS[h.check_type] || h.check_type} (${h.area}): ${h.action_required || "Overdue check"} — Risk: ${h.risk_level || "unknown"}`)
     .join("\n");
 
@@ -974,11 +974,11 @@ function HazardsTab({ data }: { data: BuildingsData }) {
       )}
 
       {/* Cara for contractor comms */}
-      <AriaPanel
+      <CaraPanel
         mode="write"
         pageContext="Buildings & Premises — property maintenance, hazards, COSHH, asbestos, pest control, fire safety, Reg 44 evidence, health and safety compliance"
         recordType="contractor_communication"
-        sourceContent={ariaSrc || "No open hazards to communicate."}
+        sourceContent={caraSrc || "No open hazards to communicate."}
         linkedRecords={`${hazards.length} open hazard(s) — Chamberlain House`}
         defaultStyle="professional_formal"
       />
@@ -1054,7 +1054,7 @@ export default function BuildingsPage() {
     <PageShell
       title="Building & H&S Compliance"
       subtitle="Chamberlain House — safety checks, certificates, and hazard management"
-      ariaContext={{ pageTitle: "Building & H&S Compliance", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Building & H&S Compliance", sourceType: "home_check" }}
       quickCreateContext={{ module: "buildings", defaultTaskCategory: "health_and_safety", defaultFormType: "health_safety_check" }}
       actions={
         <div className="flex items-center gap-2">
@@ -1069,7 +1069,7 @@ export default function BuildingsPage() {
           <Button size="sm" onClick={() => setShowAddCheck(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Record Check
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

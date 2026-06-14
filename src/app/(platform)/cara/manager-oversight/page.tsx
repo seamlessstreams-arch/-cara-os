@@ -8,8 +8,8 @@ import {
   Loader2, RefreshCw, Eye, AlertOctagon, AlertTriangle, Info, CheckCircle2,
   FileCheck, TrendingUp, Sparkles, ArrowRight, Undo2,
 } from "lucide-react";
-import { useAriaOversight, useOversightAction } from "@/hooks/use-aria-oversight";
-import type { AlertPriority } from "@/lib/aria-incident/manager-oversight-engine";
+import { useCaraOversight, useOversightAction } from "@/hooks/use-cara-oversight";
+import type { AlertPriority } from "@/lib/cara-incident/manager-oversight-engine";
 
 const PRIORITY_META: Record<AlertPriority, { chip: string; border: string }> = {
   urgent: { chip: "bg-red-100 text-red-800 border-red-200", border: "border-l-red-500" },
@@ -19,15 +19,15 @@ const PRIORITY_META: Record<AlertPriority, { chip: string; border: string }> = {
 };
 const SEV_ICON = { attention: AlertOctagon, watch: AlertTriangle, info: Info } as const;
 
-export default function AriaManagerOversightPage() {
-  const { data, isLoading, isFetching, refetch } = useAriaOversight();
+export default function CaraManagerOversightPage() {
+  const { data, isLoading, isFetching, refetch } = useCaraOversight();
   const act = useOversightAction();
 
   return (
     <PageShell
       title="Cara Manager Oversight"
       subtitle="Incident-session oversight in one place — what's missing, which AI-assisted records await your approval, and the patterns Cara has noticed. Alerts clear when the practice happens."
-      ariaContext={{ pageTitle: "Cara Manager Oversight", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Cara Manager Oversight", sourceType: "incident" }}
       actions={
         <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50">
           <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} /> Refresh
@@ -146,8 +146,8 @@ export default function AriaManagerOversightPage() {
               <Link href="/cara/review" className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--cs-border)] bg-white px-3.5 py-2 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]">Cara suggestion review queue <ArrowRight className="h-3 w-3" /></Link>
               <Link href="/intelligence/cara/oversight-queue" className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--cs-border)] bg-white px-3.5 py-2 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]">Whole-system oversight queue <ArrowRight className="h-3 w-3" /></Link>
             </div>
-            <div className="flex items-start gap-2.5 rounded-2xl border border-[var(--cs-aria-gold)]/40 bg-[var(--cs-aria-gold-bg)]/50 px-4 py-3">
-              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-aria-gold)]" />
+            <div className="flex items-start gap-2.5 rounded-2xl border border-[var(--cs-cara-gold)]/40 bg-[var(--cs-cara-gold-bg)]/50 px-4 py-3">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-cara-gold)]" />
               <p className="text-xs font-medium leading-relaxed text-[var(--cs-navy)]">{data.disclaimer}</p>
             </div>
           </>

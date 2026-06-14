@@ -92,7 +92,7 @@ export default function ComplaintsClockPage() {
     <PageShell
       title="Complaints Clock"
       subtitle="Live countdown to every complaint's statutory acknowledgement and response deadline — so a timescale is never missed (CHR 2015 Reg 39)."
-      ariaContext={{ pageTitle: "Complaints Clock", sourceType: "general" }}
+      caraContext={{ pageTitle: "Complaints Clock", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 print:hidden">

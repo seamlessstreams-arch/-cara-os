@@ -6,8 +6,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,7 +61,7 @@ const STATUS_COLOUR: Record<Reg44VisitStatus, string> = {
   scheduled:                   "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
   completed:                   "bg-blue-50 text-blue-700 border-blue-200",
   report_received:             "bg-amber-50 text-amber-700 border-amber-200",
-  manager_response_submitted:  "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  manager_response_submitted:  "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
   ri_reviewed:                 "bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
@@ -333,8 +333,8 @@ function VisitCard({
 
           {/* Manager response */}
           {visit.manager_response && (
-            <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-3">
-              <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-widest mb-1.5">
+            <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/40 p-3">
+              <p className="text-[10px] font-semibold text-[var(--cs-cara-gold)] uppercase tracking-widest mb-1.5">
                 Manager Response · {visit.manager_response_date ? formatDate(visit.manager_response_date) : ""}
               </p>
               <p className="text-xs text-[var(--cs-text-secondary)]">{visit.manager_response}</p>
@@ -463,8 +463,8 @@ export default function Reg44Page() {
   const [saving, setSaving]             = useState(false);
 
   // Cara analysis
-  const [ariaBusy, setAriaBusy]   = useState<string | null>(null);
-  const [ariaError, setAriaError] = useState<string | null>(null);
+  const [caraBusy, setCaraBusy]   = useState<string | null>(null);
+  const [caraError, setCaraError] = useState<string | null>(null);
 
   const handleSaveResponse = async () => {
     if (!respondingTo || !responseText.trim()) return;
@@ -486,9 +486,9 @@ export default function Reg44Page() {
     }
   };
 
-  const handleAriaAnalysis = async (visit: Reg44Visit) => {
-    setAriaBusy(visit.id);
-    setAriaError(null);
+  const handleCaraAnalysis = async (visit: Reg44Visit) => {
+    setCaraBusy(visit.id);
+    setCaraError(null);
     try {
       const findingSummary = (visit.findings ?? []).map((f) =>
         `[${f.type.toUpperCase()}] ${f.area}: ${f.description}${f.action_required ? ` (Action: ${f.action_required}${f.action_completed ? " — COMPLETED" : " — PENDING"})` : ""}`,
@@ -516,9 +516,9 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
 
       await updateVisit.mutateAsync({ id: visit.id, data: { aria_summary: summary } });
     } catch {
-      setAriaError("Cara analysis failed — please try again");
+      setCaraError("Cara analysis failed — please try again");
     } finally {
-      setAriaBusy(null);
+      setCaraBusy(null);
     }
   };
 
@@ -526,7 +526,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
     <PageShell
       title="Reg 44 Independent Visits"
       subtitle="Independent person visits — tracking, findings, actions and RI review"
-      ariaContext={{ pageTitle: "Reg 44 Independent Visits", sourceType: "general" }}
+      caraContext={{ pageTitle: "Reg 44 Independent Visits", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -547,7 +547,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
               RI Hub
             </button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -706,11 +706,11 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
                 {!visit.aria_summary && (visit.findings?.length ?? 0) > 0 && (
                   <div className="mt-1.5 flex justify-end">
                     <button
-                      onClick={() => handleAriaAnalysis(visit)}
-                      disabled={ariaBusy === visit.id}
+                      onClick={() => handleCaraAnalysis(visit)}
+                      disabled={caraBusy === visit.id}
                       className="inline-flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-800 disabled:opacity-50"
                     >
-                      {ariaBusy === visit.id ? (
+                      {caraBusy === visit.id ? (
                         <>
                           <Sparkles className="h-3.5 w-3.5 animate-spin" />
                           Cara analysing…
@@ -727,8 +727,8 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
               </div>
             ))
           )}
-          {ariaError && (
-            <p className="text-xs text-red-600 text-right">{ariaError}</p>
+          {caraError && (
+            <p className="text-xs text-red-600 text-right">{caraError}</p>
           )}
         </div>
       )}
@@ -748,7 +748,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base">
-              <MessageSquare className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+              <MessageSquare className="h-4 w-4 text-[var(--cs-cara-gold)]" />
               Manager Response — Visit {respondingTo?.visit_number}
             </DialogTitle>
           </DialogHeader>
@@ -819,7 +819,7 @@ Manager response: ${visit.manager_response ?? "None submitted yet"}`;
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Reg 44 Independent Visits — RI view of independent visitor reports, visit findings, children's views, action tracking, management responses, statutory compliance, Ofsted evidence"
         recordType="reg45"

@@ -603,7 +603,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: LetterboxContactRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

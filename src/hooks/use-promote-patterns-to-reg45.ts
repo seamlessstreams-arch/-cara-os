@@ -23,8 +23,8 @@ export function usePromotePatternsToReg45() {
     }) =>
       api.post<Response>("/care-events/patterns/promote", input),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-reg45-evidence"] });
-      qc.invalidateQueries({ queryKey: ["aria-audit-trail"] });
+      qc.invalidateQueries({ queryKey: ["cara-reg45-evidence"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
     },
   });
 }

@@ -16,7 +16,7 @@ import {
   computeHomeSummaryReport,
   type ReportSignalInput,
 } from "@/lib/engines/home-summary-report-engine";
-import { generateReportNarrative } from "@/lib/aria/report-narrative";
+import { generateReportNarrative } from "@/lib/cara/report-narrative";
 
 export const dynamic = "force-dynamic";
 

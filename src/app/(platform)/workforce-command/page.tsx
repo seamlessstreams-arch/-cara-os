@@ -30,7 +30,7 @@ export default function WorkforceCommandPage() {
     <PageShell
       title="Workforce Command"
       subtitle="Your whole workforce on one screen — recruitment, safer recruitment, onboarding, probation, supervision, training, retention support and Ofsted evidence, with what needs you most up top."
-      ariaContext={{ pageTitle: "Workforce Command", sourceType: "general" }}
+      caraContext={{ pageTitle: "Workforce Command", sourceType: "general" }}
       actions={
         <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"><RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} /> Refresh</button>
       }

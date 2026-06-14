@@ -31,8 +31,8 @@ import type { GovernanceMeeting, GovernanceAction } from "@/types/extended";
 import { GOVERNANCE_ACTION_STATUS_LABEL } from "@/types/extended";
 import { useGovernanceMeetings } from "@/hooks/use-governance-meetings";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ─── date helper (for overdue checks) ─── */
 const today = () => new Date().toISOString().slice(0, 10);
@@ -138,12 +138,12 @@ export default function GovernanceMeetingMinutesPage() {
     <PageShell
       title="Governance Meeting Minutes"
       subtitle="Records of RI and management governance meetings demonstrating oversight per Regulation 45 and Quality Standard 25"
-      ariaContext={{ pageTitle: "Governance Meeting Minutes", sourceType: "general" }}
+      caraContext={{ pageTitle: "Governance Meeting Minutes", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="governance-meeting-minutes" />
           <PrintButton title="Governance Meeting Minutes" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -442,7 +442,7 @@ export default function GovernanceMeetingMinutesPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Governance Meeting Minutes — board minutes, senior management team, RI visits, Ofsted outcomes, Reg 45 reports, quality assurance, action logs, performance review"
         recordType="management_oversight"

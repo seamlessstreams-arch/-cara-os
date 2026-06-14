@@ -21,13 +21,13 @@ import {
   useRetryJob,
 } from "@/hooks/use-routing-health";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 
 const HOME_ID = "home_oak";
 
 export default function RoutingHealthPage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(currentUser?.role ?? "registered_manager");
+  const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
   const { data, isLoading, refetch, isFetching } = useRoutingHealth(HOME_ID);
   const retryRoutes = useRetryRoutes();
   const retryJob = useRetryJob();
@@ -98,7 +98,7 @@ export default function RoutingHealthPage() {
                         retryRoutes.mutate({
                           care_event_id: row.care_event_id,
                           actor_id: currentUser?.id,
-                          actor_role: ariaRole,
+                          actor_role: caraRole,
                         })
                       }
                       disabled={retryRoutes.isPending}
@@ -170,7 +170,7 @@ export default function RoutingHealthPage() {
                                 retryJob.mutate({
                                   job_id: j.id,
                                   actor_id: currentUser?.id,
-                                  actor_role: ariaRole,
+                                  actor_role: caraRole,
                                 })
                               }
                               disabled={

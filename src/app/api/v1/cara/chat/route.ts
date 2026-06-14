@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 // a crash or a mock.
 //
 // This endpoint does NOT persist to the DB. The drawer is a live-assist tool.
-// Persisted drafts and approvals go through POST /api/aria/generate.
+// Persisted drafts and approvals go through POST /api/cara/generate.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export const dynamic = "force-dynamic";
@@ -210,7 +210,7 @@ export async function POST(req: NextRequest) {
             "anthropic-version": "2023-06-01",
           },
           body: JSON.stringify({
-            model: (process.env.CARA_MODEL ?? process.env.ARIA_MODEL) ?? "claude-sonnet-4-20250514",
+            model: (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? "claude-sonnet-4-20250514",
             max_tokens: MAX_TOKENS,
             system: SYSTEM_PROMPT,
             messages: [{ role: "user", content: userMessage }],
@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
   // ── Try OpenAI ─────────────────────────────────────────────────────────────
 
   const openaiKey = process.env.OPENAI_API_KEY;
-  const openaiModel = (process.env.CARA_TEXT_MODEL ?? process.env.ARIA_TEXT_MODEL) ?? "gpt-4o-mini";
+  const openaiModel = (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ?? "gpt-4o-mini";
   if (openaiKey && openaiKey.length > 10 && !openaiKey.includes("placeholder")) {
     if (shouldStream) {
       try {

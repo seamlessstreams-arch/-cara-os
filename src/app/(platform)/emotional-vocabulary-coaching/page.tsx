@@ -33,14 +33,14 @@ import { EMOTIONAL_FRAMEWORK_LABEL } from "@/types/extended";
 import { useEmotionalVocabRecords } from "@/hooks/use-emotional-vocab-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
 const FRAMEWORK_COLOURS: Record<EmotionalFramework, string> = {
   zones_of_regulation: "bg-sky-100 text-sky-800",
-  feelings_wheel_plutchik: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  feelings_wheel_plutchik: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   ruler: "bg-teal-100 text-teal-800",
   how_are_you_feeling_today: "bg-amber-100 text-amber-800",
   bespoke: "bg-pink-100 text-pink-800",
@@ -203,7 +203,7 @@ export default function EmotionalVocabularyCoachingPage() {
     <PageShell
       title="Emotional Vocabulary Coaching"
       subtitle="Per-child language work — what feelings each young person can name, what they confuse, the tools and frameworks in use, and the breakthroughs that change everything"
-      ariaContext={{ pageTitle: "Emotional Vocabulary Coaching", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Emotional Vocabulary Coaching", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emotional Vocabulary Coaching" />
@@ -212,7 +212,7 @@ export default function EmotionalVocabularyCoachingPage() {
             columns={EXPORT_COLS}
             filename="emotional-vocabulary-coaching"
           />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -223,7 +223,7 @@ export default function EmotionalVocabularyCoachingPage() {
             label: "Children in Coaching",
             value: stats.inCoaching,
             icon: MessageCircle,
-            colour: "text-[var(--cs-aria-gold)]",
+            colour: "text-[var(--cs-cara-gold)]",
           },
           {
             label: "Feelings Recognised (total)",
@@ -380,8 +380,8 @@ export default function EmotionalVocabularyCoachingPage() {
                   </div>
 
                   {/* starting position */}
-                  <div className="rounded-md bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
-                    <h4 className="text-xs font-semibold text-[var(--cs-aria-gold)] mb-1">
+                  <div className="rounded-md bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
+                    <h4 className="text-xs font-semibold text-[var(--cs-cara-gold)] mb-1">
                       Starting Position
                     </h4>
                     <p className="text-sm text-[var(--cs-navy)]">
@@ -522,7 +522,7 @@ export default function EmotionalVocabularyCoachingPage() {
       </div>
 
       {/* ── regulatory note ────────────────────────────────────────── */}
-      <div className="rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)] mb-6">
+      <div className="rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)] mb-6">
         <strong>Emotional Literacy &amp; Regulatory Frameworks:</strong> Many
         children in care arrive with limited emotional vocabulary as a
         consequence of early adversity — words for feelings simply weren&apos;t
@@ -542,7 +542,7 @@ export default function EmotionalVocabularyCoachingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Emotional Vocabulary Coaching — feelings identification, emotion coaching, zones of regulation, therapeutic direct work, self-expression, communication, behaviour support"
         recordType="direct_work"

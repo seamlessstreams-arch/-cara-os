@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateHarmfulSexualBehaviour,
-  generateAriaInsights,
+  generateCaraInsights,
   type HarmfulSexualBehaviourRow,
 } from "./harmful-sexual-behaviour-service";
 
@@ -214,20 +214,20 @@ describe("validateHarmfulSexualBehaviour", () => {
   });
 });
 
-// ── generateAriaInsights ────────────────────────────────────────────────
+// ── generateCaraInsights ────────────────────────────────────────────────
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [
       makeRow({ id: "h1", behaviour_category: "Inappropriate", risk_level: "Low" }),
     ];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[sky]");
   });
 
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 });

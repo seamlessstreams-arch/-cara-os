@@ -209,7 +209,7 @@ export function computeNvqAlerts(
 
 // ── Cara Insights ─────────────────────────────────────────────────────────
 
-export function generateNvqAriaInsights(rows: StaffNvqQualificationTrackingRow[]): string[] {
+export function generateNvqCaraInsights(rows: StaffNvqQualificationTrackingRow[]): string[] {
   const metrics = computeNvqMetrics(rows);
   const alerts = computeNvqAlerts(rows);
   const insights: string[] = [];
@@ -351,4 +351,4 @@ export async function updateStaffNvqQualificationTracking(
 
 // ── Testing export ────────────────────────────────────────────────────────
 
-export const _testing = { computeNvqMetrics, computeNvqAlerts, generateNvqAriaInsights };
+export const _testing = { computeNvqMetrics, computeNvqAlerts, generateNvqCaraInsights };

@@ -30,8 +30,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { YPSavingsAccountRecord, YPSavingsTransactionType } from "@/types/extended";
 import { YP_SAVINGS_TRANSACTION_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
@@ -155,7 +155,7 @@ export default function YPSavingsPage() {
     <PageShell
       title="Young Person Savings"
       subtitle="Individual savings accounts, transactions, goals and financial independence tracking"
-      ariaContext={{ pageTitle: "Young Person Savings", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Young Person Savings", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="yp-savings" />
@@ -163,7 +163,7 @@ export default function YPSavingsPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> New Transaction
           </button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -332,7 +332,7 @@ export default function YPSavingsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Young Person Savings — savings accounts, pocket money, birthday money, savings deposits and withdrawals, financial independence skills, Reg 45 outcomes/quality evidence, care planning"
         recordType="care_plan"

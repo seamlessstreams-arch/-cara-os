@@ -102,7 +102,7 @@ export interface CareFormAlert {
   message: string;
 }
 
-export interface AriaCareFormInsight {
+export interface CaraCareFormInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -112,7 +112,7 @@ export interface CareFormIntelligenceResult {
   form_type_analysis: FormTypeAnalysis[];
   form_profiles: FormProfile[];
   alerts: CareFormAlert[];
-  insights: AriaCareFormInsight[];
+  insights: CaraCareFormInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ export function computeCareFormIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaCareFormInsight[] = [];
+  const insights: CaraCareFormInsight[] = [];
 
   // Critical: overdue forms
   if (overdueForms.length > 0) {

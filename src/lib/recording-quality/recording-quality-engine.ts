@@ -74,7 +74,7 @@ export interface RecordingQualityAlert {
   record_id?: string;
 }
 
-export interface AriaQualityInsight {
+export interface CaraQualityInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -83,7 +83,7 @@ export interface RecordingQualityResult {
   overview: RecordingQualityOverview;
   records: ScoredRecord[];
   alerts: RecordingQualityAlert[];
-  insights: AriaQualityInsight[];
+  insights: CaraQualityInsight[];
 }
 
 // ── Word lists & patterns (transparent, no black box) ───────────────────────────
@@ -168,15 +168,15 @@ export function scoreRecord(r: RecordInput): RecordQualityScore {
   const childCentredness = scoreChildCentredness(text, r.child_name);
   const riskRelevance = scoreRiskRelevance(text, r.is_risk_related);
 
-  const ariaSuggestions: string[] = [];
-  if (missing.length > 0) ariaSuggestions.push(`Complete the missing field${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}`);
-  if (clarity < 70) ariaSuggestions.push("Add detail — record what happened, when, and the outcome, in clear sentences");
-  if (professionalLanguage < 80) ariaSuggestions.push("Reword informal or labelling language — describe the behaviour, not the child");
-  if (factuality < 70) ariaSuggestions.push("Separate fact from opinion — record what was observed, and attribute any view clearly");
-  if (childCentredness < 70) ariaSuggestions.push("Include the child's voice — what they said, wanted or felt, in their words where possible");
-  if (riskRelevance < 70 && r.is_risk_related) ariaSuggestions.push("State the risk and the action taken, and whether anyone was notified");
+  const caraSuggestions: string[] = [];
+  if (missing.length > 0) caraSuggestions.push(`Complete the missing field${missing.length === 1 ? "" : "s"}: ${missing.join(", ")}`);
+  if (clarity < 70) caraSuggestions.push("Add detail — record what happened, when, and the outcome, in clear sentences");
+  if (professionalLanguage < 80) caraSuggestions.push("Reword informal or labelling language — describe the behaviour, not the child");
+  if (factuality < 70) caraSuggestions.push("Separate fact from opinion — record what was observed, and attribute any view clearly");
+  if (childCentredness < 70) caraSuggestions.push("Include the child's voice — what they said, wanted or felt, in their words where possible");
+  if (riskRelevance < 70 && r.is_risk_related) caraSuggestions.push("State the risk and the action taken, and whether anyone was notified");
 
-  return { completeness, clarity, professionalLanguage, factuality, childCentredness, riskRelevance, missingFields: missing, ariaSuggestions };
+  return { completeness, clarity, professionalLanguage, factuality, childCentredness, riskRelevance, missingFields: missing, caraSuggestions };
 }
 
 // ── Overall + band ────────────────────────────────────────────────────────────
@@ -255,8 +255,8 @@ function buildAlerts(records: ScoredRecord[], overview: RecordingQualityOverview
   return alerts;
 }
 
-function buildInsights(records: ScoredRecord[], overview: RecordingQualityOverview): AriaQualityInsight[] {
-  const insights: AriaQualityInsight[] = [];
+function buildInsights(records: ScoredRecord[], overview: RecordingQualityOverview): CaraQualityInsight[] {
+  const insights: CaraQualityInsight[] = [];
   if (records.length === 0) return insights;
 
   if (overview.dimension_averages.childCentredness < 65) {

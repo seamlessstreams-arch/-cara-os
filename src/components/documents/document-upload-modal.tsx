@@ -86,7 +86,7 @@ export function DocumentUploadModal({
   const [extractedText, setExtractedText] = useState("");
   const [context, setContext] = useState(uploadContext ?? "");
   const [result, setResult] = useState<UploadedDocument | null>(null);
-  const [ariaError, setAriaError] = useState<string | null>(null);
+  const [caraError, setCaraError] = useState<string | null>(null);
   const [approvedTaskIds, setApprovedTaskIds] = useState<Set<string>>(new Set());
   const [createEvidence, setCreateEvidence] = useState(false);
   const [createChronology, setCreateChronology] = useState(false);
@@ -127,7 +127,7 @@ export function DocumentUploadModal({
   const handleAnalyse = async () => {
     if (!fileName.trim() || !extractedText.trim()) return;
     setStep("analysing");
-    setAriaError(null);
+    setCaraError(null);
 
     try {
       const res = await uploadMutation.mutateAsync({
@@ -141,13 +141,13 @@ export function DocumentUploadModal({
         upload_context: context || null,
       });
       setResult(res.data);
-      if (res.aria_error) setAriaError(res.aria_error);
+      if (res.aria_error) setCaraError(res.aria_error);
       // Pre-select all suggested tasks
       const allIds = new Set(res.data.ai_result?.suggested_tasks.map((t) => t.id) ?? []);
       setApprovedTaskIds(allIds);
       setStep("review");
     } catch {
-      setAriaError("Upload failed. Please try again.");
+      setCaraError("Upload failed. Please try again.");
       setStep("select");
     }
   };
@@ -195,8 +195,8 @@ export function DocumentUploadModal({
       >
         {/* Header */}
         <div className="sticky top-0 z-10 bg-white rounded-t-2xl border-b border-[var(--cs-border-subtle)] px-6 py-4 flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--cs-aria-gold-bg)]">
-            <Sparkles className="h-4.5 w-4.5 text-[var(--cs-aria-gold)]" style={{ width: "1.125rem", height: "1.125rem" }} />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--cs-cara-gold-bg)]">
+            <Sparkles className="h-4.5 w-4.5 text-[var(--cs-cara-gold)]" style={{ width: "1.125rem", height: "1.125rem" }} />
           </div>
           <div className="flex-1">
             <p className="text-sm font-bold text-[var(--cs-navy)]">Cara Document Intelligence</p>
@@ -236,7 +236,7 @@ export function DocumentUploadModal({
                 onClick={() => fileInputRef.current?.click()}
                 className={cn(
                   "rounded-2xl border-2 border-dashed p-10 text-center cursor-pointer transition-all",
-                  dragOver ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]" : "border-[var(--cs-border)] hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]/30",
+                  dragOver ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]" : "border-[var(--cs-border)] hover:border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]/30",
                   fileName && "border-emerald-300 bg-emerald-50/30",
                 )}
               >
@@ -257,8 +257,8 @@ export function DocumentUploadModal({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl bg-[var(--cs-aria-gold-bg)] flex items-center justify-center">
-                      <Upload className="h-6 w-6 text-[var(--cs-aria-gold)]" />
+                    <div className="h-12 w-12 rounded-2xl bg-[var(--cs-cara-gold-bg)] flex items-center justify-center">
+                      <Upload className="h-6 w-6 text-[var(--cs-cara-gold)]" />
                     </div>
                     <div>
                       <div className="text-sm font-semibold text-[var(--cs-navy)]">Drop your document here</div>
@@ -278,7 +278,7 @@ export function DocumentUploadModal({
                     value={fileName}
                     onChange={(e) => setFileName(e.target.value)}
                     placeholder="e.g. Alex_W_Risk_Assessment_April_2026.pdf"
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                    className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                   />
                 </div>
               )}
@@ -296,7 +296,7 @@ export function DocumentUploadModal({
                   onChange={(e) => setExtractedText(e.target.value)}
                   rows={8}
                   placeholder="Paste the document content here. Cara will read, classify, and extract intelligence from the full text…"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
                 />
               </div>
 
@@ -310,7 +310,7 @@ export function DocumentUploadModal({
                   value={context}
                   onChange={(e) => setContext(e.target.value)}
                   placeholder="e.g. 'Uploaded after Alex's strategy meeting' or 'Staff training record for Ryan'"
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                 />
               </div>
 
@@ -342,9 +342,9 @@ export function DocumentUploadModal({
           {step === "analysing" && (
             <div className="py-12 flex flex-col items-center gap-6">
               <div className="relative">
-                <div className="h-20 w-20 rounded-full border-4 border-[var(--cs-aria-gold-soft)] border-t-[var(--cs-aria-gold)] animate-spin" />
+                <div className="h-20 w-20 rounded-full border-4 border-[var(--cs-cara-gold-soft)] border-t-[var(--cs-cara-gold)] animate-spin" />
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <Sparkles className="h-8 w-8 text-[var(--cs-aria-gold)]" />
+                  <Sparkles className="h-8 w-8 text-[var(--cs-cara-gold)]" />
                 </div>
               </div>
               <div className="text-center space-y-2">
@@ -355,7 +355,7 @@ export function DocumentUploadModal({
               </div>
               <div className="flex flex-wrap justify-center gap-2">
                 {["Classifying", "Extracting entities", "Identifying risks", "Suggesting tasks", "Mapping regulations", "Checking safeguarding"].map((label) => (
-                  <span key={label} className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-[10px] font-medium text-[var(--cs-aria-gold)]">
+                  <span key={label} className="inline-flex items-center gap-1 rounded-full bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] px-2.5 py-1 text-[10px] font-medium text-[var(--cs-cara-gold)]">
                     <Loader2 className="h-2.5 w-2.5 animate-spin" />
                     {label}
                   </span>
@@ -383,12 +383,12 @@ export function DocumentUploadModal({
               )}
 
               {/* Cara error */}
-              {ariaError && (
+              {caraError && (
                 <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
                   <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                   <div>
                     <div className="text-sm font-semibold text-amber-800">Cara analysis incomplete</div>
-                    <div className="text-xs text-amber-700 mt-0.5">{ariaError}</div>
+                    <div className="text-xs text-amber-700 mt-0.5">{caraError}</div>
                   </div>
                 </div>
               )}
@@ -504,7 +504,7 @@ export function DocumentUploadModal({
                       className={cn(
                         "flex items-start gap-3 rounded-xl border p-3.5 cursor-pointer transition-all",
                         approvedTaskIds.has(task.id)
-                          ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]"
+                          ? "border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]"
                           : "border-[var(--cs-border-subtle)] bg-white hover:bg-[var(--cs-surface)]",
                       )}
                     >

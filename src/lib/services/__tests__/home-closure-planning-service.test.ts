@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { _testing, type HomeClosurePlanningRow } from "../home-closure-planning-service";
 
-const { computeHomeClosurePlanningMetrics, computeHomeClosurePlanningAlerts, generateHomeClosurePlanningAriaInsights } = _testing;
+const { computeHomeClosurePlanningMetrics, computeHomeClosurePlanningAlerts, generateHomeClosurePlanningCaraInsights } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
 
@@ -304,76 +304,76 @@ describe("home-closure-planning-service", () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════
-  // generateHomeClosurePlanningAriaInsights
+  // generateHomeClosurePlanningCaraInsights
   // ═══════════════════════════════════════════════════════════════════════
 
-  describe("generateHomeClosurePlanningAriaInsights", () => {
+  describe("generateHomeClosurePlanningCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
       const m = computeHomeClosurePlanningMetrics([]);
       const a = computeHomeClosurePlanningAlerts([]);
-      const insights = generateHomeClosurePlanningAriaInsights(m, a);
+      const insights = generateHomeClosurePlanningCaraInsights(m, a);
       expect(insights).toHaveLength(3);
     });
 
     it("insight 1 starts with [pink]", () => {
       const m = computeHomeClosurePlanningMetrics([]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[0]).toMatch(/^\[pink\]/);
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[0]).toMatch(/^\[pink\]/);
     });
 
     it("insight 2 starts with [amber]", () => {
       const m = computeHomeClosurePlanningMetrics([]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[1]).toMatch(/^\[amber\]/);
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[1]).toMatch(/^\[amber\]/);
     });
 
     it("insight 3 starts with [reflect]", () => {
       const m = computeHomeClosurePlanningMetrics([]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[2]).toMatch(/^\[reflect\]/);
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[2]).toMatch(/^\[reflect\]/);
     });
 
     it("insight 1 contains total records count", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow(), makeRow()]);
       const a = computeHomeClosurePlanningAlerts([makeRow(), makeRow()]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[0]).toContain("2 home closure planning records");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[0]).toContain("2 home closure planning records");
     });
 
     it("insight 1 contains unique children count", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[0]).toContain("2 children");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[0]).toContain("2 children");
     });
 
     it("insight 1 uses singular child for 1", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow()]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[0]).toContain("1 child");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[0]).toContain("1 child");
     });
 
     it("insight 1 contains disrupted count and percentage", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow({ child_transfer_status: "disrupted" })]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[0]).toContain("1 (100%)");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[0]).toContain("1 (100%)");
     });
 
     it("insight 1 contains transition plan rate", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow({ transition_plan_in_place: true })]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[0]).toContain("Transition plan rate: 100%");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[0]).toContain("Transition plan rate: 100%");
     });
 
     it("insight 1 contains child views sought rate", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow({ child_views_sought: true })]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[0]).toContain("Child views sought rate: 100%");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[0]).toContain("Child views sought rate: 100%");
     });
 
     it("insight 2 mentions critical and high alert counts when present", () => {
       const rows = [makeRow({ child_transfer_status: "disrupted", transition_plan_in_place: false, regulatory_notification_sent: false, closure_phase: "active_transition", child_views_sought: false }), makeRow({ child_views_sought: false })];
       const m = computeHomeClosurePlanningMetrics(rows);
       const a = computeHomeClosurePlanningAlerts(rows);
-      const i = generateHomeClosurePlanningAriaInsights(m, a)[1];
+      const i = generateHomeClosurePlanningCaraInsights(m, a)[1];
       expect(i).toContain("1 critical");
       expect(i).toContain("2 high-priority");
     });
@@ -381,31 +381,31 @@ describe("home-closure-planning-service", () => {
     it("insight 2 shows no concerns when none", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow()]);
       const a = computeHomeClosurePlanningAlerts([makeRow()]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[1]).toContain("No critical or high-priority concerns");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[1]).toContain("No critical or high-priority concerns");
     });
 
     it("insight 2 contains risk assessment rate", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow()]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[1]).toContain("Risk assessment rate");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[1]).toContain("Risk assessment rate");
     });
 
     it("insight 2 contains staff consultation rate", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow()]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[1]).toContain("Staff consultation rate");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[1]).toContain("Staff consultation rate");
     });
 
     it("insight 2 contains regulatory not sent count", () => {
       const m = computeHomeClosurePlanningMetrics([makeRow()]);
       const a = computeHomeClosurePlanningAlerts([]);
-      expect(generateHomeClosurePlanningAriaInsights(m, a)[1]).toContain("Regulatory not sent");
+      expect(generateHomeClosurePlanningCaraInsights(m, a)[1]).toContain("Regulatory not sent");
     });
 
     it("insight 3 contains reflective question about children", () => {
       const m = computeHomeClosurePlanningMetrics([]);
       const a = computeHomeClosurePlanningAlerts([]);
-      const i = generateHomeClosurePlanningAriaInsights(m, a)[2];
+      const i = generateHomeClosurePlanningCaraInsights(m, a)[2];
       expect(i).toContain("closure process");
       expect(i).toContain("child");
     });

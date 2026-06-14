@@ -34,8 +34,8 @@ import type { FeedbackDecision } from "@/types/extended";
 import { useChildFeedbackLoops } from "@/hooks/use-child-feedback-loops";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const decisionColour: Record<string, string> = {
   acted_on_in_full: "bg-green-100 text-green-800",
@@ -97,12 +97,12 @@ export default function ChildFeedbackLoopsPage() {
     <PageShell
       title="Child Feedback Loops"
       subtitle="Closing the loop on feedback children give — from raised to acknowledged to acted on to communicated back"
-      ariaContext={{ pageTitle: "Child Feedback Loops", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Child Feedback Loops", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-feedback-loops" />
           <PrintButton title="Child Feedback Loops" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -278,7 +278,7 @@ export default function ChildFeedbackLoopsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Child Feedback Loops — children's views on placement, staff, home, services, complaints resolved, wishes and feelings, participation, review feedback, statutory voice"
         recordType="care_plan"

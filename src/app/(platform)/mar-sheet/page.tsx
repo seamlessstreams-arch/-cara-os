@@ -21,8 +21,8 @@ import { useMarEntries } from "@/hooks/use-mar-entries";
 import type { MarEntry, MarRoute, MarScheduleType } from "@/types/extended";
 import { MAR_ROUTE_LABEL, MAR_SCHEDULE_TYPE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -35,7 +35,7 @@ const ROUTE_CONFIG: Record<MarRoute, { color: string; bg: string; border: string
 
 const TYPE_CONFIG: Record<MarScheduleType, { color: string; bg: string; border: string }> = {
   scheduled: { color: "text-[var(--cs-text-secondary)]", bg: "bg-slate-100", border: "border-[var(--cs-border)]" },
-  prn:       { color: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]", border: "border-[var(--cs-aria-gold-soft)]" },
+  prn:       { color: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)]", border: "border-[var(--cs-cara-gold-soft)]" },
 };
 
 /* ── Helpers ──────────────────────────────────────────────────────────── */
@@ -138,12 +138,12 @@ export default function MarSheetPage() {
     <PageShell
       title="MAR Sheet — Medication Administration Records"
       subtitle="Quality Standard 7 — Daily record of every medication dose given"
-      ariaContext={{ pageTitle: "Medication Administration Record", sourceType: "medication" }}
+      caraContext={{ pageTitle: "Medication Administration Record", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Medication Administration Record" />
           <ExportButton<MarEntry> data={filtered} columns={exportColumns} filename="mar-sheet" />
-          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -304,7 +304,7 @@ export default function MarSheetPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Medication Administration Record — MAR sheet, medication administration, controlled drugs, PRN, prescribed medications, GP instructions, pharmacist advice, Annex A evidence"
         recordType="medication"

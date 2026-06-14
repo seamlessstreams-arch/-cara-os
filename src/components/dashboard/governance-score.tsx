@@ -42,7 +42,7 @@ function useGovernanceScore() {
 const CATEGORY_CONFIG = [
   { key: "safeguarding" as const,  label: "Safeguarding", icon: Shield,    colour: "text-red-600" },
   { key: "workforce" as const,     label: "Workforce",    icon: Users,     colour: "text-blue-600" },
-  { key: "care_quality" as const,  label: "Care Quality", icon: Heart,     colour: "text-[var(--cs-aria-gold)]" },
+  { key: "care_quality" as const,  label: "Care Quality", icon: Heart,     colour: "text-[var(--cs-cara-gold)]" },
   { key: "governance" as const,    label: "Governance",   icon: FileCheck, colour: "text-emerald-600" },
 ];
 

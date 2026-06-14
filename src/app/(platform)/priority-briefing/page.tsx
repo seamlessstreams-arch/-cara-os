@@ -74,7 +74,7 @@ export default function PriorityBriefingPage() {
     <PageShell
       title="Priority Briefing"
       subtitle={`${b?.generated_for ?? ""} · what needs your attention across ${b?.engines_responded ?? 0} of ${b?.engines_queried ?? 0} intelligence engines`}
-      ariaContext={{ pageTitle: "Manager Priority Briefing", sourceType: "general" }}
+      caraContext={{ pageTitle: "Manager Priority Briefing", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button

@@ -9,11 +9,11 @@ import {
   CheckCircle2, Circle, AlertTriangle, Plus, MessageCircle, FileText, Check, ArrowLeft,
 } from "lucide-react";
 import {
-  useAriaIncidentList, useAriaIncidentSession, useStartIncident, usePatchIncident,
+  useCaraIncidentList, useCaraIncidentSession, useStartIncident, usePatchIncident,
   useAddTimelineEntry, useGenerateDraft, useAcceptDraft, type DraftResponse,
-} from "@/hooks/use-aria-incident";
-import { RestorativeConversationForm } from "@/components/aria/RestorativeConversationForm";
-import { PostIncidentReflectionForm } from "@/components/aria/PostIncidentReflectionForm";
+} from "@/hooks/use-cara-incident";
+import { RestorativeConversationForm } from "@/components/cara/RestorativeConversationForm";
+import { PostIncidentReflectionForm } from "@/components/cara/PostIncidentReflectionForm";
 import { EntryAssist } from "@/components/forms/entry-assist";
 
 const RISK_META: Record<string, { label: string; on: string; off: string }> = {
@@ -34,17 +34,17 @@ const hhmm = (iso: string) => (iso && iso.includes("T") ? iso.slice(11, 16) : is
 
 function Disclaimer({ text }: { text: string }) {
   return (
-    <div className="flex items-start gap-2.5 rounded-2xl border border-[var(--cs-aria-gold)]/40 bg-[var(--cs-aria-gold-bg)]/50 px-4 py-3">
-      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-aria-gold)]" />
+    <div className="flex items-start gap-2.5 rounded-2xl border border-[var(--cs-cara-gold)]/40 bg-[var(--cs-cara-gold-bg)]/50 px-4 py-3">
+      <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-cara-gold)]" />
       <p className="text-xs font-medium leading-relaxed text-[var(--cs-navy)]">{text}</p>
     </div>
   );
 }
 
-export default function AriaIncidentModePage() {
-  const list = useAriaIncidentList();
+export default function CaraIncidentModePage() {
+  const list = useCaraIncidentList();
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const bundle = useAriaIncidentSession(sessionId);
+  const bundle = useCaraIncidentSession(sessionId);
 
   // auto-open the active session
   useEffect(() => {
@@ -55,7 +55,7 @@ export default function AriaIncidentModePage() {
     <PageShell
       title="Cara Incident Mode"
       subtitle="Calm, live support during an incident — co-regulation prompts, a timestamped timeline, the right workflow, and an audit-safe draft record afterwards. Cara suggests; staff decide; the manager reviews."
-      ariaContext={{ pageTitle: "Cara Incident Mode", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Cara Incident Mode", sourceType: "incident" }}
     >
       <div className="mx-auto max-w-3xl space-y-4 pb-10">
         {list.isLoading && <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
@@ -75,7 +75,7 @@ export default function AriaIncidentModePage() {
 }
 
 // ── Start view ─────────────────────────────────────────────────────────────────
-function StartView({ data, onOpen }: { data: NonNullable<ReturnType<typeof useAriaIncidentList>["data"]>; onOpen: (id: string) => void }) {
+function StartView({ data, onOpen }: { data: NonNullable<ReturnType<typeof useCaraIncidentList>["data"]>; onOpen: (id: string) => void }) {
   const start = useStartIncident();
   const [childId, setChildId] = useState("");
   const [type, setType] = useState("");
@@ -161,7 +161,7 @@ function StartView({ data, onOpen }: { data: NonNullable<ReturnType<typeof useAr
 }
 
 // ── Live + post-incident view ──────────────────────────────────────────────────
-function SessionView({ sessionId, bundle, onBack }: { sessionId: string; bundle: NonNullable<ReturnType<typeof useAriaIncidentSession>["data"]>; onBack: () => void }) {
+function SessionView({ sessionId, bundle, onBack }: { sessionId: string; bundle: NonNullable<ReturnType<typeof useCaraIncidentSession>["data"]>; onBack: () => void }) {
   const { session } = bundle;
   const patch = usePatchIncident(sessionId);
   const addEntry = useAddTimelineEntry(sessionId);
@@ -312,7 +312,7 @@ function SessionView({ sessionId, bundle, onBack }: { sessionId: string; bundle:
   );
 }
 
-function PostIncidentPanel({ sessionId, bundle }: { sessionId: string; bundle: NonNullable<ReturnType<typeof useAriaIncidentSession>["data"]> }) {
+function PostIncidentPanel({ sessionId, bundle }: { sessionId: string; bundle: NonNullable<ReturnType<typeof useCaraIncidentSession>["data"]> }) {
   const gen = useGenerateDraft(sessionId);
   const accept = useAcceptDraft(sessionId);
   const [draft, setDraft] = useState<DraftResponse | null>(null);
@@ -360,10 +360,10 @@ function PostIncidentPanel({ sessionId, bundle }: { sessionId: string; bundle: N
       <PostIncidentReflectionForm sessionId={sessionId} />
 
       {/* draft record */}
-      <Card className="border-l-4 border-l-[var(--cs-aria-gold)]">
+      <Card className="border-l-4 border-l-[var(--cs-cara-gold)]">
         <CardContent className="py-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><FileText className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Draft incident record</p>
+            <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><FileText className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Draft incident record</p>
             {!recordDone && (
               <button onClick={generate} disabled={gen.isPending}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-navy)] px-3.5 py-2 text-xs font-bold text-white hover:bg-[var(--cs-navy-soft)] disabled:opacity-50">

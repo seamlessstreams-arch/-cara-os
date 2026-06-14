@@ -652,7 +652,7 @@ export default function CareEventDetailPage({
     <PageShell
       title={event.title}
       subtitle={`${event.category.replace(/_/g, " ")} · ${formatDate(event.event_date)}`}
-      ariaContext={{
+      caraContext={{
         pageTitle: event.title,
         sourceType: "incident",
         sourceId: event.id,

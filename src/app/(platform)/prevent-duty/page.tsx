@@ -32,8 +32,8 @@ import {
   PREVENT_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── label / colour maps ───────────────────────────────────────────── */
 const REFERRAL_TYPE_COLOURS: Record<PreventReferralType, string> = {
@@ -59,7 +59,7 @@ const RISK_BORDER: Record<PreventRiskLevel, string> = {
 const STATUS_COLOURS: Record<PreventStatus, string> = {
   open: "bg-blue-100 text-blue-800",
   referred: "bg-orange-100 text-orange-800",
-  channel_active: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  channel_active: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   channel_closed: "bg-green-100 text-green-800",
   nfa: "bg-slate-100 text-[var(--cs-text-secondary)]",
   monitoring: "bg-amber-100 text-amber-800",
@@ -183,7 +183,7 @@ export default function PreventDutyPage() {
     <PageShell
       title="Prevent Duty"
       subtitle="Counter-Terrorism and Security Act 2015 — radicalisation awareness, referrals and Channel programme"
-      ariaContext={{ pageTitle: "Prevent Duty", sourceType: "general" }}
+      caraContext={{ pageTitle: "Prevent Duty", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Prevent Duty" />
@@ -192,7 +192,7 @@ export default function PreventDutyPage() {
             <Plus className="h-4 w-4 mr-1" />
             New Entry
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -381,8 +381,8 @@ export default function PreventDutyPage() {
 
                     {/* channel outcome */}
                     {rec.channel_outcome && (
-                      <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
-                        <p className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider mb-1">
+                      <div className="rounded-xl bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
+                        <p className="text-[10px] font-semibold text-[var(--cs-cara-gold)] uppercase tracking-wider mb-1">
                           Channel Outcome
                         </p>
                         <p className="text-xs text-[var(--cs-navy)]">{rec.channel_outcome}</p>
@@ -552,7 +552,7 @@ export default function PreventDutyPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Prevent Duty — radicalisation risk, channel referrals, vulnerability concerns, counter-terrorism duties, staff training, referral decisions, multi-agency actions, safeguarding evidence"
         recordType="safeguarding"

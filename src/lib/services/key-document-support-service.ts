@@ -690,7 +690,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: KeyDocumentSupportRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

@@ -186,7 +186,7 @@ describe("Record Classifier", () => {
       expect(r.flows_to).toContain("safeguarding_register");
       expect(r.flows_to).toContain("timeline");
       expect(r.flows_to).toContain("reg_40");
-      expect(r.flows_to).toContain("aria");
+      expect(r.flows_to).toContain("cara");
     });
 
     it("daily log flows to standard systems", () => {

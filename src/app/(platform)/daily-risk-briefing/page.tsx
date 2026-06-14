@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
+import { CaraPanel } from "@/components/cara/cara-panel";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +16,7 @@ import { useDailyRiskBriefings } from "@/hooks/use-daily-risk-briefings";
 import type { DailyRiskBriefing, ChildRiskEntry, DailyAlert, DailyContact, DailyRiskLevel } from "@/types/extended";
 import { DAILY_RISK_LEVEL_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -52,7 +52,7 @@ export default function DailyRiskBriefingPage() {
     <PageShell
       title="Daily Risk Briefing"
       subtitle={`${today} · ${shift === "day" ? "Day Shift" : "Waking Night"} · Handover & Risk Summary`}
-      ariaContext={{ pageTitle: "Daily Risk Briefing", sourceType: "general" }}
+      caraContext={{ pageTitle: "Daily Risk Briefing", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <div className="flex items-center rounded-lg border overflow-hidden">
@@ -76,7 +76,7 @@ export default function DailyRiskBriefingPage() {
             </button>
           </div>
           <PrintButton title="Daily Risk Briefing" />
-          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

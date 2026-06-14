@@ -9,18 +9,18 @@
 //   - care_event_id present → bridge that specific event
 //   - else                  → backfill latest verified events (up to limit)
 //
-// Permission: aria.generate_drafts. Each successful proposal is audited.
+// Permission: cara.generate_drafts. Each successful proposal is audited.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import {
   proposeRecordsFromCareEvent,
   backfillSuggestedRecordsFromCareEvents,
   type BridgeResult,
-} from "@/lib/aria/aria-care-event-bridge";
+} from "@/lib/cara/cara-care-event-bridge";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
   const limit =
     Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 100) : 25;
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId,
     intent: careEventId
       ? `bridge care_event:${careEventId}`
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
   // Audit only the freshly proposed suggestions (not reused).
   for (const r of results) {
     for (const rec of r.proposed) {
-      appendAriaAudit({
+      appendCaraAudit({
         homeId,
         actorId: guard.actor.userId,
         actionType: "artifact_generated",

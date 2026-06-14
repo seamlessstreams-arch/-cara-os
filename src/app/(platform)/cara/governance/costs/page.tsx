@@ -5,7 +5,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AriaCostEstimate } from "@/components/aria/AriaCostEstimate";
+import { CaraCostEstimate } from "@/components/cara/CaraCostEstimate";
 
 interface CostSummary {
   period: string;
@@ -24,7 +24,7 @@ interface CostSummary {
   };
 }
 
-export default function AriaCostsPage() {
+export default function CaraCostsPage() {
   const [data, setData] = useState<CostSummary | null>(null);
   const [period, setPeriod] = useState<"day" | "week" | "month">("month");
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,7 @@ export default function AriaCostsPage() {
   async function loadCosts() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/aria/costs?organisationId=org-default&period=${period}`);
+      const res = await fetch(`/api/cara/costs?organisationId=org-default&period=${period}`);
       const json = await res.json();
       setData(json);
     } catch {
@@ -76,7 +76,7 @@ export default function AriaCostsPage() {
         <>
           {/* Budget overview */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <AriaCostEstimate
+            <CaraCostEstimate
               estimatedCost={0}
               actualCost={data.summary.totalCost}
               provider="openai"

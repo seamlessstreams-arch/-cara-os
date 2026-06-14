@@ -36,8 +36,8 @@ import {
 import { toast } from "sonner";
 import type { SanctionRewardEntry, SRDirection, SRRewardType, SRSanctionType } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 
 
@@ -187,7 +187,7 @@ export default function SanctionsRewardsPage() {
     <PageShell
       title="Sanctions & Rewards"
       subtitle="Positive reinforcement and proportionate consequences"
-      ariaContext={{ pageTitle: "Sanctions & Rewards", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Sanctions & Rewards", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Sanctions & Rewards" subtitle="Chamberlain House — Behaviour Management" />
@@ -195,7 +195,7 @@ export default function SanctionsRewardsPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Entry
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

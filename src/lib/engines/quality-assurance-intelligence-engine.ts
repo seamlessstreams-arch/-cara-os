@@ -73,7 +73,7 @@ export interface QAAlert {
   message: string;
 }
 
-export interface AriaQAInsight {
+export interface CaraQAInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -83,7 +83,7 @@ export interface QualityAssuranceIntelligenceResult {
   audit_areas: AuditAreaRating[];
   overdue_actions: OverdueAction[];
   alerts: QAAlert[];
-  insights: AriaQAInsight[];
+  insights: CaraQAInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -296,7 +296,7 @@ export function computeQualityAssuranceIntelligence(input: {
   alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
   // ── Insights ────────────────────────────────────────────────────────────
-  const insights: AriaQAInsight[] = [];
+  const insights: CaraQAInsight[] = [];
 
   // Critical: inadequate rating
   for (const a of audits) {

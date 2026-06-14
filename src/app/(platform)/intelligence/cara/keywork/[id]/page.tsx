@@ -35,7 +35,7 @@ const STATUS_COLOURS: Record<KeyWorkSessionStatus, string> = {
   planned: "bg-slate-100 text-[var(--cs-text-secondary)]",
   in_progress: "bg-blue-100 text-blue-800",
   completed: "bg-green-100 text-green-700",
-  reviewed: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  reviewed: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   approved: "bg-emerald-100 text-emerald-800",
 };
 
@@ -50,8 +50,8 @@ function PlanSection({ title, content, accent = false }: {
 }) {
   if (!content || (Array.isArray(content) && content.length === 0)) return null;
   return (
-    <div className={cn("rounded-xl border p-4 space-y-2", accent ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]" : "border-[var(--cs-border-subtle)] bg-white")}>
-      <p className={cn("text-[10px] font-semibold uppercase tracking-wider", accent ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")}>{title}</p>
+    <div className={cn("rounded-xl border p-4 space-y-2", accent ? "border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]" : "border-[var(--cs-border-subtle)] bg-white")}>
+      <p className={cn("text-[10px] font-semibold uppercase tracking-wider", accent ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-muted)]")}>{title}</p>
       {Array.isArray(content) ? (
         <ul className="space-y-1">
           {content.map((item, i) => (
@@ -425,9 +425,9 @@ export default function KeyWorkSessionDetailPage() {
 
         {/* Child voice / reflection (completed) */}
         {session.child_voice && (
-          <Card className="border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30">
+          <Card className="border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/30">
             <CardHeader className="pb-2">
-              <CardTitle className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider">Child&apos;s Voice</CardTitle>
+              <CardTitle className="text-xs font-semibold text-[var(--cs-cara-gold)] uppercase tracking-wider">Child&apos;s Voice</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-[var(--cs-navy)] leading-relaxed italic">&ldquo;{session.child_voice}&rdquo;</p>

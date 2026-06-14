@@ -167,10 +167,10 @@ export default function TherapeuticProfilePage() {
       <div className="space-y-6 pb-12">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Heart className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Heart className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Therapeutic Profile</h2>
@@ -179,7 +179,7 @@ export default function TherapeuticProfilePage() {
               </p>
             </div>
             <select value={selectedChild} onChange={(e) => setSelectedChild(e.target.value)}
-              className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]">
+              className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]">
               {profiles.map((p) => <option key={p.child_id} value={p.child_id}>{p.childName}</option>)}
             </select>
           </div>
@@ -198,7 +198,7 @@ export default function TherapeuticProfilePage() {
             </div>
 
             {/* ── Current Presentation ───────────────────────────────────── */}
-            <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
+            <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4">
               <p className="text-[10px] font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">Current Presentation</p>
               <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{profile.current_presentation}</p>
             </div>
@@ -295,7 +295,7 @@ export default function TherapeuticProfilePage() {
             {profile.child_voice_entries.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide flex items-center gap-2">
-                  <MessageCircle className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Child Voice
+                  <MessageCircle className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Child Voice
                 </h3>
                 {profile.child_voice_entries.map((cv, i) => (
                   <div key={i} className={cn("rounded-xl border border-[var(--cs-border)] bg-white p-4 border-l-4", SENTIMENT_STYLES[cv.sentiment])}>
@@ -303,7 +303,7 @@ export default function TherapeuticProfilePage() {
                     <div className="flex items-center gap-3 mt-2">
                       <span className="text-[10px] text-[var(--cs-text-muted)]">{cv.context}</span>
                       <span className="text-[10px] text-[var(--cs-text-muted)]">{new Date(cv.date).toLocaleDateString("en-GB")}</span>
-                      <Badge className="text-[9px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{cv.theme}</Badge>
+                      <Badge className="text-[9px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">{cv.theme}</Badge>
                     </div>
                   </div>
                 ))}
@@ -336,14 +336,14 @@ export default function TherapeuticProfilePage() {
             {profile.current_therapeutic_priorities.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide flex items-center gap-2">
-                  <Target className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Current Therapeutic Priorities
+                  <Target className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Current Therapeutic Priorities
                 </h3>
                 {profile.current_therapeutic_priorities.map((tp, i) => (
                   <div key={i} className="rounded-xl border border-[var(--cs-border)] bg-white p-4 space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--cs-navy)] text-white text-[10px] font-bold">{i + 1}</span>
                       <span className="text-sm font-semibold text-[var(--cs-navy)]">{tp.title}</span>
-                      <Badge className="text-[9px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{tp.framework}</Badge>
+                      <Badge className="text-[9px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">{tp.framework}</Badge>
                       <Badge className={cn("text-[9px] border", tp.status === "active" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-gray-50 text-gray-600 border-gray-200")}>{tp.status}</Badge>
                     </div>
                     <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed pl-8">{tp.description}</p>
@@ -384,7 +384,7 @@ function ListSection({ icon: Icon, label, colour, items }: { icon: React.Element
       <div className="p-4 space-y-2">
         {items.map((item, i) => (
           <div key={i} className="flex items-start gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] mt-1.5 shrink-0" />
+            <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-cara-gold)] mt-1.5 shrink-0" />
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{item}</p>
           </div>
         ))}

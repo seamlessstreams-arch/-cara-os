@@ -1,14 +1,14 @@
 "use client";
 
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPracticeDashboard } from "@/components/aria-practice/aria-practice-dashboard";
-import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
-import { AriaDraftAssistant } from "@/components/aria-practice/aria-draft-assistant";
-import { ThresholdConsultationPanel } from "@/components/aria-practice/threshold-consultation-panel";
-import { LadoConsultationPanel } from "@/components/aria-practice/lado-consultation-panel";
+import { CaraPracticeDashboard } from "@/components/cara-practice/cara-practice-dashboard";
+import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
+import { CaraDraftAssistant } from "@/components/cara-practice/cara-draft-assistant";
+import { ThresholdConsultationPanel } from "@/components/cara-practice/threshold-consultation-panel";
+import { LadoConsultationPanel } from "@/components/cara-practice/lado-consultation-panel";
 import { Sparkles } from "lucide-react";
 
-export default function AriaPracticePage() {
+export default function CaraPracticePage() {
   return (
     <PageShell
       title="Cara Practice Intelligence"
@@ -16,15 +16,15 @@ export default function AriaPracticePage() {
       icon={<Sparkles className="h-5 w-5" />}
     >
       <div className="space-y-6">
-        <AriaPracticeDashboard homeId="home_oak" />
+        <CaraPracticeDashboard homeId="home_oak" />
         <div className="grid lg:grid-cols-2 gap-6">
-          <AriaPracticePanel
+          <CaraPracticePanel
             sourceType="daily_record"
             homeId="home_oak"
             title="Run Cara on a record"
             text="Staff completed key work. Child engaged well. No concerns."
           />
-          <AriaDraftAssistant
+          <CaraDraftAssistant
             sourceType="daily_record"
             homeId="home_oak"
             content="Staff completed key work. Child engaged well. No concerns."

@@ -24,8 +24,8 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const CAT_LABELS: Record<string, string> = {
   petty_cash: "Petty Cash", young_person_activities: "YP Activities",
@@ -42,7 +42,7 @@ const CAT_ICONS: Record<string, React.ElementType> = {
 
 const CAT_COLORS: Record<string, string> = {
   petty_cash: "bg-amber-100 text-amber-700",
-  young_person_activities: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  young_person_activities: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   food_shopping: "bg-emerald-100 text-emerald-700",
   clothing: "bg-pink-100 text-pink-700",
   transport: "bg-blue-100 text-blue-700",
@@ -241,7 +241,7 @@ export default function ExpensesPage() {
     <PageShell
       title="Expenses"
       subtitle="Expense claims, receipts, approvals, and spend reporting"
-      ariaContext={{ pageTitle: "Expenses", sourceType: "general" }}
+      caraContext={{ pageTitle: "Expenses", sourceType: "general" }}
       quickCreateContext={{ module: "expenses", defaultTaskCategory: "finance" }}
       actions={
         <div className="flex items-center gap-2">
@@ -251,7 +251,7 @@ export default function ExpensesPage() {
           <Button size="sm" onClick={() => setShowNewForm(!showNewForm)}>
             <Plus className="h-3.5 w-3.5 mr-1" />Submit Expense
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -491,7 +491,7 @@ export default function ExpensesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Expenses — staff expense claims, receipts, petty cash, mileage, child activity spend, reimbursements, financial controls, budget codes, approval workflow, audit trail"
         recordType="task"

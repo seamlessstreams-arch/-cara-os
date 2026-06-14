@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -133,12 +133,12 @@ export default function HealthcarePlansPage() {
     <PageShell
       title="Healthcare Plans"
       subtitle="Individual healthcare plans · medical conditions, allergies, medications and protocols (Quality Standard 7 · Reg 23)"
-      ariaContext={{ pageTitle: "Healthcare Plans", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Healthcare Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={plans} columns={exportCols} filename="healthcare-plans" />
           <PrintButton title="Healthcare Plans" />
-          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
+import { CaraPanel } from "@/components/cara/cara-panel";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { useMedicationErrorInvestigations, useCreateMedicationErrorInvestigation
 import type { MedicationErrorInvestigation, MedInvSeverity, MedInvStatus, MedInvErrorType } from "@/types/extended";
 import { MED_INV_ERROR_TYPE_LABEL, MED_INV_SEVERITY_LABEL, MED_INV_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
 
 const severityColour: Record<MedInvSeverity, string> = {
@@ -120,12 +120,12 @@ export default function MedicationErrorInvestigationPage() {
 
   return (
     <PageShell title="Medication Error Investigation" subtitle="Where harm or near-harm occurred — investigated through just-culture lens, learning embedded"
-      ariaContext={{ pageTitle: "Medication Error Investigation", sourceType: "medication" }}
+      caraContext={{ pageTitle: "Medication Error Investigation", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="medication-error-investigation" />
           <PrintButton title="Medication Error Investigation" />
-          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowCreate(true)}><Plus className="h-4 w-4 mr-1" />Log Error</Button>
         </div>
       }>

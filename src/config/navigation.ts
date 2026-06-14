@@ -590,7 +590,7 @@ export const NAV_GROUPS: NavGroup[] = [
 
   // ── 7. Cara ───────────────────────────────────────────────────────────────
   {
-    id:     "aria",
+    id:     "cara",
     label:  "Cara",
     icon:   "Sparkles",
     href:   "/intelligence",
@@ -749,7 +749,7 @@ export const DOMAIN_NAV: NavGroup[] = [
       { label: "Tasks", href: "/tasks", icon: "CheckSquare", module: "tasks", badgeKey: "tasks" },
       { label: "Handover", href: "/handover", icon: "ArrowRightLeft", module: "handover" },
       { label: "Compliance", href: "/ri", icon: "Gavel", module: "ri" },
-      { label: "Cara Intelligence", href: "/intelligence", icon: "Sparkles", module: "aria" },
+      { label: "Cara Intelligence", href: "/intelligence", icon: "Sparkles", module: "cara" },
     ],
   },
   // Platform owner — metadata-only cockpit (boundary stated on every HQ page)

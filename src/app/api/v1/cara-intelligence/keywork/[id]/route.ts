@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (!updated) return NextResponse.json({ error: "Session not found" }, { status: 404 });
 
   if (body.status === "completed") {
-    intelligenceDb.ariaAuditTrail.create({
+    intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
       user_id: (body.completed_by as string) ?? "staff_darren",
       child_id: updated.child_id,
@@ -38,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       source_id: id,
     });
   } else if (body.status === "reviewed") {
-    intelligenceDb.ariaAuditTrail.create({
+    intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
       user_id: (body.reviewed_by as string) ?? "staff_darren",
       child_id: updated.child_id,

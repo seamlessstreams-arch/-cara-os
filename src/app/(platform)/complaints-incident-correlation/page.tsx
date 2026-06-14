@@ -50,7 +50,7 @@ export default function ComplaintsIncidentCorrelationPage() {
       subtitle="A cross-dataset early-warning lens — were a child's complaints a signal we should have acted on before things escalated?"
       icon={<Link2 className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Complaints ↔ Incident Correlation", sourceType: "general" }}
+      caraContext={{ pageTitle: "Complaints ↔ Incident Correlation", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

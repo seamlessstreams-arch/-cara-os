@@ -25,7 +25,7 @@ import type {
 const {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1258,18 +1258,18 @@ describe("computeAlerts", () => {
   });
 });
 
-// ── computeAriaInsights ────────────────────────────────────────────────
+// ── computeCaraInsights ────────────────────────────────────────────────
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const m = computeMetrics([]);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights).toHaveLength(3);
   });
 
   it("all insights are non-empty strings", () => {
     const m = computeMetrics([makeRow()]);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1279,28 +1279,28 @@ describe("computeAriaInsights", () => {
   it("first insight includes total_surveys count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes management_plan_rate", () => {
     const rows = [makeRow({ management_plan_in_place: true }), makeRow({ management_plan_in_place: false })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("50%");
   });
 
   it("first insight includes staff_awareness_rate", () => {
     const rows = [makeRow({ staff_awareness_confirmed: true }), makeRow({ staff_awareness_confirmed: false })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("50%");
   });
 
   it("first insight includes labelling_rate", () => {
     const rows = [makeRow({ labelling_in_place: true }), makeRow({ labelling_in_place: false })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("50%");
   });
 
@@ -1310,7 +1310,7 @@ describe("computeAriaInsights", () => {
       makeRow({ management_action: "Remove" }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("damaged condition");
     expect(insights[1]).toContain("requiring removal");
   });
@@ -1322,7 +1322,7 @@ describe("computeAriaInsights", () => {
       compliance_status: "Compliant",
     })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("No surveys with poor or damaged condition");
   });
 
@@ -1332,21 +1332,21 @@ describe("computeAriaInsights", () => {
       makeRow({ risk_score: 15 }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("10");
   });
 
   it("second insight mentions CAR 2012 when no damaged", () => {
     const rows = [makeRow({ condition_rating: "Good" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("CAR 2012");
   });
 
   it("third insight mentions damaged or removal when present", () => {
     const rows = [makeRow({ condition_rating: "Damaged" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("damaged asbestos or removal requirements");
   });
 
@@ -1356,7 +1356,7 @@ describe("computeAriaInsights", () => {
       makeRow({ condition_rating: "Good", management_action: "Monitor", staff_awareness_confirmed: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("CAR 2012");
   });
 
@@ -1366,14 +1366,14 @@ describe("computeAriaInsights", () => {
       makeRow({ condition_rating: "Good", management_action: "Monitor", staff_awareness_confirmed: true, labelling_in_place: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("All surveys show good compliance");
   });
 
   it("uses singular surveyor wording when unique_surveyors is 1", () => {
     const rows = [makeRow({ surveyor_name: "D. Laville" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("1 surveyor");
   });
 
@@ -1383,14 +1383,14 @@ describe("computeAriaInsights", () => {
       makeRow({ surveyor_name: "Staff B" }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("2 surveyors");
   });
 
   it("uses singular survey wording when 1 damaged/removal", () => {
     const rows = [makeRow({ condition_rating: "Damaged" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("survey has");
   });
 
@@ -1400,63 +1400,63 @@ describe("computeAriaInsights", () => {
       makeRow({ management_action: "Remove" }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("surveys have");
   });
 
   it("uses singular survey wording for first insight with 1 row", () => {
     const rows = [makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("1 asbestos survey");
   });
 
   it("uses plural surveys wording for first insight with multiple rows", () => {
     const rows = [makeRow(), makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("2 asbestos surveys");
   });
 
   it("uses singular survey wording in second insight with 1 damaged", () => {
     const rows = [makeRow({ condition_rating: "Poor" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("1 survey");
   });
 
   it("uses plural surveys wording in second insight with multiple damaged", () => {
     const rows = [makeRow({ condition_rating: "Poor" }), makeRow({ condition_rating: "Damaged" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("2 surveys");
   });
 
   it("uses singular location wording in second insight with 1 removal", () => {
     const rows = [makeRow({ management_action: "Remove" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("1 location");
   });
 
   it("uses plural locations wording in second insight with multiple removals", () => {
     const rows = [makeRow({ management_action: "Remove" }), makeRow({ management_action: "Remove" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("2 locations");
   });
 
   it("third insight mentions CAR 2012 when damaged present", () => {
     const rows = [makeRow({ condition_rating: "Damaged" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("CAR 2012");
   });
 
   it("third insight mentions CAR 2012 when fully compliant", () => {
     const rows = [makeRow({ condition_rating: "Good", staff_awareness_confirmed: true, labelling_in_place: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("CAR 2012");
   });
 
@@ -1465,7 +1465,7 @@ describe("computeAriaInsights", () => {
       makeRow({ condition_rating: "Good", management_action: "Monitor", staff_awareness_confirmed: true, labelling_in_place: false }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("labelling compliance");
   });
 
@@ -1474,7 +1474,7 @@ describe("computeAriaInsights", () => {
       makeRow({ condition_rating: "Good", management_action: "Monitor", staff_awareness_confirmed: false, labelling_in_place: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("duty holders");
   });
 });

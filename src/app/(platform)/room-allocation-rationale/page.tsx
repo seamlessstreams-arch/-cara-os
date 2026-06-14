@@ -31,8 +31,8 @@ import { useRoomAllocationRecords } from "@/hooks/use-room-allocation-records";
 import type { RoomAllocationRecord } from "@/types/extended";
 import { ROOM_ALLOCATION_SUITABILITY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── page ────────────────────────────────────────────────────────────── */
 
@@ -90,12 +90,12 @@ export default function RoomAllocationRationalePage() {
     <PageShell
       title="Room Allocation Rationale"
       subtitle="Why each child has the bedroom they have — documented, child-led, regularly reviewed"
-      ariaContext={{ pageTitle: "Room Allocation Rationale", sourceType: "general" }}
+      caraContext={{ pageTitle: "Room Allocation Rationale", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="room-allocation-rationale" />
           <PrintButton title="Room Allocation Rationale" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -352,7 +352,7 @@ export default function RoomAllocationRationalePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Room Allocation Rationale — bedroom allocation decisions, placement compatibility, safety rationale, gender considerations, needs-based allocation, Reg 12/13 compliance evidence"
         recordType="management_oversight"

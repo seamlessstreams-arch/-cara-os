@@ -4,7 +4,7 @@
 // GET    ?record_id=… → return the version history (oldest → newest)
 // POST   → amend a committed record (creates a new version)
 //
-// Permission: aria.commit_to_records. Safeguarding-sensitive record
+// Permission: cara.commit_to_records. Safeguarding-sensitive record
 // types (risk_update, incident_summary, behaviour_note) also require
 // the stricter approve_outputs path via isSafeguardingSensitive.
 // Every successful amendment is appended to the live audit tail.
@@ -12,13 +12,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import {
   amendCommittedRecord,
   loadCommittedVersionHistory,
-} from "@/lib/aria/aria-committed-amendments";
-import { isSafeguardingSensitiveRecordType } from "@/lib/aria/aria-suggested-records";
+} from "@/lib/cara/cara-committed-amendments";
+import { isSafeguardingSensitiveRecordType } from "@/lib/cara/cara-suggested-records";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const existing = db.ariaCommittedRecords.findById(recordId);
+  const existing = db.caraCommittedRecords.findById(recordId);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!existing.is_current_version) {
     return NextResponse.json(
@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
   const homeId = existing.home_id ?? DEFAULT_HOME_ID;
   const sensitive = isSafeguardingSensitiveRecordType(existing.record_type);
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.commit_to_records",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.commit_to_records",
     homeId,
     childId: existing.child_id,
     intent: `amend committed_record:${existing.record_type}`,
@@ -108,7 +108,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  appendAriaAudit({
+  appendCaraAudit({
     homeId,
     actorId: guard.actor.userId,
     actionType: "artifact_edited",

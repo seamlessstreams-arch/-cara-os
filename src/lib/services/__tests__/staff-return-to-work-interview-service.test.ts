@@ -17,7 +17,7 @@ import { describe, it, expect } from "vitest";
 import { _testing } from "../staff-return-to-work-interview-service";
 import type { StaffReturnToWorkInterviewRow } from "../staff-return-to-work-interview-service";
 
-const { computeMetrics, computeAlerts, computeAriaInsights } = _testing;
+const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -872,12 +872,12 @@ describe("computeAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 3. computeAriaInsights
+// 3. computeCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   it("returns exactly 3 strings", () => {
-    const insights = computeAriaInsights(computeMetrics([]));
+    const insights = computeCaraInsights(computeMetrics([]));
     expect(insights).toHaveLength(3);
     for (const i of insights) {
       expect(typeof i).toBe("string");
@@ -885,87 +885,87 @@ describe("computeAriaInsights", () => {
   });
 
   it("returns 3 strings for single row", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 strings for multiple rows", () => {
     const rows = [makeRow(), makeRow({ staff_name: "B" }), makeRow({ staff_name: "C" })];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     expect(insights).toHaveLength(3);
   });
 
   it("summary line contains total interviews count", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow(), makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow(), makeRow()]));
     expect(insights[0]).toContain("2");
   });
 
   it("summary uses singular for 1 interview", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(insights[0]).toContain("interview");
     expect(insights[0]).not.toContain("interviews");
   });
 
   it("summary uses plural for 2 interviews", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow(), makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow(), makeRow()]));
     expect(insights[0]).toContain("interviews");
   });
 
   it("summary contains unique staff count", () => {
     const rows = [makeRow({ staff_name: "A" }), makeRow({ staff_name: "B" })];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     expect(insights[0]).toContain("2");
   });
 
   it("summary uses singular for 1 staff member", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(insights[0]).toContain("staff member");
   });
 
   it("summary uses plural for 2 staff members", () => {
     const rows = [makeRow({ staff_name: "A" }), makeRow({ staff_name: "B" })];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     expect(insights[0]).toContain("staff members");
   });
 
   it("summary contains average absence days", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow({ absence_duration_days: 7 })]));
+    const insights = computeCaraInsights(computeMetrics([makeRow({ absence_duration_days: 7 })]));
     expect(insights[0]).toContain("7");
   });
 
   it("summary contains support plan rate", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow({ support_plan_agreed: true })]));
+    const insights = computeCaraInsights(computeMetrics([makeRow({ support_plan_agreed: true })]));
     expect(insights[0]).toContain("100");
   });
 
   it("summary contains welfare check rate", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow({ welfare_check_completed: true })]));
+    const insights = computeCaraInsights(computeMetrics([makeRow({ welfare_check_completed: true })]));
     expect(insights[0]).toContain("100");
   });
 
   // ── Priority items ───────────────────────────────────────────────────────
 
   it("shows no priority concerns when metrics are clean", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(insights[1]).toContain("No priority concerns");
   });
 
   it("shows priority for not_fit_count", () => {
-    const insights = computeAriaInsights(
+    const insights = computeCaraInsights(
       computeMetrics([makeRow({ fit_to_return: false })]),
     );
     expect(insights[1]).toContain("not fit to return");
   });
 
   it("shows priority for oh_referral_count", () => {
-    const insights = computeAriaInsights(
+    const insights = computeCaraInsights(
       computeMetrics([makeRow({ occupational_health_referral: true })]),
     );
     expect(insights[1]).toContain("occupational health");
   });
 
   it("shows priority for trigger_level_count", () => {
-    const insights = computeAriaInsights(
+    const insights = computeCaraInsights(
       computeMetrics([makeRow({ trigger_level_reached: true })]),
     );
     expect(insights[1]).toContain("trigger level");
@@ -977,14 +977,14 @@ describe("computeAriaInsights", () => {
       makeRow({ occupational_health_referral: true }),
       makeRow({ trigger_level_reached: true }),
     ];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     expect(insights[1]).toContain("not fit to return");
     expect(insights[1]).toContain("occupational health");
     expect(insights[1]).toContain("trigger level");
   });
 
   it("uses singular for 1 staff member not fit", () => {
-    const insights = computeAriaInsights(
+    const insights = computeCaraInsights(
       computeMetrics([makeRow({ fit_to_return: false })]),
     );
     expect(insights[1]).toContain("staff member");
@@ -996,12 +996,12 @@ describe("computeAriaInsights", () => {
       makeRow({ fit_to_return: false }),
       makeRow({ fit_to_return: false }),
     ];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     expect(insights[1]).toContain("staff members");
   });
 
   it("uses singular for 1 OH referral", () => {
-    const insights = computeAriaInsights(
+    const insights = computeCaraInsights(
       computeMetrics([makeRow({ occupational_health_referral: true })]),
     );
     expect(insights[1]).toContain("referral");
@@ -1016,14 +1016,14 @@ describe("computeAriaInsights", () => {
       makeRow({ occupational_health_referral: true }),
       makeRow({ occupational_health_referral: true }),
     ];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     expect(insights[1]).toContain("referrals");
   });
 
   // ── Reflective question ──────────────────────────────────────────────────
 
   it("reflective question is a non-empty string", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(typeof insights[2]).toBe("string");
     expect(insights[2].length).toBeGreaterThan(0);
   });
@@ -1032,33 +1032,33 @@ describe("computeAriaInsights", () => {
     const rows = [
       makeRow({ fit_to_return: false, support_plan_agreed: false }),
     ];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     expect(insights[2]).toContain("support");
   });
 
   it("reflective question mentions phased return when phased returns exist", () => {
     const rows = [makeRow({ phased_return: true })];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     expect(insights[2]).toContain("phased");
   });
 
   it("reflective question is generic when no concerns", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(insights[2]).toContain("return-to-work");
   });
 
   it("reflective question contains a question mark", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(insights[2]).toContain("?");
   });
 
   it("reflective question for empty metrics contains a question mark", () => {
-    const insights = computeAriaInsights(computeMetrics([]));
+    const insights = computeCaraInsights(computeMetrics([]));
     expect(insights[2]).toContain("?");
   });
 
   it("all 3 insights are non-empty for empty input", () => {
-    const insights = computeAriaInsights(computeMetrics([]));
+    const insights = computeCaraInsights(computeMetrics([]));
     for (const i of insights) {
       expect(i.length).toBeGreaterThan(0);
     }
@@ -1076,19 +1076,19 @@ describe("computeAriaInsights", () => {
       }),
       makeRow({ staff_name: "B", absence_duration_days: 5 }),
     ];
-    const insights = computeAriaInsights(computeMetrics(rows));
+    const insights = computeCaraInsights(computeMetrics(rows));
     for (const i of insights) {
       expect(i.length).toBeGreaterThan(0);
     }
   });
 
   it("insight 0 contains the word 'interview' or 'interviews'", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(insights[0]).toMatch(/interviews?/);
   });
 
   it("insight 2 contains a question", () => {
-    const insights = computeAriaInsights(computeMetrics([makeRow()]));
+    const insights = computeCaraInsights(computeMetrics([makeRow()]));
     expect(insights[2]).toContain("?");
   });
 });

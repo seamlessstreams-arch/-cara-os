@@ -25,7 +25,7 @@ import type {
 const {
   computeStaffConflictMetrics,
   computeStaffConflictAlerts,
-  generateStaffConflictAriaInsights,
+  generateStaffConflictCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -666,20 +666,20 @@ describe("computeStaffConflictAlerts", () => {
   });
 });
 
-// ── generateStaffConflictAriaInsights ──────────────────────────────────
+// ── generateStaffConflictCaraInsights ──────────────────────────────────
 
-describe("generateStaffConflictAriaInsights", () => {
+describe("generateStaffConflictCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeStaffConflictMetrics([]);
     const alerts = computeStaffConflictAlerts([]);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const metrics = computeStaffConflictMetrics([makeRow()]);
     const alerts = computeStaffConflictAlerts([makeRow()]);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
@@ -687,7 +687,7 @@ describe("generateStaffConflictAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -695,14 +695,14 @@ describe("generateStaffConflictAriaInsights", () => {
     const rows = [makeRow({ manager_aware: true }), makeRow({ manager_aware: false })];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computeStaffConflictMetrics([makeRow()]);
     const alerts = computeStaffConflictAlerts([makeRow()]);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -712,7 +712,7 @@ describe("generateStaffConflictAriaInsights", () => {
     ];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -721,14 +721,14 @@ describe("generateStaffConflictAriaInsights", () => {
     const rows = [makeRow({ risk_level: "low", mitigation_status: "in_place", manager_aware: true, declaration_status: "accepted", annual_review_completed: true })];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computeStaffConflictMetrics([makeRow()]);
     const alerts = computeStaffConflictAlerts([makeRow()]);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -736,7 +736,7 @@ describe("generateStaffConflictAriaInsights", () => {
     const rows = [makeRow({ risk_level: "critical" })];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("critical-risk");
   });
 
@@ -747,7 +747,7 @@ describe("generateStaffConflictAriaInsights", () => {
     ];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("Annual review completion");
   });
 
@@ -758,7 +758,7 @@ describe("generateStaffConflictAriaInsights", () => {
     ];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("annual reviews completed and no critical risks");
   });
 
@@ -766,7 +766,7 @@ describe("generateStaffConflictAriaInsights", () => {
     const rows = [makeRow()];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 conflict of interest declaration recorded");
   });
 
@@ -774,7 +774,7 @@ describe("generateStaffConflictAriaInsights", () => {
     const rows = [makeRow(), makeRow()];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("declarations");
   });
 
@@ -782,7 +782,7 @@ describe("generateStaffConflictAriaInsights", () => {
     const rows = [makeRow({ staff_name: "Staff A" })];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 staff member");
   });
 
@@ -790,14 +790,14 @@ describe("generateStaffConflictAriaInsights", () => {
     const rows = [makeRow({ staff_name: "Staff A" }), makeRow({ staff_name: "Staff B" })];
     const metrics = computeStaffConflictMetrics(rows);
     const alerts = computeStaffConflictAlerts(rows);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 staff members");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computeStaffConflictMetrics([makeRow()]);
     const alerts = computeStaffConflictAlerts([makeRow()]);
-    const insights = generateStaffConflictAriaInsights(metrics, alerts);
+    const insights = generateStaffConflictCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);

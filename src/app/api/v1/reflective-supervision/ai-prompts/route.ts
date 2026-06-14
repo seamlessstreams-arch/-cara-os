@@ -10,7 +10,7 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
-import { generateText } from "@/lib/aria/aria-provider";
+import { generateText } from "@/lib/cara/cara-provider";
 
 const AI_DISCLAIMER = "AI suggests reflective prompts only — it never writes the supervision record or its conclusions. The manager leads the conversation and records it. AI suggestions require professional judgement and manager approval.";
 

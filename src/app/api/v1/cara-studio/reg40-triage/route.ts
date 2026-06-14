@@ -5,23 +5,23 @@
 // POST   { home_id, action: "scan" } → scan candidates and create pending rows
 // POST   { triage_id, action: "notify"|"dismiss"|"escalate", ... } → decide
 //
-// Permission: aria.view_audit_logs for read; aria.approve_outputs for
+// Permission: cara.view_audit_logs for read; cara.approve_outputs for
 // any decision (notify / dismiss / escalate is statutorily-significant).
 // All decisions are appended to the live audit tail. Notification to
 // Ofsted itself is NEVER auto-sent — the manager records the reference.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import {
   decideReg40Triage,
   loadReg40Queue,
   scanReg40Candidates,
   type Reg40DecisionAction,
-} from "@/lib/aria/aria-reg40-triage";
+} from "@/lib/cara/cara-reg40-triage";
 import { db } from "@/lib/db/store";
-import type { Reg40TriageStatus } from "@/types/aria-studio";
+import type { Reg40TriageStatus } from "@/types/cara-studio";
 
 const DEFAULT_HOME_ID = "home_oak";
 const DECISION_ACTIONS: Reg40DecisionAction[] = ["notify", "dismiss", "escalate"];
@@ -31,8 +31,8 @@ export async function GET(req: NextRequest) {
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
   const status = searchParams.get("status") as Reg40TriageStatus | null;
 
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId,
     intent: "view reg40 triage queue",
   });
@@ -54,8 +54,8 @@ export async function POST(req: NextRequest) {
   // ── Action: scan ─────────────────────────────────────────────────────────
   if (action === "scan") {
     const homeId = typeof body.home_id === "string" ? body.home_id : DEFAULT_HOME_ID;
-    const guard = requireAriaStudioPermission(req, body, {
-      permission: "aria.generate_drafts",
+    const guard = requireCaraStudioPermission(req, body, {
+      permission: "cara.generate_drafts",
       homeId,
       intent: "scan reg40 candidates",
     });
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
 
     const created = scanReg40Candidates(homeId);
     for (const t of created) {
-      await appendAriaAudit({
+      await appendCaraAudit({
         homeId,
         actorId: guard.actor.userId,
         actionType: "artifact_generated",
@@ -87,11 +87,11 @@ export async function POST(req: NextRequest) {
   if (!triageId) {
     return NextResponse.json({ error: "triage_id is required" }, { status: 400 });
   }
-  const existing = db.ariaReg40Triages.findById(triageId);
+  const existing = db.caraReg40Triages.findById(triageId);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: existing.home_id,
     childId: existing.child_id,
     intent: `reg40_decision:${action}`,
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
   }
 
   const decided = result as Exclude<typeof result, { code: string }>;
-  await appendAriaAudit({
+  await appendCaraAudit({
     homeId: existing.home_id,
     actorId: guard.actor.userId,
     actionType:

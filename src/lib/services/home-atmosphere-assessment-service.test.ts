@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeHomeAtmosphereMetrics,
   computeHomeAtmosphereAlerts,
-  generateHomeAtmosphereAriaInsights,
+  generateHomeAtmosphereCaraInsights,
   type HomeAtmosphereAssessmentRow,
 } from "./home-atmosphere-assessment-service";
 
@@ -129,13 +129,13 @@ describe("computeHomeAtmosphereAlerts", () => {
   });
 });
 
-// ── generateHomeAtmosphereAriaInsights ───────────────────────────────────
+// ── generateHomeAtmosphereCaraInsights ───────────────────────────────────
 
-describe("generateHomeAtmosphereAriaInsights", () => {
+describe("generateHomeAtmosphereCaraInsights", () => {
   it("returns 3 insights", () => {
     const metrics = computeHomeAtmosphereMetrics([makeRow()]);
     const alerts = computeHomeAtmosphereAlerts([makeRow()]);
-    const insights = generateHomeAtmosphereAriaInsights(metrics, alerts);
+    const insights = generateHomeAtmosphereCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 });

@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { useMedication, useAdminister } from "@/hooks/use-medication";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -407,7 +407,7 @@ function TodayScheduleTab({
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [openForms, setOpenForms] = useState<Set<string>>(new Set());
-  const [ariaFor, setAriaFor] = useState<string | null>(null);
+  const [caraFor, setCaraFor] = useState<string | null>(null);
   const [schedSearch, setSchedSearch] = useState("");
   const schedYpQuery = useYoungPeople();
   const schedAllYP = schedYpQuery.data?.data ?? [];
@@ -580,7 +580,7 @@ function TodayScheduleTab({
                 const isScheduled = status === "scheduled" || (!admin && !isPRN);
                 const formKey = `${med.id}-${admin?.id ?? "new"}`;
                 const isFormOpen = openForms.has(formKey);
-                const showAria = ariaFor === formKey;
+                const showCara = caraFor === formKey;
 
                 return (
                   <div
@@ -717,18 +717,18 @@ function TodayScheduleTab({
                         {admin && (
                           <div className="mt-2">
                             <button
-                              onClick={() => setAriaFor(showAria ? null : formKey)}
+                              onClick={() => setCaraFor(showCara ? null : formKey)}
                               className="flex items-center gap-1.5 text-[10px] text-violet-600 hover:text-violet-700 font-medium"
                             >
                               <Sparkles className="h-3 w-3" />
-                              {showAria ? "Close Cara" : "Draft note with Cara"}
+                              {showCara ? "Close Cara" : "Draft note with Cara"}
                             </button>
                           </div>
                         )}
 
-                        {showAria && admin && (
+                        {showCara && admin && (
                           <div className="mt-3">
-                            <AriaPanel
+                            <CaraPanel
                               mode="write"
                               pageContext="Medication Administration — record a medication administration, prescribed dose, time given, staff signature, child response, any errors or near-misses"
                               recordType="medication_note"
@@ -1094,7 +1094,7 @@ function StockOversightTab({
 }) {
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
   const [needCreated, setNeedCreated] = useState<Set<string>>(new Set());
   const createNeed = useCreateTrainingNeed();
   const activeMeds = medications.filter((m) => m.is_active);
@@ -1347,11 +1347,11 @@ function StockOversightTab({
             <h3 className="text-sm font-bold text-slate-900">Management Oversight</h3>
           </div>
           <button
-            onClick={() => setShowAria(!showAria)}
+            onClick={() => setShowCara(!showCara)}
             className="flex items-center gap-1.5 text-xs text-violet-600 hover:text-violet-700 font-medium"
           >
             <Sparkles className="h-3.5 w-3.5" />
-            {showAria ? "Close Cara" : "Draft oversight with Cara"}
+            {showCara ? "Close Cara" : "Draft oversight with Cara"}
           </button>
         </div>
 
@@ -1381,8 +1381,8 @@ function StockOversightTab({
             </div>
           )}
 
-          {showAria && (
-            <AriaPanel
+          {showCara && (
+            <CaraPanel
               mode="oversee"
               pageContext="Medication Oversight — MAR chart review, administration accuracy, missed doses, controlled drugs, medication errors, storage checks, prescriptions, GP liaison"
               recordType="medication_exception_oversight"
@@ -1459,7 +1459,7 @@ export default function MedicationPage() {
     <PageShell
       title="Medication"
       subtitle={`${medications.length} active medications · ${ypCount} young people`}
-      ariaContext={{ pageTitle: "Care Events — Medication", sourceType: "medication" }}
+      caraContext={{ pageTitle: "Care Events — Medication", sourceType: "medication" }}
       quickCreateContext={{ module: "medication", defaultTaskCategory: "medication" }}
       actions={
         <div className="flex gap-2">
@@ -1484,7 +1484,7 @@ export default function MedicationPage() {
           >
             <Plus className="h-3.5 w-3.5" />Add Medication
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

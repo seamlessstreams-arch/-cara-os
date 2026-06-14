@@ -572,7 +572,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: NeurodiversitySupportRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

@@ -36,8 +36,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -52,7 +52,7 @@ const TYPE_CONFIG: Record<PocketMoneyTransactionType, { label: string; icon: Rea
   spending:            { label: "Spending",          icon: ShoppingBag,    color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200",     direction: "out" },
   savings_deposit:     { label: "Savings In",        icon: PiggyBank,      color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200",    direction: "out" },
   savings_withdrawal:  { label: "Savings Out",       icon: PiggyBank,      color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200",   direction: "in"  },
-  gift:                { label: "Gift",              icon: ArrowDownLeft,  color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]",  direction: "in"  },
+  gift:                { label: "Gift",              icon: ArrowDownLeft,  color: "text-[var(--cs-cara-gold)]",  bg: "bg-[var(--cs-cara-gold-bg)]",  border: "border-[var(--cs-cara-gold-soft)]",  direction: "in"  },
   earnings:            { label: "Earnings",          icon: TrendingUp,     color: "text-teal-700",    bg: "bg-teal-50",    border: "border-teal-200",    direction: "in"  },
   refund:              { label: "Refund",            icon: ArrowDownLeft,  color: "text-sky-700",     bg: "bg-sky-50",     border: "border-sky-200",     direction: "in"  },
 };
@@ -331,7 +331,7 @@ export default function PocketMoneyPage() {
     <PageShell
       title="Pocket Money & Savings"
       subtitle="Financial records for each young person"
-      ariaContext={{ pageTitle: "Pocket Money", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Pocket Money", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={PM_EXPORT_COLS} filename="pocket-money" />
@@ -340,7 +340,7 @@ export default function PocketMoneyPage() {
             <Plus className="h-3.5 w-3.5" />
             Record Transaction
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -376,7 +376,7 @@ export default function PocketMoneyPage() {
           { label: "Total in Wallets",   value: `£${totalWallet.toFixed(2)}`,  color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
           { label: "Total Savings",      value: `£${totalSavings.toFixed(2)}`, color: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200"    },
           { label: "Transactions",       value: data.length,           color: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-50",   border: "border-[var(--cs-border)]"   },
-          { label: "Receipts on File",   value: data.filter((t) => t.receipt_held).length, color: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]", border: "border-[var(--cs-aria-gold-soft)]" },
+          { label: "Receipts on File",   value: data.filter((t) => t.receipt_held).length, color: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)]", border: "border-[var(--cs-cara-gold-soft)]" },
         ].map((s) => (
           <div key={s.label} className={cn("rounded-lg border p-3 text-center", s.bg, s.border)}>
             <div className={cn("text-xl font-bold", s.color)}>{s.value}</div>
@@ -472,7 +472,7 @@ export default function PocketMoneyPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Pocket Money — pocket money transactions, allowances, financial records, income, spending, savings, accountability, financial capability development, Regulation 44 evidence"
         recordType="care_plan"

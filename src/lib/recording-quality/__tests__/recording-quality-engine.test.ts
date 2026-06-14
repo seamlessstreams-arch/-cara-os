@@ -55,7 +55,7 @@ describe("scoreRecord", () => {
     expect(s.professionalLanguage).toBe(100);
     expect(overallOf(s)).toBeGreaterThanOrEqual(85);
     expect(bandOf(overallOf(s))).toBe("strong");
-    expect(s.ariaSuggestions).toHaveLength(0);
+    expect(s.caraSuggestions).toHaveLength(0);
   });
   it("scores a poor record low and returns targeted suggestions", () => {
     const s = scoreRecord(rec({
@@ -68,7 +68,7 @@ describe("scoreRecord", () => {
     expect(s.childCentredness).toBeLessThanOrEqual(35);
     expect(s.riskRelevance).toBeLessThan(70);
     expect(s.missingFields).toEqual(["immediate_action", "outcome"]);
-    expect(s.ariaSuggestions.length).toBeGreaterThanOrEqual(3);
+    expect(s.caraSuggestions.length).toBeGreaterThanOrEqual(3);
     expect(bandOf(overallOf(s))).toBe("poor");
   });
 });

@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateEatingDisorderSupport,
-  generateAriaInsights,
+  generateCaraInsights,
   type EatingDisorderSupportRow,
 } from "./eating-disorder-support-service";
 
@@ -252,12 +252,12 @@ describe("eating-disorder-support-service", () => {
     });
   });
 
-  // ── generateAriaInsights ──────────────────────────────────────────
+  // ── generateCaraInsights ──────────────────────────────────────────
 
-  describe("generateAriaInsights", () => {
+  describe("generateCaraInsights", () => {
     it("returns 3 insights for populated data", () => {
       const rows = [makeRow()];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toContain("[sky]");
       expect(insights[1]).toContain("[amber]");

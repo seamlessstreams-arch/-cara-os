@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   validateEqualityDiversityMonitoring,
   type EqualityDiversityMonitoringRow,
 } from "./equality-diversity-monitoring-service";
@@ -159,9 +159,9 @@ describe("validateEqualityDiversityMonitoring", () => {
   });
 });
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[sky]");
     expect(insights[1]).toContain("[amber]");

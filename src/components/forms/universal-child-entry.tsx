@@ -194,7 +194,7 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Just tell us what happened, what you did, or what you noticed about this child today..."
-          className="w-full rounded-2xl border-2 border-[var(--cs-border)] bg-white p-4 pr-12 text-sm text-[var(--cs-text)] placeholder:text-[var(--cs-text-gentle)] resize-none focus:border-[var(--cs-aria-gold)] focus:ring-0 focus:outline-none transition-colors min-h-[120px]"
+          className="w-full rounded-2xl border-2 border-[var(--cs-border)] bg-white p-4 pr-12 text-sm text-[var(--cs-text)] placeholder:text-[var(--cs-text-gentle)] resize-none focus:border-[var(--cs-cara-gold)] focus:ring-0 focus:outline-none transition-colors min-h-[120px]"
           autoFocus
         />
         <div className="absolute bottom-3 right-3 text-[10px] text-[var(--cs-text-gentle)] tabular-nums">
@@ -225,7 +225,7 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
             </div>
             <button
               onClick={() => setShowTypeSelector(!showTypeSelector)}
-              className="text-[10px] text-[var(--cs-aria-gold)] hover:underline flex items-center gap-0.5"
+              className="text-[10px] text-[var(--cs-cara-gold)] hover:underline flex items-center gap-0.5"
             >
               Change <ChevronDown className="h-3 w-3" />
             </button>
@@ -245,13 +245,13 @@ export function UniversalChildEntry({ childId, staffId = "staff_darren", onSucce
                     className={cn(
                       "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-xs transition-all text-left",
                       isSelected
-                        ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] font-medium"
+                        ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] font-medium"
                         : "border-[var(--cs-border-subtle)] hover:border-[var(--cs-border)] hover:bg-[var(--cs-bg)]",
                     )}
                   >
                     <Icon className={cn("h-3.5 w-3.5 shrink-0", isSelected ? info.color : "text-[var(--cs-text-gentle)]")} />
                     <span className="truncate">{label}</span>
-                    {isSelected && <Check className="h-3 w-3 text-[var(--cs-aria-gold)] ml-auto shrink-0" />}
+                    {isSelected && <Check className="h-3 w-3 text-[var(--cs-cara-gold)] ml-auto shrink-0" />}
                   </button>
                 );
               })}

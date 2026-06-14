@@ -107,7 +107,7 @@ export interface CorrelationAlert {
   child_id?: string;
 }
 
-export interface AriaCorrelationInsight {
+export interface CaraCorrelationInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -116,7 +116,7 @@ export interface ComplaintsIncidentCorrelationResult {
   overview: CorrelationOverview;
   child_correlations: ChildCorrelation[];
   alerts: CorrelationAlert[];
-  insights: AriaCorrelationInsight[];
+  insights: CaraCorrelationInsight[];
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -412,8 +412,8 @@ function buildAlerts(rows: ChildCorrelation[]): CorrelationAlert[] {
 
 // ── Cara insights builder ───────────────────────────────────────────────────
 
-function buildInsights(rows: ChildCorrelation[]): AriaCorrelationInsight[] {
-  const insights: AriaCorrelationInsight[] = [];
+function buildInsights(rows: ChildCorrelation[]): CaraCorrelationInsight[] {
+  const insights: CaraCorrelationInsight[] = [];
 
   const leading = rows.filter((r) => r.correlation_type === "leading_indicator");
   if (leading.length > 0) {

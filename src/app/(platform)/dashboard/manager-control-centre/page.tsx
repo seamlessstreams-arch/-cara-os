@@ -18,7 +18,7 @@ import {
   FileSearch, BookOpen, Scale, Activity, Siren,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AriaDailyIntelligence } from "@/components/aria/aria-daily-intelligence";
+import { CaraDailyIntelligence } from "@/components/cara/cara-daily-intelligence";
 import { CardErrorBoundary } from "@/components/dashboard/card-error-boundary";
 import { SupervisionIntelligenceCard } from "@/components/dashboard/supervision-intelligence-card";
 import { RegulatoryReportingCard } from "@/components/dashboard/regulatory-reporting-card";
@@ -338,9 +338,9 @@ import { SmartLinkBadge } from "@/components/intelligence/smart-link-panel";
 import { useIncidents } from "@/hooks/use-incidents";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useKeyWorkingSessions } from "@/hooks/use-key-working";
-import { runProactiveAlertScan, type ProactiveAlert } from "@/lib/aria/aria-proactive-alerts";
-import type { IncidentRecord } from "@/lib/aria/aria-pattern-engine";
-import type { ChildRecord, IncidentSummary } from "@/lib/aria/aria-voice-gap-analysis";
+import { runProactiveAlertScan, type ProactiveAlert } from "@/lib/cara/cara-proactive-alerts";
+import type { IncidentRecord } from "@/lib/cara/cara-pattern-engine";
+import type { ChildRecord, IncidentSummary } from "@/lib/cara/cara-voice-gap-analysis";
 import Link from "next/link";
 import type {
   AttentionCategory,
@@ -399,7 +399,7 @@ const URGENCY_STYLES: Record<Urgency, { badge: string; border: string; label: st
 /* ── category config ───────────────────────────────────────────────────────── */
 
 const CATEGORY_META: Record<AttentionCategory, { label: string; badge: string; icon: React.ElementType }> = {
-  log_approval:          { label: "Log Approval",          badge: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]", icon: ClipboardCheck },
+  log_approval:          { label: "Log Approval",          badge: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]", icon: ClipboardCheck },
   incident_oversight:    { label: "Incident Oversight",    badge: "bg-orange-100 text-orange-800", icon: AlertCircle },
   serious_incident:      { label: "Serious Incident",      badge: "bg-red-100 text-red-800",       icon: Siren },
   missing_from_care:     { label: "Missing from Care",     badge: "bg-red-100 text-red-800",       icon: AlertTriangle },
@@ -498,7 +498,7 @@ export default function ManagerControlCentrePage() {
   const { data: ypData }        = useYoungPeople();
   const { data: kwData }        = useKeyWorkingSessions();
 
-  const ariaAlerts = useMemo<ProactiveAlert[]>(() => {
+  const caraAlerts = useMemo<ProactiveAlert[]>(() => {
     const incidents   = incidentsData?.data ?? [];
     const youngPeople = ypData?.data ?? [];
     const kwSessions  = kwData?.data ?? [];
@@ -569,10 +569,10 @@ export default function ManagerControlCentrePage() {
 
   // Merge live Cara proactive alerts into the attention items list
   useEffect(() => {
-    if (ariaAlerts.length === 0) return;
+    if (caraAlerts.length === 0) return;
     const severityToUrgency = (s: string): Urgency =>
       s === "urgent" ? "critical" : s === "high" ? "high" : s === "medium" ? "medium" : "low";
-    const ariaItems: AttentionItem[] = ariaAlerts.map((a) => ({
+    const caraItems: AttentionItem[] = caraAlerts.map((a) => ({
       id:             `aria_${a.id}`,
       title:          a.title,
       category:       "aria_pattern" as AttentionCategory,
@@ -586,9 +586,9 @@ export default function ManagerControlCentrePage() {
     }));
     setItems((prev) => [
       ...prev.filter((i) => i.category !== "aria_pattern"),
-      ...ariaItems,
+      ...caraItems,
     ]);
-  }, [ariaAlerts]);
+  }, [caraAlerts]);
 
   const toggle = (id: string) => setExpandedId((prev) => (prev === id ? null : id));
 
@@ -713,7 +713,7 @@ export default function ManagerControlCentrePage() {
     <PageShell
       title="Manager Control Centre"
       subtitle="What needs your attention today"
-      ariaContext={{ pageTitle: "Nothing needs your attention", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Nothing needs your attention", sourceType: "child_record" }}
       actions={
         <Button variant="outline" size="sm" className="gap-1.5">
           <Download className="h-4 w-4" />
@@ -735,7 +735,7 @@ export default function ManagerControlCentrePage() {
       </div>
 
       {/* ── Cara Daily Intelligence Brief ─────────────────────────────────── */}
-      <AriaDailyIntelligence className="mb-6" />
+      <CaraDailyIntelligence className="mb-6" />
 
       {/* ── cross-module intelligence ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
@@ -791,17 +791,17 @@ export default function ManagerControlCentrePage() {
       </div>
 
       {/* ── Cara proactive intelligence panel ─────────────────────────────── */}
-      {ariaAlerts.length > 0 && (
+      {caraAlerts.length > 0 && (
         <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 mb-4 flex items-start gap-3">
           <Brain className="h-5 w-5 text-violet-600 shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-semibold text-violet-900">
-              Cara has detected {ariaAlerts.length} proactive {ariaAlerts.length === 1 ? "alert" : "alerts"} from live records
+              Cara has detected {caraAlerts.length} proactive {caraAlerts.length === 1 ? "alert" : "alerts"} from live records
             </p>
             <p className="text-xs text-violet-700 mt-0.5">
-              {ariaAlerts.filter((a) => a.severity === "urgent").length} urgent ·{" "}
-              {ariaAlerts.filter((a) => a.severity === "high").length} high ·{" "}
-              {ariaAlerts.filter((a) => a.severity === "medium").length} medium —
+              {caraAlerts.filter((a) => a.severity === "urgent").length} urgent ·{" "}
+              {caraAlerts.filter((a) => a.severity === "high").length} high ·{" "}
+              {caraAlerts.filter((a) => a.severity === "medium").length} medium —
               patterns, voice gaps and compliance concerns surfaced automatically
             </p>
           </div>

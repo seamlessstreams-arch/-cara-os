@@ -6,8 +6,8 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -341,7 +341,7 @@ function TaskRow({ task, onComplete }: { task: Task; onComplete: (id: string) =>
 
 export default function StaffDashboardPage() {
   const qc = useQueryClient();
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
   const { currentUser } = useAuthContext();
   const staffId = currentUser?.id ?? "staff_darren";
 
@@ -382,7 +382,7 @@ export default function StaffDashboardPage() {
     <PageShell
       title="My Dashboard"
       subtitle={`${getGreeting()}, ${d.staff.full_name.split(" ")[0]} — ${new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long" })}`}
-      ariaContext={{ pageTitle: "My Dashboard", sourceType: "general" }}
+      caraContext={{ pageTitle: "My Dashboard", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           {d.summary.notifications_unread > 0 && (
@@ -399,15 +399,15 @@ export default function StaffDashboardPage() {
           )}
           <PrintButton title="My Dashboard" subtitle={`${d.staff.full_name} — Shift Overview`} targetId="staff-dashboard-content" />
           <Button
-            variant={showAria ? "default" : "outline"}
+            variant={showCara ? "default" : "outline"}
             size="sm"
-            onClick={() => setShowAria(!showAria)}
-            className={cn(showAria && "bg-slate-900 text-white")}
+            onClick={() => setShowCara(!showCara)}
+            className={cn(showCara && "bg-slate-900 text-white")}
           >
             <Sparkles className="mr-1.5 h-4 w-4" />
             Cara
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -954,8 +954,8 @@ export default function StaffDashboardPage() {
         </div>
 
         {/* ── Cara Panel ────────────────────────────────────────────────────── */}
-        {showAria && (
-          <AriaPanel
+        {showCara && (
+          <CaraPanel
             pageContext="Staff Dashboard — personal task list, due recordings, shift handovers, training compliance, supervision schedule, welfare check duties, daily activity log"
             sourceContent={`Staff dashboard for ${d.staff.full_name} — ${d.tasks.total_active} active tasks, ${d.recordings_due.total_outstanding} recordings outstanding`}
             userRole={d.staff.role}

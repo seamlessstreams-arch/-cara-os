@@ -38,8 +38,8 @@ import {
 import { useTutoringRecords } from "@/hooks/use-tutoring-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const motivationColour: Record<TutoringMotivation, string> = {
   high: "bg-emerald-100 text-emerald-800",
@@ -49,7 +49,7 @@ const motivationColour: Record<TutoringMotivation, string> = {
 };
 
 const fundingColour: Record<TutoringFundingSource, string> = {
-  pupil_premium_plus: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  pupil_premium_plus: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   virtual_school_grant: "bg-indigo-100 text-indigo-800",
   leaving_care_fund: "bg-purple-100 text-purple-800",
   home_budget: "bg-slate-100 text-[var(--cs-navy)]",
@@ -142,12 +142,12 @@ export default function ChildTutoringPrivateTuitionPage() {
     <PageShell
       title="Tutoring & Private Tuition"
       subtitle="Per-child academic support — closing the attainment gap with intentional, funded, monitored tuition"
-      ariaContext={{ pageTitle: "Tutoring & Private Tuition", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Tutoring & Private Tuition", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-tutoring" />
           <PrintButton title="Tutoring & Private Tuition" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -157,7 +157,7 @@ export default function ChildTutoringPrivateTuitionPage() {
           <p className="text-xs text-muted-foreground">Active Tutoring Arrangements</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-[var(--cs-aria-gold)]">{totalHoursPerWeek}</p>
+          <p className="text-2xl font-bold text-[var(--cs-cara-gold)]">{totalHoursPerWeek}</p>
           <p className="text-xs text-muted-foreground">Total Hours / Week</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -170,8 +170,8 @@ export default function ChildTutoringPrivateTuitionPage() {
         </div>
       </div>
 
-      <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3 mb-6 flex items-start gap-2">
-        <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)] mt-0.5 shrink-0" />
+      <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3 mb-6 flex items-start gap-2">
+        <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)] mt-0.5 shrink-0" />
         <p className="text-sm text-[var(--cs-navy)]">
           Looked-after children and care leavers face a documented attainment gap. Tutoring is a
           high-leverage entitlement — funded via Pupil Premium Plus, Virtual School grants and
@@ -298,7 +298,7 @@ export default function ChildTutoringPrivateTuitionPage() {
                   </div>
 
                   {r.exam_focus && (
-                    <div className="bg-[var(--cs-aria-gold-bg)] rounded-lg p-3 border border-[var(--cs-aria-gold-soft)]">
+                    <div className="bg-[var(--cs-cara-gold-bg)] rounded-lg p-3 border border-[var(--cs-cara-gold-soft)]">
                       <p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">
                         <Award className="h-3 w-3 inline mr-1" />
                         Exam Focus
@@ -341,17 +341,17 @@ export default function ChildTutoringPrivateTuitionPage() {
                             {r.baseline_grade ?? "—"}
                           </p>
                         </div>
-                        <div className="flex-1 h-1 bg-gradient-to-r from-slate-300 via-sky-400 to-[var(--cs-aria-gold)] rounded-full" />
+                        <div className="flex-1 h-1 bg-gradient-to-r from-slate-300 via-sky-400 to-[var(--cs-cara-gold)] rounded-full" />
                         <div className="flex-1 text-center">
                           <p className="text-xs text-muted-foreground">Current</p>
                           <p className="text-lg font-bold text-sky-600">
                             {r.current_grade ?? "—"}
                           </p>
                         </div>
-                        <div className="flex-1 h-1 bg-gradient-to-r from-sky-400 to-[var(--cs-aria-gold)] rounded-full" />
+                        <div className="flex-1 h-1 bg-gradient-to-r from-sky-400 to-[var(--cs-cara-gold)] rounded-full" />
                         <div className="flex-1 text-center">
                           <p className="text-xs text-muted-foreground">Target</p>
-                          <p className="text-lg font-bold text-[var(--cs-aria-gold)]">
+                          <p className="text-lg font-bold text-[var(--cs-cara-gold)]">
                             {r.target_grade ?? "—"}
                           </p>
                         </div>
@@ -442,7 +442,7 @@ export default function ChildTutoringPrivateTuitionPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Tutoring & Private Tuition — catch-up support, maths/English tutoring, exam preparation, SEND support, LAC education entitlement, PEP targets, virtual school head, attainment"
         recordType="education"

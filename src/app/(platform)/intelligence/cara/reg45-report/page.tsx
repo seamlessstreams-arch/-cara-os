@@ -23,14 +23,14 @@ import {
   useBuildReg45Report,
   useEditReg45Report,
   useSetReg45ReportStatus,
-} from "@/hooks/use-aria-reg45-report";
+} from "@/hooks/use-cara-reg45-report";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
-import type { AriaReg45Report, AriaReg45Theme } from "@/types/aria-studio";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
+import type { CaraReg45Report, CaraReg45Theme } from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const STATUS_TONE: Record<AriaReg45Report["status"], string> = {
+const STATUS_TONE: Record<CaraReg45Report["status"], string> = {
   draft: "bg-slate-100 text-slate-700",
   in_review: "bg-amber-100 text-amber-800",
   approved: "bg-emerald-100 text-emerald-800",
@@ -39,7 +39,7 @@ const STATUS_TONE: Record<AriaReg45Report["status"], string> = {
 
 export default function Reg45ReportPage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(currentUser?.role ?? "registered_manager");
+  const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
 
   const query = useReg45Reports(HOME_ID);
   const build = useBuildReg45Report();
@@ -73,7 +73,7 @@ export default function Reg45ReportPage() {
       {
         home_id: HOME_ID,
         actor_id: currentUser?.id,
-        actor_role: ariaRole,
+        actor_role: caraRole,
       },
       {
         onSuccess: (res) => setSelectedId(res.data.id),
@@ -83,7 +83,7 @@ export default function Reg45ReportPage() {
 
   const handleSave = () => {
     if (!current) return;
-    const narratives: Partial<Record<AriaReg45Theme, string>> = {};
+    const narratives: Partial<Record<CaraReg45Theme, string>> = {};
     for (const s of current.sections) {
       narratives[s.theme] = sectionText[s.theme] ?? s.narrative;
     }
@@ -93,17 +93,17 @@ export default function Reg45ReportPage() {
       executive_summary: exec,
       section_narratives: narratives,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 
-  const handleStatus = (status: AriaReg45Report["status"]) => {
+  const handleStatus = (status: CaraReg45Report["status"]) => {
     if (!current) return;
     setStatus.mutate({
       id: current.id,
       status,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 

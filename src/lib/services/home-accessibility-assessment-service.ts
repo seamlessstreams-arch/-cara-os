@@ -302,7 +302,7 @@ export function computeAccessibilityAlerts(
   return alerts;
 }
 
-export function generateAccessibilityAriaInsights(
+export function generateAccessibilityCaraInsights(
   metrics: ReturnType<typeof computeAccessibilityMetrics>,
   alerts: ReturnType<typeof computeAccessibilityAlerts>,
 ): string[] {
@@ -361,5 +361,5 @@ export function generateAccessibilityAriaInsights(
 export const _testing = {
   computeAccessibilityMetrics,
   computeAccessibilityAlerts,
-  generateAccessibilityAriaInsights,
+  generateAccessibilityCaraInsights,
 };

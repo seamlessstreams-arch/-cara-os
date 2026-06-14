@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -114,12 +114,12 @@ export default function ComplaintResolutionMeetingsPage() {
     <PageShell
       title="Complaint Resolution Meetings"
       subtitle="Records of meetings convened to resolve concerns — restorative, transparent, learning-focused"
-      ariaContext={{ pageTitle: "Complaint Resolution Meetings", sourceType: "complaint" }}
+      caraContext={{ pageTitle: "Complaint Resolution Meetings", sourceType: "complaint" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="complaint-resolution-meetings" />
           <PrintButton title="Complaint Resolution Meetings" />
-          <AriaStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

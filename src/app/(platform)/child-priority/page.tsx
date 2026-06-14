@@ -47,7 +47,7 @@ export default function ChildPriorityPage() {
       subtitle="Every intelligence stream, fused into one ranked list — who needs attention most today, and why"
       icon={<ListOrdered className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Child Priority — Unified Risk", sourceType: "general" }}
+      caraContext={{ pageTitle: "Child Priority — Unified Risk", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

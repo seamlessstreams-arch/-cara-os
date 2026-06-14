@@ -61,7 +61,7 @@ export function SmartUploadButton({
         <button
           onClick={() => setOpen(true)}
           className={cn(
-            "inline-flex items-center gap-2 rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-3 py-2 text-xs font-semibold text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors",
+            "inline-flex items-center gap-2 rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] px-3 py-2 text-xs font-semibold text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)] transition-colors",
             className,
           )}
         >

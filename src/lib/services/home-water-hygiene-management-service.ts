@@ -292,7 +292,7 @@ export function identifyWaterHygieneManagementAlerts(
   return alerts;
 }
 
-export function generateWaterHygieneManagementAriaInsights(
+export function generateWaterHygieneManagementCaraInsights(
   rows: HomeWaterHygieneManagementRow[],
 ): string[] {
   const metrics = computeWaterHygieneManagementMetrics(rows);
@@ -467,5 +467,5 @@ export async function deleteHomeWaterHygieneManagement(
 export const _testing = {
   computeWaterHygieneManagementMetrics,
   identifyWaterHygieneManagementAlerts,
-  generateWaterHygieneManagementAriaInsights,
+  generateWaterHygieneManagementCaraInsights,
 };

@@ -38,7 +38,7 @@ const REDACTION_CATEGORIES = [
   { category: "Local Authorities", placeholder: "[LA_REDACTED]", detection: "Known LA name list" },
 ];
 
-export default function AriaSafetyPage() {
+export default function CaraSafetyPage() {
   return (
     <div className="space-y-6">
       <div>

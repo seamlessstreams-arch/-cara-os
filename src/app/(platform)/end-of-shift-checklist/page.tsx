@@ -8,8 +8,8 @@
 
 import React, { useMemo, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import {
@@ -62,7 +62,7 @@ const shiftColour = (s: EndOfShiftType): string => {
     case "late":
       return "bg-indigo-100 text-indigo-800 border-indigo-200";
     case "sleep_in":
-      return "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]";
+      return "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]";
     case "wake_night":
       return "bg-slate-200 text-[var(--cs-navy)] border-slate-300";
   }
@@ -247,7 +247,7 @@ export default function EndOfShiftChecklistPage() {
     <PageShell
       title="End-of-Shift Checklist"
       subtitle="Standardised closing-down tasks completed by every member of staff before handover."
-      ariaContext={{ pageTitle: "End-of-Shift Checklist", sourceType: "general" }}
+      caraContext={{ pageTitle: "End-of-Shift Checklist", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -256,7 +256,7 @@ export default function EndOfShiftChecklistPage() {
             filename="end-of-shift-checklist"
           />
           <PrintButton title="End-of-Shift Checklists" />
-          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

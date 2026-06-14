@@ -1,2 +1,2 @@
-export { AriaWhistleblowingConcerns as WhistleblowingConcernsDashboardWidget } from "./WhistleblowingConcernsDashboardWidget";
+export { CaraWhistleblowingConcerns as WhistleblowingConcernsDashboardWidget } from "./WhistleblowingConcernsDashboardWidget";
 export { WhistleblowingConcernsIntelligenceWidget } from "./WhistleblowingConcernsIntelligenceWidget";

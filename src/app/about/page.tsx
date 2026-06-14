@@ -28,7 +28,7 @@ export default function AboutPage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 20% 0%, var(--cs-aria-glow) 0%, transparent 60%)" }} />
+        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 20% 0%, var(--cs-cara-glow) 0%, transparent 60%)" }} />
         <div className="relative mx-auto max-w-4xl px-5 py-16 text-center lg:py-24">
           <SectionEyebrow>Our story</SectionEyebrow>
           <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">
@@ -63,8 +63,8 @@ export default function AboutPage() {
             </p>
           </div>
 
-          <div className="mt-10 rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-aria-gold-bg)] p-8 text-center">
-            <Quote className="mx-auto h-7 w-7 text-[var(--cs-aria-gold)]" />
+          <div className="mt-10 rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-cara-gold-bg)] p-8 text-center">
+            <Quote className="mx-auto h-7 w-7 text-[var(--cs-cara-gold)]" />
             <p className="mt-4 text-lg font-medium leading-relaxed text-[var(--cs-navy)]">
               &ldquo;I built Cara because I was tired of brilliant care being let down by paperwork. Capture it once, and let the home show its own story.&rdquo;
             </p>

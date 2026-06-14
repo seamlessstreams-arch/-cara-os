@@ -26,8 +26,8 @@ import {
   ClipboardCheck, User, BookOpen, Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -156,12 +156,12 @@ export default function DocumentExpiryTrackerPage() {
     <PageShell
       title="Document Expiry Tracker"
       subtitle="Track and manage expiry dates for all critical compliance documents"
-      ariaContext={{ pageTitle: "Document Expiry Tracker", sourceType: "document" }}
+      caraContext={{ pageTitle: "Document Expiry Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Document Expiry Tracker" subtitle="Chamberlain House — Compliance Management" />
           <ExportButton data={filtered} columns={exportCols} filename="document-expiry-tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -367,7 +367,7 @@ export default function DocumentExpiryTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Document Expiry Tracker — staff DBS expiry, training certificates, Ofsted registration, insurance, care plan reviews, risk assessment reviews, compliance deadlines, Annex A"
         recordType="policy"

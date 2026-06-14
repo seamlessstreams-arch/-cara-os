@@ -241,7 +241,7 @@ export default function ChronologyIntelligencePage() {
           <Card>
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-                <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                <Brain className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                 Generate Chronology Summary
               </CardTitle>
             </CardHeader>
@@ -258,7 +258,7 @@ export default function ChronologyIntelligencePage() {
                   <select
                     value={selectedChildId}
                     onChange={(e) => setSelectedChildId(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                    className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                   >
                     <option value="">Select a young person…</option>
                     {youngPeople.map((yp) => {
@@ -287,7 +287,7 @@ export default function ChronologyIntelligencePage() {
                         "rounded-full px-3 py-1.5 text-xs font-medium transition-colors border",
                         selectedPeriod === opt.value
                           ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]"
-                          : "bg-white text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:border-[var(--cs-aria-gold-soft)] hover:text-[var(--cs-aria-gold)]"
+                          : "bg-white text-[var(--cs-text-secondary)] border-[var(--cs-border)] hover:border-[var(--cs-cara-gold-soft)] hover:text-[var(--cs-cara-gold)]"
                       )}
                     >
                       {opt.label}
@@ -315,7 +315,7 @@ export default function ChronologyIntelligencePage() {
                   onChange={(e) => setPastedNotes(e.target.value)}
                   placeholder="Paste any relevant records, log entries, or notes here…"
                   rows={4}
-                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
+                  className="w-full rounded-xl border border-[var(--cs-border)] bg-slate-50 px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] placeholder:text-[var(--cs-text-muted)]"
                 />
               </div>
 
@@ -332,13 +332,13 @@ export default function ChronologyIntelligencePage() {
                       className={cn(
                         "rounded-xl border p-3 text-left transition-all",
                         selectedStyle === opt.value
-                          ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] ring-1 ring-[var(--cs-aria-gold-soft)]"
-                          : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]/40"
+                          ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] ring-1 ring-[var(--cs-cara-gold-soft)]"
+                          : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]/40"
                       )}
                     >
                       <div className={cn(
                         "text-xs font-semibold mb-0.5",
-                        selectedStyle === opt.value ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-secondary)]"
+                        selectedStyle === opt.value ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-secondary)]"
                       )}>
                         {opt.label}
                       </div>

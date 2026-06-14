@@ -19,7 +19,7 @@ export function evaluateCandidateRules(
   const blockers: RulesBlocker[] = [];
   const warnings: RulesWarning[] = [];
   const autoTasks: RulesResult["auto_tasks"] = [];
-  const ariaSuggestions: string[] = [];
+  const caraSuggestions: string[] = [];
 
   const ADVANCED_STAGES = ["conditional_offer", "pre_start_checks", "final_clearance", "onboarding", "appointed"];
   const isAdvancedStage = ADVANCED_STAGES.includes(candidate.current_stage);
@@ -36,7 +36,7 @@ export function evaluateCandidateRules(
       entity_id: null,
       severity: "blocker",
     });
-    ariaSuggestions.push("Draft a reference chase email for outstanding references");
+    caraSuggestions.push("Draft a reference chase email for outstanding references");
   } else if (receivedRefs.length < 2) {
     warnings.push({
       code: "REF_PENDING",
@@ -67,7 +67,7 @@ export function evaluateCandidateRules(
       entity_id: dbsCheck.id,
       severity: "blocker",
     });
-    ariaSuggestions.push("Flag this DBS concern to the Registered Manager for immediate review");
+    caraSuggestions.push("Flag this DBS concern to the Registered Manager for immediate review");
   }
   if (!dbsCheck || dbsCheck.status === "not_started") {
     if (isAdvancedStage) {
@@ -111,7 +111,7 @@ export function evaluateCandidateRules(
         recommended_action: "Request written explanation from candidate",
       });
     }
-    ariaSuggestions.push("Draft a gap explanation request letter for the candidate");
+    caraSuggestions.push("Draft a gap explanation request letter for the candidate");
   }
 
   // RULE 6: Exceptional start without risk mitigation
@@ -135,7 +135,7 @@ export function evaluateCandidateRules(
       entity_id: null,
       severity: "blocker",
     });
-    ariaSuggestions.push("Review reference discrepancies and consider whether to probe at verbal verification stage");
+    caraSuggestions.push("Review reference discrepancies and consider whether to probe at verbal verification stage");
   }
 
   // RULE 8: Unsatisfactory references
@@ -176,7 +176,7 @@ export function evaluateCandidateRules(
     blockers,
     warnings,
     auto_tasks: autoTasks,
-    aria_suggestions: ariaSuggestions,
+    aria_suggestions: caraSuggestions,
   };
 }
 

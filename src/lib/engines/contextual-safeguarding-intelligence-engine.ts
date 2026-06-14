@@ -98,7 +98,7 @@ export interface ContextualSafeguardingAlert {
   message: string;
 }
 
-export interface AriaContextualInsight {
+export interface CaraContextualInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -109,7 +109,7 @@ export interface ContextualSafeguardingIntelligenceResult {
   child_risk_profiles: ChildRiskProfile[];
   locality_risks: LocalityRiskSummary[];
   alerts: ContextualSafeguardingAlert[];
-  insights: AriaContextualInsight[];
+  insights: CaraContextualInsight[];
 }
 
 export interface ContextualSafeguardingIntelligenceInput {
@@ -426,8 +426,8 @@ function computeInsights(
   screenings: ExploitationScreeningInput[],
   localityRisks: LocalityRiskInput[],
   childRiskProfiles: ChildRiskProfile[]
-): AriaContextualInsight[] {
-  const insights: AriaContextualInsight[] = [];
+): CaraContextualInsight[] {
+  const insights: CaraContextualInsight[] = [];
 
   // CRITICAL: High-risk children without safety plans
   const highRiskWithoutPlan = childRiskProfiles.filter(

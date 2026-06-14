@@ -33,8 +33,8 @@ function clearAll() {
     }
   }
   // Reg45 chips for this home
-  for (const r of db.ariaReg45EvidenceItems.findAll(HOME_ID)) {
-    db.ariaReg45EvidenceItems.patch(r.id, { status: "rejected" });
+  for (const r of db.caraReg45EvidenceItems.findAll(HOME_ID)) {
+    db.caraReg45EvidenceItems.patch(r.id, { status: "rejected" });
   }
 }
 

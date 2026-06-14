@@ -26,8 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const d = (n: number) => {
   const dt = new Date();
@@ -103,12 +103,12 @@ export default function TransAffirmingCarePlanPage() {
     <PageShell
       title="Trans-Affirming Care Plans"
       subtitle="Per-child trans-affirming care plans for trans, non-binary and gender-questioning young people. Child-led pace, identity-affirming actions, family/school/community coordination, safety risk assessment, watchful-waiting clinical model. Distinct from broader LGBTQ+ inclusion records."
-      ariaContext={{ pageTitle: "Trans-Affirming Care Plans", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Trans-Affirming Care Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="trans-affirming-care-plan" />
           <PrintButton title="Trans-Affirming Care Plans" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -335,7 +335,7 @@ export default function TransAffirmingCarePlanPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Trans-Affirming Care Plans — gender identity support, social transition plans, affirming care approach, healthcare referrals, school support plans, family engagement, Reg 45 equality evidence"
         recordType="care_plan"

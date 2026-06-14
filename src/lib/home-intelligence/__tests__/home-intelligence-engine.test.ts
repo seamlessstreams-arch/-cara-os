@@ -52,7 +52,7 @@ function fullModuleSet(): ModuleIntelligenceScore[] {
     mod({ moduleId: "filing-cabinet", moduleName: "Filing Cabinet", domain: "workforce_operations", overallScore: 83, rating: "outstanding" }),
     mod({ moduleId: "hr-files", moduleName: "HR Files", domain: "workforce_operations", overallScore: 71, rating: "good" }),
     mod({ moduleId: "multi-agency", moduleName: "Multi-Agency", domain: "workforce_operations", overallScore: 79, rating: "good" }),
-    mod({ moduleId: "aria-learning", moduleName: "Cara Learning", domain: "workforce_operations", overallScore: 68, rating: "good" }),
+    mod({ moduleId: "cara-learning", moduleName: "Cara Learning", domain: "workforce_operations", overallScore: 68, rating: "good" }),
   ];
 }
 

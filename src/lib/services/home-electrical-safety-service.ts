@@ -271,7 +271,7 @@ export function identifyElectricalSafetyAlerts(
   return alerts;
 }
 
-export function generateElectricalSafetyAriaInsights(
+export function generateElectricalSafetyCaraInsights(
   rows: HomeElectricalSafetyRow[],
 ): string[] {
   const metrics = computeElectricalSafetyMetrics(rows);
@@ -438,5 +438,5 @@ export async function deleteRecord(
 export const _testing = {
   computeElectricalSafetyMetrics,
   identifyElectricalSafetyAlerts,
-  generateElectricalSafetyAriaInsights,
+  generateElectricalSafetyCaraInsights,
 };

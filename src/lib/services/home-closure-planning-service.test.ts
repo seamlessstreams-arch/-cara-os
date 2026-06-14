@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeHomeClosurePlanningMetrics,
   computeHomeClosurePlanningAlerts,
-  generateHomeClosurePlanningAriaInsights,
+  generateHomeClosurePlanningCaraInsights,
   type HomeClosurePlanningRow,
 } from "./home-closure-planning-service";
 
@@ -138,20 +138,20 @@ describe("computeHomeClosurePlanningAlerts", () => {
   });
 });
 
-// ── generateHomeClosurePlanningAriaInsights ──────────────────────────────
+// ── generateHomeClosurePlanningCaraInsights ──────────────────────────────
 
-describe("generateHomeClosurePlanningAriaInsights", () => {
+describe("generateHomeClosurePlanningCaraInsights", () => {
   it("returns 3 insights", () => {
     const metrics = computeHomeClosurePlanningMetrics([makeRow()]);
     const alerts = computeHomeClosurePlanningAlerts([makeRow()]);
-    const insights = generateHomeClosurePlanningAriaInsights(metrics, alerts);
+    const insights = generateHomeClosurePlanningCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
     const metrics = computeHomeClosurePlanningMetrics([]);
     const alerts = computeHomeClosurePlanningAlerts([]);
-    const insights = generateHomeClosurePlanningAriaInsights(metrics, alerts);
+    const insights = generateHomeClosurePlanningCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 });

@@ -15,7 +15,7 @@ import type {
 const {
   computeRadicalisationMetrics,
   computeRadicalisationAlerts,
-  generateRadicalisationAriaInsights,
+  generateRadicalisationCaraInsights,
 } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
@@ -488,39 +488,39 @@ describe("child-radicalisation-prevention-service", () => {
     });
   });
 
-  // ── generateRadicalisationAriaInsights ────────────────────────────────
-  describe("generateRadicalisationAriaInsights", () => {
+  // ── generateRadicalisationCaraInsights ────────────────────────────────
+  describe("generateRadicalisationCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
-      const insights = generateRadicalisationAriaInsights([]);
+      const insights = generateRadicalisationCaraInsights([]);
       expect(insights).toHaveLength(3);
     });
     it("returns 3 insights for populated data", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow(), makeRow()]);
+      const insights = generateRadicalisationCaraInsights([makeRow(), makeRow()]);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [red]", () => {
-      expect(generateRadicalisationAriaInsights([])[0]).toMatch(/^\[red\]/);
+      expect(generateRadicalisationCaraInsights([])[0]).toMatch(/^\[red\]/);
     });
     it("insight 2 starts with [amber]", () => {
-      expect(generateRadicalisationAriaInsights([])[1]).toMatch(/^\[amber\]/);
+      expect(generateRadicalisationCaraInsights([])[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
-      expect(generateRadicalisationAriaInsights([])[2]).toMatch(/^\[reflect\]/);
+      expect(generateRadicalisationCaraInsights([])[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total assessments count", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow(), makeRow()]);
+      const insights = generateRadicalisationCaraInsights([makeRow(), makeRow()]);
       expect(insights[0]).toContain("2 radicalisation prevention assessments");
     });
     it("insight 1 contains unique children count", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
+      const insights = generateRadicalisationCaraInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow()]);
+      const insights = generateRadicalisationCaraInsights([makeRow()]);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains high risk breakdown", () => {
-      const insights = generateRadicalisationAriaInsights([
+      const insights = generateRadicalisationCaraInsights([
         makeRow({ vulnerability_level: "significant" }),
         makeRow({ vulnerability_level: "high" }),
       ]);
@@ -528,81 +528,81 @@ describe("child-radicalisation-prevention-service", () => {
       expect(insights[0]).toContain("1 high");
     });
     it("insight 1 contains channel active count", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow({ assessment_status: "channel_active" })]);
+      const insights = generateRadicalisationCaraInsights([makeRow({ assessment_status: "channel_active" })]);
       expect(insights[0]).toContain("1 Channel case active");
     });
     it("insight 1 uses plural cases for multiple channel active", () => {
-      const insights = generateRadicalisationAriaInsights([
+      const insights = generateRadicalisationCaraInsights([
         makeRow({ assessment_status: "channel_active" }),
         makeRow({ assessment_status: "channel_active" }),
       ]);
       expect(insights[0]).toContain("2 Channel cases active");
     });
     it("insight 1 contains monitoring count", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow({ assessment_status: "monitoring" })]);
+      const insights = generateRadicalisationCaraInsights([makeRow({ assessment_status: "monitoring" })]);
       expect(insights[0]).toContain("1 in monitoring");
     });
     it("insight 1 contains prevent training rate", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow({ prevent_training_completed: true })]);
+      const insights = generateRadicalisationCaraInsights([makeRow({ prevent_training_completed: true })]);
       expect(insights[0]).toContain("100%");
     });
     it("insight 2 mentions critical and high alert counts when present", () => {
       const rows = [
         makeRow({ vulnerability_level: "high", safety_plan_in_place: false, channel_referral_made: false }),
       ];
-      const insights = generateRadicalisationAriaInsights(rows);
+      const insights = generateRadicalisationCaraInsights(rows);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high-priority");
     });
     it("insight 2 shows no concerns when none", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow()]);
+      const insights = generateRadicalisationCaraInsights([makeRow()]);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 2 contains safety plan rate", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow()]);
+      const insights = generateRadicalisationCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Safety plan rate");
     });
     it("insight 2 contains channel referral rate", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow()]);
+      const insights = generateRadicalisationCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Channel referral rate");
     });
     it("insight 2 contains child views rate", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow()]);
+      const insights = generateRadicalisationCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Child views rate");
     });
     it("insight 3 contains reflective question about vulnerability assessments", () => {
-      const insights = generateRadicalisationAriaInsights([]);
+      const insights = generateRadicalisationCaraInsights([]);
       expect(insights[2]).toContain("vulnerability assessments");
     });
     it("insight 3 mentions family engagement", () => {
-      const insights = generateRadicalisationAriaInsights([]);
+      const insights = generateRadicalisationCaraInsights([]);
       expect(insights[2]).toContain("family engagement");
     });
     it("insight 3 mentions multi-agency", () => {
-      const insights = generateRadicalisationAriaInsights([]);
+      const insights = generateRadicalisationCaraInsights([]);
       expect(insights[2]).toContain("multi-agency");
     });
     it("all insights are strings", () => {
-      const insights = generateRadicalisationAriaInsights([makeRow()]);
+      const insights = generateRadicalisationCaraInsights([makeRow()]);
       for (const i of insights) expect(typeof i).toBe("string");
     });
     it("empty array still produces meaningful content", () => {
-      const insights = generateRadicalisationAriaInsights([]);
+      const insights = generateRadicalisationCaraInsights([]);
       expect(insights[0]).toContain("0 radicalisation prevention assessments");
       expect(insights[0]).toContain("0 children");
     });
     it("insight 1 for zero assessments shows 0 significant and 0 high", () => {
-      const insights = generateRadicalisationAriaInsights([]);
+      const insights = generateRadicalisationCaraInsights([]);
       expect(insights[0]).toContain("0 significant");
       expect(insights[0]).toContain("0 high");
     });
     it("insight 2 with only medium alerts shows no critical or high", () => {
       const rows = [makeRow({ child_views_obtained: false, prevent_training_completed: false })];
-      const insights = generateRadicalisationAriaInsights(rows);
+      const insights = generateRadicalisationCaraInsights(rows);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 3 mentions child voice", () => {
-      const insights = generateRadicalisationAriaInsights([]);
+      const insights = generateRadicalisationCaraInsights([]);
       expect(insights[2]).toContain("voice");
     });
   });

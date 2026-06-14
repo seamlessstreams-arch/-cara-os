@@ -1,13 +1,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Early Warnings
 // GET   → list warnings (filterable by status/severity)
-// PATCH → acknowledge / escalate / close (RBAC: aria.approve_outputs)
+// PATCH → acknowledge / escalate / close (RBAC: cara.approve_outputs)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import type { AriaEarlyWarning } from "@/types/aria-studio";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import type { CaraEarlyWarning } from "@/types/cara-studio";
 
 const DEFAULT_HOME_ID = "home_oak";
 const SEVERITY_RANK: Record<string, number> = {
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status");
   const severity = searchParams.get("severity");
 
-  let items: AriaEarlyWarning[] = db.ariaEarlyWarnings.findAll(homeId);
+  let items: CaraEarlyWarning[] = db.caraEarlyWarnings.findAll(homeId);
   if (status) items = items.filter((w) => w.status === status);
   if (severity) items = items.filter((w) => w.severity === severity);
 
@@ -59,13 +59,13 @@ export async function PATCH(req: NextRequest) {
   if (!ALLOWED.includes(status as (typeof ALLOWED)[number])) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
-  const existing = db.ariaEarlyWarnings.findById(id);
+  const existing = db.caraEarlyWarnings.findById(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: existing.home_id,
     intent: `update early_warning ${status}`,
     isSafeguardingSensitive: true,
@@ -73,8 +73,8 @@ export async function PATCH(req: NextRequest) {
   if (!guard.ok) return guard.response;
 
   const now = new Date().toISOString();
-  const updated = db.ariaEarlyWarnings.patch(id, {
-    status: status as AriaEarlyWarning["status"],
+  const updated = db.caraEarlyWarnings.patch(id, {
+    status: status as CaraEarlyWarning["status"],
     acknowledged_by:
       status === "acknowledged" || status === "escalated"
         ? guard.actor.userId

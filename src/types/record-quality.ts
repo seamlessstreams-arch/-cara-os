@@ -19,5 +19,5 @@ export type RecordQualityScore = {
   childCentredness: number;
   riskRelevance: number;
   missingFields: string[];
-  ariaSuggestions: string[];
+  caraSuggestions: string[];
 };

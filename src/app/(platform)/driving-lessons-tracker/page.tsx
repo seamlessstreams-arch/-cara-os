@@ -21,8 +21,8 @@ import { DRIVING_STAGE_LABEL, DRIVING_FUNDING_SOURCE_LABEL } from "@/types/exten
 import { useDrivingRecords } from "@/hooks/use-driving-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -137,11 +137,11 @@ export default function DrivingLessonsTrackerPage() {
     <PageShell
       title="Driving Lessons Tracker"
       subtitle="Provisional licence, theory and practical progress for over-17s — Pathway Plan and Care Leavers (England) Regulations 2010"
-      ariaContext={{ pageTitle: "Driving Lessons Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Driving Lessons Tracker", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Driving Lessons Tracker" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="driving-lessons-tracker" />,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -344,7 +344,7 @@ export default function DrivingLessonsTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Driving Lessons Tracker — theory test, practical test, lessons booked, instructor, hours logged, leaving care, independence, personal transport, pathway plan, funding"
         recordType="education"

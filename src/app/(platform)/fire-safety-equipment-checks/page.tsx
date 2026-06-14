@@ -38,8 +38,8 @@ import {
 } from "@/types/extended";
 import { useFireEquipmentChecks } from "@/hooks/use-fire-equipment-checks";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const statusColour: Record<FireComplianceStatus, string> = {
   compliant: "bg-green-100 text-green-800",
@@ -108,12 +108,12 @@ export default function FireSafetyEquipmentChecksPage() {
     <PageShell
       title="Fire Safety Equipment Checks"
       subtitle="Detailed inspection records — extinguishers, alarms, doors, lighting, and signage"
-      ariaContext={{ pageTitle: "Fire Safety Equipment Checks", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Fire Safety Equipment Checks", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="fire-safety-equipment-checks" />
           <PrintButton title="Fire Safety Equipment Checks" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -263,7 +263,7 @@ export default function FireSafetyEquipmentChecksPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Fire Safety Equipment Checks — fire alarms, extinguishers, escape routes, fire doors, detector tests, evacuation drills, compliance dates, Reg 46, RRFSO 2005"
         recordType="ofsted_evidence"

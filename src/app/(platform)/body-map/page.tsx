@@ -30,8 +30,8 @@ import { toast } from "sonner";
 import { useBodyMap, useCreateBodyMapEntry, useUpdateBodyMapEntry } from "@/hooks/use-body-map";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { BodyRegion, MarkType, MarkColour, BodyMapStatus, BodyMapEntry } from "@/types/extended";
 import {
   Search, Filter, ArrowUpDown, X, Plus,
@@ -247,7 +247,7 @@ export default function BodyMapPage() {
     <PageShell
       title="Body Map Records"
       subtitle="Physical observations, marks, and injury recording"
-      ariaContext={{ pageTitle: "Body Map Records", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Body Map Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Body Map Records" subtitle="Chamberlain House — Safeguarding" />
@@ -255,11 +255,11 @@ export default function BodyMapPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Record Observation
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
-      <AriaPanel mode="assist" pageContext="Body Map — physical injury recording, safeguarding observations, marks and bruising, non-accidental injury indicators" recordType="body_map" userRole="registered_manager" className="mb-2" />
+      <CaraPanel mode="assist" pageContext="Body Map — physical injury recording, safeguarding observations, marks and bruising, non-accidental injury indicators" recordType="body_map" userRole="registered_manager" className="mb-2" />
       {/* ── Loading ────────────────────────────────────────────────────────── */}
       {isLoading && (
         <div className="flex items-center justify-center py-12">

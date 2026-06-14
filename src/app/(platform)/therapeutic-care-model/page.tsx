@@ -24,8 +24,8 @@ import type { TherapeuticStaffTraining, TherapeuticChildImpact, TherapeuticCompe
 import { useTherapeuticStaffTraining } from "@/hooks/use-therapeutic-staff-training";
 import { useTherapeuticChildImpact } from "@/hooks/use-therapeutic-child-impact";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── types ─────────────────────────────────────────────────────────────── */
 
@@ -116,12 +116,12 @@ export default function TherapeuticCareModelPage() {
     <PageShell
       title="Therapeutic Care Model"
       subtitle="The Trauma-Informed, Attachment-Aware, Relational (TIAR) model underpinning practice at Chamberlain House"
-      ariaContext={{ pageTitle: "Therapeutic Care Model", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Therapeutic Care Model", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Therapeutic Care Model" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="therapeutic-care-model" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -374,7 +374,7 @@ export default function TherapeuticCareModelPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Therapeutic Care Model — therapeutic approach framework, trauma-informed practice, attachment-based care, PACE model, therapeutic relationships, evidence base, Reg 45 quality evidence"
         recordType="care_plan"

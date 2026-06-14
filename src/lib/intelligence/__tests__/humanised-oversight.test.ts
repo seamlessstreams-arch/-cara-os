@@ -1,13 +1,13 @@
 import { describe, it, expect, vi } from "vitest";
 import type { HumanisedOversightInput } from "@/types/intelligence.layer";
 
-vi.mock("@/lib/aria/aria-provider", () => ({
-  getAriaProviderConfig: () => ({ configured: false }),
+vi.mock("@/lib/cara/cara-provider", () => ({
+  getCaraProviderConfig: () => ({ configured: false }),
   generateText: vi.fn(),
 }));
 
-vi.mock("@/lib/aria/writingStyleRules", () => ({
-  applyAriaPostprocessor: (text: string) => text,
+vi.mock("@/lib/cara/writingStyleRules", () => ({
+  applyCaraPostprocessor: (text: string) => text,
 }));
 
 describe("generateHumanisedOversight (fallback mode)", () => {

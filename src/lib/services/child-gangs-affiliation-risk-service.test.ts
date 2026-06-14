@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
 } from "./child-gangs-affiliation-risk-service";
 import type { ChildGangsAffiliationRiskRow } from "./child-gangs-affiliation-risk-service";
 
@@ -135,12 +135,12 @@ describe("computeAlerts (gangs)", () => {
   });
 });
 
-// -- computeAriaInsights ------------------------------------------------------
+// -- computeCaraInsights ------------------------------------------------------
 
-describe("computeAriaInsights (gangs)", () => {
+describe("computeCaraInsights (gangs)", () => {
   it("returns 3 insights for empty data", () => {
     const metrics = computeMetrics([]);
-    const insights = computeAriaInsights(metrics);
+    const insights = computeCaraInsights(metrics);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[2]).toContain("[reflect]");
@@ -150,7 +150,7 @@ describe("computeAriaInsights (gangs)", () => {
     const rows = [makeRow({ risk_level: "Significant", safety_plan_in_place: false })];
     const metrics = computeMetrics(rows);
     const alerts = computeAlerts(rows);
-    const insights = computeAriaInsights(metrics, alerts);
+    const insights = computeCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
   });
 });

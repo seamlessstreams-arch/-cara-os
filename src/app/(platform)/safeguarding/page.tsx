@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AriaPanel } from "@/components/aria/aria-panel";
+import { CaraPanel } from "@/components/cara/cara-panel";
 import {
   AlertTriangle, Shield, Eye, CheckCircle2, Clock, FileText,
   Plus, Users, MapPin, Calendar, Phone, Bell, TrendingUp,
@@ -28,7 +28,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import NextLink from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
@@ -493,7 +493,7 @@ function SafeguardingConcernsTab() {
               <div className="rounded-2xl border border-slate-200 p-4">
                 <p className="text-sm text-slate-700 leading-relaxed">{oversightTarget.description}</p>
               </div>
-              <AriaPanel
+              <CaraPanel
                 mode="oversee"
                 pageContext="Safeguarding — Oversight"
                 recordType="safeguarding_oversight"
@@ -1244,7 +1244,7 @@ function ManagerActionsTab() {
   const query = useIncidents({ needs_oversight: true });
   const addOversight = useAddOversight();
   const [oversightNote, setOversightNote] = useState<Record<string, string>>({});
-  const [ariaPanelId, setAriaPanelId] = useState<string | null>(null);
+  const [caraPanelId, setCaraPanelId] = useState<string | null>(null);
 
   const oversightQueue: Incident[] = (query.data?.data ?? [])
     .filter((i) => i.requires_oversight && !i.oversight_by)
@@ -1311,16 +1311,16 @@ function ManagerActionsTab() {
                       <p className="mt-1 text-xs text-slate-600 line-clamp-2">{inc.description}</p>
                     </div>
                     <button
-                      onClick={() => setAriaPanelId(ariaPanelId === inc.id ? null : inc.id)}
+                      onClick={() => setCaraPanelId(caraPanelId === inc.id ? null : inc.id)}
                       className="flex items-center gap-1 rounded-xl border border-violet-200 bg-violet-50 px-2.5 py-1.5 text-[10px] font-semibold text-violet-700 hover:bg-violet-100 shrink-0"
                     >
                       <Sparkles className="h-3 w-3" /> Cara
                     </button>
                   </div>
 
-                  {ariaPanelId === inc.id && (
+                  {caraPanelId === inc.id && (
                     <div className="mt-3">
-                      <AriaPanel
+                      <CaraPanel
                         mode="oversee"
                         pageContext="Safeguarding — Manager Actions"
                         recordType="incident_oversight"
@@ -1453,7 +1453,7 @@ function ManagerActionsTab() {
           <Sparkles className="h-4 w-4 text-violet-600" />
           <span className="text-sm font-bold text-slate-900">Cara — Manager Support</span>
         </div>
-        <AriaPanel
+        <CaraPanel
           mode="oversee"
           pageContext="Safeguarding — Manager Actions"
           linkedRecords="Incidents, missing episodes, chronology, strategy discussions"
@@ -1494,7 +1494,7 @@ export default function SafeguardingPage() {
     <PageShell
       title="Safeguarding"
       subtitle={`${openSafeguarding.length} open concern${openSafeguarding.length !== 1 ? "s" : ""} · ${awaitingOversight.length} awaiting oversight · MASH referral active`}
-      ariaContext={{ pageTitle: "Safeguarding", sourceType: "general" }}
+      caraContext={{ pageTitle: "Safeguarding", sourceType: "general" }}
       quickCreateContext={{
         module: "safeguarding",
         defaultTaskCategory: "safeguarding",
@@ -1506,7 +1506,7 @@ export default function SafeguardingPage() {
           <ExportButton data={openSafeguarding} columns={SAFEGUARDING_EXPORT_COLS} filename="safeguarding-concerns" />
           <PrintButton title="Safeguarding Records" subtitle="Chamberlain House — Safeguarding & Child Protection" targetId="safeguarding-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Safeguarding — evidence upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" className="bg-rose-600 hover:bg-rose-700">
             <Plus className="h-3.5 w-3.5" />
             Log Concern

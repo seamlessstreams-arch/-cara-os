@@ -51,7 +51,7 @@ export interface TrendAlert {
   severity: "critical" | "high" | "medium" | "low";
   message: string;
 }
-export interface AriaTrendInsight {
+export interface CaraTrendInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -60,7 +60,7 @@ export interface RecordingQualityTrendResult {
   overview: RecordingQualityTrendOverview;
   series: WeeklyPoint[];
   alerts: TrendAlert[];
-  insights: AriaTrendInsight[];
+  insights: CaraTrendInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -163,8 +163,8 @@ function buildAlerts(o: RecordingQualityTrendOverview): TrendAlert[] {
   return alerts;
 }
 
-function buildInsights(o: RecordingQualityTrendOverview): AriaTrendInsight[] {
-  const insights: AriaTrendInsight[] = [];
+function buildInsights(o: RecordingQualityTrendOverview): CaraTrendInsight[] {
+  const insights: CaraTrendInsight[] = [];
   if (o.populated_weeks < 2) {
     insights.push({ severity: "warning", text: "Not enough history yet to show a recording-quality trend — keep recording and a trajectory will build over the coming weeks." });
     return insights;

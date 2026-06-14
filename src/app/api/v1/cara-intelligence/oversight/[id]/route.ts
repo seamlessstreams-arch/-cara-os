@@ -5,7 +5,7 @@ interface RouteParams { params: Promise<{ id: string }>; }
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  const record = intelligenceDb.ariaOversight.findById(id);
+  const record = intelligenceDb.caraOversight.findById(id);
   if (!record) return NextResponse.json({ error: "Oversight not found" }, { status: 404 });
   return NextResponse.json({ data: record });
 }
@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  const existing = intelligenceDb.ariaOversight.findById(id);
+  const existing = intelligenceDb.caraOversight.findById(id);
   if (!existing) return NextResponse.json({ error: "Oversight not found" }, { status: 404 });
 
   const patch: Record<string, unknown> = {};
@@ -25,11 +25,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (body[key] !== undefined) patch[key] = body[key];
   }
 
-  const updated = intelligenceDb.ariaOversight.patch(id, patch);
+  const updated = intelligenceDb.caraOversight.patch(id, patch);
   if (!updated) return NextResponse.json({ error: "Oversight not found" }, { status: 404 });
 
   if (body.approval_status === "approved") {
-    intelligenceDb.ariaAuditTrail.create({
+    intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
       user_id: (body.manager_id as string) ?? "staff_darren",
       child_id: updated.child_id,

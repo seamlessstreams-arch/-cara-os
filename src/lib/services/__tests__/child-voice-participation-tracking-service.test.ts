@@ -27,7 +27,7 @@ import type {
 const {
   computeVoiceParticipationMetrics,
   computeVoiceParticipationAlerts,
-  generateVoiceParticipationAriaInsights,
+  generateVoiceParticipationCaraInsights,
 } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
@@ -1210,17 +1210,17 @@ describe("computeVoiceParticipationAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 4. generateVoiceParticipationAriaInsights
+// 4. generateVoiceParticipationCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateVoiceParticipationAriaInsights", () => {
+describe("generateVoiceParticipationCaraInsights", () => {
   it("returns exactly 3 strings", () => {
-    const insights = generateVoiceParticipationAriaInsights([]);
+    const insights = generateVoiceParticipationCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("each insight is a non-empty string", () => {
-    const insights = generateVoiceParticipationAriaInsights([]);
+    const insights = generateVoiceParticipationCaraInsights([]);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1228,23 +1228,23 @@ describe("generateVoiceParticipationAriaInsights", () => {
   });
 
   it("first insight starts with [violet]", () => {
-    const insights = generateVoiceParticipationAriaInsights([makeRow()]);
+    const insights = generateVoiceParticipationCaraInsights([makeRow()]);
     expect(insights[0].startsWith("[violet]")).toBe(true);
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateVoiceParticipationAriaInsights([makeRow()]);
+    const insights = generateVoiceParticipationCaraInsights([makeRow()]);
     expect(insights[1].startsWith("[amber]")).toBe(true);
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateVoiceParticipationAriaInsights([makeRow()]);
+    const insights = generateVoiceParticipationCaraInsights([makeRow()]);
     expect(insights[2].startsWith("[reflect]")).toBe(true);
   });
 
   it("first insight includes total records count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[0]).toContain("3 voice and participation records");
   });
 
@@ -1253,13 +1253,13 @@ describe("generateVoiceParticipationAriaInsights", () => {
       makeRow({ child_name: "Alice" }),
       makeRow({ child_name: "Bob" }),
     ];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[0]).toContain("2 children");
   });
 
   it("first insight uses singular 'child' for 1 unique child", () => {
     const rows = [makeRow({ child_name: "Alice" })];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[0]).toContain("1 child");
     expect(insights[0]).not.toContain("1 children");
   });
@@ -1269,7 +1269,7 @@ describe("generateVoiceParticipationAriaInsights", () => {
       makeRow({ voice_outcome: "views_not_sought" }),
       makeRow({ voice_outcome: "views_not_sought" }),
     ];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[0]).toContain("2 instances");
   });
 
@@ -1277,19 +1277,19 @@ describe("generateVoiceParticipationAriaInsights", () => {
     const rows = [
       makeRow({ voice_outcome: "views_not_sought" }),
     ];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[0]).toContain("1 instance ");
   });
 
   it("first insight includes felt heard rate", () => {
     const rows = [makeRow({ child_felt_heard: true })];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[0]).toContain("Child felt heard rate: 100%");
   });
 
   it("first insight includes decision changed rate", () => {
     const rows = [makeRow({ decision_changed_by_voice: true })];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[0]).toContain("Decision changed by child's voice rate: 100%");
   });
 
@@ -1300,7 +1300,7 @@ describe("generateVoiceParticipationAriaInsights", () => {
       participation_type: "care_plan_review",
       child_felt_heard: false, outcome_fed_back: false,
     })];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high-priority");
   });
@@ -1310,35 +1310,35 @@ describe("generateVoiceParticipationAriaInsights", () => {
       voice_outcome: "views_fully_incorporated",
       child_felt_heard: true, outcome_fed_back: true,
     })];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority concerns");
   });
 
   it("second insight includes outcome_fed_back_rate", () => {
     const rows = [makeRow({ outcome_fed_back: true })];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[1]).toContain("Outcome fed back rate:");
   });
 
   it("second insight includes child_prepared_rate", () => {
     const rows = [makeRow({ child_prepared_beforehand: true })];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[1]).toContain("Child prepared rate:");
   });
 
   it("second insight includes age_appropriate_rate", () => {
     const rows = [makeRow({ age_appropriate_methods: true })];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[1]).toContain("Age-appropriate methods rate:");
   });
 
   it("third insight is a reflective question about participation quality", () => {
-    const insights = generateVoiceParticipationAriaInsights([makeRow()]);
+    const insights = generateVoiceParticipationCaraInsights([makeRow()]);
     expect(insights[2]).toContain("genuinely influencing");
   });
 
   it("handles empty rows without error", () => {
-    const insights = generateVoiceParticipationAriaInsights([]);
+    const insights = generateVoiceParticipationCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 voice and participation records");
   });
@@ -1347,7 +1347,7 @@ describe("generateVoiceParticipationAriaInsights", () => {
     const rows = Array.from({ length: 50 }, (_, i) =>
       makeRow({ child_name: `Child ${i % 10}` }),
     );
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("50 voice and participation records");
     expect(insights[0]).toContain("10 children");

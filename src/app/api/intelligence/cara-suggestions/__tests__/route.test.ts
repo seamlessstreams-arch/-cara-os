@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { GET, PATCH } from "@/app/api/intelligence/cara-suggestions/route";
-import { ariaSuggestions } from "@/lib/intelligence/fallback-store";
+import { caraSuggestions } from "@/lib/intelligence/fallback-store";
 import { NextRequest } from "next/server";
 
 function makeReq(url: string, init?: RequestInit): NextRequest {
   return new NextRequest(new Request(url, init));
 }
 
-describe("aria-suggestions route (fallback mode)", () => {
+describe("cara-suggestions route (fallback mode)", () => {
   beforeEach(() => {
     // Reset audit_timeline / status mutations between tests by reloading from snapshot.
     // Each test below uses its own suggestion id and only asserts on transitions
@@ -34,7 +34,7 @@ describe("aria-suggestions route (fallback mode)", () => {
   });
 
   it("GET ?id= returns a single item", async () => {
-    const seed = ariaSuggestions[0];
+    const seed = caraSuggestions[0];
     const res = await GET(makeReq(`http://x/api/intelligence/cara-suggestions?id=${seed.id}`));
     const body = await res.json();
     expect(body.ok).toBe(true);
@@ -52,7 +52,7 @@ describe("aria-suggestions route (fallback mode)", () => {
   });
 
   it("PATCH approves a suggestion and stamps approved_at + appends audit", async () => {
-    const seed = ariaSuggestions[0];
+    const seed = caraSuggestions[0];
     const before = seed.audit_timeline.length;
     const res = await PATCH(
       makeReq("http://x/api/intelligence/cara-suggestions", {
@@ -75,7 +75,7 @@ describe("aria-suggestions route (fallback mode)", () => {
   });
 
   it("PATCH rejects with reason", async () => {
-    const seed = ariaSuggestions[1];
+    const seed = caraSuggestions[1];
     const res = await PATCH(
       makeReq("http://x/api/intelligence/cara-suggestions", {
         method: "PATCH",

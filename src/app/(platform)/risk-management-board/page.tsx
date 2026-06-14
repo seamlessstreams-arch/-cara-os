@@ -57,15 +57,15 @@ import {
   STRATEGIC_RISK_KRI_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config (icons cannot be serialized) ────────────────────── */
 
 const CATEGORY_CONFIG: Record<StrategicRiskCategory, { icon: React.ElementType; color: string; bg: string; border: string }> = {
   operational:    { icon: Settings,    color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200"    },
   workforce:      { icon: Users,       color: "text-indigo-700",  bg: "bg-indigo-50",  border: "border-indigo-200"  },
-  regulatory:     { icon: Scale,       color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]"  },
+  regulatory:     { icon: Scale,       color: "text-[var(--cs-cara-gold)]",  bg: "bg-[var(--cs-cara-gold-bg)]",  border: "border-[var(--cs-cara-gold-soft)]"  },
   financial:      { icon: Coins,       color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
   reputational:   { icon: Megaphone,   color: "text-rose-700",    bg: "bg-rose-50",    border: "border-rose-200"    },
   strategic:      { icon: Target,      color: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-50",   border: "border-[var(--cs-border)]"   },
@@ -181,12 +181,12 @@ export default function RiskManagementBoardPage() {
     <PageShell
       title="Strategic Risk Management Board"
       subtitle="Organisational risk register — board-level oversight of risks to the home as a regulated business"
-      ariaContext={{ pageTitle: "Strategic Risk Management Board", sourceType: "general" }}
+      caraContext={{ pageTitle: "Strategic Risk Management Board", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={visible} columns={exportCols} filename="strategic-risk-register" />
           <PrintButton title="Strategic Risk Management Board" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -439,7 +439,7 @@ export default function RiskManagementBoardPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Strategic Risk Management Board — organisational risk register, workforce risk, regulatory risk, financial risk, reputational risk, governance risk, RI oversight, QS13 evidence"
         recordType="management_oversight"

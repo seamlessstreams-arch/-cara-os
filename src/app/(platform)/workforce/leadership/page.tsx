@@ -5,8 +5,8 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
   Telescope, Sparkles, ChevronRight, ArrowUpRight,
   CheckCircle2, AlertTriangle, Clock, Search,
@@ -47,7 +47,7 @@ const LEADERSHIP_EXPORT_COLS: ExportColumn<StaffCompetencyProfile>[] = [
 ];
 
 export default function LeadershipReadinessPage() {
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
   const [search, setSearch] = useState("");
 
   const profilesQuery = useCompetencyProfiles({ homeId: "home_oak" });
@@ -108,7 +108,7 @@ export default function LeadershipReadinessPage() {
     <PageShell
       title="Leadership Readiness Panel"
       subtitle="Cara gap analysis for Team Leader → RM → RI succession track"
-      ariaContext={{ pageTitle: "Leadership Readiness Panel", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Leadership Readiness Panel", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -123,7 +123,7 @@ export default function LeadershipReadinessPage() {
           <Button
             size="sm"
             className="gap-1.5 bg-amber-600 hover:bg-amber-700 text-white"
-            onClick={() => setShowAria((p) => !p)}
+            onClick={() => setShowCara((p) => !p)}
           >
             <Sparkles className="h-3.5 w-3.5" />
             Cara Leadership Analysis
@@ -131,15 +131,15 @@ export default function LeadershipReadinessPage() {
           <Link href="/workforce/succession">
             <Button variant="outline" size="sm">Succession Board</Button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="leadership-content" className="space-y-0">
-      {showAria && (
+      {showCara && (
         <div className="relative">
-          <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
-          <AriaPanel
+          <button onClick={() => setShowCara(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
+          <CaraPanel
             mode="staff_development_summary"
             pageContext={`Leadership readiness: ${leadershipProfiles.length} staff on leadership track. Profiles: ${leadershipProfiles.map((p) => `${getStaffName(p.staff_id)} (${p.overall_readiness_score}% towards ${p.target_stage ? PATHWAY_STAGE_LABELS[p.target_stage] : "current stage"})`).join(", ")}`}
           />

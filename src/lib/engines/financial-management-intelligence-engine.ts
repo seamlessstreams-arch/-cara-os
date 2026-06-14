@@ -99,7 +99,7 @@ export interface FinancialAlert {
   message: string;
 }
 
-export interface AriaFinancialInsight {
+export interface CaraFinancialInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -109,7 +109,7 @@ export interface FinancialManagementIntelligenceResult {
   category_spend: CategorySpend[];
   staff_spend: StaffSpend[];
   alerts: FinancialAlert[];
-  insights: AriaFinancialInsight[];
+  insights: CaraFinancialInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -294,7 +294,7 @@ export function computeFinancialManagementIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaFinancialInsight[] = [];
+  const insights: CaraFinancialInsight[] = [];
 
   // Critical: stale approvals
   if (oldPending.length > 0) {

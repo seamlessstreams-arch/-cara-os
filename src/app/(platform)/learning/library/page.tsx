@@ -6,8 +6,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +55,7 @@ function LibraryEntryCard({ entry }: { entry: ResourceLibraryEntry }) {
   };
 
   return (
-    <Card className={cn("border transition-all hover:shadow-sm", entry.is_pinned ? "border-[var(--cs-aria-gold-soft)]" : "border-[var(--cs-border-subtle)]")}>
+    <Card className={cn("border transition-all hover:shadow-sm", entry.is_pinned ? "border-[var(--cs-cara-gold-soft)]" : "border-[var(--cs-border-subtle)]")}>
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           <div className={cn(
@@ -79,7 +79,7 @@ function LibraryEntryCard({ entry }: { entry: ResourceLibraryEntry }) {
                   className={cn(
                     "rounded p-0.5 transition-colors",
                     entry.is_pinned
-                      ? "text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)]"
+                      ? "text-[var(--cs-cara-gold)] hover:text-[var(--cs-cara-gold)]"
                       : "text-[var(--cs-text-gentle)] hover:text-[var(--cs-text-muted)]"
                   )}
                   title={entry.is_pinned ? "Unpin" : "Pin to top"}
@@ -109,7 +109,7 @@ function LibraryEntryCard({ entry }: { entry: ResourceLibraryEntry }) {
                 </Badge>
               )}
               {entry.is_pinned && (
-                <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]">
+                <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]">
                   Pinned
                 </Badge>
               )}
@@ -247,7 +247,7 @@ export default function ResourceLibraryPage() {
     <PageShell
       title="Resource Library"
       subtitle="All approved learning resources — auto-populated when resources are approved"
-      ariaContext={{ pageTitle: "Learning Resource Library", sourceType: "document" }}
+      caraContext={{ pageTitle: "Learning Resource Library", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -259,7 +259,7 @@ export default function ResourceLibraryPage() {
           />
           <PrintButton title="Resource Library" subtitle="Chamberlain House — Learning Resources" targetId="library-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Resource Library upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -270,7 +270,7 @@ export default function ResourceLibraryPage() {
           {[
             { label: "Total Resources", value: stats.total, colour: "text-[var(--cs-text-secondary)]", bg: "bg-slate-50", icon: Library },
             { label: "Approved", value: stats.approved, colour: "text-emerald-700", bg: "bg-emerald-50", icon: CheckCircle2 },
-            { label: "Pinned", value: stats.pinned, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]", icon: Pin },
+            { label: "Pinned", value: stats.pinned, colour: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)]", icon: Pin },
             { label: "Staff Resources", value: stats.staffCount, colour: "text-teal-700", bg: "bg-teal-50", icon: Users },
             { label: "Children Resources", value: stats.childCount, colour: "text-blue-700", bg: "bg-blue-50", icon: BookOpen },
             { label: "Total Uses", value: stats.totalUsage, colour: "text-amber-700", bg: "bg-amber-50", icon: BarChart3 },
@@ -404,7 +404,7 @@ export default function ResourceLibraryPage() {
           </div>
         )}
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Learning Resource Library — training resources, care manuals, policy documents, regulatory guidance, safeguarding resources, therapeutic frameworks, CPD materials"
         recordType="staff_training"

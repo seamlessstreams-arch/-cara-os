@@ -31,7 +31,7 @@ import {
   RENEWAL_PRIORITIES,
 } from "../staff-dbs-renewal-tracking-service";
 
-const { computeDbsMetrics, computeDbsAlerts, generateDbsAriaInsights } = _testing;
+const { computeDbsMetrics, computeDbsAlerts, generateDbsCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -810,48 +810,48 @@ describe("computeDbsAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// generateDbsAriaInsights
+// generateDbsCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateDbsAriaInsights", () => {
+describe("generateDbsCaraInsights", () => {
   // ── Structure ───────────────────────────────────────────────────────────
 
   it("returns exactly 3 insights for empty array", () => {
-    const insights = generateDbsAriaInsights([]);
+    const insights = generateDbsCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for single record", () => {
-    const insights = generateDbsAriaInsights([makeRow()]);
+    const insights = generateDbsCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for multiple records", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights).toHaveLength(3);
   });
 
   it("all insights are strings", () => {
-    const insights = generateDbsAriaInsights([makeRow()]);
+    const insights = generateDbsCaraInsights([makeRow()]);
     for (const i of insights) expect(typeof i).toBe("string");
   });
 
   it("all insights are non-empty", () => {
-    const insights = generateDbsAriaInsights([makeRow()]);
+    const insights = generateDbsCaraInsights([makeRow()]);
     for (const i of insights) expect(i.length).toBeGreaterThan(0);
   });
 
   // ── Insight 1: purple-themed summary ───────────────────────────────────
 
   it("first insight starts with [purple]", () => {
-    const insights = generateDbsAriaInsights([makeRow()]);
+    const insights = generateDbsCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[purple\]/);
   });
 
   it("first insight includes total check count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
@@ -860,7 +860,7 @@ describe("generateDbsAriaInsights", () => {
       makeRow({ staff_name: "Alice" }),
       makeRow({ staff_name: "Bob" }),
     ];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
@@ -869,80 +869,80 @@ describe("generateDbsAriaInsights", () => {
       makeRow({ dbs_status: "expired" }),
       makeRow({ dbs_status: "current" }),
     ];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[0]).toContain("1 expired");
   });
 
   it("first insight includes renewal due count", () => {
     const rows = [makeRow({ dbs_status: "renewal_due" })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[0]).toContain("1 renewal due");
   });
 
   it("first insight includes pending count", () => {
     const rows = [makeRow({ dbs_status: "pending" })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[0]).toContain("1 pending");
   });
 
   it("first insight includes disclosed count", () => {
     const rows = [makeRow({ check_outcome: "information_disclosed" })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[0]).toContain("1 with disclosed information");
   });
 
   it("first insight uses singular check for 1 record", () => {
-    const insights = generateDbsAriaInsights([makeRow()]);
+    const insights = generateDbsCaraInsights([makeRow()]);
     expect(insights[0]).toContain("1 DBS check");
     expect(insights[0]).not.toContain("checks tracked");
   });
 
   it("first insight uses plural checks for 2+ records", () => {
     const rows = [makeRow(), makeRow()];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[0]).toContain("checks");
   });
 
   it("first insight uses singular member for 1 staff", () => {
-    const insights = generateDbsAriaInsights([makeRow()]);
+    const insights = generateDbsCaraInsights([makeRow()]);
     expect(insights[0]).toContain("member");
     expect(insights[0]).not.toContain("members");
   });
 
   it("first insight uses plural members for 2+ staff", () => {
     const rows = [makeRow({ staff_name: "Alice" }), makeRow({ staff_name: "Bob" })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[0]).toContain("members");
   });
 
   // ── Insight 2: amber-themed priorities ──────────────────────────────────
 
   it("second insight starts with [amber]", () => {
-    const insights = generateDbsAriaInsights([makeRow()]);
+    const insights = generateDbsCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("second insight mentions alerts when critical alerts exist", () => {
     const rows = [makeRow({ dbs_status: "expired" })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 
   it("second insight mentions no alerts when all compliant", () => {
     const rows = [makeRow()];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[1]).toMatch(/[Nn]o critical/);
   });
 
   it("second insight includes barred list rate", () => {
     const rows = [makeRow({ barred_list_checked: true }), makeRow({ barred_list_checked: false })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   it("second insight includes enhanced check rate", () => {
     const rows = [makeRow({ enhanced_check_completed: true }), makeRow({ enhanced_check_completed: false })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
@@ -951,27 +951,27 @@ describe("generateDbsAriaInsights", () => {
       makeRow({ update_service_registered: true, dbs_status: "expired" }),
       makeRow({ update_service_registered: false }),
     ];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   // ── Insight 3: reflect-themed question ──────────────────────────────────
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateDbsAriaInsights([makeRow()]);
+    const insights = generateDbsCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions expired count when present", () => {
     const rows = [makeRow({ dbs_status: "expired" })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[2]).toContain("1");
     expect(insights[2]).toContain("expired");
   });
 
   it("third insight uses singular when 1 expired", () => {
     const rows = [makeRow({ dbs_status: "expired" })];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[2]).toContain("check has");
   });
 
@@ -980,7 +980,7 @@ describe("generateDbsAriaInsights", () => {
       makeRow({ dbs_status: "expired", staff_name: "Alice" }),
       makeRow({ dbs_status: "expired", staff_name: "Bob" }),
     ];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[2]).toContain("checks have");
   });
 
@@ -988,7 +988,7 @@ describe("generateDbsAriaInsights", () => {
     const rows = [
       makeRow({ dbs_status: "current", update_service_registered: false }),
     ];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[2]).toContain("Update Service");
   });
 
@@ -996,14 +996,14 @@ describe("generateDbsAriaInsights", () => {
     const rows = [
       makeRow({ dbs_status: "current", update_service_registered: true }),
     ];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[2]).toContain("current");
     expect(insights[2]).toContain("Update Service");
   });
 
   it("third insight references CHR 2015 when fully compliant", () => {
     const rows = [makeRow()];
-    const insights = generateDbsAriaInsights(rows);
+    const insights = generateDbsCaraInsights(rows);
     expect(insights[2]).toContain("CHR 2015");
   });
 });
@@ -1158,7 +1158,7 @@ describe("edge cases", () => {
   });
 
   it("insights handle empty data gracefully", () => {
-    const insights = generateDbsAriaInsights([]);
+    const insights = generateDbsCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 DBS");
     expect(insights[0]).toContain("0 staff");

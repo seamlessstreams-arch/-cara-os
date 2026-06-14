@@ -161,7 +161,7 @@ export function YoungPeopleStrip() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <Heart className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Heart className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Young People
           </CardTitle>
         </CardHeader>
@@ -183,9 +183,9 @@ export function YoungPeopleStrip() {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <Heart className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Heart className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Young People — At a Glance
-            <Badge className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0 text-[10px] rounded-full">
+            <Badge className="bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-0 text-[10px] rounded-full">
               {children.length}
             </Badge>
           </CardTitle>

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeEnvironmentalImpactMetrics,
   computeEnvironmentalImpactAlerts,
-  generateEnvironmentalImpactAriaInsights,
+  generateEnvironmentalImpactCaraInsights,
   type EnvironmentalImpactAssessmentRow,
 } from "./environmental-impact-assessment-service";
 
@@ -136,11 +136,11 @@ describe("computeEnvironmentalImpactAlerts", () => {
   });
 });
 
-describe("generateEnvironmentalImpactAriaInsights", () => {
+describe("generateEnvironmentalImpactCaraInsights", () => {
   it("returns 3 insights", () => {
     const metrics = computeEnvironmentalImpactMetrics([]);
     const alerts = computeEnvironmentalImpactAlerts([]);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[cyan]");
     expect(insights[1]).toContain("[amber]");
@@ -151,7 +151,7 @@ describe("generateEnvironmentalImpactAriaInsights", () => {
     const rows = [makeRow({ performance_rating: "poor", action_plan_created: false })];
     const metrics = computeEnvironmentalImpactMetrics(rows);
     const alerts = computeEnvironmentalImpactAlerts(rows);
-    const insights = generateEnvironmentalImpactAriaInsights(metrics, alerts);
+    const insights = generateEnvironmentalImpactCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("poor");
   });
 });

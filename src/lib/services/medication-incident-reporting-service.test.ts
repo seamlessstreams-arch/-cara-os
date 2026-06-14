@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMedicationIncidentMetrics,
   computeMedicationIncidentAlerts,
-  generateMedicationIncidentAriaInsights,
+  generateMedicationIncidentCaraInsights,
   type MedicationIncidentReportRow,
 } from "./medication-incident-reporting-service";
 
@@ -121,11 +121,11 @@ describe("computeMedicationIncidentAlerts", () => {
   });
 });
 
-describe("generateMedicationIncidentAriaInsights", () => {
+describe("generateMedicationIncidentCaraInsights", () => {
   it("returns 3 insights", () => {
     const metrics = computeMedicationIncidentMetrics([]);
     const alerts = computeMedicationIncidentAlerts([]);
-    const insights = generateMedicationIncidentAriaInsights(metrics, alerts);
+    const insights = generateMedicationIncidentCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[pink]");
     expect(insights[1]).toContain("[amber]");
@@ -138,7 +138,7 @@ describe("generateMedicationIncidentAriaInsights", () => {
     ];
     const metrics = computeMedicationIncidentMetrics(rows);
     const alerts = computeMedicationIncidentAlerts(rows);
-    const insights = generateMedicationIncidentAriaInsights(metrics, alerts);
+    const insights = generateMedicationIncidentCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("1 critical");
   });
 });

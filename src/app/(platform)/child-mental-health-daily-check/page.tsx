@@ -33,8 +33,8 @@ import {
 import { useMentalHealthCheckIns } from "@/hooks/use-mental-health-check-ins";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── colour maps ──────────────────────────────────────────────────────── */
 const MOOD_CONFIG: Record<MoodRating, { color: string; bar: string; label: string }> = {
@@ -42,7 +42,7 @@ const MOOD_CONFIG: Record<MoodRating, { color: string; bar: string; label: strin
   2: { color: "text-orange-600", bar: "bg-orange-400", label: "Low" },
   3: { color: "text-amber-600",  bar: "bg-amber-400",  label: "OK" },
   4: { color: "text-sky-600",    bar: "bg-sky-400",    label: "Good" },
-  5: { color: "text-[var(--cs-aria-gold)]", bar: "bg-[var(--cs-aria-gold-bg)]0", label: "Great" },
+  5: { color: "text-[var(--cs-cara-gold)]", bar: "bg-[var(--cs-cara-gold-bg)]0", label: "Great" },
 };
 
 const SLEEP_COLORS: Record<CheckInSleepQuality, string> = {
@@ -50,14 +50,14 @@ const SLEEP_COLORS: Record<CheckInSleepQuality, string> = {
   "disrupted": "bg-orange-100 text-orange-800",
   "ok":        "bg-amber-100 text-amber-800",
   "good":      "bg-sky-100 text-sky-800",
-  "great":     "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  "great":     "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
 };
 
 const APPETITE_COLORS: Record<CheckInAppetite, string> = {
   "skipped_meals":   "bg-red-100 text-red-800",
   "picked":          "bg-amber-100 text-amber-800",
   "ate_normally":    "bg-sky-100 text-sky-800",
-  "hungry_ate_well": "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  "hungry_ate_well": "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
 };
 
 const ENERGY_COLORS: Record<CheckInEnergy, string> = {
@@ -65,7 +65,7 @@ const ENERGY_COLORS: Record<CheckInEnergy, string> = {
   "low":       "bg-orange-100 text-orange-800",
   "ok":        "bg-amber-100 text-amber-800",
   "good":      "bg-sky-100 text-sky-800",
-  "buzzy":     "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  "buzzy":     "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
 };
 
 /* ── component ───────────────────────────────────────────────────────── */
@@ -148,12 +148,12 @@ export default function ChildMentalHealthDailyCheckPage() {
     <PageShell
       title="Daily Mental Health Check-Ins"
       subtitle="Quick child-led mood and wellbeing pulse — a daily moment to ask, listen, and notice patterns"
-      ariaContext={{ pageTitle: "Daily Mental Health Check-Ins", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Daily Mental Health Check-Ins", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Daily Mental Health Check-Ins" />
           <ExportButton data={filtered} columns={exportCols} filename="daily-mental-health-check-ins" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -167,8 +167,8 @@ export default function ChildMentalHealthDailyCheckPage() {
               <p className="text-lg font-bold">{checkInsThisWeek}</p>
             </div>
           </div>
-          <div className="rounded-xl border bg-gradient-to-br from-[var(--cs-aria-gold-bg)] to-white p-4 flex items-center gap-3">
-            <Smile className={cn("h-5 w-5", MOOD_CONFIG[Math.round(avgMood) as MoodRating]?.color ?? "text-[var(--cs-aria-gold)]")} />
+          <div className="rounded-xl border bg-gradient-to-br from-[var(--cs-cara-gold-bg)] to-white p-4 flex items-center gap-3">
+            <Smile className={cn("h-5 w-5", MOOD_CONFIG[Math.round(avgMood) as MoodRating]?.color ?? "text-[var(--cs-cara-gold)]")} />
             <div>
               <p className="text-xs text-muted-foreground">Average Mood</p>
               <p className={cn("text-lg font-bold", MOOD_CONFIG[Math.round(avgMood) as MoodRating]?.color)}>
@@ -183,8 +183,8 @@ export default function ChildMentalHealthDailyCheckPage() {
               <p className={cn("text-lg font-bold", flagsThisWeek > 0 && "text-amber-600")}>{flagsThisWeek}</p>
             </div>
           </div>
-          <div className="rounded-xl border bg-gradient-to-br from-[var(--cs-aria-gold-bg)] to-white p-4 flex items-center gap-3">
-            <Sun className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+          <div className="rounded-xl border bg-gradient-to-br from-[var(--cs-cara-gold-bg)] to-white p-4 flex items-center gap-3">
+            <Sun className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             <div>
               <p className="text-xs text-muted-foreground">Child-Led Conversations</p>
               <p className="text-lg font-bold">{childLedConversations}</p>
@@ -243,7 +243,7 @@ export default function ChildMentalHealthDailyCheckPage() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <div className={cn(
                       "h-10 w-10 rounded-full flex items-center justify-center text-xl shrink-0",
-                      "bg-gradient-to-br from-sky-50 to-[var(--cs-aria-gold-bg)] border"
+                      "bg-gradient-to-br from-sky-50 to-[var(--cs-cara-gold-bg)] border"
                     )}>
                       <span aria-hidden>{rec.mood_emoji}</span>
                     </div>
@@ -278,7 +278,7 @@ export default function ChildMentalHealthDailyCheckPage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="border-t bg-gradient-to-br from-sky-50/40 to-[var(--cs-aria-gold-bg)]/30 p-4 space-y-4">
+                  <div className="border-t bg-gradient-to-br from-sky-50/40 to-[var(--cs-cara-gold-bg)]/30 p-4 space-y-4">
                     {/* mood scale visual */}
                     <div className="rounded-lg bg-white border p-3">
                       <p className="text-xs font-medium text-[var(--cs-text-secondary)] mb-2">Mood Scale (1-5)</p>
@@ -312,9 +312,9 @@ export default function ChildMentalHealthDailyCheckPage() {
                         </p>
                         <p className="text-sm italic text-[var(--cs-navy)]">&ldquo;{rec.whats_heavy}&rdquo;</p>
                       </div>
-                      <div className="rounded-lg bg-white border border-[var(--cs-aria-gold-soft)] p-3">
-                        <p className="text-xs font-medium text-[var(--cs-aria-gold)] mb-1 flex items-center gap-1.5">
-                          <Sun className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                      <div className="rounded-lg bg-white border border-[var(--cs-cara-gold-soft)] p-3">
+                        <p className="text-xs font-medium text-[var(--cs-cara-gold)] mb-1 flex items-center gap-1.5">
+                          <Sun className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                           What&apos;s Good Today
                         </p>
                         <p className="text-sm italic text-[var(--cs-navy)]">&ldquo;{rec.whats_good}&rdquo;</p>
@@ -367,7 +367,7 @@ export default function ChildMentalHealthDailyCheckPage() {
                     )}
 
                     {rec.weekly_trend_note && (
-                      <div className="rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
+                      <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
                         <p className="text-xs font-medium text-[var(--cs-navy)] mb-1 flex items-center gap-1.5">
                           <TrendingUp className="h-3.5 w-3.5" />
                           Weekly Trend Note
@@ -402,7 +402,7 @@ export default function ChildMentalHealthDailyCheckPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Daily Mental Health Check-Ins — emotional wellbeing scores, mood tracking, self-harm risk, anxiety level, sleep quality, daily check-in, therapeutic rapport, CAMHS monitoring, Reg 45 evidence"
         recordType="direct_work"

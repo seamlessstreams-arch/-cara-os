@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computePocketMoneyAuditMetrics,
   computePocketMoneyAuditAlerts,
-  generatePocketMoneyAuditAriaInsights,
+  generatePocketMoneyAuditCaraInsights,
 } from "./childrens-pocket-money-audit-service";
 import type { ChildrensPocketMoneyAuditRow } from "./childrens-pocket-money-audit-service";
 
@@ -140,14 +140,14 @@ describe("computePocketMoneyAuditAlerts", () => {
   });
 });
 
-// -- generatePocketMoneyAuditAriaInsights -------------------------------------
+// -- generatePocketMoneyAuditCaraInsights -------------------------------------
 
-describe("generatePocketMoneyAuditAriaInsights", () => {
+describe("generatePocketMoneyAuditCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [makeRow(), makeRow({ id: "a2", child_name: "Beth" })];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
 
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[cyan]");
@@ -158,7 +158,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
   it("returns 3 insights even for empty data", () => {
     const metrics = computePocketMoneyAuditMetrics([]);
     const alerts = computePocketMoneyAuditAlerts([]);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 });

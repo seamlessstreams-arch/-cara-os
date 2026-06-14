@@ -12,7 +12,7 @@ export type StatusType =
   | "overdue"
   | "needs_review"
   | "oversight"
-  | "aria"
+  | "cara"
   | "escalated"
   | "low"
   | "medium"
@@ -30,7 +30,7 @@ const STATUS_CONFIG: Record<StatusType, { label: string; classes: string; dot: s
   overdue:      { label: "Overdue",                       classes: "bg-red-50      text-red-700     border-red-200",      dot: "bg-red-500"      },
   needs_review: { label: "Needs Review",                  classes: "bg-amber-50    text-amber-700   border-amber-200",    dot: "bg-amber-500"    },
   oversight:    { label: "Requires Oversight",            classes: "bg-purple-50   text-[var(--cs-oversight)]  border-purple-200",   dot: "bg-[var(--cs-oversight)]"   },
-  aria:         { label: "Cara Suggestion",               classes: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]", dot: "bg-[var(--cs-aria-gold)]" },
+  cara:         { label: "Cara Suggestion",               classes: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]", dot: "bg-[var(--cs-cara-gold)]" },
   escalated:    { label: "Escalated",                     classes: "bg-pink-50     text-pink-700    border-pink-200",     dot: "bg-pink-500"     },
   low:          { label: "Low Risk",                      classes: "bg-emerald-50  text-emerald-700 border-emerald-200",  dot: "bg-emerald-400"  },
   medium:       { label: "Medium Risk",                   classes: "bg-amber-50    text-amber-700   border-amber-200",    dot: "bg-amber-500"    },

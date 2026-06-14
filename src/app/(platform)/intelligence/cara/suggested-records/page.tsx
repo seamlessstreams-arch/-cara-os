@@ -27,23 +27,23 @@ import {
   useRejectSuggestedRecord,
   useCommitSuggestedRecord,
   useProposeSuggestedRecord,
-} from "@/hooks/use-aria-suggested-records";
-import { useBridgeCareEvents } from "@/hooks/use-aria-care-event-bridge";
+} from "@/hooks/use-cara-suggested-records";
+import { useBridgeCareEvents } from "@/hooks/use-cara-care-event-bridge";
 import {
   useAmendCommittedRecord,
   useCommittedVersionHistory,
-} from "@/hooks/use-aria-committed-amendments";
+} from "@/hooks/use-cara-committed-amendments";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import {
-  ARIA_SUGGESTED_RECORD_LABELS,
-  type AriaCommittedRecord,
-  type AriaSuggestedRecord,
-} from "@/types/aria-studio";
+  CARA_SUGGESTED_RECORD_LABELS,
+  type CaraCommittedRecord,
+  type CaraSuggestedRecord,
+} from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const STATUS_TONE: Record<AriaSuggestedRecord["status"], string> = {
+const STATUS_TONE: Record<CaraSuggestedRecord["status"], string> = {
   pending: "bg-amber-100 text-amber-800",
   committed: "bg-emerald-100 text-emerald-800",
   rejected: "bg-rose-100 text-rose-800",
@@ -55,7 +55,7 @@ function PendingCard({
   actorId,
   actorRole,
 }: {
-  rec: AriaSuggestedRecord;
+  rec: CaraSuggestedRecord;
   actorId: string | undefined;
   actorRole: string;
 }) {
@@ -182,7 +182,7 @@ function CommittedCard({
   actorId,
   actorRole,
 }: {
-  rec: AriaCommittedRecord;
+  rec: CaraCommittedRecord;
   actorId: string | undefined;
   actorRole: string;
 }) {
@@ -221,7 +221,7 @@ function CommittedCard({
           <div>
             <CardTitle className="text-sm">{rec.title}</CardTitle>
             <CardDescription className="text-xs">
-              {ARIA_SUGGESTED_RECORD_LABELS[rec.record_type]} · v{rec.version}
+              {CARA_SUGGESTED_RECORD_LABELS[rec.record_type]} · v{rec.version}
               {" · committed "}
               {new Date(rec.committed_at).toLocaleString()} by {rec.committed_by}
               {rec.amended_at && (
@@ -359,7 +359,7 @@ function CommittedCard({
 
 export default function SuggestedRecordsPage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(currentUser?.role ?? "registered_manager");
+  const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
 
   const pending = useSuggestedRecords(HOME_ID, "pending");
   const decided = useSuggestedRecords(HOME_ID);
@@ -384,7 +384,7 @@ export default function SuggestedRecordsPage() {
         { type: "daily_log", id: "demo-evidence", label: "Daily log – evening shift" },
       ],
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 
@@ -400,7 +400,7 @@ export default function SuggestedRecordsPage() {
                 home_id: HOME_ID,
                 limit: 25,
                 actor_id: currentUser?.id,
-                actor_role: ariaRole,
+                actor_role: caraRole,
               })
             }
             disabled={bridge.isPending}
@@ -445,7 +445,7 @@ export default function SuggestedRecordsPage() {
                 key={rec.id}
                 rec={rec}
                 actorId={currentUser?.id}
-                actorRole={ariaRole}
+                actorRole={caraRole}
               />
             ))
           )}
@@ -464,7 +464,7 @@ export default function SuggestedRecordsPage() {
                 key={c.id}
                 rec={c}
                 actorId={currentUser?.id}
-                actorRole={ariaRole}
+                actorRole={caraRole}
               />
             ))
           )}

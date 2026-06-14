@@ -146,7 +146,7 @@ export interface HealthAlert {
   message: string;
 }
 
-export interface AriaHealthInsight {
+export interface CaraHealthInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -158,7 +158,7 @@ export interface HealthWellbeingResult {
   child_profiles: ChildHealthProfile[];
   camhs: CamhsSummary;
   alerts: HealthAlert[];
-  insights: AriaHealthInsight[];
+  insights: CaraHealthInsight[];
 }
 
 export interface HealthWellbeingInput {
@@ -585,7 +585,7 @@ export function computeHealthWellbeing(
 
   // ── Cara Health Insights ─────────────────────────────────────────────────
 
-  const insights: AriaHealthInsight[] = [];
+  const insights: CaraHealthInsight[] = [];
 
   // 1. Health assessment compliance
   if (children.length > 0 && haCount < children.length) {

@@ -20,8 +20,8 @@ import { useSupervisionTrackerRecords, useCreateSupervisionTrackerRecord } from 
 import type { SupervisionTrackerRecord, SupervisionTrackerComplianceStatus } from "@/types/extended";
 import { SUPERVISION_TRACKER_COMPLIANCE_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
@@ -147,12 +147,12 @@ export default function SupervisionTrackerPage() {
 
   return (
     <PageShell title="Supervision Compliance Tracker" subtitle="Reg 33 · Staff Supervision · Workforce Development" 
-      ariaContext={{ pageTitle: "Supervision Compliance Tracker", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Supervision Compliance Tracker", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Supervision Tracker" />
           <ExportButton data={records} columns={exportCols} filename="supervision-tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-3.5 w-3.5 mr-1" /> Log Session
           </Button>
@@ -226,7 +226,7 @@ export default function SupervisionTrackerPage() {
           <p>Children&apos;s Homes (England) Regulations 2015, Reg 33 — the registered person must ensure staff receive appropriate supervision. Minimum frequency: monthly for all care staff, fortnightly during probation. Supervision must include: safeguarding, professional development, wellbeing, and case discussion. Cancelled sessions must be rescheduled within 7 days. Supervision compliance is monitored by the Responsible Individual and inspected by Ofsted.</p>
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Supervision Compliance Tracker — Regulation 33, staff supervision records, overdue supervision, themes, compliance monitoring"
         recordType="supervision"

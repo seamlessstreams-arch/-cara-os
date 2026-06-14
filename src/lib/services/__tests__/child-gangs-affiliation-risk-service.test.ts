@@ -22,7 +22,7 @@ import type {
   ChildGangsAffiliationRiskRow,
 } from "../child-gangs-affiliation-risk-service";
 
-const { computeMetrics, computeAlerts, computeAriaInsights } = _testing;
+const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
 
@@ -1238,15 +1238,15 @@ describe("computeAlerts", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 4. computeAriaInsights
+// 4. computeCaraInsights
 // ═══════════════════════════════════════════════════════════════════════════
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   // ── Structure ──────────────────────────────────────────────────────
   describe("structure", () => {
     it("returns an array of 3 strings", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights).toHaveLength(3);
       for (const i of insights) {
         expect(typeof i).toBe("string");
@@ -1254,15 +1254,15 @@ describe("computeAriaInsights", () => {
     });
     it("first insight starts with [red]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[0]).toMatch(/^\[red\]/);
+      expect(computeCaraInsights(metrics)[0]).toMatch(/^\[red\]/);
     });
     it("second insight starts with [amber]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[1]).toMatch(/^\[amber\]/);
+      expect(computeCaraInsights(metrics)[1]).toMatch(/^\[amber\]/);
     });
     it("third insight starts with [reflect]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[2]).toMatch(/^\[reflect\]/);
+      expect(computeCaraInsights(metrics)[2]).toMatch(/^\[reflect\]/);
     });
   });
 
@@ -1270,15 +1270,15 @@ describe("computeAriaInsights", () => {
   describe("empty data", () => {
     it("first insight mentions 0 assessments", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[0]).toContain("0 gang affiliation risk assessments");
+      expect(computeCaraInsights(metrics)[0]).toContain("0 gang affiliation risk assessments");
     });
     it("first insight mentions 0 children", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[0]).toContain("0 children");
+      expect(computeCaraInsights(metrics)[0]).toContain("0 children");
     });
     it("second insight mentions no critical or high-priority concerns", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[1]).toContain("No critical or high-priority concerns");
+      expect(computeCaraInsights(metrics)[1]).toContain("No critical or high-priority concerns");
     });
   });
 
@@ -1292,19 +1292,19 @@ describe("computeAriaInsights", () => {
     const alerts = computeAlerts(rows);
 
     it("first insight mentions total assessments", () => {
-      expect(computeAriaInsights(metrics, alerts)[0]).toContain("2 gang affiliation risk assessments");
+      expect(computeCaraInsights(metrics, alerts)[0]).toContain("2 gang affiliation risk assessments");
     });
     it("first insight mentions unique children", () => {
-      expect(computeAriaInsights(metrics, alerts)[0]).toContain("2 children");
+      expect(computeCaraInsights(metrics, alerts)[0]).toContain("2 children");
     });
     it("first insight mentions high risk count", () => {
-      expect(computeAriaInsights(metrics, alerts)[0]).toContain("1 at High or Significant risk level");
+      expect(computeCaraInsights(metrics, alerts)[0]).toContain("1 at High or Significant risk level");
     });
     it("first insight mentions county lines count", () => {
-      expect(computeAriaInsights(metrics, alerts)[0]).toContain("1 county lines case");
+      expect(computeCaraInsights(metrics, alerts)[0]).toContain("1 county lines case");
     });
     it("first insight mentions NRM referral count", () => {
-      expect(computeAriaInsights(metrics, alerts)[0]).toContain("NRM referral count: 1");
+      expect(computeCaraInsights(metrics, alerts)[0]).toContain("NRM referral count: 1");
     });
   });
 
@@ -1312,33 +1312,33 @@ describe("computeAriaInsights", () => {
   describe("singular/plural", () => {
     it("uses singular 'assessment' for 1 record", () => {
       const metrics = computeMetrics([makeRow()]);
-      expect(computeAriaInsights(metrics)[0]).toContain("1 gang affiliation risk assessment ");
+      expect(computeCaraInsights(metrics)[0]).toContain("1 gang affiliation risk assessment ");
     });
     it("uses plural 'assessments' for 2 records", () => {
       const metrics = computeMetrics([makeRow({ id: "1" }), makeRow({ id: "2" })]);
-      expect(computeAriaInsights(metrics)[0]).toContain("2 gang affiliation risk assessments");
+      expect(computeCaraInsights(metrics)[0]).toContain("2 gang affiliation risk assessments");
     });
     it("uses singular 'child' for 1 unique child", () => {
       const metrics = computeMetrics([makeRow()]);
-      expect(computeAriaInsights(metrics)[0]).toContain("1 child");
+      expect(computeCaraInsights(metrics)[0]).toContain("1 child");
     });
     it("uses plural 'children' for 2 unique children", () => {
       const metrics = computeMetrics([
         makeRow({ id: "1", child_name: "A" }),
         makeRow({ id: "2", child_name: "B" }),
       ]);
-      expect(computeAriaInsights(metrics)[0]).toContain("2 children");
+      expect(computeCaraInsights(metrics)[0]).toContain("2 children");
     });
     it("uses singular 'case' for 1 county lines", () => {
       const metrics = computeMetrics([makeRow({ county_lines_risk: true })]);
-      expect(computeAriaInsights(metrics)[0]).toContain("1 county lines case.");
+      expect(computeCaraInsights(metrics)[0]).toContain("1 county lines case.");
     });
     it("uses plural 'cases' for 2 county lines", () => {
       const metrics = computeMetrics([
         makeRow({ id: "1", county_lines_risk: true }),
         makeRow({ id: "2", county_lines_risk: true }),
       ]);
-      expect(computeAriaInsights(metrics)[0]).toContain("2 county lines cases");
+      expect(computeCaraInsights(metrics)[0]).toContain("2 county lines cases");
     });
   });
 
@@ -1361,7 +1361,7 @@ describe("computeAriaInsights", () => {
       ];
       const metrics = computeMetrics(rows);
       const alerts = computeAlerts(rows);
-      const insight = computeAriaInsights(metrics, alerts)[1];
+      const insight = computeCaraInsights(metrics, alerts)[1];
       expect(insight).toContain("1 critical and 1 high-priority concerns");
     });
     it("mentions no concerns when no alerts", () => {
@@ -1370,24 +1370,24 @@ describe("computeAriaInsights", () => {
       ];
       const metrics = computeMetrics(rows);
       const alerts = computeAlerts(rows);
-      const insight = computeAriaInsights(metrics, alerts)[1];
+      const insight = computeCaraInsights(metrics, alerts)[1];
       expect(insight).toContain("No critical or high-priority concerns");
     });
     it("includes safety plan rate", () => {
       const metrics = computeMetrics([makeRow()]);
-      expect(computeAriaInsights(metrics)[1]).toContain("Safety plan rate:");
+      expect(computeCaraInsights(metrics)[1]).toContain("Safety plan rate:");
     });
     it("includes multi-agency rate", () => {
       const metrics = computeMetrics([makeRow()]);
-      expect(computeAriaInsights(metrics)[1]).toContain("Multi-agency rate:");
+      expect(computeCaraInsights(metrics)[1]).toContain("Multi-agency rate:");
     });
     it("includes police notification rate", () => {
       const metrics = computeMetrics([makeRow()]);
-      expect(computeAriaInsights(metrics)[1]).toContain("Police notification rate:");
+      expect(computeCaraInsights(metrics)[1]).toContain("Police notification rate:");
     });
     it("handles alerts being undefined", () => {
       const metrics = computeMetrics([makeRow()]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
   });
@@ -1396,19 +1396,19 @@ describe("computeAriaInsights", () => {
   describe("reflective question", () => {
     it("contains a question mark", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[2]).toContain("?");
+      expect(computeCaraInsights(metrics)[2]).toContain("?");
     });
     it("mentions gang affiliation", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[2]).toContain("gang affiliation");
+      expect(computeCaraInsights(metrics)[2]).toContain("gang affiliation");
     });
     it("mentions multi-agency partners", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[2]).toContain("multi-agency partners");
+      expect(computeCaraInsights(metrics)[2]).toContain("multi-agency partners");
     });
     it("mentions disruption strategy", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[2]).toContain("disruption strategy");
+      expect(computeCaraInsights(metrics)[2]).toContain("disruption strategy");
     });
   });
 });

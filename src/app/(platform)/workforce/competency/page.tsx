@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
@@ -212,7 +212,7 @@ export default function CompetencyFrameworkPage() {
     <PageShell
       title="Competency Framework"
       subtitle="10-domain scoring matrix across all staff — gaps, strengths & team averages"
-      ariaContext={{ pageTitle: "Staff Competency Matrix", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Competency Matrix", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -225,7 +225,7 @@ export default function CompetencyFrameworkPage() {
               Workforce Hub
             </button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -280,7 +280,7 @@ export default function CompetencyFrameworkPage() {
             placeholder="Search by name, role or stage..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white py-1.5 pl-9 pr-3 text-xs text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:ring-1 focus:ring-[var(--cs-aria-gold)]/30 outline-none transition-all"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white py-1.5 pl-9 pr-3 text-xs text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-cara-gold)] focus:ring-1 focus:ring-[var(--cs-cara-gold)]/30 outline-none transition-all"
           />
         </div>
         <div className="flex items-center gap-1.5 text-xs text-[var(--cs-text-muted)] shrink-0">
@@ -526,7 +526,7 @@ export default function CompetencyFrameworkPage() {
         regular supervision). ILACS — Quality of Care: workforce capability and competency directly assessed by inspectors.
       </div>
       </div>{/* close #competency-content */}
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Competency Matrix — competency assessments, skills frameworks, Reg 34 development, ILACS workforce quality, competency gaps, professional development, Ofsted inspection evidence"
         recordType="staff_training"

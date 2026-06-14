@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeStaffConflictMetrics,
   computeStaffConflictAlerts,
-  generateStaffConflictAriaInsights,
+  generateStaffConflictCaraInsights,
 } from "./staff-conflict-of-interest-service";
 import type { StaffConflictOfInterestRow } from "./staff-conflict-of-interest-service";
 
@@ -163,13 +163,13 @@ describe("computeStaffConflictAlerts", () => {
   });
 });
 
-// -- generateStaffConflictAriaInsights ----------------------------------------
+// -- generateStaffConflictCaraInsights ----------------------------------------
 
-describe("generateStaffConflictAriaInsights", () => {
+describe("generateStaffConflictCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
     const m = computeStaffConflictMetrics([]);
     const a = computeStaffConflictAlerts([]);
-    const insights = generateStaffConflictAriaInsights(m, a);
+    const insights = generateStaffConflictCaraInsights(m, a);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[cyan]");
     expect(insights[2]).toContain("[reflect]");

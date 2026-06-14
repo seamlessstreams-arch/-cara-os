@@ -29,7 +29,7 @@ export default function WorkforcePage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 80% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(45% 45% at 0% 30%, var(--cs-aria-glow) 0%, transparent 55%)" }} />
+        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(55% 50% at 80% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(45% 45% at 0% 30%, var(--cs-cara-glow) 0%, transparent 55%)" }} />
         <div className="relative mx-auto max-w-4xl px-5 py-16 text-center lg:py-24">
           <SectionEyebrow>Workforce &amp; safe access</SectionEyebrow>
           <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-[var(--cs-navy)] sm:text-5xl">
@@ -126,8 +126,8 @@ export default function WorkforcePage() {
                   </div>
                 ))}
               </div>
-              <div className="mt-4 rounded-2xl border border-[var(--cs-border)]/60 bg-[var(--cs-aria-gold-bg)]/50 px-4 py-3">
-                <div className="flex items-center gap-2 text-xs font-bold text-[var(--cs-navy)]"><GraduationCap className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Training currency</div>
+              <div className="mt-4 rounded-2xl border border-[var(--cs-border)]/60 bg-[var(--cs-cara-gold-bg)]/50 px-4 py-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-[var(--cs-navy)]"><GraduationCap className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Training currency</div>
                 <p className="mt-1 text-[11px] text-[var(--cs-text-secondary)]">Safeguarding, first aid, medication &amp; Team-Teach all in date for staff on shift.</p>
               </div>
             </div>

@@ -31,8 +31,8 @@ import {
   AlertTriangle, CheckCircle2, Clock, Target, Calendar, Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Local config ────────────────────────────────────────────────────────────
 const AREA_META: Record<TransitionPlanningArea, { icon: React.ReactNode; color: string }> = {
@@ -176,13 +176,13 @@ export default function TransitionPlanningPage() {
     <PageShell
       title="Transition Planning"
       subtitle="Pathway planning for independence — tracking goals across all life areas"
-      ariaContext={{ pageTitle: "Transition Planning", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Transition Planning", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Transition Planning" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="transition-planning" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Goal</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -433,7 +433,7 @@ export default function TransitionPlanningPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Transition Planning — leaving care plans, pathway plans, moving on plans, transition goals, independence skills, after-care support, accommodation planning, Reg 45 quality evidence"
         recordType="placement_plan"

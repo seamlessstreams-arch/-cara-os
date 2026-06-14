@@ -103,7 +103,7 @@ export interface DoLAlert {
   message: string;
 }
 
-export interface AriaDoLInsight {
+export interface CaraDoLInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -114,7 +114,7 @@ export interface DoLIntelligenceResult {
   child_restrictions: ChildRestrictionProfile[];
   active_orders: ActiveOrderSummary[];
   alerts: DoLAlert[];
-  insights: AriaDoLInsight[];
+  insights: CaraDoLInsight[];
 }
 
 // ── Type Label Maps ─────────────────────────────────────────────────────────
@@ -320,7 +320,7 @@ export function computeDoLIntelligence(input: DoLIntelligenceInput): DoLIntellig
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────────
-  const insights: AriaDoLInsight[] = [];
+  const insights: CaraDoLInsight[] = [];
 
   // Critical: DoL orders expiring imminently without renewal
   const imminentOrders = active_orders.filter(

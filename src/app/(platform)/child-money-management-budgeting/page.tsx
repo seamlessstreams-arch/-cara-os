@@ -30,8 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<MoneyRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -112,12 +112,12 @@ export default function ChildMoneyManagementBudgetingPage() {
     <PageShell
       title="Money Management & Budgeting"
       subtitle="Per-child practical money management — bank app fluency, weekly budget, payslip reading, scam recognition, BNPL risks, comparison shopping, debt awareness. Critical preparation for leaving care."
-      ariaContext={{ pageTitle: "Money Management & Budgeting", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Money Management & Budgeting", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-money-management-budgeting" />
           <PrintButton title="Money Management & Budgeting" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -243,7 +243,7 @@ export default function ChildMoneyManagementBudgetingPage() {
                         <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Tools used</div>
                         <div className="flex flex-wrap gap-1.5">
                           {r.tools_used.map((t, i) => (
-                            <span key={i} className="text-xs px-2 py-0.5 rounded-full border bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{t}</span>
+                            <span key={i} className="text-xs px-2 py-0.5 rounded-full border bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">{t}</span>
                           ))}
                         </div>
                       </div>
@@ -279,7 +279,7 @@ export default function ChildMoneyManagementBudgetingPage() {
         })}
       </div>
 
-      <div className="mt-6 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+      <div className="mt-6 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
         <div className="font-semibold mb-1">Regulatory framework</div>
         <p>
           Practice is grounded in the Pathway Plan duty (Care Leavers (England) Regulations 2010), Quality Standard 6
@@ -295,7 +295,7 @@ export default function ChildMoneyManagementBudgetingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Money Management & Budgeting — pocket money, savings, spending records, independent living skills, financial education, benefit transitions, Pathway Plan finance, LAC entitlements"
         recordType="direct_work"

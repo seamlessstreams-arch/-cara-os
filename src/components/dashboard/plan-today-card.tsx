@@ -16,7 +16,7 @@ const DOT: Record<ScheduleBlock["kind"], string> = {
   anchor: "bg-[var(--cs-teal)]",
   task: "bg-[var(--cs-navy)]",
   break: "bg-[var(--cs-text-gentle)]",
-  routine: "bg-[var(--cs-aria-gold)]",
+  routine: "bg-[var(--cs-cara-gold)]",
 };
 
 function PlanTodayInner() {

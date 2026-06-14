@@ -1,0 +1,439 @@
+// ══════════════════════════════════════════════════════════════════════════════
+// Cara STUDIO — AI PROVIDER ABSTRACTION
+//
+// Multi-provider layer: OpenAI, Anthropic, Gemini, or safe stub fallback.
+// Server-side only — never import in client components.
+// ══════════════════════════════════════════════════════════════════════════════
+
+export interface StudioAIProviderConfig {
+  configured: boolean;
+  provider: "openai" | "anthropic" | "gemini" | "stub";
+  model: string;
+  maxSourceTokens: number;
+  reason?: string;
+}
+
+export interface StudioAIResponse {
+  content: string;
+  model: string;
+  provider: string;
+  tokens_used?: number;
+}
+
+export function getStudioAIProvider(): StudioAIProviderConfig {
+  // Default: when AI_PROVIDER isn't set, use Anthropic if a key is present
+  // (matching the platform-wide cara-provider default) — stub only when no key.
+  const defaultProvider = process.env.ANTHROPIC_API_KEY ? "anthropic" : "stub";
+  const provider = (process.env.AI_PROVIDER ?? defaultProvider).toLowerCase() as StudioAIProviderConfig["provider"];
+  const model = process.env.AI_DEFAULT_MODEL ?? "gpt-4.1-mini";
+  const maxSourceTokens = parseInt((process.env.CARA_MAX_SOURCE_TOKENS ?? process.env.CARA_MAX_SOURCE_TOKENS) ?? "8000", 10);
+
+  if (provider === "openai") {
+    const key = process.env.OPENAI_API_KEY;
+    if (!key || key.includes("placeholder")) {
+      return { configured: false, provider: "stub", model, maxSourceTokens, reason: "OPENAI_API_KEY not configured. Using demo mode." };
+    }
+    return { configured: true, provider: "openai", model, maxSourceTokens };
+  }
+
+  if (provider === "anthropic") {
+    const key = process.env.ANTHROPIC_API_KEY;
+    if (!key || key.includes("placeholder")) {
+      return { configured: false, provider: "stub", model: "claude-sonnet-4-20250514", maxSourceTokens, reason: "ANTHROPIC_API_KEY not configured. Using demo mode." };
+    }
+    return { configured: true, provider: "anthropic", model: process.env.AI_DEFAULT_MODEL ?? "claude-sonnet-4-20250514", maxSourceTokens };
+  }
+
+  if (provider === "gemini") {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+      return { configured: false, provider: "stub", model: "gemini-2.5-pro", maxSourceTokens, reason: "GEMINI_API_KEY not configured. Using demo mode." };
+    }
+    return { configured: true, provider: "gemini", model: process.env.AI_DEFAULT_MODEL ?? "gemini-2.5-pro", maxSourceTokens };
+  }
+
+  return { configured: false, provider: "stub", model: "stub", maxSourceTokens, reason: "AI_PROVIDER not set or set to 'stub'. Using demo mode." };
+}
+
+export async function generateStudioContent(
+  systemPrompt: string,
+  userPrompt: string,
+  options?: { maxTokens?: number; temperature?: number },
+): Promise<StudioAIResponse> {
+  const config = getStudioAIProvider();
+  const maxTokens = options?.maxTokens ?? 4096;
+  const temperature = options?.temperature ?? 0.4;
+
+  // ── OpenAI ──────────────────────────────────────────────────────────────
+  if (config.configured && config.provider === "openai") {
+    try {
+      const moduleName = "openai"; const { default: OpenAI } = await import(/* webpackIgnore: true */ moduleName) as { default: new (opts: { apiKey: string | undefined }) => any };
+      const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      const response = await client.chat.completions.create({
+        model: config.model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt },
+        ],
+        max_tokens: maxTokens,
+        temperature,
+      });
+      return {
+        content: response.choices[0]?.message?.content ?? "",
+        model: config.model,
+        provider: "openai",
+        tokens_used: response.usage?.total_tokens,
+      };
+    } catch (err) {
+      console.error("[cara-studio] OpenAI generation failed:", err);
+      return generateStubContent(systemPrompt, userPrompt);
+    }
+  }
+
+  // ── Anthropic ───────────────────────────────────────────────────────────
+  if (config.configured && config.provider === "anthropic") {
+    try {
+      const { default: Anthropic } = await import("@anthropic-ai/sdk");
+      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const response = await client.messages.create({
+        model: config.model,
+        max_tokens: maxTokens,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userPrompt }],
+      });
+      const text = response.content
+        .filter((b) => b.type === "text")
+        .map((b) => ("text" in b ? b.text : ""))
+        .join("");
+      return {
+        content: text,
+        model: config.model,
+        provider: "anthropic",
+        tokens_used: (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0),
+      };
+    } catch (err) {
+      console.error("[cara-studio] Anthropic generation failed:", err);
+      return generateStubContent(systemPrompt, userPrompt);
+    }
+  }
+
+  // ── Stub / Demo ─────────────────────────────────────────────────────────
+  return generateStubContent(systemPrompt, userPrompt);
+}
+
+function generateStubContent(_system: string, userPrompt: string): StudioAIResponse {
+  const artifactType = extractArtifactType(userPrompt);
+  const content = STUB_RESPONSES[artifactType] ?? STUB_RESPONSES.default;
+  return {
+    content: `⚠️ DEMO MODE — This content was generated by the Cara Studio stub provider. Configure AI_PROVIDER and the appropriate API key for live generation.\n\n${content}`,
+    model: "stub",
+    provider: "stub",
+  };
+}
+
+function extractArtifactType(prompt: string): string {
+  const lower = prompt.toLowerCase();
+  if (lower.includes("keywork")) return "keywork_session";
+  if (lower.includes("management oversight")) return "management_oversight";
+  if (lower.includes("risk review")) return "risk_review";
+  if (lower.includes("incident learning")) return "incident_learning_review";
+  if (lower.includes("staff training")) return "staff_training";
+  if (lower.includes("child-friendly") || lower.includes("child friendly")) return "child_friendly_explanation";
+  if (lower.includes("reg 45") || lower.includes("reg45")) return "reg45_summary";
+  if (lower.includes("ofsted")) return "ofsted_readiness_summary";
+  if (lower.includes("safeguarding")) return "safeguarding_review";
+  if (lower.includes("supervision")) return "supervision_prompt";
+  if (lower.includes("action plan")) return "action_plan";
+  return "default";
+}
+
+const STUB_RESPONSES: Record<string, string> = {
+  keywork_session: `# Key Work Session Plan
+
+**Session Title:** Understanding What Helps When Things Feel Hard
+**Framework:** PACE (Playfulness, Acceptance, Curiosity, Empathy)
+
+## Purpose
+To explore what the young person finds helpful during difficult moments, building on recent daily log entries showing improved self-regulation.
+
+## Evidence Used
+- Daily log entries from the past two weeks showing three occasions where the young person used their calm-down strategies independently
+- Key work session from last month where they identified music as helpful
+
+## Child Voice Currently Known
+"Sometimes I just need five minutes and my headphones" — recorded in daily log, 8 May 2026.
+
+## Therapeutic Rationale
+The young person has shown growing capacity to recognise their own emotional states. This session builds on that progress using a strengths-based approach within a PACE framework.
+
+## Staff Preparation
+- Ensure the young person's preferred space is available
+- Have creative materials ready (scaling cards, emotion wheels)
+- Review recent logs for current themes
+
+## Suggested Opening
+"I've noticed something really positive recently — you've been handling some tricky moments brilliantly. I wondered if we could talk about what's been helping?"
+
+## Reflective Questions
+1. "What does it feel like in your body when things start to feel too much?"
+2. "What helped you last Tuesday when you went to your room instead of shouting?"
+3. "If you could teach a new staff member one thing about supporting you, what would it be?"
+
+## Follow-up Actions
+- [ ] Update care plan with identified strategies
+- [ ] Share learning with team at handover
+- [ ] Schedule next key work session within two weeks
+
+## Human Review Required
+This is a draft session plan. A staff member must review, personalise, and approve before use.`,
+
+  management_oversight: `# Management Oversight
+
+## Evidence Reviewed
+Based on available records from the selected period, this oversight comment addresses the care and progress of the young person.
+
+## Oversight Comment
+The evidence shows the team has maintained consistent, child-centred practice this week. Daily recordings are timely and capture the young person's voice well. The key work session on Tuesday was well-planned and followed the PACE framework appropriately.
+
+## Child Impact Analysis
+The young person appears settled, with improved school attendance this week (4 out of 5 days) and no incidents. Their mood has been described as "bright" in three daily logs.
+
+## Staff Practice Analysis
+Staff have consistently used de-escalation approaches and maintained familiar routines. Handovers have been detailed and action-focused.
+
+## Risk Analysis
+No new risks identified. Current risk assessment remains appropriate based on this week's evidence.
+
+## Regulatory Relevance
+- Reg 11 (Duty of Care) — evidenced through consistent daily recording
+- Reg 14 (Care Planning) — key work session aligned to care plan objectives
+
+## Actions Required
+- [ ] Acknowledge good practice with the team at next handover
+- [ ] Ensure next key work session is booked within the care plan review cycle
+
+## Human Review Required
+This oversight comment is a draft. The Registered Manager must review, amend if necessary, and approve before it becomes part of the official record.`,
+
+  risk_review: `# Risk Review
+
+## Current Risk Summary
+Based on the evidence available, the young person's overall risk profile remains at the current assessed level.
+
+## Recent Indicators
+The selected evidence shows patterns that the reviewing manager should consider when assessing whether the current risk rating remains appropriate.
+
+## Protective Factors
+- Strong relationship with key worker
+- Engagement with education
+- Consistent routines maintained by the team
+
+## Staff Consistency Needs
+The evidence suggests this young person responds best to familiar adults. Rota planning should prioritise key worker availability during higher-risk periods.
+
+## Safeguarding Considerations
+No new safeguarding concerns identified in the reviewed evidence. Existing safeguarding plan remains in place.
+
+## Human Review Required
+This risk review is a professional hypothesis based on available evidence. A manager must review, apply professional judgement, and determine whether the risk assessment requires updating.`,
+
+  incident_learning_review: `# Incident Learning Review
+
+## What Happened
+Based on the incident record, this review examines the sequence of events, responses, and learning opportunities.
+
+## Immediate Response
+The staff response was timely and followed the behaviour support plan. The young person was offered space and a familiar adult.
+
+## Child Impact
+The young person's account should be captured through a return-to-baseline conversation. Their voice is essential to understanding what happened from their perspective.
+
+## What Went Well
+- Staff maintained a calm, PACE-informed approach
+- De-escalation was attempted before any physical intervention consideration
+- Post-incident repair was initiated within the hour
+
+## What Needs to Improve
+- Earlier recognition of escalation signs may have prevented the incident
+- The daily log prior to the incident noted possible triggers that were not shared at handover
+
+## Staff Learning
+The team may benefit from a reflective discussion about early warning signs and handover communication.
+
+## Human Review Required
+This learning review is a draft. The manager must review with the team, capture the young person's view, and approve before filing.`,
+
+  staff_training: `# Staff Training Session
+
+**Title:** Understanding Escalation Patterns and Early Intervention
+**Evidence Base:** Practice themes identified from recent recording analysis
+
+## Learning Objectives
+1. Recognise early warning signs of emotional dysregulation
+2. Apply PACE principles during the early stages of escalation
+3. Understand the importance of handover communication for continuity of care
+
+## Case Study Scenario
+A young person has been quieter than usual during tea time. They refused their favourite meal and went to their room without speaking. The previous shift noted a difficult phone call with a family member. The current shift was not aware of this.
+
+## Discussion Prompts
+- What information would have helped the current shift team?
+- How might the young person be feeling? What unmet need might their behaviour be communicating?
+- What would a PACE-informed response look like in this moment?
+
+## Reflective Questions
+1. Think of a time when you missed an early sign. What would you do differently now?
+2. How do you ensure critical information is shared between shifts?
+3. What does "emotional availability" look like in practice?
+
+## Human Review Required
+This training content is a draft generated from practice themes. A manager must review, adapt to the team's needs, and approve before delivery.`,
+
+  child_friendly_explanation: `# What's Happening — A Simple Explanation
+
+## What Happened
+Something happened recently that the adults around you want to make sure you understand.
+
+## What the Adults Are Thinking About
+The grown-ups who look after you are thinking about how to make sure you feel safe and supported. They want to make sure everything is going well for you.
+
+## What Support Is Available
+- You can talk to your key worker any time
+- You can speak to an independent advocate if you want to talk to someone outside the home
+- You can write things down if talking feels hard
+
+## What Happens Next
+Your key worker will check in with you to see how you're feeling about everything. You don't have to talk about it if you don't want to, but they'll be there if you do.
+
+## Your Rights
+- You have the right to be listened to
+- You have the right to say how you feel
+- You have the right to have someone speak up for you
+
+## Human Review Required
+This explanation is a draft. A staff member must review, personalise for the young person, and ensure it is age-appropriate and sensitive before sharing.`,
+
+  reg45_summary: `# Regulation 45 Evidence Summary
+
+## Quality of Care
+Evidence from the selected period should be reviewed to demonstrate the quality of care provided.
+
+## Safeguarding
+All safeguarding records from the period should be reviewed and referenced.
+
+## Leadership and Management
+Management oversight entries, supervision records, and team meeting minutes provide evidence of effective leadership.
+
+## Workforce
+Training records, supervision completion rates, and staff development evidence should be cited.
+
+## Areas Requiring Further Evidence
+Cara has identified potential gaps in the evidence base. The manager should review and address these before the Reg 45 report is finalised.
+
+## Human Review Required
+This evidence summary is a draft. The Registered Manager and Responsible Individual must review, verify evidence accuracy, and approve before formal submission.`,
+
+  default: `# Cara Studio Draft
+
+## Summary
+This draft has been generated based on the available evidence and selected parameters.
+
+## Evidence Base
+The sources selected for this generation have been reviewed. Confidence levels and any identified gaps are noted in the evidence panel.
+
+## Key Points
+Based on the evidence reviewed, the following themes have been identified for professional consideration.
+
+## Professional Hypothesis
+This section contains analysis based on the available evidence. It represents a professional hypothesis, not a conclusion.
+
+## Suggested Actions
+- [ ] Review and amend this draft as needed
+- [ ] Capture any missing child voice
+- [ ] Update relevant plans if appropriate
+- [ ] Record management oversight
+
+## Human Review Required
+This is an Cara-generated draft. It must be reviewed, amended where necessary, and approved by an authorised person before it becomes part of the official record.`,
+
+  safeguarding_review: `# Safeguarding Review
+
+## Current Position
+Based on the evidence available, this review examines the safeguarding position for the young person.
+
+## Possible Indicators
+Cara has identified patterns that may require professional review. These are presented as possible indicators, not conclusions.
+
+## What Is Known
+The evidence base includes relevant records from the selected period.
+
+## What Is Unknown
+Areas where further information may be needed are flagged for the reviewing manager.
+
+## Recommended Actions
+- [ ] Review indicators with the safeguarding lead
+- [ ] Consider whether a multi-agency discussion is needed
+- [ ] Ensure the young person's voice is captured
+
+## Human Review Required
+This safeguarding review contains sensitive analysis. A designated safeguarding lead must review before any action is taken.`,
+
+  supervision_prompt: `# Supervision Discussion Prompts
+
+## Practice Themes
+Based on recent recordings and practice patterns, the following themes may be useful for supervision.
+
+## Reflective Questions
+1. How has your practice developed this month?
+2. What has been your most challenging situation, and how did you respond?
+3. What support do you need from the team or management?
+
+## Child-Focused Discussion
+Consider the young people you work most closely with. What progress have you noticed? What concerns you?
+
+## Professional Development
+Are there training needs or learning opportunities you would like to explore?
+
+## Human Review Required
+These prompts are suggestions. The supervising manager should adapt them to the individual staff member's needs.`,
+
+  action_plan: `# Action Plan
+
+## Objective
+Based on the evidence reviewed, this action plan addresses identified priorities.
+
+## Actions
+
+| # | Action | Owner | Due | Priority | Status |
+|---|--------|-------|-----|----------|--------|
+| 1 | Review and update relevant assessment | Manager | Within 5 working days | High | Open |
+| 2 | Capture the young person's views | Key Worker | Within 3 working days | High | Open |
+| 3 | Share learning with the team | Team Leader | Next team meeting | Medium | Open |
+| 4 | Schedule follow-up review | Manager | Within 4 weeks | Medium | Open |
+
+## Review Date
+This action plan should be reviewed within four weeks of approval.
+
+## Human Review Required
+This action plan is a draft. The responsible manager must review, assign owners, set realistic deadlines, and approve.`,
+
+  ofsted_readiness_summary: `# Ofsted Readiness Summary
+
+## Strong Evidence
+Areas where the evidence base is well-documented and demonstrates good or outstanding practice.
+
+## Weak Evidence
+Areas where the evidence may be insufficient to demonstrate compliance or quality during inspection.
+
+## Missing Evidence
+Gaps in the evidence base that should be addressed as a priority.
+
+## Overdue Actions
+Actions from previous reviews, audits, or plans that remain incomplete.
+
+## What to Prioritise This Week
+Based on the current evidence position, the manager should focus on addressing the most critical gaps.
+
+## Human Review Required
+This readiness summary is a draft. The Registered Manager and Responsible Individual must review and verify before using it to inform inspection preparation.`,
+};

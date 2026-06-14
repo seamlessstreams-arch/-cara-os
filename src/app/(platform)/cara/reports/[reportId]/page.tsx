@@ -34,14 +34,14 @@ import type {
   ChildReportAction,
   ChallengeItem,
   ReportAudience,
-} from "@/types/aria-reports";
+} from "@/types/cara-reports";
 import {
   REPORT_TYPE_LABELS,
   REPORT_STATUS_LABELS,
   REPORT_AUDIENCE_LABELS,
   REPORT_AUDIENCES,
   EVIDENCE_STATUS_LABELS,
-} from "@/types/aria-reports";
+} from "@/types/cara-reports";
 import {
   Sparkles,
   ArrowLeft,
@@ -138,7 +138,7 @@ function priorityBadgeVariant(priority: string) {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
-export default function AriaReportDetailPage({
+export default function CaraReportDetailPage({
   params,
 }: {
   params: Promise<{ reportId: string }>;
@@ -173,7 +173,7 @@ export default function AriaReportDetailPage({
   useEffect(() => {
     async function fetchReport() {
       try {
-        const res = await fetch(`/api/aria/reports/${reportId}`);
+        const res = await fetch(`/api/cara/reports/${reportId}`);
         const json = await res.json();
         if (json.ok) {
           setReport(json.data.report);
@@ -183,7 +183,7 @@ export default function AriaReportDetailPage({
           setError(json.error ?? "Failed to load report.");
         }
       } catch (err) {
-        console.error("[aria/reports/[id]] Fetch error:", err);
+        console.error("[cara/reports/[id]] Fetch error:", err);
         setError("Failed to load report.");
       } finally {
         setLoading(false);
@@ -195,11 +195,11 @@ export default function AriaReportDetailPage({
   useEffect(() => {
     async function fetchChallenges() {
       try {
-        const res = await fetch(`/api/aria/reports/${reportId}/challenge`);
+        const res = await fetch(`/api/cara/reports/${reportId}/challenge`);
         const json = await res.json();
         if (json.ok) setChallenges(json.data);
       } catch (err) {
-        console.error("[aria/reports/[id]] Challenge fetch error:", err);
+        console.error("[cara/reports/[id]] Challenge fetch error:", err);
       }
     }
     fetchChallenges();
@@ -208,11 +208,11 @@ export default function AriaReportDetailPage({
   useEffect(() => {
     async function fetchActions() {
       try {
-        const res = await fetch(`/api/aria/reports/${reportId}/actions`);
+        const res = await fetch(`/api/cara/reports/${reportId}/actions`);
         const json = await res.json();
         if (json.ok) setActions(json.data);
       } catch (err) {
-        console.error("[aria/reports/[id]] Actions fetch error:", err);
+        console.error("[cara/reports/[id]] Actions fetch error:", err);
       }
     }
     fetchActions();
@@ -224,7 +224,7 @@ export default function AriaReportDetailPage({
     if (!report) return;
     setStatusLoading(true);
     try {
-      const res = await fetch(`/api/aria/reports/${reportId}/approve`, {
+      const res = await fetch(`/api/cara/reports/${reportId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -238,7 +238,7 @@ export default function AriaReportDetailPage({
         setReport({ ...report, status: "pending_review" });
       }
     } catch (err) {
-      console.error("[aria/reports] Submit for review error:", err);
+      console.error("[cara/reports] Submit for review error:", err);
     } finally {
       setStatusLoading(false);
     }
@@ -248,7 +248,7 @@ export default function AriaReportDetailPage({
     if (!report) return;
     setStatusLoading(true);
     try {
-      const res = await fetch(`/api/aria/reports/${reportId}/approve`, {
+      const res = await fetch(`/api/cara/reports/${reportId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -261,7 +261,7 @@ export default function AriaReportDetailPage({
         setReport({ ...report, status: "approved" });
       }
     } catch (err) {
-      console.error("[aria/reports] Approve error:", err);
+      console.error("[cara/reports] Approve error:", err);
     } finally {
       setStatusLoading(false);
     }
@@ -271,7 +271,7 @@ export default function AriaReportDetailPage({
     if (!report) return;
     setStatusLoading(true);
     try {
-      const res = await fetch(`/api/aria/reports/${reportId}/approve`, {
+      const res = await fetch(`/api/cara/reports/${reportId}/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -285,7 +285,7 @@ export default function AriaReportDetailPage({
         setReport({ ...report, status: "rejected" });
       }
     } catch (err) {
-      console.error("[aria/reports] Reject error:", err);
+      console.error("[cara/reports] Reject error:", err);
     } finally {
       setStatusLoading(false);
     }
@@ -295,7 +295,7 @@ export default function AriaReportDetailPage({
     if (!report) return;
     setStatusLoading(true);
     try {
-      const res = await fetch(`/api/aria/reports/${reportId}/lock`, {
+      const res = await fetch(`/api/cara/reports/${reportId}/lock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lockedBy: DEFAULT_USER_ID }),
@@ -305,7 +305,7 @@ export default function AriaReportDetailPage({
         setReport({ ...report, status: "locked" });
       }
     } catch (err) {
-      console.error("[aria/reports] Lock error:", err);
+      console.error("[cara/reports] Lock error:", err);
     } finally {
       setStatusLoading(false);
     }
@@ -315,7 +315,7 @@ export default function AriaReportDetailPage({
     if (!report) return;
     setStatusLoading(true);
     try {
-      const res = await fetch(`/api/aria/reports/${reportId}/reg45`, {
+      const res = await fetch(`/api/cara/reports/${reportId}/reg45`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ createdBy: DEFAULT_USER_ID }),
@@ -325,7 +325,7 @@ export default function AriaReportDetailPage({
         router.push("/cara/reg45");
       }
     } catch (err) {
-      console.error("[aria/reports] Reg45 link error:", err);
+      console.error("[cara/reports] Reg45 link error:", err);
     } finally {
       setStatusLoading(false);
     }
@@ -336,7 +336,7 @@ export default function AriaReportDetailPage({
   async function handleRewrite(sectionId: string, audience: ReportAudience) {
     setRewritingSection(sectionId);
     try {
-      const res = await fetch(`/api/aria/reports/${reportId}/rewrite`, {
+      const res = await fetch(`/api/cara/reports/${reportId}/rewrite`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sectionId, audience }),
@@ -350,7 +350,7 @@ export default function AriaReportDetailPage({
         );
       }
     } catch (err) {
-      console.error("[aria/reports] Rewrite error:", err);
+      console.error("[cara/reports] Rewrite error:", err);
     } finally {
       setRewritingSection(null);
     }
@@ -363,7 +363,7 @@ export default function AriaReportDetailPage({
     decision: "accept" | "reject",
   ) {
     try {
-      const res = await fetch(`/api/aria/reports/${reportId}/actions`, {
+      const res = await fetch(`/api/cara/reports/${reportId}/actions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ actionId, decision }),
@@ -382,7 +382,7 @@ export default function AriaReportDetailPage({
         );
       }
     } catch (err) {
-      console.error("[aria/reports] Action decision error:", err);
+      console.error("[cara/reports] Action decision error:", err);
     }
   }
 
@@ -406,7 +406,7 @@ export default function AriaReportDetailPage({
     return (
       <PageShell title="Loading Report..." subtitle="">
         <div className="flex items-center justify-center py-24">
-          <Loader2 className="h-8 w-8 text-[var(--cs-aria-gold)] animate-spin" />
+          <Loader2 className="h-8 w-8 text-[var(--cs-cara-gold)] animate-spin" />
         </div>
       </PageShell>
     );
@@ -459,7 +459,7 @@ export default function AriaReportDetailPage({
             <CardContent className="pt-6">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <Badge variant="aria" className="text-xs">
+                  <Badge variant="cara" className="text-xs">
                     {REPORT_TYPE_LABELS[report.report_type]}
                   </Badge>
                   <Badge
@@ -660,7 +660,7 @@ export default function AriaReportDetailPage({
                                 {ev.source_date}
                               </span>
                               {ev.is_child_voice && (
-                                <Badge variant="aria" className="text-[10px]">
+                                <Badge variant="cara" className="text-[10px]">
                                   Child voice
                                 </Badge>
                               )}
@@ -1000,7 +1000,7 @@ export default function AriaReportDetailPage({
                           {ev.source_date}
                         </span>
                         {ev.is_child_voice && (
-                          <Badge variant="aria" className="text-[10px]">
+                          <Badge variant="cara" className="text-[10px]">
                             Child voice
                           </Badge>
                         )}

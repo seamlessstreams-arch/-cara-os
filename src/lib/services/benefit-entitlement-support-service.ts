@@ -671,7 +671,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: BenefitEntitlementSupportRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

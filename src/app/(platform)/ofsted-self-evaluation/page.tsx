@@ -25,8 +25,8 @@ import { useSelfEvaluationAreas } from "@/hooks/use-self-evaluation-areas";
 import type { SelfEvaluationArea, SelfEvaluationGrade } from "@/types/extended";
 import { SELF_EVALUATION_GRADE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────────────── */
 const d = (n: number) => {
@@ -123,12 +123,12 @@ export default function OfstedSelfEvaluationPage() {
     <PageShell
       title="Ofsted Self-Evaluation"
       subtitle="Self-assessment against the Social Care Common Inspection Framework (SCCIF) judgement areas"
-      ariaContext={{ pageTitle: "Ofsted Self-Evaluation", sourceType: "reg45" }}
+      caraContext={{ pageTitle: "Ofsted Self-Evaluation", sourceType: "reg45" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Ofsted Self-Evaluation" />
           <ExportButton data={filtered} columns={exportCols} filename="ofsted-self-evaluation" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -416,7 +416,7 @@ export default function OfstedSelfEvaluationPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Ofsted Self-Evaluation — SEF, quality of care judgements, leadership and management, outstanding practice, areas for development, evidence gathering, ILACS framework, Reg 45"
         recordType="ofsted_evidence"

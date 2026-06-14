@@ -33,14 +33,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const surveyTypeColour: Record<string, string> = {
   management_survey: "bg-indigo-100 text-indigo-800 border-indigo-200",
   refurbishment_demolition_survey: "bg-rose-100 text-rose-800 border-rose-200",
   re_inspection: "bg-sky-100 text-sky-800 border-sky-200",
-  air_monitoring: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
+  air_monitoring: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]",
   removal_record: "bg-emerald-100 text-emerald-800 border-emerald-200",
 };
 
@@ -145,12 +145,12 @@ export default function BuildingAsbestosRegisterPage() {
     <PageShell
       title="Asbestos Register & Management Plan"
       subtitle="Statutory asbestos register and management plan for the home premises — Control of Asbestos Regulations 2012 (CAR 2012). Records of survey type, location of any asbestos-containing materials (ACMs), condition rating per HSG264, encapsulation, removal records, contractor licence details, and pre-works tradesperson briefings before any drilling or disturbance work. Children's Homes Regs Reg 25 (premises) and Quality Standard 10."
-      ariaContext={{ pageTitle: "Asbestos Register", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Asbestos Register", sourceType: "home_check" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="building-asbestos-register" />
           <PrintButton title="Asbestos Register" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -392,7 +392,7 @@ export default function BuildingAsbestosRegisterPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Asbestos Register — asbestos survey, ACM location, risk rating, condition, management plan, disturbance records, R&R contractor, Control of Asbestos Regulations 2012, HSE compliance"
         recordType="ofsted_evidence"

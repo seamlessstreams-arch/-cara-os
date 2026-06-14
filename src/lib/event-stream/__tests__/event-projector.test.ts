@@ -61,7 +61,7 @@ describe("incident projection", () => {
     expect(e.requiresApproval).toBe(true);
     expect(e.approvalLevel).toBe("manager");
     expect(e.structuredTags).toContain("safeguarding");
-    expect(e.ariaAnalysis?.complianceFlags.some((f) => /Reg 40/.test(f))).toBe(true);
+    expect(e.caraAnalysis?.complianceFlags.some((f) => /Reg 40/.test(f))).toBe(true);
     expect(e.occurredAt).toBe("2026-06-01T14:00:00.000Z");
   });
   it("keeps a routine low incident unapproved", () => {
@@ -86,7 +86,7 @@ describe("missing projection", () => {
     expect(e.structuredTags).toContain("rhi_outstanding");
   });
   it("raises a return-home-interview compliance flag", () => {
-    expect(e.ariaAnalysis?.complianceFlags.some((f) => /Return home interview/i.test(f))).toBe(true);
+    expect(e.caraAnalysis?.complianceFlags.some((f) => /Return home interview/i.test(f))).toBe(true);
   });
 });
 
@@ -157,33 +157,33 @@ describe("extended event types", () => {
     const e = projectEvents({ maintenance: [{ id: "m1", title: "Boiler fault", priority: "urgent", status: "open" }] })[0];
     expect(e.eventType).toBe("maintenance");
     expect(e.riskLevel).toBe("medium");
-    expect(e.ariaAnalysis?.complianceFlags.some((f) => /Urgent maintenance/.test(f))).toBe(true);
+    expect(e.caraAnalysis?.complianceFlags.some((f) => /Urgent maintenance/.test(f))).toBe(true);
   });
   it("scores a low QA audit as high risk with an action-plan flag", () => {
     const e = projectEvents({ audits: [{ id: "a1", title: "Medication audit", score: 5, max_score: 10, status: "completed" }] })[0];
     expect(e.eventType).toBe("qa_check");
     expect(e.riskLevel).toBe("high");
-    expect(e.ariaAnalysis?.complianceFlags.some((f) => /below expected/.test(f))).toBe(true);
+    expect(e.caraAnalysis?.complianceFlags.some((f) => /below expected/.test(f))).toBe(true);
   });
   it("routes a Reg 44 visit to the RI and flags an unsent report", () => {
     const e = projectEvents({ reg44Reports: [{ id: "r1", visit_date: "2026-05-20", visitor: "J. Visitor", overall_judgement: "requires_improvement", report_sent_to_ofsted: false }] })[0];
     expect(e.eventType).toBe("reg44");
     expect(e.approvalLevel).toBe("ri");
     expect(e.riskLevel).toBe("medium");
-    expect(e.ariaAnalysis?.complianceFlags.some((f) => /not yet sent to Ofsted/.test(f))).toBe(true);
+    expect(e.caraAnalysis?.complianceFlags.some((f) => /not yet sent to Ofsted/.test(f))).toBe(true);
   });
   it("flags a missed health appointment", () => {
     const e = projectEvents({ appointments: [{ id: "h1", child_id: "yp_casey", date: "2026-06-01", type: "dental", title: "Dental check", status: "missed" }] })[0];
     expect(e.eventType).toBe("health");
     expect(e.childId).toBe("yp_casey");
     expect(e.riskLevel).toBe("medium");
-    expect(e.ariaAnalysis?.complianceFlags.some((f) => /missed/i.test(f))).toBe(true);
+    expect(e.caraAnalysis?.complianceFlags.some((f) => /missed/i.test(f))).toBe(true);
   });
   it("projects staff sickness absence (with RTW flag) and filters out annual leave", () => {
     const sick = projectEvents({ leaveRequests: [{ id: "l1", staff_id: "staff_anna", leave_type: "sick", start_date: "2026-06-01", total_days: 3, status: "approved", return_to_work_required: true, return_to_work_completed: false }] });
     expect(sick).toHaveLength(1);
     expect(sick[0].eventType).toBe("staff_absence");
-    expect(sick[0].ariaAnalysis?.complianceFlags.some((f) => /Return-to-work/.test(f))).toBe(true);
+    expect(sick[0].caraAnalysis?.complianceFlags.some((f) => /Return-to-work/.test(f))).toBe(true);
     const annual = projectEvents({ leaveRequests: [{ id: "l2", staff_id: "x", leave_type: "annual", start_date: "2026-06-01" }] });
     expect(annual).toHaveLength(0);
   });
@@ -241,14 +241,14 @@ describe("projectComplaint (new spine domain)", () => {
     const [e] = projectEvents({ complaints: [cmp({ id: "c2", includes_safeguarding_element: true })] });
     expect(e.riskLevel).toBe("high");
     expect(e.structuredTags).toContain("safeguarding_element");
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /safeguarding element/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /safeguarding element/i.test(f))).toBe(true);
   });
 
   it("rates a resolved complaint low and flags a missing outcome when closed without one", () => {
     const [open] = projectEvents({ complaints: [cmp({ id: "c3", status: "response_sent" })] });
     expect(open.riskLevel).toBe("low");
     const [closed] = projectEvents({ complaints: [cmp({ id: "c4", status: "closed", outcome: null })] });
-    expect(closed.ariaAnalysis!.missingInformation).toContain("outcome");
+    expect(closed.caraAnalysis!.missingInformation).toContain("outcome");
   });
 });
 
@@ -273,7 +273,7 @@ describe("projectFamilyContact (new spine domain)", () => {
     const [e] = projectEvents({ familyContacts: [fc({ id: "cl2", safeguarding_concern: true })] });
     expect(e.riskLevel).toBe("high");
     expect(e.structuredTags).toContain("safeguarding_concern");
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /safeguarding/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /safeguarding/i.test(f))).toBe(true);
   });
 
   it("rates a contact with concerns or a distressed child as medium", () => {
@@ -310,7 +310,7 @@ describe("projectRiskAssessment (new spine domain)", () => {
 
   it("flags a not-finalised (under_review/draft) assessment", () => {
     const [e] = projectEvents({ riskAssessments: [ra({ id: "ra3", status: "under_review" })] });
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /not finalised/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /not finalised/i.test(f))).toBe(true);
   });
 });
 
@@ -342,8 +342,8 @@ describe("projectLacReview (new spine domain)", () => {
   it("flags a non-participating child and a care plan not updated", () => {
     const [e] = projectEvents({ lacReviews: [lac({ id: "lac4", child_participation: "did_not_participate", care_plan_updated: false })] });
     expect(e.structuredTags).toContain("care_plan_not_updated");
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /did not participate/i.test(f))).toBe(true);
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /care plan not updated/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /did not participate/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /care plan not updated/i.test(f))).toBe(true);
   });
 });
 
@@ -369,12 +369,12 @@ describe("projectNotifiableEvent (new spine domain)", () => {
     const [e] = projectEvents({ notifiableEvents: [ne({ id: "ne2", ofsted_status: "pending" })] });
     expect(e.riskLevel).toBe("critical");
     expect(e.approvalLevel).toBe("ri");
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /notification outstanding/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /notification outstanding/i.test(f))).toBe(true);
   });
 
   it("flags a late notification", () => {
     const [e] = projectEvents({ notifiableEvents: [ne({ id: "ne3", ofsted_status: "notified_late" })] });
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /made late/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /made late/i.test(f))).toBe(true);
   });
 });
 
@@ -398,11 +398,11 @@ describe("projectBehaviourSupportPlan (new spine domain)", () => {
 
   it("flags a not-finalised (draft/under_review) plan", () => {
     const [e] = projectEvents({ behaviourSupportPlans: [bsp({ id: "bsp2", status: "under_review" })] });
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /not finalised/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /not finalised/i.test(f))).toBe(true);
   });
 
   it("flags a suspended plan", () => {
     const [e] = projectEvents({ behaviourSupportPlans: [bsp({ id: "bsp3", status: "suspended" })] });
-    expect(e.ariaAnalysis!.complianceFlags.some((f) => /suspended/i.test(f))).toBe(true);
+    expect(e.caraAnalysis!.complianceFlags.some((f) => /suspended/i.test(f))).toBe(true);
   });
 });

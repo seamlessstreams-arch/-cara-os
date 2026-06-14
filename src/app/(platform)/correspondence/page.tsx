@@ -37,8 +37,8 @@ import {
   Send, Inbox, Reply,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -199,7 +199,7 @@ export default function CorrespondencePage() {
     <PageShell
       title="Correspondence Log"
       subtitle="Professional communications and formal correspondence"
-      ariaContext={{ pageTitle: "Correspondence Log", sourceType: "contact_log" }}
+      caraContext={{ pageTitle: "Correspondence Log", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Correspondence Log" subtitle="Chamberlain House — Professional Communications" />
@@ -207,7 +207,7 @@ export default function CorrespondencePage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Log Correspondence
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -507,7 +507,7 @@ export default function CorrespondencePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Correspondence Log — letters, emails, reports, referrals, notifications, legal correspondence, placement authority, professionals, Reg 40 notifications, Ofsted, inspection"
         recordType="management_oversight"

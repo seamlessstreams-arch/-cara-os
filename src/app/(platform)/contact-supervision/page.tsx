@@ -14,8 +14,8 @@ import {
   Clock,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
@@ -196,7 +196,7 @@ export default function ContactSupervisionPage() {
     <PageShell
       title="Contact Supervision"
       subtitle="Supervised and supported contact session records — family, siblings and significant others"
-      ariaContext={{ pageTitle: "Contact Supervision", sourceType: "contact_log" }}
+      caraContext={{ pageTitle: "Contact Supervision", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Contact Supervision Records" />
@@ -204,7 +204,7 @@ export default function ContactSupervisionPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> Record Session
           </button>
-          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

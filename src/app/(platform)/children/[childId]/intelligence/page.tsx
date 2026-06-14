@@ -77,9 +77,9 @@ export default function ChildIntelligencePage({
       <div className="mb-6 flex items-center gap-3">
         <div
           className="flex h-10 w-10 items-center justify-center rounded-lg"
-          style={{ backgroundColor: "var(--cs-aria-gold-bg)" }}
+          style={{ backgroundColor: "var(--cs-cara-gold-bg)" }}
         >
-          <Sparkles className="h-5 w-5" style={{ color: "var(--cs-aria-gold)" }} />
+          <Sparkles className="h-5 w-5" style={{ color: "var(--cs-cara-gold)" }} />
         </div>
         <div>
           <h1 className="text-xl font-semibold" style={{ color: "var(--cs-navy)" }}>
@@ -95,8 +95,8 @@ export default function ChildIntelligencePage({
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <Card>
           <CardContent className="flex items-center gap-3 py-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: "var(--cs-aria-gold-bg)" }}>
-              <FileText className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: "var(--cs-cara-gold-bg)" }}>
+              <FileText className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
             </div>
             <div>
               <p className="text-xs" style={{ color: "var(--cs-text-muted)" }}>Total Reports</p>
@@ -150,25 +150,25 @@ export default function ChildIntelligencePage({
           <CardContent className="space-y-2">
             <Link href={`/children/${childId}/reports/new`} className="block">
               <Button variant="outline" className="w-full justify-start gap-2 text-sm">
-                <Plus className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+                <Plus className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
                 Generate Weekly Report
               </Button>
             </Link>
             <Link href={`/children/${childId}/reports`} className="block">
               <Button variant="outline" className="w-full justify-start gap-2 text-sm">
-                <List className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+                <List className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
                 View All Reports
               </Button>
             </Link>
             <Link href={`/cara-studio/therapeutic-profile?childId=${childId}`} className="block">
               <Button variant="outline" className="w-full justify-start gap-2 text-sm">
-                <Heart className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+                <Heart className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
                 Therapeutic Profile
               </Button>
             </Link>
             <Link href={`/cara/reg45`} className="block">
               <Button variant="outline" className="w-full justify-start gap-2 text-sm">
-                <TrendingUp className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+                <TrendingUp className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
                 Reg 45 Evidence
               </Button>
             </Link>
@@ -190,9 +190,9 @@ export default function ChildIntelligencePage({
                 >
                   <div
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: "var(--cs-aria-gold-bg)" }}
+                    style={{ backgroundColor: "var(--cs-cara-gold-bg)" }}
                   >
-                    <item.icon className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+                    <item.icon className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium" style={{ color: "var(--cs-navy)" }}>

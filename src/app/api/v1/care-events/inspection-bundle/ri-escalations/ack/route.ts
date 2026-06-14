@@ -2,17 +2,17 @@
 // API — RI acknowledge a trajectory escalation  (Milestone 52)
 //
 // POST { home_id, escalation_id, note }
-// Permission: aria.ri_qa (RI-only action — acks oversight escalations).
+// Permission: cara.ri_qa (RI-only action — acks oversight escalations).
 // Audited. Does NOT silence the underlying manager-facing alert.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import {
   detectTrajectoryRiEscalations,
   recordTrajectoryRiEscalationAck,
 } from "@/lib/care-events/inspection-trajectory";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 
 export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "note is required" }, { status: 400 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.ri_qa",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.ri_qa",
     homeId,
     intent: "acknowledge trajectory RI escalation",
     isSafeguardingSensitive: true,
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
     note,
   });
 
-  appendAriaAudit({
+  appendCaraAudit({
     homeId,
     actorId: guard.actor.userId,
     actionType: "artifact_reviewed",

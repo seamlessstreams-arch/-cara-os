@@ -53,7 +53,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`h-full antialiased ${jakarta.variable}`} style={{ fontFamily: "var(--font-sans)" }}>
-      <body className="min-h-full bg-[var(--cs-bg)] text-[var(--cs-text)] selection:bg-[var(--cs-aria-gold-soft)] selection:text-[var(--cs-navy)]">
+      <body className="min-h-full bg-[var(--cs-bg)] text-[var(--cs-text)] selection:bg-[var(--cs-cara-gold-soft)] selection:text-[var(--cs-navy)]">
         <OfflineBanner />
         <QueryProvider>{children}</QueryProvider>
         <Toaster />

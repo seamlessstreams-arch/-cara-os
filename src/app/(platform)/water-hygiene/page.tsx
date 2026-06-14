@@ -37,8 +37,8 @@ import {
   WATER_HYGIENE_COMPLIANCE_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -183,12 +183,12 @@ export default function WaterHygienePage() {
     <PageShell
       title="Water Hygiene & Legionella"
       subtitle="HSE ACOP L8 · HSG274 · Reg 12 — Protection of Children"
-      ariaContext={{ pageTitle: "Water Hygiene Records", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Water Hygiene Records", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Water Hygiene Records" />
           <ExportButton data={filtered} columns={exportCols} filename="water-hygiene" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Check</Button>
         </div>
       }
@@ -396,7 +396,7 @@ export default function WaterHygienePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Water Hygiene Records — Legionella risk, hot water temperature checks, cold water flushing, shower head cleaning, boiler records, HSE ACOP L8 compliance, Reg 44 evidence"
         recordType="ofsted_evidence"

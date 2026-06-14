@@ -26,7 +26,7 @@ import type {
 const {
   computeGasSafetyMetrics,
   identifyGasSafetyAlerts,
-  generateGasSafetyAriaInsights,
+  generateGasSafetyCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1573,42 +1573,42 @@ describe("identifyGasSafetyAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// generateGasSafetyAriaInsights
+// generateGasSafetyCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateGasSafetyAriaInsights", () => {
+describe("generateGasSafetyCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const records = [makeRecord()];
-    const insights = generateGasSafetyAriaInsights(records);
+    const insights = generateGasSafetyCaraInsights(records);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty array", () => {
-    const insights = generateGasSafetyAriaInsights([]);
+    const insights = generateGasSafetyCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [red]", () => {
     const records = [makeRecord()];
-    const insights = generateGasSafetyAriaInsights(records);
+    const insights = generateGasSafetyCaraInsights(records);
     expect(insights[0]).toMatch(/^\[red\]/);
   });
 
   it("second insight starts with [amber]", () => {
     const records = [makeRecord()];
-    const insights = generateGasSafetyAriaInsights(records);
+    const insights = generateGasSafetyCaraInsights(records);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("third insight starts with [reflect]", () => {
     const records = [makeRecord()];
-    const insights = generateGasSafetyAriaInsights(records);
+    const insights = generateGasSafetyCaraInsights(records);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("all insights are non-empty strings", () => {
     const records = [makeRecord()];
-    const insights = generateGasSafetyAriaInsights(records);
+    const insights = generateGasSafetyCaraInsights(records);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1618,7 +1618,7 @@ describe("generateGasSafetyAriaInsights", () => {
   describe("first insight (red) — summary stats", () => {
     it("includes total inspection count", () => {
       const records = [makeRecord(), makeRecord(), makeRecord()];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[0]).toContain("3 gas safety inspections");
     });
 
@@ -1627,31 +1627,31 @@ describe("generateGasSafetyAriaInsights", () => {
         makeRecord({ engineer_name: "Engineer A" }),
         makeRecord({ engineer_name: "Engineer B" }),
       ];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[0]).toContain("2 engineers");
     });
 
     it("uses singular engineer for count of 1", () => {
       const records = [makeRecord({ engineer_name: "Single Engineer" })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[0]).toContain("1 engineer");
     });
 
     it("includes Immediately Dangerous count", () => {
       const records = [makeRecord({ result: "Immediately Dangerous" })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[0]).toContain("1 Immediately Dangerous");
     });
 
     it("includes At Risk count", () => {
       const records = [makeRecord({ result: "At Risk" }), makeRecord({ result: "At Risk" })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[0]).toContain("2 At Risk");
     });
 
     it("includes defects total", () => {
       const records = [makeRecord({ defects_found: 5 }), makeRecord({ defects_found: 3 })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[0]).toContain("8 total defects");
     });
   });
@@ -1659,32 +1659,32 @@ describe("generateGasSafetyAriaInsights", () => {
   describe("second insight (amber) — priority concerns", () => {
     it("mentions critical and high alerts when present", () => {
       const records = [makeRecord({ result: "Immediately Dangerous", compliance_status: "Non-Compliant" })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high");
     });
 
     it("mentions remedial completion rate when alerts present", () => {
       const records = [makeRecord({ result: "Immediately Dangerous", defects_found: 2, remedial_completed: true })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[1]).toContain("100%");
     });
 
     it("mentions no critical alerts when all clean", () => {
       const records = [makeRecord({ result: "Safe", compliance_status: "Compliant", carbon_monoxide_alarm_tested: true, next_inspection_date: daysFromNow(365) })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[1]).toContain("No critical or high-priority");
     });
 
     it("mentions Gas Safety Regulations when no alerts", () => {
       const records = [makeRecord({ result: "Safe", compliance_status: "Compliant", carbon_monoxide_alarm_tested: true, next_inspection_date: daysFromNow(365) })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[1]).toContain("Gas Safety Regulations");
     });
 
     it("uses singular for 1 non-compliant inspection", () => {
       const records = [makeRecord({ result: "Immediately Dangerous", compliance_status: "Non-Compliant" })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[1]).toContain("inspection has");
     });
 
@@ -1693,7 +1693,7 @@ describe("generateGasSafetyAriaInsights", () => {
         makeRecord({ result: "Immediately Dangerous", compliance_status: "Non-Compliant" }),
         makeRecord({ result: "Immediately Dangerous", compliance_status: "Expired" }),
       ];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[1]).toContain("inspections have");
     });
   });
@@ -1701,26 +1701,26 @@ describe("generateGasSafetyAriaInsights", () => {
   describe("third insight (reflect) — reflective question", () => {
     it("mentions Immediately Dangerous and At Risk counts when present", () => {
       const records = [makeRecord({ result: "Immediately Dangerous" }), makeRecord({ result: "At Risk" })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[2]).toContain("1 Immediately Dangerous");
       expect(insights[2]).toContain("1 At Risk");
     });
 
     it("asks about remedial tracking when no dangerous results but incomplete remedial", () => {
       const records = [makeRecord({ result: "Safe", defects_found: 2, remedial_completed: false })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[2]).toContain("remedial");
     });
 
     it("provides positive reflection when all clean", () => {
       const records = [makeRecord({ result: "Safe", defects_found: 0 })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[2]).toContain("no Immediately Dangerous or At Risk");
     });
 
     it("asks about staff awareness in positive reflection", () => {
       const records = [makeRecord({ result: "Safe", defects_found: 0 })];
-      const insights = generateGasSafetyAriaInsights(records);
+      const insights = generateGasSafetyCaraInsights(records);
       expect(insights[2]).toContain("staff");
     });
   });

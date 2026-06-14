@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -459,7 +459,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <PageShell title="Settings" subtitle="Account, home configuration, and preferences" ariaContext={{ pageTitle: "Settings", sourceType: "general" }} showQuickCreate={false} actions={<AriaStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />}>
+    <PageShell title="Settings" subtitle="Account, home configuration, and preferences" caraContext={{ pageTitle: "Settings", sourceType: "general" }} showQuickCreate={false} actions={<CaraStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />}>
       <div className="flex gap-6">
         <aside className="w-52 shrink-0">
           <nav className="space-y-0.5">
@@ -635,7 +635,7 @@ export default function SettingsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Settings — home configuration, account settings, user preferences, notification settings, branding, integration settings, system administration"
         recordType="uploaded_document"

@@ -20,8 +20,8 @@ import {
   Megaphone, Sparkles, MessageSquare, Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Meta maps ───────────────────────────────────────────────────────────────
 
@@ -133,12 +133,12 @@ export default function OperationalMeetingsPage() {
     <PageShell
       title="Operational Meetings"
       subtitle="Daily huddles, handovers, debriefs, and weekly team meetings (QS 13)"
-      ariaContext={{ pageTitle: "Operational Meetings", sourceType: "general" }}
+      caraContext={{ pageTitle: "Operational Meetings", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Operational Meetings" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="operational-meetings" />
-          <AriaStudioQuickActionButton context={{ record_type: "team_meeting", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "team_meeting", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -375,7 +375,7 @@ export default function OperationalMeetingsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Operational Meetings — team meetings, handover meetings, management meetings, multi-agency meetings, placement planning meetings, action tracking, minutes, Reg 45 governance evidence"
         recordType="team_meeting"

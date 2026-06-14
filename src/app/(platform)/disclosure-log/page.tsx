@@ -40,8 +40,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── config ──────────────────────────────────────────────────────────────────
 const severityColour: Record<string, string> = {
@@ -135,12 +135,12 @@ export default function DisclosureLogPage() {
     <PageShell
       title="Disclosure Log"
       subtitle="Safeguarding disclosures by children — what was said, the context, and how staff responded"
-      ariaContext={{ pageTitle: "Disclosure Log", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Disclosure Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="disclosure-log" />
           <PrintButton title="Disclosure Log" />
-          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -505,7 +505,7 @@ export default function DisclosureLogPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Disclosure Log — disclosures of abuse, neglect, historical trauma, significant risk, safeguarding response, referral, information sharing, LADO, multi-agency, child protection plan"
         recordType="safeguarding"

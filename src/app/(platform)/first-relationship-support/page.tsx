@@ -34,8 +34,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const statusColour: Record<string, string> = {
   expressing_interest: "bg-purple-100 text-purple-800 border-purple-200",
@@ -133,12 +133,12 @@ export default function FirstRelationshipSupportPage() {
   return (
     <PageShell
       title="First Relationship Support"
-      ariaContext={{ pageTitle: "First Relationship Support", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "First Relationship Support", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="first-relationship-support" />
           <PrintButton title="First Relationship Support" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -366,7 +366,7 @@ export default function FirstRelationshipSupportPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="First Relationship Support — attachment support, key worker relationship, therapeutic relationship, trust building, relational permanence, therapeutic parenting, direct work"
         recordType="direct_work"

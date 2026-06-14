@@ -25,7 +25,7 @@ import type {
 const {
   computeEmploymentSupportMetrics,
   computeEmploymentSupportAlerts,
-  generateEmploymentSupportAriaInsights,
+  generateEmploymentSupportCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -909,51 +909,51 @@ describe("computeEmploymentSupportAlerts", () => {
   });
 });
 
-// ── generateEmploymentSupportAriaInsights ──────────────────────────────
+// ── generateEmploymentSupportCaraInsights ──────────────────────────────
 
-describe("generateEmploymentSupportAriaInsights", () => {
+describe("generateEmploymentSupportCaraInsights", () => {
   it("returns exactly 3 insights", () => {
-    const insights = generateEmploymentSupportAriaInsights([]);
+    const insights = generateEmploymentSupportCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [lime]", () => {
-    const insights = generateEmploymentSupportAriaInsights([makeRow()]);
+    const insights = generateEmploymentSupportCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[lime\]/);
   });
 
   it("first insight includes total_records count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes unique young people count", () => {
     const rows = [makeRow({ child_name: "Alice" }), makeRow({ child_name: "Bob" })];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
   it("first insight includes cv_completed_rate", () => {
     const rows = [makeRow({ cv_completed: true }), makeRow({ cv_completed: false })];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("uses singular young person wording when unique_children is 1", () => {
     const rows = [makeRow({ child_name: "Alice" })];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[0]).toContain("1 young person");
   });
 
   it("uses plural young people wording when unique_children > 1", () => {
     const rows = [makeRow({ child_name: "Alice" }), makeRow({ child_name: "Bob" })];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[0]).toContain("2 young people");
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateEmploymentSupportAriaInsights([makeRow()]);
+    const insights = generateEmploymentSupportCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -962,25 +962,25 @@ describe("generateEmploymentSupportAriaInsights", () => {
       makeRow({ employment_status: "not_in_employment", readiness_level: "not_ready", progress_status: "not_started" }),
       makeRow({ readiness_level: "work_ready", employment_status: "not_in_employment" }),
     ];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
 
   it("second insight mentions no alerts when none present", () => {
     const rows = [makeRow({ employment_status: "employed_full_time", readiness_level: "employed", progress_status: "completed", cv_completed: true, financial_literacy_covered: true, workplace_rights_covered: true })];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority");
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateEmploymentSupportAriaInsights([makeRow()]);
+    const insights = generateEmploymentSupportCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions not work ready when some are not_ready", () => {
     const rows = [makeRow({ readiness_level: "not_ready" })];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[2]).toContain("not work ready");
   });
 
@@ -989,7 +989,7 @@ describe("generateEmploymentSupportAriaInsights", () => {
       makeRow({ readiness_level: "developing", child_motivated: false }),
       makeRow({ readiness_level: "work_ready", child_motivated: true }),
     ];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[2]).toContain("motivation");
   });
 
@@ -998,13 +998,13 @@ describe("generateEmploymentSupportAriaInsights", () => {
       makeRow({ readiness_level: "work_ready", child_motivated: true }),
       makeRow({ readiness_level: "employed", child_motivated: true }),
     ];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[2]).toContain("motivated and none are assessed as not work ready");
   });
 
   it("uses singular wording when 1 not_ready", () => {
     const rows = [makeRow({ readiness_level: "not_ready" })];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[2]).toContain("young person is");
   });
 
@@ -1013,12 +1013,12 @@ describe("generateEmploymentSupportAriaInsights", () => {
       makeRow({ readiness_level: "not_ready" }),
       makeRow({ readiness_level: "not_ready" }),
     ];
-    const insights = generateEmploymentSupportAriaInsights(rows);
+    const insights = generateEmploymentSupportCaraInsights(rows);
     expect(insights[2]).toContain("young people are");
   });
 
   it("all insights are non-empty strings", () => {
-    const insights = generateEmploymentSupportAriaInsights([makeRow()]);
+    const insights = generateEmploymentSupportCaraInsights([makeRow()]);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);

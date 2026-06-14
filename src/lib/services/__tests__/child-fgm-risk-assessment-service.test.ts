@@ -12,7 +12,7 @@ import type {
 const {
   computeFgmRiskMetrics,
   computeFgmRiskAlerts,
-  generateFgmRiskAriaInsights,
+  generateFgmRiskCaraInsights,
 } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
@@ -554,61 +554,61 @@ describe("child-fgm-risk-assessment-service", () => {
     });
   });
 
-  // ── generateFgmRiskAriaInsights ────────────────────────────────────────
-  describe("generateFgmRiskAriaInsights", () => {
+  // ── generateFgmRiskCaraInsights ────────────────────────────────────────
+  describe("generateFgmRiskCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights).toHaveLength(3);
     });
     it("returns 3 insights for populated data", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow(), makeRow()]);
+      const insights = generateFgmRiskCaraInsights([makeRow(), makeRow()]);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [red]", () => {
-      expect(generateFgmRiskAriaInsights([])[0]).toMatch(/^\[red\]/);
+      expect(generateFgmRiskCaraInsights([])[0]).toMatch(/^\[red\]/);
     });
     it("insight 2 starts with [amber]", () => {
-      expect(generateFgmRiskAriaInsights([])[1]).toMatch(/^\[amber\]/);
+      expect(generateFgmRiskCaraInsights([])[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
-      expect(generateFgmRiskAriaInsights([])[2]).toMatch(/^\[reflect\]/);
+      expect(generateFgmRiskCaraInsights([])[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total assessments count", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow(), makeRow()]);
+      const insights = generateFgmRiskCaraInsights([makeRow(), makeRow()]);
       expect(insights[0]).toContain("2 FGM risk assessments");
     });
     it("insight 1 contains unique children count", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
+      const insights = generateFgmRiskCaraInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow()]);
+      const insights = generateFgmRiskCaraInsights([makeRow()]);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains high risk count", () => {
-      const insights = generateFgmRiskAriaInsights([
+      const insights = generateFgmRiskCaraInsights([
         makeRow({ risk_level: "High" }),
         makeRow({ risk_level: "Immediate" }),
       ]);
       expect(insights[0]).toContain("2 at High or Immediate risk level");
     });
     it("insight 1 contains mandatory report count", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow({ mandatory_report_made: true })]);
+      const insights = generateFgmRiskCaraInsights([makeRow({ mandatory_report_made: true })]);
       expect(insights[0]).toContain("1 mandatory report made");
     });
     it("insight 1 uses plural reports for multiple", () => {
-      const insights = generateFgmRiskAriaInsights([
+      const insights = generateFgmRiskCaraInsights([
         makeRow({ mandatory_report_made: true }),
         makeRow({ mandatory_report_made: true }),
       ]);
       expect(insights[0]).toContain("2 mandatory reports made");
     });
     it("insight 1 contains FGM Protection Order count", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow({ fgm_protection_order: true })]);
+      const insights = generateFgmRiskCaraInsights([makeRow({ fgm_protection_order: true })]);
       expect(insights[0]).toContain("1 FGM Protection Order in place");
     });
     it("insight 1 uses plural Orders for multiple", () => {
-      const insights = generateFgmRiskAriaInsights([
+      const insights = generateFgmRiskCaraInsights([
         makeRow({ fgm_protection_order: true }),
         makeRow({ fgm_protection_order: true }),
       ]);
@@ -618,88 +618,88 @@ describe("child-fgm-risk-assessment-service", () => {
       const rows = [
         makeRow({ risk_level: "Immediate", mandatory_report_made: false, multi_agency_referral: false }),
       ];
-      const insights = generateFgmRiskAriaInsights(rows);
+      const insights = generateFgmRiskCaraInsights(rows);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high-priority");
     });
     it("insight 2 shows no concerns when none", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow({ risk_level: "No Identified Risk" })]);
+      const insights = generateFgmRiskCaraInsights([makeRow({ risk_level: "No Identified Risk" })]);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 2 contains safety plan rate", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow()]);
+      const insights = generateFgmRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Safety plan rate");
     });
     it("insight 2 contains multi-agency rate", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow()]);
+      const insights = generateFgmRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Multi-agency rate");
     });
     it("insight 2 contains cultural sensitivity rate", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow()]);
+      const insights = generateFgmRiskCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Cultural sensitivity rate");
     });
     it("insight 3 contains reflective question about FGM risk assessments", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[2]).toContain("FGM risk assessments");
     });
     it("insight 3 mentions cultural sensitivity", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[2]).toContain("cultural sensitivity");
     });
     it("insight 3 mentions specialist services", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[2]).toContain("specialist services");
     });
     it("insight 3 mentions multi-agency", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[2]).toContain("multi-agency");
     });
     it("insight 3 mentions mandatory reporting", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[2]).toContain("mandatory reporting");
     });
     it("all insights are strings", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow()]);
+      const insights = generateFgmRiskCaraInsights([makeRow()]);
       for (const i of insights) expect(typeof i).toBe("string");
     });
     it("empty array still produces meaningful content", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[0]).toContain("0 FGM risk assessments");
       expect(insights[0]).toContain("0 children");
     });
     it("insight 1 for zero assessments shows 0 at High or Immediate", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[0]).toContain("0 at High or Immediate risk level");
     });
     it("insight 1 for zero assessments shows 0 mandatory reports", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[0]).toContain("0 mandatory reports made");
     });
     it("insight 1 for zero assessments shows 0 FGM Protection Orders", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[0]).toContain("0 FGM Protection Orders in place");
     });
     it("insight 2 with only medium alerts shows no critical or high", () => {
       const rows = [makeRow({ risk_level: "No Identified Risk", cultural_sensitivity_considered: false })];
-      const insights = generateFgmRiskAriaInsights(rows);
+      const insights = generateFgmRiskCaraInsights(rows);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 2 with critical alerts shows count", () => {
       const rows = [makeRow({ risk_level: "Immediate", mandatory_report_made: false })];
-      const insights = generateFgmRiskAriaInsights(rows);
+      const insights = generateFgmRiskCaraInsights(rows);
       expect(insights[1]).toMatch(/1 critical/);
     });
     it("insight 2 with high alerts shows count", () => {
       const rows = [makeRow({ risk_level: "Low", multi_agency_referral: false })];
-      const insights = generateFgmRiskAriaInsights(rows);
+      const insights = generateFgmRiskCaraInsights(rows);
       expect(insights[1]).toMatch(/1 high-priority/);
     });
     it("insight 2 safety plan rate value is correct", () => {
-      const insights = generateFgmRiskAriaInsights([makeRow({ safety_plan_in_place: true })]);
+      const insights = generateFgmRiskCaraInsights([makeRow({ safety_plan_in_place: true })]);
       expect(insights[1]).toContain("100%");
     });
     it("insight 3 is a reflective question", () => {
-      const insights = generateFgmRiskAriaInsights([]);
+      const insights = generateFgmRiskCaraInsights([]);
       expect(insights[2]).toContain("?");
     });
   });

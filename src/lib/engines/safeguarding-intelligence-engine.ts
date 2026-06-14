@@ -132,7 +132,7 @@ export interface NotifiableEventProfile {
   by_type: { type: string; count: number }[];
 }
 
-export interface AriaInsight {
+export interface CaraInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -143,7 +143,7 @@ export interface SafeguardingIntelligenceResult {
   risk_assessments: RiskAssessmentProfile;
   missing: MissingProfile;
   notifiable_events: NotifiableEventProfile;
-  insights: AriaInsight[];
+  insights: CaraInsight[];
 }
 
 export interface SafeguardingIntelligenceInput {
@@ -398,7 +398,7 @@ export function computeSafeguardingIntelligence(
   const childName = (id: string) => childNameMap.get(id) ?? "Unknown child";
 
   // ── Cara Safeguarding Intelligence Insights ───────────────────────────
-  const insights: AriaInsight[] = [];
+  const insights: CaraInsight[] = [];
 
   // 1. Pending Ofsted notifications (critical)
   if (pending > 0) {

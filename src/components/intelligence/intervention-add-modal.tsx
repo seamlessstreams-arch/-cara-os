@@ -94,7 +94,7 @@ function DictationTextarea({
         placeholder={placeholder}
         className={cn(
           "w-full resize-none rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 pr-10 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
-          "focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)]",
+          "focus:border-[var(--cs-cara-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-bg)]",
           "transition-colors"
         )}
       />
@@ -289,7 +289,7 @@ export function InterventionAddModal({
                     placeholder="Describe this intervention briefly"
                     className={cn(
                       "w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
-                      "focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)]",
+                      "focus:border-[var(--cs-cara-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-bg)]",
                       "transition-colors"
                     )}
                   />
@@ -362,7 +362,7 @@ export function InterventionAddModal({
                     onChange={(e) => setReviewDate(e.target.value)}
                     className={cn(
                       "w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-xs text-[var(--cs-navy)]",
-                      "focus:border-[var(--cs-aria-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-bg)]",
+                      "focus:border-[var(--cs-cara-gold)] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-bg)]",
                       "transition-colors"
                     )}
                   />

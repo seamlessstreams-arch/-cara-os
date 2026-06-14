@@ -25,7 +25,7 @@ import type {
 const {
   computeOfstedReadinessMetrics,
   computeOfstedReadinessAlerts,
-  generateOfstedReadinessAriaInsights,
+  generateOfstedReadinessCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -935,110 +935,110 @@ describe("computeOfstedReadinessAlerts", () => {
   });
 });
 
-// ── generateOfstedReadinessAriaInsights ──────────────────────────────────
+// ── generateOfstedReadinessCaraInsights ──────────────────────────────────
 
-describe("generateOfstedReadinessAriaInsights", () => {
+describe("generateOfstedReadinessCaraInsights", () => {
   it("returns exactly 3 insights", () => {
-    const insights = generateOfstedReadinessAriaInsights([]);
+    const insights = generateOfstedReadinessCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights with data", () => {
-    const insights = generateOfstedReadinessAriaInsights([makeRow()]);
+    const insights = generateOfstedReadinessCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
-    const insights = generateOfstedReadinessAriaInsights([makeRow()]);
+    const insights = generateOfstedReadinessCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
   it("first insight includes total assessments count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes outstanding count", () => {
     const rows = [makeRow({ readiness_rating: "outstanding" })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[0]).toContain("1 rated outstanding");
   });
 
   it("first insight includes inadequate count", () => {
     const rows = [makeRow({ readiness_rating: "inadequate" })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[0]).toContain("1 inadequate");
   });
 
   it("first insight includes evidence missing count", () => {
     const rows = [makeRow({ evidence_status: "evidence_missing" })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[0]).toContain("1 with evidence missing");
   });
 
   it("first insight uses singular assessment when 1 row", () => {
     const rows = [makeRow()];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[0]).toContain("1 inspection readiness assessment");
   });
 
   it("first insight uses plural assessments when multiple rows", () => {
     const rows = [makeRow(), makeRow()];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[0]).toContain("2 inspection readiness assessments");
   });
 
   it("first insight uses singular assessor when 1 assessor", () => {
     const rows = [makeRow({ assessor_name: "Alice" })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[0]).toContain("1 assessor");
   });
 
   it("first insight uses plural assessors when multiple assessors", () => {
     const rows = [makeRow({ assessor_name: "Alice" }), makeRow({ assessor_name: "Bob" })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[0]).toContain("2 assessors");
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateOfstedReadinessAriaInsights([makeRow()]);
+    const insights = generateOfstedReadinessCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("second insight mentions critical and high alerts when present", () => {
     const rows = [makeRow({ readiness_rating: "inadequate", regulatory_requirements_met: false })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
 
   it("second insight mentions no alerts when none present", () => {
     const rows = [makeRow()];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("second insight includes self_evaluation_rate", () => {
     const rows = [makeRow({ manager_self_evaluation_done: true }), makeRow({ manager_self_evaluation_done: false })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateOfstedReadinessAriaInsights([makeRow()]);
+    const insights = generateOfstedReadinessCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions inadequate when some areas are inadequate", () => {
     const rows = [makeRow({ readiness_rating: "inadequate" })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[2]).toContain("inadequate");
   });
 
   it("third insight uses singular area wording when 1 inadequate", () => {
     const rows = [makeRow({ readiness_rating: "inadequate" })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[2]).toContain("area is");
   });
 
@@ -1047,7 +1047,7 @@ describe("generateOfstedReadinessAriaInsights", () => {
       makeRow({ readiness_rating: "inadequate" }),
       makeRow({ readiness_rating: "inadequate" }),
     ];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[2]).toContain("areas are");
   });
 
@@ -1055,13 +1055,13 @@ describe("generateOfstedReadinessAriaInsights", () => {
     const rows = [
       makeRow({ readiness_rating: "good", evidence_status: "evidence_missing" }),
     ];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[2]).toContain("evidence missing");
   });
 
   it("third insight uses singular assessment when 1 evidence missing", () => {
     const rows = [makeRow({ readiness_rating: "good", evidence_status: "evidence_missing" })];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[2]).toContain("assessment has");
   });
 
@@ -1070,7 +1070,7 @@ describe("generateOfstedReadinessAriaInsights", () => {
       makeRow({ readiness_rating: "good", evidence_status: "evidence_missing" }),
       makeRow({ readiness_rating: "good", evidence_status: "evidence_missing" }),
     ];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[2]).toContain("assessments have");
   });
 
@@ -1079,12 +1079,12 @@ describe("generateOfstedReadinessAriaInsights", () => {
       makeRow({ readiness_rating: "good", evidence_status: "evidence_gathered" }),
       makeRow({ readiness_rating: "outstanding", evidence_status: "evidence_gathered" }),
     ];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights[2]).toContain("continuous improvement");
   });
 
   it("all insights are non-empty strings", () => {
-    const insights = generateOfstedReadinessAriaInsights([makeRow()]);
+    const insights = generateOfstedReadinessCaraInsights([makeRow()]);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1092,7 +1092,7 @@ describe("generateOfstedReadinessAriaInsights", () => {
   });
 
   it("handles empty array gracefully", () => {
-    const insights = generateOfstedReadinessAriaInsights([]);
+    const insights = generateOfstedReadinessCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 inspection readiness assessments");
     expect(insights[2]).toContain("continuous improvement");

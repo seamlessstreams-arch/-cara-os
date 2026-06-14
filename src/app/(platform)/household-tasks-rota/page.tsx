@@ -32,8 +32,8 @@ import { TASK_CATEGORY_LABEL, TASK_FREQUENCY_LABEL, SUPPORT_LEVEL_LABEL } from "
 import { useHouseholdTasks } from "@/hooks/use-household-tasks";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function supportColour(s: SupportLevel): string {
@@ -149,12 +149,12 @@ export default function HouseholdTasksRotaPage() {
     <PageShell
       title="Household Tasks Rota"
       subtitle="Children's contribution to household life — building independence skills age-appropriately"
-      ariaContext={{ pageTitle: "Household Tasks Rota", sourceType: "general" }}
+      caraContext={{ pageTitle: "Household Tasks Rota", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="household-tasks-rota" />
           <PrintButton title="Household Tasks Rota" />
-          <AriaStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -360,7 +360,7 @@ export default function HouseholdTasksRotaPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Household Tasks Rota — chores, cleaning rota, life skills, independence, key tasks assigned to children, staff responsibilities, participation, care plan evidence"
         recordType="rota"

@@ -28,8 +28,8 @@ import { RIGHTS_KNOWLEDGE_LEVEL_LABEL } from "@/types/extended";
 import { useRightsLiteracyRecords } from "@/hooks/use-rights-literacy-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -143,12 +143,12 @@ export default function ChildRightsLiteracyTrackerPage() {
     <PageShell
       title="Child Rights Literacy Tracker"
       subtitle="Per-child rights knowledge, advocacy connections and empowerment learning — UNCRC, CHR 2015, Children Act 1989"
-      ariaContext={{ pageTitle: "Children's Rights Literacy", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Children's Rights Literacy", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-rights-literacy" />
           <PrintButton title="Children's Rights Literacy" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -443,7 +443,7 @@ export default function ChildRightsLiteracyTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Children's Rights Literacy — rights awareness, UNCRC, complaints process, advocacy, Independent Reviewing Officer, children's guide, rights education, empowerment, participation, Reg 44"
         recordType="direct_work"

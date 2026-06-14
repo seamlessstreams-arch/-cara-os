@@ -49,17 +49,17 @@ const PremisesComplianceCard = dynamic(() => import("@/components/dashboard/prem
 const InspectionReadinessIntelligenceCard = dynamic(() => import("@/components/dashboard/inspection-readiness-intelligence-card").then(m => ({ default: m.InspectionReadinessIntelligenceCard })), { ssr: false });
 const StaffWellbeingIntelligenceCard = dynamic(() => import("@/components/dashboard/staff-wellbeing-intelligence-card").then(m => ({ default: m.StaffWellbeingIntelligenceCard })), { ssr: false });
 const RiskIntelligenceDashboardCard = dynamic(() => import("@/components/dashboard/risk-intelligence-dashboard-card").then(m => ({ default: m.RiskIntelligenceDashboardCard })), { ssr: false });
-const AriaDashboardPanel = dynamic(() => import("@/components/dashboard/aria-dashboard-panel").then(m => ({ default: m.AriaDashboardPanel })), { ssr: false });
-const AriaDailyIntelligence = dynamic(() => import("@/components/aria/aria-daily-intelligence").then(m => ({ default: m.AriaDailyIntelligence })), { ssr: false });
-const AriaTodayBriefing = dynamic(() => import("@/components/aria/aria-today-briefing").then(m => ({ default: m.AriaTodayBriefing })), { ssr: false });
-const AriaRegulatoryPulse = dynamic(() => import("@/components/aria/aria-regulatory-pulse").then(m => ({ default: m.AriaRegulatoryPulse })), { ssr: false });
-const AriaRecordingQuality = dynamic(() => import("@/components/aria/aria-recording-quality").then(m => ({ default: m.AriaRecordingQuality })), { ssr: false });
-const AriaShiftSafety = dynamic(() => import("@/components/aria/aria-shift-safety").then(m => ({ default: m.AriaShiftSafety })), { ssr: false });
-const AriaSupervisionIntelligence = dynamic(() => import("@/components/aria/aria-supervision-intelligence").then(m => ({ default: m.AriaSupervisionIntelligence })), { ssr: false });
-const AriaMedicationIntelligence = dynamic(() => import("@/components/aria/aria-medication-intelligence"), { ssr: false });
-const AriaStaffingAdequacy = dynamic(() => import("@/components/aria/aria-staffing-adequacy"), { ssr: false });
-const AriaTrainingCompliance = dynamic(() => import("@/components/aria/aria-training-compliance"), { ssr: false });
-const AriaIncidentAnalysis = dynamic(() => import("@/components/aria/aria-incident-analysis"), { ssr: false });
+const CaraDashboardPanel = dynamic(() => import("@/components/dashboard/cara-dashboard-panel").then(m => ({ default: m.CaraDashboardPanel })), { ssr: false });
+const CaraDailyIntelligence = dynamic(() => import("@/components/cara/cara-daily-intelligence").then(m => ({ default: m.CaraDailyIntelligence })), { ssr: false });
+const CaraTodayBriefing = dynamic(() => import("@/components/cara/cara-today-briefing").then(m => ({ default: m.CaraTodayBriefing })), { ssr: false });
+const CaraRegulatoryPulse = dynamic(() => import("@/components/cara/cara-regulatory-pulse").then(m => ({ default: m.CaraRegulatoryPulse })), { ssr: false });
+const CaraRecordingQuality = dynamic(() => import("@/components/cara/cara-recording-quality").then(m => ({ default: m.CaraRecordingQuality })), { ssr: false });
+const CaraShiftSafety = dynamic(() => import("@/components/cara/cara-shift-safety").then(m => ({ default: m.CaraShiftSafety })), { ssr: false });
+const CaraSupervisionIntelligence = dynamic(() => import("@/components/cara/cara-supervision-intelligence").then(m => ({ default: m.CaraSupervisionIntelligence })), { ssr: false });
+const CaraMedicationIntelligence = dynamic(() => import("@/components/cara/cara-medication-intelligence"), { ssr: false });
+const CaraStaffingAdequacy = dynamic(() => import("@/components/cara/cara-staffing-adequacy"), { ssr: false });
+const CaraTrainingCompliance = dynamic(() => import("@/components/cara/cara-training-compliance"), { ssr: false });
+const CaraIncidentAnalysis = dynamic(() => import("@/components/cara/cara-incident-analysis"), { ssr: false });
 
 const ActivityFeed = dynamic(() => import("@/components/dashboard/activity-feed").then(m => ({ default: m.ActivityFeed })), { ssr: false });
 const YoungPeopleStrip = dynamic(() => import("@/components/dashboard/young-people-strip").then(m => ({ default: m.YoungPeopleStrip })), { ssr: false });
@@ -320,7 +320,7 @@ const HomeLocalitySafeguardingIntelligenceCard = dynamic(() => import("@/compone
 const HomeRecruitmentAuditTrailIntelligenceCard = dynamic(() => import("@/components/dashboard/home-recruitment-audit-trail-intelligence-card").then(m => ({ default: m.HomeRecruitmentAuditTrailIntelligenceCard })), { ssr: false });
 const HomeFilingEvidenceGovernanceIntelligenceCard = dynamic(() => import("@/components/dashboard/home-filing-evidence-governance-intelligence-card").then(m => ({ default: m.HomeFilingEvidenceGovernanceIntelligenceCard })), { ssr: false });
 const HomeIndependenceSkillsReadinessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-independence-skills-readiness-intelligence-card").then(m => ({ default: m.HomeIndependenceSkillsReadinessIntelligenceCard })), { ssr: false });
-const HomeAriaContentQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-aria-content-quality-intelligence-card").then(m => ({ default: m.HomeAriaContentQualityIntelligenceCard })), { ssr: false });
+const HomeCaraContentQualityIntelligenceCard = dynamic(() => import("@/components/dashboard/home-cara-content-quality-intelligence-card").then(m => ({ default: m.HomeCaraContentQualityIntelligenceCard })), { ssr: false });
 
 // Batch 29 — Notification Responsiveness, Holistic Child Progress, Information Flow Quality, Regulatory Evidence Completeness
 const HomeNotificationResponsivenessIntelligenceCard = dynamic(() => import("@/components/dashboard/home-notification-responsiveness-intelligence-card").then(m => ({ default: m.HomeNotificationResponsivenessIntelligenceCard })), { ssr: false });
@@ -594,7 +594,7 @@ function StatCard({
     return (
       <Link
         href={href}
-        className="block rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-5 transition-all hover:shadow-[var(--cs-shadow-card)] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/40"
+        className="block rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-5 transition-all hover:shadow-[var(--cs-shadow-card)] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
       >
         {inner}
       </Link>
@@ -720,7 +720,7 @@ function TaskRow({ task, onComplete }: { task: Task; onComplete?: (id: string) =
             </span>
           )}
           {task.linked_child_id && (
-            <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-0.5">
+            <span className="text-[10px] text-[var(--cs-cara-gold)] flex items-center gap-0.5">
               <Heart className="h-2.5 w-2.5" />
               {getYPName(task.linked_child_id)}
             </span>
@@ -797,7 +797,7 @@ function OversightRow({
         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
           <span className="text-[10px] text-[var(--cs-text-muted)]">{TYPE_LABELS[incident.type] || incident.type}</span>
           {incident.child_id && (
-            <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-0.5">
+            <span className="text-[10px] text-[var(--cs-cara-gold)] flex items-center gap-0.5">
               <Heart className="h-2.5 w-2.5" />
               {getYPName(incident.child_id)}
             </span>
@@ -829,7 +829,7 @@ const SHIFT_TYPE_LABELS: Record<string, string> = {
 const SHIFT_TYPE_COLORS: Record<string, string> = {
   day: "bg-emerald-100 text-emerald-700",
   sleep_in: "bg-indigo-100 text-indigo-700",
-  waking_night: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  waking_night: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   early: "bg-sky-100 text-sky-700",
   late: "bg-orange-100 text-orange-700",
 };
@@ -931,7 +931,7 @@ function SubScoreBar({ label, value, icon: Icon }: { label: string; value: numbe
 
 function TimeSavedWidget({ formatted }: { formatted: Record<string, string> }) {
   const stats = [
-    { label: "You today", value: formatted.user_today || "—", icon: Timer, color: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]" },
+    { label: "You today", value: formatted.user_today || "—", icon: Timer, color: "text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]" },
     { label: "You this week", value: formatted.user_week || "—", icon: TrendingUp, color: "text-blue-600 bg-blue-50" },
     { label: "Home this week", value: formatted.home_week || "—", icon: Activity, color: "text-emerald-600 bg-emerald-50" },
     { label: "Home this month", value: formatted.home_month || "—", icon: Zap, color: "text-amber-600 bg-amber-50" },
@@ -941,7 +941,7 @@ function TimeSavedWidget({ formatted }: { formatted: Record<string, string> }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <Timer className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+          <Timer className="h-5 w-5 text-[var(--cs-cara-gold)]" />
           Time Saved by Cara
         </CardTitle>
       </CardHeader>
@@ -1227,7 +1227,7 @@ export default function DashboardPage() {
 
   const handleAddOversight = (id: string) => {
     setOversightTarget(id);
-    document.getElementById("aria-anchor")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    document.getElementById("cara-anchor")?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   // For care workers: filter task list to current user only
@@ -1272,7 +1272,7 @@ export default function DashboardPage() {
       subtitle={`${formatLiveDate()} · Chamberlain House · ${d ? d.young_people.current.length : 3} young people in placement`}
       quickCreateContext={{ module: "dashboard" }}
       actions={pageActions}
-      ariaContext={{ sourceType: "general", pageTitle: "Command Centre" }}
+      caraContext={{ sourceType: "general", pageTitle: "Command Centre" }}
     >
       <div className="space-y-8 pb-8">
 
@@ -1597,7 +1597,7 @@ export default function DashboardPage() {
                       </CardTitle>
                       <div className="flex items-center gap-2">
                         {!config.personalTasksOnly && (d?.tasks.awaiting_sign_off ?? 0) > 0 && (
-                          <span className="text-[10px] font-medium text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] rounded-full px-2 py-0.5">
+                          <span className="text-[10px] font-medium text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] rounded-full px-2 py-0.5">
                             {d!.tasks.awaiting_sign_off} sign-off
                           </span>
                         )}
@@ -1657,17 +1657,17 @@ export default function DashboardPage() {
                     <InspectionReadinessIntelligenceCard />
                     <StaffWellbeingIntelligenceCard />
                     <RiskIntelligenceDashboardCard />
-                    <AriaTodayBriefing />
-                    <AriaShiftSafety />
-                    <AriaRegulatoryPulse />
-                    <AriaRecordingQuality />
-                    <AriaSupervisionIntelligence />
-                    <AriaMedicationIntelligence />
-                    <AriaStaffingAdequacy />
-                    <AriaTrainingCompliance />
-                    <AriaIncidentAnalysis />
-                    <AriaDailyIntelligence />
-                    <AriaDashboardPanel />
+                    <CaraTodayBriefing />
+                    <CaraShiftSafety />
+                    <CaraRegulatoryPulse />
+                    <CaraRecordingQuality />
+                    <CaraSupervisionIntelligence />
+                    <CaraMedicationIntelligence />
+                    <CaraStaffingAdequacy />
+                    <CaraTrainingCompliance />
+                    <CaraIncidentAnalysis />
+                    <CaraDailyIntelligence />
+                    <CaraDashboardPanel />
                     <HomeOfstedReadinessCompositeCard />
                     <HomeChildWellbeingCompositeCard />
                     <HomeWorkforceResilienceCompositeCard />
@@ -1861,7 +1861,7 @@ export default function DashboardPage() {
                     <HomeRecruitmentAuditTrailIntelligenceCard />
                     <HomeFilingEvidenceGovernanceIntelligenceCard />
                     <HomeIndependenceSkillsReadinessIntelligenceCard />
-                    <HomeAriaContentQualityIntelligenceCard />
+                    <HomeCaraContentQualityIntelligenceCard />
                     <HomeNotificationResponsivenessIntelligenceCard />
                     <HomeHolisticChildProgressIntelligenceCard />
                     <HomeInformationFlowQualityIntelligenceCard />
@@ -2092,13 +2092,13 @@ export default function DashboardPage() {
                     <CardHeader className="pb-2">
                       <div className="flex items-center justify-between">
                         <CardTitle className="flex items-center gap-2 text-[13px]">
-                          <Eye className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                          <Eye className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                           Oversight Queue
                         </CardTitle>
                         <Link href="/incidents" className="text-[11px] text-blue-600 hover:underline">All incidents →</Link>
                       </div>
                       {(d?.incidents.awaiting_oversight ?? 0) > 0 && (
-                        <p className="text-[11px] text-[var(--cs-aria-gold)] font-medium mt-1">
+                        <p className="text-[11px] text-[var(--cs-cara-gold)] font-medium mt-1">
                           {d!.incidents.awaiting_oversight} awaiting your oversight
                         </p>
                       )}
@@ -2239,7 +2239,7 @@ export default function DashboardPage() {
         )}
 
         {/* Cara anchor for oversight scroll target */}
-        <div id="aria-anchor" />
+        <div id="cara-anchor" />
 
       </div>
 

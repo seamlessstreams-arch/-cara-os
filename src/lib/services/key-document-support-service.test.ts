@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateKeyDocumentSupport,
-  generateAriaInsights,
+  generateCaraInsights,
   type KeyDocumentSupportRow,
 } from "./key-document-support-service";
 
@@ -203,12 +203,12 @@ describe("key-document-support-service", () => {
     });
   });
 
-  // -- generateAriaInsights -----------------------------------------------------
+  // -- generateCaraInsights -----------------------------------------------------
 
-  describe("generateAriaInsights", () => {
+  describe("generateCaraInsights", () => {
     it("returns 3 insights", () => {
       const rows = [makeRow()];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toContain("[sky]");
       expect(insights[1]).toContain("[amber]");

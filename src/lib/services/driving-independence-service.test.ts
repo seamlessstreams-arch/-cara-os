@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateDrivingIndependence,
-  generateAriaInsights,
+  generateCaraInsights,
   DrivingIndependenceRow,
 } from "./driving-independence-service";
 
@@ -198,18 +198,18 @@ describe("validateDrivingIndependence", () => {
   });
 });
 
-// ── generateAriaInsights ───────────────────────────────────────────────
+// ── generateCaraInsights ───────────────────────────────────────────────
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [makeRow()];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights.length).toBe(3);
     expect(insights[0]).toContain("[sky]");
   });
 
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights.length).toBe(3);
   });
 });

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeAccessibilityMetrics,
   computeAccessibilityAlerts,
-  generateAccessibilityAriaInsights,
+  generateAccessibilityCaraInsights,
   type HomeAccessibilityAssessmentRow,
 } from "./home-accessibility-assessment-service";
 
@@ -136,13 +136,13 @@ describe("computeAccessibilityAlerts", () => {
   });
 });
 
-// ── generateAccessibilityAriaInsights ────────────────────────────────────
+// ── generateAccessibilityCaraInsights ────────────────────────────────────
 
-describe("generateAccessibilityAriaInsights", () => {
+describe("generateAccessibilityCaraInsights", () => {
   it("returns 3 insights", () => {
     const metrics = computeAccessibilityMetrics([makeRow()]);
     const alerts = computeAccessibilityAlerts([makeRow()]);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 });

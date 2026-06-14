@@ -83,10 +83,10 @@ export default function LearningStudioPage() {
     <PageShell title="Learning Studio" subtitle="Generate and manage learning resources">
       <div className="space-y-6 pb-12">
 
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <BookOpen className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <BookOpen className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Learning Studio</h2>
@@ -95,7 +95,7 @@ export default function LearningStudioPage() {
               </p>
             </div>
             <button className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs font-medium text-[var(--cs-navy)] hover:bg-[var(--cs-surface)] transition-colors">
-              <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+              <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
               Generate New
             </button>
           </div>
@@ -126,10 +126,10 @@ export default function LearningStudioPage() {
           <div className="relative flex-1 max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
             <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search resources..."
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white pl-9 pr-3 py-2 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]" />
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white pl-9 pr-3 py-2 text-xs text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]" />
           </div>
           <select value={typeFilter ?? ""} onChange={(e) => setTypeFilter(e.target.value || null)}
-            className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]">
+            className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-xs text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]">
             <option value="">All Types</option>
             {RESOURCE_TYPE_GROUPS.map((g) => (
               <optgroup key={g.group} label={g.group}>
@@ -141,7 +141,7 @@ export default function LearningStudioPage() {
             {["staff", "child"].map((a) => (
               <button key={a} onClick={() => setAudienceFilter(audienceFilter === a ? null : a)}
                 className={cn("rounded-full border px-3 py-1.5 text-[10px] font-medium transition-all",
-                  audienceFilter === a ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]" : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:border-[var(--cs-aria-gold-soft)]")}>
+                  audienceFilter === a ? "bg-[var(--cs-navy)] text-white border-[var(--cs-navy)]" : "bg-white text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:border-[var(--cs-cara-gold-soft)]")}>
                 {a.charAt(0).toUpperCase() + a.slice(1)}
               </button>
             ))}
@@ -155,10 +155,10 @@ export default function LearningStudioPage() {
             return (
               <button key={r.id} onClick={() => setSelectedId(selectedId === r.id ? null : r.id)}
                 className={cn("rounded-xl border bg-white p-4 text-left transition-all space-y-2",
-                  selectedId === r.id ? "border-[var(--cs-aria-gold)] ring-1 ring-[var(--cs-aria-gold-soft)]" : "border-[var(--cs-border)] hover:border-[var(--cs-aria-gold-soft)]")}>
+                  selectedId === r.id ? "border-[var(--cs-cara-gold)] ring-1 ring-[var(--cs-cara-gold-soft)]" : "border-[var(--cs-border)] hover:border-[var(--cs-cara-gold-soft)]")}>
                 <div className="flex items-start gap-3">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--cs-surface)]">
-                    <Icon className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                    <Icon className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-[var(--cs-navy)] truncate">{r.title}</p>
@@ -167,7 +167,7 @@ export default function LearningStudioPage() {
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <Badge className={cn("text-[9px] border", STATUS_STYLES[r.status])}>{r.status}</Badge>
-                  {r.framework && <Badge className="text-[9px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{r.framework}</Badge>}
+                  {r.framework && <Badge className="text-[9px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">{r.framework}</Badge>}
                   <span className="text-[10px] text-[var(--cs-text-muted)] ml-auto">{r.use_count} uses</span>
                 </div>
               </button>

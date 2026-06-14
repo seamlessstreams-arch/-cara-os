@@ -4,13 +4,13 @@
 // POST /api/v1/care-events/annex-a/promote
 //   body: { home_id? }
 //
-// Permission: aria.generate_drafts. Audited as artifact_generated when new
+// Permission: cara.generate_drafts. Audited as artifact_generated when new
 // chips are created.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import { promoteCareEventsToAnnexA } from "@/lib/care-events/care-event-annex-a-bridge";
 
 const DEFAULT_HOME_ID = "home_oak";
@@ -24,8 +24,8 @@ export async function POST(req: NextRequest) {
   }
 
   const homeId = body.home_id ?? DEFAULT_HOME_ID;
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId,
     intent: "promote care events to Annex A evidence",
   });
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
   const result = promoteCareEventsToAnnexA(homeId);
 
   if (result.created > 0) {
-    appendAriaAudit({
+    appendCaraAudit({
       homeId,
       actorId: guard.actor.userId,
       actionType: "artifact_generated",

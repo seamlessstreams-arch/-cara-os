@@ -23,8 +23,8 @@ import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { SigEventCategory, SigEventSeverity, SigEventNotifyStatus, SignificantEvent } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 
 const CATEGORY_META: Record<SigEventCategory, { label: string; icon: React.ReactNode; color: string }> = {
@@ -147,18 +147,18 @@ export default function SignificantEventsPage() {
     <PageShell
       title="Significant Events"
       subtitle="Recording and tracking important events in each child&apos;s journey"
-      ariaContext={{ pageTitle: "Significant Events", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Significant Events", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Significant Events" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="significant-events" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Event</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
-        <AriaPanel mode="assist" pageContext="Significant Events — important milestones, positive and negative events, statutory notifications, life story recording" recordType="significant_event" userRole="registered_manager" className="mb-2" />
+        <CaraPanel mode="assist" pageContext="Significant Events — important milestones, positive and negative events, statutory notifications, life story recording" recordType="significant_event" userRole="registered_manager" className="mb-2" />
         {/* ── Stats strip ──────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[

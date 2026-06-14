@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeEmotionalWellbeingMetrics,
   computeEmotionalWellbeingAlerts,
-  generateEmotionalWellbeingAriaInsights,
+  generateEmotionalWellbeingCaraInsights,
   type EmotionalWellbeingOutcomeRow,
 } from "./emotional-wellbeing-outcome-service";
 
@@ -158,14 +158,14 @@ describe("emotional-wellbeing-outcome-service", () => {
     });
   });
 
-  // ── generateEmotionalWellbeingAriaInsights ────────────────────────
+  // ── generateEmotionalWellbeingCaraInsights ────────────────────────
 
-  describe("generateEmotionalWellbeingAriaInsights", () => {
+  describe("generateEmotionalWellbeingCaraInsights", () => {
     it("returns 3 insights", () => {
       const rows = [makeRow()];
       const metrics = computeEmotionalWellbeingMetrics(rows);
       const alerts = computeEmotionalWellbeingAlerts(rows);
-      const insights = generateEmotionalWellbeingAriaInsights(metrics, alerts);
+      const insights = generateEmotionalWellbeingCaraInsights(metrics, alerts);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toContain("[pink]");
       expect(insights[1]).toContain("[amber]");

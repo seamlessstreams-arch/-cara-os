@@ -13,7 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { HrLetterType } from "@/lib/hr/types";
-import { applyAriaPostprocessor } from "@/lib/aria/writingStyleRules";
+import { applyCaraPostprocessor } from "@/lib/cara/writingStyleRules";
 
 export interface LetterContext {
   recipientName: string;
@@ -424,5 +424,5 @@ export function renderLetterTemplate(type: HrLetterType, ctx: LetterContext): st
       break;
   }
 
-  return applyAriaPostprocessor(body);
+  return applyCaraPostprocessor(body);
 }

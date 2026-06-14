@@ -3,7 +3,7 @@ import "server-only";
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA HQ — AI usage meter
 //
-// Called from the provider seam (aria-provider generateText) on every
+// Called from the provider seam (cara-provider generateText) on every
 // successful model call, so AI cost fills in organically — no per-feature
 // wiring needed. Cost is a ROUGH GBP ESTIMATE for margin watching, never
 // billing (the `estimated` flag travels with every row).

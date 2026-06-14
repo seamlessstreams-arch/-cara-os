@@ -32,7 +32,7 @@ import type {
 const {
   computeStaffWhistleblowingMetrics,
   computeStaffWhistleblowingAlerts,
-  generateStaffWhistleblowingAriaInsights,
+  generateStaffWhistleblowingCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -547,20 +547,20 @@ describe("computeStaffWhistleblowingAlerts", () => {
   });
 });
 
-// ── generateStaffWhistleblowingAriaInsights ──────────────────────────────
+// ── generateStaffWhistleblowingCaraInsights ──────────────────────────────
 
-describe("generateStaffWhistleblowingAriaInsights", () => {
+describe("generateStaffWhistleblowingCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeStaffWhistleblowingMetrics([]);
     const alerts = computeStaffWhistleblowingAlerts([]);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const metrics = computeStaffWhistleblowingMetrics([makeRow()]);
     const alerts = computeStaffWhistleblowingAlerts([makeRow()]);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
@@ -568,7 +568,7 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -576,7 +576,7 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     const rows = [makeRow({ staff_name: "A" }), makeRow({ staff_name: "B" })];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 unique staff members");
   });
 
@@ -584,14 +584,14 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     const rows = [makeRow({ staff_name: "A" })];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 unique staff member");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computeStaffWhistleblowingMetrics([makeRow()]);
     const alerts = computeStaffWhistleblowingAlerts([makeRow()]);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -601,7 +601,7 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     ];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -610,14 +610,14 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     const rows = [makeRow()];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computeStaffWhistleblowingMetrics([makeRow()]);
     const alerts = computeStaffWhistleblowingAlerts([makeRow()]);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -625,7 +625,7 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     const rows = [makeRow({ policy_change_required: true })];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("policy change");
   });
 
@@ -636,7 +636,7 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     ];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("sharing lessons");
   });
 
@@ -647,7 +647,7 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     ];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("learning shared effectively");
   });
 
@@ -655,7 +655,7 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     const rows = [makeRow({ policy_change_required: true })];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("investigation has");
   });
 
@@ -666,14 +666,14 @@ describe("generateStaffWhistleblowingAriaInsights", () => {
     ];
     const metrics = computeStaffWhistleblowingMetrics(rows);
     const alerts = computeStaffWhistleblowingAlerts(rows);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("investigations have");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computeStaffWhistleblowingMetrics([makeRow()]);
     const alerts = computeStaffWhistleblowingAlerts([makeRow()]);
-    const insights = generateStaffWhistleblowingAriaInsights(metrics, alerts);
+    const insights = generateStaffWhistleblowingCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);

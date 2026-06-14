@@ -5,9 +5,9 @@
 "use client";
 
 import { useState } from "react";
-import { AriaAuditViewer } from "@/components/aria/AriaAuditViewer";
+import { CaraAuditViewer } from "@/components/cara/CaraAuditViewer";
 
-// Demo data — in production this fetches from /api/aria/audit
+// Demo data — in production this fetches from /api/cara/audit
 const DEMO_ENTRIES = [
   {
     id: "audit-001",
@@ -92,7 +92,7 @@ const DEMO_ENTRIES = [
   },
 ];
 
-export default function AriaAuditPage() {
+export default function CaraAuditPage() {
   const [entries] = useState(DEMO_ENTRIES);
 
   return (
@@ -126,7 +126,7 @@ export default function AriaAuditPage() {
         </div>
       </div>
 
-      <AriaAuditViewer entries={entries} />
+      <CaraAuditViewer entries={entries} />
     </div>
   );
 }

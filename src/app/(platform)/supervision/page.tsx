@@ -4,7 +4,7 @@ import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
 import { PageGuidance } from "@/components/ui/page-guidance";
-import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
+import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,8 +29,8 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { api } from "@/hooks/use-api";
 import type { Supervision, SupervisionAction } from "@/types";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 type Tab = "supervision" | "probation" | "appraisals" | "goals";
 
@@ -409,7 +409,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-xs gap-1 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
+                  className="h-7 text-xs gap-1 text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]"
                   onClick={extractTrainingNeeds}
                   disabled={extracting || createNeed.isPending}
                 >
@@ -418,7 +418,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
                 </Button>
               )}
               {needCreated && (
-                <span className="text-[10px] text-[var(--cs-aria-gold)] flex items-center gap-1">
+                <span className="text-[10px] text-[var(--cs-cara-gold)] flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" />Training need created
                 </span>
               )}
@@ -693,7 +693,7 @@ export default function SupervisionPage() {
     <PageShell
       title="Supervision & Performance"
       subtitle="Supervision records, probation, appraisals, and individual goal tracking"
-      ariaContext={{ pageTitle: "Supervision & Performance", sourceType: "general" }}
+      caraContext={{ pageTitle: "Supervision & Performance", sourceType: "general" }}
       quickCreateContext={{ module: "supervision", defaultTaskCategory: "supervision", defaultFormType: "supervision_record", preferredTab: "form" }}
       actions={
         <div className="flex items-center gap-2">
@@ -703,7 +703,7 @@ export default function SupervisionPage() {
           <Button size="sm" onClick={() => setScheduleOpen(true)}>
             <Plus className="h-3.5 w-3.5" />Schedule Supervision
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -712,7 +712,7 @@ export default function SupervisionPage() {
           title="Supervision & performance"
           description="Schedule, record, and track formal supervision for all staff. Overdue supervisions are flagged automatically. Actions from supervision feed into the task system."
           evidenceTip="Supervision records should evidence reflective practice, not just operational updates. Inspectors look for professional development discussions linked to individual children."
-          ariaTip="Cara can identify supervision themes across the team and flag when a staff member's caseload may be affecting their wellbeing."
+          caraTip="Cara can identify supervision themes across the team and flag when a staff member's caseload may be affecting their wellbeing."
           regulationRef="Children's Homes Regulations 2015, Reg 33(4)(b) — Supervision of staff"
           variant="compliance"
         />
@@ -1110,13 +1110,13 @@ export default function SupervisionPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Supervision & Performance — staff supervision records, performance reviews, development plans, appraisal records, management oversight, Reg 40 supervision compliance, Ofsted workforce evidence"
         recordType="supervision"
         className="mt-6"
       />
-      <AriaPracticePanel sourceType="supervision" homeId="home_oak" title="Run Cara on this supervision" />
+      <CaraPracticePanel sourceType="supervision" homeId="home_oak" title="Run Cara on this supervision" />
     </PageShell>
     </>
   );

@@ -34,8 +34,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<RiteRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -145,12 +145,12 @@ export default function ChildReligiousRiteMilestonesPage() {
     <PageShell
       title="Religious Rites & Milestones"
       subtitle="Per-child rite-of-passage record — honouring faith milestones in care, including those that pre-date the placement"
-      ariaContext={{ pageTitle: "Religious Rites & Milestones", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Religious Rites & Milestones", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-religious-rite-milestones" />
           <PrintButton title="Religious Rites & Milestones" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -362,7 +362,7 @@ export default function ChildReligiousRiteMilestonesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Religious Rites & Milestones — faith celebrations, baptism, bar/bat mitzvah, confirmation, Eid, Diwali, Ramadan, religious instruction, cultural identity, spiritual needs, care plan"
         recordType="direct_work"

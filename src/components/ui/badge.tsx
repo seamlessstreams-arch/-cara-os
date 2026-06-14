@@ -15,7 +15,7 @@ const badgeVariants = cva(
         warning: "border-transparent bg-amber-100 text-[var(--cs-warning)]",
         info: "border-transparent bg-blue-100 text-[var(--cs-info)]",
         purple: "border-transparent bg-violet-100 text-violet-800",
-        aria: "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+        cara: "border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
         oversight: "border-transparent bg-purple-100 text-[var(--cs-oversight)]",
         risk: "border-transparent bg-red-50 text-[var(--cs-risk)]",
       },

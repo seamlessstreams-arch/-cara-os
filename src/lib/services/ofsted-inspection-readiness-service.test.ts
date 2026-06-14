@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeOfstedReadinessMetrics,
   computeOfstedReadinessAlerts,
-  generateOfstedReadinessAriaInsights,
+  generateOfstedReadinessCaraInsights,
   type OfstedInspectionReadinessRow,
 } from "./ofsted-inspection-readiness-service";
 
@@ -153,12 +153,12 @@ describe("computeOfstedReadinessAlerts", () => {
   });
 });
 
-// ── generateOfstedReadinessAriaInsights ─────────────────────────────────
+// ── generateOfstedReadinessCaraInsights ─────────────────────────────────
 
-describe("generateOfstedReadinessAriaInsights", () => {
+describe("generateOfstedReadinessCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [makeRow()];
-    const insights = generateOfstedReadinessAriaInsights(rows);
+    const insights = generateOfstedReadinessCaraInsights(rows);
     expect(insights.length).toBe(3);
     expect(insights[0]).toContain("[cyan]");
     expect(insights[1]).toContain("[amber]");
@@ -166,7 +166,7 @@ describe("generateOfstedReadinessAriaInsights", () => {
   });
 
   it("returns 3 insights for empty data", () => {
-    const insights = generateOfstedReadinessAriaInsights([]);
+    const insights = generateOfstedReadinessCaraInsights([]);
     expect(insights.length).toBe(3);
   });
 });

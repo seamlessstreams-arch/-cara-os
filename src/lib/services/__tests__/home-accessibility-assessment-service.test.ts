@@ -25,7 +25,7 @@ import type {
 const {
   computeAccessibilityMetrics,
   computeAccessibilityAlerts,
-  generateAccessibilityAriaInsights,
+  generateAccessibilityCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -879,20 +879,20 @@ describe("computeAccessibilityAlerts", () => {
   });
 });
 
-// ── generateAccessibilityAriaInsights ──────────────────────────────────
+// ── generateAccessibilityCaraInsights ──────────────────────────────────
 
-describe("generateAccessibilityAriaInsights", () => {
+describe("generateAccessibilityCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeAccessibilityMetrics([]);
     const alerts = computeAccessibilityAlerts([]);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [teal]", () => {
     const metrics = computeAccessibilityMetrics([makeRow()]);
     const alerts = computeAccessibilityAlerts([makeRow()]);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[teal\]/);
   });
 
@@ -900,7 +900,7 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -908,7 +908,7 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow({ wheelchair_accessible: true }), makeRow({ wheelchair_accessible: false })];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("50%");
   });
 
@@ -916,7 +916,7 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow({ emergency_egress_accessible: true }), makeRow({ emergency_egress_accessible: false })];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("50%");
   });
 
@@ -924,14 +924,14 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow({ cost_estimate: 1500 })];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1,500");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computeAccessibilityMetrics([makeRow()]);
     const alerts = computeAccessibilityAlerts([makeRow()]);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -941,7 +941,7 @@ describe("generateAccessibilityAriaInsights", () => {
     ];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -950,14 +950,14 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow({ compliance_level: "fully_accessible", adjustment_status: "not_required", emergency_egress_accessible: true, child_consulted: "Child A", lighting_adequate: true })];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority accessibility alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computeAccessibilityMetrics([makeRow()]);
     const alerts = computeAccessibilityAlerts([makeRow()]);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -965,7 +965,7 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow({ compliance_level: "not_accessible" })];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("not accessible");
   });
 
@@ -975,7 +975,7 @@ describe("generateAccessibilityAriaInsights", () => {
     ];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("deferred");
   });
 
@@ -985,7 +985,7 @@ describe("generateAccessibilityAriaInsights", () => {
     ];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("No areas are currently assessed as not accessible");
   });
 
@@ -993,7 +993,7 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow({ assessor_name: "Staff A" })];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 assessor");
   });
 
@@ -1004,14 +1004,14 @@ describe("generateAccessibilityAriaInsights", () => {
     ];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 assessors");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computeAccessibilityMetrics([makeRow()]);
     const alerts = computeAccessibilityAlerts([makeRow()]);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1022,7 +1022,7 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow({ compliance_level: "not_accessible" })];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("area has");
   });
 
@@ -1033,7 +1033,7 @@ describe("generateAccessibilityAriaInsights", () => {
     ];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("areas have");
   });
 
@@ -1041,7 +1041,7 @@ describe("generateAccessibilityAriaInsights", () => {
     const rows = [makeRow({ compliance_level: "fully_accessible", adjustment_status: "deferred" })];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("adjustment has");
   });
 
@@ -1052,7 +1052,7 @@ describe("generateAccessibilityAriaInsights", () => {
     ];
     const metrics = computeAccessibilityMetrics(rows);
     const alerts = computeAccessibilityAlerts(rows);
-    const insights = generateAccessibilityAriaInsights(metrics, alerts);
+    const insights = generateAccessibilityCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("adjustments have");
   });
 });

@@ -11,8 +11,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
-import { upsertReg45EvidenceForCareEvent } from "@/lib/aria/aria-reg45-evidence";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
+import { upsertReg45EvidenceForCareEvent } from "@/lib/cara/cara-reg45-evidence";
 import type { CareEventStatus } from "@/types/care-events";
 
 const VERIFIABLE: ReadonlySet<CareEventStatus> = new Set<CareEventStatus>([
@@ -78,10 +78,10 @@ export function verifyCareEventsBulk(
     }
 
     // Approve pending Reg 45 evidence drafted from this event
-    for (const item of db.ariaReg45EvidenceItems
+    for (const item of db.caraReg45EvidenceItems
       .findAll(homeId)
       .filter((r) => r.source_id === id && r.status === "ai_draft")) {
-      db.ariaReg45EvidenceItems.patch(item.id, {
+      db.caraReg45EvidenceItems.patch(item.id, {
         status: "accepted",
         decided_by: actorId,
         decided_at: verifiedAt,
@@ -119,7 +119,7 @@ export function verifyCareEventsBulk(
       ip_address: null,
     });
 
-    appendAriaAudit({
+    appendCaraAudit({
       homeId,
       actorId,
       actionType: "artifact_committed",
@@ -177,7 +177,7 @@ export function returnCareEventsBulk(
       ip_address: null,
     });
 
-    appendAriaAudit({
+    appendCaraAudit({
       homeId,
       actorId,
       actionType: "artifact_rejected",

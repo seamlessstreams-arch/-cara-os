@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeVoiceParticipationMetrics,
   computeVoiceParticipationAlerts,
-  generateVoiceParticipationAriaInsights,
+  generateVoiceParticipationCaraInsights,
 } from "./child-voice-participation-tracking-service";
 import type { ChildVoiceParticipationTrackingRow } from "./child-voice-participation-tracking-service";
 
@@ -169,11 +169,11 @@ describe("computeVoiceParticipationAlerts", () => {
   });
 });
 
-// -- generateVoiceParticipationAriaInsights ------------------------------------
+// -- generateVoiceParticipationCaraInsights ------------------------------------
 
-describe("generateVoiceParticipationAriaInsights", () => {
+describe("generateVoiceParticipationCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateVoiceParticipationAriaInsights([]);
+    const insights = generateVoiceParticipationCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[violet]");
     expect(insights[2]).toContain("[reflect]");
@@ -181,7 +181,7 @@ describe("generateVoiceParticipationAriaInsights", () => {
 
   it("reports no critical/high when all data is clean", () => {
     const rows = [makeRow()];
-    const insights = generateVoiceParticipationAriaInsights(rows);
+    const insights = generateVoiceParticipationCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority concerns");
   });
 });

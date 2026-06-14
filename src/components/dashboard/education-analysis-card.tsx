@@ -68,7 +68,7 @@ export function EducationAnalysisCard({ childId }: EducationAnalysisCardProps) {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/aria/education?childId=${childId}`);
+        const res = await fetch(`/api/cara/education?childId=${childId}`);
         const json = await res.json();
         if (json.success) setData(json.data);
       } catch (err) {

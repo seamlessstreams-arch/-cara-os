@@ -5,7 +5,7 @@ interface RouteParams { params: Promise<{ id: string }>; }
 
 export async function GET(_req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  const rec = intelligenceDb.ariaRecommendations.findById(id);
+  const rec = intelligenceDb.caraRecommendations.findById(id);
   if (!rec) return NextResponse.json({ error: "Recommendation not found" }, { status: 404 });
   return NextResponse.json({ data: rec });
 }
@@ -16,7 +16,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
-  const existing = intelligenceDb.ariaRecommendations.findById(id);
+  const existing = intelligenceDb.caraRecommendations.findById(id);
   if (!existing) return NextResponse.json({ error: "Recommendation not found" }, { status: 404 });
 
   const allowed = ["status","task_created","task_id","deadline","assigned_role","priority"];
@@ -25,11 +25,11 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
     if (body[key] !== undefined) patch[key] = body[key];
   }
 
-  const updated = intelligenceDb.ariaRecommendations.patch(id, patch);
+  const updated = intelligenceDb.caraRecommendations.patch(id, patch);
   if (!updated) return NextResponse.json({ error: "Recommendation not found" }, { status: 404 });
 
   if (body.status === "actioned" || body.status === "task_created") {
-    intelligenceDb.ariaAuditTrail.create({
+    intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
       user_id: "staff_darren",
       child_id: updated.child_id,

@@ -30,13 +30,13 @@ import { EXTRACURRICULAR_CATEGORY_LABEL, CLUB_SOCIAL_FIT_LABEL } from "@/types/e
 import type { ExtracurricularCategory, ClubSocialFit } from "@/types/extended";
 import { useExtracurricularClubRecords } from "@/hooks/use-extracurricular-club-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const categoryColour: Record<ExtracurricularCategory, string> = {
   sport: "bg-sky-100 text-sky-800",
-  music: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
-  drama_theatre: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  music: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
+  drama_theatre: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   faith_community: "bg-amber-100 text-amber-800",
   academic_debate: "bg-blue-100 text-blue-800",
   coding_tech: "bg-cyan-100 text-cyan-800",
@@ -173,12 +173,12 @@ export default function ChildExtracurricularClubsPage() {
     <PageShell
       title="Extracurricular Clubs & Societies"
       subtitle="Per-child clubs, societies and after-school activities — attendance, social fit, skill building, transport and cost"
-      ariaContext={{ pageTitle: "Extracurricular Clubs & Societies", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Extracurricular Clubs & Societies", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="extracurricular-clubs" />
           <PrintButton title="Extracurricular Clubs & Societies" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -188,7 +188,7 @@ export default function ChildExtracurricularClubsPage() {
           <p className="text-xs text-muted-foreground">Active Clubs</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-[var(--cs-aria-gold)]">{weeklyHours}h</p>
+          <p className="text-2xl font-bold text-[var(--cs-cara-gold)]">{weeklyHours}h</p>
           <p className="text-xs text-muted-foreground">Weekly Hours (active)</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -196,7 +196,7 @@ export default function ChildExtracurricularClubsPage() {
           <p className="text-xs text-muted-foreground">Weekly Cost (active)</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-[var(--cs-aria-gold)]">{reviewsDue}</p>
+          <p className="text-2xl font-bold text-[var(--cs-cara-gold)]">{reviewsDue}</p>
           <p className="text-xs text-muted-foreground">Reviews Due (60d)</p>
         </div>
       </div>
@@ -288,7 +288,7 @@ export default function ChildExtracurricularClubsPage() {
                   >
                     {c.ongoing ? "Ongoing" : "Ended"}
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]">
                     {c.attendance_rate}% att.
                   </span>
                   <span
@@ -353,7 +353,7 @@ export default function ChildExtracurricularClubsPage() {
                     </div>
                   </div>
 
-                  <div className="bg-[var(--cs-aria-gold-bg)] rounded-lg p-3 border border-[var(--cs-aria-gold-soft)]">
+                  <div className="bg-[var(--cs-cara-gold-bg)] rounded-lg p-3 border border-[var(--cs-cara-gold-soft)]">
                     <p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1 flex items-center gap-1">
                       <Award className="h-3 w-3" />
                       Skills Built
@@ -361,7 +361,7 @@ export default function ChildExtracurricularClubsPage() {
                     <ul className="space-y-1">
                       {c.skills_built.map((s, i) => (
                         <li key={i} className="text-sm flex items-start gap-1">
-                          <Star className="h-3 w-3 text-[var(--cs-aria-gold)] mt-1 shrink-0" />
+                          <Star className="h-3 w-3 text-[var(--cs-cara-gold)] mt-1 shrink-0" />
                           <span>{s}</span>
                         </li>
                       ))}
@@ -435,7 +435,7 @@ export default function ChildExtracurricularClubsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Extracurricular Clubs & Societies — clubs, societies, teams, music, drama, sport, scouts, cadets, participation tracking, transport, consent, cost, LAC entitlement, PEP targets"
         recordType="education"

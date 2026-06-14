@@ -186,8 +186,8 @@ export function ActionOutcomeAddModal({
         >
           {/* Header */}
           <div className="flex items-center gap-3 border-b border-[var(--cs-border-subtle)] px-5 py-4">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-aria-gold-bg)]">
-              <Target className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-cara-gold-bg)]">
+              <Target className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1 min-w-0">
               <Dialog.Title className="text-sm font-semibold text-[var(--cs-navy)]">
@@ -236,7 +236,7 @@ export function ActionOutcomeAddModal({
                     placeholder="What action was agreed?"
                     className={cn(
                       "w-full rounded-xl border px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)]",
-                      "focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] focus:border-transparent transition-shadow",
+                      "focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] focus:border-transparent transition-shadow",
                       errors.title ? "border-red-300 bg-red-50" : "border-[var(--cs-border)] bg-white"
                     )}
                   />
@@ -264,7 +264,7 @@ export function ActionOutcomeAddModal({
                     placeholder="Describe exactly what was agreed and by whom"
                     className={cn(
                       "w-full rounded-xl border px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] resize-none",
-                      "focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] focus:border-transparent transition-shadow",
+                      "focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] focus:border-transparent transition-shadow",
                       errors.whatWasAgreed ? "border-red-300 bg-red-50" : "border-[var(--cs-border)] bg-white"
                     )}
                   />
@@ -292,7 +292,7 @@ export function ActionOutcomeAddModal({
                     placeholder="Why does this action matter for the young person or the home?"
                     className={cn(
                       "w-full rounded-xl border px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] resize-none",
-                      "focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] focus:border-transparent transition-shadow",
+                      "focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] focus:border-transparent transition-shadow",
                       errors.whyItMatters ? "border-red-300 bg-red-50" : "border-[var(--cs-border)] bg-white"
                     )}
                   />
@@ -310,7 +310,7 @@ export function ActionOutcomeAddModal({
                       id="ao-child"
                       value={selectedChild}
                       onChange={(e) => setSelectedChild(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] focus:border-transparent transition-shadow"
+                      className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] focus:border-transparent transition-shadow"
                     >
                       <option value="">— None —</option>
                       {CHILD_OPTIONS.map((c) => (
@@ -327,7 +327,7 @@ export function ActionOutcomeAddModal({
                       type="date"
                       value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
-                      className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] focus:border-transparent transition-shadow"
+                      className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] focus:border-transparent transition-shadow"
                     />
                   </div>
                 </div>
@@ -339,7 +339,7 @@ export function ActionOutcomeAddModal({
                     id="ao-owner"
                     value={selectedOwner}
                     onChange={(e) => setSelectedOwner(e.target.value)}
-                    className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] focus:border-transparent transition-shadow"
+                    className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] focus:border-transparent transition-shadow"
                   >
                     {OWNER_OPTIONS.map((o) => (
                       <option key={o.id} value={o.id}>{o.name}</option>

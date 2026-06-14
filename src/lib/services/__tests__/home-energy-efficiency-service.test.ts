@@ -25,7 +25,7 @@ import type {
 const {
   computeEnergyEfficiencyMetrics,
   computeEnergyEfficiencyAlerts,
-  generateEnergyEfficiencyAriaInsights,
+  generateEnergyEfficiencyCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -945,39 +945,39 @@ describe("computeEnergyEfficiencyAlerts", () => {
   });
 });
 
-// ── generateEnergyEfficiencyAriaInsights ─────────────────────────────────
+// ── generateEnergyEfficiencyCaraInsights ─────────────────────────────────
 
-describe("generateEnergyEfficiencyAriaInsights", () => {
+describe("generateEnergyEfficiencyCaraInsights", () => {
   it("returns exactly 3 insights", () => {
-    const insights = generateEnergyEfficiencyAriaInsights([]);
+    const insights = generateEnergyEfficiencyCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [orange]", () => {
-    const insights = generateEnergyEfficiencyAriaInsights([makeRow()]);
+    const insights = generateEnergyEfficiencyCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[orange\]/);
   });
 
   it("first insight includes total_assessments count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes epc_valid_rate", () => {
     const rows = [makeRow({ current_epc_valid: true }), makeRow({ current_epc_valid: false })];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("first insight includes smart_meter_rate", () => {
     const rows = [makeRow({ smart_meter_installed: true }), makeRow({ smart_meter_installed: false })];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateEnergyEfficiencyAriaInsights([makeRow()]);
+    const insights = generateEnergyEfficiencyCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -985,14 +985,14 @@ describe("generateEnergyEfficiencyAriaInsights", () => {
     const rows = [
       makeRow({ current_epc_valid: false, energy_area: "heating", insulation_adequate: false }),
     ];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
 
   it("second insight mentions no alerts when none present", () => {
     const rows = [makeRow({ current_epc_valid: true, efficiency_rating: "b_rating", improvement_status: "in_progress", insulation_adequate: true, smart_meter_installed: true, children_involved_in_saving: true })];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
@@ -1000,18 +1000,18 @@ describe("generateEnergyEfficiencyAriaInsights", () => {
     const rows = [
       makeRow({ current_epc_valid: false, monthly_cost_estimate: 150.50 }),
     ];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[1]).toContain("150.50");
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateEnergyEfficiencyAriaInsights([makeRow()]);
+    const insights = generateEnergyEfficiencyCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions poor when some have poor ratings", () => {
     const rows = [makeRow({ efficiency_rating: "e_rating" })];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[2]).toContain("poor");
   });
 
@@ -1020,7 +1020,7 @@ describe("generateEnergyEfficiencyAriaInsights", () => {
       makeRow({ efficiency_rating: "b_rating", children_involved_in_saving: false }),
       makeRow({ efficiency_rating: "b_rating", children_involved_in_saving: true }),
     ];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[2]).toContain("Children are involved");
   });
 
@@ -1029,13 +1029,13 @@ describe("generateEnergyEfficiencyAriaInsights", () => {
       makeRow({ efficiency_rating: "b_rating", children_involved_in_saving: true }),
       makeRow({ efficiency_rating: "b_rating", children_involved_in_saving: true }),
     ];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[2]).toContain("involve children in energy saving and no poor");
   });
 
   it("uses singular assessor wording when unique_assessors is 1", () => {
     const rows = [makeRow({ assessor_name: "Staff A" })];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[0]).toContain("1 assessor");
   });
 
@@ -1044,12 +1044,12 @@ describe("generateEnergyEfficiencyAriaInsights", () => {
       makeRow({ assessor_name: "Staff A" }),
       makeRow({ assessor_name: "Staff B" }),
     ];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[0]).toContain("2 assessors");
   });
 
   it("all insights are non-empty strings", () => {
-    const insights = generateEnergyEfficiencyAriaInsights([makeRow()]);
+    const insights = generateEnergyEfficiencyCaraInsights([makeRow()]);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1058,7 +1058,7 @@ describe("generateEnergyEfficiencyAriaInsights", () => {
 
   it("uses singular assessment wording when 1 poor", () => {
     const rows = [makeRow({ efficiency_rating: "e_rating" })];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[2]).toContain("assessment has");
   });
 
@@ -1067,7 +1067,7 @@ describe("generateEnergyEfficiencyAriaInsights", () => {
       makeRow({ efficiency_rating: "e_rating" }),
       makeRow({ efficiency_rating: "f_rating" }),
     ];
-    const insights = generateEnergyEfficiencyAriaInsights(rows);
+    const insights = generateEnergyEfficiencyCaraInsights(rows);
     expect(insights[2]).toContain("assessments have");
   });
 });

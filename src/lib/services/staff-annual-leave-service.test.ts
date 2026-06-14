@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeStaffAnnualLeaveMetrics,
   computeStaffAnnualLeaveAlerts,
-  generateStaffAnnualLeaveAriaInsights,
+  generateStaffAnnualLeaveCaraInsights,
 } from "./staff-annual-leave-service";
 import type { StaffAnnualLeaveRow } from "./staff-annual-leave-service";
 
@@ -160,13 +160,13 @@ describe("computeStaffAnnualLeaveAlerts", () => {
   });
 });
 
-// -- generateStaffAnnualLeaveAriaInsights -------------------------------------
+// -- generateStaffAnnualLeaveCaraInsights -------------------------------------
 
-describe("generateStaffAnnualLeaveAriaInsights", () => {
+describe("generateStaffAnnualLeaveCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
     const m = computeStaffAnnualLeaveMetrics([]);
     const a = computeStaffAnnualLeaveAlerts([]);
-    const insights = generateStaffAnnualLeaveAriaInsights(m, a);
+    const insights = generateStaffAnnualLeaveCaraInsights(m, a);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[pink]");
     expect(insights[2]).toContain("[reflect]");

@@ -4,7 +4,7 @@
 // Cara — GENERATE NEW REPORT (CHILD-SCOPED)
 //
 // Report generation form pre-scoped to a specific child. The child is locked
-// and cannot be changed. Otherwise behaves identically to /aria/reports/new.
+// and cannot be changed. Otherwise behaves identically to /cara/reports/new.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { use, useState } from "react";
@@ -27,8 +27,8 @@ import {
   REPORT_TYPE_LABELS,
   REPORT_AUDIENCES,
   REPORT_AUDIENCE_LABELS,
-} from "@/types/aria-reports";
-import type { ReportType, ReportAudience } from "@/types/aria-reports";
+} from "@/types/cara-reports";
+import type { ReportType, ReportAudience } from "@/types/cara-reports";
 import {
   Sparkles,
   ArrowLeft,
@@ -80,7 +80,7 @@ export default function ChildNewReportPage({
     setError(null);
 
     try {
-      const res = await fetch("/api/aria/reports/generate", {
+      const res = await fetch("/api/cara/reports/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -122,9 +122,9 @@ export default function ChildNewReportPage({
           </Link>
           <div
             className="flex h-10 w-10 items-center justify-center rounded-lg"
-            style={{ backgroundColor: "var(--cs-aria-gold-bg)" }}
+            style={{ backgroundColor: "var(--cs-cara-gold-bg)" }}
           >
-            <Sparkles className="h-5 w-5" style={{ color: "var(--cs-aria-gold)" }} />
+            <Sparkles className="h-5 w-5" style={{ color: "var(--cs-cara-gold)" }} />
           </div>
           <div>
             <h1 className="text-xl font-semibold" style={{ color: "var(--cs-navy)" }}>
@@ -214,7 +214,7 @@ export default function ChildNewReportPage({
               onClick={handleGenerate}
               disabled={loading}
               className="w-full gap-2"
-              style={{ backgroundColor: "var(--cs-aria-gold)" }}
+              style={{ backgroundColor: "var(--cs-cara-gold)" }}
             >
               {loading ? (
                 <>

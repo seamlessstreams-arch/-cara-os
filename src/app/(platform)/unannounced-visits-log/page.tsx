@@ -26,8 +26,8 @@ import {
   UNANNOUNCED_VISIT_OVERALL_ASSESSMENT_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -156,12 +156,12 @@ export default function UnannouncedVisitsLogPage() {
     <PageShell
       title="Unannounced Visits Log"
       subtitle="Management, RI, and external oversight visits — demonstrating active monitoring under Regulation 44/45"
-      ariaContext={{ pageTitle: "Unannounced Visits Log", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Unannounced Visits Log", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Unannounced Visits Log" />
           <ExportButton data={processed} columns={exportCols} filename="unannounced-visits-log" />
-          <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -403,7 +403,7 @@ export default function UnannouncedVisitsLogPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Unannounced Visits Log — Reg 44 unannounced visits, RI visits, local authority visits, Ofsted visits, visit outcomes, actions raised, compliance evidence, inspector notes"
         recordType="ofsted_evidence"

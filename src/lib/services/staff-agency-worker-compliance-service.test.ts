@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
 } from "./staff-agency-worker-compliance-service";
 import type { StaffAgencyWorkerComplianceRow } from "./staff-agency-worker-compliance-service";
 
@@ -154,24 +154,24 @@ describe("computeAlerts", () => {
   });
 });
 
-// -- computeAriaInsights -------------------------------------------------------
+// -- computeCaraInsights -------------------------------------------------------
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   it("returns 3 insights for empty rows", () => {
-    const insights = computeAriaInsights([]);
+    const insights = computeCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("includes reflect insight about non-compliant workers when present", () => {
     const rows = [makeRow({ compliance_status: "Non-Compliant" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("[reflect]");
     expect(insights[2]).toContain("non-compliant");
   });
 
   it("includes reflect insight about supervision when all compliant but supervision < 100%", () => {
     const rows = [makeRow({ supervision_arranged: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("[reflect]");
     expect(insights[2]).toContain("supervision");
   });

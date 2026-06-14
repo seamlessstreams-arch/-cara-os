@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeElectricalSafetyMetrics,
   identifyElectricalSafetyAlerts,
-  generateElectricalSafetyAriaInsights,
+  generateElectricalSafetyCaraInsights,
   type HomeElectricalSafetyRow,
 } from "./home-electrical-safety-service";
 
@@ -115,16 +115,16 @@ describe("identifyElectricalSafetyAlerts", () => {
   });
 });
 
-describe("generateElectricalSafetyAriaInsights", () => {
+describe("generateElectricalSafetyCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [makeRow()];
-    const insights = generateElectricalSafetyAriaInsights(rows);
+    const insights = generateElectricalSafetyCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("1 electrical safety inspections");
   });
 
   it("returns 3 insights for empty data", () => {
-    const insights = generateElectricalSafetyAriaInsights([]);
+    const insights = generateElectricalSafetyCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 });

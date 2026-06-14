@@ -36,8 +36,8 @@ import {
   SUBJECT_ACCESS_REQUESTER_TYPE_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ────────────────────────────── */
 
@@ -142,13 +142,13 @@ export default function SubjectAccessRequestsPage() {
     <PageShell
       title="Subject Access Requests (SARs)"
       subtitle="GDPR · UK Data Protection Act 2018 · Information Rights"
-      ariaContext={{ pageTitle: "Subject Access Requests", sourceType: "document" }}
+      caraContext={{ pageTitle: "Subject Access Requests", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Subject Access Requests" />
           <ExportButton data={records} columns={exportCols} filename="subject-access-requests" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Request</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "uploaded_document", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -364,7 +364,7 @@ export default function SubjectAccessRequestsPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Subject Access Requests — SAR requests, response deadlines, data disclosure decisions, GDPR compliance, information governance, management oversight, regulatory compliance evidence"
         recordType="uploaded_document"

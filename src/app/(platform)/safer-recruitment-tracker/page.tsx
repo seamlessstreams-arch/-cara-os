@@ -29,8 +29,8 @@ import { useSaferRecruitmentRecords } from "@/hooks/use-safer-recruitment-record
 import type { SaferRecruitmentRecord, SaferRecruitmentStatus, SaferRecruitmentReferenceStatus, SaferRecruitmentDbsResult } from "@/types/extended";
 import { SAFER_RECRUITMENT_STATUS_LABEL, SAFER_RECRUITMENT_REFERENCE_STATUS_LABEL, SAFER_RECRUITMENT_DBS_RESULT_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -150,12 +150,12 @@ export default function SaferRecruitmentTrackerPage() {
     <PageShell
       title="Safer Recruitment Tracker"
       subtitle="Schedule 2 & Reg 32 — end-to-end vetting and onboarding compliance for new staff"
-      ariaContext={{ pageTitle: "Safer Recruitment Tracker", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Safer Recruitment Tracker", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="safer-recruitment-tracker" />
           <PrintButton title="Safer Recruitment Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -444,7 +444,7 @@ export default function SaferRecruitmentTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Safer Recruitment Tracker — DBS checks, references, interview records, safer recruitment compliance, Reg 40 staffing compliance, Ofsted staffing evidence, recruitment audit trail"
         recordType="staff_training"

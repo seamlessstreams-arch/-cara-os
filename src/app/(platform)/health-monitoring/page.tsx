@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -113,12 +113,12 @@ export default function HealthMonitoringPage() {
     <PageShell
       title="Health Monitoring"
       subtitle="Dental, optician, immunisation, and routine health checks — Regulation 23"
-      ariaContext={{ pageTitle: "Health Monitoring", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Health Monitoring", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Health Monitoring" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="health-monitoring" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Add Record</Button>,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

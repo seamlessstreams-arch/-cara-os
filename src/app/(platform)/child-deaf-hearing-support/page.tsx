@@ -38,8 +38,8 @@ import {
   BSL_LEVEL_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -128,12 +128,12 @@ export default function ChildDeafHearingSupportPage() {
     <PageShell
       title="Deaf & Hearing Support"
       subtitle="Per-child hearing status and Deaf identity work — hearing aids, cochlear implants, BSL/SSE language preference, audiology, school plans, home adaptations, Deaf community connection. Honours Deaf identity as culture, not deficit."
-      ariaContext={{ pageTitle: "Deaf & Hearing Support", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Deaf & Hearing Support", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-deaf-hearing-support" />
           <PrintButton title="Deaf & Hearing Support" />
-          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -352,7 +352,7 @@ export default function ChildDeafHearingSupportPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Deaf & Hearing Support — hearing aids, BSL, lip-reading, audiology appointments, hearing assessment, communication adaptations, EHCP, school support, AHA, specialist equipment"
         recordType="health"

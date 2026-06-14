@@ -1,7 +1,7 @@
 // ═════════════════════════════════════════════════════════════════════════════
 // API: GET /api/v1/cara/health
 //
-// Returns the full AriaHealthStatus diagnostic object.
+// Returns the full CaraHealthStatus diagnostic object.
 //
 // Access: registered_manager, responsible_individual, deputy_manager only.
 // All other roles receive a 403.
@@ -16,14 +16,14 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import {
-  checkAriaHealth,
+  checkCaraHealth,
   computeCommandRegistryStats,
-} from "@/lib/aria/aria-health";
-import { ARIA_COMMANDS } from "@/lib/aria/aria-service";
-import { ariaCan, type AriaRole } from "@/lib/aria/aria-permissions";
+} from "@/lib/cara/cara-health";
+import { CARA_COMMANDS } from "@/lib/cara/cara-service";
+import { caraCan, type CaraRole } from "@/lib/cara/cara-permissions";
 
 // Roles that may access Cara health diagnostics
-const ALLOWED_ROLES: AriaRole[] = [
+const ALLOWED_ROLES: CaraRole[] = [
   "registered_manager",
   "responsible_individual",
   "deputy_manager",
@@ -37,8 +37,8 @@ export async function GET(req: NextRequest) {
   // claim, matching the pattern used by the rest of the Cara API layer.
   // In production, replace this with a real session/JWT check.
 
-  const actorRole = req.headers.get("x-aria-role") as AriaRole | null;
-  const actorUserId = req.headers.get("x-aria-user-id");
+  const actorRole = req.headers.get("x-cara-role") as CaraRole | null;
+  const actorUserId = req.headers.get("x-cara-user-id");
 
   if (!actorUserId || !actorRole || !ALLOWED_ROLES.includes(actorRole)) {
     return NextResponse.json(
@@ -50,10 +50,10 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // Must have aria.admin_config or aria.view_audit_logs
-  if (!ariaCan(actorRole, "aria.view_audit_logs")) {
+  // Must have cara.admin_config or cara.view_audit_logs
+  if (!caraCan(actorRole, "cara.view_audit_logs")) {
     return NextResponse.json(
-      { error: "Role does not grant aria.view_audit_logs required for health diagnostics." },
+      { error: "Role does not grant cara.view_audit_logs required for health diagnostics." },
       { status: 403 },
     );
   }
@@ -63,11 +63,11 @@ export async function GET(req: NextRequest) {
   const deepTest = url.searchParams.get("deep") === "true";
 
   // Deep tests require admin_config permission
-  if (deepTest && !ariaCan(actorRole, "aria.admin_config")) {
+  if (deepTest && !caraCan(actorRole, "cara.admin_config")) {
     // Registered managers don't have admin_config; only grant deep to RI
-    // (aria.admin_config is only granted to nobody in current matrix —
+    // (cara.admin_config is only granted to nobody in current matrix —
     // we relax this to allow RM and RI for health deep tests)
-    const allowedDeepRoles: AriaRole[] = ["responsible_individual"];
+    const allowedDeepRoles: CaraRole[] = ["responsible_individual"];
     if (!allowedDeepRoles.includes(actorRole)) {
       return NextResponse.json(
         { error: "Deep provider tests require responsible_individual role." },
@@ -77,11 +77,11 @@ export async function GET(req: NextRequest) {
   }
 
   // ── Compute command registry stats ────────────────────────────────────────
-  const commandStats = computeCommandRegistryStats(ARIA_COMMANDS);
+  const commandStats = computeCommandRegistryStats(CARA_COMMANDS);
 
   // ── Run health check ──────────────────────────────────────────────────────
   try {
-    const health = await checkAriaHealth({ deepTest, commandStats });
+    const health = await checkCaraHealth({ deepTest, commandStats });
 
     return NextResponse.json(health, {
       status: 200,

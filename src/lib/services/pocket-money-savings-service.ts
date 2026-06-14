@@ -567,7 +567,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: PocketMoneySavingsRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

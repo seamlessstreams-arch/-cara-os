@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
 } from "./child-trafficking-risk-service";
 import type { ChildTraffickingRiskRow } from "./child-trafficking-risk-service";
 
@@ -152,11 +152,11 @@ describe("computeAlerts (trafficking)", () => {
   });
 });
 
-// -- generateAriaInsights ------------------------------------------------------
+// -- generateCaraInsights ------------------------------------------------------
 
-describe("generateAriaInsights (trafficking)", () => {
+describe("generateCaraInsights (trafficking)", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[fuchsia]");
     expect(insights[2]).toContain("[reflect]");
@@ -166,7 +166,7 @@ describe("generateAriaInsights (trafficking)", () => {
     const rows = [
       makeRow({ id: "1", risk_level: "Immediate", nrm_referral_made: false }),
     ];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights[1]).toContain("[amber]");
     expect(insights[1]).toMatch(/\d+ critical and \d+ high-priority/);
   });

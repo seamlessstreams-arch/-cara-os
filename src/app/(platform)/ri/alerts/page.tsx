@@ -9,8 +9,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -76,7 +76,7 @@ const SEVERITY_ORDER: RiAlertSeverity[] = ["critical", "high", "medium", "low"];
 const TYPE_CONFIG: Record<RiAlertType, { label: string; icon: React.ReactNode; colour: string }> = {
   safeguarding_risk:  { label: "Safeguarding",       icon: <ShieldAlert className="h-3.5 w-3.5" />, colour: "text-red-600 bg-red-50 border-red-200" },
   repeated_incident:  { label: "Repeated Incident",  icon: <Flame className="h-3.5 w-3.5" />,      colour: "text-orange-600 bg-orange-50 border-orange-200" },
-  weak_oversight:     { label: "Weak Oversight",      icon: <Eye className="h-3.5 w-3.5" />,        colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
+  weak_oversight:     { label: "Weak Oversight",      icon: <Eye className="h-3.5 w-3.5" />,        colour: "text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]" },
   missing_compliance: { label: "Missing Compliance",  icon: <FileWarning className="h-3.5 w-3.5" />,colour: "text-pink-600 bg-pink-50 border-pink-200" },
   overdue_action:     { label: "Overdue Action",      icon: <Timer className="h-3.5 w-3.5" />,      colour: "text-amber-600 bg-amber-50 border-amber-200" },
   rising_risk:        { label: "Rising Risk",         icon: <TrendingUp className="h-3.5 w-3.5" />, colour: "text-rose-600 bg-rose-50 border-rose-200" },
@@ -106,7 +106,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
     createNeed.mutate(
       {
         home_id: alert.home_id,
-        identified_by: "aria",
+        identified_by: "cara",
         need_type: "safeguarding",
         title: `Training need from RI alert: ${alert.title}`,
         description: alert.description,
@@ -228,7 +228,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="text-xs h-7 gap-1 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
+                        className="text-xs h-7 gap-1 text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]"
                         onClick={createTrainingNeed}
                         disabled={createNeed.isPending}
                       >
@@ -237,7 +237,7 @@ function AlertCard({ alert }: { alert: RiAlert }) {
                       </Button>
                     ) : (
                       <Link href="/learning/training-needs">
-                        <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-[var(--cs-aria-gold)]">
+                        <Button size="sm" variant="ghost" className="text-xs h-7 gap-1 text-[var(--cs-cara-gold)]">
                           <CheckCircle2 className="h-3 w-3" />
                           Training need created →
                         </Button>
@@ -494,14 +494,14 @@ export default function RiAlertsPage() {
     <PageShell
       title="RI Alerts"
       subtitle="Auto-detected governance, compliance, and safeguarding alerts"
-      ariaContext={{ pageTitle: "RI Alerts", sourceType: "general" }}
+      caraContext={{ pageTitle: "RI Alerts", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={displayed} columns={ALERT_EXPORT_COLS} filename="ri-alerts" />
           <PrintButton title="RI Alerts Report" subtitle="Chamberlain House Compliance" targetId="ri-alerts-content" />
           <SmartUploadButton variant="inline" label="Upload Evidence" uploadContext="RI Alerts — evidence upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -679,7 +679,7 @@ export default function RiAlertsPage() {
           </div>
         )}
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="RI Alerts — auto-detected governance alerts, compliance alerts, safeguarding alerts, regulatory triggers, escalation evidence, RI oversight, Ofsted readiness indicators"
         recordType="management_oversight"

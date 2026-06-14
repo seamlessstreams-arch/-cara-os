@@ -611,10 +611,10 @@ describe("strengths (via generateManagementOversight)", () => {
 
 // ── Cara Confidence ───────────────────────────────────────────────────────
 
-describe("ariaConfidence (via generateManagementOversight)", () => {
+describe("caraConfidence (via generateManagementOversight)", () => {
   it("returns a fixed confidence value", () => {
     const result = generateManagementOversight(baseInput());
-    expect(result.ariaConfidence).toBe(0.78);
+    expect(result.caraConfidence).toBe(0.78);
   });
 });
 
@@ -635,7 +635,7 @@ describe("generateManagementOversight — integration", () => {
     expect(result).toHaveProperty("strengths");
     expect(result).toHaveProperty("suggestedActions");
     expect(result).toHaveProperty("regulatoryLinks");
-    expect(result).toHaveProperty("ariaConfidence");
+    expect(result).toHaveProperty("caraConfidence");
   });
 
   it("produces coherent output for a high-quality record", () => {

@@ -23,7 +23,7 @@ function getDemoInputs(): RiScoreInputs {
     // Training needs — 1 urgent unaddressed, 1 high completed, 2 medium
     trainingNeeds: [
       {
-        id: "tn-demo-1", home_id: "oak-house", identified_by: "aria",
+        id: "tn-demo-1", home_id: "oak-house", identified_by: "cara",
         need_type: "specialist", title: "Attachment & Trauma Advanced",
         description: "Advanced attachment training needed following recent placement challenges",
         priority: "urgent", status: "identified",

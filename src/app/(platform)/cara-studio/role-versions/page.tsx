@@ -101,10 +101,10 @@ export default function RoleVersionsPage() {
       <div className="space-y-6 pb-12">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Users className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Users className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Role-Based Output Versions</h2>
@@ -129,11 +129,11 @@ export default function RoleVersionsPage() {
                   className={cn(
                     "inline-flex items-center gap-2 rounded-lg border px-3 py-2 transition-all",
                     isSelected
-                      ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] ring-2 ring-[var(--cs-aria-gold-soft)]"
-                      : "border-[var(--cs-border)] bg-[var(--cs-surface)] hover:border-[var(--cs-aria-gold-soft)]",
+                      ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] ring-2 ring-[var(--cs-cara-gold-soft)]"
+                      : "border-[var(--cs-border)] bg-[var(--cs-surface)] hover:border-[var(--cs-cara-gold-soft)]",
                   )}
                 >
-                  <Icon className={cn("h-4 w-4", isSelected ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")} />
+                  <Icon className={cn("h-4 w-4", isSelected ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-muted)]")} />
                   <span className={cn("text-xs font-medium", isSelected ? "text-[var(--cs-navy)]" : "text-[var(--cs-text-secondary)]")}>
                     {ROLE_CONFIG[role]?.description?.split(",")[0] ?? role.replace(/_/g, " ")}
                   </span>

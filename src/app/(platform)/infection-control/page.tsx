@@ -27,8 +27,8 @@ import { toast } from "sonner";
 import type { InfectionRecord, InfectionType, InfectionSeverity, InfectionStatus } from "@/types/extended";
 import { INFECTION_TYPE_LABEL, INFECTION_SEVERITY_LABEL, INFECTION_STATUS_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── colour maps ─────────────────────────────────────────────────────────── */
 
@@ -133,13 +133,13 @@ export default function InfectionControlPage() {
     <PageShell
       title="Infection Prevention & Control"
       subtitle="Health Protection · IPC Policy · Public Health England Guidance"
-      ariaContext={{ pageTitle: "Infection Control Log", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Infection Control Log", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Infection Control Log" />
           <ExportButton data={data} columns={exportCols} filename="infection-control" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" />Log Infection</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -402,7 +402,7 @@ export default function InfectionControlPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Infection Control Log — illness outbreak, infection risk, cleaning protocols, PPE, quarantine, UKHSA notification, food hygiene, hand hygiene, Reg 31, Annex A evidence"
         recordType="health"

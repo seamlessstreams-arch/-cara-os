@@ -123,7 +123,7 @@ export function QuickCreateActions({ context, compact = false, className }: Quic
                   className="flex w-full items-center gap-2.5 px-3 py-2 text-sm text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
                   onClick={() => { setDefaultTab("form"); setShowMenu(false); setOpen(true); }}
                 >
-                  <FileText className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+                  <FileText className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
                   New Form
                 </button>
               </div>

@@ -130,7 +130,7 @@ export interface OutcomeAlert {
   message: string;
 }
 
-export interface AriaOutcomeInsight {
+export interface CaraOutcomeInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -142,7 +142,7 @@ export interface OutcomesProgressResult {
   review_compliance: ReviewCompliance;
   progress_velocity: ProgressVelocity;
   alerts: OutcomeAlert[];
-  insights: AriaOutcomeInsight[];
+  insights: CaraOutcomeInsight[];
 }
 
 // ── Domain Label Map ────────────────────────────────────────────────────────
@@ -441,7 +441,7 @@ export function computeOutcomesProgress(input: OutcomesProgressInput): OutcomesP
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaOutcomeInsight[] = [];
+  const insights: CaraOutcomeInsight[] = [];
 
   // Critical: any child with declining outcomes and no recent review
   for (const profile of child_profiles) {

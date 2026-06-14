@@ -20,9 +20,9 @@ import {
 import {
   ARTIFACT_TYPE_LABELS,
   STATUS_LABELS,
-  type AriaStudioArtifact,
-  type AriaStudioArtifactType,
-} from "@/types/aria-studio";
+  type CaraStudioArtifact,
+  type CaraStudioArtifactType,
+} from "@/types/cara-studio";
 
 // ── Status config ───────────────────────────────────────────────────────────
 
@@ -48,63 +48,63 @@ const STATUS_STYLES: Record<string, string> = {
 
 // ── Demo artifacts ──────────────────────────────────────────────────────────
 
-const DEMO_ARTIFACTS: AriaStudioArtifact[] = [
+const DEMO_ARTIFACTS: CaraStudioArtifact[] = [
   {
     id: "hist-1", home_id: "home-1", artifact_type: "keywork_session", title: "Key Work Session — Jayden — Identity & Belonging",
     status: "committed", child_id: "child_1", created_by: "user-1",
     created_at: "2026-05-10T09:00:00Z", committed_at: "2026-05-10T14:00:00Z",
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 82,
-  } as AriaStudioArtifact,
+  } as CaraStudioArtifact,
   {
     id: "hist-2", home_id: "home-1", artifact_type: "management_oversight", title: "Weekly Management Oversight — w/c 5 May",
     status: "committed", child_id: null, created_by: "user-1",
     created_at: "2026-05-09T08:30:00Z", committed_at: "2026-05-09T16:00:00Z",
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 78,
-  } as AriaStudioArtifact,
+  } as CaraStudioArtifact,
   {
     id: "hist-3", home_id: "home-1", artifact_type: "risk_review", title: "Risk Review — Amara — Self-Harm Indicators",
     status: "approved", child_id: "child_2", created_by: "user-1",
     created_at: "2026-05-08T11:00:00Z", committed_at: null,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 71,
-  } as AriaStudioArtifact,
+  } as CaraStudioArtifact,
   {
     id: "hist-4", home_id: "home-1", artifact_type: "staff_training", title: "De-escalation Refresher — Practice-Based Scenarios",
     status: "in_review", child_id: null, created_by: "user-2",
     created_at: "2026-05-08T10:00:00Z", committed_at: null,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 65,
-  } as AriaStudioArtifact,
+  } as CaraStudioArtifact,
   {
     id: "hist-5", home_id: "home-1", artifact_type: "incident_learning_review", title: "Incident Learning — Window Damage 6 May",
     status: "draft", child_id: "child_3", created_by: "user-1",
     created_at: "2026-05-07T15:00:00Z", committed_at: null,
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 55,
-  } as AriaStudioArtifact,
+  } as CaraStudioArtifact,
   {
     id: "hist-6", home_id: "home-1", artifact_type: "social_worker_update", title: "Social Worker Update — Jayden — April Progress",
     status: "committed", child_id: "child_1", created_by: "user-1",
     created_at: "2026-05-06T09:00:00Z", committed_at: "2026-05-06T17:00:00Z",
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 88,
-  } as AriaStudioArtifact,
+  } as CaraStudioArtifact,
   {
     id: "hist-7", home_id: "home-1", artifact_type: "child_friendly_explanation", title: "What Happens at a Review — Amara",
     status: "committed", child_id: "child_2", created_by: "user-1",
     created_at: "2026-05-05T14:00:00Z", committed_at: "2026-05-05T16:30:00Z",
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 92,
-  } as AriaStudioArtifact,
+  } as CaraStudioArtifact,
   {
     id: "hist-8", home_id: "home-1", artifact_type: "reg45_summary", title: "Regulation 45 Summary — April 2026",
     status: "committed", child_id: null, created_by: "user-1",
     created_at: "2026-05-03T09:00:00Z", committed_at: "2026-05-04T11:00:00Z",
     generated_content: "", plain_text_content: null,
     evidence_confidence_score: 85,
-  } as AriaStudioArtifact,
+  } as CaraStudioArtifact,
 ];
 
 const DEMO_CHILDREN = [
@@ -116,7 +116,7 @@ const DEMO_CHILDREN = [
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function HistoryPage() {
-  const [artifacts, setArtifacts] = useState<AriaStudioArtifact[]>(DEMO_ARTIFACTS);
+  const [artifacts, setArtifacts] = useState<CaraStudioArtifact[]>(DEMO_ARTIFACTS);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
@@ -140,10 +140,10 @@ export default function HistoryPage() {
       <div className="space-y-6 pb-12">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <History className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <History className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Generation History</h2>
@@ -161,8 +161,8 @@ export default function HistoryPage() {
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
               !statusFilter
-                ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] ring-1 ring-[var(--cs-aria-gold-soft)]"
-                : "border-[var(--cs-border)] bg-white text-[var(--cs-text-secondary)] hover:border-[var(--cs-aria-gold-soft)]",
+                ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] ring-1 ring-[var(--cs-cara-gold-soft)]"
+                : "border-[var(--cs-border)] bg-white text-[var(--cs-text-secondary)] hover:border-[var(--cs-cara-gold-soft)]",
             )}
           >
             All ({artifacts.length})
@@ -174,8 +174,8 @@ export default function HistoryPage() {
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
                 statusFilter === status
-                  ? "ring-1 ring-[var(--cs-aria-gold-soft)]"
-                  : "hover:border-[var(--cs-aria-gold-soft)]",
+                  ? "ring-1 ring-[var(--cs-cara-gold-soft)]"
+                  : "hover:border-[var(--cs-cara-gold-soft)]",
                 STATUS_STYLES[status],
               )}
             >
@@ -193,23 +193,23 @@ export default function HistoryPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search artifacts..."
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-white pl-10 pr-4 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full rounded-xl border border-[var(--cs-border)] bg-white pl-10 pr-4 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             />
           </div>
           <select
             value={typeFilter ?? ""}
             onChange={(e) => setTypeFilter(e.target.value || null)}
-            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
           >
             <option value="">All types</option>
             {[...new Set(artifacts.map((a) => a.artifact_type))].map((type) => (
-              <option key={type} value={type}>{ARTIFACT_TYPE_LABELS[type as AriaStudioArtifactType] ?? type}</option>
+              <option key={type} value={type}>{ARTIFACT_TYPE_LABELS[type as CaraStudioArtifactType] ?? type}</option>
             ))}
           </select>
           <select
             value={childFilter ?? ""}
             onChange={(e) => setChildFilter(e.target.value || null)}
-            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+            className="rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
           >
             <option value="">All children</option>
             {DEMO_CHILDREN.map((c) => (
@@ -233,7 +233,7 @@ export default function HistoryPage() {
               return (
                 <div
                   key={artifact.id}
-                  className="flex items-center gap-4 rounded-xl border border-[var(--cs-border)] bg-white p-4 hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]/20 transition-all cursor-pointer group"
+                  className="flex items-center gap-4 rounded-xl border border-[var(--cs-border)] bg-white p-4 hover:border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]/20 transition-all cursor-pointer group"
                 >
                   <StatusIcon className={cn("h-5 w-5 shrink-0", artifact.status === "committed" ? "text-blue-500" : artifact.status === "approved" ? "text-emerald-500" : artifact.status === "draft" ? "text-[var(--cs-text-muted)]" : "text-amber-500")} />
                   <div className="flex-1 min-w-0">
@@ -263,7 +263,7 @@ export default function HistoryPage() {
                     </div>
                     <span className="text-[10px] font-medium text-[var(--cs-text-muted)]">{confidence}%</span>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-[var(--cs-text-muted)] group-hover:text-[var(--cs-aria-gold)] transition-colors shrink-0" />
+                  <ChevronRight className="h-4 w-4 text-[var(--cs-text-muted)] group-hover:text-[var(--cs-cara-gold)] transition-colors shrink-0" />
                 </div>
               );
             })

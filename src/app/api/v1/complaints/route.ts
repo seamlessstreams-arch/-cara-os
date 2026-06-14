@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { generateId } from "@/lib/utils";
-import { runPostSaveIntelligence } from "@/lib/aria/post-save-intelligence";
+import { runPostSaveIntelligence } from "@/lib/cara/post-save-intelligence";
 import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 
 // Working-day calculator

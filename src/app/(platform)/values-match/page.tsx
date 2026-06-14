@@ -52,7 +52,7 @@ export default function ValuesMatchPage() {
     <PageShell
       title="Values-Based Matching"
       subtitle="How each candidate's values, experience and relational practice align with the home's Employer Values Profile — a transparent, explainable support for safer recruitment decisions."
-      ariaContext={{ pageTitle: "Values-Based Matching", sourceType: "general" }}
+      caraContext={{ pageTitle: "Values-Based Matching", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <Link href="/employer-values" className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 print:hidden">

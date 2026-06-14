@@ -236,7 +236,7 @@ export function computeMedicationIncidentAlerts(
   return alerts;
 }
 
-export function generateMedicationIncidentAriaInsights(
+export function generateMedicationIncidentCaraInsights(
   metrics: ReturnType<typeof computeMedicationIncidentMetrics>,
   alerts: ReturnType<typeof computeMedicationIncidentAlerts>,
 ): string[] {
@@ -358,5 +358,5 @@ export function createMedicationIncidentReport(payload: {
 export const _testing = {
   computeMedicationIncidentMetrics,
   computeMedicationIncidentAlerts,
-  generateMedicationIncidentAriaInsights,
+  generateMedicationIncidentCaraInsights,
 };

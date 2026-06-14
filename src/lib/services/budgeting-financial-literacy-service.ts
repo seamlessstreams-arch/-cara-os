@@ -489,7 +489,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: BudgetingFinancialLiteracyRow[],
 ): string[] {
   const metrics = computeMetrics(rows);
@@ -762,6 +762,6 @@ export async function deleteBudgetingFinancialLiteracy(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   validateBudgetingFinancialLiteracy,
 };

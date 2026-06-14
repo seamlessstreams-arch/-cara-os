@@ -36,8 +36,8 @@ import {
   AlertTriangle, Copy, CheckCircle2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -183,7 +183,7 @@ export default function ContactDirectoryPage() {
     <PageShell
       title="Contact Directory"
       subtitle="Professional contacts and emergency numbers"
-      ariaContext={{ pageTitle: "Contact Directory", sourceType: "contact_log" }}
+      caraContext={{ pageTitle: "Contact Directory", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Contact Directory" subtitle="Chamberlain House — Professional Contacts" />
@@ -191,7 +191,7 @@ export default function ContactDirectoryPage() {
           <Button size="sm" onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-1" /> Add Contact
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -496,7 +496,7 @@ export default function ContactDirectoryPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Contact Directory — professional contacts, social workers, IROs, health professionals, school contacts, CAMHS, therapists, solicitors, police, family support workers"
         recordType="task"

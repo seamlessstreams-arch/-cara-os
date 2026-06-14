@@ -3,14 +3,14 @@
 //
 // POST /api/v1/care-events/inspection-snapshot/:id/export
 //   { reason? } → returns the full snapshot payload AND records the export
-//   in the immutable export history. Required permission: aria.export.
+//   in the immutable export history. Required permission: cara.export.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { getPersistedSnapshot } from "@/lib/care-events/inspection-snapshot";
 import { recordExport } from "@/lib/care-events/export-history";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 
 export async function POST(
   req: NextRequest,
@@ -23,11 +23,11 @@ export async function POST(
   let body: { reason?: string } = {};
   try { body = await req.json(); } catch { /* allow empty body */ }
 
-  const guard = requireAriaStudioPermission(
+  const guard = requireCaraStudioPermission(
     req,
     body as Record<string, unknown>,
     {
-      permission: "aria.export",
+      permission: "cara.export",
       homeId: row.home_id,
       intent: "export inspection snapshot",
     },
@@ -47,7 +47,7 @@ export async function POST(
     reason: body.reason ?? null,
   });
 
-  appendAriaAudit({
+  appendCaraAudit({
     homeId: row.home_id,
     actorId: guard.actor.userId,
     actionType: "artifact_committed",

@@ -127,10 +127,10 @@ export default function SessionBuilderPage() {
     <PageShell title="Session Builder" subtitle="Generate therapeutic session plans">
       <div className="space-y-6 pb-12">
 
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Sparkles className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Therapeutic Session Builder</h2>
@@ -161,7 +161,7 @@ export default function SessionBuilderPage() {
                 <div key={group.group} className="rounded-xl border border-[var(--cs-border)] bg-white overflow-hidden">
                   <button onClick={() => toggleGroup(group.group)} className="w-full px-4 py-3 flex items-center gap-3 hover:bg-[var(--cs-surface)] transition-colors">
                     {isExpanded ? <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted)]" /> : <ChevronRight className="h-4 w-4 text-[var(--cs-text-muted)]" />}
-                    <Icon className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                    <Icon className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                     <span className="text-sm font-semibold text-[var(--cs-navy)]">{group.group}</span>
                     <Badge className="text-[9px] bg-[var(--cs-surface)] text-[var(--cs-text-muted)] border-[var(--cs-border)] ml-auto">{group.types.length} types</Badge>
                   </button>
@@ -169,10 +169,10 @@ export default function SessionBuilderPage() {
                     <div className="px-4 pb-3 border-t border-[var(--cs-border)]">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pt-3">
                         {group.types.map((t) => (
-                          <button key={t.type} className="rounded-lg border border-[var(--cs-border)] p-3 text-left hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)] transition-all group">
+                          <button key={t.type} className="rounded-lg border border-[var(--cs-border)] p-3 text-left hover:border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)] transition-all group">
                             <span className="text-xs font-medium text-[var(--cs-navy)] group-hover:text-[var(--cs-navy)]">{t.label}</span>
                             <div className="flex items-center gap-1 mt-1">
-                              <Sparkles className="h-3 w-3 text-[var(--cs-aria-gold)]" />
+                              <Sparkles className="h-3 w-3 text-[var(--cs-cara-gold)]" />
                               <span className="text-[10px] text-[var(--cs-text-muted)]">Generate</span>
                             </div>
                           </button>
@@ -191,13 +191,13 @@ export default function SessionBuilderPage() {
             <div className="space-y-2">
               {sessions.map((s) => (
                 <button key={s.id} onClick={() => setSelectedSession(s.id)}
-                  className={cn("w-full rounded-xl border p-4 text-left transition-all", selectedSession === s.id ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] ring-1 ring-[var(--cs-aria-gold-soft)]" : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-aria-gold-soft)]")}>
+                  className={cn("w-full rounded-xl border p-4 text-left transition-all", selectedSession === s.id ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] ring-1 ring-[var(--cs-cara-gold-soft)]" : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-cara-gold-soft)]")}>
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-xs font-semibold text-[var(--cs-navy)]">{s.title}</span>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <Badge className={cn("text-[9px] border", STATUS_STYLES[s.status])}>{s.status}</Badge>
-                    <Badge className="text-[9px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{s.framework}</Badge>
+                    <Badge className="text-[9px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">{s.framework}</Badge>
                     {s.scheduled_date && <span className="text-[10px] text-[var(--cs-text-muted)]">{new Date(s.scheduled_date).toLocaleDateString("en-GB")}</span>}
                   </div>
                 </button>
@@ -211,7 +211,7 @@ export default function SessionBuilderPage() {
                   <h3 className="text-base font-bold text-[var(--cs-navy)]">{current.title}</h3>
                   <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <Badge className={cn("text-[9px] border", STATUS_STYLES[current.status])}>{current.status}</Badge>
-                    <Badge className="text-[9px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{current.framework}</Badge>
+                    <Badge className="text-[9px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">{current.framework}</Badge>
                     {current.child_name && <span className="text-[10px] text-[var(--cs-text-muted)]">{current.child_name}</span>}
                   </div>
                 </div>
@@ -233,7 +233,7 @@ export default function SessionBuilderPage() {
                     <p className="text-[10px] font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">Reflective Questions</p>
                     {current.content.reflective_questions.map((q, i) => (
                       <div key={i} className="flex items-start gap-2 mb-1">
-                        <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] mt-1.5 shrink-0" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-cara-gold)] mt-1.5 shrink-0" />
                         <p className="text-xs text-[var(--cs-text-secondary)]">{q}</p>
                       </div>
                     ))}

@@ -24,8 +24,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<ParticipationEntry>[] = [
   { header: "Date", accessor: (r) => r.date },
@@ -106,12 +106,12 @@ export default function ChildParticipationLogPage() {
     <PageShell
       title="Child Participation Log"
       subtitle="Recording how children's views influence decisions — demonstrating genuine participation"
-      ariaContext={{ pageTitle: "Child Participation Log", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Child Participation Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={entries} columns={exportCols} filename="child-participation-log" />
           <PrintButton title="Child Participation Log" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -314,7 +314,7 @@ export default function ChildParticipationLogPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Child Participation Log — participation in meetings, groups, planning, feedback, voice, advocacy, children's rights, Article 12 UNCRC, wishes and feelings, LAC review participation"
         recordType="direct_work"

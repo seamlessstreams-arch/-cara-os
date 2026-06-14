@@ -12,8 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -129,18 +129,18 @@ export default function ShiftNotesPage() {
     <PageShell
       title="Shift Notes"
       subtitle="Detailed per-shift records for continuity of care across the team"
-      ariaContext={{ pageTitle: "Shift Notes", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Shift Notes", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Shift Notes" />
           <ExportButton data={filtered} columns={exportCols} filename="shift-notes" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Shift Note</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
-        <AriaPanel mode="assist" pageContext="Shift Notes — detailed per-shift records for continuity of care, handover observations, children's behaviour, significant events" recordType="shift_note" userRole="registered_manager" className="mb-2" />
+        <CaraPanel mode="assist" pageContext="Shift Notes — detailed per-shift records for continuity of care, handover observations, children's behaviour, significant events" recordType="shift_note" userRole="registered_manager" className="mb-2" />
         {/* ── Stats ────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[

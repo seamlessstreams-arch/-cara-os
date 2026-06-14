@@ -256,7 +256,7 @@ export function computeSicknessAlerts(rows: StaffSicknessManagementRow[]): {
  * Generate Cara intelligence insights for sickness management.
  * Returns 3 strings: summary (cyan), priority concerns (amber), reflective question (reflect).
  */
-export function generateSicknessAriaInsights(
+export function generateSicknessCaraInsights(
   rows: StaffSicknessManagementRow[],
 ): string[] {
   const metrics = computeSicknessMetrics(rows);
@@ -425,5 +425,5 @@ export async function updateStaffSicknessManagement(
 export const _testing = {
   computeSicknessMetrics,
   computeSicknessAlerts,
-  generateSicknessAriaInsights,
+  generateSicknessCaraInsights,
 };

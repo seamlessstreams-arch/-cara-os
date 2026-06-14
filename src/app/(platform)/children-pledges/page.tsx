@@ -30,8 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const statusColour: Record<string, string> = {
   consistently_met: "bg-green-100 text-green-800",
@@ -110,12 +110,12 @@ export default function ChildrenPledgesPage() {
     <PageShell
       title="Children's Pledges"
       subtitle="Our promises to each child — co-produced, reviewed regularly, and evidenced through practice"
-      ariaContext={{ pageTitle: "Children's Pledges", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Children's Pledges", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="children-pledges" />
           <PrintButton title="Children's Pledges" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -270,7 +270,7 @@ export default function ChildrenPledgesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Children's Pledges — corporate parent promises, entitlements, activities budget, virtual school, health, culture, identity, participation, listening to children's views"
         recordType="care_plan"

@@ -11,7 +11,7 @@ const at = (n: number) => addDays(TODAY, -n);
 function sr(id: string, daysAgo: number, overall: number, childVoice: number): ScoredRecord {
   return {
     id, type: "daily_log", date: at(daysAgo), overall, band: "good",
-    score: { completeness: 90, clarity: 90, professionalLanguage: 90, factuality: 90, childCentredness: childVoice, riskRelevance: 90, missingFields: [], ariaSuggestions: [] },
+    score: { completeness: 90, clarity: 90, professionalLanguage: 90, factuality: 90, childCentredness: childVoice, riskRelevance: 90, missingFields: [], caraSuggestions: [] },
   };
 }
 const run = (records: ScoredRecord[]) => computeRecordingQualityTrend({ records, today: TODAY, weeks: 8 });

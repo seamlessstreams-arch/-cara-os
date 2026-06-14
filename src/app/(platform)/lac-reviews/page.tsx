@@ -23,8 +23,8 @@ import {
   AlertTriangle, FileText, Target, Star, Loader2
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const TYPE_META: Record<LACReviewType, { label: string; color: string }> = {
   initial:       { label: "Initial (20 days)",  color: "bg-blue-100 text-blue-800" },
@@ -116,13 +116,13 @@ export default function LACReviewsPage() {
     <PageShell
       title="LAC Reviews"
       subtitle="Looked-After Children review meetings — tracking outcomes, actions, and child participation"
-      ariaContext={{ pageTitle: "LAC Reviews", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "LAC Reviews", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="LAC Reviews" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="lac-reviews" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Record Review</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -393,7 +393,7 @@ export default function LACReviewsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="LAC Reviews — statutory LAC review records, care plan review outcomes, action points, IRO decisions, carer attendance, child participation, Annex A evidence, Reg 45 themes"
         recordType="care_plan"

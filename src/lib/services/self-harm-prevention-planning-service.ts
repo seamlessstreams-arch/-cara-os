@@ -539,7 +539,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: SelfHarmPreventionPlanRow[],
 ): string[] {
   const metrics = computeMetrics(rows);
@@ -829,6 +829,6 @@ export async function deleteSelfHarmPreventionPlan(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   validateSelfHarmPreventionPlan,
 };

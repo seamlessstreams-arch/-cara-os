@@ -27,8 +27,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { TimelineEvent, TimelineEventCategory } from "@/types/extended";
 import { useTimelineEvents } from "@/hooks/use-timeline-events";
 
@@ -103,12 +103,12 @@ export default function TraumaInformedTimelinePage() {
     <PageShell
       title="Trauma-Informed Timeline"
       subtitle="Life event chronology for therapeutic understanding — supporting TIAR and trauma-informed care"
-      ariaContext={{ pageTitle: "Trauma-Informed Timeline", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Trauma-Informed Timeline", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="trauma-informed-timeline" />
           <PrintButton title="Trauma-Informed Timeline" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -261,7 +261,7 @@ export default function TraumaInformedTimelinePage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Trauma-Informed Timeline — adverse childhood experiences, ACEs, trauma history, significant events, therapeutic context, life story work, placement history, developmental impact, care planning"
         recordType="care_plan"

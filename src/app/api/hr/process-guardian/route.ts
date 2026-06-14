@@ -21,7 +21,7 @@ import {
   type GuardianReview,
   type GuardianActionType,
   ENGINE_VERSION,
-} from "@/lib/aria/hrProcessGuardian";
+} from "@/lib/cara/hrProcessGuardian";
 import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -127,14 +127,14 @@ export async function POST(req: NextRequest) {
 
   if (!persist || !isSupabaseEnabled()) {
     return NextResponse.json({
-      data: { review, persisted: false, ariaLabel: review.ariaLabel },
+      data: { review, persisted: false, caraLabel: review.caraLabel },
     });
   }
 
   const supabaseRaw = createServerClient();
   if (!supabaseRaw) {
     return NextResponse.json({
-      data: { review, persisted: false, ariaLabel: review.ariaLabel },
+      data: { review, persisted: false, caraLabel: review.caraLabel },
     });
   }
   const supabase = loose(supabaseRaw);
@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
     suggested_safer_wording: review.suggestedSaferWording ?? null,
     suggested_actions: review.suggestedActions,
     regulatory_links: review.regulatoryLinks,
-    aria_confidence: review.ariaConfidence,
+    aria_confidence: review.caraConfidence,
     llm_used: review.llmUsed,
     engine_version: review.engineVersion,
     generated_at: review.generatedAt,
@@ -208,7 +208,7 @@ export async function POST(req: NextRequest) {
   });
 
   return NextResponse.json({
-    data: { reviewId, review, persisted: true, ariaLabel: review.ariaLabel },
+    data: { reviewId, review, persisted: true, caraLabel: review.caraLabel },
   });
 }
 

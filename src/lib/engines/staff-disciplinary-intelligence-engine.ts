@@ -70,7 +70,7 @@ export interface DisciplinaryAlert {
   message: string;
 }
 
-export interface AriaDisciplinaryInsight {
+export interface CaraDisciplinaryInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -81,7 +81,7 @@ export interface StaffDisciplinaryIntelligenceResult {
   open_cases: OpenDisciplinaryCase[];
   outcome_distribution: OutcomeDistribution[];
   alerts: DisciplinaryAlert[];
-  insights: AriaDisciplinaryInsight[];
+  insights: CaraDisciplinaryInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -329,7 +329,7 @@ export function computeStaffDisciplinaryIntelligence(input: {
 
   // ── Insights ────────────────────────────────────────────────────────────
 
-  const insights: AriaDisciplinaryInsight[] = [];
+  const insights: CaraDisciplinaryInsight[] = [];
 
   // CRITICAL: Active suspensions with LADO involvement
   const suspendedWithLado = openCases.filter((c) => c.suspension && c.lado_referral);

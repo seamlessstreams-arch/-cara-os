@@ -40,7 +40,7 @@ export function LearningDesignSection() {
     <section className="rounded-3xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)]">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="flex items-center gap-2 text-base font-bold text-[var(--cs-navy)]">
-          <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Learning design — turn what you know about a child into something you can use on shift
+          <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Learning design — turn what you know about a child into something you can use on shift
         </h2>
         {queueCount > 0 && (
           <Link href="/cara-studio/review" className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800 hover:bg-amber-200">

@@ -7,41 +7,41 @@ import {
   rejectArtifact,
   commitArtifact,
   editArtifact,
-} from "@/lib/aria/aria-studio-service";
-import { runQualityCheck } from "@/lib/aria/aria-studio-quality";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import type { AriaPermission } from "@/lib/aria/aria-permissions";
+} from "@/lib/cara/cara-studio-service";
+import { runQualityCheck } from "@/lib/cara/cara-studio-quality";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import type { CaraPermission } from "@/lib/cara/cara-permissions";
 
 type Params = { params: Promise<{ id: string }> };
 
 // Maps a PATCH `action` to the permission required to perform it.
-function permissionForAction(action: string): AriaPermission {
+function permissionForAction(action: string): CaraPermission {
   switch (action) {
-    case "submit":           return "aria.generate_drafts";
-    case "approve":          return "aria.approve_outputs";
-    case "request_changes":  return "aria.approve_outputs";
-    case "reject":           return "aria.reject_outputs";
-    case "commit":           return "aria.commit_to_records";
-    case "quality_check":    return "aria.approve_outputs";
-    case "archive":          return "aria.commit_to_records";
-    case "recover":          return "aria.commit_to_records";
-    case "edit":             return "aria.rewrite";
-    default:                  return "aria.rewrite";
+    case "submit":           return "cara.generate_drafts";
+    case "approve":          return "cara.approve_outputs";
+    case "request_changes":  return "cara.approve_outputs";
+    case "reject":           return "cara.reject_outputs";
+    case "commit":           return "cara.commit_to_records";
+    case "quality_check":    return "cara.approve_outputs";
+    case "archive":          return "cara.commit_to_records";
+    case "recover":          return "cara.commit_to_records";
+    case "edit":             return "cara.rewrite";
+    default:                  return "cara.rewrite";
   }
 }
 
 // GET /api/v1/cara-studio/artifacts/[id]
 export async function GET(_req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const artifact = db.ariaArtifacts.findById(id);
+  const artifact = db.caraArtifacts.findById(id);
   if (!artifact) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const versions = db.ariaArtifactVersions.findByArtifact(id);
-  const reviews = db.ariaArtifactReviews.findByArtifact(id);
-  const actions = db.ariaArtifactActions.findByArtifact(id);
-  const qualityChecks = db.ariaQualityChecks.findByArtifact(id);
-  const auditLog = db.ariaStudioAuditLog.findByArtifact(id);
-  const sources = db.ariaSources.findByIds(artifact.source_ids);
+  const versions = db.caraArtifactVersions.findByArtifact(id);
+  const reviews = db.caraArtifactReviews.findByArtifact(id);
+  const actions = db.caraArtifactActions.findByArtifact(id);
+  const qualityChecks = db.caraQualityChecks.findByArtifact(id);
+  const auditLog = db.caraStudioAuditLog.findByArtifact(id);
+  const sources = db.caraSources.findByIds(artifact.source_ids);
 
   return NextResponse.json({
     data: artifact,
@@ -53,7 +53,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 // Handles: edit, submit, approve, changes_requested, reject, commit, archive, quality_check
 export async function PATCH(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const artifact = db.ariaArtifacts.findById(id);
+  const artifact = db.caraArtifacts.findById(id);
   if (!artifact) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   let body: Record<string, unknown>;
@@ -73,7 +73,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
         ? "edit"
         : "patch";
 
-  const guard = requireAriaStudioPermission(req, body, {
+  const guard = requireCaraStudioPermission(req, body, {
     permission: permissionForAction(resolvedAction),
     homeId: artifact.home_id,
     childId: artifact.child_id,
@@ -125,16 +125,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   if (action === "quality_check") {
     const qc = runQualityCheck(artifact);
-    const refreshed = db.ariaArtifacts.findById(id);
+    const refreshed = db.caraArtifacts.findById(id);
     return NextResponse.json({ data: refreshed, qualityCheck: qc });
   }
 
   if (action === "archive") {
-    const updated = db.ariaArtifacts.patch(id, {
+    const updated = db.caraArtifacts.patch(id, {
       status: "archived",
       archived_at: new Date().toISOString(),
     });
-    db.ariaStudioAuditLog.create({
+    db.caraStudioAuditLog.create({
       home_id: artifact.home_id,
       actor_id: actorId,
       action_type: "artifact_archived",
@@ -154,8 +154,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (artifact.status !== "deleted_recoverable") {
       return NextResponse.json({ error: "Can only recover deleted artifacts" }, { status: 422 });
     }
-    const updated = db.ariaArtifacts.patch(id, { status: "draft" });
-    db.ariaStudioAuditLog.create({
+    const updated = db.caraArtifacts.patch(id, { status: "draft" });
+    db.caraStudioAuditLog.create({
       home_id: artifact.home_id,
       actor_id: actorId,
       action_type: "artifact_recovered",
@@ -192,7 +192,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
-  const updated = db.ariaArtifacts.patch(id, patchData as never);
+  const updated = db.caraArtifacts.patch(id, patchData as never);
   return NextResponse.json({ data: updated });
 }
 
@@ -200,23 +200,23 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 // Soft delete — marks as deleted_recoverable
 export async function DELETE(req: NextRequest, { params }: Params) {
   const { id } = await params;
-  const artifact = db.ariaArtifacts.findById(id);
+  const artifact = db.caraArtifacts.findById(id);
   if (!artifact) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   if (artifact.status === "committed") {
     return NextResponse.json({ error: "Committed artifacts cannot be deleted" }, { status: 422 });
   }
 
-  const guard = requireAriaStudioPermission(req, null, {
-    permission: "aria.commit_to_records",
+  const guard = requireCaraStudioPermission(req, null, {
+    permission: "cara.commit_to_records",
     homeId: artifact.home_id,
     childId: artifact.child_id,
     intent: `delete ${id}`,
   });
   if (!guard.ok) return guard.response;
 
-  const updated = db.ariaArtifacts.patch(id, { status: "deleted_recoverable" });
-  db.ariaStudioAuditLog.create({
+  const updated = db.caraArtifacts.patch(id, { status: "deleted_recoverable" });
+  db.caraStudioAuditLog.create({
     home_id: artifact.home_id,
     actor_id: guard.actor.userId,
     action_type: "artifact_deleted",

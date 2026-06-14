@@ -34,8 +34,8 @@ import {
 import { useTraumaTherapyLogs } from "@/hooks/use-trauma-therapy-logs";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────── */
 
@@ -207,12 +207,12 @@ export default function ChildTraumaTherapyLogPage() {
     <PageShell
       title="Child Trauma Therapy Log"
       subtitle="Per-child trauma therapy attendance and observable presentation — therapeutic content stays in the therapy room"
-      ariaContext={{ pageTitle: "Child Trauma Therapy Log", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Child Trauma Therapy Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Trauma Therapy Log" />
           <ExportButton data={exportRows} columns={exportCols} filename="child-trauma-therapy-log" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -291,7 +291,7 @@ export default function ChildTraumaTherapyLogPage() {
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                    <Brain className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                     <h3 className="font-semibold">{getYPName(r.child_id)}</h3>
                     <span className="text-sm text-gray-600">— {r.therapist_name}</span>
                     <span className="text-xs text-gray-400">({r.therapist_service})</span>
@@ -449,7 +449,7 @@ export default function ChildTraumaTherapyLogPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Child Trauma Therapy Log — therapy attendance, therapist, session presentation, observable impact, CAMHS, trauma-informed care, therapeutic relationship, PEP, care plan integration"
         recordType="care_plan"

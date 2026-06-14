@@ -11,7 +11,7 @@ import type { CaraCurriculumMapOutput } from "./cara-types";
 import type { CaraChildContext } from "./cara-context-builder";
 import { CARA_CURRICULUM_DOMAINS, RISK_TO_DOMAINS, RECORDING_PROMPTS, type CaraCurriculumDomain } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
-import { independenceSkillsForDomain } from "@/lib/aria/practice-frameworks";
+import { independenceSkillsForDomain } from "@/lib/cara/practice-frameworks";
 
 export interface CurriculumGenInput {
   ctx: CaraChildContext;

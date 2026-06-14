@@ -25,7 +25,7 @@ import type {
 const {
   computeFireRiskMetrics,
   computeFireRiskAlerts,
-  generateFireRiskAriaInsights,
+  generateFireRiskCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1234,39 +1234,39 @@ describe("computeFireRiskAlerts", () => {
   });
 });
 
-// ── generateFireRiskAriaInsights ────────────────────────────────────────
+// ── generateFireRiskCaraInsights ────────────────────────────────────────
 
-describe("generateFireRiskAriaInsights", () => {
+describe("generateFireRiskCaraInsights", () => {
   it("returns exactly 3 insights", () => {
-    const insights = generateFireRiskAriaInsights([]);
+    const insights = generateFireRiskCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [red]", () => {
-    const insights = generateFireRiskAriaInsights([makeRow()]);
+    const insights = generateFireRiskCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[red\]/);
   });
 
   it("first insight includes total_assessments count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes escape_routes_clear_rate", () => {
     const rows = [makeRow({ escape_routes_clear: true }), makeRow({ escape_routes_clear: false })];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("first insight includes detection_system_tested_rate", () => {
     const rows = [makeRow({ detection_system_tested: true }), makeRow({ detection_system_tested: false })];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateFireRiskAriaInsights([makeRow()]);
+    const insights = generateFireRiskCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -1274,7 +1274,7 @@ describe("generateFireRiskAriaInsights", () => {
     const rows = [
       makeRow({ risk_rating: "intolerable", escape_routes_clear: false }),
     ];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -1288,7 +1288,7 @@ describe("generateFireRiskAriaInsights", () => {
       fire_drills_completed: true,
       peep_in_place: true,
     })];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority fire risk alerts");
   });
 
@@ -1296,18 +1296,18 @@ describe("generateFireRiskAriaInsights", () => {
     const rows = [
       makeRow({ risk_rating: "intolerable" }),
     ];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[1]).toContain("1 intolerable");
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateFireRiskAriaInsights([makeRow()]);
+    const insights = generateFireRiskCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions intolerable/high when some have those ratings", () => {
     const rows = [makeRow({ risk_rating: "intolerable" })];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[2]).toContain("intolerable or high fire risk");
   });
 
@@ -1316,7 +1316,7 @@ describe("generateFireRiskAriaInsights", () => {
       makeRow({ risk_rating: "low", fire_drills_completed: false }),
       makeRow({ risk_rating: "low", fire_drills_completed: true }),
     ];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[2]).toContain("Fire drills are completed");
   });
 
@@ -1325,13 +1325,13 @@ describe("generateFireRiskAriaInsights", () => {
       makeRow({ risk_rating: "low", fire_drills_completed: true }),
       makeRow({ risk_rating: "low", fire_drills_completed: true }),
     ];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[2]).toContain("fire drills completed and no high or intolerable");
   });
 
   it("uses singular assessor wording when unique_assessors is 1", () => {
     const rows = [makeRow({ assessor_name: "Staff A" })];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[0]).toContain("1 assessor");
   });
 
@@ -1340,12 +1340,12 @@ describe("generateFireRiskAriaInsights", () => {
       makeRow({ assessor_name: "Staff A" }),
       makeRow({ assessor_name: "Staff B" }),
     ];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[0]).toContain("2 assessors");
   });
 
   it("all insights are non-empty strings", () => {
-    const insights = generateFireRiskAriaInsights([makeRow()]);
+    const insights = generateFireRiskCaraInsights([makeRow()]);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1354,7 +1354,7 @@ describe("generateFireRiskAriaInsights", () => {
 
   it("uses singular assessment wording when 1 intolerable/high", () => {
     const rows = [makeRow({ risk_rating: "high" })];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[2]).toContain("assessment has");
   });
 
@@ -1363,7 +1363,7 @@ describe("generateFireRiskAriaInsights", () => {
       makeRow({ risk_rating: "high" }),
       makeRow({ risk_rating: "intolerable" }),
     ];
-    const insights = generateFireRiskAriaInsights(rows);
+    const insights = generateFireRiskCaraInsights(rows);
     expect(insights[2]).toContain("assessments have");
   });
 });

@@ -29,8 +29,8 @@ import type { OnlineGamingRecord, PegiRating } from "@/types/extended";
 import { PEGI_RATING_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const pegiColour: Record<string, string> = {
   "3": "bg-green-100 text-green-800",
@@ -109,12 +109,12 @@ export default function OnlineGamingTrackerPage() {
     <PageShell
       title="Online Gaming Tracker"
       subtitle="Per-child gaming activity — child-led with safeguarding lens. Console, games, online interactions, time, spend, and online safety."
-      ariaContext={{ pageTitle: "Online Gaming Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Online Gaming Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="online-gaming-tracker" />
           <PrintButton title="Online Gaming Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -124,7 +124,7 @@ export default function OnlineGamingTrackerPage() {
           <p className="text-xs text-muted-foreground">Active Gamers</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-[var(--cs-aria-gold)]">{weeklyHoursTotal}</p>
+          <p className="text-2xl font-bold text-[var(--cs-cara-gold)]">{weeklyHoursTotal}</p>
           <p className="text-xs text-muted-foreground">Total Weekly Hours</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -203,7 +203,7 @@ export default function OnlineGamingTrackerPage() {
                   <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-indigo-100 text-indigo-800">
                     {r.console.split(" ")[0]}
                   </span>
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]">
                     {r.weekly_hours} hrs/wk
                   </span>
                   <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium inline-flex items-center gap-1", r.voice_chat_used ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-[var(--cs-text-secondary)]")}>
@@ -322,7 +322,7 @@ export default function OnlineGamingTrackerPage() {
                     </div>
                   )}
 
-                  <div className="bg-[var(--cs-aria-gold-bg)] rounded-lg p-3">
+                  <div className="bg-[var(--cs-cara-gold-bg)] rounded-lg p-3">
                     <p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">Screen-Time Balance</p>
                     <p className="text-sm">{r.screen_time_balance_note}</p>
                   </div>
@@ -358,7 +358,7 @@ export default function OnlineGamingTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Online Gaming Tracker — game usage, age ratings, online contacts, spending, screen time, grooming risks, gaming addiction, consent, parental controls, online safety plan"
         recordType="risk_assessment"

@@ -220,7 +220,7 @@ function HeaderStatCards() {
       <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-2 shadow-sm">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">Voice Coverage</span>
-          <MessageSquareQuote className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+          <MessageSquareQuote className="h-4 w-4 text-[var(--cs-cara-gold)]" />
         </div>
         {voiceLoading ? (
           <Skeleton className="h-8 w-12" />
@@ -264,7 +264,7 @@ function ChildOverviewCard({ child }: { child: { id: string; name: string } }) {
   return (
     <Link
       href={`/young-people/${child.id}`}
-      className="block rounded-2xl border border-[var(--cs-border)] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+      className="block rounded-2xl border border-[var(--cs-border)] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
     >
       {/* Child header */}
       <div className="flex items-center gap-3 mb-4">
@@ -567,7 +567,7 @@ function ActionsTrackerSection() {
 
 // ── Section E: Cara Weekly Report Generator ───────────────────────────────────
 
-function AriaWeeklyReportSection() {
+function CaraWeeklyReportSection() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [rawOutput, setRawOutput]       = useState("");
   const [isDone, setIsDone]             = useState(false);
@@ -658,7 +658,7 @@ function AriaWeeklyReportSection() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+          <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
           Cara Weekly Report
           {isDone && rawOutput && (
             <Badge className="ml-auto bg-emerald-100 text-emerald-700 border-0 text-[10px] rounded-full">
@@ -669,7 +669,7 @@ function AriaWeeklyReportSection() {
       </CardHeader>
       <CardContent className="space-y-4">
         {!rawOutput && !isGenerating && (
-          <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-4 text-xs text-[var(--cs-aria-gold)] leading-relaxed">
+          <div className="rounded-xl bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-4 text-xs text-[var(--cs-cara-gold)] leading-relaxed">
             Cara will generate a comprehensive management narrative covering home climate, pattern alerts,
             wellbeing scores, outstanding actions, and children&apos;s voice coverage for the week.
           </div>
@@ -688,7 +688,7 @@ function AriaWeeklyReportSection() {
               <pre className="text-xs text-[var(--cs-text-secondary)] whitespace-pre-wrap leading-relaxed font-sans">
                 {rawOutput}
                 {isGenerating && (
-                  <span className="inline-block h-3.5 w-0.5 bg-[var(--cs-aria-gold-bg)]0 ml-0.5 animate-pulse align-middle" />
+                  <span className="inline-block h-3.5 w-0.5 bg-[var(--cs-cara-gold-bg)]0 ml-0.5 animate-pulse align-middle" />
                 )}
               </pre>
             </div>
@@ -866,7 +866,7 @@ function BulkComputeSection() {
           trend:               parsed.trend ?? "stable",
           strengths:           Array.isArray(parsed.strengths) ? parsed.strengths : [],
           concerns:            Array.isArray(parsed.concerns)  ? parsed.concerns  : [],
-          computed_by:         "aria",
+          computed_by:         "cara",
         });
 
         setProgress((prev) => [...prev.slice(0, -1), `✓ ${child.name} — score: ${parsed.overall_score ?? "?"}`]);
@@ -881,11 +881,11 @@ function BulkComputeSection() {
   }
 
   return (
-    <Card className="border-[var(--cs-aria-gold-soft)]">
+    <Card className="border-[var(--cs-cara-gold-soft)]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Cpu className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Cpu className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Compute All Wellbeing Snapshots
           </CardTitle>
           <Button
@@ -918,9 +918,9 @@ function BulkComputeSection() {
           </p>
         )}
         {progress.length > 0 && (
-          <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] px-4 py-3 space-y-1.5">
+          <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] px-4 py-3 space-y-1.5">
             {progress.map((line, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-[var(--cs-aria-gold)]">
+              <div key={i} className="flex items-center gap-2 text-xs text-[var(--cs-cara-gold)]">
                 {state === "running" && i === progress.length - 1
                   ? <Loader2 className="h-3 w-3 animate-spin shrink-0" />
                   : <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
@@ -971,7 +971,7 @@ export default function WeeklyOverviewPage() {
         <ActionsTrackerSection />
 
         {/* E: Cara weekly report */}
-        <AriaWeeklyReportSection />
+        <CaraWeeklyReportSection />
 
         {/* F: Bulk compute snapshots */}
         <BulkComputeSection />

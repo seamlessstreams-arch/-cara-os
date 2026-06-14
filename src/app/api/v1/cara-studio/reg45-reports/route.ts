@@ -1,27 +1,27 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Reg 45 Report Builder
 // GET   → list reports for a home (latest first)
-// POST  → build a new draft report (RBAC: aria.generate_drafts)
+// POST  → build a new draft report (RBAC: cara.generate_drafts)
 // PATCH → edit text OR transition status (draft → in_review → approved → locked)
-//   - text edits: aria.rewrite
-//   - status transitions: aria.approve_outputs (safeguarding-sensitive on
+//   - text edits: cara.rewrite
+//   - status transitions: cara.approve_outputs (safeguarding-sensitive on
 //     approved/locked)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import {
   buildReg45Report,
   loadReg45Reports,
   editReg45Report,
   setReg45ReportStatus,
-} from "@/lib/aria/aria-reg45-report";
-import type { AriaReg45Report } from "@/types/aria-studio";
+} from "@/lib/cara/cara-reg45-report";
+import type { CaraReg45Report } from "@/types/cara-studio";
 
 const DEFAULT_HOME_ID = "home_oak";
 
-const ALLOWED_STATUSES: Array<AriaReg45Report["status"]> = [
+const ALLOWED_STATUSES: Array<CaraReg45Report["status"]> = [
   "draft",
   "in_review",
   "approved",
@@ -47,8 +47,8 @@ export async function POST(req: NextRequest) {
   const periodEnd = typeof body.period_end === "string" ? body.period_end : undefined;
   const title = typeof body.title === "string" ? body.title : undefined;
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId,
     intent: "build reg45_report_draft",
   });
@@ -74,7 +74,7 @@ export async function PATCH(req: NextRequest) {
   const id = typeof body.id === "string" ? body.id : null;
   if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
-  const existing = db.ariaReg45Reports.findById(id);
+  const existing = db.caraReg45Reports.findById(id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (existing.status === "locked") {
     return NextResponse.json({ error: "Report is locked" }, { status: 409 });
@@ -82,12 +82,12 @@ export async function PATCH(req: NextRequest) {
 
   // Status transition path
   if (typeof body.status === "string") {
-    if (!ALLOWED_STATUSES.includes(body.status as AriaReg45Report["status"])) {
+    if (!ALLOWED_STATUSES.includes(body.status as CaraReg45Report["status"])) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
     const sensitive = body.status === "approved" || body.status === "locked";
-    const guard = requireAriaStudioPermission(req, body, {
-      permission: sensitive ? "aria.approve_outputs" : "aria.rewrite",
+    const guard = requireCaraStudioPermission(req, body, {
+      permission: sensitive ? "cara.approve_outputs" : "cara.rewrite",
       homeId: existing.home_id,
       intent: `set reg45_report status ${body.status}`,
       isSafeguardingSensitive: sensitive,
@@ -96,7 +96,7 @@ export async function PATCH(req: NextRequest) {
     const note = typeof body.note === "string" ? body.note : null;
     const next = setReg45ReportStatus(
       id,
-      body.status as AriaReg45Report["status"],
+      body.status as CaraReg45Report["status"],
       guard.actor.userId,
       note,
     );
@@ -104,8 +104,8 @@ export async function PATCH(req: NextRequest) {
   }
 
   // Text edit path
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.rewrite",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.rewrite",
     homeId: existing.home_id,
     intent: "edit reg45_report",
   });

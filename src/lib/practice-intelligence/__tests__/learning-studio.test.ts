@@ -8,7 +8,7 @@ vi.mock("@/lib/supabase/server", () => ({
   createServerClient: vi.fn(() => null),
 }));
 
-vi.mock("@/lib/aria-studio/ai-provider.service", () => ({
+vi.mock("@/lib/cara-studio/ai-provider.service", () => ({
   generateStudioContent: vi.fn(() => Promise.resolve({
     content: JSON.stringify({
       title: "Test Resource",

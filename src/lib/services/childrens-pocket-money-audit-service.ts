@@ -276,7 +276,7 @@ export function computePocketMoneyAuditAlerts(
   return alerts;
 }
 
-export function generatePocketMoneyAuditAriaInsights(
+export function generatePocketMoneyAuditCaraInsights(
   metrics: ReturnType<typeof computePocketMoneyAuditMetrics>,
   alerts: ReturnType<typeof computePocketMoneyAuditAlerts>,
 ): string[] {
@@ -335,5 +335,5 @@ export function generatePocketMoneyAuditAriaInsights(
 export const _testing = {
   computePocketMoneyAuditMetrics,
   computePocketMoneyAuditAlerts,
-  generatePocketMoneyAuditAriaInsights,
+  generatePocketMoneyAuditCaraInsights,
 };

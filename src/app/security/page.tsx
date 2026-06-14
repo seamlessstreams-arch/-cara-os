@@ -67,10 +67,10 @@ export default function SecurityPage() {
 
       {/* AI safety — the standout */}
       <section className="relative overflow-hidden bg-[var(--cs-navy)] text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background: "radial-gradient(50% 60% at 0% 0%, var(--cs-aria-glow) 0%, transparent 55%), radial-gradient(45% 55% at 100% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
+        <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background: "radial-gradient(50% 60% at 0% 0%, var(--cs-cara-glow) 0%, transparent 55%), radial-gradient(45% 55% at 100% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
         <div className="relative mx-auto max-w-7xl px-5 py-20">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-block rounded-full border border-[var(--cs-aria-gold)]/30 bg-[var(--cs-aria-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-aria-gold-soft)]">The Cara safety contract</span>
+            <span className="inline-block rounded-full border border-[var(--cs-cara-gold)]/30 bg-[var(--cs-cara-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-cara-gold-soft)]">The Cara safety contract</span>
             <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">AI that assists — and never oversteps.</h2>
             <p className="mt-4 text-lg text-white/75">
               Your RAG ratings come from deterministic, explainable engines — not a language model guessing. Where AI does help,

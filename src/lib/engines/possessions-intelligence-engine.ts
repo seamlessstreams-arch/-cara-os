@@ -66,7 +66,7 @@ export interface PossessionsAlert {
   message: string;
 }
 
-export interface AriaPossessionsInsight {
+export interface CaraPossessionsInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -76,7 +76,7 @@ export interface PossessionsIntelligenceResult {
   child_inventories: ChildInventoryProfile[];
   category_breakdown: CategoryBreakdown[];
   alerts: PossessionsAlert[];
-  insights: AriaPossessionsInsight[];
+  insights: CaraPossessionsInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ export function computePossessionsIntelligence(input: {
       message: `${c.name} has no possessions logged — inventory not started`,
     }));
 
-    const insights: AriaPossessionsInsight[] = [];
+    const insights: CaraPossessionsInsight[] = [];
 
     return {
       overview: {
@@ -266,7 +266,7 @@ export function computePossessionsIntelligence(input: {
   }
 
   // ── Insights ────────────────────────────────────────────────────────────
-  const insights: AriaPossessionsInsight[] = [];
+  const insights: CaraPossessionsInsight[] = [];
 
   // Critical: missing items with no resolution
   if (missingItems > 0) {

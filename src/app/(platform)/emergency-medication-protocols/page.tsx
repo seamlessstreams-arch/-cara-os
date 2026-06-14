@@ -46,8 +46,8 @@ import {
   Zap,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -239,7 +239,7 @@ export default function EmergencyMedicationProtocolsPage() {
     <PageShell
       title="Emergency Medication Protocols"
       subtitle="Per-child emergency response procedures — QS7 (Health) & Regulation 23"
-      ariaContext={{ pageTitle: "Emergency Medication Protocols", sourceType: "medication" }}
+      caraContext={{ pageTitle: "Emergency Medication Protocols", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Emergency Medication Protocols" />
@@ -248,7 +248,7 @@ export default function EmergencyMedicationProtocolsPage() {
             columns={exportColumns}
             filename="emergency-medication-protocols"
           />
-          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -650,7 +650,7 @@ export default function EmergencyMedicationProtocolsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Emergency Medication Protocols — epipen, adrenaline auto-injector, buccal midazolam, rescue medication, anaphylaxis protocol, seizure protocol, administration instructions, training"
         recordType="medication"

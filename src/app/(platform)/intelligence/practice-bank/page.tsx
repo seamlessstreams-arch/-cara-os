@@ -35,7 +35,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   what_works:    "bg-emerald-100 text-emerald-800",
   what_to_avoid: "bg-red-100 text-red-800",
   language:      "bg-blue-100 text-blue-800",
-  preparation:   "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  preparation:   "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   repair:        "bg-orange-100 text-orange-800",
   regulation:    "bg-teal-100 text-teal-800",
   engagement:    "bg-amber-100 text-amber-800",
@@ -157,12 +157,12 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
   return (
     <Link
       href={`/young-people/${yp.id}?tab=intelligence`}
-      className="block rounded-2xl border border-[var(--cs-border)] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+      className="block rounded-2xl border border-[var(--cs-border)] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <div className="h-10 w-10 rounded-full bg-[var(--cs-aria-gold-bg)] flex items-center justify-center shrink-0">
-          <span className="text-sm font-bold text-[var(--cs-aria-gold)]">{initial}</span>
+        <div className="h-10 w-10 rounded-full bg-[var(--cs-cara-gold-bg)] flex items-center justify-center shrink-0">
+          <span className="text-sm font-bold text-[var(--cs-cara-gold)]">{initial}</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold text-[var(--cs-navy)]">
@@ -174,7 +174,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin text-[var(--cs-text-gentle)]" />
           ) : (
-            <span className="text-lg font-bold text-[var(--cs-aria-gold)]">{entries.length}</span>
+            <span className="text-lg font-bold text-[var(--cs-cara-gold)]">{entries.length}</span>
           )}
           <span className="text-[10px] text-[var(--cs-text-muted)] leading-none">entries</span>
         </div>
@@ -237,7 +237,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
         </Button>
       </div>
 
-      <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--cs-aria-gold)] font-medium">
+      <div className="mt-2 flex items-center gap-1 text-[11px] text-[var(--cs-cara-gold)] font-medium">
         <Star className="h-3 w-3" />
         Open full intelligence view
       </div>
@@ -248,7 +248,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
           <div className="w-full max-w-xl bg-white shadow-[var(--cs-shadow-elevated)] rounded-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+                <Sparkles className="h-5 w-5 text-[var(--cs-cara-gold)]" />
                 <span className="text-lg font-bold text-[var(--cs-navy)]">Cara — What Works Suggestions</span>
               </div>
               <button onClick={() => setSuggestions(null)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]"><X className="h-5 w-5" /></button>
@@ -259,7 +259,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
                 Evidence-based "what works" approaches for {displayName}:
               </div>
               {suggestions.map((suggestion, i) => (
-                <div key={i} className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
+                <div key={i} className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4">
                   <div className="text-sm text-[var(--cs-navy)] leading-relaxed">{suggestion}</div>
                   <button
                     onClick={() => addToBank(suggestion, i)}
@@ -268,7 +268,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
                       "mt-2 flex items-center gap-1 text-xs font-semibold transition-colors",
                       saved.has(i)
                         ? "text-emerald-600 cursor-default"
-                        : "text-[var(--cs-aria-gold)] hover:text-[var(--cs-aria-gold)] disabled:opacity-50"
+                        : "text-[var(--cs-cara-gold)] hover:text-[var(--cs-cara-gold)] disabled:opacity-50"
                     )}
                   >
                     {saving === i ? (
@@ -303,7 +303,7 @@ function HomeSummaryStrip({ youngPeople }: { youngPeople: YPEnriched[] }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
       {[
-        { label: "Young People", value: total, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)]" },
+        { label: "Young People", value: total, colour: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)]" },
         { label: "With practice data", value: total, colour: "text-emerald-700", bg: "bg-emerald-50" },
         { label: "Key categories", value: Object.keys(CATEGORY_LABELS).length, colour: "text-blue-700", bg: "bg-blue-50" },
         { label: "Staff can add entries", value: "anytime", colour: "text-amber-700", bg: "bg-amber-50" },
@@ -352,14 +352,14 @@ export default function PracticeBankPage() {
       <div id="practice-bank-content" className="space-y-6 animate-fade-in">
 
         {/* Intro panel */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-5">
           <div className="flex items-start gap-3">
-            <BookOpen className="h-5 w-5 text-[var(--cs-aria-gold)] mt-0.5 shrink-0" />
+            <BookOpen className="h-5 w-5 text-[var(--cs-cara-gold)] mt-0.5 shrink-0" />
             <div>
               <div className="text-sm font-semibold text-[var(--cs-navy)] mb-1">
                 Practice Bank — Manager Overview
               </div>
-              <p className="text-xs text-[var(--cs-aria-gold)] leading-relaxed">
+              <p className="text-xs text-[var(--cs-cara-gold)] leading-relaxed">
                 The practice bank captures what works, what to avoid, and relational
                 strategies for each young person. Entries are contributed by staff and
                 reviewed by managers. Cards flagging <strong>"what to avoid"</strong> entries

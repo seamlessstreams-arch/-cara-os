@@ -17,13 +17,13 @@ function clearAll() {
   for (const e of evs.filter((e) => e.home_id === HOME_ID)) {
     const i = evs.indexOf(e); if (i >= 0) evs.splice(i, 1);
   }
-  const triages = db.ariaReg40Triages.findAll(HOME_ID);
-  const all40 = db.ariaReg40Triages.findAll();
+  const triages = db.caraReg40Triages.findAll(HOME_ID);
+  const all40 = db.caraReg40Triages.findAll();
   for (const t of triages) {
     const i = all40.indexOf(t); if (i >= 0) all40.splice(i, 1);
   }
-  const r45 = db.ariaReg45EvidenceItems.findAll(HOME_ID);
-  const all45 = db.ariaReg45EvidenceItems.findAll();
+  const r45 = db.caraReg45EvidenceItems.findAll(HOME_ID);
+  const all45 = db.caraReg45EvidenceItems.findAll();
   for (const r of r45) {
     const i = all45.indexOf(r); if (i >= 0) all45.splice(i, 1);
   }
@@ -72,7 +72,7 @@ describe("loadOversightInbox", () => {
   });
 
   it("includes pending reg40 triages with critical priority", () => {
-    db.ariaReg40Triages.create({
+    db.caraReg40Triages.create({
       home_id: HOME_ID,
       child_id: "yp_a",
       source_event_id: "src1",
@@ -94,7 +94,7 @@ describe("loadOversightInbox", () => {
   });
 
   it("includes Reg 45 ai_draft chips and Annex A pending items", () => {
-    db.ariaReg45EvidenceItems.create({
+    db.caraReg45EvidenceItems.create({
       home_id: HOME_ID,
       child_id: null,
       theme: "safeguarding",
@@ -149,7 +149,7 @@ describe("loadOversightInbox", () => {
   });
 
   it("ignores Reg 45 chips that are not ai_draft", () => {
-    db.ariaReg45EvidenceItems.create({
+    db.caraReg45EvidenceItems.create({
       home_id: HOME_ID,
       child_id: null,
       theme: "health",
@@ -177,7 +177,7 @@ describe("loadOversightInbox", () => {
   it("aggregates by_source counts correctly", () => {
     seedEvent({ status: "manager_review_required" });
     seedEvent({ status: "manager_review_required", title: "two" });
-    db.ariaReg40Triages.create({
+    db.caraReg40Triages.create({
       home_id: HOME_ID, child_id: null,
       source_event_id: "src", source_category: "x", source_title: "x",
       source_event_date: "2026-05-01",

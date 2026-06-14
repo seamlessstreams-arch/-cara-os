@@ -100,5 +100,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ data: { analysis, ariaLabel: analysis.ariaLabel } });
+  return NextResponse.json({ data: { analysis, caraLabel: analysis.caraLabel } });
 }

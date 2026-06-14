@@ -662,7 +662,7 @@ export interface PatternAnalysisEntry {
 
 // ── Cara Safeguards ─────────────────────────────────────────────────────────
 
-export const ARIA_SAFEGUARD_RULES = [
+export const CARA_SAFEGUARD_RULES = [
   "never_state_speculation_as_fact",
   "always_mark_human_review_required",
   "never_label_children",
@@ -674,10 +674,10 @@ export const ARIA_SAFEGUARD_RULES = [
   "audit_all_generations",
   "require_human_approval_before_commit",
 ] as const;
-export type AriaSafeguardRule = (typeof ARIA_SAFEGUARD_RULES)[number];
+export type CaraSafeguardRule = (typeof CARA_SAFEGUARD_RULES)[number];
 
-export interface AriaSafeguardCheck {
-  rule: AriaSafeguardRule;
+export interface CaraSafeguardCheck {
+  rule: CaraSafeguardRule;
   passed: boolean;
   detail: string | null;
 }

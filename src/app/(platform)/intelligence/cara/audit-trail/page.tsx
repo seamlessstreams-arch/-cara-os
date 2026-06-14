@@ -32,13 +32,13 @@ import {
 import {
   useAuditActors,
   useAuditTrail,
-} from "@/hooks/use-aria-audit-trail";
-import { ARIA_AUDIT_ACTION_LABELS } from "@/lib/aria/aria-audit-trail";
-import type { AriaAuditAction, AriaStudioAuditLog } from "@/types/aria-studio";
+} from "@/hooks/use-cara-audit-trail";
+import { CARA_AUDIT_ACTION_LABELS } from "@/lib/cara/cara-audit-trail";
+import type { CaraAuditAction, CaraStudioAuditLog } from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const ACTION_VALUES: AriaAuditAction[] = [
+const ACTION_VALUES: CaraAuditAction[] = [
   "source_indexed",
   "artifact_generated",
   "artifact_edited",
@@ -58,7 +58,7 @@ const ACTION_VALUES: AriaAuditAction[] = [
   "contradiction_detected",
 ];
 
-const ACTION_TONE: Partial<Record<AriaAuditAction, string>> = {
+const ACTION_TONE: Partial<Record<CaraAuditAction, string>> = {
   artifact_generated: "bg-sky-100 text-sky-800",
   artifact_edited: "bg-amber-100 text-amber-800",
   artifact_submitted: "bg-indigo-100 text-indigo-800",
@@ -71,7 +71,7 @@ const ACTION_TONE: Partial<Record<AriaAuditAction, string>> = {
   contradiction_detected: "bg-orange-100 text-orange-800",
 };
 
-function actionIcon(a: AriaAuditAction) {
+function actionIcon(a: CaraAuditAction) {
   switch (a) {
     case "artifact_generated":
       return <Sparkles className="h-4 w-4" />;
@@ -90,13 +90,13 @@ function actionIcon(a: AriaAuditAction) {
   }
 }
 
-function isDenied(entry: AriaStudioAuditLog): boolean {
+function isDenied(entry: CaraStudioAuditLog): boolean {
   return (entry.prompt_summary ?? "").startsWith("DENIED ");
 }
 
-export default function AriaAuditTrailPage() {
+export default function CaraAuditTrailPage() {
   const [actor, setActor] = useState<string>("");
-  const [action, setAction] = useState<AriaAuditAction | "">("");
+  const [action, setAction] = useState<CaraAuditAction | "">("");
   const [showDeniedOnly, setShowDeniedOnly] = useState(false);
 
   const actors = useAuditActors(HOME_ID);
@@ -161,13 +161,13 @@ export default function AriaAuditTrailPage() {
             </label>
             <select
               value={action}
-              onChange={(e) => setAction(e.target.value as AriaAuditAction | "")}
+              onChange={(e) => setAction(e.target.value as CaraAuditAction | "")}
               className="rounded border px-2 py-1 text-sm"
             >
               <option value="">All actions</option>
               {ACTION_VALUES.map((a) => (
                 <option key={a} value={a}>
-                  {ARIA_AUDIT_ACTION_LABELS[a]}
+                  {CARA_AUDIT_ACTION_LABELS[a]}
                 </option>
               ))}
             </select>
@@ -210,7 +210,7 @@ export default function AriaAuditTrailPage() {
                         variant="outline"
                         className={ACTION_TONE[entry.action_type] ?? "bg-slate-100 text-slate-700"}
                       >
-                        {ARIA_AUDIT_ACTION_LABELS[entry.action_type]}
+                        {CARA_AUDIT_ACTION_LABELS[entry.action_type]}
                       </Badge>
                       {denied && (
                         <Badge variant="outline" className="bg-rose-100 text-rose-800">

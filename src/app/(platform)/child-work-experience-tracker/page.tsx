@@ -29,8 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<WorkExpRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -62,7 +62,7 @@ const typeColour: Record<string, string> = {
   year_10_placement: "bg-sky-100 text-sky-800 border-sky-200",
   post_16_placement: "bg-blue-100 text-blue-800 border-blue-200",
   taster_day: "bg-amber-100 text-amber-800 border-amber-200",
-  career_exploration_meeting: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
+  career_exploration_meeting: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]",
   employer_mentor_session: "bg-emerald-100 text-emerald-800 border-emerald-200",
   apprenticeship_taster: "bg-teal-100 text-teal-800 border-teal-200",
   volunteering_placement: "bg-pink-100 text-pink-800 border-pink-200",
@@ -119,12 +119,12 @@ export default function ChildWorkExperienceTrackerPage() {
     <PageShell
       title="Work Experience & Career Exposure"
       subtitle="Per-child work experience and career exposure — Year 10 placements, post-16 work experience, taster days, career exploration meetings, employer mentors."
-      ariaContext={{ pageTitle: "Work Experience & Career Exposure", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Work Experience & Career Exposure", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-work-experience-tracker" />
           <PrintButton title="Work Experience & Career Exposure" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -281,8 +281,8 @@ export default function ChildWorkExperienceTrackerPage() {
                       </div>
                     ) : null}
 
-                    <div className="rounded-md border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3 lg:col-span-2">
-                      <div className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase mb-2">Child reflection</div>
+                    <div className="rounded-md border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-3 lg:col-span-2">
+                      <div className="text-xs font-semibold text-[var(--cs-cara-gold)] uppercase mb-2">Child reflection</div>
                       <p className="text-sm text-[var(--cs-navy)] italic">&ldquo;{r.child_reflection}&rdquo;</p>
                     </div>
 
@@ -335,7 +335,7 @@ export default function ChildWorkExperienceTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Work Experience & Career Exposure — placements, career days, job shadowing, employer visits, apprenticeship exploration, pathway 3 leaving care, PEP, skills, career aspiration"
         recordType="education"

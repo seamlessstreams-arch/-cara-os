@@ -23,8 +23,8 @@ import { SCREENING_TOOL_LABEL, SUBSTANCE_RISK_LEVEL_LABEL } from "@/types/extend
 import { useSubstanceScreenings } from "@/hooks/use-substance-screenings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -185,7 +185,7 @@ export default function DrugAndAlcoholScreeningPage() {
     <PageShell
       title="Drug and Alcohol Screening"
       subtitle="Substance use risk screening · Early identification · Harm reduction · Quality Standard 5 · Working Together 2023"
-      ariaContext={{ pageTitle: "Drug and Alcohol Screening", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Drug and Alcohol Screening", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Drug and Alcohol Screening" />
@@ -194,7 +194,7 @@ export default function DrugAndAlcoholScreeningPage() {
             columns={exportCols}
             filename="drug-and-alcohol-screening"
           />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -339,7 +339,7 @@ export default function DrugAndAlcoholScreeningPage() {
                           {SCREENING_TOOL_LABEL[r.screening_tool]}
                         </Badge>
                         {r.child_authored && (
-                          <Badge variant="outline" className="bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]">
+                          <Badge variant="outline" className="bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]">
                             Child contributed
                           </Badge>
                         )}
@@ -443,11 +443,11 @@ export default function DrugAndAlcoholScreeningPage() {
 
                     {/* child voice */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="bg-[var(--cs-aria-gold-bg)] rounded-lg p-3">
+                      <div className="bg-[var(--cs-cara-gold-bg)] rounded-lg p-3">
                         <p className="font-medium text-[var(--cs-navy)] mb-1 flex items-center gap-1">
                           <Lightbulb className="h-3.5 w-3.5" /> Child&apos;s Insight
                         </p>
-                        <p className="text-[var(--cs-aria-gold)] text-xs">{r.child_insight}</p>
+                        <p className="text-[var(--cs-cara-gold)] text-xs">{r.child_insight}</p>
                       </div>
                       <div className="bg-fuchsia-50 rounded-lg p-3">
                         <p className="font-medium text-fuchsia-800 mb-1 flex items-center gap-1">
@@ -562,7 +562,7 @@ export default function DrugAndAlcoholScreeningPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Drug and Alcohol Screening — substance misuse, urine testing, breathalyser, county lines risk, NPS, harm reduction, safeguarding, risk assessment, CAMHS, action plan, care plan"
         recordType="risk_assessment"

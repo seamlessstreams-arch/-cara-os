@@ -13,10 +13,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
-import { AriaContextLinker } from "@/components/aria/aria-context-linker";
-import { AriaOversightQuality } from "@/components/aria/aria-oversight-quality";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
+import { CaraContextLinker } from "@/components/cara/cara-context-linker";
+import { CaraOversightQuality } from "@/components/cara/cara-oversight-quality";
 import {
   useSupervision, useUpdateSupervision,
 } from "@/hooks/use-supervision";
@@ -42,7 +42,7 @@ import {
 const TYPE_COLOURS: Record<string, string> = {
   formal:              "bg-blue-100 text-blue-700 border-blue-200",
   informal:            "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
-  group:               "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  group:               "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
   reflective_practice: "bg-teal-100 text-teal-700 border-teal-200",
   probation_review:    "bg-amber-100 text-amber-700 border-amber-200",
 };
@@ -161,7 +161,7 @@ export default function SupervisionDetailPage({
   const createNeed = useCreateTrainingNeed();
   const docsQuery = useDocumentIntelligence();
 
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
   const [togglingAction, setTogglingAction] = useState<string | null>(null);
   const [needCreated, setNeedCreated] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -248,7 +248,7 @@ export default function SupervisionDetailPage({
     (a) => a.due_date && new Date(a.due_date) < new Date()
   );
 
-  const ariaSourceContent = [
+  const caraSourceContent = [
     `Supervision type: ${typeLabel}`,
     `Staff: ${staffName}`,
     `Supervisor: ${supervisorName}`,
@@ -272,7 +272,7 @@ export default function SupervisionDetailPage({
     <PageShell
       title="Supervision Record"
       subtitle={`${staffName} · ${typeLabel} · ${formatDate(date)}`}
-      ariaContext={{ pageTitle: "Recent Care Events", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Recent Care Events", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Supervision Record" subtitle="Chamberlain House — Supervision Session" targetId="supervision-detail-content" />
@@ -289,8 +289,8 @@ export default function SupervisionDetailPage({
           <Button
             variant="outline"
             size="sm"
-            className="gap-1.5 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
-            onClick={() => setShowAria((p) => !p)}
+            className="gap-1.5 text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]"
+            onClick={() => setShowCara((p) => !p)}
           >
             <Sparkles className="h-3.5 w-3.5" />
             Cara
@@ -321,8 +321,8 @@ export default function SupervisionDetailPage({
                         {sup.status.charAt(0).toUpperCase() + sup.status.slice(1)}
                       </Badge>
                       {sup.aria_assist_used && (
-                        <AriaUsageBadge
-                          ariaAssisted
+                        <CaraUsageBadge
+                          caraAssisted
                           sourceTable="supervisions"
                           recordId={sup.id}
                           size="sm"
@@ -394,7 +394,7 @@ export default function SupervisionDetailPage({
 
                 {/* Cara Oversight Quality Check */}
                 {sup.discussion_points && (
-                  <AriaOversightQuality
+                  <CaraOversightQuality
                     oversightText={sup.discussion_points}
                     recordType="general"
                     recordReference={`Supervision — ${formatDate(sup.actual_date ?? sup.scheduled_date)}`}
@@ -408,7 +408,7 @@ export default function SupervisionDetailPage({
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
-                  <ClipboardList className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                  <ClipboardList className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                   Actions Agreed
                   {sup.actions_agreed.length > 0 && (
                     <span className="ml-auto text-xs font-normal text-[var(--cs-text-muted)]">
@@ -439,22 +439,22 @@ export default function SupervisionDetailPage({
             </Card>
 
             {/* Cara panel */}
-            {showAria && (
+            {showCara && (
               <div className="relative">
                 <div className="absolute top-2 right-2 z-10">
                   <button
-                    onClick={() => setShowAria(false)}
+                    onClick={() => setShowCara(false)}
                     className="rounded-full p-1 bg-white shadow border border-[var(--cs-border)] text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] transition-colors"
                   >
                     ✕
                   </button>
                 </div>
-                <AriaContextLinker sourceTable="supervisions" recordId={sup.id} className="mb-3" />
-                <AriaPanel
+                <CaraContextLinker sourceTable="supervisions" recordId={sup.id} className="mb-3" />
+                <CaraPanel
                   mode="oversee"
                   pageContext="Supervision Record — reflective supervision session notes, practice standards, caseload review, staff wellbeing, development areas, actions and accountability"
                   recordType="supervision"
-                  sourceContent={ariaSourceContent}
+                  sourceContent={caraSourceContent}
                   userRole="manager"
                   defaultStyle="management_oversight"
                   linkedRecords={`Staff: ${staffName} | Supervisor: ${supervisorName}`}
@@ -590,7 +590,7 @@ export default function SupervisionDetailPage({
 
               {sup.status === "completed" && sup.discussion_points && (
                 needCreated ? (
-                  <div className="flex items-center gap-2 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-3 py-2 text-xs text-[var(--cs-aria-gold)]">
+                  <div className="flex items-center gap-2 rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] px-3 py-2 text-xs text-[var(--cs-cara-gold)]">
                     <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                     Training need created
                   </div>
@@ -598,7 +598,7 @@ export default function SupervisionDetailPage({
                   <Button
                     variant="outline"
                     size="sm"
-                    className="w-full gap-1.5 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
+                    className="w-full gap-1.5 text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]"
                     onClick={handleCreateTrainingNeed}
                     disabled={createNeed.isPending}
                   >
@@ -625,11 +625,11 @@ export default function SupervisionDetailPage({
 
             {/* Linked Documents */}
             {linkedDocs.length > 0 && (
-              <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-4 space-y-3">
+              <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/40 p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Library className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                  <Library className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                   <span className="text-sm font-semibold text-[var(--cs-navy)]">Staff Evidence Documents</span>
-                  <span className="ml-auto text-xs text-[var(--cs-aria-gold)]">{linkedDocs.length} file{linkedDocs.length !== 1 ? "s" : ""}</span>
+                  <span className="ml-auto text-xs text-[var(--cs-cara-gold)]">{linkedDocs.length} file{linkedDocs.length !== 1 ? "s" : ""}</span>
                 </div>
                 <div className="space-y-1.5">
                   {linkedDocs.map((doc) => (

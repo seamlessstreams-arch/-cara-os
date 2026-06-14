@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeDbsMetrics,
   computeDbsAlerts,
-  generateDbsAriaInsights,
+  generateDbsCaraInsights,
 } from "./staff-dbs-renewal-tracking-service";
 import type { StaffDbsRenewalTrackingRow } from "./staff-dbs-renewal-tracking-service";
 
@@ -186,11 +186,11 @@ describe("computeDbsAlerts", () => {
   });
 });
 
-// -- generateDbsAriaInsights ---------------------------------------------------
+// -- generateDbsCaraInsights ---------------------------------------------------
 
-describe("generateDbsAriaInsights", () => {
+describe("generateDbsCaraInsights", () => {
   it("returns 3 insights for empty rows", () => {
-    const insights = generateDbsAriaInsights([]);
+    const insights = generateDbsCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[purple]");
     expect(insights[2]).toContain("[reflect]");

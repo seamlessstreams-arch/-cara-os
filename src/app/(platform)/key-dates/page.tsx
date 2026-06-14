@@ -27,8 +27,8 @@ import { cn, formatDate } from "@/lib/utils";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -62,7 +62,7 @@ const CAT_CONFIG: Record<EventCategory, {
   border:string;
 }> = {
   lac_review:   { label: "LAC Review",       icon: ClipboardList, color: "text-indigo-600",  bg: "bg-indigo-50",  border: "border-indigo-200" },
-  reg44:        { label: "Reg 44 Visit",      icon: Eye,           color: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]" },
+  reg44:        { label: "Reg 44 Visit",      icon: Eye,           color: "text-[var(--cs-cara-gold)]",  bg: "bg-[var(--cs-cara-gold-bg)]",  border: "border-[var(--cs-cara-gold-soft)]" },
   supervision:  { label: "Supervision",       icon: Users,         color: "text-teal-600",    bg: "bg-teal-50",    border: "border-teal-200"   },
   appraisal:    { label: "Appraisal",         icon: CheckCircle2,  color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200"},
   training:     { label: "Training Renewal",  icon: GraduationCap, color: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200"  },
@@ -307,13 +307,13 @@ export default function KeyDatesPage() {
     <PageShell
       title="Key Dates"
       subtitle="Statutory deadlines, review dates, and operational milestones — next 90 days"
-      ariaContext={{ pageTitle: "Key Dates & Deadlines", sourceType: "general" }}
+      caraContext={{ pageTitle: "Key Dates & Deadlines", sourceType: "general" }}
       quickCreateContext={{ module: "compliance", defaultTaskCategory: "compliance" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={KEY_DATE_EXPORT_COLS} filename="key-dates" />
           <PrintButton title="Key Dates" subtitle="Chamberlain House — Key Dates & Deadlines" targetId="key-dates-content" />
-          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -454,7 +454,7 @@ export default function KeyDatesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Key Dates & Deadlines — LAC reviews, care plan reviews, Reg 44 visits, Reg 45 reports, court dates, placement anniversary, key worker meetings, court hearings, statutory deadlines"
         recordType="task"

@@ -321,7 +321,7 @@ export function identifyPestControlManagementAlerts(
   return alerts;
 }
 
-export function generatePestControlManagementAriaInsights(
+export function generatePestControlManagementCaraInsights(
   rows: HomePestControlManagementRow[],
 ): string[] {
   const metrics = computePestControlManagementMetrics(rows);
@@ -494,5 +494,5 @@ export async function deleteHomePestControlManagement(
 export const _testing = {
   computePestControlManagementMetrics,
   identifyPestControlManagementAlerts,
-  generatePestControlManagementAriaInsights,
+  generatePestControlManagementCaraInsights,
 };

@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     strengths: body.strengths ?? [],
     concerns: body.concerns ?? [],
     evidence_refs: body.evidence_refs ?? [],
-    computed_by: body.computed_by ?? "aria",
+    computed_by: body.computed_by ?? "cara",
     reviewed_by: body.reviewed_by ?? null,
   });
 

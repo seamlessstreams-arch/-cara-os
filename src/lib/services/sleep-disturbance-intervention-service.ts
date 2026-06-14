@@ -249,7 +249,7 @@ export function computeSleepDisturbanceAlerts(
   return alerts;
 }
 
-export function generateSleepDisturbanceAriaInsights(
+export function generateSleepDisturbanceCaraInsights(
   rows: SleepDisturbanceInterventionRow[],
 ): string[] {
   const metrics = computeSleepDisturbanceMetrics(rows);
@@ -387,5 +387,5 @@ export async function createSleepDisturbanceIntervention(input: {
 export const _testing = {
   computeSleepDisturbanceMetrics,
   computeSleepDisturbanceAlerts,
-  generateSleepDisturbanceAriaInsights,
+  generateSleepDisturbanceCaraInsights,
 };

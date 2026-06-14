@@ -570,7 +570,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: HigherEducationSupportRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

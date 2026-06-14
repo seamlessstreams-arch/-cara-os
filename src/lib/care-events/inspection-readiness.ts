@@ -95,7 +95,7 @@ export function computeInspectionReadiness(homeId: string): InspectionReadinessR
   const returnedScore = clamp(100 - returnedCount * 10);
 
   // ── Reg 45 pending evidence ───────────────────────────────────────────────
-  const reg45Pending = db.ariaReg45EvidenceItems
+  const reg45Pending = db.caraReg45EvidenceItems
     .findAll(homeId)
     .filter((c) => PENDING_REG45_STATUSES.has(c.status)).length;
   const reg45Score = clamp(100 - reg45Pending * 2);

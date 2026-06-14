@@ -75,7 +75,7 @@ interface GuardianFlag {
 interface GuardianReview {
   generatedAt: string;
   status: string;
-  ariaLabel: string;
+  caraLabel: string;
   fairnessScore: number;
   fairnessJudgement: "safe_to_approve" | "review_recommended" | "do_not_approve_yet";
   acasAlignment: Record<string, boolean | string>;
@@ -101,7 +101,7 @@ interface GuardianReview {
     assignedRole: string;
   }[];
   regulatoryLinks: string[];
-  ariaConfidence: number;
+  caraConfidence: number;
   llmUsed: boolean;
   engineVersion: string;
 }
@@ -261,8 +261,8 @@ export default function HrProcessGuardianPage() {
   return (
     <PageShell title="Cara — HR Process Guardian">
       {/* Cara draft banner */}
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
-        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-cara-gold)]" />
         <div>
           <div className="font-semibold">Cara suggested draft, never final</div>
           <p className="text-[var(--cs-navy)]">
@@ -281,7 +281,7 @@ export default function HrProcessGuardianPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ShieldCheck className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <ShieldCheck className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Draft to review
           </CardTitle>
         </CardHeader>
@@ -429,7 +429,7 @@ export default function HrProcessGuardianPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="text-xs uppercase text-[var(--cs-text-muted)] mb-1">Cara confidence</div>
-                <div className="text-3xl font-semibold text-[var(--cs-navy)]">{Math.round(review.ariaConfidence * 100)}%</div>
+                <div className="text-3xl font-semibold text-[var(--cs-navy)]">{Math.round(review.caraConfidence * 100)}%</div>
                 <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{review.llmUsed ? "LLM-enhanced" : "Deterministic only"}</div>
               </CardContent>
             </Card>
@@ -504,7 +504,7 @@ export default function HrProcessGuardianPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between gap-2 text-base">
                     <span className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Suggested safer wording
+                      <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Suggested safer wording
                     </span>
                     <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)} className="gap-1.5">
                       <Pencil className="h-3.5 w-3.5" /> {editing ? "Stop editing" : "Edit"}

@@ -518,7 +518,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: EatingDisorderSupportRow[],
 ): string[] {
   const metrics = computeMetrics(rows);
@@ -845,6 +845,6 @@ export async function deleteEatingDisorderSupport(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   validateEatingDisorderSupport,
 };

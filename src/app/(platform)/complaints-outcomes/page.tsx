@@ -14,8 +14,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -190,7 +190,7 @@ export default function ComplaintsOutcomesPage() {
     <PageShell
       title="Complaints Outcomes"
       subtitle="Investigation outcomes, learning points, practice changes, and response timescales"
-      ariaContext={{ pageTitle: "Complaints Outcomes", sourceType: "complaint" }}
+      caraContext={{ pageTitle: "Complaints Outcomes", sourceType: "complaint" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Complaints Outcomes" />
@@ -198,7 +198,7 @@ export default function ComplaintsOutcomesPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Outcome
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "complaint", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -329,7 +329,7 @@ export default function ComplaintsOutcomesPage() {
                       </Badge>
                     )}
                     {entry.ofsted_notified && (
-                      <Badge variant="outline" className="text-[10px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">
+                      <Badge variant="outline" className="text-[10px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]">
                         Ofsted Notified
                       </Badge>
                     )}

@@ -194,7 +194,7 @@ export function HomeLanding() {
             href="/record-home"
             className="inline-flex items-center gap-1.5 rounded-xl bg-[var(--cs-navy)] text-white px-3.5 py-2 text-xs font-semibold hover:opacity-95 transition-opacity"
           >
-            <Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+            <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
             Record anything
           </Link>
           <DomainCreateMenu domain="home" />

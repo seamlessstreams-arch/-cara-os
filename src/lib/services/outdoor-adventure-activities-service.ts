@@ -654,7 +654,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: OutdoorAdventureActivityRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

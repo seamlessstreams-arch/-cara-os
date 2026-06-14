@@ -15,7 +15,7 @@ function ev(o: {
     summary: `${o.type} ${o.id}`, structuredTags: o.tags ?? [], evidenceCategories: ["risk management"],
     riskLevel: o.risk ?? "low", requiresApproval: !!o.approval, approvalLevel: o.approval,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: { themes: [], suggestedActions: o.suggestion ? [o.suggestion] : [], complianceFlags: o.flags ?? [], missingInformation: [], confidenceScore: 1 },
+    caraAnalysis: { themes: [], suggestedActions: o.suggestion ? [o.suggestion] : [], complianceFlags: o.flags ?? [], missingInformation: [], confidenceScore: 1 },
     audit: { createdAt: at(o.daysAgo ?? 2), updatedAt: at(o.daysAgo ?? 2), version: 1, changeHistory: [] },
   };
 }

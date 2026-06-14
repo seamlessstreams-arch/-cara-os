@@ -15,7 +15,7 @@ import type {
 const {
   computeNutritionMetrics,
   computeNutritionAlerts,
-  generateNutritionAriaInsights,
+  generateNutritionCaraInsights,
 } = _testing;
 
 const now = new Date(new Date().toISOString().split("T")[0]);
@@ -473,39 +473,39 @@ describe("child-nutrition-weight-monitoring-service", () => {
     });
   });
 
-  // ── generateNutritionAriaInsights ────────────────────────────────────
-  describe("generateNutritionAriaInsights", () => {
+  // ── generateNutritionCaraInsights ────────────────────────────────────
+  describe("generateNutritionCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
-      const insights = generateNutritionAriaInsights([]);
+      const insights = generateNutritionCaraInsights([]);
       expect(insights).toHaveLength(3);
     });
     it("returns 3 insights for populated data", () => {
-      const insights = generateNutritionAriaInsights([makeRow(), makeRow()]);
+      const insights = generateNutritionCaraInsights([makeRow(), makeRow()]);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [red]", () => {
-      expect(generateNutritionAriaInsights([])[0]).toMatch(/^\[red\]/);
+      expect(generateNutritionCaraInsights([])[0]).toMatch(/^\[red\]/);
     });
     it("insight 2 starts with [amber]", () => {
-      expect(generateNutritionAriaInsights([])[1]).toMatch(/^\[amber\]/);
+      expect(generateNutritionCaraInsights([])[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
-      expect(generateNutritionAriaInsights([])[2]).toMatch(/^\[reflect\]/);
+      expect(generateNutritionCaraInsights([])[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total assessments count", () => {
-      const insights = generateNutritionAriaInsights([makeRow(), makeRow()]);
+      const insights = generateNutritionCaraInsights([makeRow(), makeRow()]);
       expect(insights[0]).toContain("2 nutrition and weight monitoring assessments");
     });
     it("insight 1 contains unique children count", () => {
-      const insights = generateNutritionAriaInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
+      const insights = generateNutritionCaraInsights([makeRow({ child_name: "A" }), makeRow({ child_name: "B" })]);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
-      const insights = generateNutritionAriaInsights([makeRow()]);
+      const insights = generateNutritionCaraInsights([makeRow()]);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains weight concern breakdown", () => {
-      const insights = generateNutritionAriaInsights([
+      const insights = generateNutritionCaraInsights([
         makeRow({ bmi_category: "underweight" }),
         makeRow({ bmi_category: "overweight" }),
         makeRow({ bmi_category: "obese" }),
@@ -514,71 +514,71 @@ describe("child-nutrition-weight-monitoring-service", () => {
       expect(insights[0]).toContain("1 overweight");
     });
     it("insight 1 contains BMI calculated rate", () => {
-      const insights = generateNutritionAriaInsights([makeRow({ bmi_calculated: true })]);
+      const insights = generateNutritionCaraInsights([makeRow({ bmi_calculated: true })]);
       expect(insights[0]).toContain("BMI calculated rate");
       expect(insights[0]).toContain("100%");
     });
     it("insight 1 contains dietary needs met rate", () => {
-      const insights = generateNutritionAriaInsights([makeRow({ dietary_needs_met: true })]);
+      const insights = generateNutritionCaraInsights([makeRow({ dietary_needs_met: true })]);
       expect(insights[0]).toContain("Dietary needs met rate");
     });
     it("insight 2 mentions critical and high alert counts when present", () => {
       const rows = [
         makeRow({ bmi_category: "obese", clinical_referral_made: false }),
       ];
-      const insights = generateNutritionAriaInsights(rows);
+      const insights = generateNutritionCaraInsights(rows);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high-priority");
     });
     it("insight 2 shows no concerns when none", () => {
-      const insights = generateNutritionAriaInsights([makeRow()]);
+      const insights = generateNutritionCaraInsights([makeRow()]);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 2 contains clinical referral rate", () => {
-      const insights = generateNutritionAriaInsights([makeRow()]);
+      const insights = generateNutritionCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Clinical referral rate");
     });
     it("insight 2 contains weight management plan rate", () => {
-      const insights = generateNutritionAriaInsights([makeRow()]);
+      const insights = generateNutritionCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Weight management plan rate");
     });
     it("insight 2 contains hydration adequate rate", () => {
-      const insights = generateNutritionAriaInsights([makeRow()]);
+      const insights = generateNutritionCaraInsights([makeRow()]);
       expect(insights[1]).toContain("Hydration adequate rate");
     });
     it("insight 3 contains reflective question about nutritional assessments", () => {
-      const insights = generateNutritionAriaInsights([]);
+      const insights = generateNutritionCaraInsights([]);
       expect(insights[2]).toContain("nutritional assessments");
     });
     it("insight 3 mentions cultural preferences", () => {
-      const insights = generateNutritionAriaInsights([]);
+      const insights = generateNutritionCaraInsights([]);
       expect(insights[2]).toContain("cultural preferences");
     });
     it("insight 3 mentions health professionals", () => {
-      const insights = generateNutritionAriaInsights([]);
+      const insights = generateNutritionCaraInsights([]);
       expect(insights[2]).toContain("health professionals");
     });
     it("all insights are strings", () => {
-      const insights = generateNutritionAriaInsights([makeRow()]);
+      const insights = generateNutritionCaraInsights([makeRow()]);
       for (const i of insights) expect(typeof i).toBe("string");
     });
     it("empty array still produces meaningful content", () => {
-      const insights = generateNutritionAriaInsights([]);
+      const insights = generateNutritionCaraInsights([]);
       expect(insights[0]).toContain("0 nutrition and weight monitoring assessments");
       expect(insights[0]).toContain("0 children");
     });
     it("insight 1 for zero assessments shows 0 underweight and 0 overweight", () => {
-      const insights = generateNutritionAriaInsights([]);
+      const insights = generateNutritionCaraInsights([]);
       expect(insights[0]).toContain("0 underweight");
       expect(insights[0]).toContain("0 overweight");
     });
     it("insight 2 with only medium alerts shows no critical or high", () => {
       const rows = [makeRow({ bmi_calculated: false, hydration_adequate: false })];
-      const insights = generateNutritionAriaInsights(rows);
+      const insights = generateNutritionCaraInsights(rows);
       expect(insights[1]).toContain("No critical or high-priority concerns");
     });
     it("insight 3 mentions dietary plan", () => {
-      const insights = generateNutritionAriaInsights([]);
+      const insights = generateNutritionCaraInsights([]);
       expect(insights[2]).toContain("dietary plan");
     });
   });

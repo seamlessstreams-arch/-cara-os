@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
 } from "./child-radicalisation-risk-service";
 import type { ChildRadicalisationRiskRow } from "./child-radicalisation-risk-service";
 
@@ -143,11 +143,11 @@ describe("computeAlerts (radicalisation risk)", () => {
   });
 });
 
-// -- generateAriaInsights -----------------------------------------------------
+// -- generateCaraInsights -----------------------------------------------------
 
-describe("generateAriaInsights (radicalisation risk)", () => {
+describe("generateCaraInsights (radicalisation risk)", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[2]).toContain("[reflect]");
@@ -155,7 +155,7 @@ describe("generateAriaInsights (radicalisation risk)", () => {
 
   it("shows critical/high counts when alerts present", () => {
     const rows = [makeRow({ risk_level: "Immediate", prevent_referral_made: false })];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 });

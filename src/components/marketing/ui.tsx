@@ -37,7 +37,7 @@ export function SectionEyebrow({ children }: { children: React.ReactNode }) {
 }
 
 export function FeatureCard({ Icon, title, body, accent }: { Icon: LucideIcon; title: string; body: string; accent: "teal" | "gold" | "navy" }) {
-  const ring = accent === "teal" ? "bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]" : accent === "gold" ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]" : "bg-[var(--cs-navy)]/5 text-[var(--cs-navy)]";
+  const ring = accent === "teal" ? "bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]" : accent === "gold" ? "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]" : "bg-[var(--cs-navy)]/5 text-[var(--cs-navy)]";
   return (
     <div className="group rounded-2xl border border-[var(--cs-border)] bg-white p-6 shadow-[var(--cs-shadow-card)] transition-transform hover:-translate-y-0.5">
       <div className={`mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl ${ring}`}>

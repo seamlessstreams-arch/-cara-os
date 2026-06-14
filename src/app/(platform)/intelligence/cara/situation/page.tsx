@@ -11,13 +11,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DictationButton } from "@/components/common/dictation-button";
 import {
-  useAriaAssessments,
-  useCreateAriaAssessment,
+  useCaraAssessments,
+  useCreateCaraAssessment,
 } from "@/hooks/use-intelligence";
 import { cn, formatDate } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import type { AriaAssessment, AriaRiskLevel, AriaConfidenceLevel, AriaRecommendedAction } from "@/types/extended";
+import type { CaraAssessment, CaraRiskLevel, CaraConfidenceLevel, CaraRecommendedAction } from "@/types/extended";
 import {
   Sparkles, Loader2, AlertTriangle, CheckCircle2, Shield,
   Brain, User, Info, Clock, MessageSquare, Heart,
@@ -43,7 +43,7 @@ const SOURCE_TYPES = [
 
 // ── Risk / confidence helpers ─────────────────────────────────────────────────
 
-const RISK_COLOURS: Record<AriaRiskLevel, string> = {
+const RISK_COLOURS: Record<CaraRiskLevel, string> = {
   critical: "bg-red-100 text-red-800 border-red-200",
   high: "bg-orange-100 text-orange-800 border-orange-200",
   medium: "bg-amber-100 text-amber-800 border-amber-200",
@@ -51,7 +51,7 @@ const RISK_COLOURS: Record<AriaRiskLevel, string> = {
   not_identified: "bg-green-100 text-green-700 border-green-200",
 };
 
-const CONFIDENCE_LABELS: Record<AriaConfidenceLevel, string> = {
+const CONFIDENCE_LABELS: Record<CaraConfidenceLevel, string> = {
   high: "High Confidence",
   possible: "Possible",
   needs_human_review: "Needs Human Review",
@@ -89,8 +89,8 @@ interface ParsedSituationResult {
   follow_up_key_work?: string;
   resources_needed?: string;
   // Risk / confidence
-  risk_level?: AriaRiskLevel;
-  confidence_level?: AriaConfidenceLevel;
+  risk_level?: CaraRiskLevel;
+  confidence_level?: CaraConfidenceLevel;
   safeguarding_concern?: string;
   // Array outputs
   safeguarding_flags?: string[];
@@ -98,7 +98,7 @@ interface ParsedSituationResult {
   protective_factors_list?: string[];
   emotional_needs?: string[];
   emotional_needs_list?: string[];
-  suggested_actions?: AriaRecommendedAction[];
+  suggested_actions?: CaraRecommendedAction[];
   ai_generated_text?: string;
 }
 
@@ -129,8 +129,8 @@ function SectionCard({
 // ── Previous assessments list ─────────────────────────────────────────────────
 
 function PreviousAssessments({ childId }: { childId: string }) {
-  const { data, isLoading } = useAriaAssessments({ childId });
-  const assessments: AriaAssessment[] = useMemo(() => data?.data ?? [], [data]);
+  const { data, isLoading } = useCaraAssessments({ childId });
+  const assessments: CaraAssessment[] = useMemo(() => data?.data ?? [], [data]);
 
   if (!childId) {
     return (
@@ -190,7 +190,7 @@ function ResultsPanel({
   sourceContent: string;
   onSaved: () => void;
 }) {
-  const createAssessment = useCreateAriaAssessment();
+  const createAssessment = useCreateCaraAssessment();
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [saving, setSaving] = useState(false);
@@ -281,7 +281,7 @@ function ResultsPanel({
           </span>
         )}
         {result.confidence_level && (
-          <span className="rounded-full bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-3 py-1 text-xs font-medium text-[var(--cs-aria-gold)]">
+          <span className="rounded-full bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] px-3 py-1 text-xs font-medium text-[var(--cs-cara-gold)]">
             {CONFIDENCE_LABELS[result.confidence_level]}
           </span>
         )}
@@ -334,9 +334,9 @@ function ResultsPanel({
 
       {/* ── Emotional need underneath ─────────────────────────────────────────── */}
       {result.emotional_need_underneath && (
-        <SectionCard label="Emotional Need Underneath" icon={Heart} className="border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30">
+        <SectionCard label="Emotional Need Underneath" icon={Heart} className="border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/30">
           <p className="text-sm text-[var(--cs-navy)] leading-relaxed">{result.emotional_need_underneath}</p>
-          <p className="text-[10px] text-[var(--cs-aria-gold)] italic">
+          <p className="text-[10px] text-[var(--cs-cara-gold)] italic">
             The unmet emotional need that may be driving this situation.
           </p>
         </SectionCard>
@@ -398,7 +398,7 @@ function ResultsPanel({
           </p>
           <div className="flex flex-wrap gap-1.5">
             {emotionalNeeds.map((n, i) => (
-              <span key={i} className="rounded-full bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)]">
+              <span key={i} className="rounded-full bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-cara-gold)]">
                 {n}
               </span>
             ))}
@@ -504,7 +504,7 @@ function ResultsPanel({
 
 // ── Record content formatter ───────────────────────────────────────────────────
 
-function formatIncidentForAria(incident: Record<string, unknown>): string {
+function formatIncidentForCara(incident: Record<string, unknown>): string {
   const lines: string[] = [
     `INCIDENT REPORT — ${String(incident.type ?? "").replace(/_/g, " ").toUpperCase()}`,
     `Reference: ${incident.reference ?? ""}`,
@@ -525,7 +525,7 @@ function formatIncidentForAria(incident: Record<string, unknown>): string {
   return lines.filter((l) => l !== null).join("\n").trim();
 }
 
-function formatDailyLogForAria(entry: Record<string, unknown>): string {
+function formatDailyLogForCara(entry: Record<string, unknown>): string {
   const lines: string[] = [
     `DAILY LOG ENTRY — ${String(entry.entry_type ?? "").toUpperCase()}`,
     `Date: ${entry.date ?? ""} at ${entry.time ?? ""}`,
@@ -578,8 +578,8 @@ export default function SituationReviewPage() {
         const record = json?.data as Record<string, unknown> | undefined;
         if (!record) return;
 
-        if (s === "incident") setContent(formatIncidentForAria(record));
-        else if (s === "daily_log" || s === "behaviour") setContent(formatDailyLogForAria(record));
+        if (s === "incident") setContent(formatIncidentForCara(record));
+        else if (s === "daily_log" || s === "behaviour") setContent(formatDailyLogForCara(record));
       } catch {
         // Silently fail — user can type manually
       } finally {
@@ -647,7 +647,7 @@ export default function SituationReviewPage() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                  <Brain className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                   Situation Information
                 </CardTitle>
               </CardHeader>
@@ -658,7 +658,7 @@ export default function SituationReviewPage() {
                   <select
                     value={childId}
                     onChange={(e) => setChildId(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-soft)]"
+                    className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-soft)]"
                   >
                     <option value="">Select young person</option>
                     {youngPeople.map((yp) => (
@@ -673,7 +673,7 @@ export default function SituationReviewPage() {
                   <select
                     value={sourceType}
                     onChange={(e) => setSourceType(e.target.value)}
-                    className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-soft)]"
+                    className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-soft)]"
                   >
                     {SOURCE_TYPES.map((s) => (
                       <option key={s.value} value={s.value}>{s.label}</option>
@@ -687,7 +687,7 @@ export default function SituationReviewPage() {
                     <label className="text-xs font-medium text-[var(--cs-text-secondary)]">Situation Information</label>
                     <div className="flex items-center gap-2">
                       {prefilling && (
-                        <span className="flex items-center gap-1 text-[10px] text-[var(--cs-aria-gold)]">
+                        <span className="flex items-center gap-1 text-[10px] text-[var(--cs-cara-gold)]">
                           <Loader2 className="h-3 w-3 animate-spin" />Loading record…
                         </span>
                       )}
@@ -700,14 +700,14 @@ export default function SituationReviewPage() {
                     rows={10}
                     placeholder="Enter or paste the situation information here. Include as much detail as possible — what happened, when, who was involved, context, staff observations, and any immediate actions taken."
                     className={cn(
-                      "w-full rounded-lg border px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold-soft)] resize-none leading-relaxed",
-                      prefilling ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30" : "border-[var(--cs-border)] bg-white"
+                      "w-full rounded-lg border px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold-soft)] resize-none leading-relaxed",
+                      prefilling ? "border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/30" : "border-[var(--cs-border)] bg-white"
                     )}
                   />
                   <p className="text-[10px] text-[var(--cs-text-muted)]">
                     {content.length} characters
                     {content.length > 0 && !prefilling && (
-                      <span className="text-[var(--cs-aria-gold)] ml-2">· Record content loaded — add any additional context below</span>
+                      <span className="text-[var(--cs-cara-gold)] ml-2">· Record content loaded — add any additional context below</span>
                     )}
                   </p>
                 </div>
@@ -739,7 +739,7 @@ export default function SituationReviewPage() {
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                    <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                     Cara Analysis Results
                   </CardTitle>
                 </CardHeader>
@@ -758,9 +758,9 @@ export default function SituationReviewPage() {
 
           {/* Right: guidance + previous */}
           <div className="space-y-4">
-            <Card className="border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/30">
+            <Card className="border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/30">
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider flex items-center gap-2">
+                <CardTitle className="text-xs font-semibold text-[var(--cs-cara-gold)] uppercase tracking-wider flex items-center gap-2">
                   <Info className="h-3.5 w-3.5" />Cara Guidance
                 </CardTitle>
               </CardHeader>
@@ -788,12 +788,12 @@ export default function SituationReviewPage() {
                     "Resources needed",
                   ].map((item) => (
                     <li key={item} className="flex items-start gap-1.5">
-                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] shrink-0" />
+                      <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[var(--cs-cara-gold)] shrink-0" />
                       {item}
                     </li>
                   ))}
                 </ul>
-                <p className="text-[10px] text-[var(--cs-text-muted)] italic border-t border-[var(--cs-aria-gold-soft)] pt-2">
+                <p className="text-[10px] text-[var(--cs-text-muted)] italic border-t border-[var(--cs-cara-gold-soft)] pt-2">
                   Provide as much detail as possible for the most accurate analysis.
                 </p>
               </CardContent>

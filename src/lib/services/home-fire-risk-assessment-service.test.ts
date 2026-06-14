@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeFireRiskMetrics,
   computeFireRiskAlerts,
-  generateFireRiskAriaInsights,
+  generateFireRiskCaraInsights,
   type HomeFireRiskAssessmentRow,
 } from "./home-fire-risk-assessment-service";
 
@@ -138,13 +138,13 @@ describe("computeFireRiskAlerts", () => {
   });
 });
 
-describe("generateFireRiskAriaInsights", () => {
+describe("generateFireRiskCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
-    const insights = generateFireRiskAriaInsights([makeRow()]);
+    const insights = generateFireRiskCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty data", () => {
-    expect(generateFireRiskAriaInsights([])).toHaveLength(3);
+    expect(generateFireRiskCaraInsights([])).toHaveLength(3);
   });
 });

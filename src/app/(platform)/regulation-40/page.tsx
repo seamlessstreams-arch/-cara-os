@@ -39,8 +39,8 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Status colours ─────────────────────────────────────────────────────────────
 
@@ -349,8 +349,8 @@ export default function Regulation40Page() {
     <PageShell
       title="Regulation 40 Triage Queue"
       subtitle="Events requiring triage to determine if an Ofsted notifiable event notification is required"
-      ariaContext={{ pageTitle: "Regulation 40 Triage Queue", sourceType: "general" }}
-      actions={<AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />}
+      caraContext={{ pageTitle: "Regulation 40 Triage Queue", sourceType: "general" }}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />}
     >
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
@@ -445,7 +445,7 @@ export default function Regulation40Page() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Regulation 40 Triage Queue — Reg 40 notifications to Ofsted, significant events triage, notification decisions, management sign-off, regulatory reporting, statutory compliance evidence"
         recordType="reg45"

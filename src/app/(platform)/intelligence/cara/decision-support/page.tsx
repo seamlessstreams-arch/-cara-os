@@ -18,33 +18,33 @@ import {
   useRunDecisionSupport,
   useUpdateRecommendation,
   useUpdateFormulation,
-} from "@/hooks/use-aria-decision-support";
+} from "@/hooks/use-cara-decision-support";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type {
-  AriaFormulation,
-  AriaDecisionRecommendation,
-  AriaDecisionPriority,
-  AriaFormulationFactorType,
-} from "@/types/aria-studio";
+  CaraFormulation,
+  CaraDecisionRecommendation,
+  CaraDecisionPriority,
+  CaraFormulationFactorType,
+} from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const PRIORITY_TONE: Record<AriaDecisionPriority, string> = {
+const PRIORITY_TONE: Record<CaraDecisionPriority, string> = {
   p1: "bg-rose-50 text-rose-800 border-rose-300",
   p2: "bg-orange-50 text-orange-800 border-orange-300",
   p3: "bg-amber-50 text-amber-800 border-amber-300",
   p4: "bg-slate-50 text-slate-700 border-slate-300",
 };
 
-const PRIORITY_LABEL: Record<AriaDecisionPriority, string> = {
+const PRIORITY_LABEL: Record<CaraDecisionPriority, string> = {
   p1: "P1 · Urgent",
   p2: "P2 · High",
   p3: "P3 · Medium",
   p4: "P4 · Routine",
 };
 
-const FACTOR_TONE: Record<AriaFormulationFactorType, string> = {
+const FACTOR_TONE: Record<CaraFormulationFactorType, string> = {
   predisposing: "border-l-slate-400",
   precipitating: "border-l-orange-400",
   perpetuating: "border-l-rose-400",
@@ -54,7 +54,7 @@ const FACTOR_TONE: Record<AriaFormulationFactorType, string> = {
 function FactorRow({
   factor,
 }: {
-  factor: AriaFormulation["factors"][number];
+  factor: CaraFormulation["factors"][number];
 }) {
   return (
     <div className={`border-l-4 pl-3 ${FACTOR_TONE[factor.factor_type]}`}>
@@ -71,8 +71,8 @@ function FormulationCard({
   formulation,
   onAction,
 }: {
-  formulation: AriaFormulation;
-  onAction: (id: string, status: AriaFormulation["status"]) => void;
+  formulation: CaraFormulation;
+  onAction: (id: string, status: CaraFormulation["status"]) => void;
 }) {
   return (
     <Card>
@@ -150,10 +150,10 @@ function RecommendationCard({
   recommendation,
   onAction,
 }: {
-  recommendation: AriaDecisionRecommendation;
+  recommendation: CaraDecisionRecommendation;
   onAction: (
     id: string,
-    status: AriaDecisionRecommendation["status"],
+    status: CaraDecisionRecommendation["status"],
   ) => void;
 }) {
   return (
@@ -232,7 +232,7 @@ function RecommendationCard({
 
 export default function DecisionSupportPage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(
+  const caraRole = appRoleToCaraRole(
     currentUser?.role ?? "registered_manager",
   );
 
@@ -247,28 +247,28 @@ export default function DecisionSupportPage() {
     run.mutate({
       home_id: HOME_ID,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 
   const handleRecAction = (
     id: string,
-    status: AriaDecisionRecommendation["status"],
+    status: CaraDecisionRecommendation["status"],
   ) => {
     updateRec.mutate({
       id,
       status,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 
-  const handleFormAction = (id: string, status: AriaFormulation["status"]) => {
+  const handleFormAction = (id: string, status: CaraFormulation["status"]) => {
     updateForm.mutate({
       id,
       status,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 

@@ -13,8 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { useAdmissions, useCreateReferral, useUpdateReferral } from "@/hooks/use-admissions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getStaffName } from "@/lib/seed-data";
@@ -135,18 +135,18 @@ export default function AdmissionsPage() {
     <PageShell
       title="Admissions & Referrals"
       subtitle="Pre-admission referrals, impact assessments, and matching decisions"
-      ariaContext={{ pageTitle: "Admissions & Referrals", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Admissions & Referrals", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Admissions & Referrals" />
           <ExportButton data={filtered} columns={exportCols} filename="admissions-referrals" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Referral</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
-        <AriaPanel mode="assist" pageContext="Admissions & Referrals — pre-admission referrals, impact assessments, matching decisions, placement suitability" recordType="admission" userRole="registered_manager" className="mb-2" />
+        <CaraPanel mode="assist" pageContext="Admissions & Referrals — pre-admission referrals, impact assessments, matching decisions, placement suitability" recordType="admission" userRole="registered_manager" className="mb-2" />
         {/* ── Stats ────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[

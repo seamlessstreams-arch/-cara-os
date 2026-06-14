@@ -33,8 +33,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const occasionColour: Record<string, string> = {
   birthday: "bg-pink-100 text-pink-800",
@@ -102,12 +102,12 @@ export default function BirthdayCardTrackerPage() {
     <PageShell
       title="Cards & Letters Tracker"
       subtitle="Cards and letters received by children — celebrating connection across all relationships"
-      ariaContext={{ pageTitle: "Cards & Letters Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Cards & Letters Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="birthday-card-tracker" />
           <PrintButton title="Cards & Letters Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -265,7 +265,7 @@ export default function BirthdayCardTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Cards & Letters Tracker — birthday and occasion cards sent to or from children, family contact support, letterbox contact, birthdays remembered, looked-after child duties"
         recordType="direct_work"

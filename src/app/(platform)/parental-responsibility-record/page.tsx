@@ -42,8 +42,8 @@ import {
 } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const STATUS_COLOUR: Record<PrLegalStatus, string> = {
   section_20_voluntary: "bg-yellow-100 text-yellow-800",
@@ -111,12 +111,12 @@ export default function ParentalResponsibilityRecordPage() {
     <PageShell
       title="Parental Responsibility Record"
       subtitle="Per-child legal status, PR holders, delegated authorities, and consent matrix"
-      ariaContext={{ pageTitle: "Parental Responsibility Records", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Parental Responsibility Records", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="parental-responsibility-records" />
           <PrintButton title="Parental Responsibility Records" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -372,7 +372,7 @@ export default function ParentalResponsibilityRecordPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Parental Responsibility Records — who holds PR, local authority PR, special guardians, parental agreements, PR decisions, care orders, placement orders, legal status, Annex A evidence"
         recordType="care_plan"

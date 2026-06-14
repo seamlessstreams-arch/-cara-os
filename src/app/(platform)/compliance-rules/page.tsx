@@ -48,7 +48,7 @@ export default function ComplianceRulesPage() {
       subtitle="Hard regulatory rules, pass or fail — deliberately separate from Cara's suggestions"
       icon={<ShieldCheck className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Compliance Rules — Fixed Checks", sourceType: "general" }}
+      caraContext={{ pageTitle: "Compliance Rules — Fixed Checks", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

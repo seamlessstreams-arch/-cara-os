@@ -3,7 +3,7 @@
 //
 // generateStructured<T> abstraction so Cara Studio is never locked to one
 // model. The default implementation rides the platform's existing server-only
-// Anthropic path (generateText: CARA_*/ARIA_* env, graceful when unconfigured)
+// Anthropic path (generateText: CARA_*/CARA_* env, graceful when unconfigured)
 // and validates the model's JSON against the caller's Zod schema. The mock
 // provider returns null, which tells generators to use their deterministic
 // scaffold — so the whole UI works with no API key and in tests.
@@ -15,7 +15,7 @@
 
 import "server-only";
 import type { z } from "zod";
-import { generateText } from "@/lib/aria/aria-provider";
+import { generateText } from "@/lib/cara/cara-provider";
 import { CARA_STUDIO_SYSTEM_PROMPT } from "./cara-prompt-library";
 
 export interface StructuredGenParams<T> {

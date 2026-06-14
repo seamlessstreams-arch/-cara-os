@@ -19,28 +19,28 @@ import {
   useLatestHomeDynamicsSnapshot,
   useHomeDynamicsSnapshots,
   useGenerateHomeDynamicsSnapshot,
-} from "@/hooks/use-aria-home-dynamics";
+} from "@/hooks/use-cara-home-dynamics";
 import { useAuthContext } from "@/contexts/auth-context";
 import type {
-  AriaHomeDynamicsIndicator,
-  AriaIndicatorStatus,
-} from "@/types/aria-studio";
+  CaraHomeDynamicsIndicator,
+  CaraIndicatorStatus,
+} from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const STATUS_TONE: Record<AriaIndicatorStatus, string> = {
+const STATUS_TONE: Record<CaraIndicatorStatus, string> = {
   green: "bg-emerald-50 text-emerald-700 border-emerald-200",
   amber: "bg-amber-50 text-amber-700 border-amber-200",
   red: "bg-rose-50 text-rose-700 border-rose-200",
 };
 
-const STATUS_LABEL: Record<AriaIndicatorStatus, string> = {
+const STATUS_LABEL: Record<CaraIndicatorStatus, string> = {
   green: "Within range",
   amber: "Attention",
   red: "Action required",
 };
 
-function IndicatorTile({ ind }: { ind: AriaHomeDynamicsIndicator }) {
+function IndicatorTile({ ind }: { ind: CaraHomeDynamicsIndicator }) {
   return (
     <Card className={`border ${STATUS_TONE[ind.status]}`}>
       <CardHeader className="pb-2">

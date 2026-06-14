@@ -55,7 +55,7 @@ export interface RoutingAlert {
   event_id?: string;
 }
 
-export interface AriaRoutingInsight {
+export interface CaraRoutingInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -64,7 +64,7 @@ export interface EventRoutingResult {
   overview: RoutingOverview;
   plans: EventRoutingPlan[];
   alerts: RoutingAlert[];
-  insights: AriaRoutingInsight[];
+  insights: CaraRoutingInsight[];
 }
 
 // ── Risk ordering ─────────────────────────────────────────────────────────────
@@ -91,8 +91,8 @@ export function evalCondition(e: CornerstoneEvent, c: RoutingCondition): boolean
       if (c.op === "includes" || c.op === "eq") return e.structuredTags.includes(c.value as string);
       return false;
     case "complianceFlags":
-      if (c.op === "exists") return (e.ariaAnalysis?.complianceFlags.length ?? 0) > 0;
-      if (c.op === "includes") return (e.ariaAnalysis?.complianceFlags ?? []).includes(c.value as string);
+      if (c.op === "exists") return (e.caraAnalysis?.complianceFlags.length ?? 0) > 0;
+      if (c.op === "includes") return (e.caraAnalysis?.complianceFlags ?? []).includes(c.value as string);
       return false;
     case "childId":
       return c.op === "exists" ? !!e.childId : e.childId === c.value;
@@ -291,8 +291,8 @@ function buildAlerts(plans: EventRoutingPlan[]): RoutingAlert[] {
   return alerts;
 }
 
-function buildInsights(plans: EventRoutingPlan[], overview: RoutingOverview): AriaRoutingInsight[] {
-  const insights: AriaRoutingInsight[] = [];
+function buildInsights(plans: EventRoutingPlan[], overview: RoutingOverview): CaraRoutingInsight[] {
+  const insights: CaraRoutingInsight[] = [];
 
   if (overview.external_notifications_pending > 0) {
     const apis = Object.keys(overview.external_api_counts).sort().join(", ");

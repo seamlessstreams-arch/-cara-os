@@ -31,10 +31,10 @@ import { cn, formatDate, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/common/print-button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { AriaPanel } from "@/components/aria/aria-panel";
+import { CaraPanel } from "@/components/cara/cara-panel";
 import {
   MapPin, AlertTriangle, CheckCircle2, Clock, Shield, ChevronDown,
   ChevronUp, Plus, Sparkles, Phone, User, Calendar,
@@ -176,7 +176,7 @@ function EpisodeCard({
               </Badge>
             )}
             {awaitingRHI && (
-              <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]">
+              <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]">
                 RHI Outstanding
               </Badge>
             )}
@@ -226,7 +226,7 @@ function EpisodeCard({
             <Button
               size="sm"
               variant="outline"
-              className="h-7 text-xs gap-1 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]"
+              className="h-7 text-xs gap-1 text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]"
               onClick={() => onCompleteRHI(episode)}
             >
               <Sparkles className="h-3 w-3" />
@@ -312,8 +312,8 @@ function PatternRow({ p }: { p: PatternAnalysis }) {
 
   return (
     <div className="flex items-center gap-4 p-3 rounded-xl border border-[var(--cs-border-subtle)] bg-white hover:bg-[var(--cs-surface)] transition-colors">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--cs-aria-gold-bg)]">
-        <User className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[var(--cs-cara-gold-bg)]">
+        <User className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
@@ -322,7 +322,7 @@ function PatternRow({ p }: { p: PatternAnalysis }) {
             <Badge className="text-[10px] h-4 px-1.5 bg-red-100 text-red-700 border border-red-200">CS Risk</Badge>
           )}
           {p.return_interview_outstanding && (
-            <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]">RHI Outstanding</Badge>
+            <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]">RHI Outstanding</Badge>
           )}
         </div>
         <div className="flex flex-wrap gap-3 mt-1 text-[11px] text-[var(--cs-text-muted)]">
@@ -617,7 +617,7 @@ function RhiDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Return Home Interview — {ypName}
           </DialogTitle>
         </DialogHeader>
@@ -671,8 +671,8 @@ function RhiDialog({
               )}
 
               {rhiResult.suggested_interview_questions && rhiResult.suggested_interview_questions.length > 0 && (
-                <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
-                  <div className="text-[11px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wide mb-2">
+                <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4">
+                  <div className="text-[11px] font-semibold text-[var(--cs-cara-gold)] uppercase tracking-wide mb-2">
                     Suggested Interview Questions
                   </div>
                   <ol className="space-y-1.5">
@@ -859,19 +859,19 @@ export default function MissingFromCarePage() {
     <PageShell
       title="Missing from Care"
       subtitle="Track missing episodes, return home interviews, and contextual safeguarding risks"
-      ariaContext={{ pageTitle: "Missing from Care", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Missing from Care", sourceType: "incident" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Missing from Care Log" subtitle="Chamberlain House — Missing Episodes & Return Interviews" targetId="mfc-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Missing From Care — return interview or episode upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "missing_from_care", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "missing_from_care", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="mfc-content" className="space-y-6 animate-fade-in max-w-5xl">
 
-        <AriaPanel
+        <CaraPanel
           mode="assist"
           pageContext="Missing from Care — episode tracking, return home interviews, contextual safeguarding"
           recordType="missing_episode"
@@ -903,15 +903,15 @@ export default function MissingFromCarePage() {
 
         {/* RHI outstanding banner */}
         {awaitingRHI.length > 0 && (
-          <div className="flex items-center gap-3 rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
-            <FileText className="h-5 w-5 text-[var(--cs-aria-gold)] shrink-0" />
-            <p className="text-sm font-semibold text-[var(--cs-aria-gold)]">
+          <div className="flex items-center gap-3 rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4">
+            <FileText className="h-5 w-5 text-[var(--cs-cara-gold)] shrink-0" />
+            <p className="text-sm font-semibold text-[var(--cs-cara-gold)]">
               {awaitingRHI.length} return home interview{awaitingRHI.length !== 1 ? "s" : ""} outstanding
             </p>
             <Button
               size="sm"
               variant="outline"
-              className="ml-auto text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] h-8 text-xs shrink-0"
+              className="ml-auto text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)] h-8 text-xs shrink-0"
               onClick={() => setStatusFilter("all")}
             >
               Review
@@ -924,7 +924,7 @@ export default function MissingFromCarePage() {
           <StatChip label="Total episodes" value={meta?.total ?? 0} colour="text-[var(--cs-text-secondary)]" bg="bg-slate-50" />
           <StatChip label="Active / missing" value={meta?.active ?? 0} colour={meta?.active ? "text-red-700" : "text-[var(--cs-text-muted)]"} bg={meta?.active ? "bg-red-50" : "bg-slate-50"} />
           <StatChip label="CS risk episodes" value={meta?.contextual_risk ?? 0} colour={meta?.contextual_risk ? "text-orange-700" : "text-[var(--cs-text-muted)]"} bg={meta?.contextual_risk ? "bg-orange-50" : "bg-slate-50"} />
-          <StatChip label="RHI outstanding" value={meta?.unresolved ?? 0} colour={meta?.unresolved ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]"} bg={meta?.unresolved ? "bg-[var(--cs-aria-gold-bg)]" : "bg-slate-50"} />
+          <StatChip label="RHI outstanding" value={meta?.unresolved ?? 0} colour={meta?.unresolved ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-muted)]"} bg={meta?.unresolved ? "bg-[var(--cs-cara-gold-bg)]" : "bg-slate-50"} />
         </div>
 
         {/* Controls */}
@@ -1025,7 +1025,7 @@ export default function MissingFromCarePage() {
             {/* Awaiting RHI */}
             {awaitingRHI.length > 0 && statusFilter !== "active" && (
               <>
-                <div className="text-[11px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider flex items-center gap-1.5 pt-2">
+                <div className="text-[11px] font-semibold text-[var(--cs-cara-gold)] uppercase tracking-wider flex items-center gap-1.5 pt-2">
                   <FileText className="h-3.5 w-3.5" />
                   Awaiting Return Interview ({awaitingRHI.length})
                 </div>

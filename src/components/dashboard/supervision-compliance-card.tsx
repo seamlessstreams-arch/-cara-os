@@ -68,7 +68,7 @@ export function SupervisionComplianceCard() {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <MessageSquare className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <MessageSquare className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Supervision
           </CardTitle>
         </CardHeader>
@@ -86,11 +86,11 @@ export function SupervisionComplianceCard() {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-[13px]">
-            <MessageSquare className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <MessageSquare className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Supervision
           </CardTitle>
           <Link href="/supervision">
-            <Badge className="text-[9px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-0 rounded-full hover:bg-[var(--cs-aria-gold-soft)] cursor-pointer">
+            <Badge className="text-[9px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-0 rounded-full hover:bg-[var(--cs-cara-gold-soft)] cursor-pointer">
               View all
             </Badge>
           </Link>

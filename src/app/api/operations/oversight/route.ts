@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const {
       homeId, recordType, recordId, recordReference,
       oversightText, qualityScore, qualityDimensions,
-      ariaPrompted, ariaPromptUsed, ariaSuggestions,
+      caraPrompted, caraPromptUsed, caraSuggestions,
       actionsIdentified, regulationRefs, oversightBy,
     } = body;
 
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     const result = await createOversightNote({
       homeId, recordType, recordId, recordReference,
       oversightText, qualityScore, qualityDimensions,
-      ariaPrompted, ariaPromptUsed, ariaSuggestions,
+      caraPrompted, caraPromptUsed, caraSuggestions,
       actionsIdentified, regulationRefs, oversightBy,
     });
     if (!result.ok) return NextResponse.json({ error: result.error }, { status: 500 });

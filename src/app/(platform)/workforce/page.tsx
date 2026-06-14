@@ -13,8 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
   Network, Sparkles, Users, TrendingUp, GitBranch, Milestone,
   BarChart2, UserCheck, ShieldCheck, Award, Microscope, Briefcase,
@@ -53,7 +53,7 @@ const READINESS_BG = (score: number) =>
 const MODULE_TILES = [
   { href: "/workforce/pathway",         icon: Milestone,      label: "Career Pathway",        desc: "5-stage progression ladder",         colour: "text-violet-600 bg-violet-50 border-violet-100" },
   { href: "/workforce/competency",      icon: BarChart2,      label: "Competency Framework",  desc: "10-domain scoring matrix",           colour: "text-blue-600 bg-blue-50 border-blue-100" },
-  { href: "/workforce/aria-planner",    icon: Sparkles,       label: "Cara Dev Planner",      desc: "Cara-generated development plans",   colour: "text-indigo-600 bg-indigo-50 border-indigo-100" },
+  { href: "/workforce/cara-planner",    icon: Sparkles,       label: "Cara Dev Planner",      desc: "Cara-generated development plans",   colour: "text-indigo-600 bg-indigo-50 border-indigo-100" },
   { href: "/workforce/succession",      icon: GitBranch,      label: "Succession Board",      desc: "Role coverage & readiness",          colour: "text-emerald-600 bg-emerald-50 border-emerald-100" },
   { href: "/workforce/leadership",      icon: Telescope,      label: "Leadership Readiness",  desc: "Cara leadership gap analysis",       colour: "text-amber-600 bg-amber-50 border-amber-100" },
   { href: "/workforce/appraisals",      icon: UserCheck,      label: "Appraisals",            desc: "Annual & probation reviews",         colour: "text-teal-600 bg-teal-50 border-teal-100" },
@@ -67,7 +67,7 @@ const MODULE_TILES = [
 ];
 
 export default function WorkforceHubPage() {
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
 
   const profilesQuery  = useCompetencyProfiles({ homeId: "home_oak" });
   const appraisalsQuery = useAppraisals();
@@ -101,7 +101,7 @@ export default function WorkforceHubPage() {
     <PageShell
       title="Workforce Intelligence"
       subtitle="Staff development, competency & succession — powered by Cara"
-      ariaContext={{ pageTitle: "Workforce Intelligence", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Workforce Intelligence", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -110,20 +110,20 @@ export default function WorkforceHubPage() {
           <Button
             size="sm"
             className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white"
-            onClick={() => setShowAria((p) => !p)}
+            onClick={() => setShowCara((p) => !p)}
           >
             <Sparkles className="h-3.5 w-3.5" />
             Cara Workforce Analysis
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       {/* Cara Panel */}
-      {showAria && (
+      {showCara && (
         <div className="relative">
-          <button onClick={() => setShowAria(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
-          <AriaPanel
+          <button onClick={() => setShowCara(false)} className="absolute top-3 right-3 z-10 text-slate-400 hover:text-slate-600 text-xs">✕ Close</button>
+          <CaraPanel
             mode="staff_development_summary"
             pageContext={`Workforce hub: ${profiles.length} staff profiles, avg readiness ${avgReadiness}/100. ${overdueAppraisals} overdue appraisals. ${qualGaps} mandatory qualification gaps. Succession plans: ${activePlansCount} active.`}
           />

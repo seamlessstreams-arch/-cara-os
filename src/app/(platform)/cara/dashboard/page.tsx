@@ -15,25 +15,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { DashboardSummary, ChildReport } from "@/types/aria-reports";
+import type { DashboardSummary, ChildReport } from "@/types/cara-reports";
 import {
   REPORT_TYPE_LABELS,
   REPORT_STATUS_LABELS,
-} from "@/types/aria-reports";
-import { AriaActivityCard } from "@/components/aria/aria-activity-card";
-import { AriaPendingBanner } from "@/components/aria/aria-pending-banner";
-import { AriaHistoryTimeline } from "@/components/aria/aria-history-timeline";
-import { AriaConfidenceBreakdown } from "@/components/aria/aria-confidence-breakdown";
-import { AriaModuleCoverage } from "@/components/aria/aria-module-coverage";
-import { AriaProviderStatus } from "@/components/aria/aria-provider-status";
-import { AriaOnboardingCard } from "@/components/aria/aria-onboarding-card";
-import { AriaInsightCard } from "@/components/aria/aria-insight-card";
-import { AriaReg45Evidence } from "@/components/aria/aria-reg45-evidence";
-import { AriaRiskMatrix } from "@/components/aria/aria-risk-matrix";
-import { AriaComplianceCalendar } from "@/components/aria/aria-compliance-calendar";
-import { AriaRegulationChecker } from "@/components/aria/aria-regulation-checker";
-import { AriaPatternAlert } from "@/components/aria/aria-pattern-alert";
-import { AriaDocumentIntelligence } from "@/components/aria/aria-document-intelligence";
+} from "@/types/cara-reports";
+import { CaraActivityCard } from "@/components/cara/cara-activity-card";
+import { CaraPendingBanner } from "@/components/cara/cara-pending-banner";
+import { CaraHistoryTimeline } from "@/components/cara/cara-history-timeline";
+import { CaraConfidenceBreakdown } from "@/components/cara/cara-confidence-breakdown";
+import { CaraModuleCoverage } from "@/components/cara/cara-module-coverage";
+import { CaraProviderStatus } from "@/components/cara/cara-provider-status";
+import { CaraOnboardingCard } from "@/components/cara/cara-onboarding-card";
+import { CaraInsightCard } from "@/components/cara/cara-insight-card";
+import { CaraReg45Evidence } from "@/components/cara/cara-reg45-evidence";
+import { CaraRiskMatrix } from "@/components/cara/cara-risk-matrix";
+import { CaraComplianceCalendar } from "@/components/cara/cara-compliance-calendar";
+import { CaraRegulationChecker } from "@/components/cara/cara-regulation-checker";
+import { CaraPatternAlert } from "@/components/cara/cara-pattern-alert";
+import { CaraDocumentIntelligence } from "@/components/cara/cara-document-intelligence";
 import {
   Sparkles,
   FileText,
@@ -87,7 +87,7 @@ function statusBadgeVariant(status: string) {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
-export default function AriaDashboardPage() {
+export default function CaraDashboardPage() {
   const [dashboard, setDashboard] = useState<DashboardSummary | null>(null);
   const [reports, setReports] = useState<ChildReport[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,12 +96,12 @@ export default function AriaDashboardPage() {
     async function fetchDashboard() {
       try {
         const res = await fetch(
-          `/api/aria/dashboard?homeId=${DEFAULT_HOME_ID}`,
+          `/api/cara/dashboard?homeId=${DEFAULT_HOME_ID}`,
         );
         const json = await res.json();
         if (json.ok) setDashboard(json.data);
       } catch (err) {
-        console.error("[aria/dashboard] Failed to fetch dashboard:", err);
+        console.error("[cara/dashboard] Failed to fetch dashboard:", err);
       }
     }
     fetchDashboard();
@@ -111,12 +111,12 @@ export default function AriaDashboardPage() {
     async function fetchReports() {
       try {
         const res = await fetch(
-          `/api/aria/reports/list?homeId=${DEFAULT_HOME_ID}&limit=5`,
+          `/api/cara/reports/list?homeId=${DEFAULT_HOME_ID}&limit=5`,
         );
         const json = await res.json();
         if (json.ok) setReports(json.data);
       } catch (err) {
-        console.error("[aria/dashboard] Failed to fetch reports:", err);
+        console.error("[cara/dashboard] Failed to fetch reports:", err);
       } finally {
         setLoading(false);
       }
@@ -130,15 +130,15 @@ export default function AriaDashboardPage() {
       subtitle="Reports, oversight & evidence intelligence"
     >
       {/* ── Gold intro banner ────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-5 mb-6">
+      <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-5 mb-6">
         <div className="flex items-start gap-3">
-          <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
+          <Sparkles className="h-5 w-5 text-[var(--cs-cara-gold)] shrink-0 mt-0.5" />
           <div className="flex-1">
             <div className="flex items-center justify-between gap-3 mb-1">
               <h2 className="text-sm font-semibold text-[var(--cs-navy)]">
                 Cara Intelligence
               </h2>
-              <AriaProviderStatus />
+              <CaraProviderStatus />
             </div>
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">
               Cara generates evidence-based reports, identifies oversight gaps,
@@ -151,10 +151,10 @@ export default function AriaDashboardPage() {
       </div>
 
       {/* ── Onboarding (first-time users) ─────────────────────────────── */}
-      <AriaOnboardingCard className="mb-6" />
+      <CaraOnboardingCard className="mb-6" />
 
       {/* ── Pending outputs banner ─────────────────────────────────────── */}
-      <AriaPendingBanner
+      <CaraPendingBanner
         actorUserId="staff_darren"
         actorRole="registered_manager"
         homeId={DEFAULT_HOME_ID}
@@ -261,7 +261,7 @@ export default function AriaDashboardPage() {
         <h2 className="text-base font-semibold text-[var(--cs-navy)] mb-4">
           Command Activity
         </h2>
-        <AriaActivityCard homeId={DEFAULT_HOME_ID} days={30} />
+        <CaraActivityCard homeId={DEFAULT_HOME_ID} days={30} />
       </div>
 
       {/* ── Cara Proactive Insights ──────────────────────────────────────── */}
@@ -269,13 +269,13 @@ export default function AriaDashboardPage() {
         <h2 className="text-base font-semibold text-[var(--cs-navy)] mb-4">
           Proactive Insights
         </h2>
-        <AriaInsightCard homeId={DEFAULT_HOME_ID} limit={5} />
+        <CaraInsightCard homeId={DEFAULT_HOME_ID} limit={5} />
       </div>
 
       {/* ── Confidence & Module Coverage ─────────────────────────────────── */}
       <div className="grid gap-6 lg:grid-cols-2 mb-8">
-        <AriaConfidenceBreakdown homeId={DEFAULT_HOME_ID} days={30} />
-        <AriaModuleCoverage homeId={DEFAULT_HOME_ID} days={30} />
+        <CaraConfidenceBreakdown homeId={DEFAULT_HOME_ID} days={30} />
+        <CaraModuleCoverage homeId={DEFAULT_HOME_ID} days={30} />
       </div>
 
       {/* ── My Cara History ──────────────────────────────────────────────── */}
@@ -283,7 +283,7 @@ export default function AriaDashboardPage() {
         <h2 className="text-base font-semibold text-[var(--cs-navy)] mb-4">
           My Recent History
         </h2>
-        <AriaHistoryTimeline userId="staff_darren" days={30} limit={8} />
+        <CaraHistoryTimeline userId="staff_darren" days={30} limit={8} />
       </div>
 
       {/* ── Recent Reports ───────────────────────────────────────────────── */}
@@ -333,7 +333,7 @@ export default function AriaDashboardPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <Badge variant="aria" className="text-[10px]">
+                        <Badge variant="cara" className="text-[10px]">
                           {REPORT_TYPE_LABELS[report.report_type]}
                         </Badge>
                         <Badge
@@ -366,32 +366,32 @@ export default function AriaDashboardPage() {
 
       {/* ── Reg 45 Evidence ────────────────────────────────────────────── */}
       <div className="mb-8">
-        <AriaReg45Evidence homeId={DEFAULT_HOME_ID} />
+        <CaraReg45Evidence homeId={DEFAULT_HOME_ID} />
       </div>
 
       {/* ── Pattern Intelligence ─────────────────────────────────────────── */}
       <div className="mb-8">
-        <AriaPatternAlert homeId="home_oak" />
+        <CaraPatternAlert homeId="home_oak" />
       </div>
 
       {/* ── Risk Matrix ──────────────────────────────────────────────────── */}
       <div className="mb-8">
-        <AriaRiskMatrix />
+        <CaraRiskMatrix />
       </div>
 
       {/* ── Compliance Calendar ────────────────────────────────────────────── */}
       <div className="mb-8">
-        <AriaComplianceCalendar />
+        <CaraComplianceCalendar />
       </div>
 
       {/* ── Regulation Compliance Checker ─────────────────────────────────── */}
       <div className="mb-8">
-        <AriaRegulationChecker />
+        <CaraRegulationChecker />
       </div>
 
       {/* ── Document Intelligence ──────────────────────────────────────────── */}
       <div className="mb-8">
-        <AriaDocumentIntelligence />
+        <CaraDocumentIntelligence />
       </div>
 
       {/* ── Quick Actions ────────────────────────────────────────────────── */}
@@ -403,8 +403,8 @@ export default function AriaDashboardPage() {
           <Link href="/cara/reports/new">
             <Card className="hover:shadow-md transition-all cursor-pointer group h-full">
               <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
-                <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] p-3">
-                  <Plus className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+                <div className="rounded-xl bg-[var(--cs-cara-gold-bg)] p-3">
+                  <Plus className="h-5 w-5 text-[var(--cs-cara-gold)]" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-[var(--cs-navy)] group-hover:text-blue-700 transition-colors">

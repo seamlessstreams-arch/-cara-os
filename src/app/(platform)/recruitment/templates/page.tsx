@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import {
   Mail, FileText, Search, Copy, ExternalLink, Tag, Clock, Sparkles,
   Shield, Users, AlertTriangle, CheckCircle2, X, ChevronDown, ChevronUp,
@@ -688,7 +688,7 @@ export default function TemplatesPage() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<TemplateCategory | "all">("all");
   const [activeTemplate, setActiveTemplate] = useState<Template | null>(null);
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
 
   const filtered = useMemo(() => {
     let list = TEMPLATES;
@@ -717,16 +717,16 @@ export default function TemplatesPage() {
     <PageShell
       title="Communication Templates"
       subtitle="Safer recruitment correspondence — regulation-compliant email and letter templates"
-      ariaContext={{ pageTitle: "Communication Templates", sourceType: "document" }}
+      caraContext={{ pageTitle: "Communication Templates", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Communication Templates" subtitle="Chamberlain House — Safer Recruitment Templates" targetId="templates-content" />
           <SmartUploadButton variant="inline" label="Upload Template Document" uploadContext="Safer Recruitment — communication template or correspondence document upload" />
-          <Button size="sm" variant="outline" onClick={() => setShowAria((v) => !v)}>
+          <Button size="sm" variant="outline" onClick={() => setShowCara((v) => !v)}>
             <Sparkles className="h-3.5 w-3.5 mr-1" />
-            {showAria ? "Hide Cara" : "Ask Cara"}
+            {showCara ? "Hide Cara" : "Ask Cara"}
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -756,8 +756,8 @@ export default function TemplatesPage() {
         </div>
 
         {/* Cara */}
-        {showAria && (
-          <AriaPanel
+        {showCara && (
+          <CaraPanel
             pageContext="Recruitment template library. 15 UK safer recruitment correspondence templates covering application, references, offers, rejections, compliance, gap explanations, and onboarding. Templates include merge fields and regulation references."
             userRole="registered_manager"
             mode="assist"

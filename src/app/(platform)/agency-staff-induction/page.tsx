@@ -21,8 +21,8 @@ import { useAgencyInductions } from "@/hooks/use-agency-inductions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { AgencyInduction, AgencyInductionType } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -102,12 +102,12 @@ export default function AgencyStaffInductionPage() {
     <PageShell
       title="Agency Staff Induction"
       subtitle="Reg 32 · Quality Standard 13 · KCSIE 2024 — Induction of agency staff who cover shifts"
-      ariaContext={{ pageTitle: "Agency Staff Induction", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Agency Staff Induction", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Agency Staff Induction" />
           <ExportButton data={data} columns={exportCols} filename="agency-staff-induction" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -317,7 +317,7 @@ export default function AgencyStaffInductionPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Agency Staff Induction — agency worker induction log, mandatory briefings, safeguarding awareness, medication competency, home rules, expectations, Reg 44 evidence"
         recordType="staff_training"

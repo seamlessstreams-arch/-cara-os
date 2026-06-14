@@ -189,7 +189,7 @@ export function computeForcedMarriageRiskAlerts(
   return alerts;
 }
 
-export function generateForcedMarriageRiskAriaInsights(
+export function generateForcedMarriageRiskCaraInsights(
   rows: ChildForcedMarriageRiskRow[],
 ): string[] {
   const metrics = computeForcedMarriageRiskMetrics(rows);
@@ -308,5 +308,5 @@ export async function createChildForcedMarriageRisk(input: {
 export const _testing = {
   computeForcedMarriageRiskMetrics,
   computeForcedMarriageRiskAlerts,
-  generateForcedMarriageRiskAriaInsights,
+  generateForcedMarriageRiskCaraInsights,
 };

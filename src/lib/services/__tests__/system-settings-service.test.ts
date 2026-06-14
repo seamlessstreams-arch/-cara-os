@@ -6,7 +6,7 @@ const { mergeWithDefaults, DEFAULT_SETTINGS } = _testing;
 describe("DEFAULT_SETTINGS", () => {
   it("has settings across all 5 categories", () => {
     const categories = [...new Set(DEFAULT_SETTINGS.map((s) => s.category))];
-    expect(categories).toContain("aria");
+    expect(categories).toContain("cara");
     expect(categories).toContain("notifications");
     expect(categories).toContain("compliance");
     expect(categories).toContain("operational");
@@ -51,19 +51,19 @@ describe("mergeWithDefaults", () => {
 
   it("overrides defaults with DB values", () => {
     const dbSettings = [
-      { key: "aria.enabled", value: false },
+      { key: "cara.enabled", value: false },
       { key: "ops.home_capacity", value: 8 },
     ];
     const merged = mergeWithDefaults(dbSettings);
-    expect(merged["aria.enabled"]).toBe(false);
+    expect(merged["cara.enabled"]).toBe(false);
     expect(merged["ops.home_capacity"]).toBe(8);
   });
 
   it("preserves defaults not in DB", () => {
-    const dbSettings = [{ key: "aria.enabled", value: false }];
+    const dbSettings = [{ key: "cara.enabled", value: false }];
     const merged = mergeWithDefaults(dbSettings);
-    // The default for aria.auto_scan_interval_hours is 24
-    expect(merged["aria.auto_scan_interval_hours"]).toBe(24);
+    // The default for cara.auto_scan_interval_hours is 24
+    expect(merged["cara.auto_scan_interval_hours"]).toBe(24);
   });
 
   it("handles extra DB keys not in defaults", () => {

@@ -90,7 +90,7 @@ export default function PlanCurrencyPage() {
     <PageShell
       title="Plan Currency Register"
       subtitle="Are the children's plans in date? Every statutory plan & assessment, RAG-rated by review date across every child — one screen, no silos (CHR 2015 Reg 6 / Quality Standards)."
-      ariaContext={{ pageTitle: "Plan Currency Register", sourceType: "general" }}
+      caraContext={{ pageTitle: "Plan Currency Register", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 print:hidden">

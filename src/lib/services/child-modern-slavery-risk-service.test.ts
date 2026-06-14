@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeModernSlaveryRiskMetrics,
   computeModernSlaveryRiskAlerts,
-  generateModernSlaveryRiskAriaInsights,
+  generateModernSlaveryRiskCaraInsights,
 } from "./child-modern-slavery-risk-service";
 import type { ChildModernSlaveryRiskRow } from "./child-modern-slavery-risk-service";
 
@@ -143,11 +143,11 @@ describe("computeModernSlaveryRiskAlerts", () => {
   });
 });
 
-// -- generateModernSlaveryRiskAriaInsights ------------------------------------
+// -- generateModernSlaveryRiskCaraInsights ------------------------------------
 
-describe("generateModernSlaveryRiskAriaInsights", () => {
+describe("generateModernSlaveryRiskCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateModernSlaveryRiskAriaInsights([]);
+    const insights = generateModernSlaveryRiskCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[2]).toContain("[reflect]");
@@ -155,7 +155,7 @@ describe("generateModernSlaveryRiskAriaInsights", () => {
 
   it("shows critical counts when alerts present", () => {
     const rows = [makeRow({ risk_level: "Immediate", nrm_referral_made: false })];
-    const insights = generateModernSlaveryRiskAriaInsights(rows);
+    const insights = generateModernSlaveryRiskCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 });

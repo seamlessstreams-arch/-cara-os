@@ -91,7 +91,7 @@ export interface RiskAlert {
   message: string;
 }
 
-export interface AriaRiskInsight {
+export interface CaraRiskInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -101,7 +101,7 @@ export interface RiskAssessmentIntelligenceResult {
   child_profiles: ChildRiskProfile[];
   domain_analysis: DomainAnalysis[];
   alerts: RiskAlert[];
-  insights: AriaRiskInsight[];
+  insights: CaraRiskInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -294,7 +294,7 @@ export function computeRiskAssessmentIntelligence(input: RiskAssessmentIntellige
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaRiskInsight[] = [];
+  const insights: CaraRiskInsight[] = [];
 
   // Critical: very_high risk present
   if (veryHigh > 0) {

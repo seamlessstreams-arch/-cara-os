@@ -106,7 +106,7 @@ export interface MedicationAlert {
   message: string;
 }
 
-export interface AriaMedicationInsight {
+export interface CaraMedicationInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -117,7 +117,7 @@ export interface MedicationIntelligenceResult {
   medication_details: MedicationDetail[];
   prn_analysis: PRNAnalysis;
   alerts: MedicationAlert[];
-  insights: AriaMedicationInsight[];
+  insights: CaraMedicationInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -331,7 +331,7 @@ export function computeMedicationIntelligence(input: MedicationIntelligenceInput
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaMedicationInsight[] = [];
+  const insights: CaraMedicationInsight[] = [];
 
   // Critical: missed doses
   if (missed > 0) {

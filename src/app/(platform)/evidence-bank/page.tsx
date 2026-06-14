@@ -35,7 +35,7 @@ export default function EvidenceBankPage() {
       subtitle="The home's evidence across all 14 Ofsted categories — assembled automatically from day-to-day events, with gaps surfaced"
       icon={<Archive className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Automated Evidence Bank", sourceType: "general" }}
+      caraContext={{ pageTitle: "Automated Evidence Bank", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="h-6 w-6 animate-spin text-[var(--cs-text-muted)]" /></div>

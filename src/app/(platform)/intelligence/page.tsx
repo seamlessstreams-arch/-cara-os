@@ -255,7 +255,7 @@ function HomeClimateSection() {
         narrative:                   parsed.narrative ?? "Cara climate assessment complete.",
         hotspot_times:               Array.isArray(parsed.hotspot_times) ? parsed.hotspot_times : [],
         risk_flags:                  Array.isArray(parsed.risk_flags)    ? parsed.risk_flags    : [],
-        computed_by:                 "aria",
+        computed_by:                 "cara",
       });
 
       setComputeState("success");
@@ -329,8 +329,8 @@ function HomeClimateSection() {
           </div>
 
           {climate.narrative && (
-            <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4">
-              <div className="text-[10px] font-semibold text-[var(--cs-aria-gold)] uppercase tracking-wider mb-1">Cara Analysis</div>
+            <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4">
+              <div className="text-[10px] font-semibold text-[var(--cs-cara-gold)] uppercase tracking-wider mb-1">Cara Analysis</div>
               <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{climate.narrative}</p>
             </div>
           )}
@@ -556,7 +556,7 @@ function RecentInterventionsSection() {
   const INT_STATUS: Record<string, string> = {
     active: "bg-emerald-100 text-emerald-800",
     paused: "bg-amber-100 text-amber-800",
-    under_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+    under_review: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   };
 
   async function handleReview(e: React.MouseEvent, intervention: Intervention) {
@@ -639,7 +639,7 @@ function RecentInterventionsSection() {
                       onClick={(e) => handleReview(e, intervention)}
                       disabled={reviewingId === intervention.id}
                       title="Review with Cara"
-                      className="flex items-center gap-1 rounded-lg bg-[var(--cs-aria-gold-bg)] hover:bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] px-2 py-1 text-[10px] font-semibold transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 rounded-lg bg-[var(--cs-cara-gold-bg)] hover:bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] px-2 py-1 text-[10px] font-semibold transition-colors disabled:opacity-50"
                     >
                       {reviewingId === intervention.id ? (
                         <Loader2 className="h-3 w-3 animate-spin" />
@@ -668,7 +668,7 @@ function RecentInterventionsSection() {
           >
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ClipboardList className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+                <ClipboardList className="h-5 w-5 text-[var(--cs-cara-gold)]" />
                 <div>
                   <div className="text-sm font-bold text-[var(--cs-navy)]">Cara — Intervention Review</div>
                   <div className="text-xs text-[var(--cs-text-muted)] truncate max-w-sm">{reviewTitle}</div>
@@ -719,7 +719,7 @@ function VoiceCoverageSection() {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm font-semibold flex items-center gap-2">
-          <MessageSquareQuote className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+          <MessageSquareQuote className="h-4 w-4 text-[var(--cs-cara-gold)]" />
           Children's Voice
         </CardTitle>
       </CardHeader>
@@ -732,9 +732,9 @@ function VoiceCoverageSection() {
         ) : (
           <div className="space-y-3">
             {recentVoice.map((record) => (
-              <div key={record.id} className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-3 space-y-1.5">
+              <div key={record.id} className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/40 p-3 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="rounded-full bg-[var(--cs-aria-gold-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--cs-aria-gold)] capitalize">
+                  <span className="rounded-full bg-[var(--cs-cara-gold-bg)] px-2 py-0.5 text-[10px] font-semibold text-[var(--cs-cara-gold)] capitalize">
                     {record.theme.replace("_", " ")}
                   </span>
                   {record.voice_heeded !== null && (
@@ -783,7 +783,7 @@ const OWNER_NAMES: Record<string, string> = {
 
 const STATUS_CLASSES: Record<string, string> = {
   open:        "bg-blue-100 text-blue-800",
-  in_progress: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  in_progress: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   completed:   "bg-emerald-100 text-emerald-800",
   overdue:     "bg-red-100 text-red-800",
   stalled:     "bg-amber-100 text-amber-800",
@@ -843,7 +843,7 @@ function ActionOutcomesSection() {
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Target className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Target className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Action Outcomes
             {overdueActions.length > 0 && (
               <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-700">
@@ -922,7 +922,7 @@ interface ScannedPattern {
   period_end: string;
 }
 
-function AriaPatternScanSection() {
+function CaraPatternScanSection() {
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [scanning, setScanning]           = useState(false);
@@ -1056,18 +1056,18 @@ function AriaPatternScanSection() {
   }
 
   return (
-    <Card className="border-[var(--cs-aria-gold-soft)]">
+    <Card className="border-[var(--cs-cara-gold-soft)]">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <ScanSearch className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <ScanSearch className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Cara Pattern Scanner
           </CardTitle>
           <Button
             size="sm"
             className={cn(
               "gap-1.5 text-xs",
-              scanning ? "bg-[var(--cs-aria-gold)]" : "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
+              scanning ? "bg-[var(--cs-cara-gold)]" : "bg-[var(--cs-navy)] hover:bg-[var(--cs-navy)]/90 text-white"
             )}
             onClick={handleScan}
             disabled={scanning}
@@ -1082,7 +1082,7 @@ function AriaPatternScanSection() {
       </CardHeader>
       <CardContent className="space-y-4">
         {!patterns && !scanning && !scanError && (
-          <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-xs text-[var(--cs-aria-gold)] leading-relaxed">
+          <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-xs text-[var(--cs-cara-gold)] leading-relaxed">
             Cara will analyse all available intelligence data across the home — voice records,
             interventions, action outcomes, and existing alerts — and identify significant
             patterns, emerging themes, or concerns requiring manager attention.
@@ -1098,7 +1098,7 @@ function AriaPatternScanSection() {
 
         {scanning && (
           <div className="flex items-center gap-3 py-6 text-xs text-[var(--cs-text-muted)]">
-            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-aria-gold)]" />
+            <Loader2 className="h-5 w-5 animate-spin text-[var(--cs-cara-gold)]" />
             Cara is scanning intelligence data across all children…
           </div>
         )}
@@ -1210,7 +1210,7 @@ export default function IntelligenceHubPage() {
         </div>
 
         {/* Cara Pattern Scanner — full width */}
-        <AriaPatternScanSection />
+        <CaraPatternScanSection />
       </div>
       <CareEventsPanel
         title="Care Events — Patterns & Intelligence"

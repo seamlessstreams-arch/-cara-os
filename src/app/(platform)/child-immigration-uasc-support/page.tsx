@@ -21,8 +21,8 @@ import { IMMIGRATION_STATUS_LABEL, ENGLISH_LANGUAGE_LEVEL_LABEL } from "@/types/
 import { useImmigrationUascRecords } from "@/hooks/use-immigration-uasc-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -167,11 +167,11 @@ export default function ChildImmigrationUascSupportPage() {
     <PageShell
       title="Child Immigration & UASC Support"
       subtitle="Per-child immigration status, age assessment, asylum claim, family tracing, leave-to-remain reviews — handled with trauma-informed care"
-      ariaContext={{ pageTitle: "Immigration & UASC Support", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Immigration & UASC Support", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="Immigration & UASC Support" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="child-immigration-uasc-support" />,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -438,7 +438,7 @@ export default function ChildImmigrationUascSupportPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Immigration & UASC Support — unaccompanied asylum-seeking child, age dispute, NRPF, immigration solicitor, Home Office, NTS referral, Dubs, resettlement, Section 20 to care order, asylum claim"
         recordType="care_plan"

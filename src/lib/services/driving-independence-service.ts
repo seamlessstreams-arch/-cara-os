@@ -625,7 +625,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: DrivingIndependenceRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

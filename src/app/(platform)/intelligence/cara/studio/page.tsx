@@ -27,22 +27,22 @@ import {
   Clock, Eye, Layers, Cpu, Zap, RefreshCw,
 } from "lucide-react";
 import {
-  useAriaArtifacts, useGenerateAriaArtifact, useUpdateAriaArtifact,
-  useDeleteAriaArtifact, useAriaGaps,
-} from "@/hooks/use-aria-studio";
+  useCaraArtifacts, useGenerateCaraArtifact, useUpdateCaraArtifact,
+  useDeleteCaraArtifact, useCaraGaps,
+} from "@/hooks/use-cara-studio";
 import { useYoungPeople } from "@/hooks/use-young-people";
-import { AriaStudioArtifactCard } from "@/components/aria/studio-artifact-card";
+import { CaraStudioArtifactCard } from "@/components/cara/studio-artifact-card";
 import type {
-  AriaArtifactType, AriaFramework, AriaTone, AriaCreativeMode, AriaGenerationRequest,
-} from "@/types/aria-studio";
+  CaraArtifactType, CaraFramework, CaraTone, CaraCreativeMode, CaraGenerationRequest,
+} from "@/types/cara-studio";
 import {
-  ARIA_ARTIFACT_TYPE_LABELS, ARIA_FRAMEWORK_LABELS,
-  ARIA_TONE_LABELS, ARIA_CREATIVE_MODE_LABELS,
-} from "@/types/aria-studio";
+  CARA_ARTIFACT_TYPE_LABELS, CARA_FRAMEWORK_LABELS,
+  CARA_TONE_LABELS, CARA_CREATIVE_MODE_LABELS,
+} from "@/types/cara-studio";
 
 // ── Artifact type groups ───────────────────────────────────────────────────
 
-const ARTIFACT_TYPE_GROUPS: Array<{ label: string; types: AriaArtifactType[] }> = [
+const ARTIFACT_TYPE_GROUPS: Array<{ label: string; types: CaraArtifactType[] }> = [
   {
     label: "Child-centred practice",
     types: ["keywork_session", "direct_work_session", "child_friendly_worksheet", "child_friendly_explanation"],
@@ -73,32 +73,32 @@ const ARTIFACT_TYPE_GROUPS: Array<{ label: string; types: AriaArtifactType[] }> 
   },
 ];
 
-const FRAMEWORKS: AriaFramework[] = [
+const FRAMEWORKS: CaraFramework[] = [
   "pace", "ddp", "arc", "trauma_informed", "therapeutic_parenting",
   "restorative_practice", "youth_work", "psychologically_informed",
   "relationship_based", "safeguarding_led", "strengths_based",
   "attachment_informed", "signs_of_safety", "none",
 ];
 
-const TONES: AriaTone[] = ["professional", "warm", "child_friendly", "formal", "therapeutic", "plain_english", "legal_careful"];
-const CREATIVE_MODES: AriaCreativeMode[] = ["conservative", "balanced", "creative", "therapeutic", "child_friendly", "training_focused", "inspection_ready", "reflective", "plain_english", "professional_legal"];
+const TONES: CaraTone[] = ["professional", "warm", "child_friendly", "formal", "therapeutic", "plain_english", "legal_careful"];
+const CREATIVE_MODES: CaraCreativeMode[] = ["conservative", "balanced", "creative", "therapeutic", "child_friendly", "training_focused", "inspection_ready", "reflective", "plain_english", "professional_legal"];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function AriaStudioPage() {
+export default function CaraStudioPage() {
   return (
     <Suspense fallback={null}>
-      <AriaStudioPageInner />
+      <CaraStudioPageInner />
     </Suspense>
   );
 }
 
-function AriaStudioPageInner() {
+function CaraStudioPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   // Pre-fill from query params (quick action entry)
-  const preArtifactType = searchParams.get("artifact_type") as AriaArtifactType | null;
+  const preArtifactType = searchParams.get("artifact_type") as CaraArtifactType | null;
   const preChildId = searchParams.get("child_id");
 
   // ── Filters ──────────────────────────────────────────────────────────────
@@ -110,12 +110,12 @@ function AriaStudioPageInner() {
   // ── Create dialog ────────────────────────────────────────────────────────
   const [dialogOpen, setDialogOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
-  const [selectedType, setSelectedType] = useState<AriaArtifactType | null>(preArtifactType);
+  const [selectedType, setSelectedType] = useState<CaraArtifactType | null>(preArtifactType);
   const [formData, setFormData] = useState({
     child_id: preChildId ?? "__home",
-    framework: "none" as AriaFramework,
-    tone: "professional" as AriaTone,
-    creative_mode: "balanced" as AriaCreativeMode,
+    framework: "none" as CaraFramework,
+    tone: "professional" as CaraTone,
+    creative_mode: "balanced" as CaraCreativeMode,
     additional_context: "",
     title: "",
   });
@@ -129,17 +129,17 @@ function AriaStudioPageInner() {
   }, [preArtifactType]);
 
   // ── Data ─────────────────────────────────────────────────────────────────
-  const { data: artifactsData, isLoading } = useAriaArtifacts({
+  const { data: artifactsData, isLoading } = useCaraArtifacts({
     status: statusFilter === "all" ? undefined : statusFilter,
     artifact_type: typeFilter || undefined,
     child_id: childFilter === "all" ? undefined : childFilter,
   });
-  const { data: gapsData } = useAriaGaps({ status: "open" });
+  const { data: gapsData } = useCaraGaps({ status: "open" });
   const { data: youngPeopleData } = useYoungPeople();
 
-  const generateMutation = useGenerateAriaArtifact();
-  const updateMutation = useUpdateAriaArtifact();
-  const deleteMutation = useDeleteAriaArtifact();
+  const generateMutation = useGenerateCaraArtifact();
+  const updateMutation = useUpdateCaraArtifact();
+  const deleteMutation = useDeleteCaraArtifact();
 
   const artifacts = artifactsData?.data ?? [];
   const meta = artifactsData?.meta;
@@ -156,12 +156,12 @@ function AriaStudioPageInner() {
     : artifacts;
 
   // ── Handlers ─────────────────────────────────────────────────────────────
-  function handleSelectType(type: AriaArtifactType) {
+  function handleSelectType(type: CaraArtifactType) {
     setSelectedType(type);
     // Auto-generate title
     setFormData((prev) => ({
       ...prev,
-      title: ARIA_ARTIFACT_TYPE_LABELS[type] ?? type,
+      title: CARA_ARTIFACT_TYPE_LABELS[type] ?? type,
     }));
     setStep(2);
   }
@@ -169,9 +169,9 @@ function AriaStudioPageInner() {
   async function handleGenerate() {
     if (!selectedType) return;
 
-    const request: AriaGenerationRequest = {
+    const request: CaraGenerationRequest = {
       artifact_type: selectedType,
-      title: formData.title || ARIA_ARTIFACT_TYPE_LABELS[selectedType],
+      title: formData.title || CARA_ARTIFACT_TYPE_LABELS[selectedType],
       child_id: formData.child_id && formData.child_id !== "__home" ? formData.child_id : null,
       home_id: "home_oak",
       staff_id: "staff_anna",
@@ -215,7 +215,7 @@ function AriaStudioPageInner() {
     <PageShell
       title="Cara Studio"
       subtitle="Generative intelligence workspace — create, review and commit 30+ artifact types"
-      ariaContext={{
+      caraContext={{
         pageTitle: "Cara Studio — generative intelligence workspace",
         suggestedAction: "Generate a new artifact from home records",
       }}
@@ -330,7 +330,7 @@ function AriaStudioPageInner() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filteredArtifacts.map((artifact) => (
-            <AriaStudioArtifactCard
+            <CaraStudioArtifactCard
               key={artifact.id}
               artifact={artifact}
               onSubmit={handleSubmit}
@@ -382,7 +382,7 @@ function AriaStudioPageInner() {
                           selectedType === type ? "bg-violet-50 border-violet-400 font-medium" : ""
                         }`}
                       >
-                        {ARIA_ARTIFACT_TYPE_LABELS[type]}
+                        {CARA_ARTIFACT_TYPE_LABELS[type]}
                       </button>
                     ))}
                   </div>
@@ -396,7 +396,7 @@ function AriaStudioPageInner() {
               {/* Selected type display */}
               <div className="flex items-center gap-2 p-2 bg-violet-50 rounded-md">
                 <Badge variant="outline" className="text-violet-700 border-violet-300">
-                  {ARIA_ARTIFACT_TYPE_LABELS[selectedType]}
+                  {CARA_ARTIFACT_TYPE_LABELS[selectedType]}
                 </Badge>
                 <button
                   onClick={() => setStep(1)}
@@ -413,7 +413,7 @@ function AriaStudioPageInner() {
                   <Input
                     value={formData.title}
                     onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))}
-                    placeholder={`e.g. ${ARIA_ARTIFACT_TYPE_LABELS[selectedType]} — [child name]`}
+                    placeholder={`e.g. ${CARA_ARTIFACT_TYPE_LABELS[selectedType]} — [child name]`}
                     className="h-9"
                   />
                 </div>
@@ -442,7 +442,7 @@ function AriaStudioPageInner() {
                     <Label className="text-xs font-medium">Framework</Label>
                     <Select
                       value={formData.framework}
-                      onValueChange={(v) => setFormData((p) => ({ ...p, framework: v as AriaFramework }))}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, framework: v as CaraFramework }))}
                     >
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -450,7 +450,7 @@ function AriaStudioPageInner() {
                       <SelectContent>
                         {FRAMEWORKS.map((f) => (
                           <SelectItem key={f} value={f} className="text-xs">
-                            {ARIA_FRAMEWORK_LABELS[f].split(" (")[0]}
+                            {CARA_FRAMEWORK_LABELS[f].split(" (")[0]}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -462,7 +462,7 @@ function AriaStudioPageInner() {
                     <Label className="text-xs font-medium">Tone</Label>
                     <Select
                       value={formData.tone}
-                      onValueChange={(v) => setFormData((p) => ({ ...p, tone: v as AriaTone }))}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, tone: v as CaraTone }))}
                     >
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -470,7 +470,7 @@ function AriaStudioPageInner() {
                       <SelectContent>
                         {TONES.map((t) => (
                           <SelectItem key={t} value={t} className="text-xs">
-                            {ARIA_TONE_LABELS[t]}
+                            {CARA_TONE_LABELS[t]}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -482,7 +482,7 @@ function AriaStudioPageInner() {
                     <Label className="text-xs font-medium">Mode</Label>
                     <Select
                       value={formData.creative_mode}
-                      onValueChange={(v) => setFormData((p) => ({ ...p, creative_mode: v as AriaCreativeMode }))}
+                      onValueChange={(v) => setFormData((p) => ({ ...p, creative_mode: v as CaraCreativeMode }))}
                     >
                       <SelectTrigger className="h-9">
                         <SelectValue />
@@ -490,7 +490,7 @@ function AriaStudioPageInner() {
                       <SelectContent>
                         {CREATIVE_MODES.map((m) => (
                           <SelectItem key={m} value={m} className="text-xs">
-                            {ARIA_CREATIVE_MODE_LABELS[m]}
+                            {CARA_CREATIVE_MODE_LABELS[m]}
                           </SelectItem>
                         ))}
                       </SelectContent>

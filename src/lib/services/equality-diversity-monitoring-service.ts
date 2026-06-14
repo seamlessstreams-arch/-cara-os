@@ -502,7 +502,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: EqualityDiversityMonitoringRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

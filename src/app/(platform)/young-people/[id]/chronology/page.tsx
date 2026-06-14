@@ -387,7 +387,7 @@ export default function ChildChronologyPage({
       subtitle={`Complete event timeline · ${stats?.total ?? 0} entries`}
       recordAnything
       recordChildId={id}
-      ariaContext={{
+      caraContext={{
         childId:    id,
         childName,
         pageTitle:  "Child Chronology",

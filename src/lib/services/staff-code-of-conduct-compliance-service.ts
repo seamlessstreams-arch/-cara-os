@@ -315,7 +315,7 @@ export function computeCodeOfConductAlerts(
   return alerts;
 }
 
-export function generateCodeOfConductAriaInsights(
+export function generateCodeOfConductCaraInsights(
   rows: StaffCodeOfConductComplianceRow[],
 ): string[] {
   const metrics = computeCodeOfConductMetrics(rows);
@@ -375,5 +375,5 @@ export function generateCodeOfConductAriaInsights(
 export const _testing = {
   computeCodeOfConductMetrics,
   computeCodeOfConductAlerts,
-  generateCodeOfConductAriaInsights,
+  generateCodeOfConductCaraInsights,
 };

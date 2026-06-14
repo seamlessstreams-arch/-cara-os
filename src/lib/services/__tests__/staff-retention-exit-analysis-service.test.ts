@@ -21,7 +21,7 @@ import type {
 const {
   computeStaffRetentionMetrics,
   computeStaffRetentionAlerts,
-  generateStaffRetentionAriaInsights,
+  generateStaffRetentionCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -783,27 +783,27 @@ describe("computeStaffRetentionAlerts", () => {
   });
 });
 
-// ── generateStaffRetentionAriaInsights ──────────────────────────────────
+// ── generateStaffRetentionCaraInsights ──────────────────────────────────
 
-describe("generateStaffRetentionAriaInsights", () => {
+describe("generateStaffRetentionCaraInsights", () => {
   it("returns exactly 3 insights", () => {
-    const insights = generateStaffRetentionAriaInsights([]);
+    const insights = generateStaffRetentionCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights with data", () => {
-    const insights = generateStaffRetentionAriaInsights([makeRow()]);
+    const insights = generateStaffRetentionCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [amber]", () => {
-    const insights = generateStaffRetentionAriaInsights([makeRow()]);
+    const insights = generateStaffRetentionCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[amber\]/);
   });
 
   it("first insight includes total exits count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
@@ -812,36 +812,36 @@ describe("generateStaffRetentionAriaInsights", () => {
       makeRow({ staff_name: "A" }),
       makeRow({ staff_name: "B" }),
     ];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
   it("first insight uses singular exit wording for 1 exit", () => {
     const rows = [makeRow()];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[0]).toContain("1 staff exit");
   });
 
   it("first insight uses plural exits wording for multiple exits", () => {
     const rows = [makeRow(), makeRow()];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[0]).toContain("exits");
   });
 
   it("first insight uses singular staff member wording for 1 unique staff", () => {
     const rows = [makeRow({ staff_name: "Only One" })];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[0]).toContain("1 unique staff member");
   });
 
   it("first insight uses plural staff members wording for multiple unique staff", () => {
     const rows = [makeRow({ staff_name: "A" }), makeRow({ staff_name: "B" })];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[0]).toContain("staff members");
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateStaffRetentionAriaInsights([makeRow()]);
+    const insights = generateStaffRetentionCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -849,31 +849,31 @@ describe("generateStaffRetentionAriaInsights", () => {
     const rows = [
       makeRow({ retention_risk_level: "critical", analysis_status: "closed", exit_interview_completed: false }),
     ];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
 
   it("second insight mentions no alerts when none present", () => {
     const rows = [makeRow()];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateStaffRetentionAriaInsights([makeRow()]);
+    const insights = generateStaffRetentionCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions burnout when burnout exits exist", () => {
     const rows = [makeRow({ exit_reason: "burnout" })];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[2]).toContain("burnout");
   });
 
   it("third insight uses singular member wording for 1 burnout", () => {
     const rows = [makeRow({ exit_reason: "burnout" })];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[2]).toContain("member has");
   });
 
@@ -882,19 +882,19 @@ describe("generateStaffRetentionAriaInsights", () => {
       makeRow({ exit_reason: "burnout" }),
       makeRow({ exit_reason: "burnout" }),
     ];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[2]).toContain("members have");
   });
 
   it("third insight mentions critical risk when no burnout but critical risk exists", () => {
     const rows = [makeRow({ exit_reason: "relocation", retention_risk_level: "critical" })];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[2]).toContain("critical-risk");
   });
 
   it("third insight uses singular departure wording for 1 critical risk", () => {
     const rows = [makeRow({ exit_reason: "relocation", retention_risk_level: "critical" })];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[2]).toContain("departure was");
   });
 
@@ -903,18 +903,18 @@ describe("generateStaffRetentionAriaInsights", () => {
       makeRow({ exit_reason: "relocation", retention_risk_level: "critical" }),
       makeRow({ exit_reason: "career_progression", retention_risk_level: "critical" }),
     ];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[2]).toContain("departures were");
   });
 
   it("third insight celebrates stability when no burnout or critical risk", () => {
     const rows = [makeRow({ exit_reason: "career_progression", retention_risk_level: "low" })];
-    const insights = generateStaffRetentionAriaInsights(rows);
+    const insights = generateStaffRetentionCaraInsights(rows);
     expect(insights[2]).toContain("No burnout or critical-risk departures");
   });
 
   it("all insights are non-empty strings", () => {
-    const insights = generateStaffRetentionAriaInsights([makeRow()]);
+    const insights = generateStaffRetentionCaraInsights([makeRow()]);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -922,7 +922,7 @@ describe("generateStaffRetentionAriaInsights", () => {
   });
 
   it("handles empty array gracefully", () => {
-    const insights = generateStaffRetentionAriaInsights([]);
+    const insights = generateStaffRetentionCaraInsights([]);
     expect(insights).toHaveLength(3);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");

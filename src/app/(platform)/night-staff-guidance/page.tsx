@@ -11,8 +11,8 @@ import { useNightStaffGuidance } from "@/hooks/use-night-staff-guidance";
 import type { NightStaffGuidanceSection, GuidancePriority, GuidanceSectionKey } from "@/types/extended";
 import { GUIDANCE_PRIORITY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const PRI_CLR: Record<GuidancePriority, string> = {
   essential: "bg-red-100 text-red-800",
@@ -47,11 +47,11 @@ export default function NightStaffGuidancePage() {
 
   return (
     <PageShell title="Night Staff Guidance" subtitle="Waking Night & Sleep-In Procedures — Chamberlain House" 
-      ariaContext={{ pageTitle: "Night Staff Guidance", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Night Staff Guidance", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Night Staff Guidance" />
-          <AriaStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "handover", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }>
       <div id="print-area">
@@ -102,7 +102,7 @@ export default function NightStaffGuidancePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Night Staff Guidance — waking night procedures, sleep-in, night-time checks, lone working, medication, emergency procedures, fire evacuation"
         recordType="handover"

@@ -26,8 +26,8 @@ import {
   TRAINING_OVERALL_COMPLIANCE_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -131,12 +131,12 @@ export default function MandatoryTrainingMatrixPage() {
     <PageShell
       title="Mandatory Training Matrix"
       subtitle="Cross-staff training currency · Reg 32 · KCSIE 2024 · Quality Standard 13"
-      ariaContext={{ pageTitle: "Mandatory Training Matrix", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Mandatory Training Matrix", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Mandatory Training Matrix" />
           <ExportButton data={data} columns={exportCols} filename="mandatory-training-matrix" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -363,7 +363,7 @@ export default function MandatoryTrainingMatrixPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Mandatory Training Matrix — safeguarding, first aid, moving & handling, fire safety, medication, food hygiene, attachment, trauma-informed, training expiry dates, Reg 44 evidence"
         recordType="staff_training"

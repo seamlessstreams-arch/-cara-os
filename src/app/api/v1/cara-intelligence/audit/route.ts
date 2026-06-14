@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
-import type { AriaAuditEntry, AuditActionType } from "@/types/extended";
+import type { CaraAuditEntry, AuditActionType } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -9,8 +9,8 @@ export async function GET(req: NextRequest) {
   const limit   = parseInt(searchParams.get("limit") ?? "100", 10);
 
   let results = childId
-    ? intelligenceDb.ariaAuditTrail.findByChild(childId)
-    : intelligenceDb.ariaAuditTrail.findAll(homeId);
+    ? intelligenceDb.caraAuditTrail.findByChild(childId)
+    : intelligenceDb.caraAuditTrail.findAll(homeId);
 
   results = results.slice(0, limit);
 
@@ -18,14 +18,14 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let body: Partial<AriaAuditEntry>;
+  let body: Partial<CaraAuditEntry>;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   if (!body.user_id) return NextResponse.json({ error: "Missing required field: user_id" }, { status: 400 });
   if (!body.action_type) return NextResponse.json({ error: "Missing required field: action_type" }, { status: 400 });
 
-  const entry = intelligenceDb.ariaAuditTrail.create({
+  const entry = intelligenceDb.caraAuditTrail.create({
     home_id:        body.home_id ?? "home_oak",
     user_id:        body.user_id,
     child_id:       body.child_id,

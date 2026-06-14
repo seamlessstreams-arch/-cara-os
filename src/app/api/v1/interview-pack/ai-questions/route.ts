@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
-import { generateText } from "@/lib/aria/aria-provider";
+import { generateText } from "@/lib/cara/cara-provider";
 import { INTERVIEW_ROLES } from "@/lib/engines/interview-pack-engine";
 import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
 

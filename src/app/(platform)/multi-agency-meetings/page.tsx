@@ -31,8 +31,8 @@ import {
   MEETING_ACTION_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const STATUS_CLR: Record<MultiAgencyMeetingStatus, string> = {
   scheduled: "bg-blue-100 text-blue-700",
@@ -166,12 +166,12 @@ export default function MultiAgencyMeetingsPage() {
     <PageShell
       title="Multi-Agency Meetings"
       subtitle="LAC reviews, PEPs, strategy meetings, CIN/CPP conferences and professionals meetings"
-      ariaContext={{ pageTitle: "Multi-Agency Meetings", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Multi-Agency Meetings", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="multi-agency-meetings" />
           <PrintButton title="Multi-Agency Meetings" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
           <Button size="sm" onClick={() => setShowDialog(true)}><Plus className="h-4 w-4 mr-1" /> New Meeting</Button>
         </div>
       }
@@ -346,7 +346,7 @@ export default function MultiAgencyMeetingsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Multi-Agency Meetings — CLA reviews, strategy meetings, CP conferences, EHCP reviews, TAC meetings, PLO, ICR, safeguarding strategy, professional coordination"
         recordType="management_oversight"

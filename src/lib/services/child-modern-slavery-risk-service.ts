@@ -207,7 +207,7 @@ export function computeModernSlaveryRiskAlerts(
   return alerts;
 }
 
-export function generateModernSlaveryRiskAriaInsights(
+export function generateModernSlaveryRiskCaraInsights(
   rows: ChildModernSlaveryRiskRow[],
 ): string[] {
   const metrics = computeModernSlaveryRiskMetrics(rows);
@@ -398,5 +398,5 @@ export async function deleteChildModernSlaveryRisk(
 export const _testing = {
   computeModernSlaveryRiskMetrics,
   computeModernSlaveryRiskAlerts,
-  generateModernSlaveryRiskAriaInsights,
+  generateModernSlaveryRiskCaraInsights,
 };

@@ -21,7 +21,7 @@ import type {
 const {
   computeSafeguardingPartnershipMetrics,
   computeSafeguardingPartnershipAlerts,
-  generateSafeguardingPartnershipAriaInsights,
+  generateSafeguardingPartnershipCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -503,20 +503,20 @@ describe("computeSafeguardingPartnershipAlerts", () => {
   });
 });
 
-// ── generateSafeguardingPartnershipAriaInsights ───────────────────────────
+// ── generateSafeguardingPartnershipCaraInsights ───────────────────────────
 
-describe("generateSafeguardingPartnershipAriaInsights", () => {
+describe("generateSafeguardingPartnershipCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeSafeguardingPartnershipMetrics([]);
     const alerts = computeSafeguardingPartnershipAlerts([]);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const metrics = computeSafeguardingPartnershipMetrics([makeRow()]);
     const alerts = computeSafeguardingPartnershipAlerts([makeRow()]);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
@@ -524,7 +524,7 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -532,7 +532,7 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     const rows = [makeRow({ child_name: "A" }), makeRow({ child_name: "B" })];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 unique children");
   });
 
@@ -540,14 +540,14 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     const rows = [makeRow({ child_name: "A" })];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 unique child");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computeSafeguardingPartnershipMetrics([makeRow()]);
     const alerts = computeSafeguardingPartnershipAlerts([makeRow()]);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -557,7 +557,7 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     ];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -566,14 +566,14 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     const rows = [makeRow()];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computeSafeguardingPartnershipMetrics([makeRow()]);
     const alerts = computeSafeguardingPartnershipAlerts([makeRow()]);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -581,7 +581,7 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     const rows = [makeRow({ urgency_level: "emergency" })];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("emergency");
   });
 
@@ -592,7 +592,7 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     ];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("information sharing");
   });
 
@@ -603,7 +603,7 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     ];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("shared and followed up effectively");
   });
 
@@ -611,7 +611,7 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     const rows = [makeRow({ urgency_level: "emergency" })];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("referral has");
   });
 
@@ -622,14 +622,14 @@ describe("generateSafeguardingPartnershipAriaInsights", () => {
     ];
     const metrics = computeSafeguardingPartnershipMetrics(rows);
     const alerts = computeSafeguardingPartnershipAlerts(rows);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("referrals have");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computeSafeguardingPartnershipMetrics([makeRow()]);
     const alerts = computeSafeguardingPartnershipAlerts([makeRow()]);
-    const insights = generateSafeguardingPartnershipAriaInsights(metrics, alerts);
+    const insights = generateSafeguardingPartnershipCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);

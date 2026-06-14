@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -163,12 +163,12 @@ export default function AfterCarePage() {
     <PageShell
       title="After-Care & Staying Close"
       subtitle="Post-placement support and outcomes tracking — Children Act 1989"
-      ariaContext={{ pageTitle: "After-Care & Staying Close", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "After-Care & Staying Close", sourceType: "child_record" }}
       actions={[
         <PrintButton key="p" title="After-Care & Staying Close" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="after-care" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />Add Record</Button>,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">

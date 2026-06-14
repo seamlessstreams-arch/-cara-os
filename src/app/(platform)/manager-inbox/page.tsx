@@ -44,7 +44,7 @@ export default function ManagerInboxPage() {
       subtitle="Everything that needs a human decision — approvals, safeguarding, high-risk and compliance — in one prioritised list, built from the event stream"
       icon={<Inbox className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Manager Action Inbox", sourceType: "general" }}
+      caraContext={{ pageTitle: "Manager Action Inbox", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="h-6 w-6 animate-spin text-[var(--cs-text-muted)]" /></div>

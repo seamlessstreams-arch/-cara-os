@@ -101,7 +101,7 @@ export default function HomeSummaryReportPage() {
     <PageShell
       title="Home Summary Report"
       subtitle={`${r?.period_label ?? ""} · ${r?.total_children ?? 0} children · ${r?.total_staff ?? 0} staff · shareable with the placing authority, board or a review`}
-      ariaContext={{ pageTitle: "Home Summary Report", sourceType: "general" }}
+      caraContext={{ pageTitle: "Home Summary Report", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button

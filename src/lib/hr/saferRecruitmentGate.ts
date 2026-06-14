@@ -80,7 +80,7 @@ export interface GateEvaluation {
   blockingReasons: string[];
   unmetChecks: CheckRowResult[];
   failedChecks: CheckRowResult[];
-  ariaLabel: "Cara suggested draft";
+  caraLabel: "Cara suggested draft";
   rationaleSummary: string;
   regulatoryLinks: string[];
 }
@@ -342,7 +342,7 @@ export function evaluateSaferRecruitmentGate(
     blockingReasons,
     unmetChecks,
     failedChecks,
-    ariaLabel: "Cara suggested draft",
+    caraLabel: "Cara suggested draft",
     rationaleSummary,
     regulatoryLinks: REGULATORY_LINKS,
   };

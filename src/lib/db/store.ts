@@ -31,10 +31,10 @@ import type { SignInVerification } from "@/lib/attendance/presence-verification"
 import type { EmergencyAlert } from "@/lib/staffing/emergency-types";
 import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
 import type { ReflectiveSupervisionRecord } from "@/lib/engines/supervision-engine";
-import type { IncidentSession, IncidentTimelineEntry, AriaRecordingReview, PromptBankEntry } from "@/lib/aria-incident/aria-incident-engine";
-import { defaultPromptBank } from "@/lib/aria-incident/aria-incident-engine";
-import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from "@/lib/aria-incident/post-incident-engine";
-import type { AlertStateRecord } from "@/lib/aria-incident/manager-oversight-engine";
+import type { IncidentSession, IncidentTimelineEntry, CaraRecordingReview, PromptBankEntry } from "@/lib/cara-incident/cara-incident-engine";
+import { defaultPromptBank } from "@/lib/cara-incident/cara-incident-engine";
+import type { RestorativeConversationRecord, PostIncidentReflectionRecord } from "@/lib/cara-incident/post-incident-engine";
+import type { AlertStateRecord } from "@/lib/cara-incident/manager-oversight-engine";
 import type { HqOrganisation, HqUsageEvent, HqAiUsageRow, HqBreakGlassGrant } from "@/lib/hq/hq-types";
 import { seedHqOrganisations, seedHqUsageEvents } from "@/lib/hq/hq-seeds";
 import type { CalendarEvent } from "@/lib/calendar/calendar-types";
@@ -410,15 +410,15 @@ import type {
 } from "@/types/care-events";
 import type { InspectionRecord } from "@/types/extended";
 import type {
-  AriaPracticeAssessment,
-  AriaDevelopmentalGapRecord,
-  AriaProtectiveFactorReview,
-  AriaRelationshipDepthReview,
-  AriaThresholdConsultation,
-  AriaStaffWellbeingSignal,
-  AriaPracticeFlag,
-  AriaGuidanceRule,
-} from "@/lib/aria-practice/types";
+  CaraPracticeAssessment,
+  CaraDevelopmentalGapRecord,
+  CaraProtectiveFactorReview,
+  CaraRelationshipDepthReview,
+  CaraThresholdConsultation,
+  CaraStaffWellbeingSignal,
+  CaraPracticeFlag,
+  CaraGuidanceRule,
+} from "@/lib/cara-practice/types";
 import type {
   WakeUpRoutine,
   OutcomeMeasure,
@@ -446,18 +446,18 @@ import {
   SEED_FILING_CABINET, SEED_SAVED_TIME_METRICS,
 } from "@/lib/seed-care-events";
 import type {
-  AriaArtifact, AriaSource, AriaArtifactVersion, AriaArtifactReview,
-  AriaArtifactAction, AriaQualityCheck, AriaGap, AriaStudioAuditLog,
-  AriaHomeDynamicsSnapshot,
-  AriaSafeguardingPattern, AriaEarlyWarning,
-  AriaCareGraphNode, AriaCareGraphEdge,
-  AriaFormulation, AriaDecisionRecommendation, AriaReg45EvidenceItem,
-  AriaAnnexASnapshot,
-  AriaReg45Report,
-  AriaSuggestedRecord,
-  AriaCommittedRecord,
-  AriaReg40Triage,
-} from "@/types/aria-studio";
+  CaraArtifact, CaraSource, CaraArtifactVersion, CaraArtifactReview,
+  CaraArtifactAction, CaraQualityCheck, CaraGap, CaraStudioAuditLog,
+  CaraHomeDynamicsSnapshot,
+  CaraSafeguardingPattern, CaraEarlyWarning,
+  CaraCareGraphNode, CaraCareGraphEdge,
+  CaraFormulation, CaraDecisionRecommendation, CaraReg45EvidenceItem,
+  CaraAnnexASnapshot,
+  CaraReg45Report,
+  CaraSuggestedRecord,
+  CaraCommittedRecord,
+  CaraReg40Triage,
+} from "@/types/cara-studio";
 
 // ── Persisted inspection snapshot envelope (M31) ─────────────────────────────
 // Self-contained immutable record. Payload is the full InspectionSnapshot
@@ -586,7 +586,7 @@ export interface ExportHistoryEntry {
  * non-sensitive commands, and bucketed by child so an answer is never served across
  * different children. (The intelligence chain: rules → this learned cache → Claude.)
  */
-export interface AriaCachedResponse {
+export interface CaraCachedResponse {
   id: string;
   /** Cara command this answer was produced for (the cache bucket). */
   command_id: string;
@@ -623,7 +623,7 @@ const store = {
   shifts: [...SHIFTS] as Shift[],
   signInVerifications: [] as SignInVerification[],
   emergencyAlerts: [] as EmergencyAlert[],
-  ariaResponseCache: [] as AriaCachedResponse[],
+  caraResponseCache: [] as CaraCachedResponse[],
   pushSubscriptions: [] as StoredPushSubscription[],
   medications: [...MEDICATIONS] as Medication[],
   medicationAdministrations: [] as MedicationAdministration[],
@@ -762,13 +762,13 @@ const store = {
   employerValuesProfiles: [] as EmployerValuesProfile[],
   candidateValuesProfiles: [] as CandidateValuesProfile[],
   reflectiveSupervisions: [] as ReflectiveSupervisionRecord[],
-  ariaIncidentSessions: [] as IncidentSession[],
-  ariaIncidentTimeline: [] as IncidentTimelineEntry[],
-  ariaRecordingReviews: [] as AriaRecordingReview[],
-  ariaRestorativeConversations: [] as RestorativeConversationRecord[],
-  ariaPostIncidentReflections: [] as PostIncidentReflectionRecord[],
-  ariaManagerAlertStates: [] as AlertStateRecord[],
-  ariaPromptBank: defaultPromptBank() as PromptBankEntry[],
+  caraIncidentSessions: [] as IncidentSession[],
+  caraIncidentTimeline: [] as IncidentTimelineEntry[],
+  caraRecordingReviews: [] as CaraRecordingReview[],
+  caraRestorativeConversations: [] as RestorativeConversationRecord[],
+  caraPostIncidentReflections: [] as PostIncidentReflectionRecord[],
+  caraManagerAlertStates: [] as AlertStateRecord[],
+  caraPromptBank: defaultPromptBank() as PromptBankEntry[],
   caraLearningProfiles: [] as CaraChildLearningProfile[],
   caraStudioOutputs: [] as CaraSavedOutput[],
   caraLibraryResources: [] as CaraLibraryResource[],
@@ -2653,7 +2653,7 @@ const store = {
   brandingAuditLog: [] as Array<Record<string, unknown>>,
 
   // ── Cara Studio ──────────────────────────────────────────────────────────────
-  ariaArtifacts: [
+  caraArtifacts: [
     {
       id: "art_demo_001",
       artifact_type: "keywork_session",
@@ -2777,37 +2777,37 @@ const store = {
       quality_checks_passed: false,
       amendment_reason: null,
     },
-  ] as AriaArtifact[],
-  ariaSources: [] as AriaSource[],
-  ariaArtifactVersions: [] as AriaArtifactVersion[],
-  ariaArtifactReviews: [] as AriaArtifactReview[],
-  ariaArtifactActions: [] as AriaArtifactAction[],
-  ariaQualityChecks: [] as AriaQualityCheck[],
-  ariaGaps: [] as AriaGap[],
-  ariaStudioAuditLog: [] as AriaStudioAuditLog[],
-  ariaHomeDynamicsSnapshots: [] as AriaHomeDynamicsSnapshot[],
-  ariaSafeguardingPatterns: [] as AriaSafeguardingPattern[],
-  ariaEarlyWarnings: [] as AriaEarlyWarning[],
-  ariaCareGraphNodes: [] as AriaCareGraphNode[],
-  ariaCareGraphEdges: [] as AriaCareGraphEdge[],
-  ariaFormulations: [] as AriaFormulation[],
-  ariaDecisionRecommendations: [] as AriaDecisionRecommendation[],
-  ariaReg45EvidenceItems: [] as AriaReg45EvidenceItem[],
-  ariaAnnexASnapshots: [] as AriaAnnexASnapshot[],
-  ariaReg45Reports: [] as AriaReg45Report[],
-  ariaSuggestedRecords: [] as AriaSuggestedRecord[],
-  ariaCommittedRecords: [] as AriaCommittedRecord[],
-  ariaReg40Triages: [] as AriaReg40Triage[],
+  ] as CaraArtifact[],
+  caraSources: [] as CaraSource[],
+  caraArtifactVersions: [] as CaraArtifactVersion[],
+  caraArtifactReviews: [] as CaraArtifactReview[],
+  caraArtifactActions: [] as CaraArtifactAction[],
+  caraQualityChecks: [] as CaraQualityCheck[],
+  caraGaps: [] as CaraGap[],
+  caraStudioAuditLog: [] as CaraStudioAuditLog[],
+  caraHomeDynamicsSnapshots: [] as CaraHomeDynamicsSnapshot[],
+  caraSafeguardingPatterns: [] as CaraSafeguardingPattern[],
+  caraEarlyWarnings: [] as CaraEarlyWarning[],
+  caraCareGraphNodes: [] as CaraCareGraphNode[],
+  caraCareGraphEdges: [] as CaraCareGraphEdge[],
+  caraFormulations: [] as CaraFormulation[],
+  caraDecisionRecommendations: [] as CaraDecisionRecommendation[],
+  caraReg45EvidenceItems: [] as CaraReg45EvidenceItem[],
+  caraAnnexASnapshots: [] as CaraAnnexASnapshot[],
+  caraReg45Reports: [] as CaraReg45Report[],
+  caraSuggestedRecords: [] as CaraSuggestedRecord[],
+  caraCommittedRecords: [] as CaraCommittedRecord[],
+  caraReg40Triages: [] as CaraReg40Triage[],
 
   // Cara Practice Intelligence
-  ariaPracticeAssessments: [] as AriaPracticeAssessment[],
-  ariaDevelopmentalGaps: [] as AriaDevelopmentalGapRecord[],
-  ariaProtectiveFactorReviews: [] as AriaProtectiveFactorReview[],
-  ariaRelationshipDepthReviews: [] as AriaRelationshipDepthReview[],
-  ariaThresholdConsultations: [] as AriaThresholdConsultation[],
-  ariaStaffWellbeingSignals: [] as AriaStaffWellbeingSignal[],
-  ariaPracticeFlags: [] as AriaPracticeFlag[],
-  ariaGuidanceRules: [] as AriaGuidanceRule[],
+  caraPracticeAssessments: [] as CaraPracticeAssessment[],
+  caraDevelopmentalGaps: [] as CaraDevelopmentalGapRecord[],
+  caraProtectiveFactorReviews: [] as CaraProtectiveFactorReview[],
+  caraRelationshipDepthReviews: [] as CaraRelationshipDepthReview[],
+  caraThresholdConsultations: [] as CaraThresholdConsultation[],
+  caraStaffWellbeingSignals: [] as CaraStaffWellbeingSignal[],
+  caraPracticeFlags: [] as CaraPracticeFlag[],
+  caraGuidanceRules: [] as CaraGuidanceRule[],
 
   // Shift Swap Requests
   shiftSwaps: [
@@ -3567,43 +3567,43 @@ store.candidateValuesProfiles = [
 // ais_demo_0: an earlier family-contact incident (record completed, but child's
 // voice + restorative follow-up missing) — lights up oversight alerts and, with
 // ais_demo_1, the family-contact pattern insight.
-const ariaIncDay0 = daysFromNow(-12);
-const ariaIncDay = daysFromNow(-2);
-store.ariaIncidentSessions = [
+const caraIncDay0 = daysFromNow(-12);
+const caraIncDay = daysFromNow(-2);
+store.caraIncidentSessions = [
   {
     id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", started_by_user_id: "staff_lackson",
-    started_at: ariaIncDay0 + "T20:15:00Z", ended_at: ariaIncDay0 + "T20:55:00Z",
+    started_at: caraIncDay0 + "T20:15:00Z", ended_at: caraIncDay0 + "T20:55:00Z",
     incident_type: "family_contact_distress", incident_status: "record_created", immediate_risk_level: "low",
-    manager_notified: true, manager_notified_at: ariaIncDay0 + "T20:25:00Z",
+    manager_notified: true, manager_notified_at: caraIncDay0 + "T20:25:00Z",
     ai_support_used: true, final_record_created: true,
     workflow_progress: { reassure: true, trigger: true },
-    created_at: ariaIncDay0 + "T20:15:00Z", updated_at: ariaIncDay0 + "T20:55:00Z",
+    created_at: caraIncDay0 + "T20:15:00Z", updated_at: caraIncDay0 + "T20:55:00Z",
   },
   {
     id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", started_by_user_id: "staff_edward",
-    started_at: ariaIncDay + "T19:42:00Z", ended_at: ariaIncDay + "T20:20:00Z",
+    started_at: caraIncDay + "T19:42:00Z", ended_at: caraIncDay + "T20:20:00Z",
     incident_type: "family_contact_distress", incident_status: "ended", immediate_risk_level: "medium",
-    manager_notified: true, manager_notified_at: ariaIncDay + "T19:50:00Z",
+    manager_notified: true, manager_notified_at: caraIncDay + "T19:50:00Z",
     ai_support_used: true, final_record_created: false,
     workflow_progress: { reassure: true, space: true, trigger: true, staff_response: true },
-    created_at: ariaIncDay + "T19:42:00Z", updated_at: ariaIncDay + "T20:20:00Z",
+    created_at: caraIncDay + "T19:42:00Z", updated_at: caraIncDay + "T20:20:00Z",
   },
 ];
-store.ariaIncidentTimeline = [
-  { id: "ait_d0a", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "observation", raw_text: "Alex became tearful and slammed his door after the phone call with his mum was cut short.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay0 + "T20:15:00Z", created_at: ariaIncDay0 + "T20:15:00Z" },
-  { id: "ait_d0b", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "staff_action", raw_text: "Staff gave space and checked in gently after ten minutes.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay0 + "T20:30:00Z", created_at: ariaIncDay0 + "T20:30:00Z" },
-  { id: "ait_d0c", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "manager_notification", raw_text: "Duty manager made aware.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay0 + "T20:25:00Z", created_at: ariaIncDay0 + "T20:25:00Z" },
-  { id: "ait_d1", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "observation", raw_text: "Young person became distressed after family phone contact.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:42:00Z", created_at: ariaIncDay + "T19:42:00Z" },
-  { id: "ait_d2", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "staff_action", raw_text: "Staff reduced demands and offered space.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:44:00Z", created_at: ariaIncDay + "T19:44:00Z" },
-  { id: "ait_d3", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "observation", raw_text: "Young person declined support but remained in the communal area.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:47:00Z", created_at: ariaIncDay + "T19:47:00Z" },
-  { id: "ait_d4", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "manager_notification", raw_text: "Duty manager made aware by phone.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:50:00Z", created_at: ariaIncDay + "T19:50:00Z" },
-  { id: "ait_d5", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "deescalation_attempt", raw_text: "Staff offered a drink and reassurance.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T19:52:00Z", created_at: ariaIncDay + "T19:52:00Z" },
-  { id: "ait_d6", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "child_voice", raw_text: "Alex said the call made him miss home and he didn't want to talk yet.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T20:05:00Z", created_at: ariaIncDay + "T20:05:00Z" },
-  { id: "ait_d7", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "restorative_action", raw_text: "Restorative conversation planned with trusted staff member once settled.", ai_rewritten_text: null, accepted_text: null, timestamp: ariaIncDay + "T20:20:00Z", created_at: ariaIncDay + "T20:20:00Z" },
+store.caraIncidentTimeline = [
+  { id: "ait_d0a", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "observation", raw_text: "Alex became tearful and slammed his door after the phone call with his mum was cut short.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay0 + "T20:15:00Z", created_at: caraIncDay0 + "T20:15:00Z" },
+  { id: "ait_d0b", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "staff_action", raw_text: "Staff gave space and checked in gently after ten minutes.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay0 + "T20:30:00Z", created_at: caraIncDay0 + "T20:30:00Z" },
+  { id: "ait_d0c", incident_session_id: "ais_demo_0", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_lackson", entry_type: "manager_notification", raw_text: "Duty manager made aware.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay0 + "T20:25:00Z", created_at: caraIncDay0 + "T20:25:00Z" },
+  { id: "ait_d1", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "observation", raw_text: "Young person became distressed after family phone contact.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay + "T19:42:00Z", created_at: caraIncDay + "T19:42:00Z" },
+  { id: "ait_d2", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "staff_action", raw_text: "Staff reduced demands and offered space.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay + "T19:44:00Z", created_at: caraIncDay + "T19:44:00Z" },
+  { id: "ait_d3", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "observation", raw_text: "Young person declined support but remained in the communal area.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay + "T19:47:00Z", created_at: caraIncDay + "T19:47:00Z" },
+  { id: "ait_d4", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "manager_notification", raw_text: "Duty manager made aware by phone.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay + "T19:50:00Z", created_at: caraIncDay + "T19:50:00Z" },
+  { id: "ait_d5", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "deescalation_attempt", raw_text: "Staff offered a drink and reassurance.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay + "T19:52:00Z", created_at: caraIncDay + "T19:52:00Z" },
+  { id: "ait_d6", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "child_voice", raw_text: "Alex said the call made him miss home and he didn't want to talk yet.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay + "T20:05:00Z", created_at: caraIncDay + "T20:05:00Z" },
+  { id: "ait_d7", incident_session_id: "ais_demo_1", home_id: "home_oak", child_id: "yp_alex", user_id: "staff_edward", entry_type: "restorative_action", raw_text: "Restorative conversation planned with trusted staff member once settled.", ai_rewritten_text: null, accepted_text: null, timestamp: caraIncDay + "T20:20:00Z", created_at: caraIncDay + "T20:20:00Z" },
 ];
 
 // ── Restorative conversation completed for the demo incident session ──────────
-store.ariaRestorativeConversations = [
+store.caraRestorativeConversations = [
   {
     id: "arc_demo_1", home_id: "home_oak", child_id: "yp_alex", incident_session_id: "ais_demo_1",
     completed_by_user_id: "staff_edward", conversation_date: daysFromNow(-1),
@@ -6690,29 +6690,29 @@ const additionalDailyLogs: DailyLogEntry[] = [
 store.dailyLog.push(...additionalDailyLogs);
 
 // ── Cara Practice Intelligence — demo signals (so the dashboard renders cards) ──
-const ariaPracticeSeedAt = new Date().toISOString();
-store.ariaPracticeFlags = [
-  { id: "apf_seed_1", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: "log_120", flag_type: "activity_over_impact", severity: "medium", title: "Activity recorded, but child impact not yet evidenced", description: "The record shows activity took place but does not evidence what changed in the child's lived experience.", evidence: "completed key work; engaged well; no concerns", recommended_action: "Add what the child said, showed or felt, and what is now different for the child.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_2", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: "log_120", flag_type: "vague_recording", severity: "medium", title: "Vague recording — limited child-centred detail", description: "Reassurance language is used without evidence of impact or the child's voice.", evidence: "engaged well; no concerns", recommended_action: "Replace reassurance with specifics: what happened and what the child experienced.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_3", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "care_plan", source_id: null, flag_type: "vague_recording", severity: "medium", title: "Vague recording — limited child-centred detail", description: "Settled / no concerns recorded without analysis.", evidence: "settled; no concerns", recommended_action: "Record what the child said, showed, feared or avoided.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_4", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: null, flag_type: "vague_recording", severity: "medium", title: "Vague recording — limited child-centred detail", description: "Compliant / settled recorded without the child's experience.", evidence: "compliant; settled", recommended_action: "Describe the child's lived experience, not adult engagement.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_5", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "care_plan", source_id: null, flag_type: "developmental_gap", severity: "high", title: "Developmental gap detected (stability, belonging, emotional security)", description: "The plan describes domains of childhood that are missing or insufficient.", evidence: "stability; belonging; emotional security", recommended_action: "Add owned plan actions that close each gap and define what will be different for the child.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_6", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "risk_assessment", source_id: null, flag_type: "overstated_protective_factor", severity: "medium", title: "Possible overstated protective factor", description: "Mum attends meetings — needs strengthening into a real protective factor.", evidence: "attends meetings; engages with professionals", recommended_action: "Test what harm it reduces, reliability under stress, and strength for the current risk.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_7", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "safeguarding_concern", source_id: null, flag_type: "safeguarding_threshold", severity: "high", title: "Possible safeguarding threshold concern", description: "Disclosure / harm language that may meet a safeguarding threshold. Manager review advised.", evidence: "disclosed; scared", recommended_action: "Manager to complete a threshold consultation and consider a strategy discussion.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_8", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "key_work", source_id: null, flag_type: "relationship_depth", severity: "low", title: "Relationship at Interaction stage", description: "The record describes contact. Cara does not assume this is trust; emotional safety is not yet evidenced.", evidence: "Interaction — “I speak with you.”", recommended_action: "Move from contact toward cooperation and notice what the child allows the adult to see.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_9", tenant_id: null, child_id: null, staff_id: "staff_ryan", home_id: "home_oak", source_type: "supervision", source_id: null, flag_type: "staff_wellbeing", severity: "medium", title: "Staff wellbeing signal — offer support", description: "Wellbeing signals are present. Support indicators, not disciplinary evidence.", evidence: "overwhelmed; drained", recommended_action: "Offer reflective supervision and a wellbeing check-in; review workload.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_10", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: null, flag_type: "extra_familial_harm", severity: "high", title: "Possible extra-familial harm — apply the contextual-safeguarding lens", description: "The record mentions risks that may sit in a context beyond the home (peer networks, neighbourhood). Assess and disrupt the context, not the child; survival strategies are constrained choices to understand, not grounds to criminalise. Cara advises; the manager decides on screening or referral.", evidence: "older associates; out of area", recommended_action: "Record where harm is happening (locations, peers, online), consider exploitation screening, and whether the manager should make a contextual or multi-agency referral. Keep child-level data out of context-sharing with non-traditional partners.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
-  { id: "apf_seed_11", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: null, flag_type: "nrm_consideration", severity: "high", title: "Consider a National Referral Mechanism (NRM) referral", description: "Possible modern-slavery / trafficking indicators (criminal exploitation, debt). A child who is exploited is a victim, not an offender (Section 45 may apply). No consent is needed to refer a child. The manager / DSL should consider whether an NRM referral is required, alongside the usual safeguarding referrals.", evidence: "county line; owes a debt", recommended_action: "Manager / DSL to consider an NRM referral for suspected modern slavery or trafficking — Cara advises, the manager decides. Recognise the child as a victim and guard against adultification bias.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: ariaPracticeSeedAt, resolved_at: null },
+const caraPracticeSeedAt = new Date().toISOString();
+store.caraPracticeFlags = [
+  { id: "apf_seed_1", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: "log_120", flag_type: "activity_over_impact", severity: "medium", title: "Activity recorded, but child impact not yet evidenced", description: "The record shows activity took place but does not evidence what changed in the child's lived experience.", evidence: "completed key work; engaged well; no concerns", recommended_action: "Add what the child said, showed or felt, and what is now different for the child.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_2", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: "log_120", flag_type: "vague_recording", severity: "medium", title: "Vague recording — limited child-centred detail", description: "Reassurance language is used without evidence of impact or the child's voice.", evidence: "engaged well; no concerns", recommended_action: "Replace reassurance with specifics: what happened and what the child experienced.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_3", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "care_plan", source_id: null, flag_type: "vague_recording", severity: "medium", title: "Vague recording — limited child-centred detail", description: "Settled / no concerns recorded without analysis.", evidence: "settled; no concerns", recommended_action: "Record what the child said, showed, feared or avoided.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_4", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: null, flag_type: "vague_recording", severity: "medium", title: "Vague recording — limited child-centred detail", description: "Compliant / settled recorded without the child's experience.", evidence: "compliant; settled", recommended_action: "Describe the child's lived experience, not adult engagement.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_5", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "care_plan", source_id: null, flag_type: "developmental_gap", severity: "high", title: "Developmental gap detected (stability, belonging, emotional security)", description: "The plan describes domains of childhood that are missing or insufficient.", evidence: "stability; belonging; emotional security", recommended_action: "Add owned plan actions that close each gap and define what will be different for the child.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_6", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "risk_assessment", source_id: null, flag_type: "overstated_protective_factor", severity: "medium", title: "Possible overstated protective factor", description: "Mum attends meetings — needs strengthening into a real protective factor.", evidence: "attends meetings; engages with professionals", recommended_action: "Test what harm it reduces, reliability under stress, and strength for the current risk.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_7", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "safeguarding_concern", source_id: null, flag_type: "safeguarding_threshold", severity: "high", title: "Possible safeguarding threshold concern", description: "Disclosure / harm language that may meet a safeguarding threshold. Manager review advised.", evidence: "disclosed; scared", recommended_action: "Manager to complete a threshold consultation and consider a strategy discussion.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_8", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "key_work", source_id: null, flag_type: "relationship_depth", severity: "low", title: "Relationship at Interaction stage", description: "The record describes contact. Cara does not assume this is trust; emotional safety is not yet evidenced.", evidence: "Interaction — “I speak with you.”", recommended_action: "Move from contact toward cooperation and notice what the child allows the adult to see.", requires_manager_review: false, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_9", tenant_id: null, child_id: null, staff_id: "staff_ryan", home_id: "home_oak", source_type: "supervision", source_id: null, flag_type: "staff_wellbeing", severity: "medium", title: "Staff wellbeing signal — offer support", description: "Wellbeing signals are present. Support indicators, not disciplinary evidence.", evidence: "overwhelmed; drained", recommended_action: "Offer reflective supervision and a wellbeing check-in; review workload.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_10", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: null, flag_type: "extra_familial_harm", severity: "high", title: "Possible extra-familial harm — apply the contextual-safeguarding lens", description: "The record mentions risks that may sit in a context beyond the home (peer networks, neighbourhood). Assess and disrupt the context, not the child; survival strategies are constrained choices to understand, not grounds to criminalise. Cara advises; the manager decides on screening or referral.", evidence: "older associates; out of area", recommended_action: "Record where harm is happening (locations, peers, online), consider exploitation screening, and whether the manager should make a contextual or multi-agency referral. Keep child-level data out of context-sharing with non-traditional partners.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
+  { id: "apf_seed_11", tenant_id: null, child_id: "yp_jordan", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: null, flag_type: "nrm_consideration", severity: "high", title: "Consider a National Referral Mechanism (NRM) referral", description: "Possible modern-slavery / trafficking indicators (criminal exploitation, debt). A child who is exploited is a victim, not an offender (Section 45 may apply). No consent is needed to refer a child. The manager / DSL should consider whether an NRM referral is required, alongside the usual safeguarding referrals.", evidence: "county line; owes a debt", recommended_action: "Manager / DSL to consider an NRM referral for suspected modern slavery or trafficking — Cara advises, the manager decides. Recognise the child as a victim and guard against adultification bias.", requires_manager_review: true, requires_ri_review: false, resolved: false, created_at: caraPracticeSeedAt, resolved_at: null },
 ];
-store.ariaThresholdConsultations = [
-  { id: "atc_seed_1", tenant_id: null, child_id: "yp_jordan", concern_type: "safeguarding", source_type: "safeguarding_concern", source_id: null, child_lived_experience: "Jordan describes feeling unsafe and unheard at home.", evidence_and_harm_analysis: "Disclosure of harm; corroborating low mood recorded over two weeks.", family_functioning_parental_capacity: "Manager to complete — parental capacity assessment outstanding.", threshold_and_escalation_analysis: "Concern may meet threshold; structured consultation required.", decision_rationale: "Manager to complete — Cara does not make the statutory decision.", recommended_next_step: "Complete a threshold consultation and consider a strategy discussion.", reasonable_cause_to_suspect_significant_harm: null, strategy_discussion_recommended: true, lado_consultation_recommended: false, emergency_action_recommended: false, aria_summary: "Possible safeguarding threshold concern — manager review advised.", manager_decision: null, manager_rationale: null, created_by: "staff_darren", created_at: ariaPracticeSeedAt },
+store.caraThresholdConsultations = [
+  { id: "atc_seed_1", tenant_id: null, child_id: "yp_jordan", concern_type: "safeguarding", source_type: "safeguarding_concern", source_id: null, child_lived_experience: "Jordan describes feeling unsafe and unheard at home.", evidence_and_harm_analysis: "Disclosure of harm; corroborating low mood recorded over two weeks.", family_functioning_parental_capacity: "Manager to complete — parental capacity assessment outstanding.", threshold_and_escalation_analysis: "Concern may meet threshold; structured consultation required.", decision_rationale: "Manager to complete — Cara does not make the statutory decision.", recommended_next_step: "Complete a threshold consultation and consider a strategy discussion.", reasonable_cause_to_suspect_significant_harm: null, strategy_discussion_recommended: true, lado_consultation_recommended: false, emergency_action_recommended: false, aria_summary: "Possible safeguarding threshold concern — manager review advised.", manager_decision: null, manager_rationale: null, created_by: "staff_darren", created_at: caraPracticeSeedAt },
 ];
-store.ariaStaffWellbeingSignals = [
-  { id: "aws_seed_1", tenant_id: null, staff_id: "staff_ryan", home_id: "home_oak", signal_type: "burnout", signal_source: "supervision", severity: "medium", evidence: "Reported feeling overwhelmed and emotionally drained over recent shifts.", support_recommendation: "Reflective supervision, wellbeing check-in, and a workload/rota review.", manager_action: null, resolved: false, created_at: ariaPracticeSeedAt },
+store.caraStaffWellbeingSignals = [
+  { id: "aws_seed_1", tenant_id: null, staff_id: "staff_ryan", home_id: "home_oak", signal_type: "burnout", signal_source: "supervision", severity: "medium", evidence: "Reported feeling overwhelmed and emotionally drained over recent shifts.", support_recommendation: "Reflective supervision, wellbeing check-in, and a workload/rota review.", manager_action: null, resolved: false, created_at: caraPracticeSeedAt },
 ];
-store.ariaPracticeAssessments = [
-  { id: "apa_seed_1", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: "log_120", assessment_type: "practice_quality", status: "open", created_by: "staff_anna", created_at: ariaPracticeSeedAt, updated_at: ariaPracticeSeedAt, developmental_gap_score: 100, child_lived_experience_score: 35, protective_factor_score: 100, relationship_depth_score: 28, safeguarding_threshold_score: 100, supervision_quality_score: 55, workforce_wellbeing_score: 100, overall_practice_quality_score: 55, summary: "Activity recorded without evidencing child impact.", aria_advice: [], aria_flags: [], aria_recommendations: [], aria_questions: [], aria_draft_output: null, reviewer_id: null, reviewed_at: null, manager_decision: null, manager_rationale: null },
-  { id: "apa_seed_2", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "key_work", source_id: null, assessment_type: "practice_quality", status: "open", created_by: "staff_chervelle", created_at: ariaPracticeSeedAt, updated_at: ariaPracticeSeedAt, developmental_gap_score: 78, child_lived_experience_score: 90, protective_factor_score: 100, relationship_depth_score: 64, safeguarding_threshold_score: 100, supervision_quality_score: 72, workforce_wellbeing_score: 100, overall_practice_quality_score: 72, summary: "Strong child-centred record evidencing what changed for the child.", aria_advice: [], aria_flags: [], aria_recommendations: [], aria_questions: [], aria_draft_output: null, reviewer_id: null, reviewed_at: null, manager_decision: null, manager_rationale: null },
+store.caraPracticeAssessments = [
+  { id: "apa_seed_1", tenant_id: null, child_id: "yp_alex", staff_id: null, home_id: "home_oak", source_type: "daily_record", source_id: "log_120", assessment_type: "practice_quality", status: "open", created_by: "staff_anna", created_at: caraPracticeSeedAt, updated_at: caraPracticeSeedAt, developmental_gap_score: 100, child_lived_experience_score: 35, protective_factor_score: 100, relationship_depth_score: 28, safeguarding_threshold_score: 100, supervision_quality_score: 55, workforce_wellbeing_score: 100, overall_practice_quality_score: 55, summary: "Activity recorded without evidencing child impact.", aria_advice: [], aria_flags: [], aria_recommendations: [], aria_questions: [], aria_draft_output: null, reviewer_id: null, reviewed_at: null, manager_decision: null, manager_rationale: null },
+  { id: "apa_seed_2", tenant_id: null, child_id: "yp_casey", staff_id: null, home_id: "home_oak", source_type: "key_work", source_id: null, assessment_type: "practice_quality", status: "open", created_by: "staff_chervelle", created_at: caraPracticeSeedAt, updated_at: caraPracticeSeedAt, developmental_gap_score: 78, child_lived_experience_score: 90, protective_factor_score: 100, relationship_depth_score: 64, safeguarding_threshold_score: 100, supervision_quality_score: 72, workforce_wellbeing_score: 100, overall_practice_quality_score: 72, summary: "Strong child-centred record evidencing what changed for the child.", aria_advice: [], aria_flags: [], aria_recommendations: [], aria_questions: [], aria_draft_output: null, reviewer_id: null, reviewed_at: null, manager_decision: null, manager_rationale: null },
 ];
 
 // ── Outcome Star assessments (seed) ───────────────────────────────────────────
@@ -11479,28 +11479,28 @@ export const db = {
   },
 
   // ── Cara learned-answer cache (rules → cache → Claude) ──────────────────────
-  ariaResponseCache: {
-    findAll: (): AriaCachedResponse[] => store.ariaResponseCache,
-    findByBucket: (commandId: string, childId: string | null): AriaCachedResponse[] =>
-      store.ariaResponseCache.filter(
+  caraResponseCache: {
+    findAll: (): CaraCachedResponse[] => store.caraResponseCache,
+    findByBucket: (commandId: string, childId: string | null): CaraCachedResponse[] =>
+      store.caraResponseCache.filter(
         (r) => r.command_id === commandId && r.child_id === (childId ?? null),
       ),
     create: (
-      data: Omit<AriaCachedResponse, "id" | "created_at" | "last_used_at" | "hit_count">,
-    ): AriaCachedResponse => {
+      data: Omit<CaraCachedResponse, "id" | "created_at" | "last_used_at" | "hit_count">,
+    ): CaraCachedResponse => {
       const now = new Date().toISOString();
-      const rec: AriaCachedResponse = {
+      const rec: CaraCachedResponse = {
         ...data,
         id: generateId("arc"),
         hit_count: 0,
         created_at: now,
         last_used_at: now,
       };
-      store.ariaResponseCache.push(rec);
+      store.caraResponseCache.push(rec);
       return rec;
     },
     recordHit: (id: string): void => {
-      const rec = store.ariaResponseCache.find((r) => r.id === id);
+      const rec = store.caraResponseCache.find((r) => r.id === id);
       if (rec) {
         rec.hit_count += 1;
         rec.last_used_at = new Date().toISOString();
@@ -18856,39 +18856,39 @@ export const db = {
   },
 
   // ── Cara Studio ───────────────────────────────────────────────────────────────
-  ariaArtifacts: {
+  caraArtifacts: {
     findAll: (homeId?: string) =>
-      homeId ? store.ariaArtifacts.filter((a) => a.home_id === homeId) : store.ariaArtifacts,
-    findById: (id: string) => store.ariaArtifacts.find((a) => a.id === id) ?? null,
-    findByChild: (childId: string) => store.ariaArtifacts.filter((a) => a.child_id === childId),
+      homeId ? store.caraArtifacts.filter((a) => a.home_id === homeId) : store.caraArtifacts,
+    findById: (id: string) => store.caraArtifacts.find((a) => a.id === id) ?? null,
+    findByChild: (childId: string) => store.caraArtifacts.filter((a) => a.child_id === childId),
     findByStatus: (status: string, homeId?: string) => {
-      let items = store.ariaArtifacts.filter((a) => a.status === status);
+      let items = store.caraArtifacts.filter((a) => a.status === status);
       if (homeId) items = items.filter((a) => a.home_id === homeId);
       return items;
     },
     findByType: (type: string, homeId?: string) => {
-      let items = store.ariaArtifacts.filter((a) => a.artifact_type === type);
+      let items = store.caraArtifacts.filter((a) => a.artifact_type === type);
       if (homeId) items = items.filter((a) => a.home_id === homeId);
       return items;
     },
-    create: (data: Omit<AriaArtifact, "id" | "created_at">): AriaArtifact => {
+    create: (data: Omit<CaraArtifact, "id" | "created_at">): CaraArtifact => {
       const now = new Date().toISOString();
-      const artifact: AriaArtifact = {
+      const artifact: CaraArtifact = {
         ...data,
         id: generateId("art"),
         created_at: now,
       };
-      store.ariaArtifacts.push(artifact);
+      store.caraArtifacts.push(artifact);
       return artifact;
     },
-    patch: (id: string, data: Partial<AriaArtifact>): AriaArtifact | null => {
-      const idx = store.ariaArtifacts.findIndex((a) => a.id === id);
+    patch: (id: string, data: Partial<CaraArtifact>): CaraArtifact | null => {
+      const idx = store.caraArtifacts.findIndex((a) => a.id === id);
       if (idx === -1) return null;
-      store.ariaArtifacts[idx] = { ...store.ariaArtifacts[idx], ...data };
-      return store.ariaArtifacts[idx];
+      store.caraArtifacts[idx] = { ...store.caraArtifacts[idx], ...data };
+      return store.caraArtifacts[idx];
     },
     stats: (homeId: string) => {
-      const items = store.ariaArtifacts.filter((a) => a.home_id === homeId);
+      const items = store.caraArtifacts.filter((a) => a.home_id === homeId);
       return {
         total: items.length,
         draft: items.filter((a) => a.status === "draft").length,
@@ -18898,561 +18898,561 @@ export const db = {
       };
     },
   },
-  ariaSources: {
+  caraSources: {
     findAll: (homeId?: string) =>
-      homeId ? store.ariaSources.filter((s) => s.home_id === homeId) : store.ariaSources,
-    findById: (id: string) => store.ariaSources.find((s) => s.id === id) ?? null,
-    findByChild: (childId: string) => store.ariaSources.filter((s) => s.child_id === childId),
-    findByIds: (ids: string[]) => store.ariaSources.filter((s) => ids.includes(s.id)),
-    create: (data: Omit<AriaSource, "id" | "created_at" | "updated_at">): AriaSource => {
+      homeId ? store.caraSources.filter((s) => s.home_id === homeId) : store.caraSources,
+    findById: (id: string) => store.caraSources.find((s) => s.id === id) ?? null,
+    findByChild: (childId: string) => store.caraSources.filter((s) => s.child_id === childId),
+    findByIds: (ids: string[]) => store.caraSources.filter((s) => ids.includes(s.id)),
+    create: (data: Omit<CaraSource, "id" | "created_at" | "updated_at">): CaraSource => {
       const now = new Date().toISOString();
-      const source: AriaSource = { ...data, id: generateId("src"), created_at: now, updated_at: now };
-      store.ariaSources.push(source);
+      const source: CaraSource = { ...data, id: generateId("src"), created_at: now, updated_at: now };
+      store.caraSources.push(source);
       return source;
     },
-    patch: (id: string, data: Partial<AriaSource>): AriaSource | null => {
-      const idx = store.ariaSources.findIndex((s) => s.id === id);
+    patch: (id: string, data: Partial<CaraSource>): CaraSource | null => {
+      const idx = store.caraSources.findIndex((s) => s.id === id);
       if (idx === -1) return null;
-      store.ariaSources[idx] = { ...store.ariaSources[idx], ...data, updated_at: new Date().toISOString() };
-      return store.ariaSources[idx];
+      store.caraSources[idx] = { ...store.caraSources[idx], ...data, updated_at: new Date().toISOString() };
+      return store.caraSources[idx];
     },
   },
-  ariaArtifactVersions: {
+  caraArtifactVersions: {
     findByArtifact: (artifactId: string) =>
-      store.ariaArtifactVersions.filter((v) => v.artifact_id === artifactId)
+      store.caraArtifactVersions.filter((v) => v.artifact_id === artifactId)
         .sort((a, b) => b.version_number - a.version_number),
-    create: (data: Omit<AriaArtifactVersion, "id">): AriaArtifactVersion => {
-      const version: AriaArtifactVersion = { ...data, id: generateId("av") };
-      store.ariaArtifactVersions.push(version);
+    create: (data: Omit<CaraArtifactVersion, "id">): CaraArtifactVersion => {
+      const version: CaraArtifactVersion = { ...data, id: generateId("av") };
+      store.caraArtifactVersions.push(version);
       return version;
     },
   },
-  ariaArtifactReviews: {
+  caraArtifactReviews: {
     findByArtifact: (artifactId: string) =>
-      store.ariaArtifactReviews.filter((r) => r.artifact_id === artifactId),
-    create: (data: Omit<AriaArtifactReview, "id" | "created_at">): AriaArtifactReview => {
-      const review: AriaArtifactReview = { ...data, id: generateId("rev"), created_at: new Date().toISOString() };
-      store.ariaArtifactReviews.push(review);
+      store.caraArtifactReviews.filter((r) => r.artifact_id === artifactId),
+    create: (data: Omit<CaraArtifactReview, "id" | "created_at">): CaraArtifactReview => {
+      const review: CaraArtifactReview = { ...data, id: generateId("rev"), created_at: new Date().toISOString() };
+      store.caraArtifactReviews.push(review);
       return review;
     },
   },
-  ariaArtifactActions: {
+  caraArtifactActions: {
     findByArtifact: (artifactId: string) =>
-      store.ariaArtifactActions.filter((a) => a.artifact_id === artifactId),
-    create: (data: Omit<AriaArtifactAction, "id" | "created_at">): AriaArtifactAction => {
-      const action: AriaArtifactAction = { ...data, id: generateId("aac"), created_at: new Date().toISOString() };
-      store.ariaArtifactActions.push(action);
+      store.caraArtifactActions.filter((a) => a.artifact_id === artifactId),
+    create: (data: Omit<CaraArtifactAction, "id" | "created_at">): CaraArtifactAction => {
+      const action: CaraArtifactAction = { ...data, id: generateId("aac"), created_at: new Date().toISOString() };
+      store.caraArtifactActions.push(action);
       return action;
     },
-    patch: (id: string, data: Partial<AriaArtifactAction>): AriaArtifactAction | null => {
-      const idx = store.ariaArtifactActions.findIndex((a) => a.id === id);
+    patch: (id: string, data: Partial<CaraArtifactAction>): CaraArtifactAction | null => {
+      const idx = store.caraArtifactActions.findIndex((a) => a.id === id);
       if (idx === -1) return null;
-      store.ariaArtifactActions[idx] = { ...store.ariaArtifactActions[idx], ...data };
-      return store.ariaArtifactActions[idx];
+      store.caraArtifactActions[idx] = { ...store.caraArtifactActions[idx], ...data };
+      return store.caraArtifactActions[idx];
     },
   },
-  ariaQualityChecks: {
+  caraQualityChecks: {
     findByArtifact: (artifactId: string) =>
-      store.ariaQualityChecks.filter((q) => q.artifact_id === artifactId),
+      store.caraQualityChecks.filter((q) => q.artifact_id === artifactId),
     findLatestByArtifact: (artifactId: string) =>
-      store.ariaQualityChecks.filter((q) => q.artifact_id === artifactId)
+      store.caraQualityChecks.filter((q) => q.artifact_id === artifactId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at))[0] ?? null,
-    create: (data: Omit<AriaQualityCheck, "id" | "created_at">): AriaQualityCheck => {
-      const check: AriaQualityCheck = { ...data, id: generateId("qc"), created_at: new Date().toISOString() };
-      store.ariaQualityChecks.push(check);
+    create: (data: Omit<CaraQualityCheck, "id" | "created_at">): CaraQualityCheck => {
+      const check: CaraQualityCheck = { ...data, id: generateId("qc"), created_at: new Date().toISOString() };
+      store.caraQualityChecks.push(check);
       return check;
     },
   },
-  ariaGaps: {
+  caraGaps: {
     findAll: (homeId?: string) =>
-      homeId ? store.ariaGaps.filter((g) => g.home_id === homeId) : store.ariaGaps,
-    findByChild: (childId: string) => store.ariaGaps.filter((g) => g.child_id === childId),
+      homeId ? store.caraGaps.filter((g) => g.home_id === homeId) : store.caraGaps,
+    findByChild: (childId: string) => store.caraGaps.filter((g) => g.child_id === childId),
     findOpen: (homeId: string) =>
-      store.ariaGaps.filter((g) => g.home_id === homeId && g.status === "open"),
-    create: (data: Omit<AriaGap, "id" | "created_at">): AriaGap => {
-      const gap: AriaGap = { ...data, id: generateId("gap"), created_at: new Date().toISOString() };
-      store.ariaGaps.push(gap);
+      store.caraGaps.filter((g) => g.home_id === homeId && g.status === "open"),
+    create: (data: Omit<CaraGap, "id" | "created_at">): CaraGap => {
+      const gap: CaraGap = { ...data, id: generateId("gap"), created_at: new Date().toISOString() };
+      store.caraGaps.push(gap);
       return gap;
     },
-    patch: (id: string, data: Partial<AriaGap>): AriaGap | null => {
-      const idx = store.ariaGaps.findIndex((g) => g.id === id);
+    patch: (id: string, data: Partial<CaraGap>): CaraGap | null => {
+      const idx = store.caraGaps.findIndex((g) => g.id === id);
       if (idx === -1) return null;
-      store.ariaGaps[idx] = { ...store.ariaGaps[idx], ...data };
-      return store.ariaGaps[idx];
+      store.caraGaps[idx] = { ...store.caraGaps[idx], ...data };
+      return store.caraGaps[idx];
     },
   },
-  ariaStudioAuditLog: {
+  caraStudioAuditLog: {
     findAll: (homeId?: string) =>
-      homeId ? store.ariaStudioAuditLog.filter((l) => l.home_id === homeId) : store.ariaStudioAuditLog,
+      homeId ? store.caraStudioAuditLog.filter((l) => l.home_id === homeId) : store.caraStudioAuditLog,
     findByArtifact: (artifactId: string) =>
-      store.ariaStudioAuditLog.filter((l) => l.artifact_id === artifactId),
-    create: (data: Omit<AriaStudioAuditLog, "id" | "created_at">): AriaStudioAuditLog => {
-      const entry: AriaStudioAuditLog = { ...data, id: generateId("aal"), created_at: new Date().toISOString() };
-      store.ariaStudioAuditLog.push(entry);
+      store.caraStudioAuditLog.filter((l) => l.artifact_id === artifactId),
+    create: (data: Omit<CaraStudioAuditLog, "id" | "created_at">): CaraStudioAuditLog => {
+      const entry: CaraStudioAuditLog = { ...data, id: generateId("aal"), created_at: new Date().toISOString() };
+      store.caraStudioAuditLog.push(entry);
       return entry;
     },
   },
-  ariaHomeDynamicsSnapshots: {
+  caraHomeDynamicsSnapshots: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaHomeDynamicsSnapshots.filter((s) => s.home_id === homeId)
-        : store.ariaHomeDynamicsSnapshots,
-    findById: (id: string) => store.ariaHomeDynamicsSnapshots.find((s) => s.id === id),
+        ? store.caraHomeDynamicsSnapshots.filter((s) => s.home_id === homeId)
+        : store.caraHomeDynamicsSnapshots,
+    findById: (id: string) => store.caraHomeDynamicsSnapshots.find((s) => s.id === id),
     latestForHome: (homeId: string) => {
-      const list = store.ariaHomeDynamicsSnapshots
+      const list = store.caraHomeDynamicsSnapshots
         .filter((s) => s.home_id === homeId)
         .sort((a, b) => b.generated_at.localeCompare(a.generated_at));
       return list[0] ?? null;
     },
-    create: (data: Omit<AriaHomeDynamicsSnapshot, "id">): AriaHomeDynamicsSnapshot => {
-      const snap: AriaHomeDynamicsSnapshot = { ...data, id: generateId("hds") };
-      store.ariaHomeDynamicsSnapshots.push(snap);
+    create: (data: Omit<CaraHomeDynamicsSnapshot, "id">): CaraHomeDynamicsSnapshot => {
+      const snap: CaraHomeDynamicsSnapshot = { ...data, id: generateId("hds") };
+      store.caraHomeDynamicsSnapshots.push(snap);
       return snap;
     },
   },
-  ariaSafeguardingPatterns: {
+  caraSafeguardingPatterns: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaSafeguardingPatterns.filter((p) => p.home_id === homeId)
-        : store.ariaSafeguardingPatterns,
-    findById: (id: string) => store.ariaSafeguardingPatterns.find((p) => p.id === id),
+        ? store.caraSafeguardingPatterns.filter((p) => p.home_id === homeId)
+        : store.caraSafeguardingPatterns,
+    findById: (id: string) => store.caraSafeguardingPatterns.find((p) => p.id === id),
     findOpen: (homeId: string) =>
-      store.ariaSafeguardingPatterns.filter(
+      store.caraSafeguardingPatterns.filter(
         (p) => p.home_id === homeId && p.status === "open",
       ),
-    create: (data: Omit<AriaSafeguardingPattern, "id">): AriaSafeguardingPattern => {
-      const rec: AriaSafeguardingPattern = { ...data, id: generateId("sgp") };
-      store.ariaSafeguardingPatterns.push(rec);
+    create: (data: Omit<CaraSafeguardingPattern, "id">): CaraSafeguardingPattern => {
+      const rec: CaraSafeguardingPattern = { ...data, id: generateId("sgp") };
+      store.caraSafeguardingPatterns.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaSafeguardingPattern>): AriaSafeguardingPattern | null => {
-      const idx = store.ariaSafeguardingPatterns.findIndex((p) => p.id === id);
+    patch: (id: string, data: Partial<CaraSafeguardingPattern>): CaraSafeguardingPattern | null => {
+      const idx = store.caraSafeguardingPatterns.findIndex((p) => p.id === id);
       if (idx === -1) return null;
-      store.ariaSafeguardingPatterns[idx] = { ...store.ariaSafeguardingPatterns[idx], ...data };
-      return store.ariaSafeguardingPatterns[idx];
+      store.caraSafeguardingPatterns[idx] = { ...store.caraSafeguardingPatterns[idx], ...data };
+      return store.caraSafeguardingPatterns[idx];
     },
   },
-  ariaEarlyWarnings: {
+  caraEarlyWarnings: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaEarlyWarnings.filter((w) => w.home_id === homeId)
-        : store.ariaEarlyWarnings,
-    findById: (id: string) => store.ariaEarlyWarnings.find((w) => w.id === id),
+        ? store.caraEarlyWarnings.filter((w) => w.home_id === homeId)
+        : store.caraEarlyWarnings,
+    findById: (id: string) => store.caraEarlyWarnings.find((w) => w.id === id),
     findActive: (homeId: string) =>
-      store.ariaEarlyWarnings.filter(
+      store.caraEarlyWarnings.filter(
         (w) => w.home_id === homeId && w.status === "active",
       ),
-    create: (data: Omit<AriaEarlyWarning, "id" | "created_at">): AriaEarlyWarning => {
-      const rec: AriaEarlyWarning = {
+    create: (data: Omit<CaraEarlyWarning, "id" | "created_at">): CaraEarlyWarning => {
+      const rec: CaraEarlyWarning = {
         ...data,
         id: generateId("ewn"),
         created_at: new Date().toISOString(),
       };
-      store.ariaEarlyWarnings.push(rec);
+      store.caraEarlyWarnings.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaEarlyWarning>): AriaEarlyWarning | null => {
-      const idx = store.ariaEarlyWarnings.findIndex((w) => w.id === id);
+    patch: (id: string, data: Partial<CaraEarlyWarning>): CaraEarlyWarning | null => {
+      const idx = store.caraEarlyWarnings.findIndex((w) => w.id === id);
       if (idx === -1) return null;
-      store.ariaEarlyWarnings[idx] = { ...store.ariaEarlyWarnings[idx], ...data };
-      return store.ariaEarlyWarnings[idx];
+      store.caraEarlyWarnings[idx] = { ...store.caraEarlyWarnings[idx], ...data };
+      return store.caraEarlyWarnings[idx];
     },
   },
   // ── Cara Practice Intelligence ─────────────────────────────────────────────
-  ariaPracticeAssessments: {
+  caraPracticeAssessments: {
     findAll: (homeId?: string) =>
-      homeId ? store.ariaPracticeAssessments.filter((r) => r.home_id === homeId) : store.ariaPracticeAssessments,
-    findById: (id: string) => store.ariaPracticeAssessments.find((r) => r.id === id),
-    findByChild: (childId: string) => store.ariaPracticeAssessments.filter((r) => r.child_id === childId),
-    create: (data: Omit<AriaPracticeAssessment, "id" | "created_at" | "updated_at">): AriaPracticeAssessment => {
+      homeId ? store.caraPracticeAssessments.filter((r) => r.home_id === homeId) : store.caraPracticeAssessments,
+    findById: (id: string) => store.caraPracticeAssessments.find((r) => r.id === id),
+    findByChild: (childId: string) => store.caraPracticeAssessments.filter((r) => r.child_id === childId),
+    create: (data: Omit<CaraPracticeAssessment, "id" | "created_at" | "updated_at">): CaraPracticeAssessment => {
       const now = new Date().toISOString();
-      const rec: AriaPracticeAssessment = { ...data, id: generateId("apa"), created_at: now, updated_at: now };
-      store.ariaPracticeAssessments.push(rec);
+      const rec: CaraPracticeAssessment = { ...data, id: generateId("apa"), created_at: now, updated_at: now };
+      store.caraPracticeAssessments.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaPracticeAssessment>): AriaPracticeAssessment | null => {
-      const idx = store.ariaPracticeAssessments.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraPracticeAssessment>): CaraPracticeAssessment | null => {
+      const idx = store.caraPracticeAssessments.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaPracticeAssessments[idx] = { ...store.ariaPracticeAssessments[idx], ...data, updated_at: new Date().toISOString() };
-      return store.ariaPracticeAssessments[idx];
+      store.caraPracticeAssessments[idx] = { ...store.caraPracticeAssessments[idx], ...data, updated_at: new Date().toISOString() };
+      return store.caraPracticeAssessments[idx];
     },
   },
-  ariaDevelopmentalGaps: {
-    findAll: () => store.ariaDevelopmentalGaps,
-    findById: (id: string) => store.ariaDevelopmentalGaps.find((r) => r.id === id),
-    findByChild: (childId: string) => store.ariaDevelopmentalGaps.filter((r) => r.child_id === childId),
-    create: (data: Omit<AriaDevelopmentalGapRecord, "id" | "created_at" | "updated_at">): AriaDevelopmentalGapRecord => {
+  caraDevelopmentalGaps: {
+    findAll: () => store.caraDevelopmentalGaps,
+    findById: (id: string) => store.caraDevelopmentalGaps.find((r) => r.id === id),
+    findByChild: (childId: string) => store.caraDevelopmentalGaps.filter((r) => r.child_id === childId),
+    create: (data: Omit<CaraDevelopmentalGapRecord, "id" | "created_at" | "updated_at">): CaraDevelopmentalGapRecord => {
       const now = new Date().toISOString();
-      const rec: AriaDevelopmentalGapRecord = { ...data, id: generateId("adg"), created_at: now, updated_at: now };
-      store.ariaDevelopmentalGaps.push(rec);
+      const rec: CaraDevelopmentalGapRecord = { ...data, id: generateId("adg"), created_at: now, updated_at: now };
+      store.caraDevelopmentalGaps.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaDevelopmentalGapRecord>): AriaDevelopmentalGapRecord | null => {
-      const idx = store.ariaDevelopmentalGaps.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraDevelopmentalGapRecord>): CaraDevelopmentalGapRecord | null => {
+      const idx = store.caraDevelopmentalGaps.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaDevelopmentalGaps[idx] = { ...store.ariaDevelopmentalGaps[idx], ...data, updated_at: new Date().toISOString() };
-      return store.ariaDevelopmentalGaps[idx];
+      store.caraDevelopmentalGaps[idx] = { ...store.caraDevelopmentalGaps[idx], ...data, updated_at: new Date().toISOString() };
+      return store.caraDevelopmentalGaps[idx];
     },
   },
-  ariaProtectiveFactorReviews: {
-    findAll: () => store.ariaProtectiveFactorReviews,
-    findById: (id: string) => store.ariaProtectiveFactorReviews.find((r) => r.id === id),
-    findByChild: (childId: string) => store.ariaProtectiveFactorReviews.filter((r) => r.child_id === childId),
-    create: (data: Omit<AriaProtectiveFactorReview, "id" | "created_at">): AriaProtectiveFactorReview => {
-      const rec: AriaProtectiveFactorReview = { ...data, id: generateId("apf"), created_at: new Date().toISOString() };
-      store.ariaProtectiveFactorReviews.push(rec);
+  caraProtectiveFactorReviews: {
+    findAll: () => store.caraProtectiveFactorReviews,
+    findById: (id: string) => store.caraProtectiveFactorReviews.find((r) => r.id === id),
+    findByChild: (childId: string) => store.caraProtectiveFactorReviews.filter((r) => r.child_id === childId),
+    create: (data: Omit<CaraProtectiveFactorReview, "id" | "created_at">): CaraProtectiveFactorReview => {
+      const rec: CaraProtectiveFactorReview = { ...data, id: generateId("apf"), created_at: new Date().toISOString() };
+      store.caraProtectiveFactorReviews.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaProtectiveFactorReview>): AriaProtectiveFactorReview | null => {
-      const idx = store.ariaProtectiveFactorReviews.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraProtectiveFactorReview>): CaraProtectiveFactorReview | null => {
+      const idx = store.caraProtectiveFactorReviews.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaProtectiveFactorReviews[idx] = { ...store.ariaProtectiveFactorReviews[idx], ...data };
-      return store.ariaProtectiveFactorReviews[idx];
+      store.caraProtectiveFactorReviews[idx] = { ...store.caraProtectiveFactorReviews[idx], ...data };
+      return store.caraProtectiveFactorReviews[idx];
     },
   },
-  ariaRelationshipDepthReviews: {
-    findAll: () => store.ariaRelationshipDepthReviews,
-    findById: (id: string) => store.ariaRelationshipDepthReviews.find((r) => r.id === id),
-    findByChild: (childId: string) => store.ariaRelationshipDepthReviews.filter((r) => r.child_id === childId),
-    create: (data: Omit<AriaRelationshipDepthReview, "id" | "created_at">): AriaRelationshipDepthReview => {
-      const rec: AriaRelationshipDepthReview = { ...data, id: generateId("ard"), created_at: new Date().toISOString() };
-      store.ariaRelationshipDepthReviews.push(rec);
+  caraRelationshipDepthReviews: {
+    findAll: () => store.caraRelationshipDepthReviews,
+    findById: (id: string) => store.caraRelationshipDepthReviews.find((r) => r.id === id),
+    findByChild: (childId: string) => store.caraRelationshipDepthReviews.filter((r) => r.child_id === childId),
+    create: (data: Omit<CaraRelationshipDepthReview, "id" | "created_at">): CaraRelationshipDepthReview => {
+      const rec: CaraRelationshipDepthReview = { ...data, id: generateId("ard"), created_at: new Date().toISOString() };
+      store.caraRelationshipDepthReviews.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaRelationshipDepthReview>): AriaRelationshipDepthReview | null => {
-      const idx = store.ariaRelationshipDepthReviews.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraRelationshipDepthReview>): CaraRelationshipDepthReview | null => {
+      const idx = store.caraRelationshipDepthReviews.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaRelationshipDepthReviews[idx] = { ...store.ariaRelationshipDepthReviews[idx], ...data };
-      return store.ariaRelationshipDepthReviews[idx];
+      store.caraRelationshipDepthReviews[idx] = { ...store.caraRelationshipDepthReviews[idx], ...data };
+      return store.caraRelationshipDepthReviews[idx];
     },
   },
-  ariaThresholdConsultations: {
-    findAll: () => store.ariaThresholdConsultations,
-    findById: (id: string) => store.ariaThresholdConsultations.find((r) => r.id === id),
-    findByChild: (childId: string) => store.ariaThresholdConsultations.filter((r) => r.child_id === childId),
-    create: (data: Omit<AriaThresholdConsultation, "id" | "created_at">): AriaThresholdConsultation => {
-      const rec: AriaThresholdConsultation = { ...data, id: generateId("atc"), created_at: new Date().toISOString() };
-      store.ariaThresholdConsultations.push(rec);
+  caraThresholdConsultations: {
+    findAll: () => store.caraThresholdConsultations,
+    findById: (id: string) => store.caraThresholdConsultations.find((r) => r.id === id),
+    findByChild: (childId: string) => store.caraThresholdConsultations.filter((r) => r.child_id === childId),
+    create: (data: Omit<CaraThresholdConsultation, "id" | "created_at">): CaraThresholdConsultation => {
+      const rec: CaraThresholdConsultation = { ...data, id: generateId("atc"), created_at: new Date().toISOString() };
+      store.caraThresholdConsultations.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaThresholdConsultation>): AriaThresholdConsultation | null => {
-      const idx = store.ariaThresholdConsultations.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraThresholdConsultation>): CaraThresholdConsultation | null => {
+      const idx = store.caraThresholdConsultations.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaThresholdConsultations[idx] = { ...store.ariaThresholdConsultations[idx], ...data };
-      return store.ariaThresholdConsultations[idx];
+      store.caraThresholdConsultations[idx] = { ...store.caraThresholdConsultations[idx], ...data };
+      return store.caraThresholdConsultations[idx];
     },
   },
-  ariaStaffWellbeingSignals: {
+  caraStaffWellbeingSignals: {
     findAll: (homeId?: string) =>
-      homeId ? store.ariaStaffWellbeingSignals.filter((r) => r.home_id === homeId) : store.ariaStaffWellbeingSignals,
-    findById: (id: string) => store.ariaStaffWellbeingSignals.find((r) => r.id === id),
-    findByStaff: (staffId: string) => store.ariaStaffWellbeingSignals.filter((r) => r.staff_id === staffId),
-    create: (data: Omit<AriaStaffWellbeingSignal, "id" | "created_at">): AriaStaffWellbeingSignal => {
-      const rec: AriaStaffWellbeingSignal = { ...data, id: generateId("aws"), created_at: new Date().toISOString() };
-      store.ariaStaffWellbeingSignals.push(rec);
+      homeId ? store.caraStaffWellbeingSignals.filter((r) => r.home_id === homeId) : store.caraStaffWellbeingSignals,
+    findById: (id: string) => store.caraStaffWellbeingSignals.find((r) => r.id === id),
+    findByStaff: (staffId: string) => store.caraStaffWellbeingSignals.filter((r) => r.staff_id === staffId),
+    create: (data: Omit<CaraStaffWellbeingSignal, "id" | "created_at">): CaraStaffWellbeingSignal => {
+      const rec: CaraStaffWellbeingSignal = { ...data, id: generateId("aws"), created_at: new Date().toISOString() };
+      store.caraStaffWellbeingSignals.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaStaffWellbeingSignal>): AriaStaffWellbeingSignal | null => {
-      const idx = store.ariaStaffWellbeingSignals.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraStaffWellbeingSignal>): CaraStaffWellbeingSignal | null => {
+      const idx = store.caraStaffWellbeingSignals.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaStaffWellbeingSignals[idx] = { ...store.ariaStaffWellbeingSignals[idx], ...data };
-      return store.ariaStaffWellbeingSignals[idx];
+      store.caraStaffWellbeingSignals[idx] = { ...store.caraStaffWellbeingSignals[idx], ...data };
+      return store.caraStaffWellbeingSignals[idx];
     },
   },
-  ariaPracticeFlags: {
+  caraPracticeFlags: {
     findAll: (homeId?: string) =>
-      homeId ? store.ariaPracticeFlags.filter((r) => r.home_id === homeId) : store.ariaPracticeFlags,
-    findById: (id: string) => store.ariaPracticeFlags.find((r) => r.id === id),
-    findByChild: (childId: string) => store.ariaPracticeFlags.filter((r) => r.child_id === childId),
+      homeId ? store.caraPracticeFlags.filter((r) => r.home_id === homeId) : store.caraPracticeFlags,
+    findById: (id: string) => store.caraPracticeFlags.find((r) => r.id === id),
+    findByChild: (childId: string) => store.caraPracticeFlags.filter((r) => r.child_id === childId),
     findOpen: (homeId?: string) =>
-      store.ariaPracticeFlags.filter((r) => !r.resolved && (!homeId || r.home_id === homeId)),
-    create: (data: Omit<AriaPracticeFlag, "id" | "created_at">): AriaPracticeFlag => {
-      const rec: AriaPracticeFlag = { ...data, id: generateId("apf_flag"), created_at: new Date().toISOString() };
-      store.ariaPracticeFlags.push(rec);
+      store.caraPracticeFlags.filter((r) => !r.resolved && (!homeId || r.home_id === homeId)),
+    create: (data: Omit<CaraPracticeFlag, "id" | "created_at">): CaraPracticeFlag => {
+      const rec: CaraPracticeFlag = { ...data, id: generateId("apf_flag"), created_at: new Date().toISOString() };
+      store.caraPracticeFlags.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaPracticeFlag>): AriaPracticeFlag | null => {
-      const idx = store.ariaPracticeFlags.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraPracticeFlag>): CaraPracticeFlag | null => {
+      const idx = store.caraPracticeFlags.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaPracticeFlags[idx] = { ...store.ariaPracticeFlags[idx], ...data };
-      return store.ariaPracticeFlags[idx];
+      store.caraPracticeFlags[idx] = { ...store.caraPracticeFlags[idx], ...data };
+      return store.caraPracticeFlags[idx];
     },
   },
-  ariaGuidanceRules: {
-    findAll: () => store.ariaGuidanceRules,
-    findById: (id: string) => store.ariaGuidanceRules.find((r) => r.id === id),
-    findByKey: (key: string) => store.ariaGuidanceRules.find((r) => r.rule_key === key),
-    create: (data: Omit<AriaGuidanceRule, "id" | "created_at">): AriaGuidanceRule => {
-      const rec: AriaGuidanceRule = { ...data, id: generateId("agr"), created_at: new Date().toISOString() };
-      store.ariaGuidanceRules.push(rec);
+  caraGuidanceRules: {
+    findAll: () => store.caraGuidanceRules,
+    findById: (id: string) => store.caraGuidanceRules.find((r) => r.id === id),
+    findByKey: (key: string) => store.caraGuidanceRules.find((r) => r.rule_key === key),
+    create: (data: Omit<CaraGuidanceRule, "id" | "created_at">): CaraGuidanceRule => {
+      const rec: CaraGuidanceRule = { ...data, id: generateId("agr"), created_at: new Date().toISOString() };
+      store.caraGuidanceRules.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaGuidanceRule>): AriaGuidanceRule | null => {
-      const idx = store.ariaGuidanceRules.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraGuidanceRule>): CaraGuidanceRule | null => {
+      const idx = store.caraGuidanceRules.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaGuidanceRules[idx] = { ...store.ariaGuidanceRules[idx], ...data };
-      return store.ariaGuidanceRules[idx];
+      store.caraGuidanceRules[idx] = { ...store.caraGuidanceRules[idx], ...data };
+      return store.caraGuidanceRules[idx];
     },
   },
-  ariaCareGraphNodes: {
+  caraCareGraphNodes: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaCareGraphNodes.filter((n) => n.home_id === homeId)
-        : store.ariaCareGraphNodes,
-    findById: (id: string) => store.ariaCareGraphNodes.find((n) => n.id === id),
+        ? store.caraCareGraphNodes.filter((n) => n.home_id === homeId)
+        : store.caraCareGraphNodes,
+    findById: (id: string) => store.caraCareGraphNodes.find((n) => n.id === id),
     findByChild: (homeId: string, childId: string) =>
-      store.ariaCareGraphNodes.filter(
+      store.caraCareGraphNodes.filter(
         (n) => n.home_id === homeId && (n.child_id === childId || n.child_id === null),
       ),
-    create: (data: Omit<AriaCareGraphNode, "id" | "created_at">): AriaCareGraphNode => {
-      const rec: AriaCareGraphNode = {
+    create: (data: Omit<CaraCareGraphNode, "id" | "created_at">): CaraCareGraphNode => {
+      const rec: CaraCareGraphNode = {
         ...data,
         id: generateId("cgn"),
         created_at: new Date().toISOString(),
       };
-      store.ariaCareGraphNodes.push(rec);
+      store.caraCareGraphNodes.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaCareGraphNode>): AriaCareGraphNode | null => {
-      const idx = store.ariaCareGraphNodes.findIndex((n) => n.id === id);
+    patch: (id: string, data: Partial<CaraCareGraphNode>): CaraCareGraphNode | null => {
+      const idx = store.caraCareGraphNodes.findIndex((n) => n.id === id);
       if (idx === -1) return null;
-      store.ariaCareGraphNodes[idx] = { ...store.ariaCareGraphNodes[idx], ...data };
-      return store.ariaCareGraphNodes[idx];
+      store.caraCareGraphNodes[idx] = { ...store.caraCareGraphNodes[idx], ...data };
+      return store.caraCareGraphNodes[idx];
     },
     deleteByHome: (homeId: string, childId?: string | null) => {
-      store.ariaCareGraphNodes = store.ariaCareGraphNodes.filter((n) => {
+      store.caraCareGraphNodes = store.caraCareGraphNodes.filter((n) => {
         if (n.home_id !== homeId) return true;
         if (childId === undefined) return false;
         return n.child_id !== childId && n.child_id !== null;
       });
     },
   },
-  ariaCareGraphEdges: {
+  caraCareGraphEdges: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaCareGraphEdges.filter((e) => e.home_id === homeId)
-        : store.ariaCareGraphEdges,
-    findById: (id: string) => store.ariaCareGraphEdges.find((e) => e.id === id),
+        ? store.caraCareGraphEdges.filter((e) => e.home_id === homeId)
+        : store.caraCareGraphEdges,
+    findById: (id: string) => store.caraCareGraphEdges.find((e) => e.id === id),
     findByNode: (nodeId: string) =>
-      store.ariaCareGraphEdges.filter(
+      store.caraCareGraphEdges.filter(
         (e) => e.from_node_id === nodeId || e.to_node_id === nodeId,
       ),
-    create: (data: Omit<AriaCareGraphEdge, "id" | "created_at">): AriaCareGraphEdge => {
-      const rec: AriaCareGraphEdge = {
+    create: (data: Omit<CaraCareGraphEdge, "id" | "created_at">): CaraCareGraphEdge => {
+      const rec: CaraCareGraphEdge = {
         ...data,
         id: generateId("cge"),
         created_at: new Date().toISOString(),
       };
-      store.ariaCareGraphEdges.push(rec);
+      store.caraCareGraphEdges.push(rec);
       return rec;
     },
     deleteByHome: (homeId: string) => {
-      store.ariaCareGraphEdges = store.ariaCareGraphEdges.filter((e) => e.home_id !== homeId);
+      store.caraCareGraphEdges = store.caraCareGraphEdges.filter((e) => e.home_id !== homeId);
     },
     deleteByNodeIds: (nodeIds: Set<string>) => {
-      store.ariaCareGraphEdges = store.ariaCareGraphEdges.filter(
+      store.caraCareGraphEdges = store.caraCareGraphEdges.filter(
         (e) => !nodeIds.has(e.from_node_id) && !nodeIds.has(e.to_node_id),
       );
     },
   },
-  ariaFormulations: {
+  caraFormulations: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaFormulations.filter((f) => f.home_id === homeId)
-        : store.ariaFormulations,
-    findById: (id: string) => store.ariaFormulations.find((f) => f.id === id),
+        ? store.caraFormulations.filter((f) => f.home_id === homeId)
+        : store.caraFormulations,
+    findById: (id: string) => store.caraFormulations.find((f) => f.id === id),
     findByChild: (homeId: string, childId: string) =>
-      store.ariaFormulations.filter(
+      store.caraFormulations.filter(
         (f) => f.home_id === homeId && f.child_id === childId,
       ),
     findActiveForChild: (homeId: string, childId: string) =>
-      store.ariaFormulations.find(
+      store.caraFormulations.find(
         (f) =>
           f.home_id === homeId &&
           f.child_id === childId &&
           (f.status === "ai_draft" || f.status === "in_review" || f.status === "approved"),
       ),
-    create: (data: Omit<AriaFormulation, "id">): AriaFormulation => {
-      const rec: AriaFormulation = { ...data, id: generateId("frm") };
-      store.ariaFormulations.push(rec);
+    create: (data: Omit<CaraFormulation, "id">): CaraFormulation => {
+      const rec: CaraFormulation = { ...data, id: generateId("frm") };
+      store.caraFormulations.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaFormulation>): AriaFormulation | null => {
-      const idx = store.ariaFormulations.findIndex((f) => f.id === id);
+    patch: (id: string, data: Partial<CaraFormulation>): CaraFormulation | null => {
+      const idx = store.caraFormulations.findIndex((f) => f.id === id);
       if (idx === -1) return null;
-      store.ariaFormulations[idx] = { ...store.ariaFormulations[idx], ...data };
-      return store.ariaFormulations[idx];
+      store.caraFormulations[idx] = { ...store.caraFormulations[idx], ...data };
+      return store.caraFormulations[idx];
     },
   },
-  ariaDecisionRecommendations: {
+  caraDecisionRecommendations: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaDecisionRecommendations.filter((r) => r.home_id === homeId)
-        : store.ariaDecisionRecommendations,
-    findById: (id: string) => store.ariaDecisionRecommendations.find((r) => r.id === id),
+        ? store.caraDecisionRecommendations.filter((r) => r.home_id === homeId)
+        : store.caraDecisionRecommendations,
+    findById: (id: string) => store.caraDecisionRecommendations.find((r) => r.id === id),
     findOpen: (homeId: string) =>
-      store.ariaDecisionRecommendations.filter(
+      store.caraDecisionRecommendations.filter(
         (r) =>
           r.home_id === homeId &&
           (r.status === "ai_draft" || r.status === "modified" || r.status === "deferred"),
       ),
-    create: (data: Omit<AriaDecisionRecommendation, "id">): AriaDecisionRecommendation => {
-      const rec: AriaDecisionRecommendation = { ...data, id: generateId("rec") };
-      store.ariaDecisionRecommendations.push(rec);
+    create: (data: Omit<CaraDecisionRecommendation, "id">): CaraDecisionRecommendation => {
+      const rec: CaraDecisionRecommendation = { ...data, id: generateId("rec") };
+      store.caraDecisionRecommendations.push(rec);
       return rec;
     },
     patch: (
       id: string,
-      data: Partial<AriaDecisionRecommendation>,
-    ): AriaDecisionRecommendation | null => {
-      const idx = store.ariaDecisionRecommendations.findIndex((r) => r.id === id);
+      data: Partial<CaraDecisionRecommendation>,
+    ): CaraDecisionRecommendation | null => {
+      const idx = store.caraDecisionRecommendations.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaDecisionRecommendations[idx] = {
-        ...store.ariaDecisionRecommendations[idx],
+      store.caraDecisionRecommendations[idx] = {
+        ...store.caraDecisionRecommendations[idx],
         ...data,
       };
-      return store.ariaDecisionRecommendations[idx];
+      return store.caraDecisionRecommendations[idx];
     },
   },
-  ariaReg45EvidenceItems: {
+  caraReg45EvidenceItems: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaReg45EvidenceItems.filter((e) => e.home_id === homeId)
-        : store.ariaReg45EvidenceItems,
-    findById: (id: string) => store.ariaReg45EvidenceItems.find((e) => e.id === id),
+        ? store.caraReg45EvidenceItems.filter((e) => e.home_id === homeId)
+        : store.caraReg45EvidenceItems,
+    findById: (id: string) => store.caraReg45EvidenceItems.find((e) => e.id === id),
     findInPeriod: (homeId: string, periodStart: string, periodEnd: string) =>
-      store.ariaReg45EvidenceItems.filter(
+      store.caraReg45EvidenceItems.filter(
         (e) =>
           e.home_id === homeId &&
           e.period_start === periodStart &&
           e.period_end === periodEnd,
       ),
     findBySource: (homeId: string, sourceTable: string, sourceId: string) =>
-      store.ariaReg45EvidenceItems.find(
+      store.caraReg45EvidenceItems.find(
         (e) => e.home_id === homeId && e.source_table === sourceTable && e.source_id === sourceId,
       ),
-    create: (data: Omit<AriaReg45EvidenceItem, "id">): AriaReg45EvidenceItem => {
-      const rec: AriaReg45EvidenceItem = { ...data, id: generateId("r45") };
-      store.ariaReg45EvidenceItems.push(rec);
+    create: (data: Omit<CaraReg45EvidenceItem, "id">): CaraReg45EvidenceItem => {
+      const rec: CaraReg45EvidenceItem = { ...data, id: generateId("r45") };
+      store.caraReg45EvidenceItems.push(rec);
       return rec;
     },
     patch: (
       id: string,
-      data: Partial<AriaReg45EvidenceItem>,
-    ): AriaReg45EvidenceItem | null => {
-      const idx = store.ariaReg45EvidenceItems.findIndex((e) => e.id === id);
+      data: Partial<CaraReg45EvidenceItem>,
+    ): CaraReg45EvidenceItem | null => {
+      const idx = store.caraReg45EvidenceItems.findIndex((e) => e.id === id);
       if (idx === -1) return null;
-      store.ariaReg45EvidenceItems[idx] = {
-        ...store.ariaReg45EvidenceItems[idx],
+      store.caraReg45EvidenceItems[idx] = {
+        ...store.caraReg45EvidenceItems[idx],
         ...data,
       };
-      return store.ariaReg45EvidenceItems[idx];
+      return store.caraReg45EvidenceItems[idx];
     },
   },
-  ariaAnnexASnapshots: {
+  caraAnnexASnapshots: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaAnnexASnapshots.filter((s) => s.home_id === homeId)
-        : store.ariaAnnexASnapshots,
-    findById: (id: string) => store.ariaAnnexASnapshots.find((s) => s.id === id),
-    findLatestDraft: (homeId: string): AriaAnnexASnapshot | undefined =>
-      [...store.ariaAnnexASnapshots]
+        ? store.caraAnnexASnapshots.filter((s) => s.home_id === homeId)
+        : store.caraAnnexASnapshots,
+    findById: (id: string) => store.caraAnnexASnapshots.find((s) => s.id === id),
+    findLatestDraft: (homeId: string): CaraAnnexASnapshot | undefined =>
+      [...store.caraAnnexASnapshots]
         .filter((s) => s.home_id === homeId && s.status === "draft")
         .sort((a, b) => b.generated_at.localeCompare(a.generated_at))[0],
-    create: (data: Omit<AriaAnnexASnapshot, "id">): AriaAnnexASnapshot => {
-      const rec: AriaAnnexASnapshot = { ...data, id: generateId("axa") };
-      store.ariaAnnexASnapshots.push(rec);
+    create: (data: Omit<CaraAnnexASnapshot, "id">): CaraAnnexASnapshot => {
+      const rec: CaraAnnexASnapshot = { ...data, id: generateId("axa") };
+      store.caraAnnexASnapshots.push(rec);
       return rec;
     },
     patch: (
       id: string,
-      data: Partial<AriaAnnexASnapshot>,
-    ): AriaAnnexASnapshot | null => {
-      const idx = store.ariaAnnexASnapshots.findIndex((s) => s.id === id);
+      data: Partial<CaraAnnexASnapshot>,
+    ): CaraAnnexASnapshot | null => {
+      const idx = store.caraAnnexASnapshots.findIndex((s) => s.id === id);
       if (idx === -1) return null;
-      store.ariaAnnexASnapshots[idx] = {
-        ...store.ariaAnnexASnapshots[idx],
+      store.caraAnnexASnapshots[idx] = {
+        ...store.caraAnnexASnapshots[idx],
         ...data,
       };
-      return store.ariaAnnexASnapshots[idx];
+      return store.caraAnnexASnapshots[idx];
     },
   },
-  ariaReg45Reports: {
+  caraReg45Reports: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaReg45Reports.filter((r) => r.home_id === homeId)
-        : store.ariaReg45Reports,
-    findById: (id: string) => store.ariaReg45Reports.find((r) => r.id === id),
-    create: (data: Omit<AriaReg45Report, "id">): AriaReg45Report => {
-      const rec: AriaReg45Report = { ...data, id: generateId("r45rep") };
-      store.ariaReg45Reports.push(rec);
+        ? store.caraReg45Reports.filter((r) => r.home_id === homeId)
+        : store.caraReg45Reports,
+    findById: (id: string) => store.caraReg45Reports.find((r) => r.id === id),
+    create: (data: Omit<CaraReg45Report, "id">): CaraReg45Report => {
+      const rec: CaraReg45Report = { ...data, id: generateId("r45rep") };
+      store.caraReg45Reports.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaReg45Report>): AriaReg45Report | null => {
-      const idx = store.ariaReg45Reports.findIndex((r) => r.id === id);
+    patch: (id: string, data: Partial<CaraReg45Report>): CaraReg45Report | null => {
+      const idx = store.caraReg45Reports.findIndex((r) => r.id === id);
       if (idx === -1) return null;
-      store.ariaReg45Reports[idx] = { ...store.ariaReg45Reports[idx], ...data };
-      return store.ariaReg45Reports[idx];
+      store.caraReg45Reports[idx] = { ...store.caraReg45Reports[idx], ...data };
+      return store.caraReg45Reports[idx];
     },
   },
-  ariaSuggestedRecords: {
+  caraSuggestedRecords: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaSuggestedRecords.filter((s) => s.home_id === homeId)
-        : store.ariaSuggestedRecords,
-    findById: (id: string) => store.ariaSuggestedRecords.find((s) => s.id === id),
-    findByStatus: (homeId: string, status: AriaSuggestedRecord["status"]) =>
-      store.ariaSuggestedRecords.filter(
+        ? store.caraSuggestedRecords.filter((s) => s.home_id === homeId)
+        : store.caraSuggestedRecords,
+    findById: (id: string) => store.caraSuggestedRecords.find((s) => s.id === id),
+    findByStatus: (homeId: string, status: CaraSuggestedRecord["status"]) =>
+      store.caraSuggestedRecords.filter(
         (s) => s.home_id === homeId && s.status === status,
       ),
-    create: (data: Omit<AriaSuggestedRecord, "id">): AriaSuggestedRecord => {
-      const rec: AriaSuggestedRecord = { ...data, id: generateId("asug") };
-      store.ariaSuggestedRecords.push(rec);
+    create: (data: Omit<CaraSuggestedRecord, "id">): CaraSuggestedRecord => {
+      const rec: CaraSuggestedRecord = { ...data, id: generateId("asug") };
+      store.caraSuggestedRecords.push(rec);
       return rec;
     },
     patch: (
       id: string,
-      data: Partial<AriaSuggestedRecord>,
-    ): AriaSuggestedRecord | null => {
-      const idx = store.ariaSuggestedRecords.findIndex((s) => s.id === id);
+      data: Partial<CaraSuggestedRecord>,
+    ): CaraSuggestedRecord | null => {
+      const idx = store.caraSuggestedRecords.findIndex((s) => s.id === id);
       if (idx === -1) return null;
-      store.ariaSuggestedRecords[idx] = {
-        ...store.ariaSuggestedRecords[idx],
+      store.caraSuggestedRecords[idx] = {
+        ...store.caraSuggestedRecords[idx],
         ...data,
       };
-      return store.ariaSuggestedRecords[idx];
+      return store.caraSuggestedRecords[idx];
     },
   },
-  ariaCommittedRecords: {
+  caraCommittedRecords: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaCommittedRecords.filter((c) => c.home_id === homeId)
-        : store.ariaCommittedRecords,
-    findById: (id: string) => store.ariaCommittedRecords.find((c) => c.id === id),
-    create: (data: Omit<AriaCommittedRecord, "id">): AriaCommittedRecord => {
-      const rec: AriaCommittedRecord = { ...data, id: generateId("acom") };
-      store.ariaCommittedRecords.push(rec);
+        ? store.caraCommittedRecords.filter((c) => c.home_id === homeId)
+        : store.caraCommittedRecords,
+    findById: (id: string) => store.caraCommittedRecords.find((c) => c.id === id),
+    create: (data: Omit<CaraCommittedRecord, "id">): CaraCommittedRecord => {
+      const rec: CaraCommittedRecord = { ...data, id: generateId("acom") };
+      store.caraCommittedRecords.push(rec);
       return rec;
     },
   },
-  ariaReg40Triages: {
+  caraReg40Triages: {
     findAll: (homeId?: string) =>
       homeId
-        ? store.ariaReg40Triages.filter((t) => t.home_id === homeId)
-        : store.ariaReg40Triages,
-    findById: (id: string) => store.ariaReg40Triages.find((t) => t.id === id),
+        ? store.caraReg40Triages.filter((t) => t.home_id === homeId)
+        : store.caraReg40Triages,
+    findById: (id: string) => store.caraReg40Triages.find((t) => t.id === id),
     findBySourceEvent: (eventId: string) =>
-      store.ariaReg40Triages.find((t) => t.source_event_id === eventId),
-    create: (data: Omit<AriaReg40Triage, "id">): AriaReg40Triage => {
-      const rec: AriaReg40Triage = { ...data, id: generateId("reg40") };
-      store.ariaReg40Triages.push(rec);
+      store.caraReg40Triages.find((t) => t.source_event_id === eventId),
+    create: (data: Omit<CaraReg40Triage, "id">): CaraReg40Triage => {
+      const rec: CaraReg40Triage = { ...data, id: generateId("reg40") };
+      store.caraReg40Triages.push(rec);
       return rec;
     },
-    patch: (id: string, data: Partial<AriaReg40Triage>): AriaReg40Triage | null => {
-      const idx = store.ariaReg40Triages.findIndex((t) => t.id === id);
+    patch: (id: string, data: Partial<CaraReg40Triage>): CaraReg40Triage | null => {
+      const idx = store.caraReg40Triages.findIndex((t) => t.id === id);
       if (idx === -1) return null;
-      store.ariaReg40Triages[idx] = { ...store.ariaReg40Triages[idx], ...data };
-      return store.ariaReg40Triages[idx];
+      store.caraReg40Triages[idx] = { ...store.caraReg40Triages[idx], ...data };
+      return store.caraReg40Triages[idx];
     },
   },
   wakeUpRoutines: {

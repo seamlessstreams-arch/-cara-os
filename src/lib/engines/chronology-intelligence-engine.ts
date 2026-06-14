@@ -96,7 +96,7 @@ export interface ChronologyAlert {
   message: string;
 }
 
-export interface AriaChronologyInsight {
+export interface CaraChronologyInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -107,7 +107,7 @@ export interface ChronologyIntelligenceResult {
   category_breakdown: CategoryBreakdown[];
   timeline: TimelinePattern[];
   alerts: ChronologyAlert[];
-  insights: AriaChronologyInsight[];
+  insights: CaraChronologyInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ export function computeChronologyIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaChronologyInsight[] = [];
+  const insights: CaraChronologyInsight[] = [];
 
   // Critical: children without chronology
   if (withoutChronology.length > 0) {

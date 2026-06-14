@@ -26,11 +26,11 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import { getStaffName, getYPName, getYPById } from "@/lib/seed-data";
 import { cn, formatDate, formatRelative } from "@/lib/utils";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
-import { AriaContextLinker } from "@/components/aria/aria-context-linker";
-import { AriaWriteToChild } from "@/components/aria/aria-write-to-child";
-import { AriaOversightQuality } from "@/components/aria/aria-oversight-quality";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
+import { CaraContextLinker } from "@/components/cara/cara-context-linker";
+import { CaraWriteToChild } from "@/components/cara/cara-write-to-child";
+import { CaraOversightQuality } from "@/components/cara/cara-oversight-quality";
 import { PrintButton } from "@/components/common/print-button";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
@@ -58,7 +58,7 @@ const SG_SEV_PRIORITY: Record<string, "urgent" | "high" | "medium" | "low"> = {
 function NotificationRow({ n }: { n: { role: string; name: string; method: string; notified_at: string; acknowledged: boolean } }) {
   const icon =
     n.role.toLowerCase().includes("police") ? <Phone className="h-3 w-3 text-blue-500" /> :
-    n.role.toLowerCase().includes("social") ? <UserCheck className="h-3 w-3 text-[var(--cs-aria-gold)]" /> :
+    n.role.toLowerCase().includes("social") ? <UserCheck className="h-3 w-3 text-[var(--cs-cara-gold)]" /> :
     n.role.toLowerCase().includes("lado") || n.role.toLowerCase().includes("manager") ? <Gavel className="h-3 w-3 text-amber-500" /> :
     <Bell className="h-3 w-3 text-[var(--cs-text-muted)]" />;
 
@@ -149,7 +149,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
   const createNeed  = useCreateTrainingNeed();
 
   const [showOversight, setShowOversight] = useState(false);
-  const [showAria,      setShowAria]      = useState(false);
+  const [showCara,      setShowCara]      = useState(false);
   const [needCreated,   setNeedCreated]   = useState(false);
 
   function handleSaved() {
@@ -208,7 +208,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
   const needsOversight = concern.requires_oversight && !concern.oversight_by;
   const linkedDocs = (docsQuery.data?.data ?? []).filter((d) => d.linked_incident_id === id);
 
-  const ariaContext = [
+  const caraContext = [
     `Safeguarding concern: ${concern.reference}`,
     `Type: ${INCIDENT_TYPE_LABELS[concern.type] || concern.type}`,
     `Severity: ${concern.severity}`,
@@ -242,9 +242,9 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
             variant="outline"
             size="sm"
             className="gap-1.5"
-            onClick={() => setShowAria((p) => !p)}
+            onClick={() => setShowCara((p) => !p)}
           >
-            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             Cara Analysis
           </Button>
           <Button variant="outline" size="sm" onClick={() => router.push("/safeguarding")}>
@@ -256,26 +256,26 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
       <div id="safeguarding-detail-content" className="max-w-3xl space-y-5 animate-fade-in">
 
         {/* ── Cara Panel ────────────────────────────────────────────────────── */}
-        {showAria && (
+        {showCara && (
           <div className="relative">
             <button
-              onClick={() => setShowAria(false)}
+              onClick={() => setShowCara(false)}
               className="absolute top-3 right-3 z-10 text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] text-xs"
             >✕ Close</button>
-            <AriaPanel
+            <CaraPanel
               mode="safeguarding_scan"
               pageContext={`Safeguarding concern — ${concern.reference}`}
               recordType="safeguarding"
-              sourceContent={ariaContext}
+              sourceContent={caraContext}
             />
           </div>
         )}
 
         {/* ── Cara Context Links ─────────────────────────────────────────── */}
-        <AriaContextLinker sourceTable="safeguarding_concerns" recordId={concern.id} className="mb-4" />
+        <CaraContextLinker sourceTable="safeguarding_concerns" recordId={concern.id} className="mb-4" />
 
         {/* ── Write to Child — safeguarding ────────────────────────────────── */}
-        <AriaWriteToChild
+        <CaraWriteToChild
           source="incident"
           sourceText={concern.oversight_note || concern.description}
           sourceRecordId={concern.id}
@@ -311,7 +311,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
                   </Badge>
                 )}
                 {concern.aria_oversight_used && (
-                  <AriaUsageBadge ariaAssisted sourceTable="incidents" recordId={concern.id} size="sm" />
+                  <CaraUsageBadge caraAssisted sourceTable="incidents" recordId={concern.id} size="sm" />
                 )}
               </div>
               <div className="text-xs text-[var(--cs-text-secondary)] mt-0.5">
@@ -343,10 +343,10 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
         {/* ── Young person ──────────────────────────────────────────────────── */}
         <div className="rounded-2xl border bg-white p-4">
           <h3 className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-3 flex items-center gap-2">
-            <Heart className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />Young Person
+            <Heart className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />Young Person
           </h3>
           <div className="flex items-center gap-3">
-            <Avatar name={ypName} size="md" className="bg-[var(--cs-aria-gold-bg)]" />
+            <Avatar name={ypName} size="md" className="bg-[var(--cs-cara-gold-bg)]" />
             <div>
               <div className="text-sm font-semibold text-[var(--cs-navy)]">{ypName}</div>
               {yp && (
@@ -458,7 +458,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
 
             {/* Cara Oversight Quality Check */}
             {concern.oversight_note && (
-              <AriaOversightQuality
+              <CaraOversightQuality
                 oversightText={concern.oversight_note}
                 recordType="safeguarding"
                 recordReference={concern.reference}
@@ -488,12 +488,12 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
         )}
 
         {/* ── Training Intelligence Loop ────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/40 p-4 space-y-3">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/40 p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <Brain className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Brain className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             <span className="text-sm font-semibold text-[var(--cs-navy)]">Training Intelligence Loop</span>
           </div>
-          <p className="text-xs text-[var(--cs-aria-gold)]">
+          <p className="text-xs text-[var(--cs-cara-gold)]">
             Create a safeguarding training need from this concern. Cara will generate targeted
             learning resources and the evidence feeds directly into your Reg 45 and governance loop.
           </p>
@@ -501,7 +501,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
             <Button
               size="sm"
               variant="outline"
-              className="gap-1.5 text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]"
+              className="gap-1.5 text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]"
               onClick={handleCreateTrainingNeed}
               disabled={createNeed.isPending}
             >
@@ -512,7 +512,7 @@ export default function SafeguardingConcernPage({ params }: { params: Promise<{ 
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               <span className="text-sm text-emerald-700 font-medium">Training need created</span>
-              <Link href="/learning/training-needs" className="ml-auto text-xs text-[var(--cs-aria-gold)] underline hover:text-[var(--cs-navy)]">
+              <Link href="/learning/training-needs" className="ml-auto text-xs text-[var(--cs-cara-gold)] underline hover:text-[var(--cs-navy)]">
                 View in Learning Studio →
               </Link>
             </div>

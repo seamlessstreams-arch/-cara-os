@@ -1,12 +1,12 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Care Graph
 // GET  → load current persisted graph (filterable by child_id)
-// POST → rebuild graph (RBAC: aria.generate_drafts)
+// POST → rebuild graph (RBAC: cara.generate_drafts)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { buildCareGraph, loadCareGraph } from "@/lib/aria/aria-care-graph";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { buildCareGraph, loadCareGraph } from "@/lib/cara/cara-care-graph";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
   const lookbackDays =
     typeof body.lookback_days === "number" ? body.lookback_days : undefined;
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId,
     intent: "rebuild care_graph",
   });

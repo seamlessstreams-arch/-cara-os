@@ -18,7 +18,7 @@ import {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface AriaQuickActionsProps {
+interface CaraQuickActionsProps {
   /** The young person this record belongs to */
   childId: string;
   /** The type of parent record (incident, daily_log, etc.) */
@@ -45,7 +45,7 @@ const ACTIONS: ActionConfig[] = [
     label: "Ask Cara to Review",
     description: "Run a structured situation analysis on this record",
     icon: Sparkles,
-    colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]",
+    colour: "text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]",
     href: (c, t, s) => `/intelligence/cara/situation?child_id=${c}&source_type=${t}&source_id=${s}`,
   },
   {
@@ -115,18 +115,18 @@ const ACTIONS: ActionConfig[] = [
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function AriaQuickActions({
+export function CaraQuickActions({
   childId,
   sourceType = "free_text",
   sourceId = "",
   defaultOpen = false,
   className,
-}: AriaQuickActionsProps) {
+}: CaraQuickActionsProps) {
   const router = useRouter();
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className={cn("rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-br from-[var(--cs-aria-gold-bg)] to-white", className)}>
+    <div className={cn("rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-br from-[var(--cs-cara-gold-bg)] to-white", className)}>
       {/* Header */}
       <button
         onClick={() => setOpen((o) => !o)}
@@ -137,7 +137,7 @@ export function AriaQuickActions({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-[var(--cs-navy)]">Cara Quick Actions</p>
-          <p className="text-[10px] text-[var(--cs-aria-gold)] leading-tight">
+          <p className="text-[10px] text-[var(--cs-cara-gold)] leading-tight">
             AI-powered actions for this record — all outputs require human review
           </p>
         </div>
@@ -172,7 +172,7 @@ export function AriaQuickActions({
               );
             })}
           </div>
-          <p className="text-[10px] text-[var(--cs-aria-gold)] italic pt-1 border-t border-[var(--cs-aria-gold-soft)]">
+          <p className="text-[10px] text-[var(--cs-cara-gold)] italic pt-1 border-t border-[var(--cs-cara-gold-soft)]">
             All Cara-generated content is a draft and requires professional review before use.
           </p>
         </div>

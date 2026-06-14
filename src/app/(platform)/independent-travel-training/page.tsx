@@ -30,8 +30,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { IndependentTravelRecord, TravelTrainingStage, TravelConfidence } from "@/types/extended";
 import { TRAVEL_TRAINING_STAGE_LABEL, TRAVEL_CONFIDENCE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ─────────────────────────────────────────────────────────────────── */
 
@@ -149,7 +149,7 @@ export default function IndependentTravelTrainingPage() {
     <PageShell
       title="Independent Travel Training"
       subtitle="Stage-based plans preparing young people (especially 14–18) for confident independent travel on public transport. Tracks routes mastered, routes in learning, travel cards, monthly budget, what-if-lost protocols, safety check-ins, and the child's own voice on readiness."
-      ariaContext={{ pageTitle: "Independent Travel Training", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Independent Travel Training", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -158,7 +158,7 @@ export default function IndependentTravelTrainingPage() {
             filename="independent-travel-training"
           />
           <PrintButton title="Independent Travel Training" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -521,7 +521,7 @@ export default function IndependentTravelTrainingPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Independent Travel Training — public transport, bus pass, rail card, travel risk assessment, route planning, supervised travel, unsupervised travel, life skills, care plan"
         recordType="education"

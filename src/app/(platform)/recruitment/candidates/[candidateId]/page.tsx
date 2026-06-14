@@ -8,8 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaUsageBadge } from "@/components/aria/aria-usage-badge";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraUsageBadge } from "@/components/cara/cara-usage-badge";
 import {
   ChevronLeft, AlertTriangle, CheckCircle2, Clock, Shield,
   FileCheck, User, Users, Globe, GraduationCap, Briefcase, Heart,
@@ -135,7 +135,7 @@ export default function CandidateDetailPage() {
 
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [expandedCheck, setExpandedCheck] = useState<string | null>(null);
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
 
   // Check action modals
   const [flagConcern, setFlagConcern] = useState<{ checkId: string; notes: string } | null>(null);
@@ -310,7 +310,7 @@ export default function CandidateDetailPage() {
                   {candidate.blocker_summary.length} blocker{candidate.blocker_summary.length !== 1 ? "s" : ""}
                 </span>
               )}
-              <AriaUsageBadge ariaAssisted={(candidate as any).aria_assist_used} sourceTable="recruitment_candidates" recordId={candidate.id} />
+              <CaraUsageBadge caraAssisted={(candidate as any).aria_assist_used} sourceTable="recruitment_candidates" recordId={candidate.id} />
             </div>
             <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{candidate.role_applied} · {candidate.email}</div>
           </div>
@@ -324,8 +324,8 @@ export default function CandidateDetailPage() {
             />
             <Button
               variant="outline" size="sm"
-              className="rounded-xl border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)]"
-              onClick={() => setShowAria(s => !s)}
+              className="rounded-xl border-[var(--cs-cara-gold-soft)] text-[var(--cs-cara-gold)]"
+              onClick={() => setShowCara(s => !s)}
             >
               <Sparkles className="h-3.5 w-3.5 mr-1.5" />
               Cara
@@ -1060,10 +1060,10 @@ export default function CandidateDetailPage() {
         </div>
 
         {/* Right column */}
-        {showAria && (
+        {showCara && (
           <div className="w-[280px] shrink-0">
             <div className="sticky top-24">
-              <AriaPanel
+              <CaraPanel
                 pageContext="safer_recruitment_candidate"
                 sourceContent={`Candidate: ${candidate.first_name} ${candidate.last_name} | Stage: ${candidate.stage} | Compliance: ${candidate.compliance_score}% | Blockers: ${candidate.blocker_summary?.join(", ") ?? "none"}`}
                 userRole="registered_manager"

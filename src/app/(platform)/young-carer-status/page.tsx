@@ -9,8 +9,8 @@ import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, Heart, Shield, AlertCircle, CheckCircle, Users } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import type { YoungCarerRecord } from "@/types/extended";
 import { useYoungCarerRecords } from "@/hooks/use-young-carer-records";
 
@@ -54,8 +54,8 @@ export default function YoungCarerStatusPage() {
     <PageShell
       title="Young Carer Status"
       subtitle="Identifying and supporting children with caring responsibilities — past, present, or risk-of"
-      ariaContext={{ pageTitle: "Young Carer Status", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="young-carer-status" /><PrintButton title="Young Carer Status" /><AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} /></div>}>
+      caraContext={{ pageTitle: "Young Carer Status", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><ExportButton data={data} columns={exportCols} filename="young-carer-status" /><PrintButton title="Young Carer Status" /><CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} /></div>}>
       {isLoading ? <div className="p-8 text-center text-muted-foreground">Loading...</div> : (<>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Records</p></div>
@@ -117,7 +117,7 @@ export default function YoungCarerStatusPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Young Carer Status — children with caring responsibilities for a parent or sibling, carer support, school impact, LA assessment, respite, plan, wellbeing"
         recordType="care_plan"

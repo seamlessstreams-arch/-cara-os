@@ -105,7 +105,7 @@ export function ShiftMode({ onExit }: ShiftModeProps) {
                 className={cn(
                   "flex flex-col items-center gap-1 shrink-0 rounded-xl p-2 min-w-[72px] transition-all border-2",
                   selectedChild === child.id
-                    ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]"
+                    ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]"
                     : "border-transparent bg-white hover:border-[var(--cs-border)]",
                 )}
               >

@@ -14,11 +14,11 @@ function clear() {
   for (const e of evs.filter((x) => x.home_id === HOME_ID)) {
     const i = evs.indexOf(e); if (i >= 0) evs.splice(i, 1);
   }
-  const t40 = db.ariaReg40Triages.findAll();
+  const t40 = db.caraReg40Triages.findAll();
   for (const t of t40.filter((x) => x.home_id === HOME_ID)) {
     const i = t40.indexOf(t); if (i >= 0) t40.splice(i, 1);
   }
-  const r45 = db.ariaReg45EvidenceItems.findAll();
+  const r45 = db.caraReg45EvidenceItems.findAll();
   for (const r of r45.filter((x) => x.home_id === HOME_ID)) {
     const i = r45.indexOf(r); if (i >= 0) r45.splice(i, 1);
   }
@@ -82,7 +82,7 @@ describe("generateInspectionSnapshot", () => {
   });
 
   it("counts pending Reg 40 triages", () => {
-    db.ariaReg40Triages.create({
+    db.caraReg40Triages.create({
       home_id: HOME_ID,
       child_id: "yp_a",
       source_event_id: "src",

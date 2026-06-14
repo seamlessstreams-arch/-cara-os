@@ -16,7 +16,7 @@
 // (whole-word / phrase) to keep the queue signal high, but when in doubt we surface.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { Reg40SuggestedCategory } from "@/types/aria-studio";
+import type { Reg40SuggestedCategory } from "@/types/cara-studio";
 
 // Ordered by severity / specificity — the first match wins, so death is checked
 // before everything, and an allegation against staff is preferred over the more

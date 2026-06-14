@@ -29,7 +29,7 @@ const LEAVE_TYPE_CONFIG: Record<string, {
 }> = {
   annual:     { icon: Palmtree,     color: "text-emerald-600", bgColor: "bg-emerald-100", label: "Annual" },
   sick:       { icon: Stethoscope,  color: "text-red-600",     bgColor: "bg-red-100",     label: "Sick" },
-  compassionate: { icon: Clock,     color: "text-[var(--cs-aria-gold)]",  bgColor: "bg-[var(--cs-aria-gold-bg)]",  label: "Compassionate" },
+  compassionate: { icon: Clock,     color: "text-[var(--cs-cara-gold)]",  bgColor: "bg-[var(--cs-cara-gold-bg)]",  label: "Compassionate" },
   training:   { icon: BookOpen,     color: "text-blue-600",    bgColor: "bg-blue-100",    label: "Training" },
   unpaid:     { icon: CalendarOff,  color: "text-[var(--cs-text-secondary)]",   bgColor: "bg-[var(--cs-surface)]",   label: "Unpaid" },
   toil:       { icon: Clock,        color: "text-amber-600",   bgColor: "bg-amber-100",   label: "TOIL" },

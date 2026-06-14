@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
 } from "./child-online-safety-monitoring-service";
 import type { ChildOnlineSafetyMonitoringRow } from "./child-online-safety-monitoring-service";
 
@@ -156,11 +156,11 @@ describe("computeAlerts (online safety)", () => {
   });
 });
 
-// -- generateAriaInsights -----------------------------------------------------
+// -- generateCaraInsights -----------------------------------------------------
 
-describe("generateAriaInsights (online safety)", () => {
+describe("generateCaraInsights (online safety)", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[sky]");
     expect(insights[2]).toContain("[reflect]");
@@ -168,7 +168,7 @@ describe("generateAriaInsights (online safety)", () => {
 
   it("shows critical/high counts when alerts present", () => {
     const rows = [makeRow({ harmful_content_found: true })];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 });

@@ -5,13 +5,13 @@
 //
 // Demonstrates the ARIACompose widget against three of the most common
 // children's-home long-text fields: a daily log entry, an incident note, and
-// a management oversight comment. Any other module can drop AriaCompose into
+// a management oversight comment. Any other module can drop CaraCompose into
 // its existing forms with one line.
 //
 // All four flows go through:
-//   POST /api/aria/generate        (server-side auth + permission + audit)
-//   /api/aria/transcribe           (voice dictation, audio discarded after)
-//   PATCH /api/aria/generate       (manager decision: approve / reject / edit)
+//   POST /api/cara/generate        (server-side auth + permission + audit)
+//   /api/cara/transcribe           (voice dictation, audio discarded after)
+//   PATCH /api/cara/generate       (manager decision: approve / reject / edit)
 //
 // The actor user id and role on this page are inputs so a manager can run
 // through the flows during onboarding. In real adoption these come from the
@@ -30,10 +30,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Sparkles, BookOpen, AlertTriangle, ClipboardCheck } from "lucide-react";
-import { AriaCompose } from "@/components/aria/aria-compose";
-import type { AriaRole } from "@/lib/aria/aria-permissions";
+import { CaraCompose } from "@/components/cara/cara-compose";
+import type { CaraRole } from "@/lib/cara/cara-permissions";
 
-const ROLES: { value: AriaRole; label: string }[] = [
+const ROLES: { value: CaraRole; label: string }[] = [
   { value: "registered_manager", label: "Registered Manager" },
   { value: "responsible_individual", label: "Responsible Individual" },
   { value: "deputy_manager", label: "Deputy Manager" },
@@ -43,9 +43,9 @@ const ROLES: { value: AriaRole; label: string }[] = [
   { value: "auditor", label: "Auditor" },
 ];
 
-export default function AriaComposePage() {
+export default function CaraComposePage() {
   const [actorUserId, setActorUserId] = useState("manager_demo_user");
-  const [actorRole, setActorRole] = useState<AriaRole>("registered_manager");
+  const [actorRole, setActorRole] = useState<CaraRole>("registered_manager");
   const [homeId, setHomeId] = useState("home_oak_house");
 
   const [dailyLog, setDailyLog] = useState("");
@@ -54,8 +54,8 @@ export default function AriaComposePage() {
 
   return (
     <PageShell title="Cara — Compose">
-      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
-        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-aria-gold)]" />
+      <div className="mb-6 flex items-start gap-3 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 text-sm text-[var(--cs-navy)]">
+        <Sparkles className="h-5 w-5 mt-0.5 text-[var(--cs-cara-gold)]" />
         <div>
           <div className="font-semibold">Cara suggested draft, never final</div>
           <p className="text-[var(--cs-navy)]">
@@ -72,7 +72,7 @@ export default function AriaComposePage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <ClipboardCheck className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Acting as
+            <ClipboardCheck className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Acting as
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -83,7 +83,7 @@ export default function AriaComposePage() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-[var(--cs-text-secondary)] mb-1">Role</label>
-              <Select value={actorRole} onValueChange={(v) => setActorRole(v as AriaRole)}>
+              <Select value={actorRole} onValueChange={(v) => setActorRole(v as CaraRole)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {ROLES.map((r) => (
@@ -113,7 +113,7 @@ export default function AriaComposePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <AriaCompose
+          <CaraCompose
             value={dailyLog}
             onChange={setDailyLog}
             actorUserId={actorUserId}
@@ -136,7 +136,7 @@ export default function AriaComposePage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <AriaCompose
+          <CaraCompose
             value={incidentNotes}
             onChange={setIncidentNotes}
             actorUserId={actorUserId}
@@ -146,13 +146,13 @@ export default function AriaComposePage() {
             sourceField="narrative"
             defaultCommand="draft_incident_record"
             commands={[
-              { id: "draft_incident_record", label: "Draft incident record", permission: "aria.generate_drafts" },
-              { id: "check_incident_chronology", label: "Check chronology", permission: "aria.analyse_risk" },
-              { id: "incident_risk_analysis", label: "Risk analysis", permission: "aria.analyse_risk" },
-              { id: "identify_missing_incident_information", label: "Missing information", permission: "aria.analyse_risk" },
-              { id: "suggest_incident_follow_up_tasks", label: "Suggest follow-up tasks", permission: "aria.create_tasks" },
-              { id: "draft_social_worker_update", label: "Draft SW update", permission: "aria.generate_drafts" },
-              { id: "draft_parent_carer_update", label: "Draft parent / carer update", permission: "aria.generate_drafts" },
+              { id: "draft_incident_record", label: "Draft incident record", permission: "cara.generate_drafts" },
+              { id: "check_incident_chronology", label: "Check chronology", permission: "cara.analyse_risk" },
+              { id: "incident_risk_analysis", label: "Risk analysis", permission: "cara.analyse_risk" },
+              { id: "identify_missing_incident_information", label: "Missing information", permission: "cara.analyse_risk" },
+              { id: "suggest_incident_follow_up_tasks", label: "Suggest follow-up tasks", permission: "cara.create_tasks" },
+              { id: "draft_social_worker_update", label: "Draft SW update", permission: "cara.generate_drafts" },
+              { id: "draft_parent_carer_update", label: "Draft parent / carer update", permission: "cara.generate_drafts" },
             ]}
             label="Notes"
             placeholder="Note what happened, who was involved, and when. Cara can structure this into an incident record."
@@ -164,11 +164,11 @@ export default function AriaComposePage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Management oversight comment
+            <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Management oversight comment
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <AriaCompose
+          <CaraCompose
             value={oversight}
             onChange={setOversight}
             actorUserId={actorUserId}
@@ -178,13 +178,13 @@ export default function AriaComposePage() {
             sourceField="comment"
             defaultCommand="draft_management_oversight"
             commands={[
-              { id: "draft_management_oversight", label: "Draft oversight", permission: "aria.generate_drafts" },
-              { id: "improve_management_oversight", label: "Improve oversight", permission: "aria.rewrite" },
-              { id: "review_management_oversight_quality", label: "Review oversight quality", permission: "aria.summarise" },
-              { id: "check_oversight_reflection", label: "Check reflection", permission: "aria.summarise" },
-              { id: "check_oversight_challenge", label: "Check challenge", permission: "aria.summarise" },
-              { id: "check_oversight_child_focus", label: "Check child focus", permission: "aria.summarise" },
-              { id: "identify_management_actions", label: "Identify management actions", permission: "aria.summarise" },
+              { id: "draft_management_oversight", label: "Draft oversight", permission: "cara.generate_drafts" },
+              { id: "improve_management_oversight", label: "Improve oversight", permission: "cara.rewrite" },
+              { id: "review_management_oversight_quality", label: "Review oversight quality", permission: "cara.summarise" },
+              { id: "check_oversight_reflection", label: "Check reflection", permission: "cara.summarise" },
+              { id: "check_oversight_challenge", label: "Check challenge", permission: "cara.summarise" },
+              { id: "check_oversight_child_focus", label: "Check child focus", permission: "cara.summarise" },
+              { id: "identify_management_actions", label: "Identify management actions", permission: "cara.summarise" },
             ]}
             label="Oversight"
             placeholder="Note what you have read and what you want to say. Cara will draft a reflective oversight for you to review."
@@ -198,7 +198,7 @@ export default function AriaComposePage() {
         </CardHeader>
         <CardContent className="text-sm text-[var(--cs-text-secondary)] space-y-2">
           <p>
-            Drop <code className="text-xs bg-slate-100 rounded px-1 py-0.5">AriaCompose</code> into any existing
+            Drop <code className="text-xs bg-slate-100 rounded px-1 py-0.5">CaraCompose</code> into any existing
             form. Pass the actor identity and role from your auth context, the
             source module and field for audit linkage, and a default command
             appropriate to the field. The mic button and command picker hide

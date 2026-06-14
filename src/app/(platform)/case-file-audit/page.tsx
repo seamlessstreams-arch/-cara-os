@@ -40,8 +40,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const ragClasses = (r: RagRating) => {
   switch (r) {
@@ -137,12 +137,12 @@ export default function CaseFileAuditPage() {
     <PageShell
       title="Case File Audit"
       subtitle="Quality audits of individual children's case files — Quality Standard 13 & Reg 36"
-      ariaContext={{ pageTitle: "Case File Audit", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Case File Audit", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="case-file-audits" />
           <PrintButton title="Case File Audit" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -362,7 +362,7 @@ export default function CaseFileAuditPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Case File Audit — compliance audit of individual child records, documentation gaps, care plan currency, review dates, missing consents, Reg 45 evidence, Annex A readiness"
         recordType="management_oversight"

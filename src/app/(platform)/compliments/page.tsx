@@ -27,8 +27,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { Compliment, ComplimentSource, ComplimentCategory } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const SOURCES: ComplimentSource[] = [
@@ -115,7 +115,7 @@ export default function ComplimentsPage() {
     <PageShell
       title="Compliments Log"
       subtitle="Positive feedback, praise, and recognition from all stakeholders"
-      ariaContext={{ pageTitle: "Compliments Log", sourceType: "general" }}
+      caraContext={{ pageTitle: "Compliments Log", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Compliments Log" />
@@ -123,7 +123,7 @@ export default function ComplimentsPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Compliment
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -340,7 +340,7 @@ export default function ComplimentsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Compliments Log — positive feedback received from families, professionals, commissioners or community, staff achievements, Reg 44/45 evidence, inspection readiness"
         recordType="management_oversight"

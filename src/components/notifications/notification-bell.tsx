@@ -59,7 +59,7 @@ export function NotificationBell({ staffId = "staff_darren" }: { staffId?: strin
             {unread > 0 && (
               <button
                 onClick={() => { notifications.forEach((n) => markAsRead(n.id)); setNotifications(generateNotifications(staffId)); }}
-                className="text-xs text-[var(--cs-aria-gold)] hover:underline"
+                className="text-xs text-[var(--cs-cara-gold)] hover:underline"
               >Mark all read</button>
             )}
           </div>
@@ -82,7 +82,7 @@ export function NotificationBell({ staffId = "staff_darren" }: { staffId?: strin
             )}
           </div>
           <div className="px-4 py-2 border-t border-[var(--cs-border)]">
-            <Link href="/notifications" className="text-xs text-[var(--cs-aria-gold)] hover:underline" onClick={() => setOpen(false)}>View all notifications</Link>
+            <Link href="/notifications" className="text-xs text-[var(--cs-cara-gold)] hover:underline" onClick={() => setOpen(false)}>View all notifications</Link>
           </div>
         </div>
       )}

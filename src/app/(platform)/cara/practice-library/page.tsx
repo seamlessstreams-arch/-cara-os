@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import {
   Loader2, BookOpen, Plus, Power, Trash2, HeartHandshake, MessageCircle, ListChecks, Lock,
 } from "lucide-react";
-import type { PromptBankEntry, WorkflowStep } from "@/lib/aria-incident/aria-incident-engine";
+import type { PromptBankEntry, WorkflowStep } from "@/lib/cara-incident/cara-incident-engine";
 
 const inputCls = "rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:border-[var(--cs-teal)] focus:outline-none focus:ring-1 focus:ring-[var(--cs-teal)]";
 
@@ -30,15 +30,15 @@ const CAT_LABEL: Record<string, string> = {
   restorative: "Restorative", safeguarding: "Safeguarding", recording: "Recording",
 };
 
-export default function AriaPracticeLibraryPage() {
+export default function CaraPracticeLibraryPage() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery<LibraryData>({
-    queryKey: ["aria-practice-library"],
-    queryFn: () => fetch("/api/v1/aria-prompt-bank").then(json),
+    queryKey: ["cara-practice-library"],
+    queryFn: () => fetch("/api/v1/cara-prompt-bank").then(json),
   });
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["aria-practice-library"] });
-    qc.invalidateQueries({ queryKey: ["aria-incident-list"] });
+    qc.invalidateQueries({ queryKey: ["cara-practice-library"] });
+    qc.invalidateQueries({ queryKey: ["cara-incident-list"] });
   };
 
   const [text, setText] = useState("");
@@ -46,7 +46,7 @@ export default function AriaPracticeLibraryPage() {
   const [forType, setForType] = useState("");
 
   const add = useMutation({
-    mutationFn: () => fetch("/api/v1/aria-prompt-bank", {
+    mutationFn: () => fetch("/api/v1/cara-prompt-bank", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt_text: text, category, incident_type: forType || null }),
     }).then(json),
@@ -54,7 +54,7 @@ export default function AriaPracticeLibraryPage() {
   });
   const patch = useMutation({
     mutationFn: (payload: { id: string; is_active?: boolean; remove?: boolean }) =>
-      fetch("/api/v1/aria-prompt-bank", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(json),
+      fetch("/api/v1/cara-prompt-bank", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }).then(json),
     onSuccess: invalidate,
   });
 
@@ -72,7 +72,7 @@ export default function AriaPracticeLibraryPage() {
     <PageShell
       title="Cara Practice Library"
       subtitle="The prompts and workflows behind Incident Mode — co-regulation and de-escalation prompts, child-voice questions and per-incident workflow checklists. Add your home's own prompts; they appear live in Incident Mode."
-      ariaContext={{ pageTitle: "Cara Practice Library", sourceType: "general" }}
+      caraContext={{ pageTitle: "Cara Practice Library", sourceType: "general" }}
     >
       <div className="mx-auto max-w-3xl space-y-4 pb-10">
         {isLoading && <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}

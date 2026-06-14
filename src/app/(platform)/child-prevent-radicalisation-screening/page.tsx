@@ -24,8 +24,8 @@ import { PREVENT_SCREENING_OUTCOME_LABEL, PREVENT_CHANNEL_STATUS_LABEL } from "@
 import { usePreventScreenings } from "@/hooks/use-prevent-screenings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -177,12 +177,12 @@ export default function ChildPreventRadicalisationScreeningPage() {
     <PageShell
       title="Child Prevent Radicalisation Screening"
       subtitle="Per-child Prevent duty screening — child-rights based, proportionate, and explicit about not conflating identity with risk"
-      ariaContext={{ pageTitle: "Prevent Screening", sourceType: "general" }}
+      caraContext={{ pageTitle: "Prevent Screening", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Prevent Screening" />
           <ExportButton data={exportRows} columns={exportCols} filename="child-prevent-radicalisation-screening" />
-          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -363,11 +363,11 @@ export default function ChildPreventRadicalisationScreeningPage() {
 
                   {/* external consultation */}
                   {r.external_consultation.length > 0 && (
-                    <div className="rounded-md bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3">
-                      <h4 className="text-xs font-semibold text-[var(--cs-aria-gold)] mb-1">External consultation</h4>
+                    <div className="rounded-md bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
+                      <h4 className="text-xs font-semibold text-[var(--cs-cara-gold)] mb-1">External consultation</h4>
                       <ul className="text-sm text-[var(--cs-navy)] space-y-1.5">
                         {r.external_consultation.map((c, i) => (
-                          <li key={i} className="border-l-2 border-[var(--cs-aria-gold-soft)] pl-2">
+                          <li key={i} className="border-l-2 border-[var(--cs-cara-gold-soft)] pl-2">
                             <p className="font-medium">{c.agency}{c.clinician ? ` — ${c.clinician}` : ""} · {formatDate(c.date)}</p>
                             <p className="text-[var(--cs-navy)]/90">{c.outcome}</p>
                           </li>
@@ -427,7 +427,7 @@ export default function ChildPreventRadicalisationScreeningPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Prevent Screening — radicalisation vulnerability, Channel referral, Prevent duty, extremism indicators, safeguarding concerns, risk assessment, action plan, multi-agency, Reg 40 notification"
         recordType="safeguarding"

@@ -27,10 +27,10 @@ export function computeRiScoreCard(homeId: string): RiScoreCard {
 
   // ── Pull data from store ─────────────────────────────────────────────────────
 
-  const flags = intelligenceDb.ariaSafeguardingFlags.findAll(homeId);
-  const assessments = intelligenceDb.ariaAssessments.findAll(homeId);
-  const oversight = intelligenceDb.ariaOversight.findAll(homeId);
-  const recommendations = intelligenceDb.ariaRecommendations.findAll(homeId);
+  const flags = intelligenceDb.caraSafeguardingFlags.findAll(homeId);
+  const assessments = intelligenceDb.caraAssessments.findAll(homeId);
+  const oversight = intelligenceDb.caraOversight.findAll(homeId);
+  const recommendations = intelligenceDb.caraRecommendations.findAll(homeId);
   const riChallenges = intelligenceDb.riChallengeLogs.findAll(homeId);
   const riAlerts = intelligenceDb.riAlerts.findAll(homeId);
   const reg45 = intelligenceDb.riReg45Evidence.findAll(homeId);

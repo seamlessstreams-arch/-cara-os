@@ -77,7 +77,7 @@ export interface ManagementOversightOutput {
   strengths: string[];
   suggestedActions: OversightAction[];
   regulatoryLinks: string[];
-  ariaConfidence: number;
+  caraConfidence: number;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -406,6 +406,6 @@ export function generateManagementOversight(
     strengths,
     suggestedActions: buildActions(input, missingEvidence, riskLevel),
     regulatoryLinks: getRegulatoryLinks(input),
-    ariaConfidence: 0.78,
+    caraConfidence: 0.78,
   };
 }

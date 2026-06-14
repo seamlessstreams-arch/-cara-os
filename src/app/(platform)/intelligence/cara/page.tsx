@@ -10,13 +10,13 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  useAriaSafeguardingFlags,
-  useAriaRecommendations,
+  useCaraSafeguardingFlags,
+  useCaraRecommendations,
   useKeyWorkSessions,
-  useAriaAssessments,
-  useAriaOversight,
+  useCaraAssessments,
+  useCaraOversight,
   useChildResources,
-  useAriaAuditTrail,
+  useCaraAuditTrail,
 } from "@/hooks/use-intelligence";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -37,9 +37,9 @@ const FEATURES = [
     title: "Situation Review",
     description: "AI-powered structured analysis of any situation",
     icon: Brain,
-    color: "text-[var(--cs-aria-gold)]",
-    bg: "bg-[var(--cs-aria-gold-bg)]",
-    border: "border-[var(--cs-aria-gold-soft)]",
+    color: "text-[var(--cs-cara-gold)]",
+    bg: "bg-[var(--cs-cara-gold-bg)]",
+    border: "border-[var(--cs-cara-gold-soft)]",
   },
   {
     href: "/intelligence/cara/oversight-radar",
@@ -160,18 +160,18 @@ function StatCard({
 }
 
 // ── Page ──────────────────────────────────────────────────────────────────────
-export default function AriaHubPage() {
+export default function CaraHubPage() {
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const ypQuery = useYoungPeople("current");
   const youngPeople = (ypQuery.data?.data ?? []).map(yp => ({ id: yp.id, name: yp.preferred_name ?? yp.first_name }));
-  const { data: flagData } = useAriaSafeguardingFlags({ homeId });
-  const { data: recData } = useAriaRecommendations({ homeId });
+  const { data: flagData } = useCaraSafeguardingFlags({ homeId });
+  const { data: recData } = useCaraRecommendations({ homeId });
   const { data: kwData } = useKeyWorkSessions({ homeId });
-  const { data: assessData } = useAriaAssessments({ homeId });
-  const { data: oversightData } = useAriaOversight({ homeId });
+  const { data: assessData } = useCaraAssessments({ homeId });
+  const { data: oversightData } = useCaraOversight({ homeId });
   const { data: resourceData } = useChildResources({ homeId });
-  const { data: auditData } = useAriaAuditTrail({ homeId });
+  const { data: auditData } = useCaraAuditTrail({ homeId });
 
   const openFlags = useMemo(() => (flagData?.data ?? []).filter((f) => f.status === "open"), [flagData]);
   const pendingRecs = useMemo(() => (recData?.data ?? []).filter((r) => r.status === "pending"), [recData]);
@@ -232,7 +232,7 @@ export default function AriaHubPage() {
                 {yp.name}
               </span>
             ))}
-            <span className="rounded-full bg-[var(--cs-navy)]/40 px-3 py-1 text-xs font-medium text-[var(--cs-aria-gold-soft)]">
+            <span className="rounded-full bg-[var(--cs-navy)]/40 px-3 py-1 text-xs font-medium text-[var(--cs-cara-gold-soft)]">
               Chamberlain House
             </span>
           </div>

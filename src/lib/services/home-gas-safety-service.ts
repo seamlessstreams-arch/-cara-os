@@ -272,7 +272,7 @@ export function identifyGasSafetyAlerts(
   return alerts;
 }
 
-export function generateGasSafetyAriaInsights(
+export function generateGasSafetyCaraInsights(
   rows: HomeGasSafetyRow[],
 ): string[] {
   const metrics = computeGasSafetyMetrics(rows);
@@ -438,5 +438,5 @@ export async function deleteRecord(
 export const _testing = {
   computeGasSafetyMetrics,
   identifyGasSafetyAlerts,
-  generateGasSafetyAriaInsights,
+  generateGasSafetyCaraInsights,
 };

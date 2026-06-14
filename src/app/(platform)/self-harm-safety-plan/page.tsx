@@ -21,8 +21,8 @@ import { useSelfHarmSafetyPlanRecords } from "@/hooks/use-self-harm-safety-plan-
 import type { SelfHarmSafetyPlanRecord, SelfHarmSafetyPlanStatus, SelfHarmSafetyPlanReviewFrequency } from "@/types/extended";
 import { SELF_HARM_SAFETY_PLAN_STATUS_LABEL, SELF_HARM_SAFETY_PLAN_REVIEW_FREQUENCY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
@@ -173,12 +173,12 @@ export default function SelfHarmSafetyPlanPage() {
     <PageShell
       title="Self-Harm Safety Plans"
       subtitle="Per-child, co-produced safety plans using the Stanley-Brown framework. Trauma-informed, hopeful, and child-led — never sensational."
-      ariaContext={{ pageTitle: "Self-Harm Safety Plans", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Self-Harm Safety Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Self-Harm Safety Plans" />
           <ExportButton data={filtered} columns={exportCols} filename="self-harm-safety-plans" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -544,7 +544,7 @@ export default function SelfHarmSafetyPlanPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Self-Harm Safety Plans — individual safety plans, risk triggers, protective factors, crisis responses, staff guidance, safeguarding evidence, care plan evidence, Reg 45 quality evidence"
         recordType="care_plan"

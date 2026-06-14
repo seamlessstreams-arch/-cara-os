@@ -24,8 +24,8 @@ import { usePetRecords } from "@/hooks/use-pet-records";
 import type { PetRecord, PetSpecies } from "@/types/extended";
 import { PET_SPECIES_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── colour maps ───────────────────────────────────────────────────────── */
 
@@ -169,12 +169,12 @@ export default function HomePetsCareLogPage() {
     <PageShell
       title="Home Pets Care Log"
       subtitle="The animals who share our home — welfare, vet records, child involvement, and the quiet therapeutic value they bring"
-      ariaContext={{ pageTitle: "Home Pets Care Log", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Home Pets Care Log", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Home Pets Care Log" />
           <ExportButton data={exportRows} columns={exportCols} filename="home-pets-care-log" />
-          <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -417,7 +417,7 @@ export default function HomePetsCareLogPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Home Pets Care Log — pets in the home, animal welfare, vet records, vaccinations, allergies, children's relationships with pets, therapeutic benefits, risk assessment"
         recordType="policy"

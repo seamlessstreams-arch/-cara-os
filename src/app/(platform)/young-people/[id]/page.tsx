@@ -9,7 +9,7 @@ import React, { useState, use, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
+import { CaraPanel } from "@/components/cara/cara-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar } from "@/components/ui/avatar";
@@ -21,14 +21,14 @@ import {
   MessageSquare, HeartHandshake, Target, BookOpen, CheckSquare,
 } from "lucide-react";
 import { ChildExperienceTab } from "@/components/intelligence/child-experience-tab";
-import { AriaQuickActions } from "@/components/intelligence/cara-quick-actions";
+import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
 import { useYoungPerson } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { PrintButton } from "@/components/common/print-button";
 import { ChildCalendarTab } from "@/components/calendar/child-calendar-tab";
 import { ChildChronologyTab } from "@/components/young-person/child-chronology-tab";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { useDocumentIntelligence } from "@/hooks/use-doc-intelligence";
 import { api } from "@/hooks/use-api";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -253,7 +253,7 @@ type ProfileTab =
   | "health" | "medication" | "education"
   | "plans-risk" | "keywork" | "family-time" | "missing"
   | "incidents" | "outcomes" | "chronology" | "documents"
-  | "aria";
+  | "cara";
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
@@ -403,7 +403,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
     {
       label: "Intelligence",
       tabs: [
-        { id: "aria", label: "Cara", icon: Sparkles },
+        { id: "cara", label: "Cara", icon: Sparkles },
       ],
     },
   ];
@@ -415,12 +415,12 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
       showQuickCreate={false}
       recordAnything
       recordChildId={id}
-      ariaContext={{ sourceType: "child_record", sourceId: id, childId: id, childName: `${displayName} ${yp.last_name}` }}
+      caraContext={{ sourceType: "child_record", sourceId: id, childId: id, childName: `${displayName} ${yp.last_name}` }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title={`${displayName} ${yp.last_name}`} subtitle="Chamberlain House — Young Person Profile" targetId="yp-detail-content" />
           <SmartUploadButton variant="icon" linkedChildId={id} uploadContext={`Young person profile — ${yp.first_name} ${yp.last_name}`} />
-          <AriaStudioQuickActionButton context={{ record_type: "keywork", record_id: id, child_id: id, home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "keywork", record_id: id, child_id: id, home_id: "home_oak" }} />
           <Button variant="outline" size="sm" onClick={() => router.push("/young-people")}>
             <ArrowLeft className="h-3.5 w-3.5 mr-1" />All Young People
           </Button>
@@ -429,7 +429,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
     >
       <div id="yp-detail-content" className="space-y-4 animate-fade-in">
 
-        <AriaPanel
+        <CaraPanel
           mode="assist"
           pageContext={`Young Person Profile — ${displayName} ${yp.last_name}`}
           recordType="child_record"
@@ -1493,9 +1493,9 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
         )}
 
         {/* ── Cara (Intelligence) ──────────────────────────────────────────── */}
-        {tab === "aria" && (
+        {tab === "cara" && (
           <div className="space-y-5">
-            <AriaQuickActions childId={yp.id} sourceType="young_person_profile" sourceId={yp.id} defaultOpen />
+            <CaraQuickActions childId={yp.id} sourceType="young_person_profile" sourceId={yp.id} defaultOpen />
             <ChildVoiceSummarySection childId={yp.id} childName={displayName} />
             <WhatChangedSection
               childName={displayName}

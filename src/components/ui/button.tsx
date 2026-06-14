@@ -16,7 +16,7 @@ const buttonVariants = cva(
         link: "text-[var(--cs-info)] underline-offset-4 hover:underline",
         success: "bg-[var(--cs-success)] text-white shadow-sm hover:bg-[var(--cs-success)]/90",
         warning: "bg-[var(--cs-warning)] text-white shadow-sm hover:bg-[var(--cs-warning)]/90",
-        aria: "bg-[var(--cs-aria-gold)] text-[var(--cs-navy)] shadow-sm hover:bg-[var(--cs-aria-gold)]/90 shadow-[var(--cs-shadow-glow-gold)]",
+        cara: "bg-[var(--cs-cara-gold)] text-[var(--cs-navy)] shadow-sm hover:bg-[var(--cs-cara-gold)]/90 shadow-[var(--cs-shadow-glow-gold)]",
       },
       size: {
         default: "h-10 px-4 py-2",

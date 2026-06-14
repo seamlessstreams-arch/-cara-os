@@ -25,8 +25,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { ProfessionalNetworkContact, NetworkContactFrequency } from "@/types/extended";
 import { NETWORK_CONTACT_FREQUENCY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -141,12 +141,12 @@ export default function ProfessionalNetworkMapPage() {
     <PageShell
       title="Professional Network Map"
       subtitle="Quality Standard 1 — Multi-agency professional contacts for each child"
-      ariaContext={{ pageTitle: "Professional Network Map", sourceType: "contact_log" }}
+      caraContext={{ pageTitle: "Professional Network Map", sourceType: "contact_log" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton<ProfessionalNetworkContact> data={records} columns={exportCols} filename="professional-network-map" />
           <PrintButton title="Professional Network Map" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -278,7 +278,7 @@ export default function ProfessionalNetworkMapPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Professional Network Map — social workers, IROs, CAMHS, education, GP, LAC nurses, legal, commissioning, advocates, multi-agency, professional meetings, CLA reviews"
         recordType="management_oversight"

@@ -96,7 +96,7 @@ export interface AdmissionAlert {
   message: string;
 }
 
-export interface AriaAdmissionInsight {
+export interface CaraAdmissionInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -107,7 +107,7 @@ export interface AdmissionReferralIntelligenceResult {
   source_analysis: SourceAnalysis[];
   decision_analysis: DecisionAnalysis;
   alerts: AdmissionAlert[];
-  insights: AriaAdmissionInsight[];
+  insights: CaraAdmissionInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -304,7 +304,7 @@ export function computeAdmissionReferralIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaAdmissionInsight[] = [];
+  const insights: CaraAdmissionInsight[] = [];
 
   // Critical: no beds but active pipeline
   if (availableBeds === 0 && active.length > 0) {

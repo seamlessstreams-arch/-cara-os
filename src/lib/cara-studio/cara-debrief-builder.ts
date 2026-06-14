@@ -10,7 +10,7 @@
 import type { CaraStaffDebriefOutput } from "./cara-types";
 import { RECORDING_PROMPTS, STAFF_REGULATION_REMINDERS } from "./cara-prompt-library";
 import { computeManagerReview, type ManagerReviewDecision } from "./cara-guardrails";
-import { BEHAVIOUR_DRIVERS } from "@/lib/aria/practice-frameworks";
+import { BEHAVIOUR_DRIVERS } from "@/lib/cara/practice-frameworks";
 
 export interface DebriefInput {
   incidentSummary: string;

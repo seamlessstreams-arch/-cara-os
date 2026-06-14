@@ -34,8 +34,8 @@ import {
   STAFF_DISCIPLINARY_SEVERITY_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local colour maps ────────────────────────────────────────────────── */
 
@@ -151,7 +151,7 @@ export default function StaffDisciplinaryPage() {
     <PageShell
       title="Staff Disciplinary"
       subtitle="Confidential disciplinary procedure — investigation, hearing and outcomes"
-      ariaContext={{ pageTitle: "Staff Disciplinary Records", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Disciplinary Records", sourceType: "staff" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Staff Disciplinary" />
@@ -159,7 +159,7 @@ export default function StaffDisciplinaryPage() {
           <button onClick={() => setDialogOpen(true)} className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700">
             <Plus className="h-4 w-4" /> New Case
           </button>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -348,7 +348,7 @@ export default function StaffDisciplinaryPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Disciplinary Records — staff disciplinary cases, investigation outcomes, sanctions, appeals, HR compliance, Reg 40 workforce evidence, management oversight, regulatory compliance"
         recordType="staff_training"

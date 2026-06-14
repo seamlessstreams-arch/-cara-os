@@ -87,11 +87,11 @@ export function generateInspectionSnapshot(
   const notifications        = loadNotifications(homeId);
   const saved_time           = loadSavedTimeDashboard(homeId);
 
-  const reg40_open = db.ariaReg40Triages
+  const reg40_open = db.caraReg40Triages
     .findAll(homeId)
     .filter((t) => t.status === "pending").length;
 
-  const reg45_ai_draft = db.ariaReg45EvidenceItems
+  const reg45_ai_draft = db.caraReg45EvidenceItems
     .findAll(homeId)
     .filter((r) => r.status === "ai_draft").length;
 

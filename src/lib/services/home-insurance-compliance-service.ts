@@ -321,7 +321,7 @@ export function computeInsuranceAlerts(
   return alerts;
 }
 
-export function generateInsuranceAriaInsights(
+export function generateInsuranceCaraInsights(
   rows: HomeInsuranceComplianceRow[],
 ): string[] {
   const metrics = computeInsuranceMetrics(rows);
@@ -381,5 +381,5 @@ export function generateInsuranceAriaInsights(
 export const _testing = {
   computeInsuranceMetrics,
   computeInsuranceAlerts,
-  generateInsuranceAriaInsights,
+  generateInsuranceCaraInsights,
 };

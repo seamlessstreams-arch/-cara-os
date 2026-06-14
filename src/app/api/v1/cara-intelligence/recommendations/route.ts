@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
-import type { AriaRecommendation, AriaRecommendationType, AriaRecommendationStatus } from "@/types/extended";
+import type { CaraRecommendation, CaraRecommendationType, CaraRecommendationStatus } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -9,8 +9,8 @@ export async function GET(req: NextRequest) {
   const status  = searchParams.get("status");
 
   let results = childId
-    ? intelligenceDb.ariaRecommendations.findByChild(childId)
-    : intelligenceDb.ariaRecommendations.findAll(homeId);
+    ? intelligenceDb.caraRecommendations.findByChild(childId)
+    : intelligenceDb.caraRecommendations.findAll(homeId);
 
   if (status) results = results.filter((r) => r.status === status);
 
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let body: Partial<AriaRecommendation>;
+  let body: Partial<CaraRecommendation>;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
@@ -30,12 +30,12 @@ export async function POST(req: NextRequest) {
     if (!body[field]) return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
   }
 
-  const rec = intelligenceDb.ariaRecommendations.create({
+  const rec = intelligenceDb.caraRecommendations.create({
     home_id:             body.home_id ?? "home_oak",
     child_id:            body.child_id,
     source_type:         body.source_type,
     source_id:           body.source_id,
-    recommendation_type: body.recommendation_type as AriaRecommendationType,
+    recommendation_type: body.recommendation_type as CaraRecommendationType,
     title:               body.title!,
     reason:              body.reason!,
     priority:            body.priority ?? "medium",
@@ -43,10 +43,10 @@ export async function POST(req: NextRequest) {
     assigned_role:       body.assigned_role,
     task_created:        body.task_created ?? false,
     task_id:             body.task_id,
-    status:              (body.status as AriaRecommendationStatus) ?? "pending",
+    status:              (body.status as CaraRecommendationStatus) ?? "pending",
   });
 
-  intelligenceDb.ariaAuditTrail.create({
+  intelligenceDb.caraAuditTrail.create({
     home_id:      rec.home_id,
     user_id:      "staff_darren",
     child_id:     rec.child_id,

@@ -73,7 +73,7 @@ export function HealthAppointmentsIntelligenceCard({ childId }: HealthAppointmen
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/aria/health-appointments?childId=${childId}`);
+        const res = await fetch(`/api/cara/health-appointments?childId=${childId}`);
         const json = await res.json();
         if (json.success) setData(json.data);
       } catch (err) {

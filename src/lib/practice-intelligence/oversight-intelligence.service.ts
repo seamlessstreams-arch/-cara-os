@@ -8,8 +8,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { createServerClient } from "@/lib/supabase/server";
-import { generateStudioContent } from "@/lib/aria-studio/ai-provider.service";
-import { ARIA_STUDIO_SYSTEM_PROMPT } from "@/lib/aria-studio/prompts";
+import { generateStudioContent } from "@/lib/cara-studio/ai-provider.service";
+import { CARA_STUDIO_SYSTEM_PROMPT } from "@/lib/cara-studio/prompts";
 import type {
   ManagementOversightDraft,
   OversightContent,
@@ -97,7 +97,7 @@ export async function generateOversightDraft(opts: {
   // Build prompt
   const typePrompt = OVERSIGHT_PROMPTS[opts.oversightType];
   const systemPrompt = [
-    ARIA_STUDIO_SYSTEM_PROMPT,
+    CARA_STUDIO_SYSTEM_PROMPT,
     "",
     "--- OVERSIGHT TYPE ---",
     typePrompt,

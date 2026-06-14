@@ -23,8 +23,8 @@ import { cn, todayStr } from "@/lib/utils";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 type ReportView = "overview" | "workforce" | "compliance" | "incidents" | "finance";
 
@@ -127,7 +127,7 @@ export default function ReportsPage() {
     <PageShell
       title="Reports & Analytics"
       subtitle="Workforce, compliance, incident, and finance reporting for managers, RI, and Ofsted"
-      ariaContext={{ pageTitle: "Management Reports", sourceType: "document" }}
+      caraContext={{ pageTitle: "Management Reports", sourceType: "document" }}
       quickCreateContext={{ module: "reports", defaultTaskCategory: "admin" }}
       actions={
         <div className="flex items-center gap-2">
@@ -260,7 +260,7 @@ export default function ReportsPage() {
             {/* Reg 44 / RI Report summary */}
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-[var(--cs-aria-gold)]" />Reg 44 / RI Report — Evidence Summary</CardTitle>
+                <CardTitle className="text-sm flex items-center gap-2"><FileText className="h-4 w-4 text-[var(--cs-cara-gold)]" />Reg 44 / RI Report — Evidence Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -455,7 +455,7 @@ export default function ReportsPage() {
               {[
                 { label: "Monthly Staff Cost", value: "£24,800", sub: "incl. overtime", color: "text-blue-600" },
                 { label: "Overtime This Month", value: "£380", sub: "6.2 hours OT", color: "text-orange-600" },
-                { label: "Expenses Submitted", value: "£561", sub: "7 claims", color: "text-[var(--cs-aria-gold)]" },
+                { label: "Expenses Submitted", value: "£561", sub: "7 claims", color: "text-[var(--cs-cara-gold)]" },
                 { label: "Petty Cash Balance", value: "£43.50", sub: "Last counted: today", color: "text-emerald-600" },
               ].map(({ label, value, sub, color }) => (
                 <div key={label} className="rounded-2xl border border-[var(--cs-border)] bg-white p-5">
@@ -474,7 +474,7 @@ export default function ReportsPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Management Reports — monthly reports, board reports, RI reports, staffing reports, incident reports, outcomes reports, Reg 45 evidence, Annex A evidence, governance oversight"
         recordType="management_oversight"

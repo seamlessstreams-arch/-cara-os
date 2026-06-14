@@ -94,7 +94,7 @@ export default function PremisesCompliancePage() {
     <PageShell
       title="Premises & Safety Compliance"
       subtitle="Are all our statutory building-safety checks and certificates in date? Gas, electrical, fire risk assessment, routine safety checks, drills and servicing — one RAG currency board (CHR 2015 Reg 31 / health & safety)."
-      ariaContext={{ pageTitle: "Premises & Safety Compliance", sourceType: "general" }}
+      caraContext={{ pageTitle: "Premises & Safety Compliance", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 print:hidden">

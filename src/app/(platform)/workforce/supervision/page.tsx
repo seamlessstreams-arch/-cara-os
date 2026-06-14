@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -114,7 +114,7 @@ export default function WorkforceSupervisionPage() {
     <PageShell
       title="Supervision Hub"
       subtitle="Reflective supervision tracker — Reg 34 compliance at a glance"
-      ariaContext={{ pageTitle: "Supervision Hub", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Supervision Hub", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -127,7 +127,7 @@ export default function WorkforceSupervisionPage() {
               New Supervision
             </Button>
           </Link>
-          <AriaStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "supervision", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -242,7 +242,7 @@ export default function WorkforceSupervisionPage() {
             placeholder="Search by name or role..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white py-1.5 pl-9 pr-3 text-xs text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:ring-1 focus:ring-[var(--cs-aria-gold)]/30 outline-none transition-all"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white py-1.5 pl-9 pr-3 text-xs text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-cara-gold)] focus:ring-1 focus:ring-[var(--cs-cara-gold)]/30 outline-none transition-all"
           />
         </div>
         <div className="flex items-center gap-1.5 text-xs text-[var(--cs-text-muted)] shrink-0">
@@ -404,7 +404,7 @@ export default function WorkforceSupervisionPage() {
         reflective and development-focused. Frequency and quality are assessed by Ofsted at inspection.
       </div>
       </div>{/* close #supervision-hub-content */}
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Supervision Hub — staff supervision schedule, Reg 34 supervision compliance, overdue supervision, reflective supervision records, management oversight, ILACS workforce quality, Ofsted inspection evidence"
         recordType="supervision"

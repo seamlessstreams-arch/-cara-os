@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateHolidayTripPlanning,
-  generateAriaInsights,
+  generateCaraInsights,
   type HolidayTripPlanningRow,
 } from "./holiday-trip-planning-service";
 
@@ -215,11 +215,11 @@ describe("validateHolidayTripPlanning", () => {
   });
 });
 
-// ── generateAriaInsights ─────────────────────────────────────────────────
+// ── generateCaraInsights ─────────────────────────────────────────────────
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights", () => {
-    const insights = generateAriaInsights([makeRow()]);
+    const insights = generateCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 });

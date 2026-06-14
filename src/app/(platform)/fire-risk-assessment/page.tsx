@@ -33,8 +33,8 @@ import {
   CircleDot, Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -135,12 +135,12 @@ export default function FireRiskAssessmentPage() {
     <PageShell
       title="Fire Risk Assessment"
       subtitle="Hazards, controls, and remedial actions under the Regulatory Reform (Fire Safety) Order 2005"
-      ariaContext={{ pageTitle: "Fire Risk Assessment", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Fire Risk Assessment", sourceType: "home_check" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Fire Risk Assessment" />
           <ExportButton data={filtered} columns={exportCols} filename="fire-risk-assessment" />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -381,7 +381,7 @@ export default function FireRiskAssessmentPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Fire Risk Assessment — fire hazards, fire detection systems, means of escape, fire extinguishers, fire doors, evacuation plan, responsible person, Reg 31, RRFSO, Ofsted"
         recordType="risk_assessment"

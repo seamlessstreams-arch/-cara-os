@@ -305,7 +305,7 @@ export function identifyCctvComplianceAlerts(
   return alerts;
 }
 
-export function generateCctvComplianceAriaInsights(
+export function generateCctvComplianceCaraInsights(
   rows: HomeCctvComplianceRow[],
 ): string[] {
   const metrics = computeCctvComplianceMetrics(rows);
@@ -482,5 +482,5 @@ export async function deleteHomeCctvCompliance(
 export const _testing = {
   computeCctvComplianceMetrics,
   identifyCctvComplianceAlerts,
-  generateCctvComplianceAriaInsights,
+  generateCctvComplianceCaraInsights,
 };

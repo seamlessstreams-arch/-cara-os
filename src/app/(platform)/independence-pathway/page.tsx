@@ -15,8 +15,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -125,12 +125,12 @@ export default function IndependencePathwayPage() {
     <PageShell
       title="Independence Pathway"
       subtitle="Overall pathway assessment and transition readiness tracking for each young person"
-      ariaContext={{ pageTitle: "Independence Pathway", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Independence Pathway", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={exportData} columns={exportCols} filename="independence-pathway" />
           <PrintButton title="Independence Pathway" />
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >

@@ -27,7 +27,7 @@ import type { Reg44IndependentVisitorReportRow } from "../reg44-independent-visi
 const {
   computeReg44IndependentVisitorMetrics,
   computeReg44IndependentVisitorAlerts,
-  generateReg44IndependentVisitorAriaInsights,
+  generateReg44IndependentVisitorCaraInsights,
 } = _testing;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -626,14 +626,14 @@ describe("computeReg44IndependentVisitorAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// generateReg44IndependentVisitorAriaInsights
+// generateReg44IndependentVisitorCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateReg44IndependentVisitorAriaInsights", () => {
+describe("generateReg44IndependentVisitorCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeReg44IndependentVisitorMetrics([makeRow()]);
     const alerts = computeReg44IndependentVisitorAlerts([makeRow()]);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -643,7 +643,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
   it("returns 3 insights for empty data", () => {
     const metrics = computeReg44IndependentVisitorMetrics([]);
     const alerts = computeReg44IndependentVisitorAlerts([]);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -653,7 +653,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
   it("first insight starts with [slate]", () => {
     const metrics = computeReg44IndependentVisitorMetrics([makeRow()]);
     const alerts = computeReg44IndependentVisitorAlerts([makeRow()]);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -664,7 +664,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
     const rows = [makeRow({ id: "r1" }), makeRow({ id: "r2" })];
     const metrics = computeReg44IndependentVisitorMetrics(rows);
     const alerts = computeReg44IndependentVisitorAlerts(rows);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -675,7 +675,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
     const rows = [makeRow({ visitor_name: "Single Visitor" })];
     const metrics = computeReg44IndependentVisitorMetrics(rows);
     const alerts = computeReg44IndependentVisitorAlerts(rows);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -690,7 +690,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
     ];
     const metrics = computeReg44IndependentVisitorMetrics(rows);
     const alerts = computeReg44IndependentVisitorAlerts(rows);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -700,7 +700,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
   it("second insight starts with [amber]", () => {
     const metrics = computeReg44IndependentVisitorMetrics([makeRow()]);
     const alerts = computeReg44IndependentVisitorAlerts([makeRow()]);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -717,7 +717,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
     ];
     const metrics = computeReg44IndependentVisitorMetrics(rows);
     const alerts = computeReg44IndependentVisitorAlerts(rows);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -737,7 +737,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
     ];
     const metrics = computeReg44IndependentVisitorMetrics(rows);
     const alerts = computeReg44IndependentVisitorAlerts(rows);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -747,7 +747,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
   it("third insight starts with [reflect]", () => {
     const metrics = computeReg44IndependentVisitorMetrics([makeRow()]);
     const alerts = computeReg44IndependentVisitorAlerts([makeRow()]);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -761,7 +761,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
     ];
     const metrics = computeReg44IndependentVisitorMetrics(rows);
     const alerts = computeReg44IndependentVisitorAlerts(rows);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -783,7 +783,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
     ];
     const metrics = computeReg44IndependentVisitorMetrics(rows);
     const alerts = computeReg44IndependentVisitorAlerts(rows);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );
@@ -805,7 +805,7 @@ describe("generateReg44IndependentVisitorAriaInsights", () => {
     ];
     const metrics = computeReg44IndependentVisitorMetrics(rows);
     const alerts = computeReg44IndependentVisitorAlerts(rows);
-    const insights = generateReg44IndependentVisitorAriaInsights(
+    const insights = generateReg44IndependentVisitorCaraInsights(
       metrics,
       alerts,
     );

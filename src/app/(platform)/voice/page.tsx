@@ -35,8 +35,8 @@ import {
   BookOpen, Shield, Target, Lightbulb, Puzzle, Brain,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
@@ -47,7 +47,7 @@ const THEME_CONFIG: Record<VoiceTheme, { label: string; icon: React.ElementType;
   complaints:    { label: "Complaints",    icon: MessageSquare,color: "text-rose-600",     bg: "bg-rose-50",     border: "border-rose-200"    },
   compliments:   { label: "Compliments",   icon: Sparkles,     color: "text-emerald-600",  bg: "bg-emerald-50",  border: "border-emerald-200" },
   needs:         { label: "Needs",         icon: Target,       color: "text-indigo-600",   bg: "bg-indigo-50",   border: "border-indigo-200"  },
-  relationships: { label: "Relationships", icon: Heart,        color: "text-[var(--cs-aria-gold)]",   bg: "bg-[var(--cs-aria-gold-bg)]",   border: "border-[var(--cs-aria-gold-soft)]"  },
+  relationships: { label: "Relationships", icon: Heart,        color: "text-[var(--cs-cara-gold)]",   bg: "bg-[var(--cs-cara-gold-bg)]",   border: "border-[var(--cs-cara-gold-soft)]"  },
   plans:         { label: "Plans",         icon: BookOpen,     color: "text-blue-600",     bg: "bg-blue-50",     border: "border-blue-200"    },
   activities:    { label: "Activities",    icon: Puzzle,       color: "text-teal-600",     bg: "bg-teal-50",     border: "border-teal-200"    },
   education:     { label: "Education",     icon: BookOpen,     color: "text-sky-600",      bg: "bg-sky-50",      border: "border-sky-200"     },
@@ -449,7 +449,7 @@ export default function VoiceOfTheChildPage() {
     <PageShell
       title="Voice of the Child"
       subtitle="What our young people are saying — their wishes, feelings, concerns, and views"
-      ariaContext={{ pageTitle: "Voice of the Child", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Voice of the Child", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans" }}
       actions={
         <div className="flex items-center gap-2">
@@ -459,7 +459,7 @@ export default function VoiceOfTheChildPage() {
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-teal-600 hover:bg-teal-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Capture Voice
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -472,7 +472,7 @@ export default function VoiceOfTheChildPage() {
             { label: "Direct Quotes", value: directQuoteCount, icon: Quote, colour: "text-indigo-600", bg: "bg-indigo-50 border-indigo-100" },
             { label: "Voice Heeded", value: heededCount, icon: CheckCircle2, colour: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
             { label: "Action Pending", value: pendingCount, icon: Clock, colour: pendingCount > 0 ? "text-amber-600" : "text-emerald-600", bg: pendingCount > 0 ? "bg-amber-50 border-amber-100" : "bg-emerald-50 border-emerald-100" },
-            { label: "Heeded Rate", value: allRecords.length > 0 ? `${Math.round((heededCount / allRecords.length) * 100)}%` : "—", icon: Target, colour: "text-[var(--cs-aria-gold)]", bg: "bg-[var(--cs-aria-gold-bg)] border-[var(--cs-aria-gold-soft)]" },
+            { label: "Heeded Rate", value: allRecords.length > 0 ? `${Math.round((heededCount / allRecords.length) * 100)}%` : "—", icon: Target, colour: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]" },
           ].map(({ label, value, icon: Icon, colour, bg }) => (
             <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
               <Icon className={cn("h-4 w-4 mx-auto mb-1", colour)} />
@@ -636,7 +636,7 @@ export default function VoiceOfTheChildPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Voice of the Child — young person's views, wishes, feelings, likes, dislikes, key words, quotes, drawings, participation, LAC review preparation, IRO, Reg 45 evidence"
         recordType="direct_work"

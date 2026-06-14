@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
   type HomeRadonTestingRow,
 } from "./home-radon-testing-service";
 
@@ -119,9 +119,9 @@ describe("computeAlerts (radon)", () => {
   });
 });
 
-describe("computeAriaInsights (radon)", () => {
+describe("computeCaraInsights (radon)", () => {
   it("returns 3 insights for empty metrics", () => {
-    const insights = computeAriaInsights(computeMetrics([]));
+    const insights = computeCaraInsights(computeMetrics([]));
     expect(insights).toHaveLength(3);
   });
 
@@ -129,7 +129,7 @@ describe("computeAriaInsights (radon)", () => {
     const m = computeMetrics([
       makeRow({ above_action_level: true, compliance_status: "Non-Compliant", radon_level_bq_m3: 300 }),
     ]);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights).toHaveLength(3);
     expect(insights[2]).toContain("200 Bq/m");
   });

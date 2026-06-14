@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeNutritionMetrics,
   computeNutritionAlerts,
-  generateNutritionAriaInsights,
+  generateNutritionCaraInsights,
 } from "./child-nutrition-weight-monitoring-service";
 import type { ChildNutritionWeightMonitoringRow } from "./child-nutrition-weight-monitoring-service";
 
@@ -159,11 +159,11 @@ describe("computeNutritionAlerts", () => {
   });
 });
 
-// -- generateNutritionAriaInsights --------------------------------------------
+// -- generateNutritionCaraInsights --------------------------------------------
 
-describe("generateNutritionAriaInsights", () => {
+describe("generateNutritionCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateNutritionAriaInsights([]);
+    const insights = generateNutritionCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[2]).toContain("[reflect]");
@@ -171,7 +171,7 @@ describe("generateNutritionAriaInsights", () => {
 
   it("shows critical counts when alerts present", () => {
     const rows = [makeRow({ bmi_category: "obese", clinical_referral_made: false })];
-    const insights = generateNutritionAriaInsights(rows);
+    const insights = generateNutritionCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 });

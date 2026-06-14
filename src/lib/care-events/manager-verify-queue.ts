@@ -69,7 +69,7 @@ export function loadManagerVerifyQueue(homeId: string): ManagerVerifyQueue {
     (e) => e.home_id === homeId && REVIEWABLE_STATUSES.has(e.status),
   );
 
-  const allReg45 = db.ariaReg45EvidenceItems.findAll(homeId);
+  const allReg45 = db.caraReg45EvidenceItems.findAll(homeId);
   const allAnnex = db.annexAEvidenceQueue.findAll();
   const allRoutes = db.careEventRoutes.findAll();
   const allJobs = db.careEventJobs.findAll();

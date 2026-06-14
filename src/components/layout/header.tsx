@@ -10,7 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { GlobalCreateMenu } from "@/components/common/global-create-menu";
-import { AriaDrawer, type AriaDrawerContext } from "@/components/aria/aria-drawer";
+import { CaraDrawer, type CaraDrawerContext } from "@/components/cara/cara-drawer";
 import { NotificationCentre } from "@/components/layout/notification-centre";
 import { CommandPalette } from "@/components/layout/command-palette";
 import { Input } from "@/components/ui/input";
@@ -48,13 +48,13 @@ interface HeaderProps {
   title:    string;
   subtitle?: string;
   actions?:  React.ReactNode;
-  ariaContext?: AriaDrawerContext;
+  caraContext?: CaraDrawerContext;
 }
 
-export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
+export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
   const breadcrumb = useBreadcrumb();
 
-  const [ariaOpen, setAriaOpen]       = useState(false);
+  const [caraOpen, setCaraOpen]       = useState(false);
   const [todayStr, setTodayStr]       = useState("");
 
   useEffect(() => {
@@ -106,7 +106,7 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
             {/* Search (opens Command Palette) */}
             <button
               onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
-              className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-1.5 text-[var(--cs-text-muted)] hover:bg-[var(--cs-aria-gold-bg)] hover:border-[var(--cs-aria-gold-soft)] hover:text-[var(--cs-text-secondary)] transition-colors"
+              className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-1.5 text-[var(--cs-text-muted)] hover:bg-[var(--cs-cara-gold-bg)] hover:border-[var(--cs-cara-gold-soft)] hover:text-[var(--cs-text-secondary)] transition-colors"
               title="Search (⌘K)"
             >
               <Search className="h-3.5 w-3.5" />
@@ -131,16 +131,16 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
 
             {/* Cara button */}
             <button
-              onClick={() => setAriaOpen((v) => !v)}
+              onClick={() => setCaraOpen((v) => !v)}
               className={cn(
                 "flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all border",
-                ariaOpen
-                  ? "bg-[var(--cs-aria-gold)] text-[var(--cs-navy)] border-[var(--cs-aria-gold)] shadow-[var(--cs-shadow-glow-gold)]"
-                  : "border-[var(--cs-aria-gold-soft)] text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] hover:border-[var(--cs-aria-gold)]",
+                caraOpen
+                  ? "bg-[var(--cs-cara-gold)] text-[var(--cs-navy)] border-[var(--cs-cara-gold)] shadow-[var(--cs-shadow-glow-gold)]"
+                  : "border-[var(--cs-cara-gold-soft)] text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)] hover:border-[var(--cs-cara-gold)]",
               )}
               title="Open Cara"
             >
-              <Sparkles className={cn("h-3.5 w-3.5", ariaOpen && "aria-pulse")} />
+              <Sparkles className={cn("h-3.5 w-3.5", caraOpen && "cara-pulse")} />
               <span className="hidden sm:inline">Cara</span>
             </button>
 
@@ -161,12 +161,12 @@ export function Header({ title, subtitle, actions, ariaContext }: HeaderProps) {
       </header>
 
       {/* ── Cara Drawer ── */}
-      <AriaDrawer
-        open={ariaOpen}
-        onClose={() => setAriaOpen(false)}
+      <CaraDrawer
+        open={caraOpen}
+        onClose={() => setCaraOpen(false)}
         context={{
           pageTitle: title,
-          ...(ariaContext ?? {}),
+          ...(caraContext ?? {}),
         }}
       />
     </>

@@ -216,7 +216,7 @@ export function computeHomeClosurePlanningAlerts(
   return alerts;
 }
 
-export function generateHomeClosurePlanningAriaInsights(
+export function generateHomeClosurePlanningCaraInsights(
   metrics: ReturnType<typeof computeHomeClosurePlanningMetrics>,
   alerts: ReturnType<typeof computeHomeClosurePlanningAlerts>,
 ): string[] {
@@ -338,5 +338,5 @@ export function createHomeClosurePlanningRecord(payload: {
 export const _testing = {
   computeHomeClosurePlanningMetrics,
   computeHomeClosurePlanningAlerts,
-  generateHomeClosurePlanningAriaInsights,
+  generateHomeClosurePlanningCaraInsights,
 };

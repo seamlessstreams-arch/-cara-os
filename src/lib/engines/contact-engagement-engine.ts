@@ -104,7 +104,7 @@ export interface ContactAlert {
   message: string;
 }
 
-export interface AriaContactInsight {
+export interface CaraContactInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -115,7 +115,7 @@ export interface ContactEngagementResult {
   child_profiles: ChildContactProfile[];
   mood_impact: MoodImpactAnalysis;
   alerts: ContactAlert[];
-  insights: AriaContactInsight[];
+  insights: CaraContactInsight[];
 }
 
 export interface ContactEngagementInput {
@@ -493,7 +493,7 @@ export function computeContactEngagement(
 
   // ── Cara Insights ────────────────────────────────────────────────────────
 
-  const insights: AriaContactInsight[] = [];
+  const insights: CaraContactInsight[] = [];
 
   // 1. No contact plan for children in placement
   const childrenWithoutPlan = children.filter((c) => {

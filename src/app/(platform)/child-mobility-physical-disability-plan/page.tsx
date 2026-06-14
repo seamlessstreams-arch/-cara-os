@@ -35,8 +35,8 @@ import {
 import { useMobilityDisabilityPlans } from "@/hooks/use-mobility-disability-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function statusColour(s: MobilityStatus): string {
@@ -133,12 +133,12 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
     <PageShell
       title="Mobility & Physical Disability Plans"
       subtitle="Per-child plans removing environmental barriers — social model framing, child-led, PT/OT linked"
-      ariaContext={{ pageTitle: "Mobility & Physical Disability Plans", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Mobility & Physical Disability Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="mobility-physical-disability-plans" />
           <PrintButton title="Mobility & Physical Disability Plans" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -445,7 +445,7 @@ export default function ChildMobilityPhysicalDisabilityPlanPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Mobility & Physical Disability Plans — mobility aids, wheelchair, physiotherapy, OT assessment, adaptations, hoisting, personal care support, EHCP, specialist equipment, PIP/DLA, AHA"
         recordType="care_plan"

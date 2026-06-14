@@ -8,9 +8,9 @@ interface PageGuidanceProps {
   title: string;
   description: string;
   evidenceTip?: string;
-  ariaTip?: string;
+  caraTip?: string;
   regulationRef?: string;
-  variant?: "default" | "aria" | "compliance" | "safeguarding";
+  variant?: "default" | "cara" | "compliance" | "safeguarding";
   className?: string;
 }
 
@@ -23,7 +23,7 @@ export function PageGuidance({
   title,
   description,
   evidenceTip,
-  ariaTip,
+  caraTip,
   regulationRef,
   variant = "default",
   className,
@@ -34,7 +34,7 @@ export function PageGuidance({
         title={title}
         description={description}
         evidenceTip={evidenceTip}
-        ariaTip={ariaTip}
+        caraTip={caraTip}
         regulationRef={regulationRef}
         variant={variant}
         dismissible

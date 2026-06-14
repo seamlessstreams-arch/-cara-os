@@ -4,8 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -72,18 +72,18 @@ export default function SafeguardingSupervisionPage() {
     <PageShell
       title="Safeguarding Supervision"
       subtitle="Specialist reflective supervision for staff working with children at high risk — distinct from line management"
-      ariaContext={{ pageTitle: "Safeguarding Supervision", sourceType: "general" }}
+      caraContext={{ pageTitle: "Safeguarding Supervision", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Safeguarding Supervision" />
           <ExportButton data={filtered} columns={exportCols} filename="safeguarding-supervision" />
-          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="print-area" className="space-y-6">
 
-        <AriaPanel mode="oversee" pageContext="Safeguarding Supervision — specialist reflective supervision for staff working with children at high risk, distinct from line management, safeguarding concerns" recordType="safeguarding_supervision" userRole="registered_manager" className="mb-2" />
+        <CaraPanel mode="oversee" pageContext="Safeguarding Supervision — specialist reflective supervision for staff working with children at high risk, distinct from line management, safeguarding concerns" recordType="safeguarding_supervision" userRole="registered_manager" className="mb-2" />
 
         {/* info banner */}
         <div className="rounded-lg bg-indigo-50 border border-indigo-200 p-4 flex gap-3">

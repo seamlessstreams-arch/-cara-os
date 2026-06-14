@@ -83,7 +83,7 @@ export default function ChildVoicePage() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/aria-studio/child-voice?childId=${selectedChild}&mode=summary`)
+    fetch(`/api/cara-studio/child-voice?childId=${selectedChild}&mode=summary`)
       .then((r) => r.json())
       .then((data) => setSummary(data))
       .catch(console.error)
@@ -103,10 +103,10 @@ export default function ChildVoicePage() {
       <div className="space-y-6 pb-12">
 
         {/* ── Header bar ──────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <MessageCircle className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <MessageCircle className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Child Voice Engine</h2>
@@ -117,7 +117,7 @@ export default function ChildVoicePage() {
             <select
               value={selectedChild}
               onChange={(e) => setSelectedChild(e.target.value)}
-              className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             >
               {DEMO_CHILDREN.map((c) => (
                 <option key={c.id} value={c.id}>{c.name}</option>
@@ -128,7 +128,7 @@ export default function ChildVoicePage() {
 
         {loading ? (
           <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-12 text-center">
-            <Sparkles className="h-8 w-8 animate-pulse text-[var(--cs-aria-gold)] mx-auto mb-3" />
+            <Sparkles className="h-8 w-8 animate-pulse text-[var(--cs-cara-gold)] mx-auto mb-3" />
             <p className="text-sm text-[var(--cs-text-muted)]">Scanning evidence for child voice...</p>
           </div>
         ) : summary ? (
@@ -137,7 +137,7 @@ export default function ChildVoicePage() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="rounded-xl border border-[var(--cs-border)] bg-white p-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <Quote className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                  <Quote className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                   <span className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide">Total Entries</span>
                 </div>
                 <p className="text-2xl font-bold text-[var(--cs-navy)]">{summary.totalEntries}</p>
@@ -183,7 +183,7 @@ export default function ChildVoicePage() {
                       onClick={() => setSentimentFilter(sentimentFilter === sentiment ? null : sentiment)}
                       className={cn(
                         "flex items-center gap-2 rounded-lg border px-3 py-2 transition-all",
-                        sentimentFilter === sentiment ? "ring-2 ring-[var(--cs-aria-gold)]" : "",
+                        sentimentFilter === sentiment ? "ring-2 ring-[var(--cs-cara-gold)]" : "",
                         config.colour,
                       )}
                     >
@@ -209,8 +209,8 @@ export default function ChildVoicePage() {
                       className={cn(
                         "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
                         themeFilter === theme
-                          ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] ring-2 ring-[var(--cs-aria-gold-soft)]"
-                          : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-secondary)] hover:border-[var(--cs-aria-gold-soft)]",
+                          ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] ring-2 ring-[var(--cs-cara-gold-soft)]"
+                          : "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-secondary)] hover:border-[var(--cs-cara-gold-soft)]",
                       )}
                     >
                       {THEME_LABELS[theme] ?? theme}
@@ -230,7 +230,7 @@ export default function ChildVoicePage() {
                 {(sentimentFilter || themeFilter) && (
                   <button
                     onClick={() => { setSentimentFilter(null); setThemeFilter(null); }}
-                    className="text-[10px] text-[var(--cs-aria-gold)] hover:underline"
+                    className="text-[10px] text-[var(--cs-cara-gold)] hover:underline"
                   >
                     Clear filters
                   </button>
@@ -249,7 +249,7 @@ export default function ChildVoicePage() {
                     <div key={entry.id} className="rounded-xl border border-[var(--cs-border)] bg-white p-4 space-y-2">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
-                          <blockquote className="text-sm text-[var(--cs-navy)] font-medium italic leading-relaxed border-l-2 border-[var(--cs-aria-gold)] pl-3">
+                          <blockquote className="text-sm text-[var(--cs-navy)] font-medium italic leading-relaxed border-l-2 border-[var(--cs-cara-gold)] pl-3">
                             &ldquo;{entry.quote}&rdquo;
                           </blockquote>
                         </div>

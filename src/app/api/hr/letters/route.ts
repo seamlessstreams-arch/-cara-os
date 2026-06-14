@@ -22,7 +22,7 @@ import {
   type GuardianActionType,
   type GuardianReview,
   ENGINE_VERSION as GUARDIAN_VERSION,
-} from "@/lib/aria/hrProcessGuardian";
+} from "@/lib/cara/hrProcessGuardian";
 import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
 import type { HrLetterType } from "@/lib/hr/types";
 
@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
       suggested_safer_wording: guardianReview.suggestedSaferWording ?? null,
       suggested_actions: guardianReview.suggestedActions,
       regulatory_links: guardianReview.regulatoryLinks,
-      aria_confidence: guardianReview.ariaConfidence,
+      aria_confidence: guardianReview.caraConfidence,
       llm_used: guardianReview.llmUsed,
       engine_version: guardianReview.engineVersion,
       generated_at: guardianReview.generatedAt,
@@ -238,7 +238,7 @@ export async function POST(req: NextRequest) {
       guardianReviewId,
       guardianReview,
       persisted: true,
-      ariaLabel: "Cara suggested draft",
+      caraLabel: "Cara suggested draft",
     },
   });
 }

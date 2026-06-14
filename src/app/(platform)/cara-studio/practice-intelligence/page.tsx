@@ -185,10 +185,10 @@ export default function PracticeIntelligencePage() {
       <div className="space-y-6 pb-12">
 
         {/* ── Header ─────────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Brain className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Brain className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Practice Intelligence Scanner</h2>
@@ -232,7 +232,7 @@ export default function PracticeIntelligencePage() {
           <div className="flex flex-wrap gap-2">
             <span className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide self-center mr-1">Key Themes:</span>
             {(hd.key_themes ?? []).map((t, i) => (
-              <Badge key={i} className="text-[10px] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border border-[var(--cs-aria-gold-soft)]">{t}</Badge>
+              <Badge key={i} className="text-[10px] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border border-[var(--cs-cara-gold-soft)]">{t}</Badge>
             ))}
           </div>
         )}
@@ -240,7 +240,7 @@ export default function PracticeIntelligencePage() {
         {/* ── Child Summaries ────────────────────────────────────────────── */}
         <div className="space-y-3">
           <h3 className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide flex items-center gap-2">
-            <Users className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Children
+            <Users className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Children
           </h3>
           {scan.child_summaries.map((child) => {
             const isExpanded = expandedChildren.has(child.child_id);
@@ -289,7 +289,7 @@ export default function PracticeIntelligencePage() {
                         </p>
                         {(child.suggested_actions ?? []).map((a, i) => (
                           <div key={i} className="flex items-start gap-1.5 mb-1">
-                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-aria-gold)] mt-1.5 shrink-0" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-[var(--cs-cara-gold)] mt-1.5 shrink-0" />
                             <span className="text-xs text-[var(--cs-text-secondary)]">{a}</span>
                           </div>
                         ))}
@@ -363,9 +363,9 @@ export default function PracticeIntelligencePage() {
           {(scan.suggested_keywork.length > 0 || scan.suggested_reflective.length > 0) && (
             <div className="rounded-xl border border-[var(--cs-border)] bg-white overflow-hidden">
               <div className="px-4 py-2.5 bg-[var(--cs-surface)] border-b border-[var(--cs-border)] flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                 <span className="text-xs font-semibold text-[var(--cs-navy)]">Suggested Sessions</span>
-                <Badge className="text-[9px] ml-auto bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]">{scan.suggested_keywork.length + scan.suggested_reflective.length}</Badge>
+                <Badge className="text-[9px] ml-auto bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]">{scan.suggested_keywork.length + scan.suggested_reflective.length}</Badge>
               </div>
               <div className="p-4 space-y-2">
                 {[...scan.suggested_keywork, ...scan.suggested_reflective].map((s, i) => (

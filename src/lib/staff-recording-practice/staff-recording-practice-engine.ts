@@ -53,7 +53,7 @@ export interface StaffRecordingAlert {
   staff_id?: string;
 }
 
-export interface AriaStaffRecordingInsight {
+export interface CaraStaffRecordingInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -62,7 +62,7 @@ export interface StaffRecordingPracticeResult {
   overview: StaffRecordingOverview;
   staff_profiles: StaffPractice[];
   alerts: StaffRecordingAlert[];
-  insights: AriaStaffRecordingInsight[];
+  insights: CaraStaffRecordingInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -119,7 +119,7 @@ export function computeStaffRecordingPractice(input: StaffRecordingPracticeInput
 
     // Most common improvement theme across this member's records.
     const themeCounts = new Map<string, number>();
-    for (const r of recs) for (const sug of r.score.ariaSuggestions) {
+    for (const r of recs) for (const sug of r.score.caraSuggestions) {
       const t = suggestionTheme(sug);
       themeCounts.set(t, (themeCounts.get(t) ?? 0) + 1);
     }
@@ -175,8 +175,8 @@ function buildAlerts(profiles: StaffPractice[]): StaffRecordingAlert[] {
   return alerts;
 }
 
-function buildInsights(profiles: StaffPractice[], overview: StaffRecordingOverview): AriaStaffRecordingInsight[] {
-  const insights: AriaStaffRecordingInsight[] = [];
+function buildInsights(profiles: StaffPractice[], overview: StaffRecordingOverview): CaraStaffRecordingInsight[] {
+  const insights: CaraStaffRecordingInsight[] = [];
   if (profiles.length === 0) return insights;
 
   // Is the child's voice a team-wide gap?

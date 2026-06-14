@@ -330,7 +330,7 @@ export function QuickDailyLog({
                     className={cn(
                       "flex flex-col items-center gap-1 rounded-xl border-2 px-3 py-2 min-w-[56px] min-h-[48px] transition-all",
                       form.mood === m.value
-                        ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] shadow-sm"
+                        ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] shadow-sm"
                         : "border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] hover:border-[var(--cs-border-subtle)]",
                     )}
                   >

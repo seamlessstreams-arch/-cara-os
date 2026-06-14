@@ -352,7 +352,7 @@ export function computeFireRiskAlerts(
   return alerts;
 }
 
-export function generateFireRiskAriaInsights(
+export function generateFireRiskCaraInsights(
   rows: HomeFireRiskAssessmentRow[],
 ): string[] {
   const metrics = computeFireRiskMetrics(rows);
@@ -412,5 +412,5 @@ export function generateFireRiskAriaInsights(
 export const _testing = {
   computeFireRiskMetrics,
   computeFireRiskAlerts,
-  generateFireRiskAriaInsights,
+  generateFireRiskCaraInsights,
 };

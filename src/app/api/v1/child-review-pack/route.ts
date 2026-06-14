@@ -17,7 +17,7 @@ import {
   type ChildReviewPackInput,
   type ReviewDomainScore,
 } from "@/lib/engines/child-review-pack-engine";
-import { generateReportNarrative } from "@/lib/aria/report-narrative";
+import { generateReportNarrative } from "@/lib/cara/report-narrative";
 
 export const dynamic = "force-dynamic";
 

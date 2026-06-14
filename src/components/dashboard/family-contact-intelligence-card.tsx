@@ -102,7 +102,7 @@ export function FamilyContactIntelligenceCard({ childId }: FamilyContactIntellig
   useEffect(() => {
     async function fetch_data() {
       try {
-        const res = await fetch(`/api/aria/family-contact?childId=${childId}`);
+        const res = await fetch(`/api/cara/family-contact?childId=${childId}`);
         const json = await res.json();
         if (json.success) setData(json.data);
       } catch (err) {

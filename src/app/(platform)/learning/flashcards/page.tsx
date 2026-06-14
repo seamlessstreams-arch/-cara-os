@@ -6,8 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +70,7 @@ function FlipCard({ card }: { card: Flashcard }) {
         className={cn(
           "relative rounded-xl border p-4 min-h-[140px] flex flex-col justify-between transition-all",
           flipped
-            ? "border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]"
+            ? "border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]"
             : "border-[var(--cs-border)] bg-white hover:border-slate-300 hover:shadow-sm"
         )}
       >
@@ -205,13 +205,13 @@ export default function FlashcardsPage() {
     <PageShell
       title="Flashcard Sets"
       subtitle="Generate interactive flashcard sets for learning and revision"
-      ariaContext={{ pageTitle: "Learning Flashcards", sourceType: "document" }}
+      caraContext={{ pageTitle: "Learning Flashcards", sourceType: "document" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Flashcard Sets" subtitle="Chamberlain House — Learning Flashcards" targetId="flashcards-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Flashcard Sets upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -327,7 +327,7 @@ export default function FlashcardsPage() {
           )}
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Learning Flashcards — knowledge retention, training revision, safeguarding flashcards, regulatory knowledge, children's rights, care practice flashcard sets"
         recordType="staff_training"

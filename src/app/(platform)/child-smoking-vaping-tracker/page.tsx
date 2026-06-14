@@ -27,8 +27,8 @@ import {
 import { useSmokingVapingRecords } from "@/hooks/use-smoking-vaping-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
 
@@ -101,12 +101,12 @@ export default function ChildSmokingVapingTrackerPage() {
     <PageShell
       title="Child Smoking & Vaping Tracker"
       subtitle="Per-child screening · Brief intervention model · NICE NG209 · Behaviour-first, not punitive"
-      ariaContext={{ pageTitle: "Smoking & Vaping Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Smoking & Vaping Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Smoking & Vaping Tracker" />
           <ExportButton data={items} columns={exportCols} filename="child-smoking-vaping-tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -347,7 +347,7 @@ export default function ChildSmokingVapingTrackerPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Smoking & Vaping Tracker — cigarette use, vaping frequency, nicotine dependence, brief intervention, NICE NG209, harm reduction, peer influence, risk assessment, care plan"
         recordType="risk_assessment"

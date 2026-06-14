@@ -308,7 +308,7 @@ export function computeQualityOfCareAlerts(
   return alerts;
 }
 
-export function generateQualityOfCareAriaInsights(
+export function generateQualityOfCareCaraInsights(
   metrics: ReturnType<typeof computeQualityOfCareMetrics>,
   alerts: ReturnType<typeof computeQualityOfCareAlerts>,
 ): string[] {
@@ -367,5 +367,5 @@ export function generateQualityOfCareAriaInsights(
 export const _testing = {
   computeQualityOfCareMetrics,
   computeQualityOfCareAlerts,
-  generateQualityOfCareAriaInsights,
+  generateQualityOfCareCaraInsights,
 };

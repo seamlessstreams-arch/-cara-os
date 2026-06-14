@@ -30,8 +30,8 @@ import {
   Sparkles, ShieldAlert, MessageCircle, Activity, Compass, Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Style helpers ─────────────────────────────────────────────────────────────
 
@@ -155,7 +155,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
     <PageShell
       title="Family Relationship Quality Tracker"
       subtitle="Quarterly assessments of each child's key family relationships — temperature, indicators, and the impact of our interventions. Quality Standard 9."
-      ariaContext={{ pageTitle: "Family Relationship Quality Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Family Relationship Quality Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -164,7 +164,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
             filename="family-relationship-quality"
           />
           <PrintButton title="Family Relationship Quality Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -384,7 +384,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
                       </ul>
                     </Section>
 
-                    <Section title="Active interventions" icon={<Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" />}>
+                    <Section title="Active interventions" icon={<Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />}>
                       {r.interventions_active.length === 0 ? (
                         <p className="text-xs italic text-[var(--cs-text-muted)]">None currently.</p>
                       ) : (
@@ -490,7 +490,7 @@ export default function FamilyRelationshipQualityTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Family Relationship Quality Tracker — relationship quality scoring, contact frequency, quality of contact, estrangement, repair, family time, care plan evidence, Reg 45 themes"
         recordType="care_plan"
@@ -517,7 +517,7 @@ function StatCard({
     sky:     "bg-sky-50 text-sky-700 border-sky-100",
     emerald: "bg-emerald-50 text-emerald-700 border-emerald-100",
     amber:   "bg-amber-50 text-amber-700 border-amber-100",
-    violet:  "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+    violet:  "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
   };
   return (
     <div className={cn("rounded-xl border bg-white p-3", "border-[var(--cs-border)]")}>

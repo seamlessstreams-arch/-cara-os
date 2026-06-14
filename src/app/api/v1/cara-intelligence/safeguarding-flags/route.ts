@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
-import type { AriaSafeguardingFlag, SafeguardingFlagType, SafeguardingFlagSeverity, SafeguardingFlagStatus } from "@/types/extended";
+import type { CaraSafeguardingFlag, SafeguardingFlagType, SafeguardingFlagSeverity, SafeguardingFlagStatus } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -9,8 +9,8 @@ export async function GET(req: NextRequest) {
   const status  = searchParams.get("status");
 
   let results = childId
-    ? intelligenceDb.ariaSafeguardingFlags.findByChild(childId)
-    : intelligenceDb.ariaSafeguardingFlags.findAll(homeId);
+    ? intelligenceDb.caraSafeguardingFlags.findByChild(childId)
+    : intelligenceDb.caraSafeguardingFlags.findAll(homeId);
 
   if (status) results = results.filter((f) => f.status === status);
 
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  let body: Partial<AriaSafeguardingFlag>;
+  let body: Partial<CaraSafeguardingFlag>;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     if (!body[field]) return NextResponse.json({ error: `Missing required field: ${field}` }, { status: 400 });
   }
 
-  const flag = intelligenceDb.ariaSafeguardingFlags.create({
+  const flag = intelligenceDb.caraSafeguardingFlags.create({
     home_id:            body.home_id ?? "home_oak",
     child_id:           body.child_id!,
     source_type:        body.source_type,
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
   });
 
   // Audit trail
-  intelligenceDb.ariaAuditTrail.create({
+  intelligenceDb.caraAuditTrail.create({
     home_id:      flag.home_id,
     user_id:      "staff_darren",
     child_id:     flag.child_id,
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
   });
 
   // Auto-generate management oversight recommendation
-  intelligenceDb.ariaRecommendations.create({
+  intelligenceDb.caraRecommendations.create({
     home_id:             flag.home_id,
     child_id:            flag.child_id,
     source_type:         "aria_safeguarding_flag",

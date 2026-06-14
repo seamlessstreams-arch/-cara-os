@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useAriaSuggestion, useUpdateAriaSuggestion } from "@/hooks/use-intelligence-layer";
+import { useCaraSuggestion, useUpdateCaraSuggestion } from "@/hooks/use-intelligence-layer";
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -241,15 +241,15 @@ const AUDIT_LABELS: Record<string, string> = {
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export default function AriaSuggestionDetailPage({
+export default function CaraSuggestionDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const { data: apiData } = useAriaSuggestion(id);
-  const updateMutation = useUpdateAriaSuggestion();
+  const { data: apiData } = useCaraSuggestion(id);
+  const updateMutation = useUpdateCaraSuggestion();
   const suggestion = ((apiData?.item as SuggestionDetail | null) ?? DEMO_SUGGESTION_FALLBACK);
 
   const [isEditing, setIsEditing] = useState(false);

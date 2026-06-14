@@ -114,7 +114,7 @@ export interface SupervisionAlert {
   message: string;
 }
 
-export interface AriaSupervisionInsight {
+export interface CaraSupervisionInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -125,7 +125,7 @@ export interface SupervisionIntelligenceResult {
   wellbeing: WellbeingAnalysis;
   training_compliance: TrainingComplianceSummary;
   alerts: SupervisionAlert[];
-  insights: AriaSupervisionInsight[];
+  insights: CaraSupervisionInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -384,7 +384,7 @@ export function computeSupervisionIntelligence(input: SupervisionIntelligenceInp
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaSupervisionInsight[] = [];
+  const insights: CaraSupervisionInsight[] = [];
 
   // Critical: overdue supervision
   if (overdueStaff.length > 0) {

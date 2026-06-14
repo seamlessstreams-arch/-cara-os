@@ -36,8 +36,8 @@ import {
 import { useSpldSupportPlans } from "@/hooks/use-spld-support-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
@@ -220,12 +220,12 @@ export default function ChildDyslexiaSpLDPlanPage() {
     <PageShell
       title="SpLD Support Plans"
       subtitle="Per-child Specific Learning Difficulty plan — dyslexia, dyscalculia, dysgraphia, DCD/dyspraxia. Strength-based, neurodiversity-affirming, technology-led."
-      ariaContext={{ pageTitle: "SpLD Support Plans", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "SpLD Support Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="SpLD Support Plans" />
           <ExportButton data={exportData} columns={EXPORT_COLS} filename="spld-support-plans" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -565,7 +565,7 @@ export default function ChildDyslexiaSpLDPlanPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="SpLD Support Plans — dyslexia, dyspraxia, dyscalculia, ADHD learning impact, EHCP, educational psychology, reading support, phonics, assistive technology, PEP targets"
         recordType="education"

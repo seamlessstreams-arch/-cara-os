@@ -42,9 +42,9 @@ export default function IntelligencePage() {
 
       {/* Hero */}
       <section className="relative overflow-hidden bg-[var(--cs-navy)] text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: "radial-gradient(50% 60% at 15% 0%, var(--cs-aria-glow) 0%, transparent 55%), radial-gradient(45% 55% at 100% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
+        <div className="pointer-events-none absolute inset-0 opacity-50" style={{ background: "radial-gradient(50% 60% at 15% 0%, var(--cs-cara-glow) 0%, transparent 55%), radial-gradient(45% 55% at 100% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
         <div className="relative mx-auto max-w-4xl px-5 py-20 text-center lg:py-28">
-          <span className="inline-block rounded-full border border-[var(--cs-aria-gold)]/30 bg-[var(--cs-aria-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-aria-gold-soft)]">Cara · real-time intelligence</span>
+          <span className="inline-block rounded-full border border-[var(--cs-cara-gold)]/30 bg-[var(--cs-cara-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-cara-gold-soft)]">Cara · real-time intelligence</span>
           <h1 className="mt-5 text-4xl font-extrabold leading-[1.1] tracking-tight text-white sm:text-5xl">Your records, analysed the moment they land.</h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-white/75">
             Cara turns the notes your team already keeps into live RAG ratings, ranked priorities and a clear direction of travel — computed from your real records by around 300 deterministic engines. No overnight batch. No black box.
@@ -151,7 +151,7 @@ export default function IntelligencePage() {
             { Icon: ShieldAlert, t: "Advise", d: "Flags when a threshold may be met — a LADO referral, a notifiable event — and points to the right next step. It surfaces the decision; you make it.", accent: "gold" },
             { Icon: Award, t: "Recognise", d: "Surfaces good practice worth celebrating, not just problems — the progress, the wins and the small moments that evidence quality of care.", accent: "navy" },
           ].map((s, i) => {
-            const ring = s.accent === "teal" ? "bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]" : s.accent === "gold" ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]" : "bg-[var(--cs-navy)]/5 text-[var(--cs-navy)]";
+            const ring = s.accent === "teal" ? "bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]" : s.accent === "gold" ? "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]" : "bg-[var(--cs-navy)]/5 text-[var(--cs-navy)]";
             return (
               <div key={i} className="rounded-2xl border border-[var(--cs-border)] bg-white p-7 shadow-[var(--cs-shadow-card)]">
                 <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${ring}`}><s.Icon className="h-6 w-6" /></div>
@@ -165,10 +165,10 @@ export default function IntelligencePage() {
 
       {/* Cara Practice Assistant */}
       <section id="practice-assistant" className="relative overflow-hidden bg-[var(--cs-navy)] text-white">
-        <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background: "radial-gradient(50% 60% at 85% 0%, var(--cs-aria-glow) 0%, transparent 55%), radial-gradient(45% 55% at 0% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
+        <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background: "radial-gradient(50% 60% at 85% 0%, var(--cs-cara-glow) 0%, transparent 55%), radial-gradient(45% 55% at 0% 100%, var(--cs-teal-glow) 0%, transparent 50%)" }} />
         <div className="relative mx-auto max-w-7xl px-5 py-20">
           <div className="mx-auto max-w-2xl text-center">
-            <span className="inline-block rounded-full border border-[var(--cs-aria-gold)]/30 bg-[var(--cs-aria-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-aria-gold-soft)]">Cara Practice Assistant</span>
+            <span className="inline-block rounded-full border border-[var(--cs-cara-gold)]/30 bg-[var(--cs-cara-gold)]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[var(--cs-cara-gold-soft)]">Cara Practice Assistant</span>
             <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Live support when practice is hardest.</h2>
             <p className="mt-4 text-lg leading-relaxed text-white/75">
               Intelligence isn&rsquo;t only hindsight. During and after an incident, Cara works alongside your team — in the moment, in the write-up, and in the follow-up.

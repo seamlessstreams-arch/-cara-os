@@ -44,7 +44,7 @@ export default function InterviewBuilderPage() {
     <PageShell
       title="Interview Builder"
       subtitle="Structured, values-aligned interview packs for every children's-home role — values, safeguarding, trauma-informed practice, PACE, scenarios and leadership, with scoring guidance and red-flag prompts."
-      ariaContext={{ pageTitle: "Interview Builder", sourceType: "general" }}
+      caraContext={{ pageTitle: "Interview Builder", sourceType: "general" }}
       actions={<PrintButton title={pack ? `Interview Pack — ${pack.role_label}` : "Interview Builder"} />}
     >
       <div className="cs-print-color mx-auto max-w-4xl space-y-5">
@@ -124,14 +124,14 @@ export default function InterviewBuilderPage() {
             <Card className="print:hidden">
               <CardContent className="py-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> Extra questions with Cara</p>
+                  <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> Extra questions with Cara</p>
                   <button onClick={suggestQuestions} disabled={aiState === "loading"} className="inline-flex items-center gap-1.5 rounded-lg bg-[var(--cs-navy)] px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-[var(--cs-navy-soft)] disabled:opacity-50">
                     {aiState === "loading" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />} Suggest questions
                   </button>
                 </div>
                 {aiState === "done" && aiQuestions.length > 0 && (
                   <>
-                    <ul className="mt-3 space-y-1.5">{aiQuestions.map((q, i) => <li key={i} className="rounded-lg border border-[var(--cs-aria-gold)]/30 bg-[var(--cs-aria-gold-bg)]/40 px-3 py-2 text-sm text-[var(--cs-text)]">{q}</li>)}</ul>
+                    <ul className="mt-3 space-y-1.5">{aiQuestions.map((q, i) => <li key={i} className="rounded-lg border border-[var(--cs-cara-gold)]/30 bg-[var(--cs-cara-gold-bg)]/40 px-3 py-2 text-sm text-[var(--cs-text)]">{q}</li>)}</ul>
                     <p className="mt-2 text-[11px] italic text-[var(--cs-text-muted)]">AI suggestions require professional judgement and manager approval. Review, edit or reject before use.</p>
                   </>
                 )}

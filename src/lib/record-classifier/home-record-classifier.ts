@@ -44,7 +44,7 @@ const HOME_TYPE_PATTERNS: HomeTypePattern[] = [
       /evacuation\s+(?:drill|practice|route)/i,
       /(?:PEEP|personal\s+emergency\s+evacuation)/i,
     ],
-    flows: ["home_record", "timeline", "compliance", "dashboard", "aria"],
+    flows: ["home_record", "timeline", "compliance", "dashboard", "cara"],
   },
   {
     type: "health_safety_check",
@@ -59,7 +59,7 @@ const HOME_TYPE_PATTERNS: HomeTypePattern[] = [
       /(?:electrical|pat\s+test|gas\s+safety|boiler)\s+(?:check|test|safety)/i,
       /window\s+restrictor|blind\s+cord/i,
     ],
-    flows: ["home_record", "timeline", "compliance", "dashboard", "aria"],
+    flows: ["home_record", "timeline", "compliance", "dashboard", "cara"],
   },
   {
     type: "maintenance_request",
@@ -73,7 +73,7 @@ const HOME_TYPE_PATTERNS: HomeTypePattern[] = [
       /(?:appliance|washing\s+machine|dryer|fridge|oven|dishwasher)\s+(?:broken|faulty|not\s+working)/i,
       /(?:damp|mould|condensation)/i,
     ],
-    flows: ["home_record", "timeline", "tasks", "dashboard", "aria"],
+    flows: ["home_record", "timeline", "tasks", "dashboard", "cara"],
   },
   {
     type: "vehicle_check",
@@ -99,7 +99,7 @@ const HOME_TYPE_PATTERNS: HomeTypePattern[] = [
       /(?:cleanliness|hygiene|infection\s+control)\s+(?:audit|check)/i,
       /(?:manager(?:'s)?|monthly|weekly)\s+(?:walk[\s-]?round|inspection|audit)/i,
     ],
-    flows: ["home_record", "timeline", "compliance", "evidence_pack", "dashboard", "aria"],
+    flows: ["home_record", "timeline", "compliance", "evidence_pack", "dashboard", "cara"],
   },
   {
     type: "observation",

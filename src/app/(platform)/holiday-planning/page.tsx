@@ -34,8 +34,8 @@ import type { TripPlan, TripType, TripStatus, TripRiskLevel, TripStaffRole } fro
 import { TRIP_TYPE_LABEL, TRIP_STATUS_LABEL, TRIP_RISK_LEVEL_LABEL, TRIP_STAFF_ROLE_LABEL } from "@/types/extended";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ───────────────────────────────────────────────────────────────────
 
@@ -194,7 +194,7 @@ function TripCard({ trip }: { trip: TripPlan }) {
                     <Badge variant="outline" className="text-[9px] px-1 py-0 bg-blue-50 text-blue-600 border-blue-200">Med</Badge>
                   )}
                   {yp.behaviour_plan_shared && (
-                    <Badge variant="outline" className="text-[9px] px-1 py-0 bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]">BP</Badge>
+                    <Badge variant="outline" className="text-[9px] px-1 py-0 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]">BP</Badge>
                   )}
                 </div>
               ))}
@@ -664,7 +664,7 @@ export default function HolidayPlanningPage() {
     <PageShell
       title="Holiday & Trip Planning"
       subtitle="Planned outings, day trips, holidays, and residential trips for young people"
-      ariaContext={{ pageTitle: "Holiday & Trip Planning", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Holiday & Trip Planning", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={TRIP_EXPORT_COLS} filename="holiday-trip-planning" />
@@ -672,7 +672,7 @@ export default function HolidayPlanningPage() {
           <Button size="sm" onClick={() => setShowNew(true)} className="bg-blue-600 hover:bg-blue-700 text-white gap-1.5 h-8 text-xs">
             <Plus className="h-3.5 w-3.5" />Plan Trip
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -888,7 +888,7 @@ export default function HolidayPlanningPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Holiday & Trip Planning — holiday consent, LA approval, passport, travel insurance, health needs abroad, risk assessment, cultural experience, aspirations, care plan evidence"
         recordType="care_plan"

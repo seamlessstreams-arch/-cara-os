@@ -52,13 +52,13 @@ interface CrossHomeSnapshot {
   ofsted_readiness_score: number;
   reg45_due_date: string | null;
   reg44_due_date: string | null;
-  aria_alerts: AriaAlert[];
-  aria_risk_factors: AriaRiskFactor[];
-  aria_recommendations: AriaRecommendation[];
+  aria_alerts: CaraAlert[];
+  aria_risk_factors: CaraRiskFactor[];
+  aria_recommendations: CaraRecommendation[];
   created_at: string;
 }
 
-interface AriaAlert {
+interface CaraAlert {
   id: string;
   severity: "critical" | "high" | "medium" | "low";
   message: string;
@@ -68,13 +68,13 @@ interface AriaAlert {
   created_at: string;
 }
 
-interface AriaRiskFactor {
+interface CaraRiskFactor {
   factor: string;
   severity: "critical" | "high" | "medium" | "low";
   trend: "improving" | "worsening" | "stable";
 }
 
-interface AriaRecommendation {
+interface CaraRecommendation {
   recommendation: string;
   priority: "immediate" | "this_week" | "this_month";
   home_id: string;
@@ -110,7 +110,7 @@ interface CrossHomeAlert {
   created_at: string;
 }
 
-interface AriaAnalysisResponse {
+interface CaraAnalysisResponse {
   analysis: string;
   evidence: Array<{ source: string; risk_level: string; compliance: number; incidents_7d: number }>;
   recommendations: string[];
@@ -119,14 +119,14 @@ interface AriaAnalysisResponse {
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-type TabId = "overview" | "comparison" | "risk" | "compliance" | "aria";
+type TabId = "overview" | "comparison" | "risk" | "compliance" | "cara";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "overview", label: "Overview" },
   { id: "comparison", label: "Home Comparison" },
   { id: "risk", label: "Risk Matrix" },
   { id: "compliance", label: "Compliance" },
-  { id: "aria", label: "Cara Analysis" },
+  { id: "cara", label: "Cara Analysis" },
 ];
 
 const DEMO_ORG_ID = "org-demo-1";
@@ -380,9 +380,9 @@ export default function CrossHomeIntelligencePage() {
   const [comparison, setComparison] = useState<ComparisonRow[]>(DEMO_COMPARISON);
   const [alerts, setAlerts] = useState<CrossHomeAlert[]>(DEMO_ALERTS);
   const [loading, setLoading] = useState(false);
-  const [ariaQuery, setAriaQuery] = useState("");
-  const [ariaResponse, setAriaResponse] = useState<AriaAnalysisResponse | null>(null);
-  const [ariaLoading, setAriaLoading] = useState(false);
+  const [caraQuery, setCaraQuery] = useState("");
+  const [caraResponse, setCaraResponse] = useState<CaraAnalysisResponse | null>(null);
+  const [caraLoading, setCaraLoading] = useState(false);
   const [generatingSnapshot, setGeneratingSnapshot] = useState(false);
 
   // ── Data Fetching ──────────────────────────────────────────────────────────
@@ -391,10 +391,10 @@ export default function CrossHomeIntelligencePage() {
     setLoading(true);
     try {
       const [overviewRes, snapshotsRes, comparisonRes, alertsRes] = await Promise.all([
-        fetch(`/api/aria/cross-home?organisationId=${DEMO_ORG_ID}&action=overview`),
-        fetch(`/api/aria/cross-home?organisationId=${DEMO_ORG_ID}&action=snapshots`),
-        fetch(`/api/aria/cross-home?organisationId=${DEMO_ORG_ID}&action=comparison`),
-        fetch(`/api/aria/cross-home?organisationId=${DEMO_ORG_ID}&action=alerts`),
+        fetch(`/api/cara/cross-home?organisationId=${DEMO_ORG_ID}&action=overview`),
+        fetch(`/api/cara/cross-home?organisationId=${DEMO_ORG_ID}&action=snapshots`),
+        fetch(`/api/cara/cross-home?organisationId=${DEMO_ORG_ID}&action=comparison`),
+        fetch(`/api/cara/cross-home?organisationId=${DEMO_ORG_ID}&action=alerts`),
       ]);
 
       if (overviewRes.ok) {
@@ -427,7 +427,7 @@ export default function CrossHomeIntelligencePage() {
   const handleGenerateSnapshot = async () => {
     setGeneratingSnapshot(true);
     try {
-      const res = await fetch("/api/aria/cross-home", {
+      const res = await fetch("/api/cara/cross-home", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "generate_snapshot", organisationId: DEMO_ORG_ID }),
@@ -442,24 +442,24 @@ export default function CrossHomeIntelligencePage() {
     }
   };
 
-  const handleAriaAnalyse = async (query: string) => {
+  const handleCaraAnalyse = async (query: string) => {
     if (!query.trim()) return;
-    setAriaLoading(true);
-    setAriaResponse(null);
+    setCaraLoading(true);
+    setCaraResponse(null);
     try {
-      const res = await fetch("/api/aria/cross-home", {
+      const res = await fetch("/api/cara/cross-home", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "aria_analyse", organisationId: DEMO_ORG_ID, query }),
       });
       if (res.ok) {
         const d = await res.json();
-        if (d.ok && d.data) setAriaResponse(d.data);
+        if (d.ok && d.data) setCaraResponse(d.data);
       }
     } catch {
       // Silent fallback
     } finally {
-      setAriaLoading(false);
+      setCaraLoading(false);
     }
   };
 
@@ -478,7 +478,7 @@ export default function CrossHomeIntelligencePage() {
         {/* Header with Globe icon and refresh */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Globe className="h-5 w-5" style={{ color: "var(--cs-aria-gold)" }} />
+            <Globe className="h-5 w-5" style={{ color: "var(--cs-cara-gold)" }} />
             <span className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
               Multi-home aggregated intelligence
             </span>
@@ -497,7 +497,7 @@ export default function CrossHomeIntelligencePage() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-1 p-1 rounded-lg" style={{ backgroundColor: "var(--cs-aria-gold-bg, #f5f0e8)" }}>
+        <div className="flex gap-1 p-1 rounded-lg" style={{ backgroundColor: "var(--cs-cara-gold-bg, #f5f0e8)" }}>
           {TABS.map((tab) => (
             <button
               key={tab.id}
@@ -529,8 +529,8 @@ export default function CrossHomeIntelligencePage() {
             comparison={comparison}
             snapshots={snapshots}
             onGenerateAnalysis={() => {
-              setActiveTab("aria");
-              handleAriaAnalyse("Compare all homes and identify areas of concern");
+              setActiveTab("cara");
+              handleCaraAnalyse("Compare all homes and identify areas of concern");
             }}
           />
         )}
@@ -540,13 +540,13 @@ export default function CrossHomeIntelligencePage() {
         {activeTab === "compliance" && (
           <ComplianceTab snapshots={snapshots} />
         )}
-        {activeTab === "aria" && (
-          <AriaAnalysisTab
-            query={ariaQuery}
-            setQuery={setAriaQuery}
-            response={ariaResponse}
-            loading={ariaLoading}
-            onSubmit={handleAriaAnalyse}
+        {activeTab === "cara" && (
+          <CaraAnalysisTab
+            query={caraQuery}
+            setQuery={setCaraQuery}
+            response={caraResponse}
+            loading={caraLoading}
+            onSubmit={handleCaraAnalyse}
           />
         )}
 
@@ -984,7 +984,7 @@ function ComplianceTab({ snapshots }: { snapshots: CrossHomeSnapshot[] }) {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <Calendar className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+              <Calendar className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
               Regulation 44 Visits
             </CardTitle>
           </CardHeader>
@@ -1006,7 +1006,7 @@ function ComplianceTab({ snapshots }: { snapshots: CrossHomeSnapshot[] }) {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
-              <FileText className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+              <FileText className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
               Regulation 45 Reviews
             </CardTitle>
           </CardHeader>
@@ -1030,7 +1030,7 @@ function ComplianceTab({ snapshots }: { snapshots: CrossHomeSnapshot[] }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Eye className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+            <Eye className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
             Staff Supervision Compliance
           </CardTitle>
         </CardHeader>
@@ -1058,7 +1058,7 @@ function ComplianceTab({ snapshots }: { snapshots: CrossHomeSnapshot[] }) {
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Activity className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+            <Activity className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
             Recording Compliance Trends (30 days)
           </CardTitle>
         </CardHeader>
@@ -1147,7 +1147,7 @@ function ComplianceTab({ snapshots }: { snapshots: CrossHomeSnapshot[] }) {
 
 // ── Cara Analysis Tab ────────────────────────────────────────────────────────
 
-function AriaAnalysisTab({
+function CaraAnalysisTab({
   query,
   setQuery,
   response,
@@ -1156,7 +1156,7 @@ function AriaAnalysisTab({
 }: {
   query: string;
   setQuery: (q: string) => void;
-  response: AriaAnalysisResponse | null;
+  response: CaraAnalysisResponse | null;
   loading: boolean;
   onSubmit: (q: string) => void;
 }) {
@@ -1166,7 +1166,7 @@ function AriaAnalysisTab({
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Sparkles className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+            <Sparkles className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
             Ask Cara about your organisation
           </CardTitle>
         </CardHeader>
@@ -1222,7 +1222,7 @@ function AriaAnalysisTab({
       {loading && (
         <Card>
           <CardContent className="p-8 text-center">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-3" style={{ color: "var(--cs-aria-gold)" }} />
+            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-3" style={{ color: "var(--cs-cara-gold)" }} />
             <p className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>
               Cara is analysing cross-home intelligence...
             </p>
@@ -1236,7 +1236,7 @@ function AriaAnalysisTab({
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Sparkles className="h-4 w-4" style={{ color: "var(--cs-aria-gold)" }} />
+                <Sparkles className="h-4 w-4" style={{ color: "var(--cs-cara-gold)" }} />
                 Cara Analysis
               </CardTitle>
               <p className="text-xs" style={{ color: "var(--cs-text-muted)" }}>
@@ -1289,9 +1289,9 @@ function AriaAnalysisTab({
                     <div
                       key={i}
                       className="flex items-start gap-3 p-2 rounded-md border"
-                      style={{ borderColor: "var(--cs-border)", backgroundColor: "var(--cs-aria-gold-bg, #faf8f4)" }}
+                      style={{ borderColor: "var(--cs-border)", backgroundColor: "var(--cs-cara-gold-bg, #faf8f4)" }}
                     >
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "var(--cs-aria-gold, #b8860b)" }}>
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ backgroundColor: "var(--cs-cara-gold, #b8860b)" }}>
                         {i + 1}
                       </span>
                       <span className="text-sm" style={{ color: "var(--cs-text-secondary)" }}>{rec}</span>
@@ -1338,7 +1338,7 @@ function AriaAnalysisTab({
       {!response && !loading && (
         <Card>
           <CardContent className="p-12 text-center">
-            <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-30" style={{ color: "var(--cs-aria-gold)" }} />
+            <Sparkles className="h-12 w-12 mx-auto mb-4 opacity-30" style={{ color: "var(--cs-cara-gold)" }} />
             <p className="text-sm" style={{ color: "var(--cs-text-muted)" }}>
               Ask Cara a question or use one of the quick queries above to get started.
             </p>

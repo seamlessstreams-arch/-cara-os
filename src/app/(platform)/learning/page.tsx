@@ -23,8 +23,8 @@ import {
   FileText, Zap,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 
 const FEATURES = [
@@ -43,9 +43,9 @@ const FEATURES = [
     title: "Resource Generator",
     description: "Generate workshops, guidance notes, flashcards, and session plans",
     icon: Sparkles,
-    colour: "text-[var(--cs-aria-gold)]",
-    bg: "bg-[var(--cs-aria-gold-bg)]",
-    border: "border-[var(--cs-aria-gold-soft)]",
+    colour: "text-[var(--cs-cara-gold)]",
+    bg: "bg-[var(--cs-cara-gold-bg)]",
+    border: "border-[var(--cs-cara-gold-soft)]",
   },
   {
     href: "/learning/workshops",
@@ -140,13 +140,13 @@ export default function LearningHubPage() {
     <PageShell
       title="Learning Studio"
       subtitle="AI-powered learning and development for staff and children"
-      ariaContext={{ pageTitle: "Learning Hub", sourceType: "general" }}
+      caraContext={{ pageTitle: "Learning Hub", sourceType: "general" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Learning Hub" subtitle="Chamberlain House — Staff Learning & Development" targetId="learning-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning Studio — training resource or certificate upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -190,7 +190,7 @@ export default function LearningHubPage() {
         <div className="grid gap-3 sm:grid-cols-5">
           <StatChip label="Active Projects" value={activeProjects} colour="text-teal-700" />
           <StatChip label="Urgent Needs" value={urgentNeeds} colour={urgentNeeds > 0 ? "text-red-700" : "text-emerald-700"} />
-          <StatChip label="Resources" value={totalResources} colour="text-[var(--cs-aria-gold)]" />
+          <StatChip label="Resources" value={totalResources} colour="text-[var(--cs-cara-gold)]" />
           <StatChip label="Knowledge Gaps" value={openGaps} colour={openGaps > 0 ? "text-orange-700" : "text-emerald-700"} />
           <StatChip label="Library" value={libraryCount} colour="text-[var(--cs-text-secondary)]" />
         </div>
@@ -262,7 +262,7 @@ export default function LearningHubPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Learning Hub — staff training, mandatory training, e-learning, training certificates, knowledge assessments, CPD, supervision learning, workforce development, Reg 45 evidence"
         recordType="staff_training"

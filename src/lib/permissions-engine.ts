@@ -75,9 +75,9 @@ export const PERM = {
   COMPLIANCE_VIEW:    "compliance.view",
   COMPLIANCE_MANAGE:  "compliance.manage",
   // Cara
-  ARIA_VIEW:          "aria.view",
-  ARIA_CONFIGURE:     "aria.configure",
-  ARIA_APPROVE:       "aria.approve",
+  CARA_VIEW:          "cara.view",
+  CARA_CONFIGURE:     "cara.configure",
+  CARA_APPROVE:       "cara.approve",
   // Admin
   ADMIN_ROLES:        "admin.roles",
   ADMIN_SETTINGS:     "admin.settings",
@@ -122,7 +122,7 @@ const CARE_WORKER_PERMS: PermissionCode[] = [
   PERM.OVERSIGHT_VIEW,
   PERM.STAFF_VIEW, PERM.ROTA_VIEW, PERM.LEAVE_VIEW, PERM.SUPERVISION_VIEW,
   PERM.TRAINING_VIEW,
-  PERM.ARIA_VIEW,
+  PERM.CARA_VIEW,
 ];
 
 const TEAM_LEADER_PERMS: PermissionCode[] = [
@@ -150,14 +150,14 @@ const DEPUTY_PERMS: PermissionCode[] = [
   PERM.OVERSIGHT_REVIEW,
   PERM.STAFF_MANAGE,
   PERM.COMPLIANCE_MANAGE,
-  PERM.ARIA_APPROVE,
+  PERM.CARA_APPROVE,
   PERM.ADMIN_AUDIT,
 ];
 
 const MANAGER_PERMS: PermissionCode[] = [
   ...DEPUTY_PERMS,
   PERM.YP_DELETE, PERM.YP_EXPORT,
-  PERM.ARIA_CONFIGURE,
+  PERM.CARA_CONFIGURE,
   PERM.ADMIN_ROLES, PERM.ADMIN_SETTINGS, PERM.ADMIN_INSPECTION, PERM.ADMIN_EXPORT,
 ];
 
@@ -180,7 +180,7 @@ export const ROLE_PERMISSIONS: Record<SystemRole, PermissionCode[]> = {
     PERM.INCIDENT_VIEW, PERM.INCIDENT_CREATE,
     PERM.MED_VIEW, PERM.MED_ADMINISTER,
     PERM.TASK_VIEW, PERM.FORM_VIEW, PERM.FORM_SUBMIT,
-    PERM.ROTA_VIEW, PERM.ARIA_VIEW,
+    PERM.ROTA_VIEW, PERM.CARA_VIEW,
   ],
   therapist:                [
     PERM.YP_VIEW, PERM.LOG_VIEW, PERM.LOG_CREATE,
@@ -189,7 +189,7 @@ export const ROLE_PERMISSIONS: Record<SystemRole, PermissionCode[]> = {
     PERM.FORM_VIEW, PERM.FORM_SUBMIT,
     PERM.EVIDENCE_VIEW, PERM.EVIDENCE_UPLOAD,
     PERM.OVERSIGHT_VIEW, PERM.SUPERVISION_VIEW,
-    PERM.ARIA_VIEW,
+    PERM.CARA_VIEW,
   ],
   hr_recruitment:           [
     PERM.STAFF_VIEW, PERM.STAFF_MANAGE,

@@ -9,7 +9,7 @@ import { PrivacyProvider } from "@/contexts/privacy-context";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
 import { useCareEventsRealtime } from "@/hooks/use-care-events-realtime";
 import { useAuthContext } from "@/contexts/auth-context";
-import { AriaGlobalButton } from "@/components/aria/aria-global-button";
+import { CaraGlobalButton } from "@/components/cara/cara-global-button";
 import { QuickCreateFab } from "@/components/common/quick-create-fab";
 import { PrivacyScreenOverlay } from "@/components/privacy/privacy-screen-overlay";
 import { PrivacyToggle } from "@/components/privacy/privacy-toggle";
@@ -53,7 +53,7 @@ export default function PlatformLayout({
             <BottomNav />
             <KeyboardShortcuts />
             <RealtimeSubscriptions />
-            <AriaGlobalButton />
+            <CaraGlobalButton />
             <QuickCreateFab />
             <PrivacyToggle />
             <PrivacyScreenOverlay />

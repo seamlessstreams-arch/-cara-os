@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     narrative: body.narrative!,
     hotspot_times: body.hotspot_times ?? [],
     risk_flags: body.risk_flags ?? [],
-    computed_by: body.computed_by ?? "aria",
+    computed_by: body.computed_by ?? "cara",
   });
 
   return NextResponse.json({ data: snapshot }, { status: 201 });

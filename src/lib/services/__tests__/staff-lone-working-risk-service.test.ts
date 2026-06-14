@@ -33,7 +33,7 @@ import {
   COMPLIANCE_STATUSES,
 } from "../staff-lone-working-risk-service";
 
-const { computeMetrics, computeAlerts, computeAriaInsights } = _testing;
+const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -926,48 +926,48 @@ describe("computeAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// computeAriaInsights
+// computeCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   // ── Structure ─────────────────────────────────────────────────────────
 
   it("returns exactly 3 insights for empty array", () => {
-    const insights = computeAriaInsights([]);
+    const insights = computeCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for single record", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for multiple records", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights).toHaveLength(3);
   });
 
   it("all insights are strings", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     for (const i of insights) expect(typeof i).toBe("string");
   });
 
   it("all insights are non-empty", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     for (const i of insights) expect(i.length).toBeGreaterThan(0);
   });
 
   // ── Insight 1: indigo-themed summary ──────────────────────────────────
 
   it("first insight starts with [indigo]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[indigo\]/);
   });
 
   it("first insight includes total assessment count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
@@ -976,7 +976,7 @@ describe("computeAriaInsights", () => {
       makeRow({ staff_name: "Alice" }),
       makeRow({ staff_name: "Bob" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
@@ -985,135 +985,135 @@ describe("computeAriaInsights", () => {
       makeRow({ assessor_name: "Assessor A" }),
       makeRow({ assessor_name: "Assessor B" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
   it("first insight includes risk assessment rate", () => {
     const rows = [makeRow({ risk_assessment_completed: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("100%");
   });
 
   it("first insight includes check-in rate", () => {
     const rows = [makeRow({ check_in_protocol_agreed: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("100%");
   });
 
   it("first insight includes training rate", () => {
     const rows = [makeRow({ training_completed: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("100%");
   });
 
   it("first insight uses singular assessment for 1 record", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toContain("1 lone working assessment");
     expect(insights[0]).not.toContain("assessments recorded");
   });
 
   it("first insight uses plural assessments for 2+ records", () => {
     const rows = [makeRow(), makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("assessments");
   });
 
   it("first insight uses singular staff member for 1 staff", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toContain("staff member");
     expect(insights[0]).not.toContain("staff members assessed");
   });
 
   it("first insight uses plural staff members for 2+ staff", () => {
     const rows = [makeRow({ staff_name: "Alice" }), makeRow({ staff_name: "Bob" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("staff members");
   });
 
   it("first insight uses singular assessor for 1 assessor", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[0]).toContain("assessor");
   });
 
   it("first insight uses plural assessors for 2+ assessors", () => {
     const rows = [makeRow({ assessor_name: "Assessor A" }), makeRow({ assessor_name: "Assessor B" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("assessors");
   });
 
   // ── Insight 2: amber-themed priorities ────────────────────────────────
 
   it("second insight starts with [amber]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("second insight mentions alerts when critical alerts exist", () => {
     const rows = [makeRow({ risk_level: "Unacceptable" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 
   it("second insight mentions no alerts when all compliant", () => {
     const rows = [makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/[Nn]o critical/);
   });
 
   it("second insight includes high risk count when alerts present", () => {
     const rows = [makeRow({ risk_level: "Unacceptable" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("0"); // high_risk_count is 0, unacceptable is 1
   });
 
   it("second insight includes incident count when alerts present", () => {
     const rows = [makeRow({ incident_during_lone_work: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("1");
   });
 
   it("second insight mentions high-priority count when present", () => {
     const rows = [makeRow({ incident_during_lone_work: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("high-priority");
   });
 
   it("second insight mentions staff safety when no alerts", () => {
     const rows = [makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("staff safety");
   });
 
   it("second insight includes personal alarm rate when no alerts", () => {
     const rows = [makeRow({ personal_alarm_issued: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("100%");
   });
 
   it("second insight includes mobile phone rate when no alerts", () => {
     const rows = [makeRow({ mobile_phone_available: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("100%");
   });
 
   // ── Insight 3: reflect-themed question ────────────────────────────────
 
   it("third insight starts with [reflect]", () => {
-    const insights = computeAriaInsights([makeRow()]);
+    const insights = computeCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions critical alert count when present", () => {
     const rows = [makeRow({ risk_level: "Unacceptable" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("1");
     expect(insights[2]).toMatch(/critical/i);
   });
 
   it("third insight uses singular when 1 critical alert", () => {
     const rows = [makeRow({ risk_level: "Unacceptable" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("alert requires");
   });
 
@@ -1122,7 +1122,7 @@ describe("computeAriaInsights", () => {
       makeRow({ risk_level: "Unacceptable", staff_name: "Alice" }),
       makeRow({ risk_level: "Unacceptable", staff_name: "Bob" }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("alerts require");
   });
 
@@ -1130,13 +1130,13 @@ describe("computeAriaInsights", () => {
     const rows = [
       makeRow({ training_completed: false }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("training");
   });
 
   it("third insight mentions staff safety when training rate < 100", () => {
     const rows = [makeRow({ training_completed: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("safety");
   });
 
@@ -1144,14 +1144,14 @@ describe("computeAriaInsights", () => {
     const rows = [
       makeRow({ training_completed: true }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("lone working");
     expect(insights[2]).toContain("welfare");
   });
 
   it("third insight mentions Health and Safety when critical alerts present", () => {
     const rows = [makeRow({ risk_level: "Unacceptable" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("Health and Safety");
   });
 });
@@ -1295,7 +1295,7 @@ describe("edge cases", () => {
   });
 
   it("insights handle empty data gracefully", () => {
-    const insights = computeAriaInsights([]);
+    const insights = computeCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 lone working");
     expect(insights[0]).toContain("0 staff");
@@ -1349,19 +1349,19 @@ describe("edge cases", () => {
 
   it("insights with only critical alerts show correct count", () => {
     const rows = [makeRow({ risk_level: "Unacceptable" })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/\d+ critical/);
   });
 
   it("insights with only high alerts show correct count", () => {
     const rows = [makeRow({ incident_during_lone_work: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toMatch(/\d+ high-priority/);
   });
 
   it("insights reflect question path for training rate < 100%", () => {
     const rows = [makeRow({ training_completed: false })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("training");
     expect(insights[2]).toContain("0%");
   });
@@ -1421,14 +1421,14 @@ describe("edge cases", () => {
       makeRow({ risk_level: "Unacceptable" }),
       makeRow({ incident_during_lone_work: true }),
     ];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high-priority");
   });
 
   it("insights third path for full training rate with no critical alerts", () => {
     const rows = [makeRow({ training_completed: true })];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[2]).toContain("lone working");
   });
 
@@ -1517,7 +1517,7 @@ describe("edge cases", () => {
 
   it("insights contain check-in rate in indigo section", () => {
     const rows = [makeRow()];
-    const insights = computeAriaInsights(rows);
+    const insights = computeCaraInsights(rows);
     expect(insights[0]).toContain("100%");
   });
 

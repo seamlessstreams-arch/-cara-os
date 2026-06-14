@@ -279,7 +279,7 @@ export function computeStaffWhistleblowingAlerts(
   return alerts;
 }
 
-export function generateStaffWhistleblowingAriaInsights(
+export function generateStaffWhistleblowingCaraInsights(
   metrics: ReturnType<typeof computeStaffWhistleblowingMetrics>,
   alerts: ReturnType<typeof computeStaffWhistleblowingAlerts>,
 ): string[] {
@@ -339,5 +339,5 @@ export function generateStaffWhistleblowingAriaInsights(
 export const _testing = {
   computeStaffWhistleblowingMetrics,
   computeStaffWhistleblowingAlerts,
-  generateStaffWhistleblowingAriaInsights,
+  generateStaffWhistleblowingCaraInsights,
 };

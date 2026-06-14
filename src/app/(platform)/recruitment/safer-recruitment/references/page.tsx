@@ -2,8 +2,8 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -238,7 +238,7 @@ export default function ReferencesPage() {
     <PageShell
       title="References"
       subtitle="Track and verify all candidate references"
-      ariaContext={{ pageTitle: "Candidate Reference Tracker", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Candidate Reference Tracker", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
@@ -332,7 +332,7 @@ export default function ReferencesPage() {
         </div>
       )}
       </div>{/* close #references-content */}
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Candidate Reference Tracker — reference requests, reference responses, employment history verification, character references, safer recruitment standards, open references, Ofsted evidence"
         recordType="staff_training"

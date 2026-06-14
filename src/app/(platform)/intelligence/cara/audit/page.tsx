@@ -8,12 +8,12 @@ import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAriaAuditTrail } from "@/hooks/use-intelligence";
+import { useCaraAuditTrail } from "@/hooks/use-intelligence";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useAuthContext } from "@/contexts/auth-context";
 import { getYPName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
-import type { AriaAuditEntry, AuditActionType } from "@/types/extended";
+import type { CaraAuditEntry, AuditActionType } from "@/types/extended";
 import {
   Layers, Brain, CheckCircle2, Shield, FileText, Users,
   ClipboardList, BookOpen, ChevronDown, ChevronUp, Lightbulb,
@@ -55,7 +55,7 @@ const DATE_FILTERS = [
 
 function ActionIcon({ actionType }: { actionType: AuditActionType }) {
   const iconClass = "h-4 w-4";
-  if (actionType.startsWith("aria_assessment")) return <Brain className={cn(iconClass, "text-[var(--cs-aria-gold)]")} />;
+  if (actionType.startsWith("aria_assessment")) return <Brain className={cn(iconClass, "text-[var(--cs-cara-gold)]")} />;
   if (actionType.startsWith("aria_oversight")) return <ClipboardList className={cn(iconClass, "text-emerald-500")} />;
   if (actionType.startsWith("keywork")) return <BookOpen className={cn(iconClass, "text-amber-500")} />;
   if (actionType.startsWith("child_resource")) return <FileText className={cn(iconClass, "text-pink-500")} />;
@@ -74,7 +74,7 @@ function formatActionType(t: string): string {
 
 // ── Timeline item ─────────────────────────────────────────────────────────────
 
-function AuditTimelineItem({ entry }: { entry: AriaAuditEntry }) {
+function AuditTimelineItem({ entry }: { entry: CaraAuditEntry }) {
   const [expanded, setExpanded] = useState(false);
   const childName = entry.child_id
     ? getYPName(entry.child_id) || entry.child_id
@@ -110,7 +110,7 @@ function AuditTimelineItem({ entry }: { entry: AriaAuditEntry }) {
                 {childName && (
                   <>
                     <span className="text-[var(--cs-text-gentle)]">·</span>
-                    <span className="text-[var(--cs-aria-gold)] font-medium">{childName}</span>
+                    <span className="text-[var(--cs-cara-gold)] font-medium">{childName}</span>
                   </>
                 )}
                 {entry.source_table && (
@@ -157,7 +157,7 @@ function AuditTimelineItem({ entry }: { entry: AriaAuditEntry }) {
                   {entry.ai_response && (
                     <div>
                       <p className="text-[9px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-0.5">AI Response</p>
-                      <p className="text-[11px] text-[var(--cs-text-secondary)] leading-relaxed line-clamp-3 bg-[var(--cs-aria-gold-bg)] rounded-lg px-2 py-1.5">
+                      <p className="text-[11px] text-[var(--cs-text-secondary)] leading-relaxed line-clamp-3 bg-[var(--cs-cara-gold-bg)] rounded-lg px-2 py-1.5">
                         {entry.ai_response.slice(0, 200)}{entry.ai_response.length > 200 ? "…" : ""}
                       </p>
                     </div>
@@ -192,8 +192,8 @@ export default function AuditTrailPage() {
   const [dateFilter, setDateFilter] = useState("week");
 
   const childParam = childFilter === "all" ? undefined : childFilter;
-  const { data, isLoading } = useAriaAuditTrail({ childId: childParam, homeId });
-  const entries: AriaAuditEntry[] = useMemo(() => data?.data ?? [], [data]);
+  const { data, isLoading } = useCaraAuditTrail({ childId: childParam, homeId });
+  const entries: CaraAuditEntry[] = useMemo(() => data?.data ?? [], [data]);
 
   const filtered = useMemo(() => {
     let list = entries;

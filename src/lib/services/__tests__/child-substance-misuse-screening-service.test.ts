@@ -22,7 +22,7 @@ import type {
   ChildSubstanceMisuseScreeningRow,
 } from "../child-substance-misuse-screening-service";
 
-const { computeMetrics, computeAlerts, computeAriaInsights } = _testing;
+const { computeMetrics, computeAlerts, computeCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -1265,79 +1265,79 @@ describe("child-substance-misuse-screening-service", () => {
   });
 
   // ═══════════════════════════════════════════════════════════════════════
-  // 5. computeAriaInsights
+  // 5. computeCaraInsights
   // ═══════════════════════════════════════════════════════════════════════
 
-  describe("computeAriaInsights", () => {
+  describe("computeCaraInsights", () => {
     it("returns 3 insights for empty data", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights).toHaveLength(3);
     });
     it("returns 3 insights for populated data", () => {
       const rows = [makeRow(), makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights).toHaveLength(3);
     });
     it("insight 1 starts with [red]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[0]).toMatch(/^\[red\]/);
+      expect(computeCaraInsights(metrics)[0]).toMatch(/^\[red\]/);
     });
     it("insight 2 starts with [amber]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[1]).toMatch(/^\[amber\]/);
+      expect(computeCaraInsights(metrics)[1]).toMatch(/^\[amber\]/);
     });
     it("insight 3 starts with [reflect]", () => {
       const metrics = computeMetrics([]);
-      expect(computeAriaInsights(metrics)[2]).toMatch(/^\[reflect\]/);
+      expect(computeCaraInsights(metrics)[2]).toMatch(/^\[reflect\]/);
     });
     it("insight 1 contains total screenings count", () => {
       const rows = [makeRow({ id: "1" }), makeRow({ id: "2" })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("2 substance misuse screenings");
     });
     it("insight 1 contains unique children count", () => {
       const rows = [makeRow({ id: "1", child_name: "A" }), makeRow({ id: "2", child_name: "B" })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("2 children");
     });
     it("insight 1 uses singular child for 1", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 child");
     });
     it("insight 1 contains high risk count", () => {
       const rows = [makeRow({ id: "1", screening_outcome: "High Risk", referral_made: true, social_worker_notified: true })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 high risk");
     });
     it("insight 1 contains immediate intervention count", () => {
       const rows = [makeRow({ id: "1", screening_outcome: "Immediate Intervention", safety_plan_in_place: true, social_worker_notified: true })];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 immediate intervention");
     });
     it("insight 1 contains no concern count", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("1 no concern");
     });
     it("insight 1 contains referral rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("Referral rate");
     });
     it("insight 1 contains risk assessment rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("Risk assessment rate");
     });
     it("insight 2 mentions critical and high alerts when present", () => {
@@ -1346,63 +1346,63 @@ describe("child-substance-misuse-screening-service", () => {
       ];
       const metrics = computeMetrics(rows);
       const alerts = computeAlerts(rows);
-      const insights = computeAriaInsights(metrics, alerts);
+      const insights = computeCaraInsights(metrics, alerts);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high-priority");
     });
     it("insight 2 shows no concerns when none", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics, []);
+      const insights = computeCaraInsights(metrics, []);
       expect(insights[1]).toContain("No critical or high-priority alerts");
     });
     it("insight 2 contains safety plan rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[1]).toContain("Safety plan rate");
     });
     it("insight 2 contains parental notification rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[1]).toContain("Parental notification rate");
     });
     it("insight 2 contains social worker notification rate", () => {
       const rows = [makeRow()];
       const metrics = computeMetrics(rows);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[1]).toContain("Social worker notification rate");
     });
     it("insight 3 contains reflective question about substance misuse", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("substance misuse");
     });
     it("insight 3 mentions tailored support", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("tailored support");
     });
     it("insight 3 mentions root causes", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("root causes");
     });
     it("all insights are strings", () => {
       const metrics = computeMetrics([makeRow()]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       for (const i of insights) expect(typeof i).toBe("string");
     });
     it("empty array still produces meaningful content", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("0 substance misuse screenings");
       expect(insights[0]).toContain("0 children");
     });
     it("insight 1 for zero screenings shows 0 high risk and 0 immediate intervention", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[0]).toContain("0 high risk");
       expect(insights[0]).toContain("0 immediate intervention");
     });
@@ -1410,12 +1410,12 @@ describe("child-substance-misuse-screening-service", () => {
       const rows = [makeRow({ id: "1", screening_outcome: "No Concern", risk_assessment_completed: false })];
       const metrics = computeMetrics(rows);
       const alerts = computeAlerts(rows);
-      const insights = computeAriaInsights(metrics, alerts);
+      const insights = computeCaraInsights(metrics, alerts);
       expect(insights[1]).toContain("No critical or high-priority alerts");
     });
     it("insight 3 mentions early warning signs", () => {
       const metrics = computeMetrics([]);
-      const insights = computeAriaInsights(metrics);
+      const insights = computeCaraInsights(metrics);
       expect(insights[2]).toContain("early warning signs");
     });
   });

@@ -31,7 +31,7 @@ const TYPE_CONFIG: Record<KeyDate["type"], {
   training_expiry:  { icon: GraduationCap,  color: "text-amber-600",   bgColor: "bg-amber-100",   label: "Training" },
   supervision:      { icon: Users,          color: "text-indigo-600",  bgColor: "bg-indigo-100",  label: "Supervision" },
   probation_end:    { icon: Award,          color: "text-emerald-600", bgColor: "bg-emerald-100", label: "Probation" },
-  placement_review: { icon: Heart,          color: "text-[var(--cs-aria-gold)]",  bgColor: "bg-[var(--cs-aria-gold-bg)]",  label: "Placement" },
+  placement_review: { icon: Heart,          color: "text-[var(--cs-cara-gold)]",  bgColor: "bg-[var(--cs-cara-gold-bg)]",  label: "Placement" },
   document_expiry:  { icon: FileText,       color: "text-[var(--cs-text-secondary)]",   bgColor: "bg-[var(--cs-surface)]",   label: "Document" },
   care_review:      { icon: Heart,          color: "text-blue-600",    bgColor: "bg-blue-100",    label: "Care Plan" },
 };

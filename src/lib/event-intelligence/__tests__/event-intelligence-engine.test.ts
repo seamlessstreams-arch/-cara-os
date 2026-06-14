@@ -19,7 +19,7 @@ function ev(o: {
     occurredAt: at(o.daysAgo), createdBy: "system", summary: `${o.type ?? "incident"} ${o.id}`,
     structuredTags: [], riskLevel: o.risk, requiresApproval: !!o.approval, approvalLevel: o.approval,
     linkedDocuments: [], linkedTasks: [], linkedRisks: [], linkedNotifications: [],
-    ariaAnalysis: { themes: o.themes ?? [], suggestedActions: [], complianceFlags: o.flags ?? [], missingInformation: [], confidenceScore: 1 },
+    caraAnalysis: { themes: o.themes ?? [], suggestedActions: [], complianceFlags: o.flags ?? [], missingInformation: [], confidenceScore: 1 },
     audit: { createdAt: at(o.daysAgo), updatedAt: at(o.daysAgo), version: 1, changeHistory: [] },
   };
 }

@@ -74,7 +74,7 @@ export interface EventIntelligenceAlert {
   child_id?: string;
 }
 
-export interface AriaEventInsight {
+export interface CaraEventInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -86,7 +86,7 @@ export interface EventIntelligenceResult {
   compliance_register: FlagCount[];
   theme_trends: ThemeCount[];
   alerts: EventIntelligenceAlert[];
-  insights: AriaEventInsight[];
+  insights: CaraEventInsight[];
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -136,7 +136,7 @@ export function computeEventIntelligence(input: EventIntelligenceInput): EventIn
     by_risk[e.riskLevel] += 1;
     typeCounts.set(e.eventType, (typeCounts.get(e.eventType) ?? 0) + 1);
     if (e.requiresApproval) pending_approvals += 1;
-    open_compliance_flags += e.ariaAnalysis?.complianceFlags.length ?? 0;
+    open_compliance_flags += e.caraAnalysis?.complianceFlags.length ?? 0;
   }
   const by_type: TypeCount[] = [...typeCounts.entries()].map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count);
 
@@ -157,7 +157,7 @@ export function computeEventIntelligence(input: EventIntelligenceInput): EventIn
     for (const e of evs) tc.set(e.eventType, (tc.get(e.eventType) ?? 0) + 1);
     const top_event_types = [...tc.entries()].map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count).slice(0, 4);
 
-    const open_flags = evs.reduce((s, e) => s + (e.ariaAnalysis?.complianceFlags.length ?? 0), 0);
+    const open_flags = evs.reduce((s, e) => s + (e.caraAnalysis?.complianceFlags.length ?? 0), 0);
     const pending = evs.filter((e) => e.requiresApproval).length;
     const critical_events = evs.filter((e) => e.riskLevel === "critical").length;
 
@@ -193,7 +193,7 @@ export function computeEventIntelligence(input: EventIntelligenceInput): EventIn
   // ── Compliance register (aggregated open flags) ────────────────────────
   const flagCounts = new Map<string, number>();
   for (const e of analysis) {
-    for (const f of e.ariaAnalysis?.complianceFlags ?? []) {
+    for (const f of e.caraAnalysis?.complianceFlags ?? []) {
       flagCounts.set(f, (flagCounts.get(f) ?? 0) + 1);
     }
   }
@@ -202,7 +202,7 @@ export function computeEventIntelligence(input: EventIntelligenceInput): EventIn
   // ── Theme trends ───────────────────────────────────────────────────────
   const themeCounts = new Map<string, number>();
   for (const e of analysis) {
-    for (const t of e.ariaAnalysis?.themes ?? []) themeCounts.set(t, (themeCounts.get(t) ?? 0) + 1);
+    for (const t of e.caraAnalysis?.themes ?? []) themeCounts.set(t, (themeCounts.get(t) ?? 0) + 1);
   }
   const theme_trends: ThemeCount[] = [...themeCounts.entries()].map(([theme, count]) => ({ theme, count })).sort((a, b) => b.count - a.count).slice(0, 6);
 
@@ -263,8 +263,8 @@ function buildInsights(
   register: FlagCount[],
   themes: ThemeCount[],
   overview: EventIntelligenceOverview,
-): AriaEventInsight[] {
-  const insights: AriaEventInsight[] = [];
+): CaraEventInsight[] {
+  const insights: CaraEventInsight[] = [];
 
   const escalating = radar.filter((c) => c.trend === "escalating");
   if (escalating.length > 0) {

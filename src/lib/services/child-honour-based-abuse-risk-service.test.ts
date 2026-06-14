@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
 } from "./child-honour-based-abuse-risk-service";
 import type { ChildHonourBasedAbuseRiskRow } from "./child-honour-based-abuse-risk-service";
 
@@ -135,11 +135,11 @@ describe("computeAlerts (honour-based abuse)", () => {
   });
 });
 
-// -- generateAriaInsights -----------------------------------------------------
+// -- generateCaraInsights -----------------------------------------------------
 
-describe("generateAriaInsights (honour-based abuse)", () => {
+describe("generateCaraInsights (honour-based abuse)", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[2]).toContain("[reflect]");
@@ -147,7 +147,7 @@ describe("generateAriaInsights (honour-based abuse)", () => {
 
   it("shows critical/high alert counts when present", () => {
     const rows = [makeRow({ risk_level: "Immediate", safety_plan_in_place: false })];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 });

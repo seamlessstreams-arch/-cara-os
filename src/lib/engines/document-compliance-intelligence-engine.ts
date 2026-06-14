@@ -114,7 +114,7 @@ export interface DocumentAlert {
   message: string;
 }
 
-export interface AriaDocumentInsight {
+export interface CaraDocumentInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -124,7 +124,7 @@ export interface DocumentComplianceIntelligenceResult {
   document_profiles: DocumentProfile[];
   category_analysis: CategoryAnalysis[];
   alerts: DocumentAlert[];
-  insights: AriaDocumentInsight[];
+  insights: CaraDocumentInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -379,7 +379,7 @@ export function computeDocumentComplianceIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaDocumentInsight[] = [];
+  const insights: CaraDocumentInsight[] = [];
 
   // Critical: expired regulatory docs
   if (expiredRegulatory.length > 0) {

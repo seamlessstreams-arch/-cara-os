@@ -481,9 +481,9 @@ describe("saferRecruitmentGate.ts", () => {
       expect(result.rows).toHaveLength(14);
     });
 
-    it("ariaLabel is always set", () => {
+    it("caraLabel is always set", () => {
       const result = evaluateSaferRecruitmentGate(completeRecruitmentRecord());
-      expect(result.ariaLabel).toBe("Cara suggested draft");
+      expect(result.caraLabel).toBe("Cara suggested draft");
     });
 
     it("regulatoryLinks are populated", () => {
@@ -778,7 +778,7 @@ describe("suspensionDecision.ts", () => {
     it("returns a complete analysis with all fields populated", () => {
       const result = analyseSuspensionDecision(baseSuspensionInput());
       expect(result.status).toBe("draft");
-      expect(result.ariaLabel).toBe("Cara suggested draft");
+      expect(result.caraLabel).toBe("Cara suggested draft");
       expect(result.engineVersion).toBe(ENGINE_VERSION);
       expect(result.generatedAt).toBeTruthy();
       expect(result.overallRiskGrade).toBeTruthy();
@@ -788,7 +788,7 @@ describe("suspensionDecision.ts", () => {
       expect(result.proportionalityRationale.length).toBeGreaterThan(0);
       expect(result.writtenReasonsDraft.length).toBeGreaterThan(0);
       expect(result.regulatoryLinks.length).toBeGreaterThan(0);
-      expect(typeof result.ariaConfidence).toBe("number");
+      expect(typeof result.caraConfidence).toBe("number");
     });
 
     it("throws when staffId is empty", () => {
@@ -1202,7 +1202,7 @@ describe("suspensionDecision.ts", () => {
     });
   });
 
-  describe("ariaConfidence", () => {
+  describe("caraConfidence", () => {
     it("higher when no blocks or warnings", () => {
       const cleanInput = baseSuspensionInput({
         proposedDecision: "do_not_suspend",
@@ -1224,13 +1224,13 @@ describe("suspensionDecision.ts", () => {
       });
       const dirtyResult = analyseSuspensionDecision(dirtyInput);
 
-      expect(cleanResult.ariaConfidence).toBeGreaterThan(dirtyResult.ariaConfidence);
+      expect(cleanResult.caraConfidence).toBeGreaterThan(dirtyResult.caraConfidence);
     });
 
-    it("ariaConfidence is between 0.2 and 0.9", () => {
+    it("caraConfidence is between 0.2 and 0.9", () => {
       const result = analyseSuspensionDecision(baseSuspensionInput());
-      expect(result.ariaConfidence).toBeGreaterThanOrEqual(0.2);
-      expect(result.ariaConfidence).toBeLessThanOrEqual(0.9);
+      expect(result.caraConfidence).toBeGreaterThanOrEqual(0.2);
+      expect(result.caraConfidence).toBeLessThanOrEqual(0.9);
     });
   });
 

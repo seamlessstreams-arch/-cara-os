@@ -7,7 +7,7 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
+import { CaraPanel } from "@/components/cara/cara-panel";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,7 +44,7 @@ import { useAuthContext } from "@/contexts/auth-context";
 import { toast } from "sonner";
 import Link from "next/link";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Status / priority colours ─────────────────────────────────────────────────
 
@@ -325,12 +325,12 @@ export default function ManagementOversightPage() {
     <PageShell
       title="Management Oversight Queue"
       subtitle="Care events and tasks requiring manager review, verification or sign-off"
-      ariaContext={{ pageTitle: "Management Oversight Queue", sourceType: "general" }}
+      caraContext={{ pageTitle: "Management Oversight Queue", sourceType: "general" }}
       actions={
-        <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+        <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
       }
     >
-      <AriaPanel
+      <CaraPanel
         mode="oversee"
         pageContext="Management Oversight Queue"
         recordType="management_oversight"

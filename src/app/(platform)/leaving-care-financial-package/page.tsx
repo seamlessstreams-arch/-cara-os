@@ -32,8 +32,8 @@ import { useLeavingCarePackages } from "@/hooks/use-leaving-care-packages";
 import type { LeavingCarePackage, TransitionStage } from "@/types/extended";
 import { TRANSITION_STAGE_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ──────────────────────────────────────────────────────────────── */
 
@@ -138,12 +138,12 @@ export default function LeavingCareFinancialPackagePage() {
     <PageShell
       title="Leaving Care Financial Package"
       subtitle="Children (Leaving Care) Act 2000 — Setting Up Home Allowance · Junior ISA · savings · financial literacy progression"
-      ariaContext={{ pageTitle: "Leaving Care Financial Package", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Leaving Care Financial Package", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="leaving-care-financial-package" />
           <PrintButton title="Leaving Care Financial Package" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -380,7 +380,7 @@ export default function LeavingCareFinancialPackagePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Leaving Care Financial Package — personal allowance, setting up home allowance, education bursary, employment grant, pathway plan finances, financial literacy, Reg 45 care leaver evidence"
         recordType="care_plan"

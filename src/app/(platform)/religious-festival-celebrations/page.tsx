@@ -29,8 +29,8 @@ import { useReligiousFestivalRecords } from "@/hooks/use-religious-festival-reco
 import type { ReligiousFestivalRecord, ReligiousFestivalFaith } from "@/types/extended";
 import { RELIGIOUS_FESTIVAL_FAITH_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local colour map ─────────────────────────────────────────────── */
 
@@ -117,12 +117,12 @@ export default function ReligiousFestivalCelebrationsPage() {
   return (
     <PageShell
       title="Religious & Cultural Festival Celebrations"
-      ariaContext={{ pageTitle: "Religious & Cultural Festival Celebrations", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Religious & Cultural Festival Celebrations", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="religious-festival-celebrations" />
           <PrintButton title="Religious & Cultural Festival Celebrations" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -323,7 +323,7 @@ export default function ReligiousFestivalCelebrationsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Religious & Cultural Festival Celebrations — cultural celebrations, religious observance, identity, faith practices, cultural planning, care plan cultural needs, diversity evidence, Reg 45"
         recordType="care_plan"

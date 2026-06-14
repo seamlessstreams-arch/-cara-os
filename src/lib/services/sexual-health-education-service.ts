@@ -510,7 +510,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: SexualHealthEducationRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

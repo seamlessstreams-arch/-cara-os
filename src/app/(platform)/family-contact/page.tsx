@@ -43,8 +43,8 @@ import {
   CalendarDays, MapPin, UserCheck, ShieldAlert, Info, Search, ArrowUpDown, ArrowUpRight,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -141,14 +141,14 @@ function ContactLogCard({
   currentUserId: string;
 }) {
   const [open, setOpen]           = useState(false);
-  const [ariaBusy, setAriaBusy]   = useState(false);
+  const [caraBusy, setCaraBusy]   = useState(false);
   const [swNote, setSwNote]       = useState("");
   const [showSwForm, setShowSwForm] = useState(false);
 
   const isCancelled = log.status === "cancelled";
 
-  async function requestAria() {
-    setAriaBusy(true);
+  async function requestCara() {
+    setCaraBusy(true);
     try {
       const res = await fetch("/api/v1/cara/chat", {
         method: "POST",
@@ -168,7 +168,7 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
       const data = await res.json();
       onUpdate(log.id, { aria_analysis: data.response ?? data.content ?? "Analysis unavailable." });
     } finally {
-      setAriaBusy(false);
+      setCaraBusy(false);
     }
   }
 
@@ -355,11 +355,11 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
               <Button
                 size="sm"
                 variant="outline"
-                onClick={requestAria}
-                disabled={ariaBusy}
+                onClick={requestCara}
+                disabled={caraBusy}
                 className="h-8 text-xs text-indigo-600 border-indigo-200 hover:bg-indigo-50"
               >
-                {ariaBusy ? "Analysing…" : "✦ Cara analysis"}
+                {caraBusy ? "Analysing…" : "✦ Cara analysis"}
               </Button>
             )}
 
@@ -913,17 +913,17 @@ export default function FamilyContactPage() {
     <PageShell
       title="Family Contact"
       subtitle="Contact arrangements, session logs, and YP voice — Reg 13"
-      ariaContext={{ pageTitle: "Family Contact", sourceType: "general" }}
+      caraContext={{ pageTitle: "Family Contact", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={filtered} columns={CONTACT_EXPORT_COLS} filename="family-contact" />
           <PrintButton title="Family Contact" subtitle="Chamberlain House — Family Contact Log" targetId="family-contact-content" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="family-contact-content" className="space-y-6">
-        <AriaPanel mode="assist" pageContext="Family Contact — Regulation 13, contact arrangements, session logs, child voice, supervised contact, letter-box contact" recordType="family_contact" userRole="registered_manager" className="mb-2" />
+        <CaraPanel mode="assist" pageContext="Family Contact — Regulation 13, contact arrangements, session logs, child voice, supervised contact, letter-box contact" recordType="family_contact" userRole="registered_manager" className="mb-2" />
         {/* Stats bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {[

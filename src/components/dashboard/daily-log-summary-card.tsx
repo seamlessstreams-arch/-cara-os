@@ -27,7 +27,7 @@ const TYPE_COLOURS: Record<string, string> = {
   behaviour: "bg-orange-100 text-orange-700",
   health:    "bg-teal-100 text-teal-700",
   education: "bg-blue-100 text-blue-700",
-  contact:   "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  contact:   "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   activity:  "bg-emerald-100 text-emerald-700",
   mood:      "bg-amber-100 text-amber-700",
   sleep:     "bg-indigo-100 text-indigo-700",

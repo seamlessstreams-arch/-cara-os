@@ -294,7 +294,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function computeAriaInsights(
+export function computeCaraInsights(
   metrics: ReturnType<typeof computeMetrics>,
 ): string[] {
   const insights: string[] = [];
@@ -350,5 +350,5 @@ export function computeAriaInsights(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
 };

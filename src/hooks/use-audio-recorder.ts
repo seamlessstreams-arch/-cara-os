@@ -10,7 +10,7 @@
 // the microphone is never left active in the background.
 //
 // The recording is kept entirely in memory until the consumer calls submit().
-// The consumer is responsible for sending the audio Blob to /api/aria/transcribe.
+// The consumer is responsible for sending the audio Blob to /api/cara/transcribe.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useCallback, useEffect, useRef, useState } from "react";

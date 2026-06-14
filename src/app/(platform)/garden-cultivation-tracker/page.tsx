@@ -32,8 +32,8 @@ import type { GardenPlotRecord, GardenPlanting, GardenPlotLocation, CropStatus }
 import { GARDEN_PLOT_LOCATION_LABEL, CROP_STATUS_LABEL } from "@/types/extended";
 import { useGardenPlotRecords } from "@/hooks/use-garden-plot-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 
 const statusColour: Record<CropStatus, string> = {
@@ -127,12 +127,12 @@ export default function GardenCultivationTrackerPage() {
     <PageShell
       title="Garden Cultivation Tracker"
       subtitle="Therapeutic gardening with our children — plots, plants, harvest, sensory work and seasonal planning"
-      ariaContext={{ pageTitle: "Garden Cultivation Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Garden Cultivation Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="garden-cultivation" />
           <PrintButton title="Garden Cultivation Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -391,7 +391,7 @@ export default function GardenCultivationTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Garden Cultivation Tracker — gardening activities, allotment, growing food, horticulture, therapeutic activity, life skills, independence, wellbeing, Ofsted evidence"
         recordType="direct_work"

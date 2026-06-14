@@ -269,7 +269,7 @@ export function computeHomeAtmosphereAlerts(
   return alerts;
 }
 
-export function generateHomeAtmosphereAriaInsights(
+export function generateHomeAtmosphereCaraInsights(
   metrics: ReturnType<typeof computeHomeAtmosphereMetrics>,
   alerts: ReturnType<typeof computeHomeAtmosphereAlerts>,
 ): string[] {
@@ -328,5 +328,5 @@ export function generateHomeAtmosphereAriaInsights(
 export const _testing = {
   computeHomeAtmosphereMetrics,
   computeHomeAtmosphereAlerts,
-  generateHomeAtmosphereAriaInsights,
+  generateHomeAtmosphereCaraInsights,
 };

@@ -9,13 +9,13 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  useAriaSafeguardingFlags,
-  useCreateAriaSafeguardingFlag,
-  useUpdateAriaSafeguardingFlag,
+  useCaraSafeguardingFlags,
+  useCreateCaraSafeguardingFlag,
+  useUpdateCaraSafeguardingFlag,
 } from "@/hooks/use-intelligence";
 import { cn, formatDate } from "@/lib/utils";
 import type {
-  AriaSafeguardingFlag, SafeguardingFlagType, SafeguardingFlagSeverity,
+  CaraSafeguardingFlag, SafeguardingFlagType, SafeguardingFlagSeverity,
 } from "@/types/extended";
 import {
   Shield, AlertTriangle, Plus, Loader2, CheckCircle2, X,
@@ -57,18 +57,18 @@ const STATUS_TABS = [
 
 // ── Flag card ─────────────────────────────────────────────────────────────────
 
-function FlagCard({ flag }: { flag: AriaSafeguardingFlag }) {
+function FlagCard({ flag }: { flag: CaraSafeguardingFlag }) {
   const { currentUser } = useAuthContext();
   const [reviewOpen, setReviewOpen] = useState(false);
   const [reviewOutcome, setReviewOutcome] = useState(flag.review_outcome ?? "");
   const [confirmClose, setConfirmClose] = useState(false);
-  const updateFlag = useUpdateAriaSafeguardingFlag();
+  const updateFlag = useUpdateCaraSafeguardingFlag();
   const [updating, setUpdating] = useState(false);
 
   const childName = getYPName(flag.child_id) || flag.child_id;
   const sev = SEVERITY_CONFIG[flag.severity];
 
-  async function handleUpdate(data: Partial<AriaSafeguardingFlag>) {
+  async function handleUpdate(data: Partial<CaraSafeguardingFlag>) {
     setUpdating(true);
     try {
       await updateFlag.mutateAsync({ id: flag.id, ...data });
@@ -230,7 +230,7 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [savedOk, setSavedOk] = useState(false);
 
-  const createFlag = useCreateAriaSafeguardingFlag();
+  const createFlag = useCreateCaraSafeguardingFlag();
 
   async function handleRaise() {
     if (!childId || !description.trim() || !recommendedAction.trim()) {
@@ -378,8 +378,8 @@ export default function SafeguardingFlagsPage() {
   const [showForm, setShowForm] = useState(false);
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const { data, isLoading } = useAriaSafeguardingFlags({ homeId });
-  const flags: AriaSafeguardingFlag[] = useMemo(() => data?.data ?? [], [data]);
+  const { data, isLoading } = useCaraSafeguardingFlags({ homeId });
+  const flags: CaraSafeguardingFlag[] = useMemo(() => data?.data ?? [], [data]);
 
   const openFlags = useMemo(() => flags.filter((f) => f.status === "open"), [flags]);
   const criticalFlags = useMemo(() => openFlags.filter((f) => f.severity === "critical"), [openFlags]);

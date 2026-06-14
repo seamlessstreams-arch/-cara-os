@@ -68,7 +68,7 @@ export function OnDutyBar({ collapsed }: { collapsed: boolean }) {
             On Duty
           </span>
         </div>
-        <Link href="/rota" className="text-[10px] text-[var(--cs-aria-gold)]/70 hover:text-[var(--cs-aria-gold)]">
+        <Link href="/rota" className="text-[10px] text-[var(--cs-cara-gold)]/70 hover:text-[var(--cs-cara-gold)]">
           Rota
         </Link>
       </div>

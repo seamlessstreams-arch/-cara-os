@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
-import { generateText } from "@/lib/aria/aria-provider";
+import { generateText } from "@/lib/cara/cara-provider";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import {
   buildJobAdvertScaffold, buildCandidateSummaryScaffold, buildActionPlanScaffold,
@@ -26,7 +26,7 @@ import { computeValuesMatch, type EmployerValuesProfile, type CandidateValuesPro
 
 function audit(user_id: string, note: string, child_id?: string) {
   try {
-    intelligenceDb.ariaAuditTrail.create({
+    intelligenceDb.caraAuditTrail.create({
       home_id: "home_oak", user_id, child_id,
       action_type: "ai_record_rewrite_generated",
       source_table: "manager_assistant",

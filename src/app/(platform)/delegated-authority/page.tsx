@@ -21,8 +21,8 @@ import { useDelegatedAuthority } from "@/hooks/use-delegated-authority";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { DelegatedAuthority, DelegatedAuthorityItem, DelegatedAuthStatus, DelegatedAuthCategory } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const STATUS_COLORS: Record<DelegatedAuthStatus, string> = {
@@ -103,12 +103,12 @@ export default function DelegatedAuthorityPage() {
     <PageShell
       title="Delegated Authority"
       subtitle="Regulation 20 — decisions the home is authorised to make for each child"
-      ariaContext={{ pageTitle: "Delegated Authority", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Delegated Authority", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Delegated Authority" />
           <ExportButton data={exportData} columns={exportCols} filename="delegated-authority" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -247,7 +247,7 @@ export default function DelegatedAuthorityPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Delegated Authority — LA permissions for haircuts, piercings, holidays, activities, medical consent, social media, employment, driving, age-related items per child"
         recordType="care_plan"

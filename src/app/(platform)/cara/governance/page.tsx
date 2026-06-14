@@ -51,7 +51,7 @@ const GOVERNANCE_MODULES = [
   },
 ];
 
-export default function AriaGovernancePage() {
+export default function CaraGovernancePage() {
   return (
     <div className="space-y-6">
       {/* Header */}

@@ -47,7 +47,7 @@ function useIntelligenceSummary() {
   // Cara says
   const topConcern = needsAttention[0]?.text ?? "";
   const topPositive = goingWell[0] ?? "";
-  const ariaSays = topConcern && topPositive
+  const caraSays = topConcern && topPositive
     ? `Focus on ${topConcern.toLowerCase()}. On the positive side, ${topPositive.toLowerCase()}.`
     : topConcern ? `Priority: ${topConcern.toLowerCase()}.`
     : topPositive ? `${topPositive}. Keep it up.`
@@ -60,7 +60,7 @@ function useIntelligenceSummary() {
     needsAttention,
     goingWell,
     overdue,
-    ariaSays,
+    caraSays,
   };
 }
 
@@ -128,9 +128,9 @@ export function IntelligenceSummary() {
         )}
 
         {/* Cara says */}
-        <div className="rounded-xl bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] p-3 flex items-start gap-2">
-          <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)] shrink-0 mt-0.5" />
-          <p className="text-xs text-[var(--cs-text-secondary)] italic">{data.ariaSays}</p>
+        <div className="rounded-xl bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3 flex items-start gap-2">
+          <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)] shrink-0 mt-0.5" />
+          <p className="text-xs text-[var(--cs-text-secondary)] italic">{data.caraSays}</p>
         </div>
       </div>
     </div>

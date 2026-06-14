@@ -26,8 +26,8 @@ import type { BereavementLossType, GriefStage, BereavementRecord } from "@/types
 import { useBereavementRecords } from "@/hooks/use-bereavement-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── label maps ──────────────────────────────────────────────────────── */
 
@@ -198,12 +198,12 @@ export default function BereavementLossSupportPage() {
     <PageShell
       title="Bereavement &amp; Loss Support"
       subtitle="Holding space for grief — child-led, trauma-informed support across every kind of loss"
-      ariaContext={{ pageTitle: "Bereavement & Loss Support", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Bereavement & Loss Support", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Bereavement & Loss Support" />
           <ExportButton data={exportRows} columns={exportCols} filename="bereavement-loss-support" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -412,7 +412,7 @@ export default function BereavementLossSupportPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Bereavement & Loss Support — grief, trauma, loss of family, pet bereavement, ambiguous loss, therapeutic support, memory boxes, direct work, CAMHS, keywork sessions"
         recordType="direct_work"

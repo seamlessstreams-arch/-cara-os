@@ -30,7 +30,7 @@ function makeEvent(over: Partial<CornerstoneEvent> & { id: string }): Cornerston
     linkedTasks: [],
     linkedRisks: [],
     linkedNotifications: [],
-    ariaAnalysis: over.ariaAnalysis,
+    caraAnalysis: over.caraAnalysis,
     audit: { createdAt: "2026-06-01T10:00:00.000Z", updatedAt: "2026-06-01T10:00:00.000Z", version: 1, changeHistory: [] },
   };
 }
@@ -80,7 +80,7 @@ describe("rule (a) mandatory-info", () => {
       events: [makeEvent({
         id: "e1",
         riskLevel: "medium",
-        ariaAnalysis: { themes: [], suggestedActions: [], complianceFlags: ["Body map required but not completed"], missingInformation: [], confidenceScore: 0.9 },
+        caraAnalysis: { themes: [], suggestedActions: [], complianceFlags: ["Body map required but not completed"], missingInformation: [], confidenceScore: 0.9 },
       })],
     }));
     const r = res.rule_results.find((x) => x.category === "mandatory-info");
@@ -96,7 +96,7 @@ describe("rule (a) mandatory-info", () => {
         id: "e1",
         eventType: "daily_log",
         riskLevel: "low",
-        ariaAnalysis: { themes: [], suggestedActions: [], complianceFlags: [], missingInformation: [], confidenceScore: 1 },
+        caraAnalysis: { themes: [], suggestedActions: [], complianceFlags: [], missingInformation: [], confidenceScore: 1 },
       })],
     }));
     expect(res.rule_results.find((x) => x.category === "mandatory-info")).toBeUndefined();
@@ -107,7 +107,7 @@ describe("rule (a) mandatory-info", () => {
       events: [makeEvent({
         id: "e1",
         riskLevel: "critical",
-        ariaAnalysis: { themes: [], suggestedActions: [], complianceFlags: ["X"], missingInformation: [], confidenceScore: 0.5 },
+        caraAnalysis: { themes: [], suggestedActions: [], complianceFlags: ["X"], missingInformation: [], confidenceScore: 0.5 },
       })],
     }));
     expect(res.rule_results.find((x) => x.category === "mandatory-info")!.severity).toBe("critical");
@@ -168,7 +168,7 @@ describe("rule (c) safeguarding-notification", () => {
         eventType: "safeguarding",
         riskLevel: "high",
         structuredTags: ["safeguarding"],
-        ariaAnalysis: { themes: [], suggestedActions: [], complianceFlags: [], missingInformation: [], confidenceScore: 1 },
+        caraAnalysis: { themes: [], suggestedActions: [], complianceFlags: [], missingInformation: [], confidenceScore: 1 },
       })],
     }));
     const r = res.rule_results.find((x) => x.category === "safeguarding-notification");
@@ -183,7 +183,7 @@ describe("rule (c) safeguarding-notification", () => {
         eventType: "safeguarding",
         riskLevel: "critical",
         structuredTags: ["safeguarding"],
-        ariaAnalysis: { themes: [], suggestedActions: [], complianceFlags: ["Ofsted notification (Reg 40) may be required"], missingInformation: [], confidenceScore: 0.8 },
+        caraAnalysis: { themes: [], suggestedActions: [], complianceFlags: ["Ofsted notification (Reg 40) may be required"], missingInformation: [], confidenceScore: 0.8 },
       })],
     }));
     const r = res.rule_results.find((x) => x.category === "safeguarding-notification");
@@ -418,7 +418,7 @@ function buildFullScenario(): ComplianceRulesInput {
         requiresApproval: true,
         approvalLevel: "manager",
         structuredTags: ["safeguarding", "child_protection"],
-        ariaAnalysis: { themes: [], suggestedActions: [], complianceFlags: ["Ofsted notification (Reg 40) may be required"], missingInformation: [], confidenceScore: 0.6 },
+        caraAnalysis: { themes: [], suggestedActions: [], complianceFlags: ["Ofsted notification (Reg 40) may be required"], missingInformation: [], confidenceScore: 0.6 },
       }),
       // missing — outstanding RHI (high)
       makeEvent({ id: "evt_mis", eventType: "missing", riskLevel: "high", structuredTags: ["missing", "rhi_outstanding"] }),

@@ -166,7 +166,7 @@ export function computeComplianceRules(input: ComplianceRulesInput): ComplianceR
   // fail: the record is incomplete against a mandatory requirement. Cara surfaces
   // the flag, but the FAIL is fixed — the manager must resolve it, not the model.
   for (const e of events) {
-    const flags = e.ariaAnalysis?.complianceFlags ?? [];
+    const flags = e.caraAnalysis?.complianceFlags ?? [];
     if (flags.length === 0) continue;
     const severity: RuleSeverity =
       e.riskLevel === "critical" ? "critical" : e.riskLevel === "high" ? "high" : "medium";
@@ -211,7 +211,7 @@ export function computeComplianceRules(input: ComplianceRulesInput): ComplianceR
     const outstanding = hasAnyTag(e, SAFEGUARDING_OUTSTANDING_TAGS);
     // A populated complianceFlag mentioning notification is also treated as
     // outstanding evidence the duty has not been discharged.
-    const flagOutstanding = (e.ariaAnalysis?.complianceFlags ?? []).some((f) =>
+    const flagOutstanding = (e.caraAnalysis?.complianceFlags ?? []).some((f) =>
       /notif|return home interview|local authority/i.test(f),
     );
     const isOutstanding = outstanding || flagOutstanding;

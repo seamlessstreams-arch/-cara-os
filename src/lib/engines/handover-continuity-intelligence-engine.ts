@@ -117,7 +117,7 @@ export interface HandoverAlert {
   message: string;
 }
 
-export interface AriaHandoverInsight {
+export interface CaraHandoverInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -127,7 +127,7 @@ export interface HandoverContinuityIntelligenceResult {
   handover_profiles: HandoverProfile[];
   child_mood_summary: ChildMoodSummary[];
   alerts: HandoverAlert[];
-  insights: AriaHandoverInsight[];
+  insights: CaraHandoverInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -343,7 +343,7 @@ export function computeHandoverContinuityIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaHandoverInsight[] = [];
+  const insights: CaraHandoverInsight[] = [];
 
   // Critical: incomplete handovers
   if (incomplete.length > 0) {

@@ -175,7 +175,7 @@ export interface PremisesAlert {
   message: string;
 }
 
-export interface AriaPremisesInsight {
+export interface CaraPremisesInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -187,7 +187,7 @@ export interface PremisesSafetyIntelligenceResult {
   maintenance_analysis: MaintenanceAnalysis[];
   vehicle_profiles: VehicleProfile[];
   alerts: PremisesAlert[];
-  insights: AriaPremisesInsight[];
+  insights: CaraPremisesInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -556,7 +556,7 @@ export function computePremisesSafetyIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaPremisesInsight[] = [];
+  const insights: CaraPremisesInsight[] = [];
 
   // Critical: any critical alert triggers Cara critical
   if (certificationsExpired > 0) {

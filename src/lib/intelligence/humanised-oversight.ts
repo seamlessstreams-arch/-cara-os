@@ -14,9 +14,9 @@ import type {
 } from "@/types/intelligence.layer";
 import {
   generateText,
-  getAriaProviderConfig,
-} from "@/lib/aria/aria-provider";
-import { applyAriaPostprocessor } from "@/lib/aria/writingStyleRules";
+  getCaraProviderConfig,
+} from "@/lib/cara/cara-provider";
+import { applyCaraPostprocessor } from "@/lib/cara/writingStyleRules";
 
 const SYSTEM_PROMPT = `You are Cara, the intelligent professional assistant built into Cara, the operating system for UK residential children's homes.
 
@@ -43,7 +43,7 @@ You are drafting management oversight for a Registered Manager. Your output must
 export async function generateHumanisedOversight(
   input: HumanisedOversightInput,
 ): Promise<HumanisedOversightOutput> {
-  const config = getAriaProviderConfig();
+  const config = getCaraProviderConfig();
 
   if (!config.configured) {
     return generateFallbackOversight(input);
@@ -63,7 +63,7 @@ export async function generateHumanisedOversight(
       return generateFallbackOversight(input);
     }
 
-    const cleanedText = applyAriaPostprocessor(result.text);
+    const cleanedText = applyCaraPostprocessor(result.text);
 
     return {
       draftText: cleanedText,

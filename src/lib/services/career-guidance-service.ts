@@ -569,7 +569,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: CareerGuidanceRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

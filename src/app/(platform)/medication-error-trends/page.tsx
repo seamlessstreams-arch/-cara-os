@@ -60,7 +60,7 @@ export default function MedicationErrorTrendsPage() {
       subtitle="Temporal and repeat-pattern early warning for medicines safety — and whether the home's learning loop is closing"
       icon={<Pill className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Medication Error Trends", sourceType: "general" }}
+      caraContext={{ pageTitle: "Medication Error Trends", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

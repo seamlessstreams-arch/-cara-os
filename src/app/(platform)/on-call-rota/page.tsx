@@ -15,8 +15,8 @@ import { useOnCallShifts } from "@/hooks/use-on-call-shifts";
 import type { OnCallShift, OnCallRole, OnCallShiftPattern } from "@/types/extended";
 import { ON_CALL_ROLE_LABEL, ON_CALL_SHIFT_PATTERN_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
@@ -72,11 +72,11 @@ export default function OnCallRotaPage() {
     <PageShell
       title="On-Call Rota"
       subtitle="Duty cover providing 24/7 escalation route — managers and senior practitioners ensuring staff and children are never without support"
-      ariaContext={{ pageTitle: "On-Call Rota", sourceType: "staff" }}
+      caraContext={{ pageTitle: "On-Call Rota", sourceType: "staff" }}
       actions={[
         <PrintButton key="p" title="On-Call Rota" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="on-call-rota" />,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "rota", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -280,7 +280,7 @@ export default function OnCallRotaPage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="On-Call Rota — out-of-hours manager cover, emergency contact, crisis support, escalation, staff manager availability, weekend on-call, incident response chain"
         recordType="rota"

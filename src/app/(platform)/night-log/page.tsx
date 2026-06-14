@@ -17,8 +17,8 @@ import type { NightCheckStatus, NightLogEntry } from "@/types/extended";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -81,12 +81,12 @@ export default function NightLogPage() {
     <PageShell
       title="Night Log"
       subtitle="Waking Night Records · Night Checks · Incidents · Security"
-      ariaContext={{ pageTitle: "Night Log", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Night Log", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Night Log" />
           <ExportButton data={exportData} columns={exportCols} filename="night-log" />
-          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -293,7 +293,7 @@ export default function NightLogPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Night Log — overnight observations, sleep checks, waking night, child welfare, disturbances, incidents, medication given at night, sleep patterns, staff checks"
         recordType="daily_log"

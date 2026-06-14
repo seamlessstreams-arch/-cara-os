@@ -28,8 +28,8 @@ import type {
 import { useBullyingIncidents } from "@/hooks/use-bullying-incidents";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── label maps ───────────────────────────────────────────────────────────── */
 
@@ -239,12 +239,12 @@ export default function BullyingIncidentLogPage() {
     <PageShell
       title="Bullying Incident Log"
       subtitle="Quality Standard 5 (Care planning) · Anti-bullying response · Sensitive record"
-      ariaContext={{ pageTitle: "Bullying Incident Log", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Bullying Incident Log", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Bullying Incident Log" />
           <ExportButton data={filtered} columns={exportCols} filename="bullying-incident-log" />
-          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -492,7 +492,7 @@ export default function BullyingIncidentLogPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Bullying Incident Log — peer bullying, cyberbullying, staff bullying, verbal/physical/emotional, action taken, restorative approach, anti-bullying policy, Reg 45 evidence"
         recordType="incident"

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeFgmRiskMetrics,
   computeFgmRiskAlerts,
-  generateFgmRiskAriaInsights,
+  generateFgmRiskCaraInsights,
 } from "./child-fgm-risk-assessment-service";
 import type { ChildFgmRiskAssessmentRow } from "./child-fgm-risk-assessment-service";
 
@@ -165,11 +165,11 @@ describe("computeFgmRiskAlerts", () => {
   });
 });
 
-// -- generateFgmRiskAriaInsights ----------------------------------------------
+// -- generateFgmRiskCaraInsights ----------------------------------------------
 
-describe("generateFgmRiskAriaInsights", () => {
+describe("generateFgmRiskCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateFgmRiskAriaInsights([]);
+    const insights = generateFgmRiskCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[1]).toContain("[amber]");
@@ -180,7 +180,7 @@ describe("generateFgmRiskAriaInsights", () => {
     const rows = [
       makeRow({ risk_level: "Immediate", mandatory_report_made: false }),
     ];
-    const insights = generateFgmRiskAriaInsights(rows);
+    const insights = generateFgmRiskCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("1 FGM risk assessments");
     expect(insights[1]).toContain("critical");

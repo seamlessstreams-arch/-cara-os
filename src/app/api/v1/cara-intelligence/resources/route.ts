@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     approved_at:   body.approved_at,
   });
 
-  intelligenceDb.ariaAuditTrail.create({
+  intelligenceDb.caraAuditTrail.create({
     home_id:      resource.home_id,
     user_id:      resource.created_by,
     child_id:     resource.child_id,

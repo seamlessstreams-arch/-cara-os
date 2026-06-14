@@ -101,7 +101,7 @@ export function RecordingQualityScoreCard() {
                     <span className="truncate text-[var(--cs-text-secondary)]">{r.type.replace(/_/g, " ")}{r.child_name ? ` · ${r.child_name}` : ""}</span>
                     <Badge className={cn("text-[9px] shrink-0", band.bg, band.text)}>{r.overall}</Badge>
                   </div>
-                  {r.score.ariaSuggestions[0] && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">→ {r.score.ariaSuggestions[0]}</p>}
+                  {r.score.caraSuggestions[0] && <p className="text-[10px] text-muted-foreground mt-0.5 truncate">→ {r.score.caraSuggestions[0]}</p>}
                 </div>
               );
             })}

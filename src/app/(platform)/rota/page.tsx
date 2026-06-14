@@ -17,7 +17,7 @@ import { useStaff } from "@/hooks/use-staff";
 import { useShiftSwaps, useCreateSwapRequest } from "@/hooks/use-shift-swaps";
 import { cn, todayStr, formatDate } from "@/lib/utils";
 import { SHIFT_TYPES, SHIFT_TYPE_LABELS } from "@/lib/constants";
-import { AriaRotaIntelligence } from "@/components/aria";
+import { CaraRotaIntelligence } from "@/components/cara";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton } from "@/components/common/export-button";
@@ -26,13 +26,13 @@ import type { Shift } from "@/types";
 import { getStaffName as seedGetStaffName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const SHIFT_COLORS: Record<string, string> = {
   day: "bg-emerald-100 text-emerald-800 border-emerald-200",
   sleep_in: "bg-indigo-100 text-indigo-800 border-indigo-200",
-  waking_night: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-aria-gold-soft)]",
+  waking_night: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)] border-[var(--cs-cara-gold-soft)]",
   short: "bg-sky-100 text-sky-800 border-sky-200",
   handover: "bg-amber-100 text-amber-800 border-amber-200",
   on_call: "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
@@ -281,7 +281,7 @@ export default function RotaPage() {
     <PageShell
       title="Rota"
       subtitle={weekLabel}
-      ariaContext={{ pageTitle: "Rota", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Rota", sourceType: "staff" }}
       quickCreateContext={{ module: "rota", defaultTaskCategory: "staffing" }}
       actions={
         <div className="flex items-center gap-2">
@@ -302,7 +302,7 @@ export default function RotaPage() {
           title="Staff rota & scheduling"
           description="Weekly shift planner with gap detection. Open shifts are highlighted in amber and must be filled to maintain safe staffing ratios at all times."
           evidenceTip="Reg 40 requires adequate staffing. Document your rationale when running below planned levels — inspectors need to see risk was managed."
-          ariaTip="Cara can analyse shift patterns to identify fatigue risks and suggest optimal rota configurations based on children's needs."
+          caraTip="Cara can analyse shift patterns to identify fatigue risks and suggest optimal rota configurations based on children's needs."
           regulationRef="Children's Homes Regulations 2015, Reg 40(2)(c) — Staffing of children's homes"
         />
 
@@ -440,7 +440,7 @@ export default function RotaPage() {
         )}
 
         {/* Cara Rota Intelligence */}
-        <AriaRotaIntelligence />
+        <CaraRotaIntelligence />
 
         {/* Week Navigation + Search */}
         <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -460,7 +460,7 @@ export default function RotaPage() {
               placeholder="Filter staff..."
               value={staffSearch}
               onChange={(e) => setStaffSearch(e.target.value)}
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white py-1.5 pl-8 pr-3 text-xs text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-aria-gold)] focus:ring-1 focus:ring-[var(--cs-aria-gold)]/30 outline-none transition-all"
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white py-1.5 pl-8 pr-3 text-xs text-[var(--cs-text-secondary)] placeholder:text-[var(--cs-text-muted)] focus:border-[var(--cs-cara-gold)] focus:ring-1 focus:ring-[var(--cs-cara-gold)]/30 outline-none transition-all"
             />
           </div>
           <Button variant="outline" size="sm" onClick={() => setWeekOffset(weekOffset + 1)}>
@@ -541,7 +541,7 @@ export default function RotaPage() {
                                 </div>
                               ) : (
                                 <div
-                                  className="rounded-lg border border-dashed border-[var(--cs-border)] px-2 py-1.5 text-[10px] text-[var(--cs-text-gentle)] cursor-pointer hover:bg-[var(--cs-aria-gold-bg)] hover:border-[var(--cs-aria-gold-soft)] hover:text-[var(--cs-aria-gold)] transition-colors"
+                                  className="rounded-lg border border-dashed border-[var(--cs-border)] px-2 py-1.5 text-[10px] text-[var(--cs-text-gentle)] cursor-pointer hover:bg-[var(--cs-cara-gold-bg)] hover:border-[var(--cs-cara-gold-soft)] hover:text-[var(--cs-cara-gold)] transition-colors"
                                   onClick={() => openAddShift(staff.id, staff.full_name, date)}
                                   title={`Add shift for ${staff.full_name}`}
                                 >
@@ -638,7 +638,7 @@ export default function RotaPage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Rota & Scheduling — shift patterns, staffing levels, agency usage, Reg 40 staffing evidence, ratio compliance, cover arrangements, handover scheduling, Ofsted staffing evidence"
         recordType="rota"
@@ -674,7 +674,7 @@ export default function RotaPage() {
               <select
                 value={shiftType}
                 onChange={(e) => setShiftType(e.target.value)}
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
               >
                 {SHIFT_TYPES.map((type) => (
                   <option key={type} value={type}>{SHIFT_TYPE_LABELS[type]}</option>
@@ -689,7 +689,7 @@ export default function RotaPage() {
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                 />
               </div>
               <div>
@@ -698,7 +698,7 @@ export default function RotaPage() {
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                 />
               </div>
             </div>
@@ -710,7 +710,7 @@ export default function RotaPage() {
                 value={shiftNotes}
                 onChange={(e) => setShiftNotes(e.target.value)}
                 placeholder="e.g. Cover for Anna"
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
               />
             </div>
 
@@ -819,7 +819,7 @@ export default function RotaPage() {
               <select
                 value={swapTargetStaffId}
                 onChange={(e) => setSwapTargetStaffId(e.target.value)}
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/40"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
               >
                 <option value="">Select staff member...</option>
                 {activeStaff.filter((s) => s.id !== swapModal.staffId).map((s) => (
@@ -834,7 +834,7 @@ export default function RotaPage() {
                 <select
                   value={swapTargetShiftId}
                   onChange={(e) => setSwapTargetShiftId(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/40"
+                  className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
                 >
                   <option value="">Any available shift</option>
                   {shifts.filter((s) => s.staff_id === swapTargetStaffId).map((s) => (
@@ -853,7 +853,7 @@ export default function RotaPage() {
                 value={swapReason}
                 onChange={(e) => setSwapReason(e.target.value)}
                 placeholder="e.g. Medical appointment, family commitment"
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]/40"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
               />
             </div>
 

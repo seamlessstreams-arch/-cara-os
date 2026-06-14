@@ -50,7 +50,7 @@ export interface DuplicateAlert {
   event_type?: string;
 }
 
-export interface AriaDuplicateInsight {
+export interface CaraDuplicateInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -69,7 +69,7 @@ export interface DuplicateDetectionResult {
   duplicates: SuspectedDuplicate[];
   clusters: DuplicateCluster[];
   alerts: DuplicateAlert[];
-  insights: AriaDuplicateInsight[];
+  insights: CaraDuplicateInsight[];
 }
 
 // ── Input ─────────────────────────────────────────────────────────────────────
@@ -347,8 +347,8 @@ function buildInsights(
   overview: DuplicateOverview,
   duplicates: SuspectedDuplicate[],
   clusters: DuplicateCluster[],
-): AriaDuplicateInsight[] {
-  const insights: AriaDuplicateInsight[] = [];
+): CaraDuplicateInsight[] {
+  const insights: CaraDuplicateInsight[] = [];
 
   if (overview.suspected_duplicates === 0) {
     insights.push({

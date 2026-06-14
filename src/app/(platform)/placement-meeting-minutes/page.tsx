@@ -31,8 +31,8 @@ import { PLACEMENT_MEETING_TYPE_LABEL, PLACEMENT_MEETING_ACTION_STATUS_LABEL } f
 import { usePlacementMeetings } from "@/hooks/use-placement-meetings";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const typeColour: Record<PlacementMeetingType, string> = {
   weekly_review: "bg-blue-100 text-blue-800",
@@ -109,12 +109,12 @@ export default function PlacementMeetingMinutesPage() {
     <PageShell
       title="Placement Meeting Minutes"
       subtitle="Internal placement reviews — multi-disciplinary discussion, decisions, and actions per child"
-      ariaContext={{ pageTitle: "Placement Meeting Minutes", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Placement Meeting Minutes", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={entries} columns={exportCols} filename="placement-meeting-minutes" />
           <PrintButton title="Placement Meeting Minutes" />
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -348,7 +348,7 @@ export default function PlacementMeetingMinutesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Placement Meeting Minutes — placement planning meetings, review meetings, multi-agency meetings, action points, attendees, decisions made, next steps, placement support, Reg 45 governance"
         recordType="placement_plan"

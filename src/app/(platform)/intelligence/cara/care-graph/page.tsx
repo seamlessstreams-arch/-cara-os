@@ -15,26 +15,26 @@ import {
   Card, CardContent, CardHeader, CardTitle, CardDescription,
 } from "@/components/ui/card";
 import { Network, RefreshCw, AlertTriangle, Sparkles } from "lucide-react";
-import { useCareGraph, useRebuildCareGraph } from "@/hooks/use-aria-care-graph";
+import { useCareGraph, useRebuildCareGraph } from "@/hooks/use-cara-care-graph";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type {
-  AriaCareGraphNode,
-  AriaCareGraphEdge,
-  AriaCareGraphNodeType,
-  AriaPatternSeverity,
-} from "@/types/aria-studio";
+  CaraCareGraphNode,
+  CaraCareGraphEdge,
+  CaraCareGraphNodeType,
+  CaraPatternSeverity,
+} from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const SEVERITY_TONE: Record<AriaPatternSeverity, string> = {
+const SEVERITY_TONE: Record<CaraPatternSeverity, string> = {
   critical: "bg-rose-50 text-rose-800 border-rose-300",
   high: "bg-orange-50 text-orange-800 border-orange-300",
   medium: "bg-amber-50 text-amber-800 border-amber-300",
   low: "bg-slate-50 text-slate-700 border-slate-300",
 };
 
-const NODE_TYPE_LABELS: Record<AriaCareGraphNodeType, string> = {
+const NODE_TYPE_LABELS: Record<CaraCareGraphNodeType, string> = {
   child: "Children",
   incident: "Incidents",
   missing_episode: "Missing Episodes",
@@ -58,9 +58,9 @@ function NodeRow({
   edges,
   nodeIndex,
 }: {
-  node: AriaCareGraphNode;
-  edges: AriaCareGraphEdge[];
-  nodeIndex: Map<string, AriaCareGraphNode>;
+  node: CaraCareGraphNode;
+  edges: CaraCareGraphEdge[];
+  nodeIndex: Map<string, CaraCareGraphNode>;
 }) {
   const outgoing = edges.filter((e) => e.from_node_id === node.id);
   const incoming = edges.filter((e) => e.to_node_id === node.id);
@@ -123,7 +123,7 @@ function NodeRow({
 
 export default function CareGraphPage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(
+  const caraRole = appRoleToCaraRole(
     currentUser?.role ?? "registered_manager",
   );
 
@@ -132,13 +132,13 @@ export default function CareGraphPage() {
 
   const snapshot = graphQuery.data?.data;
   const nodeIndex = useMemo(() => {
-    const m = new Map<string, AriaCareGraphNode>();
+    const m = new Map<string, CaraCareGraphNode>();
     for (const n of snapshot?.nodes ?? []) m.set(n.id, n);
     return m;
   }, [snapshot]);
 
   const grouped = useMemo(() => {
-    const groups = new Map<AriaCareGraphNodeType, AriaCareGraphNode[]>();
+    const groups = new Map<CaraCareGraphNodeType, CaraCareGraphNode[]>();
     for (const n of snapshot?.nodes ?? []) {
       const list = groups.get(n.node_type) ?? [];
       list.push(n);
@@ -151,7 +151,7 @@ export default function CareGraphPage() {
     rebuild.mutate({
       home_id: HOME_ID,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 
@@ -191,7 +191,7 @@ export default function CareGraphPage() {
               {Object.entries(snapshot.summary.node_counts).map(([k, v]) => (
                 <div key={k} className="rounded border bg-background p-2">
                   <div className="font-medium">
-                    {NODE_TYPE_LABELS[k as AriaCareGraphNodeType] ?? k}
+                    {NODE_TYPE_LABELS[k as CaraCareGraphNodeType] ?? k}
                   </div>
                   <div className="text-lg">{v}</div>
                 </div>

@@ -6,7 +6,7 @@
 // requiring a manager decision, drawn from the existing live engines:
 //
 //   - manager_review : care events with status "manager_review_required"
-//   - reg40_triage   : pending Reg 40 triage rows (db.ariaReg40Triages)
+//   - reg40_triage   : pending Reg 40 triage rows (db.caraReg40Triages)
 //   - amendment      : sensitive amendments awaiting re-verification (M19)
 //   - reg45_chip     : Reg 45 evidence chips with status "ai_draft"     (M18)
 //   - annex_a_chip   : Annex A evidence items with manager_decision "pending" (M21)
@@ -91,7 +91,7 @@ export function loadOversightInbox(homeId: string): OversightSummary {
   }
 
   // ── Reg 40 triages pending ──────────────────────────────────────────────
-  for (const t of db.ariaReg40Triages.findAll(homeId)) {
+  for (const t of db.caraReg40Triages.findAll(homeId)) {
     if (t.status !== "pending") continue;
     items.push({
       id: `reg40_triage:${t.id}`,
@@ -127,7 +127,7 @@ export function loadOversightInbox(homeId: string): OversightSummary {
   }
 
   // ── Reg 45 chips awaiting decision ──────────────────────────────────────
-  for (const c of db.ariaReg45EvidenceItems.findAll(homeId)) {
+  for (const c of db.caraReg45EvidenceItems.findAll(homeId)) {
     if (c.status !== "ai_draft") continue;
     items.push({
       id: `reg45_chip:${c.id}`,

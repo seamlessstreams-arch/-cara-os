@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeCodeOfConductMetrics,
   computeCodeOfConductAlerts,
-  generateCodeOfConductAriaInsights,
+  generateCodeOfConductCaraInsights,
 } from "./staff-code-of-conduct-compliance-service";
 import type { StaffCodeOfConductComplianceRow } from "./staff-code-of-conduct-compliance-service";
 
@@ -157,11 +157,11 @@ describe("computeCodeOfConductAlerts", () => {
   });
 });
 
-// -- generateCodeOfConductAriaInsights ----------------------------------------
+// -- generateCodeOfConductCaraInsights ----------------------------------------
 
-describe("generateCodeOfConductAriaInsights", () => {
+describe("generateCodeOfConductCaraInsights", () => {
   it("returns 3 insights for empty rows", () => {
-    const insights = generateCodeOfConductAriaInsights([]);
+    const insights = generateCodeOfConductCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[emerald]");
     expect(insights[2]).toContain("[reflect]");

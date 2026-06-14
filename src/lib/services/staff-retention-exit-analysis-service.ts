@@ -232,7 +232,7 @@ export function computeStaffRetentionAlerts(
   return alerts;
 }
 
-export function generateStaffRetentionAriaInsights(
+export function generateStaffRetentionCaraInsights(
   rows: StaffRetentionExitAnalysisRow[],
 ): string[] {
   const metrics = computeStaffRetentionMetrics(rows);
@@ -369,5 +369,5 @@ export async function createStaffRetentionExitAnalysis(
 export const _testing = {
   computeStaffRetentionMetrics,
   computeStaffRetentionAlerts,
-  generateStaffRetentionAriaInsights,
+  generateStaffRetentionCaraInsights,
 };

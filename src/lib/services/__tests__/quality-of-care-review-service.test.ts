@@ -23,7 +23,7 @@ import type {
 const {
   computeQualityOfCareMetrics,
   computeQualityOfCareAlerts,
-  generateQualityOfCareAriaInsights,
+  generateQualityOfCareCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -718,20 +718,20 @@ describe("computeQualityOfCareAlerts", () => {
   });
 });
 
-// ── generateQualityOfCareAriaInsights ───────────────────────────────────
+// ── generateQualityOfCareCaraInsights ───────────────────────────────────
 
-describe("generateQualityOfCareAriaInsights", () => {
+describe("generateQualityOfCareCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computeQualityOfCareMetrics([]);
     const alerts = computeQualityOfCareAlerts([]);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const metrics = computeQualityOfCareMetrics([makeRow()]);
     const alerts = computeQualityOfCareAlerts([makeRow()]);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
@@ -739,7 +739,7 @@ describe("generateQualityOfCareAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -747,14 +747,14 @@ describe("generateQualityOfCareAriaInsights", () => {
     const rows = [makeRow({ children_consulted: true }), makeRow({ children_consulted: false })];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computeQualityOfCareMetrics([makeRow()]);
     const alerts = computeQualityOfCareAlerts([makeRow()]);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -765,7 +765,7 @@ describe("generateQualityOfCareAriaInsights", () => {
     ];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -774,14 +774,14 @@ describe("generateQualityOfCareAriaInsights", () => {
     const rows = [makeRow({ domain_rating: "good", action_priority: "medium", children_consulted: true, reg44_reports_reviewed: true, actions_assigned: true })];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computeQualityOfCareMetrics([makeRow()]);
     const alerts = computeQualityOfCareAlerts([makeRow()]);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -789,7 +789,7 @@ describe("generateQualityOfCareAriaInsights", () => {
     const rows = [makeRow({ domain_rating: "inadequate" })];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("inadequate");
   });
 
@@ -800,7 +800,7 @@ describe("generateQualityOfCareAriaInsights", () => {
     ];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("Children were consulted");
   });
 
@@ -811,7 +811,7 @@ describe("generateQualityOfCareAriaInsights", () => {
     ];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("All reviews have consulted children");
   });
 
@@ -819,7 +819,7 @@ describe("generateQualityOfCareAriaInsights", () => {
     const rows = [makeRow({ reviewer_name: "Jane Smith" })];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 reviewer");
   });
 
@@ -830,14 +830,14 @@ describe("generateQualityOfCareAriaInsights", () => {
     ];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 reviewers");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computeQualityOfCareMetrics([makeRow()]);
     const alerts = computeQualityOfCareAlerts([makeRow()]);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -848,7 +848,7 @@ describe("generateQualityOfCareAriaInsights", () => {
     const rows = [makeRow({ domain_rating: "inadequate" })];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("domain has");
   });
 
@@ -859,7 +859,7 @@ describe("generateQualityOfCareAriaInsights", () => {
     ];
     const metrics = computeQualityOfCareMetrics(rows);
     const alerts = computeQualityOfCareAlerts(rows);
-    const insights = generateQualityOfCareAriaInsights(metrics, alerts);
+    const insights = generateQualityOfCareCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("domains have");
   });
 });

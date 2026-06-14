@@ -97,7 +97,7 @@ export interface NightMonitoringAlert {
   message: string;
 }
 
-export interface AriaNightInsight {
+export interface CaraNightInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -108,7 +108,7 @@ export interface NightMonitoringResult {
   staffing: NightStaffingAnalysis;
   security: SecurityCompliance;
   alerts: NightMonitoringAlert[];
-  insights: AriaNightInsight[];
+  insights: CaraNightInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ export function computeNightMonitoring(input: NightMonitoringInput): NightMonito
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaNightInsight[] = [];
+  const insights: CaraNightInsight[] = [];
 
   // Critical: child missing from room
   if (notInRoom7d.length > 0) {

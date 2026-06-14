@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeForcedMarriageRiskMetrics,
   computeForcedMarriageRiskAlerts,
-  generateForcedMarriageRiskAriaInsights,
+  generateForcedMarriageRiskCaraInsights,
 } from "./child-forced-marriage-risk-service";
 import type { ChildForcedMarriageRiskRow } from "./child-forced-marriage-risk-service";
 
@@ -146,11 +146,11 @@ describe("computeForcedMarriageRiskAlerts", () => {
   });
 });
 
-// -- generateForcedMarriageRiskAriaInsights -----------------------------------
+// -- generateForcedMarriageRiskCaraInsights -----------------------------------
 
-describe("generateForcedMarriageRiskAriaInsights", () => {
+describe("generateForcedMarriageRiskCaraInsights", () => {
   it("returns 3 insights for empty data", () => {
-    const insights = generateForcedMarriageRiskAriaInsights([]);
+    const insights = generateForcedMarriageRiskCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[2]).toContain("[reflect]");
@@ -158,7 +158,7 @@ describe("generateForcedMarriageRiskAriaInsights", () => {
 
   it("includes critical/high counts in amber insight when alerts exist", () => {
     const rows = [makeRow({ risk_level: "Immediate", fmpo_in_place: false })];
-    const insights = generateForcedMarriageRiskAriaInsights(rows);
+    const insights = generateForcedMarriageRiskCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 });

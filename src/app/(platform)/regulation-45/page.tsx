@@ -9,8 +9,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -1007,10 +1007,10 @@ export default function Regulation45EvidencePage() {
     <PageShell
       title="Regulation 45 Evidence Bank"
       subtitle="AI-suggested evidence from Care Events — review, approve and draft your report"
-      ariaContext={{ pageTitle: "Regulation 45 Evidence Bank", sourceType: "reg45" }}
-      actions={<AriaStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />}
+      caraContext={{ pageTitle: "Regulation 45 Evidence Bank", sourceType: "reg45" }}
+      actions={<CaraStudioQuickActionButton context={{ record_type: "reg45", record_id: "home_oak", home_id: "home_oak" }} />}
     >
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Regulation 45 Evidence Bank — statutory quality of care reports, evidence bank, suggested updates, approved evidence, RI briefings, inspection readiness, Children's Homes Regulations 2015"
         recordType="regulation_45"

@@ -564,7 +564,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: RestorativePracticeRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

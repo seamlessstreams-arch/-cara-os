@@ -25,7 +25,7 @@ import type {
 const {
   computePocketMoneyAuditMetrics,
   computePocketMoneyAuditAlerts,
-  generatePocketMoneyAuditAriaInsights,
+  generatePocketMoneyAuditCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -698,20 +698,20 @@ describe("computePocketMoneyAuditAlerts", () => {
   });
 });
 
-// ── generatePocketMoneyAuditAriaInsights ──────────────────────────────────
+// ── generatePocketMoneyAuditCaraInsights ──────────────────────────────────
 
-describe("generatePocketMoneyAuditAriaInsights", () => {
+describe("generatePocketMoneyAuditCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const metrics = computePocketMoneyAuditMetrics([]);
     const alerts = computePocketMoneyAuditAlerts([]);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [cyan]", () => {
     const metrics = computePocketMoneyAuditMetrics([makeRow()]);
     const alerts = computePocketMoneyAuditAlerts([makeRow()]);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[0]).toMatch(/^\[cyan\]/);
   });
 
@@ -719,7 +719,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("3");
   });
 
@@ -727,14 +727,14 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     const rows = [makeRow({ receipt_obtained: true }), makeRow({ receipt_obtained: false })];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
     const metrics = computePocketMoneyAuditMetrics([makeRow()]);
     const alerts = computePocketMoneyAuditAlerts([makeRow()]);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -745,7 +745,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     ];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
@@ -754,14 +754,14 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     const rows = [makeRow({ audit_outcome: "compliant", balance_matches_record: true, two_signatures_present: true, child_consulted_on_spending: true })];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("No critical or high-priority alerts");
   });
 
   it("third insight starts with [reflect]", () => {
     const metrics = computePocketMoneyAuditMetrics([makeRow()]);
     const alerts = computePocketMoneyAuditAlerts([makeRow()]);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
@@ -769,7 +769,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     const rows = [makeRow({ audit_outcome: "fraud_suspected" })];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("fraud");
   });
 
@@ -780,7 +780,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     ];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("Balance matches record");
   });
 
@@ -791,7 +791,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     ];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("balances matching records and no fraud");
   });
 
@@ -799,7 +799,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     const rows = [makeRow({ child_name: "Child A" })];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("1 child");
   });
 
@@ -810,14 +810,14 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     ];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[0]).toContain("2 children");
   });
 
   it("all insights are non-empty strings", () => {
     const metrics = computePocketMoneyAuditMetrics([makeRow()]);
     const alerts = computePocketMoneyAuditAlerts([makeRow()]);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -828,7 +828,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     const rows = [makeRow({ audit_outcome: "fraud_suspected" })];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("audit has");
   });
 
@@ -839,7 +839,7 @@ describe("generatePocketMoneyAuditAriaInsights", () => {
     ];
     const metrics = computePocketMoneyAuditMetrics(rows);
     const alerts = computePocketMoneyAuditAlerts(rows);
-    const insights = generatePocketMoneyAuditAriaInsights(metrics, alerts);
+    const insights = generatePocketMoneyAuditCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("audits have");
   });
 });

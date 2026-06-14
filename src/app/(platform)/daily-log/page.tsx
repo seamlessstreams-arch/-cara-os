@@ -3,9 +3,9 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPracticePanel } from "@/components/aria-practice/aria-practice-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,9 @@ import { useDailyLog, useCreateDailyLog } from "@/hooks/use-daily-log";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
-import { AriaQuickActions } from "@/components/intelligence/cara-quick-actions";
-import { AriaCompose } from "@/components/aria/aria-compose";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
+import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
+import { CaraCompose } from "@/components/cara/cara-compose";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import { api } from "@/hooks/use-api";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
@@ -170,11 +170,11 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
           </div>
 
           {/* Content */}
-          <AriaCompose
+          <CaraCompose
             value={content}
             onChange={setContent}
             actorUserId={currentUser?.id ?? "staff_darren"}
-            actorRole={appRoleToAriaRole(currentRole)}
+            actorRole={appRoleToCaraRole(currentRole)}
             homeId={currentUser?.home_id ?? "home_oak"}
             childId={childId || undefined}
             sourceModule="daily_log"
@@ -263,7 +263,7 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
 // ── Log Entry Card ────────────────────────────────────────────────────────────
 
 function LogEntryCard({ entry }: { entry: DailyLogEntry }) {
-  const [showAria, setShowAria] = useState(false);
+  const [showCara, setShowCara] = useState(false);
   const Icon = ENTRY_TYPE_ICONS[entry.entry_type] || BookOpen;
   const ypName = getYPName(entry.child_id);
   const staffFirst = getStaffName(entry.staff_id).split(" ")[0];
@@ -300,10 +300,10 @@ function LogEntryCard({ entry }: { entry: DailyLogEntry }) {
               )}
               {/* Cara quick-action toggle */}
               <button
-                onClick={() => setShowAria((v) => !v)}
+                onClick={() => setShowCara((v) => !v)}
                 className={cn(
                   "ml-auto flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold border transition-colors",
-                  showAria
+                  showCara
                     ? "bg-violet-100 text-violet-700 border-violet-200"
                     : "bg-white text-slate-500 border-slate-200 hover:bg-violet-50 hover:text-violet-600 hover:border-violet-200"
                 )}
@@ -325,9 +325,9 @@ function LogEntryCard({ entry }: { entry: DailyLogEntry }) {
             )}
 
             {/* Inline Cara actions */}
-            {showAria && (
+            {showCara && (
               <div className="mt-3">
-                <AriaQuickActions
+                <CaraQuickActions
                   childId={entry.child_id}
                   sourceType={entry.entry_type === "behaviour" ? "behaviour" : "daily_log"}
                   sourceId={entry.id}
@@ -350,7 +350,7 @@ type DetectedPattern = {
   priority: TrainingNeedPriority;
 };
 
-function AriaPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
+function CaraPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
   const [open, setOpen] = useState(false);
@@ -579,12 +579,12 @@ export default function DailyLogPage() {
             <Plus className="h-3.5 w-3.5 mr-1" />
             {showForm ? "Cancel" : "New Entry"}
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
-      ariaContext={{ pageTitle: "Daily Log", sourceType: "general" }}
+      caraContext={{ pageTitle: "Daily Log", sourceType: "general" }}
     >
-      <AriaPanel
+      <CaraPanel
         mode="write"
         pageContext="Daily Log — shift observations, significant events, behaviour, welfare, activities, mood, sleep, food, child voice, continuity of care recording"
         recordType="daily_log"
@@ -615,7 +615,7 @@ export default function DailyLogPage() {
         )}
 
         {/* Cara Pattern Scanner */}
-        <AriaPatternScanner entries={entries} />
+        <CaraPatternScanner entries={entries} />
 
         {/* New entry form */}
         {showForm && (
@@ -801,7 +801,7 @@ export default function DailyLogPage() {
           className="mt-2"
         />
       </div>
-      <AriaPracticePanel sourceType="daily_record" homeId="home_oak" title="Run Cara on this log" />
+      <CaraPracticePanel sourceType="daily_record" homeId="home_oak" title="Run Cara on this log" />
     </PageShell>
   );
 }

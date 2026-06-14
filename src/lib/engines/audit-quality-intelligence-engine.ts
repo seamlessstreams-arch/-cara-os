@@ -87,7 +87,7 @@ export interface AuditAlert {
   message: string;
 }
 
-export interface AriaAuditInsight {
+export interface CaraAuditInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -97,7 +97,7 @@ export interface AuditQualityIntelligenceResult {
   audit_profiles: AuditProfile[];
   category_analysis: CategoryAnalysis[];
   alerts: AuditAlert[];
-  insights: AriaAuditInsight[];
+  insights: CaraAuditInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -293,7 +293,7 @@ export function computeAuditQualityIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaAuditInsight[] = [];
+  const insights: CaraAuditInsight[] = [];
 
   // Critical: overdue audits
   if (overdue.length > 0) {

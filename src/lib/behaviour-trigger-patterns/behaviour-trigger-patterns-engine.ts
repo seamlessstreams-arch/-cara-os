@@ -93,7 +93,7 @@ export interface BehaviourPatternAlert {
   child_id?: string;
 }
 
-export interface AriaBehaviourInsight {
+export interface CaraBehaviourInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -102,7 +102,7 @@ export interface BehaviourTriggerPatternsResult {
   overview: BehaviourPatternOverview;
   children: ChildBehaviourPattern[];
   alerts: BehaviourPatternAlert[];
-  insights: AriaBehaviourInsight[];
+  insights: CaraBehaviourInsight[];
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -358,8 +358,8 @@ function buildAlerts(children: ChildBehaviourPattern[]): BehaviourPatternAlert[]
 
 // ── Cara insights builder ───────────────────────────────────────────────────
 
-function buildInsights(children: ChildBehaviourPattern[], overview: BehaviourPatternOverview): AriaBehaviourInsight[] {
-  const insights: AriaBehaviourInsight[] = [];
+function buildInsights(children: ChildBehaviourPattern[], overview: BehaviourPatternOverview): CaraBehaviourInsight[] {
+  const insights: CaraBehaviourInsight[] = [];
 
   const escalating = children.filter((c) => c.intensity_trajectory === "escalating");
   if (escalating.length > 0) {

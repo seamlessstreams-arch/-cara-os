@@ -54,7 +54,7 @@ export interface FinanceIntelligenceResult {
   child_spending: ChildSpendingProfile[];
   spending_categories: SpendingCategoryBreakdown[];
   alerts: FinanceAlert[];
-  insights: AriaFinanceInsight[];
+  insights: CaraFinanceInsight[];
 }
 
 export interface FinanceOverview {
@@ -89,7 +89,7 @@ export interface FinanceAlert {
   message: string;
 }
 
-export interface AriaFinanceInsight {
+export interface CaraFinanceInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -243,7 +243,7 @@ export function computeFinanceIntelligence(input: FinanceEngineInput): FinanceIn
   }
 
   // ── Insights ──────────────────────────────────────────────────────────
-  const insights: AriaFinanceInsight[] = [];
+  const insights: CaraFinanceInsight[] = [];
 
   const childrenWithNoTransactions = children.filter((child) => {
     const childTx = periodTransactions.filter((t) => t.child_id === child.id);

@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
   type ChildBereavementSupportRow,
 } from "./child-bereavement-support-service";
 
@@ -145,12 +145,12 @@ describe("computeAlerts", () => {
   });
 });
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   it("returns 3 insights for populated metrics", () => {
     const rows = [makeRow()];
     const metrics = computeMetrics(rows);
     const alerts = computeAlerts(rows);
-    const insights = computeAriaInsights(metrics, alerts);
+    const insights = computeCaraInsights(metrics, alerts);
     expect(insights.length).toBe(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[1]).toContain("[amber]");
@@ -159,7 +159,7 @@ describe("computeAriaInsights", () => {
 
   it("returns 3 insights even for empty metrics", () => {
     const metrics = computeMetrics([]);
-    const insights = computeAriaInsights(metrics);
+    const insights = computeCaraInsights(metrics);
     expect(insights.length).toBe(3);
   });
 });

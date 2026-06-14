@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { detectAllGaps } from "@/lib/aria/aria-studio-gaps";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { detectAllGaps } from "@/lib/cara/cara-studio-gaps";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 
 const HOME_ID = "home_oak";
 
@@ -20,16 +20,16 @@ export async function GET(req: NextRequest) {
     const detected = await detectAllGaps(homeId);
     for (const gap of detected) {
       // Only add if not already open with same type/child
-      const existing = db.ariaGaps.findAll(homeId).find(
+      const existing = db.caraGaps.findAll(homeId).find(
         (g) => g.gap_type === gap.gap_type && g.child_id === gap.child_id && g.status === "open"
       );
       if (!existing) {
-        db.ariaGaps.create(gap);
+        db.caraGaps.create(gap);
       }
     }
   }
 
-  let items = db.ariaGaps.findAll(homeId);
+  let items = db.caraGaps.findAll(homeId);
 
   if (childId) items = items.filter((g) => g.child_id === childId);
   if (status) items = items.filter((g) => g.status === status);
@@ -64,14 +64,14 @@ export async function PATCH(req: NextRequest) {
   const gapId = body.id as string;
   if (!gapId) return NextResponse.json({ error: "id is required" }, { status: 400 });
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.create_tasks",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.create_tasks",
     homeId: HOME_ID,
     intent: `update gap ${gapId}`,
   });
   if (!guard.ok) return guard.response;
 
-  const gap = db.ariaGaps.patch(gapId, {
+  const gap = db.caraGaps.patch(gapId, {
     status: (body.status as never) ?? undefined,
     assigned_to: (body.assigned_to as string) ?? undefined,
     resolved_at: body.status === "resolved" ? new Date().toISOString() : undefined,

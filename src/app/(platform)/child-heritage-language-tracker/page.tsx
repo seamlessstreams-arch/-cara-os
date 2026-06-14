@@ -36,8 +36,8 @@ import {
 } from "@/types/extended";
 import { useHeritageLanguageRecords } from "@/hooks/use-heritage-language-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const statusColour: Record<HeritageLanguageStatus, string> = {
   mother_tongue: "bg-amber-100 text-amber-800",
@@ -215,7 +215,7 @@ export default function ChildHeritageLanguageTrackerPage() {
     <PageShell
       title="Heritage Language Tracker"
       subtitle="Per-child heritage language preservation and development — care preserves languages, never erases them"
-      ariaContext={{ pageTitle: "Heritage Language Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Heritage Language Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -224,7 +224,7 @@ export default function ChildHeritageLanguageTrackerPage() {
             filename="heritage-language-tracker"
           />
           <PrintButton title="Heritage Language Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -566,7 +566,7 @@ export default function ChildHeritageLanguageTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Heritage Language Tracker — first language, bilingual support, translation, interpreter, cultural identity, heritage language classes, EAL, school language support, UASC, Annex A"
         recordType="direct_work"

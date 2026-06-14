@@ -40,8 +40,8 @@ import {
   QOC_ACTION_STATUS_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local colour maps ─────────────────────────────────────────────────── */
 
@@ -137,7 +137,7 @@ export default function QualityOfCarePage() {
     <PageShell
       title="Quality of Care Reviews"
       subtitle="Periodic assessments of care quality across all domains"
-      ariaContext={{ pageTitle: "Quality of Care Reviews", sourceType: "general" }}
+      caraContext={{ pageTitle: "Quality of Care Reviews", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Quality of Care Reviews" />
@@ -145,7 +145,7 @@ export default function QualityOfCarePage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> New Review
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -424,7 +424,7 @@ export default function QualityOfCarePage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Quality of Care Reviews — service quality assessment, outcomes evidence, practice standards, improvement planning, Reg 45 report evidence, Ofsted readiness, management oversight governance"
         recordType="management_oversight"

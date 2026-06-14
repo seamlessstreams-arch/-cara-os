@@ -35,8 +35,8 @@ import {
 import { useChildStaffFeedback } from "@/hooks/use-child-staff-feedback";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const sentimentColour: Record<StaffFeedbackSentiment, string> = {
   positive: "bg-green-100 text-green-800",
@@ -102,12 +102,12 @@ export default function ChildFeedbackOnStaffPage() {
     <PageShell
       title="Child Feedback on Staff"
       subtitle="Children's voice about individual staff — celebrated, addressed, never dismissed"
-      ariaContext={{ pageTitle: "Child Feedback on Staff", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Child Feedback on Staff", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="child-feedback-on-staff" />
           <PrintButton title="Child Feedback on Staff" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -281,7 +281,7 @@ export default function ChildFeedbackOnStaffPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Child Feedback on Staff — children's views on individual staff, allegations, compliments, concerns, CLA review input, Reg 44 evidence, safer practice, management oversight"
         recordType="management_oversight"

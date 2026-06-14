@@ -36,8 +36,8 @@ import {
 import { useFuneralRecords } from "@/hooks/use-funeral-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<FuneralRecord>[] = [
   { header: "Young Person", accessor: (r: FuneralRecord) => getYPName(r.child_id) },
@@ -109,12 +109,12 @@ export default function FuneralAttendanceRecordsPage() {
     <PageShell
       title="Funeral Attendance Records"
       subtitle="Sensitive record of children's involvement in funerals — child-led decision-making, preparation, ritual, faith tradition, post-funeral support. Honours dignity, grief, and the right to say goodbye in the way that's right for each child."
-      ariaContext={{ pageTitle: "Funeral Attendance Records", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Funeral Attendance Records", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="funeral-attendance-records" />
           <PrintButton title="Funeral Attendance Records" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -329,7 +329,7 @@ export default function FuneralAttendanceRecordsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Funeral Attendance Records — bereavement, death of family member, funeral attendance consent, transport, support plan, emotional impact, grief, therapeutic follow-up"
         recordType="care_plan"

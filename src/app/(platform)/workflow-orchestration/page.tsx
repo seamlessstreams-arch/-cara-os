@@ -46,7 +46,7 @@ export default function WorkflowOrchestrationPage() {
       subtitle="The actions every significant event generates automatically — approvals, debriefs, follow-ups, evidence and gated notification drafts — with escalation"
       icon={<Workflow className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Workflow Orchestration", sourceType: "general" }}
+      caraContext={{ pageTitle: "Workflow Orchestration", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="h-6 w-6 animate-spin text-[var(--cs-text-muted)]" /></div>

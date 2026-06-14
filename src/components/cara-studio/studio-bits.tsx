@@ -157,7 +157,7 @@ export function OutputView({ result }: { result: CaraApiResult }) {
       ) : result.output ? (
         <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 print:hidden">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-muted)]"><Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" /> Cara draft — saved · ID {result.id}</span>
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-muted)]"><Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" /> Cara draft — saved · ID {result.id}</span>
             <span className="flex gap-2">
               <button onClick={() => navigator.clipboard.writeText(JSON.stringify(result.output, null, 2)).catch(() => {})} className="inline-flex items-center gap-1 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]"><Copy className="h-3 w-3" /> Copy</button>
               <button onClick={() => window.print()} className="inline-flex items-center gap-1 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]"><Printer className="h-3 w-3" /> Print</button>

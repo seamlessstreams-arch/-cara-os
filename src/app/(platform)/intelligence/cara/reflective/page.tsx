@@ -13,11 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DictationButton } from "@/components/common/dictation-button";
 import {
-  useAriaAssessments,
-  useCreateAriaAssessment,
+  useCaraAssessments,
+  useCreateCaraAssessment,
 } from "@/hooks/use-intelligence";
 import { cn, formatDate } from "@/lib/utils";
-import type { AriaAssessment } from "@/types/extended";
+import type { CaraAssessment } from "@/types/extended";
 import {
   Brain, Sparkles, Loader2, AlertTriangle, CheckCircle2,
   Heart, Users, Lightbulb, HelpCircle, Star, Info,
@@ -46,7 +46,7 @@ const EVENT_TYPES = [
 const SECTION_STYLES: Record<string, { border: string; bg: string; label: string; icon: React.ElementType }> = {
   "What happened":                      { border: "border-[var(--cs-border)]",   bg: "bg-slate-50",    label: "What happened",                      icon: MessageSquare },
   "What the child was communicating":   { border: "border-blue-200",    bg: "bg-blue-50/40",  label: "What the child was communicating",   icon: Heart },
-  "How I responded":                    { border: "border-[var(--cs-aria-gold-soft)]",  bg: "bg-[var(--cs-aria-gold-bg)]/40",label: "How I responded",                    icon: User },
+  "How I responded":                    { border: "border-[var(--cs-cara-gold-soft)]",  bg: "bg-[var(--cs-cara-gold-bg)]/40",label: "How I responded",                    icon: User },
   "Was I regulated":                    { border: "border-amber-200",   bg: "bg-amber-50/40", label: "Was I regulated?",                   icon: Brain },
   "What went well":                     { border: "border-emerald-200", bg: "bg-emerald-50/40",label: "What went well",                    icon: Star },
   "What could I do differently":        { border: "border-orange-200",  bg: "bg-orange-50/40",label: "What could I do differently?",       icon: Lightbulb },
@@ -74,8 +74,8 @@ function parseDebriefText(text: string): { heading: string; content: string }[] 
 function PreviousReflections({ childId }: { childId: string }) {
   const { currentUser } = useAuthContext();
   const homeId = currentUser?.home_id ?? "home_oak";
-  const { data, isLoading } = useAriaAssessments({ childId: childId || undefined, homeId });
-  const reflections: AriaAssessment[] = useMemo(
+  const { data, isLoading } = useCaraAssessments({ childId: childId || undefined, homeId });
+  const reflections: CaraAssessment[] = useMemo(
     () => (data?.data ?? []).filter((a) => a.assessment_type === "reflective_debrief"),
     [data]
   );
@@ -131,7 +131,7 @@ export default function ReflectivePracticePage() {
   const [saving, setSaving]       = useState(false);
   const [savedOk, setSavedOk]     = useState(false);
 
-  const createAssessment = useCreateAriaAssessment();
+  const createAssessment = useCreateCaraAssessment();
 
   const handleDictation = useCallback((text: string) => {
     setDescription((prev) => prev ? `${prev} ${text}` : text);

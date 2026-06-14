@@ -30,8 +30,8 @@ import type { TrainingRecord } from "@/types";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
 import { useStaff } from "@/hooks/use-staff";
 import { cn, formatDate } from "@/lib/utils";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { api } from "@/hooks/use-api";
 import { TRAINING_CATEGORIES } from "@/lib/constants";
 import type { TrainingCategory } from "@/lib/constants";
@@ -419,7 +419,7 @@ export default function TrainingPage() {
     createNeed.mutate(
       {
         home_id: homeId,
-        identified_by: "aria",
+        identified_by: "cara",
         need_type: record.category === "safeguarding" ? "safeguarding"
           : record.category === "medication" ? "medication"
           : record.category === "restraint" ? "de_escalation"
@@ -445,7 +445,7 @@ export default function TrainingPage() {
           ? `${meta.rate}% overall compliance · ${meta.expired} expired · ${meta.expiring} expiring`
           : "Loading…"
       }
-      ariaContext={{ pageTitle: "Training & Compliance", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Training & Compliance", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex gap-2">
@@ -456,14 +456,14 @@ export default function TrainingPage() {
             <Plus className="h-3.5 w-3.5" />
             Add Record
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       <div id="training-content" className="space-y-5 animate-fade-in">
 
         {/* Cara panel */}
-        <AriaPanel mode="assist" pageContext="Training & Compliance — staff training records, mandatory training matrix, certificate uploads, compliance tracking" recordType="training_record" userRole="registered_manager" className="mb-2" />
+        <CaraPanel mode="assist" pageContext="Training & Compliance — staff training records, mandatory training matrix, certificate uploads, compliance tracking" recordType="training_record" userRole="registered_manager" className="mb-2" />
 
         {/* Summary stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

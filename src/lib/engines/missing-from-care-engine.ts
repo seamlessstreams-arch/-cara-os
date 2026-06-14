@@ -77,7 +77,7 @@ export interface PushPullAnalysis {
   risk: PushPullFactor[];
 }
 
-export interface AriaInsight {
+export interface CaraInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -86,7 +86,7 @@ export interface MissingIntelligenceResult {
   profile: MissingProfile;
   recent_episodes: RecentEpisode[];
   push_pull: PushPullAnalysis;
-  insights: AriaInsight[];
+  insights: CaraInsight[];
 }
 
 export interface MissingEngineInput {
@@ -310,7 +310,7 @@ export function computeMissingIntelligence(input: MissingEngineInput): MissingIn
   };
 
   // ── Cara Intelligence Insights (deterministic) ──────────────────────────
-  const insights: AriaInsight[] = [];
+  const insights: CaraInsight[] = [];
 
   // No episodes at all — clean record
   if (episodes.length === 0) {

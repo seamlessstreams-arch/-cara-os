@@ -160,7 +160,7 @@ export interface BehaviourAlert {
   message: string;
 }
 
-export interface AriaInsight {
+export interface CaraInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -173,7 +173,7 @@ export interface BehaviourIntelligenceResult {
   time_patterns: TimePattern[];
   child_trajectories: ChildTrajectory[];
   alerts: BehaviourAlert[];
-  insights: AriaInsight[];
+  insights: CaraInsight[];
 }
 
 export interface BehaviourEngineInput {
@@ -644,7 +644,7 @@ export function computeBehaviourIntelligence(input: BehaviourEngineInput): Behav
   }
 
   // ── Cara Intelligence Insights (deterministic) ─────────────────────────
-  const insights: AriaInsight[] = [];
+  const insights: CaraInsight[] = [];
 
   // No data at all
   if (totalWithIncidents === 0 && piCount === 0 && sanctionRewards.length === 0) {

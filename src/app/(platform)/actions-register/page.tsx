@@ -78,7 +78,7 @@ export default function ActionsRegisterPage() {
     <PageShell
       title="Actions Register"
       subtitle="Every agreed action, in one place — from reviews, supervisions, meetings, Reg 44 visits, audits and oversight. What did we agree, and is it done?"
-      ariaContext={{ pageTitle: "Actions Register", sourceType: "general" }}
+      caraContext={{ pageTitle: "Actions Register", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button

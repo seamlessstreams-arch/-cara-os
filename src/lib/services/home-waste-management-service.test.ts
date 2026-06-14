@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  generateAriaInsights,
+  generateCaraInsights,
   validateHomeWasteManagement,
   type HomeWasteManagementRow,
 } from "./home-waste-management-service";
@@ -202,15 +202,15 @@ describe("validateHomeWasteManagement", () => {
   });
 });
 
-describe("generateAriaInsights (waste management)", () => {
+describe("generateCaraInsights (waste management)", () => {
   it("returns 3 insights", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns insights with correct tags for populated data", () => {
     const rows = [makeRow({ compliance_status: "Non-Compliant" })];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights[0]).toContain("[sky]");
     expect(insights[1]).toContain("[amber]");
     expect(insights[2]).toContain("[reflect]");

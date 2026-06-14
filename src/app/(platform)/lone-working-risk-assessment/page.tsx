@@ -17,8 +17,8 @@ import { useLoneWorkingRiskAssessments } from "@/hooks/use-lone-working-risk-ass
 import type { LoneWorkingRiskAssessment, LWRAOverallRisk, LWRAScenario, LWRATraining } from "@/types/extended";
 import { LWRA_OVERALL_RISK_LABEL, LWRA_APPROVED_SHIFT_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
@@ -83,12 +83,12 @@ export default function LoneWorkingRiskAssessmentPage() {
     <PageShell
       title="Lone Working Risk Assessment"
       subtitle="Per-staff lone working assessments — scenarios, controls, and approved activities"
-      ariaContext={{ pageTitle: "Lone Working Risk Assessments", sourceType: "general" }}
+      caraContext={{ pageTitle: "Lone Working Risk Assessments", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="lone-working-risk-assessments" />
           <PrintButton title="Lone Working Risk Assessments" />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -318,7 +318,7 @@ export default function LoneWorkingRiskAssessmentPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Lone Working Risk Assessments — staff safety, sole staffing arrangements, risk controls, communication protocols, emergency procedures, Reg 31, safe staffing, Ofsted evidence"
         recordType="risk_assessment"

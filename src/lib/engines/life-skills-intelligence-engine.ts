@@ -70,7 +70,7 @@ export interface LifeSkillsAlert {
   message: string;
 }
 
-export interface AriaLifeSkillsInsight {
+export interface CaraLifeSkillsInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -80,7 +80,7 @@ export interface LifeSkillsIntelligenceResult {
   domain_averages: DomainAverage[];
   child_profiles: ChildReadinessProfile[];
   alerts: LifeSkillsAlert[];
-  insights: AriaLifeSkillsInsight[];
+  insights: CaraLifeSkillsInsight[];
 }
 
 interface EngineInput {
@@ -269,7 +269,7 @@ export function computeLifeSkillsIntelligence(input: EngineInput): LifeSkillsInt
   }
 
   // ── Cara Insights ──────────────────────────────────────────────────────
-  const insights: AriaLifeSkillsInsight[] = [];
+  const insights: CaraLifeSkillsInsight[] = [];
 
   // Warning: unassessed children
   if (unassessed.length > 0) {

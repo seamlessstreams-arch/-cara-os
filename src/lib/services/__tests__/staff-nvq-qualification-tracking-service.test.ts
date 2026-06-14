@@ -30,7 +30,7 @@ import {
   REGISTRATION_STATUSES,
 } from "../staff-nvq-qualification-tracking-service";
 
-const { computeNvqMetrics, computeNvqAlerts, generateNvqAriaInsights } = _testing;
+const { computeNvqMetrics, computeNvqAlerts, generateNvqCaraInsights } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -694,48 +694,48 @@ describe("computeNvqAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// generateNvqAriaInsights
+// generateNvqCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateNvqAriaInsights", () => {
+describe("generateNvqCaraInsights", () => {
   // ── Structure ───────────────────────────────────────────────────────────
 
   it("returns exactly 3 insights for empty array", () => {
-    const insights = generateNvqAriaInsights([]);
+    const insights = generateNvqCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for single record", () => {
-    const insights = generateNvqAriaInsights([makeRow()]);
+    const insights = generateNvqCaraInsights([makeRow()]);
     expect(insights).toHaveLength(3);
   });
 
   it("returns exactly 3 insights for multiple records", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights).toHaveLength(3);
   });
 
   it("all insights are strings", () => {
-    const insights = generateNvqAriaInsights([makeRow()]);
+    const insights = generateNvqCaraInsights([makeRow()]);
     for (const i of insights) expect(typeof i).toBe("string");
   });
 
   it("all insights are non-empty", () => {
-    const insights = generateNvqAriaInsights([makeRow()]);
+    const insights = generateNvqCaraInsights([makeRow()]);
     for (const i of insights) expect(i.length).toBeGreaterThan(0);
   });
 
   // ── Insight 1: sky-themed summary ───────────────────────────────────────
 
   it("first insight starts with [sky]", () => {
-    const insights = generateNvqAriaInsights([makeRow()]);
+    const insights = generateNvqCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[sky\]/);
   });
 
   it("first insight includes total record count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
@@ -744,13 +744,13 @@ describe("generateNvqAriaInsights", () => {
       makeRow({ staff_name: "Alice" }),
       makeRow({ staff_name: "Bob" }),
     ];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[0]).toContain("2");
   });
 
   it("first insight includes reg32 compliant rate", () => {
     const rows = [makeRow({ reg32_compliant: true }), makeRow({ reg32_compliant: false })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
@@ -760,62 +760,62 @@ describe("generateNvqAriaInsights", () => {
       makeRow({ qualification_status: "completed" }),
       makeRow({ qualification_status: "in_progress" }),
     ];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[0]).toContain("2 completed");
   });
 
   it("first insight includes in_progress count", () => {
     const rows = [makeRow({ qualification_status: "in_progress" })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[0]).toContain("1 in progress");
   });
 
   it("first insight includes not_started count", () => {
     const rows = [makeRow({ qualification_status: "not_started" })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[0]).toContain("1 not yet started");
   });
 
   it("first insight uses singular member for 1 staff", () => {
-    const insights = generateNvqAriaInsights([makeRow()]);
+    const insights = generateNvqCaraInsights([makeRow()]);
     expect(insights[0]).toContain("member");
     expect(insights[0]).not.toContain("members");
   });
 
   it("first insight uses plural members for 2+ staff", () => {
     const rows = [makeRow({ staff_name: "Alice" }), makeRow({ staff_name: "Bob" })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[0]).toContain("members");
   });
 
   // ── Insight 2: amber-themed priorities ──────────────────────────────────
 
   it("second insight starts with [amber]", () => {
-    const insights = generateNvqAriaInsights([makeRow()]);
+    const insights = generateNvqCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("second insight mentions alerts when critical alerts exist", () => {
     const rows = [makeRow({ reg32_compliant: false, qualification_status: "not_started" })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[1]).toContain("critical");
   });
 
   it("second insight mentions no alerts when all compliant", () => {
     const rows = [makeRow()];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[1]).toMatch(/[Nn]o critical/);
   });
 
   it("second insight includes within deadline rate", () => {
     const rows = [makeRow({ within_two_year_deadline: true }), makeRow({ within_two_year_deadline: false })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   it("second insight includes assessor assigned rate", () => {
     const rows = [makeRow({ assessor_assigned: true }), makeRow({ assessor_assigned: false })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
@@ -824,27 +824,27 @@ describe("generateNvqAriaInsights", () => {
       makeRow({ portfolio_progressing: true, reg32_compliant: false, qualification_status: "not_started" }),
       makeRow({ portfolio_progressing: false }),
     ];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[1]).toContain("50%");
   });
 
   // ── Insight 3: reflect-themed question ──────────────────────────────────
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateNvqAriaInsights([makeRow()]);
+    const insights = generateNvqCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions not started count when present", () => {
     const rows = [makeRow({ qualification_status: "not_started" })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[2]).toContain("1");
     expect(insights[2]).toContain("not yet started");
   });
 
   it("third insight uses singular when 1 not started", () => {
     const rows = [makeRow({ qualification_status: "not_started" })];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[2]).toContain("member has");
   });
 
@@ -853,7 +853,7 @@ describe("generateNvqAriaInsights", () => {
       makeRow({ qualification_status: "not_started", staff_name: "Alice" }),
       makeRow({ qualification_status: "not_started", staff_name: "Bob" }),
     ];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[2]).toContain("members have");
   });
 
@@ -861,7 +861,7 @@ describe("generateNvqAriaInsights", () => {
     const rows = [
       makeRow({ qualification_status: "in_progress", reg32_compliant: false }),
     ];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[2]).toContain("Reg 32");
   });
 
@@ -869,7 +869,7 @@ describe("generateNvqAriaInsights", () => {
     const rows = [
       makeRow({ qualification_status: "completed", reg32_compliant: true }),
     ];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[2]).toContain("compliant");
   });
 
@@ -877,7 +877,7 @@ describe("generateNvqAriaInsights", () => {
     const rows = [
       makeRow({ qualification_status: "completed", reg32_compliant: true }),
     ];
-    const insights = generateNvqAriaInsights(rows);
+    const insights = generateNvqCaraInsights(rows);
     expect(insights[2]).toContain("Level 4/5");
   });
 });
@@ -1086,7 +1086,7 @@ describe("edge cases", () => {
   });
 
   it("insights handle empty data gracefully", () => {
-    const insights = generateNvqAriaInsights([]);
+    const insights = generateNvqCaraInsights([]);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("0 NVQ/QCF");
     expect(insights[0]).toContain("0 staff");

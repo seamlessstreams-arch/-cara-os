@@ -64,7 +64,7 @@ interface HomeData {
   overdueActions: number;
   complaints: number;
   missingEpisodes: number;
-  ariaRiskFlags: string[];
+  caraRiskFlags: string[];
   lastReviewed: string;
 }
 
@@ -142,7 +142,7 @@ export default function ProviderOversightPage() {
         overdueActions: 0,
         complaints: (row.complaint_count as number) ?? 0,
         missingEpisodes: 0,
-        ariaRiskFlags: [],
+        caraRiskFlags: [],
         lastReviewed: (row.summary_date as string) ?? "",
       })));
     }
@@ -213,7 +213,7 @@ export default function ProviderOversightPage() {
     <PageShell
       title="RI / Provider Oversight"
       subtitle="Strategic view across all homes — compliance, risks, and readiness"
-      ariaContext={{ pageTitle: "Strategic view across all homes — compliance, risks, and readiness", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Strategic view across all homes — compliance, risks, and readiness", sourceType: "child_record" }}
     >
       <div className="space-y-6">
         {/* Home Selector */}
@@ -430,14 +430,14 @@ export default function ProviderOversightPage() {
                 </div>
 
                 {/* Cara Risk Flags */}
-                {home.ariaRiskFlags.length > 0 && (
+                {home.caraRiskFlags.length > 0 && (
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-2">
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-4 w-4 text-amber-600" />
                       <span className="text-xs font-semibold text-amber-800">Cara Risk Flags</span>
                     </div>
                     <ul className="space-y-1">
-                      {home.ariaRiskFlags.map((flag, idx) => (
+                      {home.caraRiskFlags.map((flag, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-sm text-amber-900">
                           <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0 text-amber-600" />
                           {flag}

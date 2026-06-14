@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateCreativeArtsActivity,
-  generateAriaInsights,
+  generateCaraInsights,
   type CreativeArtsActivityRow,
 } from "./creative-arts-activities-service";
 
@@ -166,12 +166,12 @@ describe("creative-arts-activities-service", () => {
     });
   });
 
-  // ── generateAriaInsights ──────────────────────────────────────────────
+  // ── generateCaraInsights ──────────────────────────────────────────────
 
-  describe("generateAriaInsights", () => {
+  describe("generateCaraInsights", () => {
     it("returns 3 insights", () => {
       const rows = [makeRow()];
-      const insights = generateAriaInsights(rows);
+      const insights = generateCaraInsights(rows);
       expect(insights).toHaveLength(3);
       expect(insights[0]).toContain("[sky]");
     });

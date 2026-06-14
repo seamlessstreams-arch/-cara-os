@@ -209,7 +209,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function computeAriaInsights(
+export function computeCaraInsights(
   metrics: ReturnType<typeof computeMetrics>,
   alerts?: ReturnType<typeof computeAlerts>,
 ): string[] {
@@ -345,5 +345,5 @@ export async function updateRecord(
 export const _testing = {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
 };

@@ -67,7 +67,7 @@ export interface WorkflowAlert {
   severity: "critical" | "high" | "medium" | "low";
   message: string;
 }
-export interface AriaWorkflowInsight {
+export interface CaraWorkflowInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -77,7 +77,7 @@ export interface WorkflowOrchestrationResult {
   triggered: TriggeredRule[];
   actions: GeneratedAction[];
   alerts: WorkflowAlert[];
-  insights: AriaWorkflowInsight[];
+  insights: CaraWorkflowInsight[];
 }
 
 export interface WorkflowOrchestrationInput {
@@ -231,8 +231,8 @@ function buildAlerts(o: WorkflowOverview, actions: GeneratedAction[]): WorkflowA
   return alerts;
 }
 
-function buildInsights(o: WorkflowOverview): AriaWorkflowInsight[] {
-  const insights: AriaWorkflowInsight[] = [];
+function buildInsights(o: WorkflowOverview): CaraWorkflowInsight[] {
+  const insights: CaraWorkflowInsight[] = [];
   if (o.actions_generated > 0) {
     insights.push({
       severity: "positive",

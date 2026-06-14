@@ -40,8 +40,8 @@ import {
   RESTRICTIONS_LOG_AUTHORISED_BY_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local colour maps ────────────────────────────────────────────── */
 
@@ -165,7 +165,7 @@ export default function RestrictionsLogPage() {
     <PageShell
       title="Restrictions Log"
       subtitle="Reg 20 — restrictions on liberty, movement, contact and access with proportionality review"
-      ariaContext={{ pageTitle: "Restrictions Log", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Restrictions Log", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="restrictions-log" />
@@ -173,7 +173,7 @@ export default function RestrictionsLogPage() {
           <button onClick={() => setShowDialog(true)} className="inline-flex items-center gap-1 rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-white hover:bg-brand/90">
             <Plus className="h-4 w-4" /> Log Restriction
           </button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -351,7 +351,7 @@ export default function RestrictionsLogPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Restrictions Log — restrictions on children's liberty, lawful restrictions, care plan restrictions, proportionality assessments, review of restrictions, Reg 40 notifications, Reg 45 evidence"
         recordType="care_plan"

@@ -35,14 +35,14 @@ interface AuditEntry {
 // ── Action config ───────────────────────────────────────────────────────────
 
 const ACTION_CONFIG: Record<string, { icon: React.ElementType; colour: string; label: string }> = {
-  generated: { icon: Sparkles, colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]", label: "Generated" },
+  generated: { icon: Sparkles, colour: "text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]", label: "Generated" },
   edited: { icon: Edit3, colour: "text-blue-600 bg-blue-50", label: "Edited" },
   submitted_for_review: { icon: Send, colour: "text-amber-600 bg-amber-50", label: "Submitted" },
   reviewed: { icon: Eye, colour: "text-purple-600 bg-purple-50", label: "Reviewed" },
   approved: { icon: CheckCircle2, colour: "text-emerald-600 bg-emerald-50", label: "Approved" },
   rejected: { icon: AlertTriangle, colour: "text-red-600 bg-red-50", label: "Rejected" },
   committed: { icon: Archive, colour: "text-blue-700 bg-blue-100", label: "Committed" },
-  created: { icon: Plus, colour: "text-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]", label: "Created" },
+  created: { icon: Plus, colour: "text-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]", label: "Created" },
   deleted: { icon: Trash2, colour: "text-red-600 bg-red-50", label: "Deleted" },
 };
 
@@ -151,10 +151,10 @@ export default function AuditTrailPage() {
       <div className="space-y-6 pb-12">
 
         {/* ── Header ──────────────────────────────────────────────────────── */}
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Shield className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Shield className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Audit Trail</h2>
@@ -177,7 +177,7 @@ export default function AuditTrailPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search audit trail..."
-              className="w-full rounded-xl border border-[var(--cs-border)] bg-white pl-10 pr-4 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+              className="w-full rounded-xl border border-[var(--cs-border)] bg-white pl-10 pr-4 py-2.5 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
             />
           </div>
           <div className="flex flex-wrap gap-2">
@@ -185,7 +185,7 @@ export default function AuditTrailPage() {
               onClick={() => setActionFilter(null)}
               className={cn(
                 "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
-                !actionFilter ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]" : "border-[var(--cs-border)] bg-white text-[var(--cs-text-secondary)]",
+                !actionFilter ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]" : "border-[var(--cs-border)] bg-white text-[var(--cs-text-secondary)]",
               )}
             >
               All
@@ -199,8 +199,8 @@ export default function AuditTrailPage() {
                   onClick={() => setActionFilter(actionFilter === action ? null : action)}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all",
-                    actionFilter === action ? "ring-1 ring-[var(--cs-aria-gold-soft)]" : "",
-                    "border-[var(--cs-border)] bg-white text-[var(--cs-text-secondary)] hover:border-[var(--cs-aria-gold-soft)]",
+                    actionFilter === action ? "ring-1 ring-[var(--cs-cara-gold-soft)]" : "",
+                    "border-[var(--cs-border)] bg-white text-[var(--cs-text-secondary)] hover:border-[var(--cs-cara-gold-soft)]",
                   )}
                 >
                   {config.label} ({count})

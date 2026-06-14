@@ -125,10 +125,10 @@ export default function DecisionSupportPage() {
     <PageShell title="Decision Support" subtitle="Evidence-informed decision frameworks">
       <div className="space-y-6 pb-12">
 
-        <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-white p-5">
+        <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-white p-5">
           <div className="flex items-start gap-4">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-navy)]">
-              <Scale className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+              <Scale className="h-5 w-5 text-[var(--cs-cara-gold)]" />
             </div>
             <div className="flex-1">
               <h2 className="text-base font-bold text-[var(--cs-navy)]">Decision Support</h2>
@@ -144,8 +144,8 @@ export default function DecisionSupportPage() {
           {decisions.map((d) => (
             <button key={d.id} onClick={() => setSelectedId(d.id)}
               className={cn("inline-flex items-center gap-2 rounded-lg border px-3 py-2 transition-all",
-                selectedId === d.id ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] ring-1 ring-[var(--cs-aria-gold-soft)]" : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-aria-gold-soft)]")}>
-              <Scale className={cn("h-4 w-4", selectedId === d.id ? "text-[var(--cs-aria-gold)]" : "text-[var(--cs-text-muted)]")} />
+                selectedId === d.id ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] ring-1 ring-[var(--cs-cara-gold-soft)]" : "border-[var(--cs-border)] bg-white hover:border-[var(--cs-cara-gold-soft)]")}>
+              <Scale className={cn("h-4 w-4", selectedId === d.id ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-muted)]")} />
               <span className="text-xs font-medium text-[var(--cs-navy)]">{d.title}</span>
               <Badge className={cn("text-[9px] border", d.status === "decided" ? "bg-emerald-50 text-emerald-700 border-emerald-200" : d.status === "open" ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-blue-50 text-blue-600 border-blue-200")}>
                 {d.status}

@@ -28,7 +28,7 @@ export function useRebuildChildDailySummary() {
       ),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["child-daily-summaries"] });
-      qc.invalidateQueries({ queryKey: ["aria-audit-trail"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
     },
   });
 }

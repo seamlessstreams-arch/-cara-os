@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
 } from "./child-substance-misuse-screening-service";
 import type { ChildSubstanceMisuseScreeningRow } from "./child-substance-misuse-screening-service";
 
@@ -156,12 +156,12 @@ describe("computeAlerts (substance misuse)", () => {
   });
 });
 
-// -- computeAriaInsights -------------------------------------------------------
+// -- computeCaraInsights -------------------------------------------------------
 
-describe("computeAriaInsights (substance misuse)", () => {
+describe("computeCaraInsights (substance misuse)", () => {
   it("returns 3 insights for empty metrics", () => {
     const metrics = computeMetrics([]);
-    const insights = computeAriaInsights(metrics);
+    const insights = computeCaraInsights(metrics);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[red]");
     expect(insights[2]).toContain("[reflect]");
@@ -173,7 +173,7 @@ describe("computeAriaInsights (substance misuse)", () => {
     ];
     const metrics = computeMetrics(rows);
     const alerts = computeAlerts(rows);
-    const insights = computeAriaInsights(metrics, alerts);
+    const insights = computeCaraInsights(metrics, alerts);
     expect(insights[1]).toContain("[amber]");
     expect(insights[1]).toMatch(/\d+ critical/);
   });

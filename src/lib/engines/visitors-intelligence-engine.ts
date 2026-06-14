@@ -78,7 +78,7 @@ export interface VisitorAlert {
   message: string;
 }
 
-export interface AriaVisitorInsight {
+export interface CaraVisitorInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -89,7 +89,7 @@ export interface VisitorsIntelligenceResult {
   child_profiles: ChildVisitorProfile[];
   recent_visitors: RecentVisitor[];
   alerts: VisitorAlert[];
-  insights: AriaVisitorInsight[];
+  insights: CaraVisitorInsight[];
 }
 
 interface EngineInput {
@@ -284,7 +284,7 @@ export function computeVisitorsIntelligence(input: EngineInput): VisitorsIntelli
   }
 
   // ── Cara Insights ──────────────────────────────────────────────────────
-  const insights: AriaVisitorInsight[] = [];
+  const insights: CaraVisitorInsight[] = [];
 
   // Critical: DBS gap for professional visitors
   if (noDbs.length > 0) {

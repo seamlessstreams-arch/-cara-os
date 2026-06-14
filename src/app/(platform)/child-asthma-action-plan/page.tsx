@@ -20,8 +20,8 @@ import {
 import { cn, todayStr } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -103,12 +103,12 @@ export default function ChildAsthmaActionPlanPage() {
     <PageShell
       title="Child Asthma Action Plan"
       subtitle="Personal Asthma Action Plan · BTS/SIGN 158 · NICE NG80 · Quality Standard 8"
-      ariaContext={{ pageTitle: "Asthma Action Plans", sourceType: "medication" }}
+      caraContext={{ pageTitle: "Asthma Action Plans", sourceType: "medication" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Asthma Action Plans" />
           <ExportButton data={data} columns={exportCols} filename="child-asthma-action-plan" />
-          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -365,7 +365,7 @@ export default function ChildAsthmaActionPlanPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Asthma Action Plans — asthma diagnosis, inhaler types, reliever/preventer, triggers, peak flow, emergency action, school sharing, review date, AHA, LAC health"
         recordType="medication"

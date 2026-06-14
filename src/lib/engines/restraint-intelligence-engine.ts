@@ -110,7 +110,7 @@ export interface RestraintAlert {
   message: string;
 }
 
-export interface AriaRestraintInsight {
+export interface CaraRestraintInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -122,7 +122,7 @@ export interface RestraintIntelligenceResult {
   type_breakdown: TypeBreakdown[];
   time_patterns: TimePattern[];
   alerts: RestraintAlert[];
-  insights: AriaRestraintInsight[];
+  insights: CaraRestraintInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -345,7 +345,7 @@ export function computeRestraintIntelligence(input: RestraintIntelligenceInput):
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaRestraintInsight[] = [];
+  const insights: CaraRestraintInsight[] = [];
 
   // Critical: high restraint frequency
   if (within30d.length >= 5) {

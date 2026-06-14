@@ -32,8 +32,8 @@ import {
   LADO_STAFF_ACTION_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -126,13 +126,13 @@ export default function LADOReferralsPage() {
     <PageShell
       title="LADO Referrals"
       subtitle="Working Together to Safeguard Children 2023 · Reg 33 · Allegations Management"
-      ariaContext={{ pageTitle: "LADO Referrals", sourceType: "general" }}
+      caraContext={{ pageTitle: "LADO Referrals", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="LADO Referrals" />
           <ExportButton data={filtered} columns={exportCols} filename="lado-referrals" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Referral</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "safeguarding", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -331,7 +331,7 @@ export default function LADOReferralsPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="LADO Referrals — Local Authority Designated Officer referrals, allegations against staff, safeguarding concerns, threshold decisions, risk assessments, regulatory notifications, Ofsted evidence"
         recordType="safeguarding"

@@ -21,8 +21,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { PostIncidentChildDebrief, ChildDebriefMethod } from "@/types/extended";
 import { CHILD_DEBRIEF_METHOD_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -113,12 +113,12 @@ export default function PostIncidentDebriefWithChildPage() {
     <PageShell
       title="Post-Incident Debrief with Child"
       subtitle="Restorative · Child-Led Reflection · Quality Standard 5 · Repair & Forward Planning"
-      ariaContext={{ pageTitle: "Post-Incident Debrief with Child", sourceType: "incident" }}
+      caraContext={{ pageTitle: "Post-Incident Debrief with Child", sourceType: "incident" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Post-Incident Debrief with Child" />
           <ExportButton data={records} columns={exportCols} filename="child-debriefs" />
-          <AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -405,7 +405,7 @@ export default function PostIncidentDebriefWithChildPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Post-Incident Debrief with Child — child's perspective on incident, impact, feelings, understanding, learning, agreement, future support, Regulation 40 evidence, safeguarding evidence"
         recordType="incident"

@@ -200,7 +200,7 @@ export function computeAlerts(
 
 // ── Cara Insights ─────────────────────────────────────────────────────────
 
-export function computeAriaInsights(rows: StaffExitInterviewRow[]): string[] {
+export function computeCaraInsights(rows: StaffExitInterviewRow[]): string[] {
   const metrics = computeMetrics(rows);
   const alerts = computeAlerts(rows);
   const insights: string[] = [];
@@ -338,4 +338,4 @@ export async function updateStaffExitInterview(
 
 // ── Testing export ────────────────────────────────────────────────────────
 
-export const _testing = { computeMetrics, computeAlerts, computeAriaInsights };
+export const _testing = { computeMetrics, computeAlerts, computeCaraInsights };

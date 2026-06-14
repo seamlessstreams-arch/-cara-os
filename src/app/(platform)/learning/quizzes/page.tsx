@@ -6,8 +6,8 @@
 
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -167,7 +167,7 @@ function QuizPlayer({
             <div
               key={i}
               className={cn("h-1.5 w-6 rounded-full", {
-                "bg-[var(--cs-aria-gold-bg)]0": i === currentIndex,
+                "bg-[var(--cs-cara-gold-bg)]0": i === currentIndex,
                 "bg-emerald-400": i in submitted && selected[i] === questions[i].correct_answer,
                 "bg-red-400": i in submitted && selected[i] !== questions[i].correct_answer,
                 "bg-slate-200": !(i in submitted) && i !== currentIndex,
@@ -208,8 +208,8 @@ function QuizPlayer({
               disabled={isAnswered}
               className={cn(
                 "w-full text-left rounded-xl border px-4 py-3 transition-all",
-                !showResult && !isSelected && "border-[var(--cs-border)] bg-white hover:border-[var(--cs-aria-gold-soft)] hover:bg-[var(--cs-aria-gold-bg)]",
-                !showResult && isSelected && "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]",
+                !showResult && !isSelected && "border-[var(--cs-border)] bg-white hover:border-[var(--cs-cara-gold-soft)] hover:bg-[var(--cs-cara-gold-bg)]",
+                !showResult && isSelected && "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]",
                 showResult && isRight && "border-emerald-400 bg-emerald-50",
                 showResult && isSelected && !isRight && "border-red-400 bg-red-50",
                 showResult && !isSelected && !isRight && "border-[var(--cs-border)] bg-white opacity-60",
@@ -218,7 +218,7 @@ function QuizPlayer({
               <div className="flex items-center gap-3">
                 <span className={cn(
                   "flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold border",
-                  !showResult && isSelected ? "border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)]0 text-white"
+                  !showResult && isSelected ? "border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)]0 text-white"
                   : showResult && isRight ? "border-emerald-500 bg-emerald-500 text-white"
                   : showResult && isSelected && !isRight ? "border-red-500 bg-red-500 text-white"
                   : "border-slate-300 text-[var(--cs-text-secondary)]"
@@ -360,13 +360,13 @@ export default function QuizzesPage() {
     <PageShell
       title="Knowledge Quizzes"
       subtitle="Generate interactive knowledge quizzes with Cara"
-      ariaContext={{ pageTitle: "Staff Knowledge Quizzes", sourceType: "staff" }}
+      caraContext={{ pageTitle: "Staff Knowledge Quizzes", sourceType: "staff" }}
       showQuickCreate={false}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Knowledge Quizzes" subtitle="Chamberlain House — Staff Knowledge Assessment" targetId="quizzes-content" />
           <SmartUploadButton variant="inline" label="Upload Resource" uploadContext="Learning — Knowledge Quizzes upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "staff_training", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -468,7 +468,7 @@ export default function QuizzesPage() {
           )}
         </div>
       </div>
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Knowledge Quizzes — knowledge assessments, safeguarding quizzes, mandatory training tests, regulatory knowledge checks, competency verification, training compliance evidence"
         recordType="staff_training"

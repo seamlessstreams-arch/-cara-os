@@ -31,8 +31,8 @@ import { KEY_DOC_STATUS_LABEL, KEY_DOC_ORIGINAL_OR_COPY_LABEL } from "@/types/ex
 import { useChildKeyDocuments } from "@/hooks/use-child-key-documents";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -183,12 +183,12 @@ export default function ChildKeyDocumentTrackerPage() {
     <PageShell
       title="Child Key Document Tracker"
       subtitle="Critical legal, identity, health & education documents held for each young person — Reg 36 records and transition-to-adulthood preparation"
-      ariaContext={{ pageTitle: "Child Key Document Tracker", sourceType: "document" }}
+      caraContext={{ pageTitle: "Child Key Document Tracker", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Child Key Document Tracker" />
           <ExportButton data={filtered} columns={exportCols} filename="child-key-document-tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -471,7 +471,7 @@ export default function ChildKeyDocumentTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Child Key Document Tracker — passport, birth certificate, NI number, red book, immunisation records, court orders, care plans, CLA documents, document location tracking"
         recordType="care_plan"

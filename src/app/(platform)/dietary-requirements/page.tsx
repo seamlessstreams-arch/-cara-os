@@ -30,8 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const severityColour: Record<string, string> = {
   life_threatening: "bg-red-200 text-red-900",
@@ -96,12 +96,12 @@ export default function DietaryRequirementsPage() {
     <PageShell
       title="Dietary Requirements"
       subtitle="Personalised dietary plans — allergies, sensory needs, religious observance, and food relationships"
-      ariaContext={{ pageTitle: "Dietary Requirements", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Dietary Requirements", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="dietary-requirements" />
           <PrintButton title="Dietary Requirements" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -365,7 +365,7 @@ export default function DietaryRequirementsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Dietary Requirements — allergies, food preferences, religious restrictions, cultural food needs, medical diets, halal, kosher, vegetarian, safe eating plan, AHA nutrition"
         recordType="care_plan"

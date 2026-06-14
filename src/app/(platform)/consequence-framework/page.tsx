@@ -32,8 +32,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const levelColour: Record<string, string> = {
   low: "bg-green-100 text-green-800",
@@ -112,12 +112,12 @@ export default function ConsequenceFrameworkPage() {
     <PageShell
       title="Consequence Framework"
       subtitle="Restorative approach to behaviour management — relational, proportionate, and child-centred"
-      ariaContext={{ pageTitle: "Consequence Framework", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Consequence Framework", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="consequence-framework" />
           <PrintButton title="Consequence Framework" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -293,7 +293,7 @@ export default function ConsequenceFrameworkPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Consequence Framework — logical consequences, reparative approaches, therapeutic responses, behaviour management, PBS, restorative practice, sanctions policy, Reg 7"
         recordType="care_plan"

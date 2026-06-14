@@ -11,11 +11,11 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { PageShell } from "@/components/ui/page-shell";
 import type {
-  AriaStudioHomeDynamics,
-  AriaStudioEarlyWarning,
-  AriaStudioSafeguardingPattern,
-  AriaStudioGap,
-} from "@/types/aria-studio";
+  CaraStudioHomeDynamics,
+  CaraStudioEarlyWarning,
+  CaraStudioSafeguardingPattern,
+  CaraStudioGap,
+} from "@/types/cara-studio";
 
 // ── Climate badge styling ───────────────────────────────────────────────────
 
@@ -37,10 +37,10 @@ const RISK_STYLES: Record<string, { bg: string; text: string }> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function HomeDynamicsDashboard() {
-  const [snapshot, setSnapshot] = useState<AriaStudioHomeDynamics | null>(null);
-  const [warnings, setWarnings] = useState<AriaStudioEarlyWarning[]>([]);
-  const [patterns, setPatterns] = useState<AriaStudioSafeguardingPattern[]>([]);
-  const [gaps, setGaps] = useState<AriaStudioGap[]>([]);
+  const [snapshot, setSnapshot] = useState<CaraStudioHomeDynamics | null>(null);
+  const [warnings, setWarnings] = useState<CaraStudioEarlyWarning[]>([]);
+  const [patterns, setPatterns] = useState<CaraStudioSafeguardingPattern[]>([]);
+  const [gaps, setGaps] = useState<CaraStudioGap[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -48,10 +48,10 @@ export default function HomeDynamicsDashboard() {
     setLoading(true);
     try {
       const [snapRes, warnRes, patternRes, gapRes] = await Promise.all([
-        fetch("/api/aria-studio/home-dynamics").then((r) => r.json()),
-        fetch("/api/aria-studio/early-warnings").then((r) => r.json()),
-        fetch("/api/aria-studio/safeguarding-patterns").then((r) => r.json()),
-        fetch("/api/aria-studio/gaps").then((r) => r.json()),
+        fetch("/api/cara-studio/home-dynamics").then((r) => r.json()),
+        fetch("/api/cara-studio/early-warnings").then((r) => r.json()),
+        fetch("/api/cara-studio/safeguarding-patterns").then((r) => r.json()),
+        fetch("/api/cara-studio/gaps").then((r) => r.json()),
       ]);
       setSnapshot(snapRes.data ?? null);
       setWarnings(warnRes.data ?? []);
@@ -69,7 +69,7 @@ export default function HomeDynamicsDashboard() {
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const res = await fetch("/api/aria-studio/home-dynamics", {
+      const res = await fetch("/api/cara-studio/home-dynamics", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -100,7 +100,7 @@ export default function HomeDynamicsDashboard() {
           disabled={generating}
           className="px-4 py-2 text-sm font-medium rounded-lg transition-colors"
           style={{
-            backgroundColor: generating ? "var(--cs-surface-alt)" : "var(--cs-aria-gold)",
+            backgroundColor: generating ? "var(--cs-surface-alt)" : "var(--cs-cara-gold)",
             color: generating ? "var(--cs-text-secondary)" : "var(--cs-navy)",
           }}
         >
@@ -110,7 +110,7 @@ export default function HomeDynamicsDashboard() {
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent" style={{ borderColor: "var(--cs-aria-gold)" }} />
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-t-transparent" style={{ borderColor: "var(--cs-cara-gold)" }} />
         </div>
       ) : (
         <div className="space-y-6">
@@ -169,14 +169,14 @@ export default function HomeDynamicsDashboard() {
 
           {/* ── Manager Focus ─────────────────────────────────────────── */}
           {snapshot?.recommended_manager_focus && (
-            <div className="rounded-xl border-l-4 p-5" style={{ borderColor: "var(--cs-aria-gold)", backgroundColor: "var(--cs-surface)" }}>
-              <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--cs-aria-gold)" }}>
+            <div className="rounded-xl border-l-4 p-5" style={{ borderColor: "var(--cs-cara-gold)", backgroundColor: "var(--cs-surface)" }}>
+              <h3 className="text-sm font-semibold mb-2" style={{ color: "var(--cs-cara-gold)" }}>
                 Recommended Manager Focus
               </h3>
               <ul className="space-y-1">
                 {snapshot.recommended_manager_focus.split(". ").filter(Boolean).map((item, i) => (
                   <li key={i} className="text-sm flex items-start gap-2" style={{ color: "var(--cs-text-primary)" }}>
-                    <span style={{ color: "var(--cs-aria-gold)" }}>•</span>
+                    <span style={{ color: "var(--cs-cara-gold)" }}>•</span>
                     {item.replace(/\.$/, "")}
                   </li>
                 ))}
@@ -198,7 +198,7 @@ export default function HomeDynamicsDashboard() {
                       <p className="text-sm font-medium" style={{ color: "var(--cs-text-primary)" }}>{w.title}</p>
                       <p className="text-xs mt-0.5" style={{ color: "var(--cs-text-secondary)" }}>{w.description}</p>
                       {w.recommended_action && (
-                        <p className="text-xs mt-1 italic" style={{ color: "var(--cs-aria-gold)" }}>{w.recommended_action}</p>
+                        <p className="text-xs mt-1 italic" style={{ color: "var(--cs-cara-gold)" }}>{w.recommended_action}</p>
                       )}
                     </div>
                   </div>

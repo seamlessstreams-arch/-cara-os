@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── types ─────────────────────────────────────────────────────────────────── */
 
@@ -184,8 +184,8 @@ export default function StaffHandbookPage() {
     <PageShell
       title="Staff Handbook"
       subtitle="Chamberlain House · Essential Information for All Staff"
-      ariaContext={{ pageTitle: "Staff Handbook", sourceType: "staff" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Staff Handbook" /><AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
+      caraContext={{ pageTitle: "Staff Handbook", sourceType: "staff" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Staff Handbook" /><CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
     >
       <div id="print-area">
         {/* version banner */}
@@ -264,7 +264,7 @@ export default function StaffHandbookPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Staff Handbook — policies, procedures, code of conduct, safeguarding obligations, reporting requirements, lone working, behaviour support, staff rights, HR procedures"
         recordType="policy"

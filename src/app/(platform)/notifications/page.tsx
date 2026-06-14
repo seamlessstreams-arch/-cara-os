@@ -35,8 +35,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -156,12 +156,12 @@ export default function NotificationsPage() {
     <PageShell
       title="Notifications & Alerts"
       subtitle="System alerts, deadlines, and action items"
-      ariaContext={{ pageTitle: "Notifications", sourceType: "general" }}
+      caraContext={{ pageTitle: "Notifications", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Notifications" />
           <ExportButton data={filtered} columns={exportCols} filename="notifications" />
-          <AriaStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "task", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -383,7 +383,7 @@ export default function NotificationsPage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Notifications — system alerts, task reminders, review deadlines, incident alerts, management notifications, regulatory deadlines, in-app notifications, action required"
         recordType="task"

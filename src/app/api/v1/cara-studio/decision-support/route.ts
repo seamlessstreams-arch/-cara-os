@@ -1,15 +1,15 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Decision Support
 // GET  → list formulations + recommendations (filter by child_id)
-// POST → run engine (RBAC: aria.generate_drafts)
+// POST → run engine (RBAC: cara.generate_drafts)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import {
   runDecisionSupport,
   loadDecisionSupport,
-} from "@/lib/aria/aria-decision-support";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+} from "@/lib/cara/cara-decision-support";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -34,8 +34,8 @@ export async function POST(req: NextRequest) {
   const lookbackDays =
     typeof body.lookback_days === "number" ? body.lookback_days : undefined;
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId,
     intent: "run decision_support",
   });

@@ -17,18 +17,18 @@ import {
   useReg45Evidence,
   useRunReg45EvidenceBuild,
   useUpdateReg45EvidenceItem,
-} from "@/hooks/use-aria-reg45-evidence";
+} from "@/hooks/use-cara-reg45-evidence";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import {
-  ARIA_REG45_THEME_LABELS,
-  type AriaReg45EvidenceItem,
-  type AriaReg45Theme,
-} from "@/types/aria-studio";
+  CARA_REG45_THEME_LABELS,
+  type CaraReg45EvidenceItem,
+  type CaraReg45Theme,
+} from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const SEVERITY_TONE: Record<AriaReg45EvidenceItem["severity"], string> = {
+const SEVERITY_TONE: Record<CaraReg45EvidenceItem["severity"], string> = {
   critical: "bg-rose-50 text-rose-800 border-rose-300",
   high: "bg-orange-50 text-orange-800 border-orange-300",
   medium: "bg-amber-50 text-amber-800 border-amber-300",
@@ -36,7 +36,7 @@ const SEVERITY_TONE: Record<AriaReg45EvidenceItem["severity"], string> = {
   positive: "bg-emerald-50 text-emerald-800 border-emerald-300",
 };
 
-const STATUS_TONE: Record<AriaReg45EvidenceItem["status"], string> = {
+const STATUS_TONE: Record<CaraReg45EvidenceItem["status"], string> = {
   ai_draft: "bg-slate-100 text-slate-700",
   accepted: "bg-emerald-100 text-emerald-800",
   deferred: "bg-amber-100 text-amber-800",
@@ -48,8 +48,8 @@ function EvidenceCard({
   item,
   onAction,
 }: {
-  item: AriaReg45EvidenceItem;
-  onAction: (id: string, status: AriaReg45EvidenceItem["status"]) => void;
+  item: CaraReg45EvidenceItem;
+  onAction: (id: string, status: CaraReg45EvidenceItem["status"]) => void;
 }) {
   const decided = item.status !== "ai_draft";
   return (
@@ -109,7 +109,7 @@ function EvidenceCard({
 
 export default function Reg45EvidencePage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(currentUser?.role ?? "registered_manager");
+  const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
 
   const query = useReg45Evidence(HOME_ID);
   const run = useRunReg45EvidenceBuild();
@@ -121,16 +121,16 @@ export default function Reg45EvidencePage() {
     run.mutate({
       home_id: HOME_ID,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 
-  const handleAction = (id: string, status: AriaReg45EvidenceItem["status"]) => {
+  const handleAction = (id: string, status: CaraReg45EvidenceItem["status"]) => {
     update.mutate({
       id,
       status,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 
@@ -190,14 +190,14 @@ export default function Reg45EvidencePage() {
         </Card>
 
         {snapshot &&
-          (Object.keys(ARIA_REG45_THEME_LABELS) as AriaReg45Theme[]).map((theme) => {
+          (Object.keys(CARA_REG45_THEME_LABELS) as CaraReg45Theme[]).map((theme) => {
             const items = snapshot.themes[theme];
             if (!items || items.length === 0) return null;
             return (
               <section key={theme}>
                 <div className="mb-2 flex items-center gap-2">
                   <h2 className="text-sm font-semibold">
-                    {ARIA_REG45_THEME_LABELS[theme]}
+                    {CARA_REG45_THEME_LABELS[theme]}
                   </h2>
                   <Badge variant="outline" className="text-[10px]">
                     {items.length} item{items.length === 1 ? "" : "s"}

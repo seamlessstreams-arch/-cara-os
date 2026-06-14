@@ -8,13 +8,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import {
   buildInspectionBundle,
   persistInspectionBundle,
   listPersistedInspectionBundles,
 } from "@/lib/care-events/inspection-bundle";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
 
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId,
     intent: "list inspection bundles",
     isSafeguardingSensitive: true,
@@ -38,11 +38,11 @@ export async function POST(req: NextRequest) {
   try { body = await req.json(); } catch { /* empty allowed */ }
   const homeId = body.home_id ?? DEFAULT_HOME_ID;
 
-  const guard = requireAriaStudioPermission(
+  const guard = requireCaraStudioPermission(
     req,
     body as Record<string, unknown>,
     {
-      permission: "aria.commit_to_records",
+      permission: "cara.commit_to_records",
       homeId,
       intent: "persist inspection bundle",
       isSafeguardingSensitive: true,
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   const bundle = buildInspectionBundle(homeId, { generatedBy: guard.actor.userId });
   persistInspectionBundle(bundle);
 
-  appendAriaAudit({
+  appendCaraAudit({
     homeId,
     actorId: guard.actor.userId,
     actionType: "artifact_committed",

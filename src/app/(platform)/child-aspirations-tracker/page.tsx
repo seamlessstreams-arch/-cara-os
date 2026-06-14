@@ -29,8 +29,8 @@ import { ASPIRATION_DOMAIN_LABEL, ASPIRATION_REALISM_LABEL } from "@/types/exten
 import { useAspirationRecords } from "@/hooks/use-aspiration-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -51,7 +51,7 @@ const REALISM_META: Record<AspirationRealism, { colour: string }> = {
   very_achievable:         { colour: "bg-green-100 text-green-800" },
   achievable_with_support: { colour: "bg-emerald-100 text-emerald-800" },
   stretch_goal:            { colour: "bg-amber-100 text-amber-800" },
-  big_dream_long_term:     { colour: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]" },
+  big_dream_long_term:     { colour: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]" },
 };
 
 const REALISM_ORDER: Record<AspirationRealism, number> = {
@@ -148,12 +148,12 @@ export default function ChildAspirationsTrackerPage() {
     <PageShell
       title="Child Aspirations Tracker"
       subtitle="Hopes, dreams and ambitions — child-led, evolving over time, woven into care planning"
-      ariaContext={{ pageTitle: "Child Aspirations Tracker", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Child Aspirations Tracker", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="child-aspirations" />
           <PrintButton title="Child Aspirations Tracker" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -162,7 +162,7 @@ export default function ChildAspirationsTrackerPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
             { l: "Aspirations tracked",       v: stats.total,              icon: Star,     c: "text-amber-600" },
-            { l: "Stretch goals",             v: stats.stretch,            icon: Sparkles, c: "text-[var(--cs-aria-gold)]" },
+            { l: "Stretch goals",             v: stats.stretch,            icon: Sparkles, c: "text-[var(--cs-cara-gold)]" },
             { l: "Reviews due",               v: stats.reviewsDue,         icon: Compass,  c: "text-sky-600" },
             { l: "Children with active plans", v: stats.childrenWithPlans, icon: Heart,    c: "text-rose-600" },
           ].map((s) => (
@@ -424,7 +424,7 @@ export default function ChildAspirationsTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Child Aspirations Tracker — goals, dreams, future plans, career interests, hobbies, vocational training, higher education, personal achievements, PEP targets, Reg 45 positive outcomes"
         recordType="care_plan"

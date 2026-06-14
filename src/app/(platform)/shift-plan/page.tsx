@@ -100,7 +100,7 @@ export default function ShiftPlanPage() {
             {plan.ai_narrative && (
               <Card>
                 <CardHeader className="flex flex-row items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                  <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                   <CardTitle className="text-sm">Cara&apos;s plan for the shift</CardTitle>
                 </CardHeader>
                 <CardContent><p className="whitespace-pre-line text-sm leading-relaxed text-[var(--cs-text-secondary)]">{plan.ai_narrative}</p></CardContent>

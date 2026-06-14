@@ -3,7 +3,7 @@ import {
   computeMetrics,
   computeAlerts,
   validateClothingAllowance,
-  generateAriaInsights,
+  generateCaraInsights,
 } from "./clothing-allowance-service";
 import type { ClothingAllowanceRow } from "./clothing-allowance-service";
 
@@ -256,12 +256,12 @@ describe("validateClothingAllowance", () => {
   });
 });
 
-// -- generateAriaInsights -----------------------------------------------------
+// -- generateCaraInsights -----------------------------------------------------
 
-describe("generateAriaInsights", () => {
+describe("generateCaraInsights", () => {
   it("returns 3 insights for populated data", () => {
     const rows = [makeRow(), makeRow({ id: "ca-2", child_name: "Beth" })];
-    const insights = generateAriaInsights(rows);
+    const insights = generateCaraInsights(rows);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[sky]");
     expect(insights[1]).toContain("[amber]");
@@ -269,7 +269,7 @@ describe("generateAriaInsights", () => {
   });
 
   it("returns 3 insights for empty data", () => {
-    const insights = generateAriaInsights([]);
+    const insights = generateCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 });

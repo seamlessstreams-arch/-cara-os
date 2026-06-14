@@ -25,7 +25,7 @@ import type {
 const {
   computeInsuranceMetrics,
   computeInsuranceAlerts,
-  generateInsuranceAriaInsights,
+  generateInsuranceCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -958,39 +958,39 @@ describe("computeInsuranceAlerts", () => {
   });
 });
 
-// ── generateInsuranceAriaInsights ────────────────────────────────────────
+// ── generateInsuranceCaraInsights ────────────────────────────────────────
 
-describe("generateInsuranceAriaInsights", () => {
+describe("generateInsuranceCaraInsights", () => {
   it("returns exactly 3 insights", () => {
-    const insights = generateInsuranceAriaInsights([]);
+    const insights = generateInsuranceCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [zinc]", () => {
-    const insights = generateInsuranceAriaInsights([makeRow()]);
+    const insights = generateInsuranceCaraInsights([makeRow()]);
     expect(insights[0]).toMatch(/^\[zinc\]/);
   });
 
   it("first insight includes total_policies count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes document_held_rate", () => {
     const rows = [makeRow({ policy_document_held: true }), makeRow({ policy_document_held: false })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("first insight includes regulatory_met_rate", () => {
     const rows = [makeRow({ regulatory_requirement_met: true }), makeRow({ regulatory_requirement_met: false })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[0]).toContain("50%");
   });
 
   it("second insight starts with [amber]", () => {
-    const insights = generateInsuranceAriaInsights([makeRow()]);
+    const insights = generateInsuranceCaraInsights([makeRow()]);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
@@ -998,25 +998,25 @@ describe("generateInsuranceAriaInsights", () => {
     const rows = [
       makeRow({ insurance_type: "employers_liability", compliance_status: "expired", regulatory_requirement_met: false }),
     ];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[1]).toContain("critical");
     expect(insights[1]).toContain("high");
   });
 
   it("second insight mentions no alerts when none present", () => {
     const rows = [makeRow({ insurance_type: "building", compliance_status: "compliant", regulatory_requirement_met: true, cover_adequate: true, certificate_displayed: true, renewal_date: daysFromNow(90) })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[1]).toContain("No critical or high-priority");
   });
 
   it("third insight starts with [reflect]", () => {
-    const insights = generateInsuranceAriaInsights([makeRow()]);
+    const insights = generateInsuranceCaraInsights([makeRow()]);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("third insight mentions expired when expired_count > 0", () => {
     const rows = [makeRow({ compliance_status: "expired" })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[2]).toContain("expired");
   });
 
@@ -1025,7 +1025,7 @@ describe("generateInsuranceAriaInsights", () => {
       makeRow({ compliance_status: "compliant", cover_adequate: false }),
       makeRow({ compliance_status: "compliant", cover_adequate: true }),
     ];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[2]).toContain("adequate");
   });
 
@@ -1034,13 +1034,13 @@ describe("generateInsuranceAriaInsights", () => {
       makeRow({ compliance_status: "compliant", cover_adequate: true }),
       makeRow({ compliance_status: "compliant", cover_adequate: true }),
     ];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[2]).toContain("All policies are current");
   });
 
   it("uses singular policy wording when total_policies is 1", () => {
     const rows = [makeRow({ policy_name: "Single Policy" })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[0]).toContain("1 insurance policy");
   });
 
@@ -1049,24 +1049,24 @@ describe("generateInsuranceAriaInsights", () => {
       makeRow({ policy_name: "Policy A" }),
       makeRow({ policy_name: "Policy B" }),
     ];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[0]).toContain("2 insurance policies");
   });
 
   it("uses singular policy name wording when unique_policies is 1", () => {
     const rows = [makeRow({ policy_name: "Same" }), makeRow({ policy_name: "Same" })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[0]).toContain("1 unique policy name");
   });
 
   it("uses plural policy names wording when unique_policies > 1", () => {
     const rows = [makeRow({ policy_name: "A" }), makeRow({ policy_name: "B" })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[0]).toContain("2 unique policy names");
   });
 
   it("all insights are non-empty strings", () => {
-    const insights = generateInsuranceAriaInsights([makeRow()]);
+    const insights = generateInsuranceCaraInsights([makeRow()]);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1075,7 +1075,7 @@ describe("generateInsuranceAriaInsights", () => {
 
   it("uses singular policy has wording when 1 expired", () => {
     const rows = [makeRow({ compliance_status: "expired" })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[2]).toContain("policy has");
   });
 
@@ -1084,19 +1084,19 @@ describe("generateInsuranceAriaInsights", () => {
       makeRow({ compliance_status: "expired" }),
       makeRow({ compliance_status: "expired" }),
     ];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[2]).toContain("policies have");
   });
 
   it("second insight includes premium when no alerts", () => {
     const rows = [makeRow({ insurance_type: "building", compliance_status: "compliant", regulatory_requirement_met: true, cover_adequate: true, certificate_displayed: true, renewal_date: daysFromNow(90), premium_amount: 5000 })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[1]).toContain("5000.00");
   });
 
   it("second insight includes expired count when alerts present", () => {
     const rows = [makeRow({ insurance_type: "employers_liability", compliance_status: "expired", regulatory_requirement_met: false })];
-    const insights = generateInsuranceAriaInsights(rows);
+    const insights = generateInsuranceCaraInsights(rows);
     expect(insights[1]).toContain("1 expired");
   });
 });

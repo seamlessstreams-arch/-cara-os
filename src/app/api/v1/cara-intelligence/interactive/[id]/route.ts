@@ -29,7 +29,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   if (!updated) return NextResponse.json({ error: "Session not found" }, { status: 404 });
 
   if (body.status === "completed") {
-    intelligenceDb.ariaAuditTrail.create({
+    intelligenceDb.caraAuditTrail.create({
       home_id: updated.home_id,
       user_id: updated.created_by,
       child_id: updated.child_id,

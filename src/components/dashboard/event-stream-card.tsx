@@ -111,8 +111,8 @@ export function EventStreamCard() {
                   <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
                     <span>{timeAgo(e.occurredAt)}</span>
                     {e.requiresApproval && e.approvalLevel && <span>· needs {e.approvalLevel.replace("_", " ")} sign-off</span>}
-                    {(e.ariaAnalysis?.complianceFlags?.length ?? 0) > 0 && (
-                      <span className="flex items-center gap-0.5 text-amber-700"><AlertTriangle className="h-2.5 w-2.5" />{e.ariaAnalysis!.complianceFlags[0]}</span>
+                    {(e.caraAnalysis?.complianceFlags?.length ?? 0) > 0 && (
+                      <span className="flex items-center gap-0.5 text-amber-700"><AlertTriangle className="h-2.5 w-2.5" />{e.caraAnalysis!.complianceFlags[0]}</span>
                     )}
                   </div>
                 </div>

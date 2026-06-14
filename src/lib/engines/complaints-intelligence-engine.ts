@@ -76,7 +76,7 @@ export interface ComplaintsAlert {
   message: string;
 }
 
-export interface AriaComplaintsInsight {
+export interface CaraComplaintsInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -87,7 +87,7 @@ export interface ComplaintsIntelligenceResult {
   theme_breakdown: ThemeBreakdown[];
   source_breakdown: SourceBreakdown[];
   alerts: ComplaintsAlert[];
-  insights: AriaComplaintsInsight[];
+  insights: CaraComplaintsInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ export function computeComplaintsIntelligence(input: {
   });
 
   // ── Insights ───────────────────────────────────────────────────────────
-  const insights: AriaComplaintsInsight[] = [];
+  const insights: CaraComplaintsInsight[] = [];
 
   for (const oc of open_complaints) {
     if (oc.days_open > 28) {

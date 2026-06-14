@@ -308,7 +308,7 @@ export function QuickCreateModal({
                       onChange={(e) => setTaskForm((f) => ({ ...f, description: e.target.value }))}
                       rows={2}
                       placeholder="Optional details…"
-                      className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
+                      className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] placeholder:text-[var(--cs-text-muted)]"
                     />
                     <div className="mt-1.5">
                       <EntryAssist value={taskForm.description} onChange={(v) => setTaskForm((f) => ({ ...f, description: v }))} sourceModule="task" sourceField="description" />
@@ -321,7 +321,7 @@ export function QuickCreateModal({
                       <select
                         value={taskForm.priority}
                         onChange={(e) => setTaskForm((f) => ({ ...f, priority: e.target.value as Task["priority"] }))}
-                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                       >
                         {TASK_PRIORITIES.map((p) => (
                           <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
@@ -333,7 +333,7 @@ export function QuickCreateModal({
                       <select
                         value={taskForm.category}
                         onChange={(e) => setTaskForm((f) => ({ ...f, category: e.target.value }))}
-                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                       >
                         {TASK_CATEGORIES.map((c) => (
                           <option key={c} value={c}>{TASK_CATEGORY_LABELS[c]}</option>
@@ -357,7 +357,7 @@ export function QuickCreateModal({
                       <select
                         value={taskForm.assigned_to}
                         onChange={(e) => setTaskForm((f) => ({ ...f, assigned_to: e.target.value }))}
-                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                       >
                         <option value="">Unassigned</option>
                         {activeStaff.map((s) => (
@@ -373,7 +373,7 @@ export function QuickCreateModal({
                       <select
                         value={taskForm.linked_child_id}
                         onChange={(e) => setTaskForm((f) => ({ ...f, linked_child_id: e.target.value }))}
-                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                       >
                         <option value="">None</option>
                         {currentYP.map((y) => (
@@ -387,7 +387,7 @@ export function QuickCreateModal({
                           type="checkbox"
                           checked={taskForm.requires_sign_off}
                           onChange={(e) => setTaskForm((f) => ({ ...f, requires_sign_off: e.target.checked }))}
-                          className="h-4 w-4 rounded border-[var(--cs-border)] text-[var(--cs-navy)] focus:ring-[var(--cs-aria-gold)]"
+                          className="h-4 w-4 rounded border-[var(--cs-border)] text-[var(--cs-navy)] focus:ring-[var(--cs-cara-gold)]"
                         />
                         <span className="text-xs font-medium text-[var(--cs-text-secondary)]">Requires sign-off</span>
                       </label>
@@ -431,7 +431,7 @@ export function QuickCreateModal({
                       <select
                         value={careForm.form_type}
                         onChange={(e) => setCareForm((f) => ({ ...f, form_type: e.target.value }))}
-                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                       >
                         {CARE_FORM_TYPES.map((t) => (
                           <option key={t} value={t}>{CARE_FORM_TYPE_LABELS[t]}</option>
@@ -443,7 +443,7 @@ export function QuickCreateModal({
                       <select
                         value={careForm.priority}
                         onChange={(e) => setCareForm((f) => ({ ...f, priority: e.target.value as CareFormValues["priority"] }))}
-                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                       >
                         {TASK_PRIORITIES.map((p) => (
                           <option key={p} value={p}>{p.charAt(0).toUpperCase() + p.slice(1)}</option>
@@ -459,7 +459,7 @@ export function QuickCreateModal({
                       onChange={(e) => setCareForm((f) => ({ ...f, description: e.target.value }))}
                       rows={2}
                       placeholder="Context or instructions for this form…"
-                      className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)] placeholder:text-[var(--cs-text-muted)]"
+                      className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)] placeholder:text-[var(--cs-text-muted)]"
                     />
                     <div className="mt-1.5">
                       <EntryAssist value={careForm.description} onChange={(v) => setCareForm((f) => ({ ...f, description: v }))} sourceModule="care_form" sourceField="description" />
@@ -472,7 +472,7 @@ export function QuickCreateModal({
                       <select
                         value={careForm.linked_child_id}
                         onChange={(e) => setCareForm((f) => ({ ...f, linked_child_id: e.target.value }))}
-                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                       >
                         <option value="">None</option>
                         {currentYP.map((y) => (
@@ -485,7 +485,7 @@ export function QuickCreateModal({
                       <select
                         value={careForm.linked_staff_id}
                         onChange={(e) => setCareForm((f) => ({ ...f, linked_staff_id: e.target.value }))}
-                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-aria-gold)]"
+                        className="w-full rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
                       >
                         <option value="">Anyone</option>
                         {activeStaff.map((s) => (

@@ -85,7 +85,7 @@ export default function HomePage() {
 
       {/* ── Hero ─────────────────────────────────────────────────────────────── */}
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(60% 50% at 75% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(50% 45% at 0% 25%, var(--cs-aria-glow) 0%, transparent 55%)" }} />
+        <div className="pointer-events-none absolute inset-0 opacity-70" style={{ background: "radial-gradient(60% 50% at 75% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(50% 45% at 0% 25%, var(--cs-cara-glow) 0%, transparent 55%)" }} />
         <div className="relative mx-auto max-w-4xl px-5 py-16 text-center lg:py-24">
           <SectionEyebrow>{BRAND.category}</SectionEyebrow>
           <h1 className="mt-5 text-4xl font-extrabold leading-[1.07] tracking-tight text-[var(--cs-navy)] sm:text-5xl lg:text-6xl">
@@ -152,7 +152,7 @@ export default function HomePage() {
         </div>
         <div className="mt-12 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {LAYERS.map((l, i) => {
-            const ring = l.accent === "teal" ? "bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]" : l.accent === "gold" ? "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]" : "bg-[var(--cs-navy)]/5 text-[var(--cs-navy)]";
+            const ring = l.accent === "teal" ? "bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]" : l.accent === "gold" ? "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]" : "bg-[var(--cs-navy)]/5 text-[var(--cs-navy)]";
             return (
               <Link key={i} href={l.href} className="group flex flex-col rounded-2xl border border-[var(--cs-border)] bg-white p-6 shadow-[var(--cs-shadow-card)] transition-transform hover:-translate-y-0.5">
                 <div className={`inline-flex h-12 w-12 items-center justify-center rounded-2xl ${ring}`}><l.Icon className="h-6 w-6" /></div>
@@ -252,8 +252,8 @@ export default function HomePage() {
 
       {/* ── Story ────────────────────────────────────────────────────────────── */}
       <section id="story" className="mx-auto max-w-3xl px-5 py-20">
-        <div className="rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-aria-gold-bg)] p-8 text-center">
-          <Quote className="mx-auto h-7 w-7 text-[var(--cs-aria-gold)]" />
+        <div className="rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-cara-gold-bg)] p-8 text-center">
+          <Quote className="mx-auto h-7 w-7 text-[var(--cs-cara-gold)]" />
           <p className="mt-3 text-lg font-medium leading-relaxed text-[var(--cs-navy)]">
             &ldquo;Cara was built inside a real children&rsquo;s home — by people who&rsquo;ve run the shift, written the Reg 40 at
             2am, and sat across from the inspector. The records were never the point. The children are.&rdquo;

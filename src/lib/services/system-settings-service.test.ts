@@ -15,19 +15,19 @@ describe("mergeWithDefaults", () => {
 
   it("overrides defaults with DB values", () => {
     const dbSettings = [
-      { key: "aria.enabled", value: false },
+      { key: "cara.enabled", value: false },
       { key: "ops.home_capacity", value: 8 },
     ];
     const merged = mergeWithDefaults(dbSettings);
-    expect(merged["aria.enabled"]).toBe(false);
+    expect(merged["cara.enabled"]).toBe(false);
     expect(merged["ops.home_capacity"]).toBe(8);
   });
 
   it("preserves defaults for keys not in DB", () => {
-    const dbSettings = [{ key: "aria.enabled", value: false }];
+    const dbSettings = [{ key: "cara.enabled", value: false }];
     const merged = mergeWithDefaults(dbSettings);
-    // aria.auto_scan_interval_hours default is 24
-    expect(merged["aria.auto_scan_interval_hours"]).toBe(24);
+    // cara.auto_scan_interval_hours default is 24
+    expect(merged["cara.auto_scan_interval_hours"]).toBe(24);
   });
 
   it("handles DB settings with keys not in defaults", () => {
@@ -38,11 +38,11 @@ describe("mergeWithDefaults", () => {
 
   it("last DB value wins for duplicate keys", () => {
     const dbSettings = [
-      { key: "aria.enabled", value: false },
-      { key: "aria.enabled", value: true },
+      { key: "cara.enabled", value: false },
+      { key: "cara.enabled", value: true },
     ];
     const merged = mergeWithDefaults(dbSettings);
-    expect(merged["aria.enabled"]).toBe(true);
+    expect(merged["cara.enabled"]).toBe(true);
   });
 
   it("includes correct number of default keys", () => {

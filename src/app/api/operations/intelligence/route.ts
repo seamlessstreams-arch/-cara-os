@@ -4,7 +4,7 @@ import {
   listRecommendations, acknowledgeRecommendation,
   actionRecommendation, dismissRecommendation,
   getRecommendationStats,
-} from "@/lib/services/aria-intelligence";
+} from "@/lib/services/cara-intelligence";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

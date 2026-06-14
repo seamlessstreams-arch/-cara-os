@@ -21,7 +21,7 @@
 // tests. The API routes own identity, persistence and audit.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { scoreRecordingQuality, type QualityScore } from "@/lib/aria/recording-quality";
+import { scoreRecordingQuality, type QualityScore } from "@/lib/cara/recording-quality";
 import type { CornerstoneEventType } from "@/types/cornerstone-event";
 import type { CommsMessageActionType, CommsLinkedRecordType } from "@/types/comms";
 import type { TaskCategory } from "@/lib/constants";

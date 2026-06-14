@@ -112,7 +112,7 @@ export interface IntegrationHubAlert {
   adapter_id?: string;
 }
 
-export interface AriaIntegrationInsight {
+export interface CaraIntegrationInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -121,7 +121,7 @@ export interface IntegrationHubResult {
   overview: IntegrationHubOverview;
   adapters: AdapterView[];
   alerts: IntegrationHubAlert[];
-  insights: AriaIntegrationInsight[];
+  insights: CaraIntegrationInsight[];
 }
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -460,8 +460,8 @@ function buildAlerts(adapters: AdapterView[]): IntegrationHubAlert[] {
 function buildInsights(
   adapters: AdapterView[],
   overview: IntegrationHubOverview,
-): AriaIntegrationInsight[] {
-  const insights: AriaIntegrationInsight[] = [];
+): CaraIntegrationInsight[] {
+  const insights: CaraIntegrationInsight[] = [];
 
   // 1. Errors first.
   const errored = adapters.filter((a) => a.status === "error");

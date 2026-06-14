@@ -33,8 +33,8 @@ import {
 import { cn } from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   flame: Flame,
@@ -93,8 +93,8 @@ export default function BusinessContinuityPage() {
     <PageShell
       title="Business Continuity Plan"
       subtitle="Emergency Preparedness · Operational Resilience · Civil Contingencies"
-      ariaContext={{ pageTitle: "Business Continuity Plan", sourceType: "document" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Business Continuity Plan" /><AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
+      caraContext={{ pageTitle: "Business Continuity Plan", sourceType: "document" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Business Continuity Plan" /><CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} /></div>}
     >
       <div id="print-area">
         {/* ── Review Status Banner ── */}
@@ -348,7 +348,7 @@ export default function BusinessContinuityPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Business Continuity Plan — emergency scenarios, staffing failure, IT outage, evacuation, flood, fire, pandemic, critical incident, recovery plan, notification chain, Reg 44 evidence"
         recordType="policy"

@@ -37,8 +37,8 @@ import {
   STAKEHOLDER_FEEDBACK_THEME_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config ───────────────────────────────────────────────────── */
 
@@ -135,7 +135,7 @@ export default function StakeholderFeedbackPage() {
     <PageShell
       title="Stakeholder Feedback"
       subtitle="Feedback from children, families, professionals, and the community"
-      ariaContext={{ pageTitle: "Stakeholder Feedback", sourceType: "general" }}
+      caraContext={{ pageTitle: "Stakeholder Feedback", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Stakeholder Feedback" />
@@ -143,7 +143,7 @@ export default function StakeholderFeedbackPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> Record Feedback
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -358,7 +358,7 @@ export default function StakeholderFeedbackPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Stakeholder Feedback — commissioner feedback, LA feedback, family feedback, professional feedback, inspection feedback, quality improvement themes, Reg 45 evidence, Ofsted evidence"
         recordType="management_oversight"

@@ -111,7 +111,7 @@ export interface AppraisalAlert {
   message: string;
 }
 
-export interface AriaAppraisalInsight {
+export interface CaraAppraisalInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -122,7 +122,7 @@ export interface AppraisalIntelligenceResult {
   competency_analysis: CompetencyAnalysis[];
   staff_profiles: StaffAppraisalProfile[];
   alerts: AppraisalAlert[];
-  insights: AriaAppraisalInsight[];
+  insights: CaraAppraisalInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -395,7 +395,7 @@ export function computeAppraisalIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaAppraisalInsight[] = [];
+  const insights: CaraAppraisalInsight[] = [];
 
   // Critical: overdue
   if (overdue.length > 0) {

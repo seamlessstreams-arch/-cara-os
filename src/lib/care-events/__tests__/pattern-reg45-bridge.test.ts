@@ -18,8 +18,8 @@ function clearAll() {
     if (idx >= 0) all.splice(idx, 1);
   }
   // Reg 45 chips
-  const chips = db.ariaReg45EvidenceItems.findAll(HOME_ID);
-  const allChips = db.ariaReg45EvidenceItems.findAll();
+  const chips = db.caraReg45EvidenceItems.findAll(HOME_ID);
+  const allChips = db.caraReg45EvidenceItems.findAll();
   for (const c of chips) {
     const idx = allChips.indexOf(c);
     if (idx >= 0) allChips.splice(idx, 1);
@@ -74,7 +74,7 @@ describe("promoteCareEventPatternsToReg45", () => {
     const second = promoteCareEventPatternsToReg45(HOME_ID);
     expect(second.created).toBe(0);
     expect(second.refreshed).toBe(first.created);
-    expect(db.ariaReg45EvidenceItems.findAll(HOME_ID).length).toBe(first.created);
+    expect(db.caraReg45EvidenceItems.findAll(HOME_ID).length).toBe(first.created);
   });
 
   it("does not silently overwrite chips already included in a report", () => {
@@ -84,10 +84,10 @@ describe("promoteCareEventPatternsToReg45", () => {
     const first = promoteCareEventPatternsToReg45(HOME_ID);
     // Lock the first chip into a report
     const chip = first.items[0]!;
-    db.ariaReg45EvidenceItems.patch(chip.id, { status: "included_in_report" });
+    db.caraReg45EvidenceItems.patch(chip.id, { status: "included_in_report" });
     const second = promoteCareEventPatternsToReg45(HOME_ID);
     expect(second.skipped_locked).toBeGreaterThanOrEqual(1);
-    const stillLocked = db.ariaReg45EvidenceItems.findById(chip.id);
+    const stillLocked = db.caraReg45EvidenceItems.findById(chip.id);
     expect(stillLocked?.status).toBe("included_in_report");
   });
 
@@ -97,9 +97,9 @@ describe("promoteCareEventPatternsToReg45", () => {
     seed({ child_id: "yp_a", category: "behaviour", daysBack: 3 });
     const first = promoteCareEventPatternsToReg45(HOME_ID);
     const chip = first.items[0]!;
-    db.ariaReg45EvidenceItems.patch(chip.id, { status: "accepted" });
+    db.caraReg45EvidenceItems.patch(chip.id, { status: "accepted" });
     promoteCareEventPatternsToReg45(HOME_ID);
-    const after = db.ariaReg45EvidenceItems.findById(chip.id);
+    const after = db.caraReg45EvidenceItems.findById(chip.id);
     expect(after?.status).toBe("accepted");
   });
 

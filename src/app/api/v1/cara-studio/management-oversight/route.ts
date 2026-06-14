@@ -5,17 +5,17 @@
 //                     reviews + recently returned items, sorted by severity)
 // POST   { record_id, action: "acknowledge" } → acknowledge an amendment
 //
-// Permission: aria.view_audit_logs for read; aria.approve_outputs for
+// Permission: cara.view_audit_logs for read; cara.approve_outputs for
 // acknowledging amendments (since acknowledgement closes a manager-review
 // loop on a committed safeguarding-sensitive record).
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
-import { loadOversightQueue } from "@/lib/aria/management-oversight";
-import { acknowledgeAmendment } from "@/lib/aria/aria-committed-amendments";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
+import { loadOversightQueue } from "@/lib/cara/management-oversight";
+import { acknowledgeAmendment } from "@/lib/cara/cara-committed-amendments";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -23,8 +23,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
 
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId,
     intent: "view oversight queue",
   });
@@ -50,11 +50,11 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const existing = db.ariaCommittedRecords.findById(recordId);
+  const existing = db.caraCommittedRecords.findById(recordId);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: existing.home_id,
     childId: existing.child_id,
     intent: `acknowledge amendment:${existing.record_type}`,
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
   }
 
   const acknowledged = result as Exclude<typeof result, { code: string }>;
-  await appendAriaAudit({
+  await appendCaraAudit({
     homeId: existing.home_id,
     actorId: guard.actor.userId,
     actionType: "artifact_approved",

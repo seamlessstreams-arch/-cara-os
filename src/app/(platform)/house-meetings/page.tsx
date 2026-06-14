@@ -23,8 +23,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { toast } from "sonner";
 import type { HouseMeeting, HouseMeetingType } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const TYPE_META: Record<HouseMeetingType, { label: string; color: string }> = {
   regular:   { label: "Regular",     color: "bg-blue-100 text-blue-800" },
@@ -115,13 +115,13 @@ export default function HouseMeetingsPage() {
     <PageShell
       title="House Meetings"
       subtitle="Children&apos;s participation in household decisions — capturing voice, actions, and outcomes"
-      ariaContext={{ pageTitle: "House Meetings", sourceType: "general" }}
+      caraContext={{ pageTitle: "House Meetings", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="House Meetings" />
           <ExportButton data={filtered} columns={EXPORT_COLS} filename="house-meetings" />
           <Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> New Meeting</Button>
-          <AriaStudioQuickActionButton context={{ record_type: "team_meeting", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "team_meeting", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -387,7 +387,7 @@ export default function HouseMeetingsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="House Meetings — children's meetings, house meeting minutes, actions, participation, voice of the child, decision making, house rules, complaints, Reg 45 evidence"
         recordType="team_meeting"

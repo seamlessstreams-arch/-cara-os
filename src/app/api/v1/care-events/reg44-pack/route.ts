@@ -8,13 +8,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import {
   generateReg44Pack,
   persistReg44Pack,
   listPersistedReg44Packs,
 } from "@/lib/care-events/reg44-pack";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -22,8 +22,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const homeId = searchParams.get("home_id") ?? DEFAULT_HOME_ID;
 
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId,
     intent: "list Reg 44 visit evidence packs",
     isSafeguardingSensitive: true,
@@ -41,11 +41,11 @@ export async function POST(req: NextRequest) {
   const days =
     Number.isFinite(daysRaw) && daysRaw > 0 && daysRaw <= 365 ? daysRaw : 30;
 
-  const guard = requireAriaStudioPermission(
+  const guard = requireCaraStudioPermission(
     req,
     body as Record<string, unknown>,
     {
-      permission: "aria.commit_to_records",
+      permission: "cara.commit_to_records",
       homeId,
       intent: "persist Reg 44 visit evidence pack",
       isSafeguardingSensitive: true,
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
   });
   persistReg44Pack(pack);
 
-  appendAriaAudit({
+  appendCaraAudit({
     homeId,
     actorId: guard.actor.userId,
     actionType: "artifact_committed",

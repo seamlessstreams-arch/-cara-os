@@ -35,8 +35,8 @@ import {
   STATUTORY_VISIT_CHILD_PRESENTED_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local config (colours not serializable) ────────────────────────────── */
 
@@ -54,7 +54,7 @@ const TYPE_CLR: Record<StatutoryVisitType, string> = {
   routine_6_weekly: "bg-blue-100 text-blue-800",
   quarterly: "bg-cyan-100 text-cyan-800",
   six_monthly: "bg-teal-100 text-teal-800",
-  pre_lac_review: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-navy)]",
+  pre_lac_review: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
   unannounced: "bg-rose-100 text-rose-800",
 };
 
@@ -190,12 +190,12 @@ export default function StatutoryVisitLogPage() {
     <PageShell
       title="Statutory Visit Log"
       subtitle="Local authority social worker visits to each child — Care Planning Regulations 2010 and Quality Standard 4"
-      ariaContext={{ pageTitle: "Statutory Visit Log", sourceType: "document" }}
+      caraContext={{ pageTitle: "Statutory Visit Log", sourceType: "document" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Statutory Visit Log" />
           <ExportButton data={processed} columns={exportCols} filename="statutory-visit-log" />
-          <AriaStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "management_oversight", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -549,7 +549,7 @@ export default function StatutoryVisitLogPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Statutory Visit Log — LA statutory visits, social worker visits, IRO visits, independent visitor visits, visit frequency compliance, care plan review visits, Annex A visit evidence"
         recordType="management_oversight"

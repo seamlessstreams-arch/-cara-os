@@ -10,7 +10,7 @@
 // manager chooses to proceed.
 //
 // Output is "Cara suggested draft" until a human approves it. The Process
-// Guardian (src/lib/aria/hrProcessGuardian.ts) is run separately on the
+// Guardian (src/lib/cara/hrProcessGuardian.ts) is run separately on the
 // suspension letter itself — this tool sits one step earlier in the workflow.
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -80,7 +80,7 @@ export interface SuspensionDecisionInput {
 export interface SuspensionDecisionAnalysis {
   generatedAt: string;
   status: "draft";
-  ariaLabel: "Cara suggested draft";
+  caraLabel: "Cara suggested draft";
 
   overallRiskGrade: SuspensionRiskRating;
   highestRiskFactor: SuspensionRiskFactor;
@@ -95,7 +95,7 @@ export interface SuspensionDecisionAnalysis {
   reviewSchedule: { reviewNumber: number; expectedDate: string }[];
   regulatoryLinks: string[];
 
-  ariaConfidence: number;
+  caraConfidence: number;
   engineVersion: string;
 }
 
@@ -538,7 +538,7 @@ export function analyseSuspensionDecision(
   const warningCount = flags.filter((f) => f.severity === "warning").length;
   const advisoryCount = flags.filter((f) => f.severity === "advisory").length;
 
-  const ariaConfidence = Math.max(
+  const caraConfidence = Math.max(
     0.2,
     Math.min(0.9, 0.5 + (blockCount === 0 ? 0.15 : -0.2) + (warningCount === 0 ? 0.1 : 0) + (advisoryCount === 0 ? 0.05 : 0)),
   );
@@ -548,7 +548,7 @@ export function analyseSuspensionDecision(
   return {
     generatedAt: new Date().toISOString(),
     status: "draft",
-    ariaLabel: "Cara suggested draft",
+    caraLabel: "Cara suggested draft",
     overallRiskGrade: overall,
     highestRiskFactor: factor,
     rationaleSummary,
@@ -559,7 +559,7 @@ export function analyseSuspensionDecision(
     writtenReasonsDraft,
     reviewSchedule,
     regulatoryLinks: REGULATORY_LINKS,
-    ariaConfidence: Math.round(ariaConfidence * 100) / 100,
+    caraConfidence: Math.round(caraConfidence * 100) / 100,
     engineVersion: ENGINE_VERSION,
   };
 }

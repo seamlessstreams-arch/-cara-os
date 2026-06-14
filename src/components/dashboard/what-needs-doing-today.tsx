@@ -366,7 +366,7 @@ export function WhatNeedsDoingToday({
       <CardHeader className="pb-3 bg-[var(--cs-surface)]/50">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <Star className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+            <Star className="h-4 w-4 text-[var(--cs-cara-gold)]" />
             <span className="text-[var(--cs-navy)]">What Needs Doing Today</span>
           </CardTitle>
           <Badge variant="secondary">

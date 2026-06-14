@@ -18,7 +18,7 @@ function sb(): SB | null {
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type SettingCategory =
-  | "aria" | "notifications" | "compliance" | "operational" | "display";
+  | "cara" | "notifications" | "compliance" | "operational" | "display";
 
 export interface SystemSetting {
   id: string;
@@ -47,12 +47,12 @@ export interface DefaultSetting {
 
 export const DEFAULT_SETTINGS: DefaultSetting[] = [
   // Cara
-  { category: "aria", key: "aria.enabled", label: "Cara Intelligence", description: "Enable or disable Cara AI intelligence features", dataType: "boolean", defaultValue: true },
-  { category: "aria", key: "aria.auto_scan_interval_hours", label: "Auto-Scan Interval", description: "How often Cara scans for patterns (hours)", dataType: "number", defaultValue: 24 },
-  { category: "aria", key: "aria.recommendation_expiry_days", label: "Recommendation Expiry", description: "Days before unacted recommendations expire", dataType: "number", defaultValue: 7 },
-  { category: "aria", key: "aria.minimum_confidence", label: "Minimum Confidence", description: "Minimum confidence threshold for surfacing recommendations (0-1)", dataType: "number", defaultValue: 0.7 },
-  { category: "aria", key: "aria.show_positive_patterns", label: "Show Positive Patterns", description: "Include positive recognition recommendations", dataType: "boolean", defaultValue: true },
-  { category: "aria", key: "aria.oversight_prompts_enabled", label: "Oversight Quality Prompts", description: "Show Cara prompts when writing management oversight", dataType: "boolean", defaultValue: true },
+  { category: "cara", key: "cara.enabled", label: "Cara Intelligence", description: "Enable or disable Cara AI intelligence features", dataType: "boolean", defaultValue: true },
+  { category: "cara", key: "cara.auto_scan_interval_hours", label: "Auto-Scan Interval", description: "How often Cara scans for patterns (hours)", dataType: "number", defaultValue: 24 },
+  { category: "cara", key: "cara.recommendation_expiry_days", label: "Recommendation Expiry", description: "Days before unacted recommendations expire", dataType: "number", defaultValue: 7 },
+  { category: "cara", key: "cara.minimum_confidence", label: "Minimum Confidence", description: "Minimum confidence threshold for surfacing recommendations (0-1)", dataType: "number", defaultValue: 0.7 },
+  { category: "cara", key: "cara.show_positive_patterns", label: "Show Positive Patterns", description: "Include positive recognition recommendations", dataType: "boolean", defaultValue: true },
+  { category: "cara", key: "cara.oversight_prompts_enabled", label: "Oversight Quality Prompts", description: "Show Cara prompts when writing management oversight", dataType: "boolean", defaultValue: true },
 
   // Notifications
   { category: "notifications", key: "notify.task_overdue_hours", label: "Task Overdue Alert", description: "Hours after due date before flagging task as overdue", dataType: "number", defaultValue: 2 },

@@ -329,7 +329,7 @@ export function computeEmploymentSupportAlerts(
   return alerts;
 }
 
-export function generateEmploymentSupportAriaInsights(
+export function generateEmploymentSupportCaraInsights(
   rows: YoungPersonEmploymentSupportRow[],
 ): string[] {
   const metrics = computeEmploymentSupportMetrics(rows);
@@ -389,5 +389,5 @@ export function generateEmploymentSupportAriaInsights(
 export const _testing = {
   computeEmploymentSupportMetrics,
   computeEmploymentSupportAlerts,
-  generateEmploymentSupportAriaInsights,
+  generateEmploymentSupportCaraInsights,
 };

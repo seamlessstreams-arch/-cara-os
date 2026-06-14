@@ -301,7 +301,7 @@ function getDemoTransition(
     qaRequired: false,
     evidenceTags: [],
     escalationLevel: 0,
-    ariaReviewed: false,
+    caraReviewed: false,
   };
 
   const result = attemptTransition(demoOcc, targetStatus, demoUser, reason, now);
@@ -355,7 +355,7 @@ function getDemoValidTransitions(occurrenceId: string) {
     qaRequired: false,
     evidenceTags: [],
     escalationLevel: 0,
-    ariaReviewed: false,
+    caraReviewed: false,
   };
 
   const validTransitions = getValidTransitions(demoOcc, demoUser);

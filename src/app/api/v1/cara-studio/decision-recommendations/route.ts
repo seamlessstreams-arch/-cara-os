@@ -1,14 +1,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Decision Recommendation status updates
-// PATCH → accept / modify / defer / reject / complete (RBAC: aria.approve_outputs)
+// PATCH → accept / modify / defer / reject / complete (RBAC: cara.approve_outputs)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import type { AriaDecisionRecommendation } from "@/types/aria-studio";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import type { CaraDecisionRecommendation } from "@/types/cara-studio";
 
-const ALLOWED: Array<AriaDecisionRecommendation["status"]> = [
+const ALLOWED: Array<CaraDecisionRecommendation["status"]> = [
   "ai_draft",
   "accepted",
   "modified",
@@ -31,17 +31,17 @@ export async function PATCH(req: NextRequest) {
   if (!id || !status) {
     return NextResponse.json({ error: "id and status are required" }, { status: 400 });
   }
-  if (!ALLOWED.includes(status as AriaDecisionRecommendation["status"])) {
+  if (!ALLOWED.includes(status as CaraDecisionRecommendation["status"])) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const existing = db.ariaDecisionRecommendations.findById(id);
+  const existing = db.caraDecisionRecommendations.findById(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: existing.home_id,
     intent: `update decision_recommendation ${status}`,
   });
@@ -54,8 +54,8 @@ export async function PATCH(req: NextRequest) {
     status === "completed" ||
     status === "deferred";
 
-  const updated = db.ariaDecisionRecommendations.patch(id, {
-    status: status as AriaDecisionRecommendation["status"],
+  const updated = db.caraDecisionRecommendations.patch(id, {
+    status: status as CaraDecisionRecommendation["status"],
     decided_by: decided ? guard.actor.userId : existing.decided_by,
     decided_at: decided ? new Date().toISOString() : existing.decided_at,
     decision_note: note ?? existing.decision_note,

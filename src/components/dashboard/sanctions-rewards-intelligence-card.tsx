@@ -73,7 +73,7 @@ export function SanctionsRewardsIntelligenceCard({ childId }: SanctionsRewardsIn
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`/api/aria/sanctions-rewards?childId=${childId}`);
+        const res = await fetch(`/api/cara/sanctions-rewards?childId=${childId}`);
         const json = await res.json();
         if (json.success) setData(json.data);
       } catch (err) {

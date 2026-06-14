@@ -30,8 +30,8 @@ import { ANNIVERSARY_SIGNIFICANCE_TYPE_LABEL, ANNIVERSARY_EMOTIONAL_SIGNIFICANCE
 import { usePlacementAnniversaryEntries } from "@/hooks/use-placement-anniversary-entries";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const significanceColour: Record<string, string> = {
   celebratory: "bg-green-100 text-green-800",
@@ -100,12 +100,12 @@ export default function PlacementAnniversariesPage() {
     <PageShell
       title="Placement Anniversaries"
       subtitle="Significant dates for each child — celebrated, honoured, prepared for, never forgotten"
-      ariaContext={{ pageTitle: "Placement Anniversaries", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Placement Anniversaries", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="placement-anniversaries" />
           <PrintButton title="Placement Anniversaries" />
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -307,7 +307,7 @@ export default function PlacementAnniversariesPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Placement Anniversaries — placement milestones, length of placement, stability markers, care anniversary records, relationships built, progress reviews, permanence planning, Reg 45 evidence"
         recordType="placement_plan"

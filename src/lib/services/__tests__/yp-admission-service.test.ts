@@ -13,7 +13,7 @@ const {
   computePhaseProgress,
   computeChecklistProgress,
   computeMatchingScore,
-  generateAriaMatchingFactors,
+  generateCaraMatchingFactors,
   ADMISSION_PHASES,
   VALID_TRANSITIONS,
   DEFAULT_CHECKLIST_ITEMS,
@@ -237,9 +237,9 @@ describe("computeMatchingScore", () => {
   });
 });
 
-// ── generateAriaMatchingFactors ───────────────────────────────────────────
+// ── generateCaraMatchingFactors ───────────────────────────────────────────
 
-describe("generateAriaMatchingFactors", () => {
+describe("generateCaraMatchingFactors", () => {
   const baseChild = {
     age: 14,
     gender: "male",
@@ -250,7 +250,7 @@ describe("generateAriaMatchingFactors", () => {
   };
 
   it("should return age_compatibility score 8 when no current residents", () => {
-    const result = generateAriaMatchingFactors({
+    const result = generateCaraMatchingFactors({
       incomingChild: baseChild,
       currentYoungPeople: [],
       homeCapacity: 4,
@@ -266,7 +266,7 @@ describe("generateAriaMatchingFactors", () => {
       { age: 14, gender: "male", riskFlags: [], status: "current" },
       { age: 15, gender: "female", riskFlags: [], status: "current" },
     ];
-    const result = generateAriaMatchingFactors({
+    const result = generateCaraMatchingFactors({
       incomingChild: baseChild,
       currentYoungPeople: currentYP,
       homeCapacity: 2,
@@ -282,7 +282,7 @@ describe("generateAriaMatchingFactors", () => {
     const currentYP = [
       { age: 15, gender: "female", riskFlags: ["cse"], status: "current" },
     ];
-    const result = generateAriaMatchingFactors({
+    const result = generateCaraMatchingFactors({
       incomingChild: child,
       currentYoungPeople: currentYP,
       homeCapacity: 4,
@@ -295,7 +295,7 @@ describe("generateAriaMatchingFactors", () => {
 
   it("should flag relationship_dynamics as high risk with >3 previous placements", () => {
     const child = { ...baseChild, previousPlacements: 5 };
-    const result = generateAriaMatchingFactors({
+    const result = generateCaraMatchingFactors({
       incomingChild: child,
       currentYoungPeople: [],
       homeCapacity: 4,
@@ -306,7 +306,7 @@ describe("generateAriaMatchingFactors", () => {
   });
 
   it("should return overall risk low for a low-risk incoming child", () => {
-    const result = generateAriaMatchingFactors({
+    const result = generateCaraMatchingFactors({
       incomingChild: baseChild,
       currentYoungPeople: [],
       homeCapacity: 4,
@@ -316,7 +316,7 @@ describe("generateAriaMatchingFactors", () => {
   });
 
   it("should always return exactly 5 factors", () => {
-    const result = generateAriaMatchingFactors({
+    const result = generateCaraMatchingFactors({
       incomingChild: { ...baseChild, riskFactors: ["cse"], mentalHealthDiagnosis: ["ADHD", "ASD", "PTSD"], presentingNeeds: ["a", "b", "c", "d"] },
       currentYoungPeople: [{ age: 12, gender: "female", riskFlags: ["cse"], status: "current" }],
       homeCapacity: 3,
@@ -332,7 +332,7 @@ describe("generateAriaMatchingFactors", () => {
   });
 
   it("should include a summary string in the result", () => {
-    const result = generateAriaMatchingFactors({
+    const result = generateCaraMatchingFactors({
       incomingChild: baseChild,
       currentYoungPeople: [],
       homeCapacity: 4,

@@ -158,7 +158,7 @@ export interface DocumentClassification {
 // ── Cara Intelligence Request ─────────────────────────────────────────────────
 
 /** Payload sent to the Cara intelligence endpoint. */
-export interface AriaIntelligenceRequest {
+export interface CaraIntelligenceRequest {
   mode:
     | 'experience_summary'
     | 'pattern_analysis'

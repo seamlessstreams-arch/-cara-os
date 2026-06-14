@@ -53,7 +53,7 @@ export default function RecordingQualityPage() {
       subtitle="How well the home's records are written — scored across the six dimensions inspectors look for, with specific suggestions to improve each one"
       icon={<PenLine className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Recording Quality", sourceType: "general" }}
+      caraContext={{ pageTitle: "Recording Quality", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="h-6 w-6 animate-spin text-[var(--cs-text-muted)]" /></div>
@@ -142,9 +142,9 @@ export default function RecordingQualityPage() {
                         );
                       })}
                     </div>
-                    {r.score.ariaSuggestions.length > 0 && (
+                    {r.score.caraSuggestions.length > 0 && (
                       <div className="space-y-1 pt-1">
-                        {r.score.ariaSuggestions.map((s, i) => (
+                        {r.score.caraSuggestions.map((s, i) => (
                           <p key={i} className="text-[11px] text-[var(--cs-text-secondary)] flex gap-1.5"><span className="text-purple-500">→</span>{s}</p>
                         ))}
                       </div>

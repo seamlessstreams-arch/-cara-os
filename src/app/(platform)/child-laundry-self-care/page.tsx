@@ -36,8 +36,8 @@ import {
 import { useLaundrySelfCareRecords } from "@/hooks/use-laundry-self-care-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── helpers ─────────────────────────────────────────────────────────────────
 function stageColour(stage: LaundryStage): string {
@@ -136,12 +136,12 @@ export default function ChildLaundrySelfCarePage() {
     <PageShell
       title="Laundry Self-Care"
       subtitle="Per-child laundry independence — sorting, machine use, drying, ironing, folding. Co-produced with each young person; linked to Pathway Plans for over-16s."
-      ariaContext={{ pageTitle: "Laundry Self-Care", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Laundry Self-Care", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={items} columns={exportCols} filename="laundry-self-care" />
           <PrintButton title="Laundry Self-Care" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -392,7 +392,7 @@ export default function ChildLaundrySelfCarePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Laundry Self-Care — personal hygiene skills, laundry routine, personal care independence, preparing for leaving care, practical skills, self-sufficiency, keywork, Reg 45 outcomes"
         recordType="direct_work"

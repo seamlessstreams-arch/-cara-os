@@ -28,8 +28,8 @@ import {
   REPORT_TYPE_LABELS,
   REPORT_AUDIENCES,
   REPORT_AUDIENCE_LABELS,
-} from "@/types/aria-reports";
-import type { ReportType, ReportAudience } from "@/types/aria-reports";
+} from "@/types/cara-reports";
+import type { ReportType, ReportAudience } from "@/types/cara-reports";
 import {
   Sparkles,
   ArrowLeft,
@@ -53,7 +53,7 @@ const DEMO_CHILDREN = [
 
 // ── Component ───────────────────────────────────────────────────────────────
 
-export default function AriaReportNewPage() {
+export default function CaraReportNewPage() {
   const router = useRouter();
 
   const [childId, setChildId] = useState("");
@@ -79,7 +79,7 @@ export default function AriaReportNewPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/aria/reports/generate", {
+      const res = await fetch("/api/cara/reports/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -108,7 +108,7 @@ export default function AriaReportNewPage() {
         setError("Report was generated but no ID was returned.");
       }
     } catch (err) {
-      console.error("[aria/reports/new] Generation error:", err);
+      console.error("[cara/reports/new] Generation error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setGenerating(false);
@@ -130,16 +130,16 @@ export default function AriaReportNewPage() {
       </Link>
 
       <div className="max-w-2xl mx-auto">
-        <Card className="border-[var(--cs-aria-gold-soft)]">
+        <Card className="border-[var(--cs-cara-gold-soft)]">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+              <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
               Report Configuration
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-3 mb-6">
-              <p className="text-[10px] text-[var(--cs-aria-gold)] font-medium">
+            <div className="rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-3 mb-6">
+              <p className="text-[10px] text-[var(--cs-cara-gold)] font-medium">
                 Cara will retrieve relevant evidence, generate a structured
                 report, and run challenge mode automatically. The report will be
                 created in draft status for your review.
@@ -249,8 +249,8 @@ export default function AriaReportNewPage() {
 
               {/* Submit */}
               {generating ? (
-                <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)] p-6 text-center">
-                  <Loader2 className="h-6 w-6 text-[var(--cs-aria-gold)] mx-auto mb-3 animate-spin" />
+                <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-6 text-center">
+                  <Loader2 className="h-6 w-6 text-[var(--cs-cara-gold)] mx-auto mb-3 animate-spin" />
                   <p className="text-sm font-medium text-[var(--cs-navy)]">
                     Cara is generating your report...
                   </p>
@@ -264,7 +264,7 @@ export default function AriaReportNewPage() {
                   type="submit"
                   disabled={!isValid}
                   className="w-full gap-2"
-                  variant="aria"
+                  variant="cara"
                 >
                   <Sparkles className="h-4 w-4" />
                   Generate Report

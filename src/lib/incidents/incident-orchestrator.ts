@@ -17,7 +17,7 @@ import { createIncidentRecord, createTaskRecord } from "@/lib/supabase/care-reco
 import type { Incident, Task } from "@/types";
 import { recordEvent, type TimelineEvent } from "@/lib/timeline/timeline-service";
 import { evaluateRules, getApplicableRules } from "@/lib/automation/automation-engine";
-import { logInteraction } from "@/lib/aria/aria-config";
+import { logInteraction } from "@/lib/cara/cara-config";
 import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 
 // ─── Types ───────────────────────────────────────────────────────────────────

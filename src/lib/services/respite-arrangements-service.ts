@@ -568,7 +568,7 @@ export function computeAlerts(
   return alerts;
 }
 
-export function generateAriaInsights(
+export function generateCaraInsights(
   rows: RespiteArrangementRow[],
 ): string[] {
   const metrics = computeMetrics(rows);

@@ -26,8 +26,8 @@ import { useSleepLog, useCreateSleepLogEntry } from "@/hooks/use-sleep-log";
 import { toast } from "sonner";
 import type { SleepLogEntry, SleepShiftType, SleepDisturbanceLevel, SleepDisturbance } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── config ──────────────────────────────────────────────────────────── */
 const SHIFT_TYPES: SleepShiftType[] = ["sleep_in", "waking_night"];
@@ -107,7 +107,7 @@ export default function SleepLogPage() {
     <PageShell
       title="Sleep-in & Waking Night Log"
       subtitle="Overnight shift records, disturbances, and morning handover"
-      ariaContext={{ pageTitle: "Sleep Log", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Sleep Log", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Sleep-in & Waking Night Log" />
@@ -115,7 +115,7 @@ export default function SleepLogPage() {
           <Button onClick={() => setShowNew(true)}>
             <Plus className="h-4 w-4 mr-2" /> New Entry
           </Button>
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -216,7 +216,7 @@ export default function SleepLogPage() {
                     {entry.shift_type === "sleep_in" ? (
                       <CloudMoon className="h-5 w-5 text-indigo-600 shrink-0" />
                     ) : (
-                      <Moon className="h-5 w-5 text-[var(--cs-aria-gold)] shrink-0" />
+                      <Moon className="h-5 w-5 text-[var(--cs-cara-gold)] shrink-0" />
                     )}
                     <div className="min-w-0">
                       <p className="font-medium">{entry.date} — {SHIFT_LABELS[entry.shift_type]}</p>
@@ -369,7 +369,7 @@ export default function SleepLogPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Sleep Log — daily child sleep records, sleep quality, night-time disturbances, sleep intervention records, bedtime routine compliance, care plan evidence, Reg 45 wellbeing evidence"
         recordType="care_plan"

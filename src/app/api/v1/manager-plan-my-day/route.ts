@@ -7,7 +7,7 @@ import { getStore } from "@/lib/db/store";
 import { getCalendarFeed } from "@/lib/calendar/calendar-service";
 import { computeManagerPlanDay, type PlanMyDayInput, type ManagerPlanDayResult } from "@/lib/engines/manager-plan-my-day-engine";
 import { parsePlanNotes } from "@/lib/plan/plan-notes";
-import { generateReportNarrative } from "@/lib/aria/report-narrative";
+import { generateReportNarrative } from "@/lib/cara/report-narrative";
 
 export const dynamic = "force-dynamic";
 

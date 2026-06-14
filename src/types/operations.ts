@@ -429,7 +429,7 @@ export interface CsManagementOversightNote {
 
 // ── Cara Intelligence ───────────────────────────────────────────────────────
 
-export type AriaRecommendationType =
+export type CaraRecommendationType =
   | "overdue_form" | "missing_oversight" | "weak_recording"
   | "staffing_concern" | "pattern_detected" | "compliance_gap"
   | "training_due" | "supervision_due" | "risk_escalation"
@@ -438,16 +438,16 @@ export type AriaRecommendationType =
   | "medication_pattern" | "incident_trend" | "placement_risk"
   | "safeguarding_pattern" | "contact_disruption";
 
-export type AriaRecommendationSeverity = "info" | "low" | "medium" | "high" | "critical";
-export type AriaRecommendationStatus = "active" | "acknowledged" | "actioned" | "dismissed" | "expired";
+export type CaraRecommendationSeverity = "info" | "low" | "medium" | "high" | "critical";
+export type CaraRecommendationStatus = "active" | "acknowledged" | "actioned" | "dismissed" | "expired";
 
-export interface CsAriaRecommendation {
+export interface CsCaraRecommendation {
   id: string;
   home_id: string;
-  recommendation_type: AriaRecommendationType;
+  recommendation_type: CaraRecommendationType;
   title: string;
   description: string;
-  severity: AriaRecommendationSeverity;
+  severity: CaraRecommendationSeverity;
   linked_child_id: string | null;
   linked_staff_id: string | null;
   linked_entity_type: string | null;
@@ -456,7 +456,7 @@ export interface CsAriaRecommendation {
   action_taken: string | null;
   action_by: string | null;
   action_at: string | null;
-  status: AriaRecommendationStatus;
+  status: CaraRecommendationStatus;
   acknowledged_by: string | null;
   acknowledged_at: string | null;
   dismissed_reason: string | null;
@@ -468,7 +468,7 @@ export interface CsAriaRecommendation {
   updated_at: string;
 }
 
-export interface CsAriaRiskSignal {
+export interface CsCaraRiskSignal {
   id: string;
   home_id: string;
   signal_type: string;

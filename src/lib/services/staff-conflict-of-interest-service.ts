@@ -279,7 +279,7 @@ export function computeStaffConflictAlerts(
   return alerts;
 }
 
-export function generateStaffConflictAriaInsights(
+export function generateStaffConflictCaraInsights(
   metrics: ReturnType<typeof computeStaffConflictMetrics>,
   alerts: ReturnType<typeof computeStaffConflictAlerts>,
 ): string[] {
@@ -338,5 +338,5 @@ export function generateStaffConflictAriaInsights(
 export const _testing = {
   computeStaffConflictMetrics,
   computeStaffConflictAlerts,
-  generateStaffConflictAriaInsights,
+  generateStaffConflictCaraInsights,
 };

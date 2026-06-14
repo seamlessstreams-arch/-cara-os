@@ -1,12 +1,12 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Annex A Snapshot lock
-// PATCH → lock a draft snapshot (RBAC: aria.approve_outputs, safeguarding-sensitive)
+// PATCH → lock a draft snapshot (RBAC: cara.approve_outputs, safeguarding-sensitive)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import { lockAnnexASnapshot } from "@/lib/aria/aria-annex-a-snapshot";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { lockAnnexASnapshot } from "@/lib/cara/cara-annex-a-snapshot";
 
 export async function PATCH(req: NextRequest) {
   let body: Record<string, unknown>;
@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "id is required" }, { status: 400 });
   }
 
-  const existing = db.ariaAnnexASnapshots.findById(id);
+  const existing = db.caraAnnexASnapshots.findById(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
@@ -30,8 +30,8 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Snapshot already locked" }, { status: 409 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: existing.home_id,
     intent: "lock annex_a_snapshot",
     isSafeguardingSensitive: true,

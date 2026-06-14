@@ -49,7 +49,7 @@ export interface RotaIntelligenceResult {
   staff_hours: StaffHoursProfile[];
   upcoming_gaps: UpcomingGap[];
   alerts: RotaAlert[];
-  insights: AriaRotaInsight[];
+  insights: CaraRotaInsight[];
 }
 
 export interface RotaOverview {
@@ -91,7 +91,7 @@ export interface RotaAlert {
   message: string;
 }
 
-export interface AriaRotaInsight {
+export interface CaraRotaInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -326,7 +326,7 @@ export function computeRotaIntelligence(input: {
 
   // ── Insights ──────────────────────────────────────────────────────────────
 
-  const insights: AriaRotaInsight[] = [];
+  const insights: CaraRotaInsight[] = [];
 
   if (openShiftsToday.length > 0) {
     insights.push({

@@ -18,24 +18,24 @@ import {
   useAnnexASnapshots,
   useRunAnnexASnapshot,
   useLockAnnexASnapshot,
-} from "@/hooks/use-aria-annex-a-snapshot";
+} from "@/hooks/use-cara-annex-a-snapshot";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
 import type {
-  AriaAnnexAReadiness,
-  AriaAnnexASectionReading,
-  AriaAnnexASnapshot,
-} from "@/types/aria-studio";
+  CaraAnnexAReadiness,
+  CaraAnnexASectionReading,
+  CaraAnnexASnapshot,
+} from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
-const READINESS_TONE: Record<AriaAnnexAReadiness, string> = {
+const READINESS_TONE: Record<CaraAnnexAReadiness, string> = {
   green: "bg-emerald-100 text-emerald-800 border-emerald-300",
   amber: "bg-amber-100 text-amber-800 border-amber-300",
   red: "bg-rose-100 text-rose-800 border-rose-300",
 };
 
-function SectionCard({ section }: { section: AriaAnnexASectionReading }) {
+function SectionCard({ section }: { section: CaraAnnexASectionReading }) {
   return (
     <Card className={`border ${READINESS_TONE[section.readiness]}`}>
       <CardHeader>
@@ -77,7 +77,7 @@ function SnapshotPanel({
   onLock,
   isLocking,
 }: {
-  snapshot: AriaAnnexASnapshot;
+  snapshot: CaraAnnexASnapshot;
   onLock: (id: string) => void;
   isLocking: boolean;
 }) {
@@ -153,7 +153,7 @@ function SnapshotPanel({
 
 export default function AnnexASnapshotPage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(currentUser?.role ?? "registered_manager");
+  const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
 
   const query = useAnnexASnapshots(HOME_ID);
   const run = useRunAnnexASnapshot();
@@ -168,7 +168,7 @@ export default function AnnexASnapshotPage() {
     run.mutate({
       home_id: HOME_ID,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 
@@ -176,7 +176,7 @@ export default function AnnexASnapshotPage() {
     lock.mutate({
       id,
       actor_id: currentUser?.id,
-      actor_role: ariaRole,
+      actor_role: caraRole,
     });
   };
 

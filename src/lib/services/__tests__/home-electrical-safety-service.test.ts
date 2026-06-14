@@ -26,7 +26,7 @@ import type {
 const {
   computeElectricalSafetyMetrics,
   identifyElectricalSafetyAlerts,
-  generateElectricalSafetyAriaInsights,
+  generateElectricalSafetyCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1540,42 +1540,42 @@ describe("identifyElectricalSafetyAlerts", () => {
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
-// generateElectricalSafetyAriaInsights
+// generateElectricalSafetyCaraInsights
 // ══════════════════════════════════════════════════════════════════════════════
 
-describe("generateElectricalSafetyAriaInsights", () => {
+describe("generateElectricalSafetyCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const records = [makeRecord()];
-    const insights = generateElectricalSafetyAriaInsights(records);
+    const insights = generateElectricalSafetyCaraInsights(records);
     expect(insights).toHaveLength(3);
   });
 
   it("returns 3 insights for empty array", () => {
-    const insights = generateElectricalSafetyAriaInsights([]);
+    const insights = generateElectricalSafetyCaraInsights([]);
     expect(insights).toHaveLength(3);
   });
 
   it("first insight starts with [red]", () => {
     const records = [makeRecord()];
-    const insights = generateElectricalSafetyAriaInsights(records);
+    const insights = generateElectricalSafetyCaraInsights(records);
     expect(insights[0]).toMatch(/^\[red\]/);
   });
 
   it("second insight starts with [amber]", () => {
     const records = [makeRecord()];
-    const insights = generateElectricalSafetyAriaInsights(records);
+    const insights = generateElectricalSafetyCaraInsights(records);
     expect(insights[1]).toMatch(/^\[amber\]/);
   });
 
   it("third insight starts with [reflect]", () => {
     const records = [makeRecord()];
-    const insights = generateElectricalSafetyAriaInsights(records);
+    const insights = generateElectricalSafetyCaraInsights(records);
     expect(insights[2]).toMatch(/^\[reflect\]/);
   });
 
   it("all insights are non-empty strings", () => {
     const records = [makeRecord()];
-    const insights = generateElectricalSafetyAriaInsights(records);
+    const insights = generateElectricalSafetyCaraInsights(records);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1585,7 +1585,7 @@ describe("generateElectricalSafetyAriaInsights", () => {
   describe("first insight (red) — summary stats", () => {
     it("includes total inspection count", () => {
       const records = [makeRecord(), makeRecord(), makeRecord()];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[0]).toContain("3 electrical safety inspections");
     });
 
@@ -1594,13 +1594,13 @@ describe("generateElectricalSafetyAriaInsights", () => {
         makeRecord({ inspector_name: "Inspector A" }),
         makeRecord({ inspector_name: "Inspector B" }),
       ];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[0]).toContain("2 inspectors");
     });
 
     it("uses singular inspector for count of 1", () => {
       const records = [makeRecord({ inspector_name: "Single Inspector" })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[0]).toContain("1 inspector");
     });
 
@@ -1609,31 +1609,31 @@ describe("generateElectricalSafetyAriaInsights", () => {
         makeRecord({ result: "Satisfactory" }),
         makeRecord({ result: "Unsatisfactory" }),
       ];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[0]).toContain("50%");
     });
 
     it("includes C1 defect total", () => {
       const records = [makeRecord({ c1_defects: 3 })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[0]).toContain("3 C1");
     });
 
     it("includes C2 defect total", () => {
       const records = [makeRecord({ c2_defects: 7 })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[0]).toContain("7 C2");
     });
 
     it("includes C3 defect total", () => {
       const records = [makeRecord({ c3_defects: 12 })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[0]).toContain("12 C3");
     });
 
     it("includes FI defect total", () => {
       const records = [makeRecord({ fi_defects: 5 })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[0]).toContain("5 FI");
     });
   });
@@ -1641,32 +1641,32 @@ describe("generateElectricalSafetyAriaInsights", () => {
   describe("second insight (amber) — priority concerns", () => {
     it("mentions critical and high alerts when present", () => {
       const records = [makeRecord({ c1_defects: 1, compliance_status: "Major Non-Compliance" })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[1]).toContain("critical");
       expect(insights[1]).toContain("high");
     });
 
     it("mentions remedial completion rate", () => {
       const records = [makeRecord({ defects_found: 2, remedial_completed: true })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[1]).toContain("100%");
     });
 
     it("mentions no critical alerts when all clean", () => {
       const records = [makeRecord({ result: "Satisfactory", compliance_status: "Compliant", c1_defects: 0, c2_defects: 0, next_inspection_date: daysFromNow(365) })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[1]).toContain("No critical or high-priority");
     });
 
     it("mentions BS 7671 when no alerts", () => {
       const records = [makeRecord({ result: "Satisfactory", compliance_status: "Compliant", c1_defects: 0, c2_defects: 0, next_inspection_date: daysFromNow(365) })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[1]).toContain("BS 7671");
     });
 
     it("uses singular for 1 non-compliant inspection", () => {
       const records = [makeRecord({ c1_defects: 1, compliance_status: "Critical Non-Compliance" })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[1]).toContain("inspection has");
     });
 
@@ -1675,7 +1675,7 @@ describe("generateElectricalSafetyAriaInsights", () => {
         makeRecord({ c1_defects: 1, compliance_status: "Critical Non-Compliance" }),
         makeRecord({ c1_defects: 1, compliance_status: "Major Non-Compliance" }),
       ];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[1]).toContain("inspections have");
     });
   });
@@ -1683,26 +1683,26 @@ describe("generateElectricalSafetyAriaInsights", () => {
   describe("third insight (reflect) — reflective question", () => {
     it("mentions C1 and C2 defects when present", () => {
       const records = [makeRecord({ c1_defects: 2, c2_defects: 3 })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[2]).toContain("2 C1");
       expect(insights[2]).toContain("3 C2");
     });
 
     it("asks about remedial tracking when no C1/C2 but incomplete remedial", () => {
       const records = [makeRecord({ c1_defects: 0, c2_defects: 0, defects_found: 2, remedial_completed: false })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[2]).toContain("remedial");
     });
 
     it("provides positive reflection when all clean", () => {
       const records = [makeRecord({ c1_defects: 0, c2_defects: 0, defects_found: 0 })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[2]).toContain("no C1 or C2 defects");
     });
 
     it("asks about staff awareness in positive reflection", () => {
       const records = [makeRecord({ c1_defects: 0, c2_defects: 0, defects_found: 0 })];
-      const insights = generateElectricalSafetyAriaInsights(records);
+      const insights = generateElectricalSafetyCaraInsights(records);
       expect(insights[2]).toContain("staff");
     });
   });

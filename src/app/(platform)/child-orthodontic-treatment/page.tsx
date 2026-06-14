@@ -34,8 +34,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<OrthoRecord>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -142,12 +142,12 @@ export default function ChildOrthodonticTreatmentPage() {
     <PageShell
       title="Orthodontic Treatment"
       subtitle="Per-child orthodontic journey — referral, IOTN scoring, NHS eligibility, brace type, appointment attendance, oral hygiene compliance, retention phase. Coordinated with general dental records and dietary planning."
-      ariaContext={{ pageTitle: "Orthodontic Treatment", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Orthodontic Treatment", sourceType: "child_record" }}
       actions={
         <div className="flex gap-2">
           <ExportButton data={filtered} columns={exportCols} filename="child-orthodontic-treatment" />
           <PrintButton title="Orthodontic Treatment" />
-          <AriaStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "health", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -376,7 +376,7 @@ export default function ChildOrthodonticTreatmentPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Orthodontic Treatment — braces, retainer, dental appliance, orthodontist appointments, treatment plan, consent, school impact, AHA dental check, LAC health, Annex A evidence"
         recordType="health"

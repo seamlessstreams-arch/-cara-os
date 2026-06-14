@@ -21,7 +21,7 @@ import type {
 const {
   computeMetrics,
   computeAlerts,
-  computeAriaInsights,
+  computeCaraInsights,
 } = _testing;
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -1213,18 +1213,18 @@ describe("computeAlerts", () => {
   });
 });
 
-// ── computeAriaInsights ────────────────────────────────────────────────
+// ── computeCaraInsights ────────────────────────────────────────────────
 
-describe("computeAriaInsights", () => {
+describe("computeCaraInsights", () => {
   it("returns exactly 3 insights", () => {
     const m = computeMetrics([]);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights).toHaveLength(3);
   });
 
   it("all insights are non-empty strings", () => {
     const m = computeMetrics([makeRow()]);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     for (const insight of insights) {
       expect(typeof insight).toBe("string");
       expect(insight.length).toBeGreaterThan(0);
@@ -1234,35 +1234,35 @@ describe("computeAriaInsights", () => {
   it("first insight includes total_tests count", () => {
     const rows = [makeRow(), makeRow(), makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("3");
   });
 
   it("first insight includes avg_radon_level", () => {
     const rows = [makeRow({ radon_level_bq_m3: 100 }), makeRow({ radon_level_bq_m3: 200 })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("150");
   });
 
   it("first insight includes max_radon_level", () => {
     const rows = [makeRow({ radon_level_bq_m3: 50 }), makeRow({ radon_level_bq_m3: 300 })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("300");
   });
 
   it("first insight includes above_action_count", () => {
     const rows = [makeRow({ above_action_level: true }), makeRow({ above_action_level: false })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("1 test above the UKHSA action level");
   });
 
   it("first insight includes above_target_count", () => {
     const rows = [makeRow({ above_target_level: true }), makeRow({ above_target_level: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("2 above the target level");
   });
 
@@ -1271,7 +1271,7 @@ describe("computeAriaInsights", () => {
       makeRow({ above_action_level: true, compliance_status: "Non-Compliant", mitigation_required: true, mitigation_installed: false }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("above the action level");
     expect(insights[1]).toContain("non-compliant");
   });
@@ -1282,7 +1282,7 @@ describe("computeAriaInsights", () => {
       compliance_status: "Compliant",
     })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("No tests above the UKHSA action level");
   });
 
@@ -1292,7 +1292,7 @@ describe("computeAriaInsights", () => {
       makeRow({ above_action_level: true, mitigation_required: true, mitigation_installed: false }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("50%");
   });
 
@@ -1302,21 +1302,21 @@ describe("computeAriaInsights", () => {
       makeRow({ above_action_level: true, retest_date: null }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("50%");
   });
 
   it("second insight mentions UKHSA when no issues", () => {
     const rows = [makeRow({ above_action_level: false, compliance_status: "Compliant" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("UKHSA");
   });
 
   it("third insight asks about mitigation when above action level", () => {
     const rows = [makeRow({ above_action_level: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("UKHSA");
     expect(insights[2]).toContain("action level");
   });
@@ -1324,7 +1324,7 @@ describe("computeAriaInsights", () => {
   it("third insight asks about target level when above target but not action", () => {
     const rows = [makeRow({ above_action_level: false, above_target_level: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("target level");
     expect(insights[2]).toContain("UKHSA");
   });
@@ -1335,14 +1335,14 @@ describe("computeAriaInsights", () => {
       makeRow({ above_action_level: false, above_target_level: false }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("All tests show radon levels below");
   });
 
   it("uses singular tester wording when unique_testers is 1", () => {
     const rows = [makeRow({ tester_name: "D. Laville" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("1 tester");
   });
 
@@ -1352,28 +1352,28 @@ describe("computeAriaInsights", () => {
       makeRow({ tester_name: "Staff B" }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("2 testers");
   });
 
   it("uses singular test wording when 1 test", () => {
     const rows = [makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("1 radon test");
   });
 
   it("uses plural tests wording when multiple tests", () => {
     const rows = [makeRow(), makeRow()];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[0]).toContain("2 radon tests");
   });
 
   it("uses singular test has wording for 1 above action", () => {
     const rows = [makeRow({ above_action_level: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("test has");
   });
 
@@ -1383,21 +1383,21 @@ describe("computeAriaInsights", () => {
       makeRow({ above_action_level: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("tests have");
   });
 
   it("third insight mentions UKHSA guidance when all below target", () => {
     const rows = [makeRow({ above_action_level: false, above_target_level: false })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("UKHSA guidance");
   });
 
   it("third insight asks about retests when above target only", () => {
     const rows = [makeRow({ above_action_level: false, above_target_level: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[2]).toContain("retests");
   });
 
@@ -1407,21 +1407,21 @@ describe("computeAriaInsights", () => {
       makeRow({ above_action_level: false, compliance_status: "Compliant" }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("2 tests compliant");
   });
 
   it("second insight uses singular test wording for 1 compliant", () => {
     const rows = [makeRow({ above_action_level: false, compliance_status: "Compliant" })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("1 test compliant");
   });
 
   it("uses singular test wording in second insight for 1 above action", () => {
     const rows = [makeRow({ above_action_level: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("1 test above the action level");
   });
 
@@ -1431,14 +1431,14 @@ describe("computeAriaInsights", () => {
       makeRow({ above_action_level: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("2 tests above the action level");
   });
 
   it("uses singular test wording in second insight for 1 mitigation required", () => {
     const rows = [makeRow({ above_action_level: true, mitigation_required: true })];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("1 test requiring mitigation");
   });
 
@@ -1448,7 +1448,7 @@ describe("computeAriaInsights", () => {
       makeRow({ above_action_level: true, mitigation_required: true }),
     ];
     const m = computeMetrics(rows);
-    const insights = computeAriaInsights(m);
+    const insights = computeCaraInsights(m);
     expect(insights[1]).toContain("2 tests requiring mitigation");
   });
 });

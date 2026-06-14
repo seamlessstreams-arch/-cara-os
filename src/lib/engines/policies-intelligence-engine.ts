@@ -61,7 +61,7 @@ export interface PoliciesAlert {
   message: string;
 }
 
-export interface AriaPoliciesInsight {
+export interface CaraPoliciesInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -71,7 +71,7 @@ export interface PoliciesIntelligenceResult {
   category_breakdown: PolicyCategoryBreakdown[];
   overdue_policies: OverduePolicy[];
   alerts: PoliciesAlert[];
-  insights: AriaPoliciesInsight[];
+  insights: CaraPoliciesInsight[];
 }
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -271,7 +271,7 @@ export function computePoliciesIntelligence(input: {
 
   // ── Insights ────────────────────────────────────────────────────────────
 
-  const insights: AriaPoliciesInsight[] = [];
+  const insights: CaraPoliciesInsight[] = [];
 
   // Critical: missing required categories
   const missingCategories = ALL_CATEGORIES.filter(

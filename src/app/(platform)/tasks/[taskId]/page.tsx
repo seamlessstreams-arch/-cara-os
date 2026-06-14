@@ -567,7 +567,7 @@ export default function TaskDetailPage() {
               if (!t.linked_record_type || !t.linked_record_id) return null;
               if (t.linked_record_type === "incident" && task.linked_incident_id) return null; // shown below
               return (
-                <Card className="rounded-2xl border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]">
+                <Card className="rounded-2xl border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]">
                   <CardContent className="py-3">
                     <p className="text-[11px] font-semibold text-[var(--cs-text-secondary)] mb-1.5">This task was created automatically from:</p>
                     <ProvenanceBadge

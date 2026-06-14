@@ -41,7 +41,7 @@ export default function StaffRecordingPracticePage() {
       subtitle="Record quality by staff member — who records well, who needs coaching, and on exactly which dimension"
       icon={<UsersRound className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Staff Recording Practice", sourceType: "general" }}
+      caraContext={{ pageTitle: "Staff Recording Practice", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24"><Loader2 className="h-6 w-6 animate-spin text-[var(--cs-text-muted)]" /></div>

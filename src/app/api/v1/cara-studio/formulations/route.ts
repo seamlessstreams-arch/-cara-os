@@ -1,14 +1,14 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Formulation status updates
-// PATCH → in_review / approved / rejected (RBAC: aria.approve_outputs)
+// PATCH → in_review / approved / rejected (RBAC: cara.approve_outputs)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
-import type { AriaFormulation } from "@/types/aria-studio";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import type { CaraFormulation } from "@/types/cara-studio";
 
-const ALLOWED: Array<AriaFormulation["status"]> = [
+const ALLOWED: Array<CaraFormulation["status"]> = [
   "ai_draft",
   "in_review",
   "approved",
@@ -30,17 +30,17 @@ export async function PATCH(req: NextRequest) {
   if (!id || !status) {
     return NextResponse.json({ error: "id and status are required" }, { status: 400 });
   }
-  if (!ALLOWED.includes(status as AriaFormulation["status"])) {
+  if (!ALLOWED.includes(status as CaraFormulation["status"])) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });
   }
 
-  const existing = db.ariaFormulations.findById(id);
+  const existing = db.caraFormulations.findById(id);
   if (!existing) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId: existing.home_id,
     intent: `update formulation ${status}`,
     isSafeguardingSensitive: true,
@@ -48,8 +48,8 @@ export async function PATCH(req: NextRequest) {
   if (!guard.ok) return guard.response;
 
   const approved = status === "approved";
-  const updated = db.ariaFormulations.patch(id, {
-    status: status as AriaFormulation["status"],
+  const updated = db.caraFormulations.patch(id, {
+    status: status as CaraFormulation["status"],
     approved_by: approved ? guard.actor.userId : existing.approved_by,
     approved_at: approved ? new Date().toISOString() : existing.approved_at,
     reviewer_note: note ?? existing.reviewer_note,

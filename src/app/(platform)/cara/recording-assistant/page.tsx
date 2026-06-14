@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import {
   Loader2, Sparkles, FileSignature, AlertTriangle, CheckCircle2, Check, ListChecks, Eye,
 } from "lucide-react";
-import type { RecordingQualityAnalysis } from "@/lib/aria-incident/recording-assistant-engine";
+import type { RecordingQualityAnalysis } from "@/lib/cara-incident/recording-assistant-engine";
 
 const inputCls = "w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:border-[var(--cs-teal)] focus:outline-none focus:ring-1 focus:ring-[var(--cs-teal)]";
 
@@ -34,11 +34,11 @@ const json = async (res: Response) => {
   return j.data ?? j;
 };
 
-export default function AriaRecordingAssistantPage() {
+export default function CaraRecordingAssistantPage() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery<AssistantData>({
-    queryKey: ["aria-recording-assistant"],
-    queryFn: () => fetch("/api/v1/aria-recording-assistant").then(json),
+    queryKey: ["cara-recording-assistant"],
+    queryFn: () => fetch("/api/v1/cara-recording-assistant").then(json),
   });
 
   const [childId, setChildId] = useState("");
@@ -50,7 +50,7 @@ export default function AriaRecordingAssistantPage() {
   const [savedReview, setSavedReview] = useState<{ review_id: string; manager_review_required: boolean } | null>(null);
 
   const analyse = useMutation<AnalysisResponse>({
-    mutationFn: () => fetch("/api/v1/aria-recording-assistant", {
+    mutationFn: () => fetch("/api/v1/cara-recording-assistant", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ raw_text: raw, record_type: recordType, child_id: childId }),
     }).then(json),
@@ -58,13 +58,13 @@ export default function AriaRecordingAssistantPage() {
   });
 
   const accept = useMutation({
-    mutationFn: () => fetch("/api/v1/aria-recording-assistant", {
+    mutationFn: () => fetch("/api/v1/cara-recording-assistant", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ accept: true, confirm: true, raw_text: raw, final_text: finalText, ai_suggested_text: result?.ai_draft ?? null, record_type: recordType, child_id: childId }),
     }).then(json),
     onSuccess: (d: any) => {
       setSavedReview(d); setResult(null); setRaw(""); setFinalText(""); setConfirmed(false);
-      qc.invalidateQueries({ queryKey: ["aria-recording-assistant"] });
+      qc.invalidateQueries({ queryKey: ["cara-recording-assistant"] });
     },
   });
 
@@ -72,7 +72,7 @@ export default function AriaRecordingAssistantPage() {
     <PageShell
       title="Cara Recording Assistant"
       subtitle="Turn raw notes into professional, therapeutic, factual records — for any record type. Cara checks the quality, suggests a rewrite, and you stay the author: original, suggestion and final version are all preserved."
-      ariaContext={{ pageTitle: "Cara Recording Assistant", sourceType: "general" }}
+      caraContext={{ pageTitle: "Cara Recording Assistant", sourceType: "general" }}
     >
       <div className="mx-auto max-w-3xl space-y-4 pb-10">
         {isLoading && <div className="flex justify-center py-20"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>}
@@ -137,9 +137,9 @@ export default function AriaRecordingAssistantPage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-[var(--cs-aria-gold)]">
+                <Card className="border-l-4 border-l-[var(--cs-cara-gold)]">
                   <CardContent className="space-y-3 py-4">
-                    <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" /> 3 · Your final record</p>
+                    <p className="flex items-center gap-1.5 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" /> 3 · Your final record</p>
                     {result.llm_message && <p className="rounded-lg bg-[var(--cs-bg)] px-3 py-2 text-xs text-[var(--cs-text-muted)]">{result.llm_message}</p>}
                     {result.ai_draft && (
                       <details className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-bg)] px-3 py-2">
@@ -183,8 +183,8 @@ export default function AriaRecordingAssistantPage() {
               </Card>
             )}
 
-            <div className="flex items-start gap-2.5 rounded-2xl border border-[var(--cs-aria-gold)]/40 bg-[var(--cs-aria-gold-bg)]/50 px-4 py-3">
-              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-aria-gold)]" />
+            <div className="flex items-start gap-2.5 rounded-2xl border border-[var(--cs-cara-gold)]/40 bg-[var(--cs-cara-gold-bg)]/50 px-4 py-3">
+              <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-cara-gold)]" />
               <p className="text-xs font-medium leading-relaxed text-[var(--cs-navy)]">{data.disclaimer}</p>
             </div>
           </>

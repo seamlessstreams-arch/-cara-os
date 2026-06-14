@@ -9,7 +9,7 @@ function scored(o: {
   const base = { completeness: 90, clarity: 90, professionalLanguage: 90, factuality: 90, childCentredness: 90, riskRelevance: 90 };
   return {
     id: o.id, type: "daily_log", staff_id: o.staff_id, overall: o.overall, band: o.band,
-    score: { ...base, ...o.dims, missingFields: [], ariaSuggestions: o.suggestions ?? [] },
+    score: { ...base, ...o.dims, missingFields: [], caraSuggestions: o.suggestions ?? [] },
   };
 }
 

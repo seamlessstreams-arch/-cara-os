@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import {
   computeComplianceCertificateMetrics,
   computeComplianceCertificateAlerts,
-  generateComplianceCertificateAriaInsights,
+  generateComplianceCertificateCaraInsights,
   type ComplianceCertificateRow,
 } from "./compliance-certificate-service";
 
@@ -150,11 +150,11 @@ describe("computeComplianceCertificateAlerts", () => {
   });
 });
 
-describe("generateComplianceCertificateAriaInsights", () => {
+describe("generateComplianceCertificateCaraInsights", () => {
   it("returns 3 insights", () => {
     const metrics = computeComplianceCertificateMetrics([makeRow()]);
     const alerts = computeComplianceCertificateAlerts([makeRow()]);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights).toHaveLength(3);
     expect(insights[0]).toContain("[cyan]");
     expect(insights[1]).toContain("[amber]");
@@ -167,7 +167,7 @@ describe("generateComplianceCertificateAriaInsights", () => {
     ];
     const metrics = computeComplianceCertificateMetrics(rows);
     const alerts = computeComplianceCertificateAlerts(rows);
-    const insights = generateComplianceCertificateAriaInsights(metrics, alerts);
+    const insights = generateComplianceCertificateCaraInsights(metrics, alerts);
     expect(insights[2]).toContain("expired");
   });
 });

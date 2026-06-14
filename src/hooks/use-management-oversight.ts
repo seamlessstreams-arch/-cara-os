@@ -2,19 +2,19 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/hooks/use-api";
-import type { ManagerOversightQueue, AriaCommittedRecord } from "@/types/aria-studio";
+import type { ManagerOversightQueue, CaraCommittedRecord } from "@/types/cara-studio";
 
 interface QueueResponse {
   data: ManagerOversightQueue;
 }
 
 interface AckResponse {
-  data: AriaCommittedRecord;
+  data: CaraCommittedRecord;
 }
 
 export function useManagementOversight(homeId: string) {
   return useQuery({
-    queryKey: ["aria-management-oversight", homeId],
+    queryKey: ["cara-management-oversight", homeId],
     queryFn: () =>
       api.get<QueueResponse>(
         `/cara-studio/management-oversight?home_id=${encodeURIComponent(homeId)}`,
@@ -36,10 +36,10 @@ export function useAcknowledgeAmendment() {
         action: "acknowledge",
       }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["aria-management-oversight"] });
-      qc.invalidateQueries({ queryKey: ["aria-committed-records"] });
-      qc.invalidateQueries({ queryKey: ["aria-committed-versions"] });
-      qc.invalidateQueries({ queryKey: ["aria-audit-trail"] });
+      qc.invalidateQueries({ queryKey: ["cara-management-oversight"] });
+      qc.invalidateQueries({ queryKey: ["cara-committed-records"] });
+      qc.invalidateQueries({ queryKey: ["cara-committed-versions"] });
+      qc.invalidateQueries({ queryKey: ["cara-audit-trail"] });
     },
   });
 }

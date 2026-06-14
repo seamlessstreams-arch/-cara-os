@@ -27,8 +27,8 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import type { Audit } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── Audit category → training need type ──────────────────────────────────────
 const AUDIT_CATEGORY_NEED: Record<string, string> = {
@@ -266,7 +266,7 @@ export default function AuditsPage() {
               <button
                 onClick={() => handleCreateNeedFromAudit(audit)}
                 disabled={createNeed.isPending}
-                className="inline-flex items-center gap-1 rounded-lg bg-[var(--cs-aria-gold-bg)] border border-[var(--cs-aria-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold-bg)] transition-colors shrink-0 disabled:opacity-50"
+                className="inline-flex items-center gap-1 rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] px-2.5 py-1 text-xs font-medium text-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold-bg)] transition-colors shrink-0 disabled:opacity-50"
               >
                 <Brain className="h-3 w-3" />
                 Training Need
@@ -304,13 +304,13 @@ export default function AuditsPage() {
       <PageShell
         title="Audits & Quality Assurance"
         subtitle="Internal audits, quality checks, and action tracking"
-      ariaContext={{ pageTitle: "Audits & Quality Assurance", sourceType: "general" }}
+      caraContext={{ pageTitle: "Audits & Quality Assurance", sourceType: "general" }}
         quickCreateContext={{ module: "audits", defaultTaskCategory: "compliance", defaultFormType: "health_safety_check" }}
         actions={
           <div className="flex gap-2">
             <ExportButton<Audit> filename="audits-export" data={filtered} columns={AUDIT_EXPORT_COLS} label="Export" />
             <PrintButton title="Audits & Quality Assurance" subtitle="Chamberlain House — Audit Schedule & Compliance" targetId="audits-content" />
-            <AriaStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
+            <CaraStudioQuickActionButton context={{ record_type: "ofsted_evidence", record_id: "home_oak", home_id: "home_oak" }} />
             <SmartUploadButton variant="inline" label="Upload" uploadContext="Audits — evidence upload" />
             <Button size="sm" onClick={() => setShowNew(true)}>
               <Plus className="h-3.5 w-3.5 mr-1" />New Audit
@@ -518,7 +518,7 @@ export default function AuditsPage() {
         days={90}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Audits & Quality Assurance — internal audits, Reg 44 visit, Reg 45 report, case file audit, quality monitoring, action plans, compliance scoring, Ofsted evidence"
         recordType="ofsted_evidence"

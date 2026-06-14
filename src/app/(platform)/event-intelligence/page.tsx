@@ -49,7 +49,7 @@ export default function EventIntelligencePage() {
       subtitle="Analytics derived from the canonical event stream — one cross-domain view of risk, approvals and compliance across every event type"
       icon={<Radar className="h-5 w-5" />}
       showQuickCreate={false}
-      ariaContext={{ pageTitle: "Event Intelligence", sourceType: "general" }}
+      caraContext={{ pageTitle: "Event Intelligence", sourceType: "general" }}
     >
       {isLoading || !intel ? (
         <div className="flex items-center justify-center py-24">

@@ -129,7 +129,7 @@ function CheckTab() {
               )}
 
               {a.prompts.length > 0 && (
-                <div><p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Reflective prompts</p><List items={a.prompts.map((p) => p.prompt)} icon={<Lightbulb className="mt-0.5 h-3 w-3 shrink-0 text-[var(--cs-aria-gold)]" />} /></div>
+                <div><p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">Reflective prompts</p><List items={a.prompts.map((p) => p.prompt)} icon={<Lightbulb className="mt-0.5 h-3 w-3 shrink-0 text-[var(--cs-cara-gold)]" />} /></div>
               )}
               <p className="border-t border-[var(--cs-border-subtle)] pt-2 text-[11px] text-[var(--cs-text-gentle)]">{a.disclaimer}</p>
             </CardContent>

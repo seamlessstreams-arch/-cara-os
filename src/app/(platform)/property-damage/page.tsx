@@ -39,8 +39,8 @@ import {
   PROPERTY_LOCATION_LABEL,
 } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── local colour maps ───────────────────────────────────────────────────── */
 
@@ -127,8 +127,8 @@ export default function PropertyDamagePage() {
 
   return (
     <PageShell title="Property Damage Log" subtitle="Asset Management · Insurance Records · Behaviour Context" 
-      ariaContext={{ pageTitle: "Property Damage Log", sourceType: "child_record" }}
-      actions={<div className="flex items-center gap-2"><PrintButton title="Property Damage Log" /><ExportButton data={filtered} columns={exportCols} filename="property-damage" /><AriaStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Report Damage</Button></div>}>
+      caraContext={{ pageTitle: "Property Damage Log", sourceType: "child_record" }}
+      actions={<div className="flex items-center gap-2"><PrintButton title="Property Damage Log" /><ExportButton data={filtered} columns={exportCols} filename="property-damage" /><CaraStudioQuickActionButton context={{ record_type: "incident", record_id: "home_oak", home_id: "home_oak" }} /><Button size="sm" onClick={() => setShowNew(true)}><Plus className="h-4 w-4 mr-1" /> Report Damage</Button></div>}>
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
           {[
@@ -228,7 +228,7 @@ export default function PropertyDamagePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Property Damage Log — damage caused or found in the home, young person involvement, repair costs, insurance, safeguarding links, behaviour patterns, Reg 40 notification"
         recordType="incident"

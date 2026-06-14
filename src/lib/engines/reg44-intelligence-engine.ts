@@ -87,7 +87,7 @@ export interface Reg44Alert {
   message: string;
 }
 
-export interface AriaReg44Insight {
+export interface CaraReg44Insight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -97,7 +97,7 @@ export interface Reg44IntelligenceResult {
   visit_profiles: VisitComplianceProfile[];
   recommendation_analysis: RecommendationAnalysis;
   alerts: Reg44Alert[];
-  insights: AriaReg44Insight[];
+  insights: CaraReg44Insight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -283,7 +283,7 @@ export function computeReg44Intelligence(input: Reg44IntelligenceInput): Reg44In
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaReg44Insight[] = [];
+  const insights: CaraReg44Insight[] = [];
 
   // Critical: visit overdue
   if (daysSinceLastVisit > 35) {

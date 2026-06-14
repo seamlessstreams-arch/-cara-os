@@ -18,7 +18,7 @@ import { APP_ROLE_LABELS, type AppRole } from "@/lib/permissions";
 import { useStaff } from "@/hooks/use-staff";
 import type { StaffEnriched } from "@/hooks/use-staff";
 import { Badge } from "@/components/ui/badge";
-import { AriaStatusBadge } from "@/components/aria/aria-health-panel";
+import { CaraStatusBadge } from "@/components/cara/cara-health-panel";
 import { OnDutyBar } from "@/components/layout/on-duty-bar";
 import {
   ChevronDown, ChevronRight, ChevronUp,
@@ -72,7 +72,7 @@ const PRIMARY_ICONS: Record<string, React.ElementType> = {
   home:         Building2,
   compliance:   ShieldCheck,
   reports:      BarChart3,
-  aria:         Sparkles,
+  cara:         Sparkles,
   settings:     Settings,
   // Domain nav IDs
   young_person: HeartHandshake,
@@ -409,7 +409,7 @@ export function Sidebar() {
 
       {/* ── Cara Status Badge (managers only) ────────────────────────────── */}
       {!collapsed && (
-        <AriaStatusBadge
+        <CaraStatusBadge
           userRole={currentRole ?? ""}
           userId={currentUser?.id ?? "current_user"}
         />

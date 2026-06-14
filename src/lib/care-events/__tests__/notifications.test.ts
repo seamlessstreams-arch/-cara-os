@@ -14,8 +14,8 @@ function clearAll() {
   for (const e of evs.filter((x) => x.home_id === HOME_ID)) {
     const i = evs.indexOf(e); if (i >= 0) evs.splice(i, 1);
   }
-  const t40 = db.ariaReg40Triages.findAll(HOME_ID);
-  const all40 = db.ariaReg40Triages.findAll();
+  const t40 = db.caraReg40Triages.findAll(HOME_ID);
+  const all40 = db.caraReg40Triages.findAll();
   for (const t of t40) {
     const i = all40.indexOf(t); if (i >= 0) all40.splice(i, 1);
   }
@@ -93,7 +93,7 @@ describe("loadNotifications", () => {
   });
 
   it("creates reg40_triage_pending notifications", () => {
-    db.ariaReg40Triages.create({
+    db.caraReg40Triages.create({
       home_id: HOME_ID,
       child_id: "yp_a",
       source_event_id: "src",

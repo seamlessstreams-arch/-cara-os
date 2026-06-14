@@ -7,17 +7,17 @@
 // POST { home_id, notification_ids[], action: "read" | "unread"
 //        | "dismiss" | "undismiss" }    → bulk per-user state mutation.
 //
-// Permission: aria.view_audit_logs (read), aria.commit_to_records (mutate).
+// Permission: cara.view_audit_logs (read), cara.commit_to_records (mutate).
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import {
   loadNotifications,
   loadNotificationsForUser,
 } from "@/lib/care-events/notifications";
 import { db } from "@/lib/db/store";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -27,8 +27,8 @@ export async function GET(req: NextRequest) {
   const includeDismissed =
     searchParams.get("include_dismissed") === "true";
 
-  const guard = requireAriaStudioPermission(req, {}, {
-    permission: "aria.view_audit_logs",
+  const guard = requireCaraStudioPermission(req, {}, {
+    permission: "cara.view_audit_logs",
     homeId,
     intent: "view notifications stream",
   });
@@ -72,11 +72,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "no_notification_ids" }, { status: 400 });
   }
 
-  const guard = requireAriaStudioPermission(
+  const guard = requireCaraStudioPermission(
     req,
     body as unknown as Record<string, unknown>,
     {
-      permission: "aria.commit_to_records",
+      permission: "cara.commit_to_records",
       homeId,
       intent: `notification.${action}`,
     },
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     updated.push(notificationId);
   }
 
-  appendAriaAudit({
+  appendCaraAudit({
     homeId,
     actorId: userId,
     actionType: "artifact_committed",

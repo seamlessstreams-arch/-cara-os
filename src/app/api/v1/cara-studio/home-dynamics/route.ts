@@ -1,13 +1,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // API — Cara Studio Home Dynamics
 // GET  → list snapshots for a home (newest first), or ?latest=1 for the latest
-// POST → generate a new snapshot from live records (RBAC: aria.generate_drafts)
+// POST → generate a new snapshot from live records (RBAC: cara.generate_drafts)
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
-import { generateHomeDynamicsSnapshot } from "@/lib/aria/aria-home-dynamics";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { generateHomeDynamicsSnapshot } from "@/lib/cara/cara-home-dynamics";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -17,11 +17,11 @@ export async function GET(req: NextRequest) {
   const latestOnly = searchParams.get("latest") === "1";
 
   if (latestOnly) {
-    const latest = db.ariaHomeDynamicsSnapshots.latestForHome(homeId);
+    const latest = db.caraHomeDynamicsSnapshots.latestForHome(homeId);
     return NextResponse.json({ data: latest });
   }
 
-  const items = db.ariaHomeDynamicsSnapshots
+  const items = db.caraHomeDynamicsSnapshots
     .findAll(homeId)
     .slice()
     .sort((a, b) => b.generated_at.localeCompare(a.generated_at));
@@ -46,8 +46,8 @@ export async function POST(req: NextRequest) {
     typeof body.window_days === "number" ? body.window_days : undefined;
   const asOf = typeof body.as_of === "string" ? body.as_of : undefined;
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.generate_drafts",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.generate_drafts",
     homeId,
     intent: "generate home_dynamics_snapshot",
   });

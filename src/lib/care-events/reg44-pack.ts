@@ -18,10 +18,10 @@ import type {
 } from "@/types/extended";
 import type { CareEvent } from "@/types/care-events";
 import type {
-  AriaReg40Triage,
-  AriaSafeguardingPattern,
-  AriaReg45EvidenceItem,
-} from "@/types/aria-studio";
+  CaraReg40Triage,
+  CaraSafeguardingPattern,
+  CaraReg45EvidenceItem,
+} from "@/types/cara-studio";
 
 // ── Public types ─────────────────────────────────────────────────────────────
 
@@ -68,10 +68,10 @@ export interface Reg44Pack {
   restraints: RestraintRecord[];
   complaints: ComplaintOutcomeRecord[];
   safeguarding_events: CareEvent[];
-  reg40_notifications: AriaReg40Triage[];
+  reg40_notifications: CaraReg40Triage[];
   keywork_sessions: KeyWorkingSession[];
-  safeguarding_patterns: AriaSafeguardingPattern[];
-  verified_reg45_evidence: AriaReg45EvidenceItem[];
+  safeguarding_patterns: CaraSafeguardingPattern[];
+  verified_reg45_evidence: CaraReg45EvidenceItem[];
   previous_visit: {
     visit_id: string | null;
     visit_date: string | null;
@@ -155,7 +155,7 @@ export function generateReg44Pack(
     )
     .sort((a, b) => (b.verified_at ?? b.event_date).localeCompare(a.verified_at ?? a.event_date));
 
-  const reg40_notifications = db.ariaReg40Triages
+  const reg40_notifications = db.caraReg40Triages
     .findAll(homeId)
     .filter((t) => inWindow(t.created_at?.slice(0, 10), window))
     .sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? ""));
@@ -165,11 +165,11 @@ export function generateReg44Pack(
     .filter((s) => s.home_id === homeId && inWindow(s.date, window))
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const safeguarding_patterns = db.ariaSafeguardingPatterns
+  const safeguarding_patterns = db.caraSafeguardingPatterns
     .findAll(homeId)
     .filter((p) => p.status !== "dismissed");
 
-  const verified_reg45_evidence = db.ariaReg45EvidenceItems
+  const verified_reg45_evidence = db.caraReg45EvidenceItems
     .findAll(homeId)
     .filter((r) => (r.status === "accepted" || r.status === "included_in_report")
       && inWindow(r.occurred_at, window));

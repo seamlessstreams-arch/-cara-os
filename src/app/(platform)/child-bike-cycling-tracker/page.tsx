@@ -37,8 +37,8 @@ import {
 import { useCyclingBikeRecords } from "@/hooks/use-cycling-bike-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const levelOrder: Record<BikeabilityLevel, number> = {
   not_started: 0,
@@ -144,12 +144,12 @@ export default function ChildBikeCyclingTrackerPage() {
     <PageShell
       title="Cycling & Bike Safety"
       subtitle="Per-child cycling capability, bike ownership, helmet and safety equipment, Bikeability progression, route competence, and theft prevention"
-      ariaContext={{ pageTitle: "Cycling & Bike Safety", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Cycling & Bike Safety", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="cycling-bike-safety" />
           <PrintButton title="Cycling & Bike Safety" />
-          <AriaStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "risk_assessment", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -452,7 +452,7 @@ export default function ChildBikeCyclingTrackerPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Cycling & Bike Safety — road safety assessment, helmet check, competency, cycling routes, consent, supervision level, bike maintenance, road sense, independent travel progression"
         recordType="risk_assessment"

@@ -46,8 +46,8 @@ import {
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ─── domain icon ─── */
 const domainIcon = (domain: SuccessFactorDomain) => {
@@ -167,20 +167,20 @@ export default function PlacementSuccessFactorsPage() {
     <PageShell
       title="Placement Success Factors"
       subtitle="Meta-analysis of what makes placements work — informing future practice across the home"
-      ariaContext={{ pageTitle: "Placement Success Factors", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Placement Success Factors", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={data} columns={exportCols} filename="placement-success-factors" />
           <PrintButton title="Placement Success Factors" />
-          <AriaStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "placement_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
       {/* ─── learning banner ─── */}
-      <div className="mb-6 rounded-lg border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-indigo-50 p-4">
+      <div className="mb-6 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-indigo-50 p-4">
         <div className="flex items-start gap-3">
-          <div className="rounded-full bg-[var(--cs-aria-gold-bg)] p-2 shrink-0">
-            <Sparkles className="h-5 w-5 text-[var(--cs-aria-gold)]" />
+          <div className="rounded-full bg-[var(--cs-cara-gold-bg)] p-2 shrink-0">
+            <Sparkles className="h-5 w-5 text-[var(--cs-cara-gold)]" />
           </div>
           <div>
             <p className="text-sm font-semibold text-[var(--cs-navy)]">
@@ -469,7 +469,7 @@ export default function PlacementSuccessFactorsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Placement Success Factors — what works for this child, strengths, protective factors, placement fit, key relationships, routines, interests, learning from previous placements, Reg 45"
         recordType="placement_plan"

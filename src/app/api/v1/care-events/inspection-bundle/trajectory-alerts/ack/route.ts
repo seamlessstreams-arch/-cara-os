@@ -2,17 +2,17 @@
 // API — Acknowledge a trajectory alert  (Milestone 48)
 //
 // POST { home_id, alert_id, note }
-// Permission: aria.manager_review (manager-only action — acks are operational).
+// Permission: cara.manager_review (manager-only action — acks are operational).
 // Audited.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { NextRequest, NextResponse } from "next/server";
-import { requireAriaStudioPermission } from "@/lib/aria/aria-studio-guard";
+import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import {
   detectTrajectoryAlerts,
   recordTrajectoryAlertAck,
 } from "@/lib/care-events/inspection-trajectory";
-import { appendAriaAudit } from "@/lib/aria/aria-audit-trail";
+import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 
 export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
@@ -27,8 +27,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "note is required" }, { status: 400 });
   }
 
-  const guard = requireAriaStudioPermission(req, body, {
-    permission: "aria.approve_outputs",
+  const guard = requireCaraStudioPermission(req, body, {
+    permission: "cara.approve_outputs",
     homeId,
     intent: "acknowledge trajectory alert",
     isSafeguardingSensitive: true,
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     note,
   });
 
-  appendAriaAudit({
+  appendCaraAudit({
     homeId,
     actorId: guard.actor.userId,
     actionType: "artifact_reviewed",

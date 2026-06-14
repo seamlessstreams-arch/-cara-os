@@ -85,7 +85,7 @@ export interface SRAlert {
   message: string;
 }
 
-export interface AriaSRInsight {
+export interface CaraSRInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -96,7 +96,7 @@ export interface SanctionsRewardsIntelligenceResult {
   sanction_types: TypeBreakdown[];
   child_profiles: ChildBehaviourProfile[];
   alerts: SRAlert[];
-  insights: AriaSRInsight[];
+  insights: CaraSRInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -292,7 +292,7 @@ export function computeSanctionsRewardsIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaSRInsight[] = [];
+  const insights: CaraSRInsight[] = [];
 
   // Critical: disproportionate entries
   if (disproportionateEntries.length > 0) {

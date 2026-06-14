@@ -179,7 +179,7 @@ export interface DevelopmentAlert {
   message: string;
 }
 
-export interface AriaDevelopmentInsight {
+export interface CaraDevelopmentInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -189,7 +189,7 @@ export interface StaffDevelopmentIntelligenceResult {
   staff_profiles: StaffDevelopmentProfile[];
   competency_analysis: CompetencyDomainAnalysis[];
   alerts: DevelopmentAlert[];
-  insights: AriaDevelopmentInsight[];
+  insights: CaraDevelopmentInsight[];
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -522,7 +522,7 @@ export function computeStaffDevelopmentIntelligence(
   }
 
   // ── Cara Insights ─────────────────────────────────────────────────────
-  const insights: AriaDevelopmentInsight[] = [];
+  const insights: CaraDevelopmentInsight[] = [];
 
   // Critical: overdue appraisals
   if (overdueAppraisals.length > 0 && activeStaff.length > 0) {

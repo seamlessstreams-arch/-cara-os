@@ -38,8 +38,8 @@ export function RecordActivityFeed({ limit = 25, className }: { limit?: number; 
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--cs-border)]">
         <div className="flex items-center gap-2">
-          <div className="h-7 w-7 rounded-lg bg-[var(--cs-aria-gold-bg)] flex items-center justify-center">
-            <Activity className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+          <div className="h-7 w-7 rounded-lg bg-[var(--cs-cara-gold-bg)] flex items-center justify-center">
+            <Activity className="h-4 w-4 text-[var(--cs-cara-gold)]" />
           </div>
           <div>
             <p className="text-sm font-bold text-[var(--cs-navy)]">Record Activity</p>

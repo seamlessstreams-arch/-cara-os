@@ -203,7 +203,7 @@ export default function PlanMyDayPage() {
             {plan.ai_narrative && (
               <Card>
                 <CardHeader className="flex flex-row items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                  <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                   <CardTitle className="text-sm">Cara&apos;s read on today</CardTitle>
                 </CardHeader>
                 <CardContent>

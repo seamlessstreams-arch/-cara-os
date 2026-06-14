@@ -26,8 +26,8 @@ import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 type MaintenanceStatus = "open" | "scheduled" | "completed";
 type MaintenancePriority = "urgent" | "high" | "medium" | "low";
@@ -53,7 +53,7 @@ const CAT_COLORS: Record<string, { bg: string; text: string; border: string }> =
   hvac:        { bg: "bg-orange-50", text: "text-orange-600", border: "border-orange-200" },
   fire_safety: { bg: "bg-red-50",    text: "text-red-600",    border: "border-red-200" },
   plumbing:    { bg: "bg-cyan-50",   text: "text-cyan-600",   border: "border-cyan-200" },
-  security:    { bg: "bg-[var(--cs-aria-gold-bg)]", text: "text-[var(--cs-aria-gold)]", border: "border-[var(--cs-aria-gold-soft)]" },
+  security:    { bg: "bg-[var(--cs-cara-gold-bg)]", text: "text-[var(--cs-cara-gold)]", border: "border-[var(--cs-cara-gold-soft)]" },
   electrical:  { bg: "bg-amber-50",  text: "text-amber-600",  border: "border-amber-200" },
   cleaning:    { bg: "bg-teal-50",   text: "text-teal-600",   border: "border-teal-200" },
   general:     { bg: "bg-slate-50",  text: "text-[var(--cs-text-secondary)]",  border: "border-[var(--cs-border)]" },
@@ -297,7 +297,7 @@ export default function MaintenancePage() {
       <PageShell
         title="Maintenance"
         subtitle="Property maintenance, safety checks, and scheduled works"
-      ariaContext={{ pageTitle: "Building Maintenance Log", sourceType: "home_check" }}
+      caraContext={{ pageTitle: "Building Maintenance Log", sourceType: "home_check" }}
         quickCreateContext={{ module: "maintenance", defaultTaskCategory: "maintenance", defaultFormType: "health_safety_check" }}
         actions={
           <div className="flex items-center gap-2">
@@ -307,7 +307,7 @@ export default function MaintenancePage() {
             <Button size="sm" onClick={() => setShowLog(true)}>
               <Plus className="h-3.5 w-3.5 mr-1" />Log Issue
             </Button>
-            <AriaStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
+            <CaraStudioQuickActionButton context={{ record_type: "policy", record_id: "home_oak", home_id: "home_oak" }} />
           </div>
         }
       >
@@ -522,7 +522,7 @@ export default function MaintenancePage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Building Maintenance Log — repairs, planned maintenance, contractor visits, gas safety, electrical checks, fire equipment, plumbing, Reg 44 premises, Ofsted evidence"
         recordType="policy"

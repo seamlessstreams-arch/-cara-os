@@ -36,8 +36,8 @@ import {
 import { useCharityGrantRecords } from "@/hooks/use-charity-grant-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const STATUS_META: Record<CharityGrantStatus, { label: string; colour: string }> = {
   drafted: { label: "Drafted", colour: "bg-gray-100 text-gray-700" },
@@ -211,7 +211,7 @@ export default function ChildCharityGrantsApplicationsPage() {
     <PageShell
       title="Charity Grants & Applications"
       subtitle="Per-child charity grant applications, decisions and items funded — Buttle UK, Family Fund, Coram Voice, Lift the Limit, Princess Royal Trust, BBC Children in Need"
-      ariaContext={{ pageTitle: "Charity Grants & Applications", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Charity Grants & Applications", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton
@@ -220,7 +220,7 @@ export default function ChildCharityGrantsApplicationsPage() {
             filename="charity-grants-applications"
           />
           <PrintButton title="Charity Grants & Applications" />
-          <AriaStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "direct_work", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -528,7 +528,7 @@ export default function ChildCharityGrantsApplicationsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Charity Grants & Applications — grant funding, charitable awards, activity funding, uniform grants, holiday grants, hobbies, vocational, application tracking, outcomes, thank you letters"
         recordType="direct_work"

@@ -149,7 +149,7 @@ function SavedOutputCard({ o }: { o: CaraSavedOutput }) {
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 shadow-[var(--cs-shadow-card)]">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-3.5 w-3.5 text-[var(--cs-aria-gold)]" /> {o.title}</p>
+          <p className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" /> {o.title}</p>
           <p className="text-xs text-[var(--cs-text-muted)]">{new Date(o.created_at).toLocaleString("en-GB")} · {o.status}{o.manager_review_status === "review_required" ? " · awaiting manager review" : o.manager_review_status === "approved" ? " · approved" : ""}</p>
         </div>
         <button onClick={() => setOpen((v) => !v)} className="rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-xs font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-bg)]">{open ? "Close" : "Open"}</button>

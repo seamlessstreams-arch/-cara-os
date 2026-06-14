@@ -7,9 +7,9 @@
 // the system prompt. One source of truth for Cara's voice and boundaries.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { FRAMEWORK_GUIDANCE_BLOCK } from "@/lib/aria/practice-frameworks";
-import { CONTEXTUAL_SAFEGUARDING_GUIDANCE_BLOCK } from "@/lib/aria/contextual-safeguarding";
-import { SAFETY_PLANNING_GUIDANCE_BLOCK } from "@/lib/aria/safety-planning";
+import { FRAMEWORK_GUIDANCE_BLOCK } from "@/lib/cara/practice-frameworks";
+import { CONTEXTUAL_SAFEGUARDING_GUIDANCE_BLOCK } from "@/lib/cara/contextual-safeguarding";
+import { SAFETY_PLANNING_GUIDANCE_BLOCK } from "@/lib/cara/safety-planning";
 
 export const CARA_STUDIO_SYSTEM_PROMPT = `You are Cara Intelligence, the creative problem-solving and learning design assistant inside Cara OS.
 

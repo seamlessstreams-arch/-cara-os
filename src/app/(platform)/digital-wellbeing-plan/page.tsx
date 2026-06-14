@@ -37,8 +37,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const exportCols: ExportColumn<DigitalPlan>[] = [
   { header: "Young Person", accessor: (r) => getYPName(r.child_id) },
@@ -95,12 +95,12 @@ export default function DigitalWellbeingPlanPage() {
     <PageShell
       title="Digital Wellbeing Plan"
       subtitle="Per-child digital wellbeing — devices, apps, screen time, online safety, and trust-based oversight"
-      ariaContext={{ pageTitle: "Digital Wellbeing Plans", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Digital Wellbeing Plans", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="digital-wellbeing-plans" />
           <PrintButton title="Digital Wellbeing Plans" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -356,7 +356,7 @@ export default function DigitalWellbeingPlanPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Digital Wellbeing Plans — screen time, device agreements, social media, online safety plan, mental health and technology, healthy boundaries, parental controls, care plan"
         recordType="care_plan"

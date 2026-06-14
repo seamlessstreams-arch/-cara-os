@@ -15,7 +15,7 @@ interface ProviderInfo {
   defaultModel: string;
 }
 
-export default function AriaProvidersPage() {
+export default function CaraProvidersPage() {
   const [providers, setProviders] = useState<ProviderInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [testingProvider, setTestingProvider] = useState<string | null>(null);
@@ -27,7 +27,7 @@ export default function AriaProvidersPage() {
 
   async function loadProviders() {
     try {
-      const res = await fetch("/api/aria/providers");
+      const res = await fetch("/api/cara/providers");
       const data = await res.json();
       setProviders(data.providers ?? []);
     } catch {
@@ -40,7 +40,7 @@ export default function AriaProvidersPage() {
   async function testProvider(name: string) {
     setTestingProvider(name);
     try {
-      const res = await fetch("/api/aria/providers/test", {
+      const res = await fetch("/api/cara/providers/test", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider: name }),

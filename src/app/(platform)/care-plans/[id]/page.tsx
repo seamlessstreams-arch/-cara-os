@@ -42,7 +42,7 @@ const DOMAIN_CONFIG: Record<CarePlanDomain, {
 }> = {
   health:                { label: "Health",                icon: Heart,         colour: "text-rose-600",    bg: "bg-rose-50",    border: "border-rose-200",   ring: "ring-rose-200"   },
   education:             { label: "Education",             icon: GraduationCap, colour: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200",   ring: "ring-blue-200"   },
-  emotional_behavioural: { label: "Emotional & Behavioural", icon: Brain,       colour: "text-[var(--cs-aria-gold)]",  bg: "bg-[var(--cs-aria-gold-bg)]",  border: "border-[var(--cs-aria-gold-soft)]", ring: "ring-[var(--cs-aria-gold-soft)]" },
+  emotional_behavioural: { label: "Emotional & Behavioural", icon: Brain,       colour: "text-[var(--cs-cara-gold)]",  bg: "bg-[var(--cs-cara-gold-bg)]",  border: "border-[var(--cs-cara-gold-soft)]", ring: "ring-[var(--cs-cara-gold-soft)]" },
   identity:              { label: "Identity & Culture",    icon: Fingerprint,   colour: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200",  ring: "ring-amber-200"  },
   family_social:         { label: "Family & Social",       icon: Users,         colour: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200",ring: "ring-emerald-200"},
   independence:          { label: "Independence",          icon: Zap,           colour: "text-sky-600",     bg: "bg-sky-50",     border: "border-sky-200",    ring: "ring-sky-200"    },
@@ -70,7 +70,7 @@ const LOG_TYPE_COLOURS: Record<string, string> = {
   behaviour: "bg-orange-100 text-orange-700",
   health:    "bg-red-100 text-red-700",
   education: "bg-blue-100 text-blue-700",
-  contact:   "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]",
+  contact:   "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
   activity:  "bg-emerald-100 text-emerald-700",
   mood:      "bg-amber-100 text-amber-700",
   sleep:     "bg-indigo-100 text-indigo-700",
@@ -205,7 +205,7 @@ function GoalCard({
             <p className="text-sm text-[var(--cs-text-secondary)] leading-relaxed">{goal.description}</p>
           </div>
 
-          <div className="rounded-xl border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/60 p-3">
+          <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/60 p-3">
             <p className="text-[10px] font-semibold text-indigo-700 uppercase tracking-wide mb-1">Desired Outcome</p>
             <p className="text-sm text-[var(--cs-navy)] leading-relaxed">{goal.desired_outcome}</p>
           </div>
@@ -308,8 +308,8 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
   const { id } = use(params);
 
   const [selectedDomain, setSelectedDomain] = useState<CarePlanDomain | "all">("all");
-  const [ariaOverview, setAriaOverview]     = useState<string | null>(null);
-  const [ariaLoading, setAriaLoading]       = useState(false);
+  const [caraOverview, setCaraOverview]     = useState<string | null>(null);
+  const [caraLoading, setCaraLoading]       = useState(false);
   const [updatingGoalId, setUpdatingGoalId] = useState<string | null>(null);
 
   const planQuery  = useCarePlan(id);
@@ -368,10 +368,10 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
     }
   }
 
-  async function generateAriaOverview() {
+  async function generateCaraOverview() {
     if (!plan) return;
-    setAriaLoading(true);
-    setAriaOverview(null);
+    setCaraLoading(true);
+    setCaraOverview(null);
     try {
       const goalSummary = plan.goals
         .map((g) => `${g.title} (${g.domain.replace(/_/g, " ")}): ${g.status.replace(/_/g, " ")}`)
@@ -384,11 +384,11 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
         record_type: "care_plan",
         user_role: "registered_manager",
       });
-      setAriaOverview(res.data?.response ?? null);
+      setCaraOverview(res.data?.response ?? null);
     } catch {
       // silently fail
     } finally {
-      setAriaLoading(false);
+      setCaraLoading(false);
     }
   }
 
@@ -410,7 +410,7 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
         <div className="text-center py-16 text-[var(--cs-text-muted)]">
           <BookOpen className="h-10 w-10 mx-auto mb-3 text-[var(--cs-text-gentle)]" />
           <p className="text-sm font-medium text-[var(--cs-text-secondary)]">Care plan not found</p>
-          <Link href="/care-plans" className="text-xs text-[var(--cs-aria-gold)] hover:underline mt-2 inline-block">
+          <Link href="/care-plans" className="text-xs text-[var(--cs-cara-gold)] hover:underline mt-2 inline-block">
             Back to Care Plans
           </Link>
         </div>
@@ -425,7 +425,7 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
       title={`${ypName} — Care Plan`}
       subtitle={`v${plan.version} · ${plan.legal_status} · Updated ${formatDate(plan.updated_at)}`}
       quickCreateContext={{ module: "care_plans", defaultTaskCategory: "young_person_plans" }}
-      ariaContext={{ pageTitle: `Care Plan — ${ypName}`, sourceType: "care_plan" }}
+      caraContext={{ pageTitle: `Care Plan — ${ypName}`, sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Care Plan" subtitle="Chamberlain House — Care Plan Detail" targetId="care-plan-detail-content" />
@@ -441,12 +441,12 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
           />
           <Button
             size="sm"
-            className="gap-1.5 bg-[var(--cs-aria-gold)] hover:bg-[var(--cs-aria-gold)]/90 text-white"
-            onClick={generateAriaOverview}
-            disabled={ariaLoading}
+            className="gap-1.5 bg-[var(--cs-cara-gold)] hover:bg-[var(--cs-cara-gold)]/90 text-white"
+            onClick={generateCaraOverview}
+            disabled={caraLoading}
           >
             <Sparkles className="h-3.5 w-3.5" />
-            {ariaLoading ? "Analysing…" : "Cara Overview"}
+            {caraLoading ? "Analysing…" : "Cara Overview"}
           </Button>
         </div>
       }
@@ -457,24 +457,24 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
           title="Care plan goals & outcomes"
           description="Track progress across all 8 care domains. Goals should be specific, measurable, and reviewed at every LAC review. Evidence from daily logs and key work sessions is linked automatically."
           evidenceTip="Inspectors look for SMART goals with clear evidence of progress. Link daily observations to specific goals to build a compelling evidence trail."
-          ariaTip="Cara can analyse daily logs and incident data to suggest which goals need attention and identify unrecognised progress."
+          caraTip="Cara can analyse daily logs and incident data to suggest which goals need attention and identify unrecognised progress."
           regulationRef="Care Planning, Placement and Case Review Regulations 2010"
-          variant="aria"
+          variant="cara"
         />
 
         {/* ── Cara Overview (when generated) ── */}
-        {ariaOverview && (
-          <div className="rounded-2xl border border-[var(--cs-aria-gold-soft)] bg-gradient-to-r from-[var(--cs-aria-gold-bg)] to-[var(--cs-aria-gold-bg)]/30 p-5 space-y-2">
+        {caraOverview && (
+          <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-[var(--cs-cara-gold-bg)]/30 p-5 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-[var(--cs-aria-gold)]" />
+                <Sparkles className="h-4 w-4 text-[var(--cs-cara-gold)]" />
                 <p className="text-sm font-semibold text-[var(--cs-navy)]">Cara Care Plan Overview</p>
               </div>
-              <button onClick={() => setAriaOverview(null)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]">
+              <button onClick={() => setCaraOverview(null)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)]">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-sm text-[var(--cs-navy)] leading-relaxed">{ariaOverview}</p>
+            <p className="text-sm text-[var(--cs-navy)] leading-relaxed">{caraOverview}</p>
           </div>
         )}
 
@@ -565,7 +565,7 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
             {selectedDomain !== "all" && (
               <button
                 onClick={() => setSelectedDomain("all")}
-                className="text-xs text-[var(--cs-aria-gold)] hover:underline"
+                className="text-xs text-[var(--cs-cara-gold)] hover:underline"
               >
                 Show all
               </button>
@@ -592,7 +592,7 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
                 ? `All Goals (${filteredGoals.length})`
                 : `${DOMAIN_CONFIG[selectedDomain].label} Goals (${filteredGoals.length})`}
             </h2>
-            <Link href={`/young-people/${plan.child_id}`} className="text-xs text-[var(--cs-aria-gold)] hover:underline">
+            <Link href={`/young-people/${plan.child_id}`} className="text-xs text-[var(--cs-cara-gold)] hover:underline">
               View YP profile →
             </Link>
           </div>
@@ -665,7 +665,7 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
             <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--cs-border-subtle)] bg-slate-50">
               <AlertTriangle className="h-4 w-4 text-[var(--cs-text-muted)]" />
               <p className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Open Incidents</p>
-              <Link href="/incidents" className="ml-auto text-[10px] text-[var(--cs-aria-gold)] hover:underline">View all →</Link>
+              <Link href="/incidents" className="ml-auto text-[10px] text-[var(--cs-cara-gold)] hover:underline">View all →</Link>
             </div>
             {openIncidents.length === 0 ? (
               <div className="p-6 text-center text-[var(--cs-text-muted)]">

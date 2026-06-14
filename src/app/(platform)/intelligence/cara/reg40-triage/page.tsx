@@ -23,11 +23,11 @@ import {
   useReg40Queue,
   useScanReg40,
   useDecideReg40,
-} from "@/hooks/use-aria-reg40-triage";
+} from "@/hooks/use-cara-reg40-triage";
 import { useAuthContext } from "@/contexts/auth-context";
-import { appRoleToAriaRole } from "@/lib/aria/aria-permissions";
-import { reg40Label } from "@/lib/aria/aria-reg40-triage";
-import type { AriaReg40Triage, Reg40TriageStatus } from "@/types/aria-studio";
+import { appRoleToCaraRole } from "@/lib/cara/cara-permissions";
+import { reg40Label } from "@/lib/cara/cara-reg40-triage";
+import type { CaraReg40Triage, Reg40TriageStatus } from "@/types/cara-studio";
 
 const HOME_ID = "home_oak";
 
@@ -43,7 +43,7 @@ function PendingTriageCard({
   actorId,
   actorRole,
 }: {
-  rec: AriaReg40Triage;
+  rec: CaraReg40Triage;
   actorId: string | undefined;
   actorRole: string;
 }) {
@@ -151,7 +151,7 @@ function PendingTriageCard({
   );
 }
 
-function DecidedCard({ rec }: { rec: AriaReg40Triage }) {
+function DecidedCard({ rec }: { rec: CaraReg40Triage }) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -184,7 +184,7 @@ function DecidedCard({ rec }: { rec: AriaReg40Triage }) {
 
 export default function Reg40TriagePage() {
   const { currentUser } = useAuthContext();
-  const ariaRole = appRoleToAriaRole(currentUser?.role ?? "registered_manager");
+  const caraRole = appRoleToCaraRole(currentUser?.role ?? "registered_manager");
   const pending = useReg40Queue(HOME_ID, "pending");
   const all = useReg40Queue(HOME_ID);
   const scan = useScanReg40();
@@ -202,7 +202,7 @@ export default function Reg40TriagePage() {
             scan.mutate({
               home_id: HOME_ID,
               actor_id: currentUser?.id,
-              actor_role: ariaRole,
+              actor_role: caraRole,
             })
           }
           disabled={scan.isPending}
@@ -238,7 +238,7 @@ export default function Reg40TriagePage() {
                 key={rec.id}
                 rec={rec}
                 actorId={currentUser?.id}
-                actorRole={ariaRole}
+                actorRole={caraRole}
               />
             ))
           )}

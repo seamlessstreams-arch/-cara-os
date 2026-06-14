@@ -33,8 +33,8 @@ import {
 } from "@/types/extended";
 import { useDigitalLiteracySkillRecords } from "@/hooks/use-digital-literacy-skill-records";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -62,7 +62,7 @@ const COMPETENCIES: DigitalLiteracyCompetency[] = [
 
 const COMP_META: Record<DigitalLiteracyCompetency, { colour: string; order: number }> = {
   not_yet_introduced: { colour: "bg-gray-100 text-gray-700",     order: 0 },
-  aware:              { colour: "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)]", order: 1 },
+  aware:              { colour: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]", order: 1 },
   did_with_help:      { colour: "bg-amber-100 text-amber-800",   order: 2 },
   did_independently:  { colour: "bg-blue-100 text-blue-700",     order: 3 },
   confident:          { colour: "bg-indigo-100 text-indigo-800", order: 4 },
@@ -70,7 +70,7 @@ const COMP_META: Record<DigitalLiteracyCompetency, { colour: string; order: numb
 
 const DOMAIN_COLOUR: Record<DigitalLiteracyDomain, string> = {
   device_basics:     "bg-indigo-50 text-indigo-700 border-indigo-200",
-  email:             "bg-[var(--cs-aria-gold-bg)] text-[var(--cs-aria-gold)] border-[var(--cs-aria-gold-soft)]",
+  email:             "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
   word_processing:   "bg-sky-50 text-sky-700 border-sky-200",
   cloud_storage:     "bg-cyan-50 text-cyan-700 border-cyan-200",
   online_banking:    "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -176,12 +176,12 @@ export default function DigitalLiteracySkillsPage() {
     <PageShell
       title="Digital Literacy Skills"
       subtitle="Per-child digital competence — from device basics to online banking, gov.uk services and scam awareness. A core preparation-for-adulthood skill, distinct from online safety."
-      ariaContext={{ pageTitle: "Digital Literacy Skills", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Digital Literacy Skills", sourceType: "child_record" }}
       actions={
         <div className="flex items-center gap-2">
           <ExportButton data={records} columns={exportCols} filename="digital-literacy-skills" />
           <PrintButton title="Digital Literacy Skills" />
-          <AriaStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "education", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -190,7 +190,7 @@ export default function DigitalLiteracySkillsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
             { label: "Skills tracked",           value: stats.skillsTracked, icon: Laptop, c: "text-indigo-600" },
-            { label: "Confident competencies",   value: stats.confident,     icon: Award,  c: "text-[var(--cs-aria-gold)]" },
+            { label: "Confident competencies",   value: stats.confident,     icon: Award,  c: "text-[var(--cs-cara-gold)]" },
             { label: "Reviews due ≤ 30 days",    value: stats.reviewsDue,    icon: Lock,   c: "text-amber-600" },
             { label: "Real-world applications",  value: stats.realWorld,     icon: Globe,  c: "text-emerald-600" },
           ].map((s) => (
@@ -258,7 +258,7 @@ export default function DigitalLiteracySkillsPage() {
                   className="w-full flex items-center justify-between p-4 hover:bg-indigo-50/40 transition-colors"
                 >
                   <div className="flex items-center gap-3 text-left">
-                    <div className="rounded-md bg-gradient-to-br from-indigo-500 to-[var(--cs-aria-gold)] p-2 text-white">
+                    <div className="rounded-md bg-gradient-to-br from-indigo-500 to-[var(--cs-cara-gold)] p-2 text-white">
                       <Laptop className="h-5 w-5" />
                     </div>
                     <div>
@@ -308,7 +308,7 @@ export default function DigitalLiteracySkillsPage() {
 
                     {/* tools & real-world */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="rounded-lg border border-[var(--cs-aria-gold-soft)] bg-[var(--cs-aria-gold-bg)]/60 p-3">
+                      <div className="rounded-lg border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)]/60 p-3">
                         <h4 className="text-sm font-semibold text-[var(--cs-navy)] mb-1.5 flex items-center gap-1.5">
                           <Mail className="h-4 w-4" /> Tools used
                         </h4>
@@ -339,7 +339,7 @@ export default function DigitalLiteracySkillsPage() {
                     </div>
 
                     {/* next step */}
-                    <div className="rounded-lg border-l-4 border-[var(--cs-aria-gold)] bg-[var(--cs-aria-gold-bg)] p-3">
+                    <div className="rounded-lg border-l-4 border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] p-3">
                       <h4 className="text-sm font-semibold text-indigo-800 mb-1">Next step</h4>
                       <p className="text-sm text-indigo-900">{rec.next_step}</p>
                     </div>
@@ -385,7 +385,7 @@ export default function DigitalLiteracySkillsPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Digital Literacy Skills — online safety, coding, internet skills, social media literacy, cyberbullying awareness, e-safety, EHCP digital support, leaving care digital skills"
         recordType="education"

@@ -30,7 +30,7 @@ export default function OfstedWorkforceEvidencePage() {
     <PageShell
       title="Ofsted Workforce Evidence"
       subtitle="The workforce evidence an inspector looks for — safer recruitment, induction, supervision, training, probation, leadership, staff voice, reflective practice, learning culture, stability and actions — organised, RAG-rated and ready to print or export."
-      ariaContext={{ pageTitle: "Ofsted Workforce Evidence", sourceType: "general" }}
+      caraContext={{ pageTitle: "Ofsted Workforce Evidence", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
           <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 print:hidden"><RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} /> Refresh</button>

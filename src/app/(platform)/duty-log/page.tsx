@@ -28,8 +28,8 @@ import { useDutyLogEntries, useCreateDutyLogEntry } from "@/hooks/use-duty-log-e
 import type { DutyLogEntry, DutyLogShift, DutyLogCategory, DutyLogPriority } from "@/types/extended";
 import { DUTY_LOG_SHIFT_LABEL, DUTY_LOG_CATEGORY_LABEL, DUTY_LOG_PRIORITY_LABEL } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -130,12 +130,12 @@ export default function DutyLogPage() {
     <PageShell
       title="Duty Log"
       subtitle="Daily Occurrence Book — legal record of all significant events per shift"
-      ariaContext={{ pageTitle: "Duty Log", sourceType: "general" }}
+      caraContext={{ pageTitle: "Duty Log", sourceType: "general" }}
       actions={[
         <PrintButton key="p" title="Duty Log" />,
         <ExportButton key="e" data={filtered} columns={exportCols} filename="duty-log" />,
         <Button key="n" size="sm" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1" />New Entry</Button>,
-        <AriaStudioQuickActionButton key="a" context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />,
+        <CaraStudioQuickActionButton key="a" context={{ record_type: "daily_log", record_id: "home_oak", home_id: "home_oak" }} />,
       ]}
     >
       <div id="print-area" className="space-y-6">
@@ -304,7 +304,7 @@ export default function DutyLogPage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Duty Log — shift handover notes, on-call events, manager on duty, overnight incidents, emergency responses, duty manager decisions, staffing issues, building issues"
         recordType="daily_log"

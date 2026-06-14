@@ -25,8 +25,8 @@ import type { DiabetesType } from "@/types/extended";
 import { useDiabeticCarePlans } from "@/hooks/use-diabetic-care-plans";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -128,12 +128,12 @@ export default function ChildDiabeticCarePlanPage() {
     <PageShell
       title="Child Diabetic Care Plan"
       subtitle="Per-child Type 1/2 diabetes plan · NICE NG18 · JBDS-IP · Diabetes UK School Plan · Quality Standard 8"
-      ariaContext={{ pageTitle: "Diabetic Care Plans", sourceType: "care_plan" }}
+      caraContext={{ pageTitle: "Diabetic Care Plans", sourceType: "care_plan" }}
       actions={
         <div className="flex items-center gap-2">
           <PrintButton title="Diabetic Care Plans" />
           <ExportButton data={data} columns={exportCols} filename="child-diabetic-care-plan" />
-          <AriaStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "medication", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -432,7 +432,7 @@ export default function ChildDiabeticCarePlanPage() {
         days={28}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Diabetic Care Plans — Type 1/Type 2 diabetes, blood glucose monitoring, insulin regime, hypo/hyperglycaemia management, dietary needs, school insulin pen, emergency action, AHA"
         recordType="medication"

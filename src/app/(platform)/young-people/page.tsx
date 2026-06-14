@@ -26,8 +26,8 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
-import { AriaPanel } from "@/components/aria/aria-panel";
-import { AriaStudioQuickActionButton } from "@/components/aria/studio-quick-action-button";
+import { CaraPanel } from "@/components/cara/cara-panel";
+import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const YP_EXPORT_COLS: ExportColumn<YPEnriched>[] = [
   { header: "First Name", accessor: (yp) => yp.preferred_name ?? yp.first_name },
@@ -791,7 +791,7 @@ export default function YoungPeoplePage() {
           ? `${meta.current} current placement${meta.current !== 1 ? "s" : ""} · ${meta.high_risk} with risk flags`
           : "Loading..."
       }
-      ariaContext={{ pageTitle: "Young People", sourceType: "child_record" }}
+      caraContext={{ pageTitle: "Young People", sourceType: "child_record" }}
       quickCreateContext={{ module: "young-people", defaultTaskCategory: "young_person_plans", defaultFormType: "welfare_check", preferredTab: "form" }}
       recordAnything
       actions={
@@ -799,7 +799,7 @@ export default function YoungPeoplePage() {
           <ExportButton data={filteredYP} columns={YP_EXPORT_COLS} filename="young-people" />
           <PrintButton title="Young People" subtitle="Chamberlain House — Children in Placement" targetId="young-people-content" />
           <SmartUploadButton variant="inline" label="Upload Document" uploadContext="Young people — care document upload" />
-          <AriaStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
+          <CaraStudioQuickActionButton context={{ record_type: "care_plan", record_id: "home_oak", home_id: "home_oak" }} />
         </div>
       }
     >
@@ -962,7 +962,7 @@ export default function YoungPeoplePage() {
         days={14}
         defaultCollapsed
       />
-      <AriaPanel
+      <CaraPanel
         mode="assist"
         pageContext="Young People — children in placement, placement details, care orders, child profiles, keyworker assignments, current placements, care planning, Reg 45 children quality evidence"
         recordType="care_plan"

@@ -356,7 +356,7 @@ function WorkflowDetail({
   setExpandedChecklist: React.Dispatch<React.SetStateAction<Set<string>>>;
   onBack: () => void;
 }) {
-  const [activeTab, setActiveTab] = useState<"overview" | "matching" | "checklist" | "aria">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "matching" | "checklist" | "cara">("overview");
   const age = getAge(workflow.child_date_of_birth);
   const phaseIdx = getPhaseIndex(workflow.current_phase);
   const nextPhase = phaseIdx < ADMISSION_PHASES.length - 1 ? ADMISSION_PHASES[phaseIdx + 1] : null;
@@ -440,7 +440,7 @@ function WorkflowDetail({
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-gray-200 pb-0">
-        {(["overview", "matching", "checklist", "aria"] as const).map((tab) => (
+        {(["overview", "matching", "checklist", "cara"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -460,7 +460,7 @@ function WorkflowDetail({
       {activeTab === "checklist" && (
         <ChecklistTab expanded={expandedChecklist} setExpanded={setExpandedChecklist} />
       )}
-      {activeTab === "aria" && <AriaTab workflow={workflow} />}
+      {activeTab === "cara" && <CaraTab workflow={workflow} />}
     </div>
   );
 }
@@ -798,7 +798,7 @@ function ChecklistTab({
 
 // ── Cara insights tab ──────────────────────────────────────────────────────
 
-function AriaTab({ workflow }: { workflow: (typeof DEMO_WORKFLOWS)[0] }) {
+function CaraTab({ workflow }: { workflow: (typeof DEMO_WORKFLOWS)[0] }) {
   const insights = [
     {
       type: "risk_assessment",

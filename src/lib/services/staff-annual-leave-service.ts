@@ -233,7 +233,7 @@ export function computeStaffAnnualLeaveAlerts(
   return alerts;
 }
 
-export function generateStaffAnnualLeaveAriaInsights(
+export function generateStaffAnnualLeaveCaraInsights(
   metrics: ReturnType<typeof computeStaffAnnualLeaveMetrics>,
   alerts: ReturnType<typeof computeStaffAnnualLeaveAlerts>,
 ): string[] {
@@ -350,5 +350,5 @@ export function createStaffAnnualLeave(payload: {
 export const _testing = {
   computeStaffAnnualLeaveMetrics,
   computeStaffAnnualLeaveAlerts,
-  generateStaffAnnualLeaveAriaInsights,
+  generateStaffAnnualLeaveCaraInsights,
 };

@@ -95,32 +95,32 @@ export function useHrInspection() {
 
 // ── Cara suggestions (review queue + detail) ─────────────────────────────────
 
-export function useAriaSuggestions(params?: { homeId?: string; status?: string }) {
+export function useCaraSuggestions(params?: { homeId?: string; status?: string }) {
   const query = new URLSearchParams();
   if (params?.homeId) query.set("homeId", params.homeId);
   if (params?.status) query.set("status", params.status);
   return useQuery({
-    queryKey: ["il", "aria-suggestions", params],
+    queryKey: ["il", "cara-suggestions", params],
     queryFn: () => ilFetch<{ ok: boolean; items: unknown[]; persisted: boolean }>(`/cara-suggestions?${query}`),
   });
 }
 
-export function useAriaSuggestion(id?: string) {
+export function useCaraSuggestion(id?: string) {
   return useQuery({
-    queryKey: ["il", "aria-suggestion", id],
+    queryKey: ["il", "cara-suggestion", id],
     queryFn: () => ilFetch<{ ok: boolean; item: unknown; persisted: boolean }>(`/cara-suggestions?id=${id}`),
     enabled: !!id,
   });
 }
 
-export function useUpdateAriaSuggestion() {
+export function useUpdateCaraSuggestion() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data: Record<string, unknown>) =>
       ilFetch("/cara-suggestions", { method: "PATCH", body: JSON.stringify(data) }),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["il", "aria-suggestions"] });
-      qc.invalidateQueries({ queryKey: ["il", "aria-suggestion"] });
+      qc.invalidateQueries({ queryKey: ["il", "cara-suggestions"] });
+      qc.invalidateQueries({ queryKey: ["il", "cara-suggestion"] });
     },
   });
 }

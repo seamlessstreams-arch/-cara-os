@@ -69,7 +69,7 @@ export interface SCCIFAlert {
   message: string;
 }
 
-export interface AriaSCCIFInsight {
+export interface CaraSCCIFInsight {
   severity: "critical" | "warning" | "positive";
   text: string;
 }
@@ -80,7 +80,7 @@ export interface SCCIFIntelligenceResult {
   evidence_gaps: string[];
   action_tracker: ActionTracker;
   alerts: SCCIFAlert[];
-  insights: AriaSCCIFInsight[];
+  insights: CaraSCCIFInsight[];
 }
 
 // ── Constants ───────────────────────────────────────────────────────────────
@@ -300,7 +300,7 @@ export function computeSCCIFIntelligence(input: SCCIFIntelligenceInput): SCCIFIn
   }
 
   // ── Insights ────────────────────────────────────────────────────────────
-  const insights: AriaSCCIFInsight[] = [];
+  const insights: CaraSCCIFInsight[] = [];
 
   // Critical: Inadequate area
   for (const area of areas) {
