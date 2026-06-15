@@ -143,7 +143,7 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Restraint Records ─────────────────────────────────────────────────────
-  const restraintRecords: RestraintRecordInput[] = (store.restraintRecords ?? [])
+  const restraintRecords: RestraintRecordInput[] = (store.restraints ?? [])
     .filter((r: any) => r.child_id === childId)
     .map((r: any) => ({
       date: (r.date ?? r.incident_date ?? "").slice(0, 10),
