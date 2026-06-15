@@ -135,6 +135,7 @@ export default function OversightWorkflowPage() {
             key={selectedId ?? "example"}
             input={payload.input}
             result={payload.result}
+            recordId={recordMeta?.id}
           />
         </div>
       )}

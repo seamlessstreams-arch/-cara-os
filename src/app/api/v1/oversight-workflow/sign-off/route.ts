@@ -17,11 +17,13 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { db } from "@/lib/db/store";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS, type AppRole } from "@/lib/permissions";
 import {
   generateManagementOversight,
   generateWorkflowSignOff,
+  buildSignOffNote,
 } from "@/lib/oversight/management-oversight-engine";
 import type {
   OversightInput,
@@ -57,6 +59,9 @@ export function appRoleToSignOffRole(role: AppRole): SignOffRole {
 interface SignOffBody extends Partial<WorkflowSignOffInput> {
   /** Optional original input — when present the result is regenerated authoritatively. */
   input?: OversightInput;
+  /** When present, a successful sign-off is recorded against this source record. */
+  recordId?: string;
+  recordType?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -107,9 +112,21 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = generateWorkflowSignOff(signOffInput);
+
+    // On a successful sign-off, record the manager's decision against the source
+    // record so the oversight loop closes (the record drops off the "needs
+    // oversight" queue). Only the human's own decision is persisted — no AI, no
+    // external notification. Mutates only the in-memory store.
+    let persistedToRecord = false;
+    if (result.signed && body.recordId && body.recordType === "incident") {
+      const note = buildSignOffNote(body.finalProfessionalOversight, signOffInput.signOffRole);
+      const updated = db.incidents.addOversight(body.recordId, note, auth.userId);
+      persistedToRecord = !!updated;
+    }
+
     // Always 200: a blocked-but-evaluated sign-off is a valid result (signed:false
     // + blockers), not a transport error. Genuine failures use 400/403/500.
-    return NextResponse.json({ data: result });
+    return NextResponse.json({ data: { ...result, persistedToRecord } });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to process workflow sign-off", details: String(error) },

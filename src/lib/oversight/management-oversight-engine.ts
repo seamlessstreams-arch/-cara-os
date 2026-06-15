@@ -295,6 +295,14 @@ function minRoleForRisk(risk: RiskLevel): SignOffRole {
 export const SIGN_OFF_STATEMENT =
   "I confirm that I have reviewed the workflow, associated records, debriefs, referrals, plan adherence, actions and management oversight. Outstanding actions have been assigned with timescales, and any escalation required has been identified.";
 
+/** Build a concise oversight note to record against the source record on sign-off. */
+export function buildSignOffNote(finalProfessionalOversight: string, signedOffByRole: SignOffRole): string {
+  const trimmed = (finalProfessionalOversight ?? "").trim().replace(/\s+/g, " ");
+  const summary = trimmed.length > 400 ? `${trimmed.slice(0, 397)}…` : trimmed;
+  const attribution = `[Signed off via Workflow Assurance by ${signedOffByRole.replace(/_/g, " ")}.]`;
+  return summary ? `${summary}\n\n${attribution}` : attribution;
+}
+
 export function deriveSignOffBlockers(result: OversightResult, input: WorkflowSignOffInput): SignOffBlocker[] {
   const blockers: SignOffBlocker[] = [];
   const r = result;

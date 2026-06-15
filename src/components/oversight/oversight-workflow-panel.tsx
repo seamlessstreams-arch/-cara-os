@@ -104,7 +104,15 @@ function SectionCard({
   );
 }
 
-export function OversightWorkflowPanel({ input, result }: { input?: OversightInput; result: OversightResult }) {
+export function OversightWorkflowPanel({
+  input,
+  result,
+  recordId,
+}: {
+  input?: OversightInput;
+  result: OversightResult;
+  recordId?: string;
+}) {
   const [professional, setProfessional] = useState(result.professionalOversight ?? "");
   const [childText, setChildText] = useState(result.childAddressedOversight ?? "");
 
@@ -270,6 +278,7 @@ export function OversightWorkflowPanel({ input, result }: { input?: OversightInp
         <OversightSignOffPanel
           input={input}
           result={result}
+          recordId={recordId}
           finalProfessionalOversight={professional}
           childAddressedOversight={result.childAddressedSuppressed ? undefined : childText || undefined}
         />

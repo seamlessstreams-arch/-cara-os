@@ -9,7 +9,7 @@
 //   useWorkflowSignOff           → POST role-gated final sign-off
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "./use-api";
 import type {
   OversightInput,
@@ -30,7 +30,7 @@ interface GenerateResponse {
   data: { result: OversightResult; disclaimer: string };
 }
 interface SignOffResponse {
-  data: WorkflowSignOffResult;
+  data: WorkflowSignOffResult & { persistedToRecord?: boolean };
 }
 
 /** Deterministic worked example — lets the page render immediately, even in prod with no AI key. */
@@ -64,13 +64,24 @@ export interface SignOffVars {
   oversightChildModeRequested?: boolean;
   contradictionsUnresolved?: boolean;
   overrideReason?: string;
+  /** When set, a successful sign-off is recorded against this source record. */
+  recordId?: string;
+  recordType?: string;
 }
 
 /** Attempt final sign-off. Returns signed/blocked + blockers (always HTTP 200). */
 export function useWorkflowSignOff() {
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: (vars: SignOffVars) =>
       api.post<SignOffResponse>("/oversight-workflow/sign-off", vars),
+    onSuccess: (res) => {
+      // If the sign-off was recorded against a record, refresh the picker + record view.
+      if (res?.data?.persistedToRecord) {
+        qc.invalidateQueries({ queryKey: ["oversight-record-list"] });
+        qc.invalidateQueries({ queryKey: ["oversight-from-record"] });
+      }
+    },
   });
 }
 

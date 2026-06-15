@@ -3,6 +3,7 @@ import {
   generateManagementOversight,
   generateTaskOversight,
   generateWorkflowSignOff,
+  buildSignOffNote,
 } from "../management-oversight-engine";
 import { scanForBannedPhrases, BANNED_CHILD_PHRASES } from "../templates/child-addressed-templates";
 import type { OversightInput, WorkflowSignOffInput, OversightResult } from "../types";
@@ -490,6 +491,24 @@ describe("recording gaps", () => {
     const r = generateManagementOversight(base({ recordType: "incident", existingRiskLevel: "high", childVoiceCaptured: false }));
     expect(r.professionalOversight).toMatch(/Recording gaps/i);
     expect(r.professionalOversight).toMatch(/Child's voice/i);
+  });
+});
+
+// ── sign-off note (for persistence back to the record) ──────────────────────
+describe("buildSignOffNote", () => {
+  it("summarises the oversight and attributes the signing role", () => {
+    const note = buildSignOffNote("Reviewed and assured. No further action.", "registered_manager");
+    expect(note).toMatch(/Reviewed and assured/);
+    expect(note).toMatch(/Signed off via Workflow Assurance by registered manager/);
+  });
+  it("truncates a very long oversight and still attributes", () => {
+    const note = buildSignOffNote("x".repeat(900), "deputy_manager");
+    expect(note.length).toBeLessThan(900);
+    expect(note).toMatch(/…/);
+    expect(note).toMatch(/deputy manager/);
+  });
+  it("still produces an attribution when oversight text is blank", () => {
+    expect(buildSignOffNote("", "team_leader")).toMatch(/Signed off via Workflow Assurance by team leader/);
   });
 });
 

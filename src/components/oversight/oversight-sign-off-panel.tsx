@@ -41,11 +41,13 @@ export function OversightSignOffPanel({
   result,
   finalProfessionalOversight,
   childAddressedOversight,
+  recordId,
 }: {
   input?: OversightInput;
   result: OversightResult;
   finalProfessionalOversight: string;
   childAddressedOversight?: string;
+  recordId?: string;
 }) {
   const [actionsAssigned, setActionsAssigned] = useState(false);
   const [timescalesRecorded, setTimescalesRecorded] = useState(false);
@@ -54,7 +56,7 @@ export function OversightSignOffPanel({
   const [overrideReason, setOverrideReason] = useState("");
 
   const signOff = useWorkflowSignOff();
-  const data: WorkflowSignOffResult | undefined = signOff.data?.data;
+  const data: (WorkflowSignOffResult & { persistedToRecord?: boolean }) | undefined = signOff.data?.data;
 
   const childModeRequested = !!result.childAddressedSuppressed || !!childAddressedOversight;
 
@@ -70,6 +72,8 @@ export function OversightSignOffPanel({
       confirmChildFacingSafeOrSuppressed: childSafe,
       oversightChildModeRequested: childModeRequested,
       overrideReason: overrideReason.trim() || undefined,
+      recordId,
+      recordType: recordId ? "incident" : undefined,
     });
   }
 
@@ -129,6 +133,10 @@ export function OversightSignOffPanel({
               {data.signed ? "Workflow signed off" : "Sign-off blocked"}
             </p>
           </div>
+
+          {data.signed && data.persistedToRecord && (
+            <p className="mt-1.5 text-sm text-emerald-800">Recorded against the event — it will drop off the oversight queue.</p>
+          )}
 
           {!data.signed && data.reason && <p className="mt-1.5 text-sm text-amber-800">{data.reason}</p>}
 
