@@ -5,9 +5,94 @@ import {
 } from "@/lib/cara/writingStyleRules";
 import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropicClient } from "@/lib/anthropic-client";
+import { getStore } from "@/lib/db/store";
+import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
+import type { IncidentType } from "@/lib/constants";
 
 // Alias for backward compat — all call sites now go through the shared client
 const getClient = getAnthropicClient;
+
+// ─── Deterministic safeguarding scan (no AI key required) ────────────────────
+
+const SAFEGUARDING_TYPES = [
+  "safeguarding_concern", "exploitation_concern", "self_harm",
+  "missing_from_care", "contextual_safeguarding", "allegation",
+];
+
+function deterministicSafeguardingScan() {
+  const store = getStore();
+  const concerns = store.incidents.filter(
+    (i) => SAFEGUARDING_TYPES.includes(i.type) && i.status !== "closed",
+  );
+
+  // Group by incident type
+  const byType: Record<string, typeof concerns> = {};
+  concerns.forEach((c) => {
+    byType[c.type] ??= [];
+    byType[c.type].push(c);
+  });
+
+  // Build themes
+  const themes = Object.entries(byType).map(([type, incs]) => ({
+    theme: INCIDENT_TYPE_LABELS[type as IncidentType] ?? type,
+    incidents: incs.map((i) => (i as { reference?: string; id: string }).reference ?? i.id),
+    confidence: (incs.length > 2 ? "high" : incs.length > 1 ? "medium" : "low") as "high" | "medium" | "low",
+    escalation_flag: incs.some((i) => i.severity === "critical" || i.severity === "high"),
+    severity: incs.some((i) => i.severity === "critical")
+      ? "critical"
+      : incs.some((i) => i.severity === "high") ? "high" : "medium",
+  }));
+
+  // Overall risk: worst severity across all open concerns
+  const overallRisk: "critical" | "high" | "medium" | "low" =
+    concerns.some((c) => c.severity === "critical") ? "critical" :
+    concerns.some((c) => c.severity === "high") ? "high" :
+    concerns.some((c) => c.severity === "medium") ? "medium" : "low";
+
+  // Cross-YP patterns: same type affecting ≥2 children
+  const crossYpPatterns: string[] = [];
+  Object.entries(byType).forEach(([type, incs]) => {
+    const uniqueChildren = new Set(incs.map((i) => i.child_id)).size;
+    if (uniqueChildren > 1) {
+      crossYpPatterns.push(
+        `${INCIDENT_TYPE_LABELS[type as IncidentType] ?? type} is affecting ${uniqueChildren} young people — consider whether a whole-home safeguarding response is needed.`,
+      );
+    }
+  });
+
+  // Rule-based recommended actions
+  const recommended_actions: string[] = [];
+  if (concerns.some((c) => c.severity === "critical")) {
+    recommended_actions.push("Immediate management review required for all critical concerns. Consider statutory notification under Regulation 40.");
+  }
+  if (byType["exploitation_concern"]) {
+    recommended_actions.push("Review all exploitation-related concerns with the CSE lead. Consider MACE referral and NRM screening.");
+  }
+  if (byType["missing_from_care"]) {
+    recommended_actions.push("Ensure Return Home Interviews are completed for all missing episodes. Update risk assessments and notify the placing authority.");
+  }
+  const oversightPending = concerns.filter((c) => {
+    const inc = c as unknown as { requires_oversight?: boolean; oversight_by?: string | null };
+    return inc.requires_oversight && !inc.oversight_by;
+  });
+  if (oversightPending.length > 0) {
+    recommended_actions.push(`${oversightPending.length} open concern${oversightPending.length > 1 ? "s" : ""} require management oversight — complete these promptly as required by Regulation 40.`);
+  }
+  if (concerns.some((c) => c.severity === "high" || c.severity === "critical")) {
+    recommended_actions.push("Review strategy discussion outcomes and consider Section 47 thresholds where exploitation or significant harm is indicated.");
+  }
+  if (recommended_actions.length === 0) {
+    recommended_actions.push("Continue monitoring. Ensure all concerns are reviewed at the next supervision and Reg 45 cycle.");
+  }
+
+  return {
+    themes,
+    overall_risk: overallRisk,
+    cross_yp_patterns: crossYpPatterns,
+    recommended_actions,
+    timestamp: new Date().toISOString(),
+  };
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1099,6 +1184,38 @@ export async function POST(req: NextRequest) {
           "At least one of source_content, document_text, or question is required",
       },
       { status: 400 }
+    );
+  }
+
+  // ── Deterministic fallback when no AI key is configured ──────────────────────
+  //
+  // Prod has no ANTHROPIC_API_KEY. Rather than error, return real data computed
+  // deterministically from the store for modes that have a deterministic engine.
+  const hasAiKey = Boolean(process.env.ANTHROPIC_API_KEY);
+  if (!hasAiKey) {
+    if (mode === "safeguarding_scan") {
+      const result = deterministicSafeguardingScan();
+      return NextResponse.json({
+        data: {
+          response: result,
+          parsed: result,
+          mode: "safeguarding_scan",
+          style: resolvedStyle,
+          model: "deterministic",
+          input_tokens: 0,
+          output_tokens: 0,
+          cache_creation_input_tokens: 0,
+          cache_read_input_tokens: 0,
+        },
+      });
+    }
+    // Other modes: return a clear no-key message rather than crashing
+    return NextResponse.json(
+      {
+        error: "AI features require an ANTHROPIC_API_KEY. Configure it in the Vercel / hosting dashboard.",
+        data: { response: "Cara AI is not configured in this environment. Add your ANTHROPIC_API_KEY to enable AI-powered insights." },
+      },
+      { status: 200 },
     );
   }
 
