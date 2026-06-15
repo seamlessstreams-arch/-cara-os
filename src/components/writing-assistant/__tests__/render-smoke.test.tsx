@@ -3,6 +3,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { InlineSuggestions } from "../inline-suggestions";
 import { CaraWritingField } from "../cara-writing-field";
+import { WritingAssistantInline } from "../writing-assistant-inline";
 import { checkWriting } from "@/lib/writing-assistant/engine";
 
 const r = (el: React.ReactElement) => renderToStaticMarkup(el);
@@ -24,6 +25,12 @@ describe("writing-assistant UI render smoke", () => {
   it("CaraWritingField mounts (textarea only until a check returns) without throwing", () => {
     expect(() =>
       r(React.createElement(CaraWritingField, { value: "Some record text here.", onChange: () => {}, fieldName: "notes" })),
+    ).not.toThrow();
+  });
+
+  it("WritingAssistantInline mounts (renders nothing until a check returns) without throwing", () => {
+    expect(() =>
+      r(React.createElement(WritingAssistantInline, { value: "Some record text here.", onApplyText: () => {}, recordType: "daily_log", fieldName: "content" })),
     ).not.toThrow();
   });
 });
