@@ -13,11 +13,11 @@ import { usePremisesCompliance } from "@/hooks/use-premises-compliance";
 import type { ComplianceStatus, ComplianceItem, PremisesComplianceResult } from "@/lib/engines/premises-compliance-engine";
 
 const STATUS_META: Record<ComplianceStatus, { label: string; pill: string; rag: string; Icon: typeof Clock }> = {
-  overdue: { label: "Overdue", pill: "bg-red-100 text-red-700", rag: "cs-rag-red", Icon: AlertOctagon },
-  action: { label: "Action needed", pill: "bg-orange-100 text-orange-700", rag: "cs-rag-red", Icon: AlertTriangle },
-  due_soon: { label: "Due soon", pill: "bg-amber-100 text-amber-700", rag: "cs-rag-amber", Icon: Clock },
-  current: { label: "In date", pill: "bg-green-100 text-green-700", rag: "cs-rag-green", Icon: CheckCircle2 },
-  no_record: { label: "No record", pill: "bg-slate-100 text-slate-500", rag: "cs-rag-slate", Icon: FileQuestion },
+  overdue: { label: "Overdue", pill: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]", rag: "cs-rag-red", Icon: AlertOctagon },
+  action: { label: "Action needed", pill: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]", rag: "cs-rag-red", Icon: AlertTriangle },
+  due_soon: { label: "Due soon", pill: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]", rag: "cs-rag-amber", Icon: Clock },
+  current: { label: "In date", pill: "bg-[var(--cs-success-bg)] text-[var(--cs-success)]", rag: "cs-rag-green", Icon: CheckCircle2 },
+  no_record: { label: "No record", pill: "bg-[var(--cs-bg)] text-[var(--cs-text-muted)]", rag: "cs-rag-slate", Icon: FileQuestion },
 };
 
 function Stat({ value, label, tone, Icon }: { value: number | string; label: string; tone: string; Icon: typeof Clock }) {
@@ -46,15 +46,15 @@ function ItemRow({ item }: { item: ComplianceItem }) {
   const m = STATUS_META[item.status];
   const inner = (
     <div className={cn("flex items-center gap-3 rounded-lg border-l-4 px-3 py-2", m.rag,
-      item.status === "current" ? "bg-white" : item.status === "no_record" ? "bg-slate-50/50" : item.status === "due_soon" ? "bg-amber-50/40" : "bg-red-50/40")}>
+      item.status === "current" ? "bg-white" : item.status === "no_record" ? "bg-[var(--cs-bg)]" : item.status === "due_soon" ? "bg-[var(--cs-warning-bg)]" : "bg-[var(--cs-risk-bg)]")}>
       <m.Icon className={cn("h-4 w-4 shrink-0",
-        item.status === "overdue" || item.status === "action" ? "text-red-500" : item.status === "due_soon" ? "text-amber-500" : item.status === "current" ? "text-green-600" : "text-slate-400")} />
+        item.status === "overdue" || item.status === "action" ? "text-[var(--cs-risk)]" : item.status === "due_soon" ? "text-[var(--cs-warning)]" : item.status === "current" ? "text-[var(--cs-success)]" : "text-[var(--cs-text-gentle)]")} />
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-[var(--cs-navy)]">{item.label}</div>
         <div className="truncate text-[11px] text-[var(--cs-text-muted)]">{dueText(item)}</div>
       </div>
       <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold", m.pill)}>{m.label}</span>
-      {item.source_href && <ChevronRight className="h-4 w-4 shrink-0 text-slate-300 print:hidden" />}
+      {item.source_href && <ChevronRight className="h-4 w-4 shrink-0 text-[var(--cs-text-gentle)] print:hidden" />}
     </div>
   );
   return item.source_href ? <Link href={item.source_href} className="block transition-opacity hover:opacity-80">{inner}</Link> : inner;
@@ -70,12 +70,12 @@ function CategoryBlock({ data, category }: { data: PremisesComplianceResult; cat
         <div className="mb-2 flex items-center gap-2">
           <h2 className="text-sm font-bold text-[var(--cs-navy)]">{category}</h2>
           {roll && (roll.overdue + roll.action > 0
-            ? <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-bold text-red-700">{roll.overdue + roll.action} need action</span>
+            ? <span className="rounded-full bg-[var(--cs-risk-bg)] px-2 py-0.5 text-[11px] font-bold text-[var(--cs-risk)]">{roll.overdue + roll.action} need action</span>
             : roll.due_soon > 0
-              ? <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-700">{roll.due_soon} due soon</span>
+              ? <span className="rounded-full bg-[var(--cs-warning-bg)] px-2 py-0.5 text-[11px] font-bold text-[var(--cs-warning)]">{roll.due_soon} due soon</span>
               : roll.no_record > 0
-                ? <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-500">{roll.no_record} no record</span>
-                : <span className="rounded-full bg-green-100 px-2 py-0.5 text-[11px] font-bold text-green-700">all in date</span>)}
+                ? <span className="rounded-full bg-[var(--cs-bg)] px-2 py-0.5 text-[11px] font-bold text-[var(--cs-text-muted)]">{roll.no_record} no record</span>
+                : <span className="rounded-full bg-[var(--cs-success-bg)] px-2 py-0.5 text-[11px] font-bold text-[var(--cs-success)]">all in date</span>)}
         </div>
         <div className="space-y-1.5">
           {items.map((i) => <ItemRow key={i.key} item={i} />)}
@@ -97,7 +97,7 @@ export default function PremisesCompliancePage() {
       caraContext={{ pageTitle: "Premises & Safety Compliance", sourceType: "general" }}
       actions={
         <div className="flex items-center gap-2">
-          <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 print:hidden">
+          <button onClick={() => refetch()} className="inline-flex items-center gap-1.5 rounded-lg border bg-white px-3 py-1.5 text-xs font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-bg)] print:hidden">
             <RefreshCw className={cn("h-3.5 w-3.5", isFetching && "animate-spin")} /> Refresh
           </button>
           <PrintButton title="Premises & Safety Compliance" />
@@ -114,10 +114,10 @@ export default function PremisesCompliancePage() {
                 <div className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy)]"><Building2 className="h-4 w-4 text-[var(--cs-teal-strong)]" /> Chamberlain House — premises compliance</div>
                 <p className="mt-1 text-sm text-[var(--cs-text-secondary)]">{data.headline}</p>
                 <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-                  <Stat value={s.compliance_rate != null ? `${s.compliance_rate}%` : "—"} label="In date" tone="bg-green-50 border-green-200 text-green-800" Icon={ShieldCheck} />
-                  <Stat value={s.overdue} label="Overdue" tone="bg-red-50 border-red-200 text-red-800" Icon={AlertOctagon} />
-                  <Stat value={s.action} label="Action needed" tone="bg-orange-50 border-orange-200 text-orange-800" Icon={AlertTriangle} />
-                  <Stat value={s.due_soon} label="Due soon" tone="bg-amber-50 border-amber-200 text-amber-800" Icon={Clock} />
+                  <Stat value={s.compliance_rate != null ? `${s.compliance_rate}%` : "—"} label="In date" tone="bg-[var(--cs-success-bg)] border-[var(--cs-success-soft)] text-[var(--cs-success)]" Icon={ShieldCheck} />
+                  <Stat value={s.overdue} label="Overdue" tone="bg-[var(--cs-risk-bg)] border-[var(--cs-risk-soft)] text-[var(--cs-risk)]" Icon={AlertOctagon} />
+                  <Stat value={s.action} label="Action needed" tone="bg-[var(--cs-warning-bg)] border-[var(--cs-warning-soft)] text-[var(--cs-warning)]" Icon={AlertTriangle} />
+                  <Stat value={s.due_soon} label="Due soon" tone="bg-[var(--cs-warning-bg)] border-[var(--cs-warning-soft)] text-[var(--cs-warning)]" Icon={Clock} />
                   <Stat value={s.no_record} label="No record" tone="bg-[var(--cs-bg)] border-[var(--cs-border)] text-[var(--cs-navy)]" Icon={FileQuestion} />
                 </div>
               </CardContent>
@@ -125,9 +125,9 @@ export default function PremisesCompliancePage() {
 
             {/* Attention — overdue / failed / due-soon, ranked */}
             {data.attention.length > 0 && (
-              <Card className="border-2 border-red-200">
+              <Card className="border-2 border-[var(--cs-risk-soft)]">
                 <CardContent className="py-4">
-                  <div className="mb-2 flex items-center gap-2 text-sm font-bold text-red-700"><AlertTriangle className="h-4 w-4" /> Needs attention <span className="rounded-full bg-red-100 px-2 py-0.5 text-[11px]">{data.attention.length}</span></div>
+                  <div className="mb-2 flex items-center gap-2 text-sm font-bold text-[var(--cs-risk)]"><AlertTriangle className="h-4 w-4" /> Needs attention <span className="rounded-full bg-[var(--cs-risk-bg)] px-2 py-0.5 text-[11px]">{data.attention.length}</span></div>
                   <div className="space-y-1.5">
                     {data.attention.map((i) => <ItemRow key={i.key} item={i} />)}
                   </div>

@@ -377,23 +377,23 @@ const isOverdue = (iso?: string) => {
 
 const URGENCY_STYLES: Record<Urgency, { badge: string; border: string; label: string }> = {
   critical: {
-    badge: "bg-red-600 text-white border-transparent",
-    border: "border-l-red-600",
+    badge: "bg-[var(--cs-risk)] text-white border-transparent",
+    border: "border-l-[var(--cs-risk)]",
     label: "Critical",
   },
   high: {
-    badge: "bg-amber-500 text-white border-transparent",
-    border: "border-l-amber-500",
+    badge: "bg-[var(--cs-warning)] text-white border-transparent",
+    border: "border-l-[var(--cs-warning)]",
     label: "High",
   },
   medium: {
-    badge: "bg-blue-100 text-blue-800 border-transparent",
-    border: "border-l-blue-400",
+    badge: "bg-[var(--cs-info-bg)] text-[var(--cs-info)] border-transparent",
+    border: "border-l-[var(--cs-info)]",
     label: "Medium",
   },
   low: {
-    badge: "bg-slate-100 text-[var(--cs-text-secondary)] border-transparent",
-    border: "border-l-slate-300",
+    badge: "bg-[var(--cs-bg)] text-[var(--cs-text-secondary)] border-transparent",
+    border: "border-l-[var(--cs-border)]",
     label: "Low",
   },
 };
@@ -402,24 +402,24 @@ const URGENCY_STYLES: Record<Urgency, { badge: string; border: string; label: st
 
 const CATEGORY_META: Record<AttentionCategory, { label: string; badge: string; icon: React.ElementType }> = {
   log_approval:          { label: "Log Approval",          badge: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]", icon: ClipboardCheck },
-  incident_oversight:    { label: "Incident Oversight",    badge: "bg-orange-100 text-orange-800", icon: AlertCircle },
-  serious_incident:      { label: "Serious Incident",      badge: "bg-red-100 text-red-800",       icon: Siren },
-  missing_from_care:     { label: "Missing from Care",     badge: "bg-red-100 text-red-800",       icon: AlertTriangle },
-  risk_assessment_review:{ label: "Risk Assessment",       badge: "bg-amber-100 text-amber-800",   icon: ShieldAlert },
+  incident_oversight:    { label: "Incident Oversight",    badge: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]", icon: AlertCircle },
+  serious_incident:      { label: "Serious Incident",      badge: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",       icon: Siren },
+  missing_from_care:     { label: "Missing from Care",     badge: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",       icon: AlertTriangle },
+  risk_assessment_review:{ label: "Risk Assessment",       badge: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]",   icon: ShieldAlert },
   placement_plan_update: { label: "Placement Plan",        badge: "bg-sky-100 text-sky-800",       icon: FileText },
-  key_work_overdue:      { label: "Key Work Overdue",      badge: "bg-emerald-100 text-emerald-800", icon: UserCheck },
+  key_work_overdue:      { label: "Key Work Overdue",      badge: "bg-[var(--cs-success-bg)] text-[var(--cs-success)]", icon: UserCheck },
   wishes_feelings_missing:{ label: "Wishes & Feelings",    badge: "bg-pink-100 text-pink-800",     icon: MessageSquareWarning },
   medication_check:      { label: "Medication Check",      badge: "bg-teal-100 text-teal-800",     icon: Pill },
   supervision_overdue:   { label: "Supervision Overdue",   badge: "bg-indigo-100 text-indigo-800", icon: Users },
-  training_gap:          { label: "Training Gap",          badge: "bg-yellow-100 text-yellow-800", icon: GraduationCap },
-  recruitment_gap:       { label: "Recruitment Gap",       badge: "bg-rose-100 text-rose-800",     icon: FileSearch },
+  training_gap:          { label: "Training Gap",          badge: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]", icon: GraduationCap },
+  recruitment_gap:       { label: "Recruitment Gap",       badge: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",     icon: FileSearch },
   complaint_open:        { label: "Complaint Open",        badge: "bg-fuchsia-100 text-fuchsia-800", icon: MessageSquareWarning },
   reg44_action_overdue:  { label: "Reg 44 Action",         badge: "bg-cyan-100 text-cyan-800",     icon: Scale },
   reg45_evidence_gap:    { label: "Reg 45 Evidence",       badge: "bg-lime-100 text-lime-800",     icon: BookOpen },
-  task_overdue:          { label: "Task Overdue",          badge: "bg-stone-100 text-stone-800",   icon: Clock },
-  staff_debrief:         { label: "Staff Debrief",         badge: "bg-blue-100 text-blue-800",     icon: Users },
-  document_sign_off:     { label: "Document Sign-off",     badge: "bg-zinc-100 text-zinc-800",     icon: ClipboardList },
-  cara_pattern:          { label: "Cara Pattern",          badge: "bg-purple-100 text-purple-800", icon: Brain },
+  task_overdue:          { label: "Task Overdue",          badge: "bg-[var(--cs-bg)] text-[var(--cs-text)]",   icon: Clock },
+  staff_debrief:         { label: "Staff Debrief",         badge: "bg-[var(--cs-info-bg)] text-[var(--cs-info)]",     icon: Users },
+  document_sign_off:     { label: "Document Sign-off",     badge: "bg-[var(--cs-bg)] text-[var(--cs-text)]",     icon: ClipboardList },
+  cara_pattern:          { label: "Cara Pattern",          badge: "bg-[var(--cs-oversight-bg)] text-[var(--cs-oversight)]", icon: Brain },
 };
 
 const STATUS_LABELS: Record<AttentionStatus, string> = {
@@ -649,14 +649,14 @@ export default function ManagerControlCentrePage() {
     const patternsDetected = activeItems.filter((i) => i.category === "cara_pattern").length;
 
     return [
-      { label: "Critical Items",       value: criticalCount,     icon: AlertTriangle,        colour: "text-red-600" },
-      { label: "High Items",           value: highCount,         icon: AlertCircle,           colour: "text-amber-600" },
-      { label: "Incidents Needing Oversight", value: incidentOversight, icon: ShieldAlert,    colour: "text-orange-600" },
-      { label: "Overdue Tasks",         value: overdueCount,      icon: Clock,                colour: "text-rose-600" },
+      { label: "Critical Items",       value: criticalCount,     icon: AlertTriangle,        colour: "text-[var(--cs-risk)]" },
+      { label: "High Items",           value: highCount,         icon: AlertCircle,           colour: "text-[var(--cs-warning)]" },
+      { label: "Incidents Needing Oversight", value: incidentOversight, icon: ShieldAlert,    colour: "text-[var(--cs-warning)]" },
+      { label: "Overdue Tasks",         value: overdueCount,      icon: Clock,                colour: "text-[var(--cs-risk)]" },
       { label: "Supervision Gaps",      value: supervisionGaps,   icon: Users,                colour: "text-indigo-600" },
-      { label: "Training Gaps",         value: trainingGaps,      icon: GraduationCap,        colour: "text-yellow-600" },
+      { label: "Training Gaps",         value: trainingGaps,      icon: GraduationCap,        colour: "text-[var(--cs-warning)]" },
       { label: "Complaints Open",       value: complaintsOpen,    icon: MessageSquareWarning,  colour: "text-fuchsia-600" },
-      { label: "Patterns Detected",     value: patternsDetected,  icon: Brain,                colour: "text-purple-600" },
+      { label: "Patterns Detected",     value: patternsDetected,  icon: Brain,                colour: "text-[var(--cs-oversight)]" },
     ];
   }, [items]);
 
@@ -741,30 +741,30 @@ export default function ManagerControlCentrePage() {
 
       {/* ── cross-module intelligence ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-        <Card className="border-blue-100">
+        <Card className="border-[var(--cs-info-soft)]">
           <CardContent className="pt-4 pb-3 text-center">
-            <ClipboardCheck className={cn("h-5 w-5 mx-auto mb-1", moduleStats.inspectionReadiness >= 80 ? "text-green-600" : moduleStats.inspectionReadiness >= 50 ? "text-amber-600" : "text-red-600")} />
+            <ClipboardCheck className={cn("h-5 w-5 mx-auto mb-1", moduleStats.inspectionReadiness >= 80 ? "text-[var(--cs-success)]" : moduleStats.inspectionReadiness >= 50 ? "text-[var(--cs-warning)]" : "text-[var(--cs-risk)]")} />
             <p className="text-2xl font-bold">{moduleStats.inspectionReadiness}%</p>
             <p className="text-[11px] text-muted-foreground leading-tight">Inspection Readiness</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3 text-center">
-            <Activity className="h-5 w-5 mx-auto mb-1 text-blue-600" />
+            <Activity className="h-5 w-5 mx-auto mb-1 text-[var(--cs-info)]" />
             <p className="text-2xl font-bold">{moduleStats.totalAttentionOpen}</p>
             <p className="text-[11px] text-muted-foreground leading-tight">Open Items</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3 text-center">
-            <Siren className="h-5 w-5 mx-auto mb-1 text-orange-600" />
+            <Siren className="h-5 w-5 mx-auto mb-1 text-[var(--cs-warning)]" />
             <p className="text-2xl font-bold">{moduleStats.pendingReviews}</p>
             <p className="text-[11px] text-muted-foreground leading-tight">Incident Reviews Due</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3 text-center">
-            <CheckCircle2 className={cn("h-5 w-5 mx-auto mb-1", moduleStats.reg44ThisMonth ? "text-green-600" : "text-red-600")} />
+            <CheckCircle2 className={cn("h-5 w-5 mx-auto mb-1", moduleStats.reg44ThisMonth ? "text-[var(--cs-success)]" : "text-[var(--cs-risk)]")} />
             <p className="text-2xl font-bold">{moduleStats.reg44ThisMonth ? "Done" : "Due"}</p>
             <p className="text-[11px] text-muted-foreground leading-tight">Reg 44 This Month</p>
           </CardContent>
@@ -785,7 +785,7 @@ export default function ManagerControlCentrePage() {
         </Card>
         <Card>
           <CardContent className="pt-4 pb-3 text-center">
-            <BookOpen className="h-5 w-5 mx-auto mb-1 text-emerald-600" />
+            <BookOpen className="h-5 w-5 mx-auto mb-1 text-[var(--cs-success)]" />
             <p className="text-2xl font-bold">{moduleStats.evidenceCount}</p>
             <p className="text-[11px] text-muted-foreground leading-tight">Evidence Items</p>
           </CardContent>
@@ -794,13 +794,13 @@ export default function ManagerControlCentrePage() {
 
       {/* ── Cara proactive intelligence panel ─────────────────────────────── */}
       {caraAlerts.length > 0 && (
-        <div className="rounded-xl border border-violet-200 bg-violet-50 p-4 mb-4 flex items-start gap-3">
-          <Brain className="h-5 w-5 text-violet-600 shrink-0 mt-0.5" />
+        <div className="rounded-xl border border-[var(--cs-oversight-soft)] bg-[var(--cs-oversight-bg)] p-4 mb-4 flex items-start gap-3">
+          <Brain className="h-5 w-5 text-[var(--cs-oversight)] shrink-0 mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-violet-900">
+            <p className="text-sm font-semibold text-[var(--cs-oversight)]">
               Cara has detected {caraAlerts.length} proactive {caraAlerts.length === 1 ? "alert" : "alerts"} from live records
             </p>
-            <p className="text-xs text-violet-700 mt-0.5">
+            <p className="text-xs text-[var(--cs-oversight)] mt-0.5">
               {caraAlerts.filter((a) => a.severity === "urgent").length} urgent ·{" "}
               {caraAlerts.filter((a) => a.severity === "high").length} high ·{" "}
               {caraAlerts.filter((a) => a.severity === "medium").length} medium —
@@ -808,7 +808,7 @@ export default function ManagerControlCentrePage() {
             </p>
           </div>
           <Link href="/intelligence/cara/pattern-intelligence">
-            <Button size="sm" variant="outline" className="gap-1.5 text-violet-700 border-violet-300 hover:bg-violet-100 shrink-0">
+            <Button size="sm" variant="outline" className="gap-1.5 text-[var(--cs-oversight)] border-[var(--cs-oversight-soft)] hover:bg-[var(--cs-oversight-bg)] shrink-0">
               <ArrowUpRight className="h-3.5 w-3.5" />
               View all
             </Button>
@@ -818,13 +818,13 @@ export default function ManagerControlCentrePage() {
 
       {/* ── critical alert banner ─────────────────────────────────────────── */}
       {stats[0].value > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
-          <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="bg-[var(--cs-risk-bg)] border border-[var(--cs-risk-soft)] rounded-lg p-3 mb-4 flex items-start gap-2">
+          <AlertTriangle className="h-5 w-5 text-[var(--cs-risk)] shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-semibold text-red-800">
+            <p className="font-semibold text-[var(--cs-risk)]">
               {stats[0].value} critical {stats[0].value === 1 ? "item requires" : "items require"} immediate attention
             </p>
-            <p className="text-red-700">
+            <p className="text-[var(--cs-risk)]">
               Critical items may have regulatory, safeguarding, or child safety implications. These should be addressed before the end of your shift.
             </p>
           </div>
@@ -957,17 +957,17 @@ export default function ManagerControlCentrePage() {
                         variant="outline"
                         className={cn(
                           "text-[11px]",
-                          item.status === "open" && "bg-emerald-50 text-emerald-700",
-                          item.status === "in_progress" && "bg-blue-50 text-blue-700",
-                          item.status === "reviewed" && "bg-slate-50 text-[var(--cs-text-secondary)]",
-                          item.status === "escalated" && "bg-red-50 text-red-700",
-                          item.status === "closed" && "bg-gray-50 text-gray-500",
+                          item.status === "open" && "bg-[var(--cs-success-bg)] text-[var(--cs-success)]",
+                          item.status === "in_progress" && "bg-[var(--cs-info-bg)] text-[var(--cs-info)]",
+                          item.status === "reviewed" && "bg-[var(--cs-bg)] text-[var(--cs-text-secondary)]",
+                          item.status === "escalated" && "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",
+                          item.status === "closed" && "bg-[var(--cs-bg)] text-[var(--cs-text-muted)]",
                         )}
                       >
                         {STATUS_LABELS[item.status]}
                       </Badge>
                       {overdue && (
-                        <Badge variant="outline" className="text-[11px] bg-red-50 text-red-700 border-red-200">
+                        <Badge variant="outline" className="text-[11px] bg-[var(--cs-risk-bg)] text-[var(--cs-risk)] border-[var(--cs-risk-soft)]">
                           <Clock className="h-3 w-3 mr-0.5" />
                           Overdue
                         </Badge>
@@ -994,7 +994,7 @@ export default function ManagerControlCentrePage() {
                         </span>
                       )}
                       {item.dueDate && (
-                        <span className={cn("flex items-center gap-1", overdue && "text-red-600 font-medium")}>
+                        <span className={cn("flex items-center gap-1", overdue && "text-[var(--cs-risk)] font-medium")}>
                           <Clock className="h-3 w-3" />
                           Due {formatDate(item.dueDate)}
                         </span>
@@ -1029,12 +1029,12 @@ export default function ManagerControlCentrePage() {
                     </div>
 
                     {/* suggested action */}
-                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-1 flex items-center gap-1">
+                    <div className="bg-[var(--cs-info-bg)] border border-[var(--cs-info-soft)] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[var(--cs-info)] uppercase tracking-wide mb-1 flex items-center gap-1">
                         <Sparkles className="h-3.5 w-3.5" />
                         Suggested Action
                       </p>
-                      <p className="text-sm text-blue-800 leading-relaxed">
+                      <p className="text-sm text-[var(--cs-info)] leading-relaxed">
                         {item.suggestedAction}
                       </p>
                     </div>
@@ -1062,9 +1062,9 @@ export default function ManagerControlCentrePage() {
                         <p className="text-[var(--cs-navy)]">{formatDate(item.createdAt)}</p>
                       </div>
                       {item.dueDate && (
-                        <div className={cn("rounded-lg p-2.5", overdue ? "bg-red-50" : "bg-muted/40")}>
-                          <p className={cn("font-medium mb-0.5", overdue ? "text-red-600" : "text-[var(--cs-text-secondary)]")}>Due Date</p>
-                          <p className={cn(overdue ? "text-red-800 font-semibold" : "text-[var(--cs-navy)]")}>{formatDate(item.dueDate)}</p>
+                        <div className={cn("rounded-lg p-2.5", overdue ? "bg-[var(--cs-risk-bg)]" : "bg-muted/40")}>
+                          <p className={cn("font-medium mb-0.5", overdue ? "text-[var(--cs-risk)]" : "text-[var(--cs-text-secondary)]")}>Due Date</p>
+                          <p className={cn(overdue ? "text-[var(--cs-risk)] font-semibold" : "text-[var(--cs-navy)]")}>{formatDate(item.dueDate)}</p>
                         </div>
                       )}
                     </div>
@@ -1090,7 +1090,7 @@ export default function ManagerControlCentrePage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                        className="gap-1.5 border-[var(--cs-success-soft)] text-[var(--cs-success)] hover:bg-[var(--cs-success-bg)]"
                         onClick={(e) => {
                           e.stopPropagation();
                           updateItem.mutate({ id: item.id, status: "reviewed" });
@@ -1103,7 +1103,7 @@ export default function ManagerControlCentrePage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="gap-1.5 border-red-200 text-red-700 hover:bg-red-50"
+                        className="gap-1.5 border-[var(--cs-risk-soft)] text-[var(--cs-risk)] hover:bg-[var(--cs-risk-bg)]"
                         onClick={(e) => {
                           e.stopPropagation();
                           updateItem.mutate({ id: item.id, status: "escalated" });
