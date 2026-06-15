@@ -159,7 +159,7 @@
   --chart-3: var(--cs-avisaar-amber);
   --chart-4: var(--cs-avisaar-coral);
   --chart-5: var(--cs-avisaar-sage);
-  --radius: 0.875rem;
+  --radius: 0.5rem; /* Cara Calm: 8px — crisp & professional, not bubbly (was 0.875rem/14px) */
   --sidebar: var(--cs-navy);
   --sidebar-foreground: rgba(255, 255, 255, 0.85);
   --sidebar-primary: var(--cs-teal);

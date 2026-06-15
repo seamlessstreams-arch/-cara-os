@@ -18,6 +18,10 @@ const badgeVariants = cva(
         cara: "border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
         oversight: "border-transparent bg-purple-100 text-[var(--cs-oversight)]",
         risk: "border-transparent bg-red-50 text-[var(--cs-risk)]",
+        // Cara Calm severity vocabulary — at most ONE per row. Light tint + token text.
+        overdue: "border-transparent bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",
+        due: "border-transparent bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]",
+        watch: "border-transparent bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]",
       },
     },
     defaultVariants: { variant: "default" },
