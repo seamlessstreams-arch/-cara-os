@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useIncidents, useAddOversight, useCreateIncident } from "@/hooks/use-incidents";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
@@ -1106,6 +1107,14 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           label="Description *"
           placeholder="Describe what happened, what was observed, who was involved, any relevant context."
           rows={5}
+        />
+        <WritingAssistantInline
+          value={form.description}
+          onApplyText={(text) => setForm((p) => ({ ...p, description: text }))}
+          recordType="incident"
+          fieldName="description"
+          childId={form.child_id || undefined}
+          mode="standard"
         />
 
         <CaraCompose

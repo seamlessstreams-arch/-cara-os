@@ -21,6 +21,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
 import { useDailyLog, useCreateDailyLog } from "@/hooks/use-daily-log";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
@@ -188,6 +189,14 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
             label="Notes"
             placeholder="Record what happened, how the young person was, any significant events or observations..."
             rows={5}
+          />
+          <WritingAssistantInline
+            value={content}
+            onApplyText={setContent}
+            recordType="daily_log"
+            fieldName="content"
+            childId={childId || undefined}
+            mode="standard"
           />
 
           <div className="flex items-center gap-6">
