@@ -107,7 +107,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = generateWorkflowSignOff(signOffInput);
-    return NextResponse.json({ data: result }, { status: result.signed ? 200 : 422 });
+    // Always 200: a blocked-but-evaluated sign-off is a valid result (signed:false
+    // + blockers), not a transport error. Genuine failures use 400/403/500.
+    return NextResponse.json({ data: result });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to process workflow sign-off", details: String(error) },
