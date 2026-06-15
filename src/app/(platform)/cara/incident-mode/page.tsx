@@ -15,6 +15,7 @@ import {
 import { RestorativeConversationForm } from "@/components/cara/RestorativeConversationForm";
 import { PostIncidentReflectionForm } from "@/components/cara/PostIncidentReflectionForm";
 import { EntryAssist } from "@/components/forms/entry-assist";
+import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 
 const RISK_META: Record<string, { label: string; on: string; off: string }> = {
   low: { label: "Low", on: "bg-green-600 text-white", off: "bg-green-50 text-green-700 border-green-200" },
@@ -237,6 +238,11 @@ function SessionView({ sessionId, bundle, onBack }: { sessionId: string; bundle:
         </Card>
       )}
 
+      {/* practice reasoning — child context during live incident */}
+      {live && (
+        <InlinePracticeReasoning childId={session.child_id} childName={bundle.child_name} />
+      )}
+
       {/* timeline */}
       <Card>
         <CardContent className="py-4">
@@ -343,6 +349,9 @@ function PostIncidentPanel({ sessionId, bundle }: { sessionId: string; bundle: N
           </div>
         </CardContent>
       </Card>
+
+      {/* practice reasoning — child context for writing the post-incident record */}
+      <InlinePracticeReasoning childId={bundle.session.child_id} childName={bundle.child_name} />
 
       {/* child voice prompts */}
       <Card>
