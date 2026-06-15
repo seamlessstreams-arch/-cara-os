@@ -10,7 +10,6 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Workflow,
   Brain,
@@ -31,6 +30,7 @@ import { OversightSignOffPanel } from "./oversight-sign-off-panel";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlinePracticeLearning } from "@/components/practice-learning/inline-practice-learning";
 import { KnowledgeGraphInsights } from "@/components/knowledge-graph/knowledge-graph-insights";
+import { CaraWritingField } from "@/components/writing-assistant/cara-writing-field";
 import type { OversightInput, OversightResult, OversightAction } from "@/lib/oversight/types";
 
 function FindingGroup({ title, items }: { title: string; items: string[] }) {
@@ -243,11 +243,16 @@ export function OversightWorkflowPanel({
         title="Professional management oversight"
         description="Inspection-ready. Edit to add your professional judgement before sign-off."
       >
-        <Textarea
+        <CaraWritingField
           value={professional}
-          onChange={(e) => setProfessional(e.target.value)}
-          rows={16}
-          className="font-mono text-xs leading-relaxed"
+          onChange={setProfessional}
+          mode="management-oversight"
+          recordType="management_oversight"
+          fieldName="professional_oversight"
+          childId={childId}
+          knownNames={input?.childName ? [input.childName] : undefined}
+          minHeight={320}
+          aria-label="Professional management oversight"
         />
       </SectionCard>
 
@@ -258,12 +263,19 @@ export function OversightWorkflowPanel({
         description="A warm, plain-English version written to the child — only where it is safe to do so."
       >
         {!result.childAddressedSuppressed && childText && (
-          <Textarea
-            value={childText}
-            onChange={(e) => setChildText(e.target.value)}
-            rows={6}
-            className="mb-3 text-sm leading-relaxed"
-          />
+          <div className="mb-3">
+            <CaraWritingField
+              value={childText}
+              onChange={setChildText}
+              mode="writing-to-child"
+              recordType="child_addressed_oversight"
+              fieldName="child_addressed"
+              childId={childId}
+              knownNames={input?.childName ? [input.childName] : undefined}
+              minHeight={120}
+              aria-label="Child-addressed oversight"
+            />
+          </div>
         )}
         <ChildAddressedPreview
           text={childText}
