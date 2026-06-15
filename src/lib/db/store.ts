@@ -11329,11 +11329,16 @@ export const db = {
       ];
       for (const d of defs) {
         store.commsChannels.push({
-          id: generateId("ch"), home_id: homeId, type: d.type, name: d.name, description: null,
+          // Deterministic, stable id (NOT timestamp-based) so a channel id is identical across
+          // serverless instances — otherwise a channel id from one instance 404s on another,
+          // breaking message send/view on multi-instance prod.
+          id: `ch_${homeId}_${d.type}`, home_id: homeId, type: d.type, name: d.name, description: null,
           access: d.access, allowed_roles: d.allowed_roles ?? [], linked_child_id: null, linked_incident_id: null,
           sensitivity: d.sensitivity, is_archived: false, created_by: "system", created_at: now, updated_at: now,
         });
       }
+      // Seed realistic message threads so channels aren't empty (deterministic ids + real staff).
+      db.commsMessages.seedDefaults(homeId);
     },
     findForHome: (homeId: string): CommsChannel[] => {
       db.commsChannels.seedDefaults(homeId);
@@ -11385,6 +11390,34 @@ export const db = {
       if (idx === -1) return null;
       store.commsMessages[idx] = { ...store.commsMessages[idx], ...updates, updated_at: new Date().toISOString() };
       return store.commsMessages[idx];
+    },
+    /** Seed realistic demo threads once per home (deterministic ids + real seeded staff). */
+    seedDefaults: (homeId: string): void => {
+      if (store.commsMessages.some((m) => m.home_id === homeId)) return;
+      const chan = (type: string) => `ch_${homeId}_${type}`;
+      const base = Date.now();
+      const at = (h: number) => new Date(base - h * 3600_000).toISOString();
+      const defs: Array<{ type: string; author: string; body: string; h: number; priority?: CommsMessage["priority"]; ack?: boolean }> = [
+        { type: "home_announcements", author: "staff_darren", body: "Welcome to the Comms Centre — this replaces WhatsApp and personal email for all home communication. Role-based, shift-aware and fully auditable.", h: 30 },
+        { type: "home_announcements", author: "staff_darren", body: "Reminder: please keep daily logs up to date before the end of each shift — our Reg 44 visit is coming up.", h: 6, ack: true },
+        { type: "shift_handover", author: "staff_ryan", body: "Early-shift handover: Alex settled and attended school; Casey needs a GP appointment booked; no overnight incidents.", h: 4 },
+        { type: "shift_handover", author: "staff_anna", body: "Late-shift handover: all young people in by curfew, Jordan completed a key-work session, medication given as scheduled.", h: 1 },
+        { type: "managers_seniors", author: "staff_darren", body: "Supervision slots for this month are on the rota — please confirm yours by Friday.", h: 28 },
+        { type: "medication_updates", author: "staff_ryan", body: "Casey's PRN guidance has been updated per the GP letter — read the MAR chart before administering.", h: 9, priority: "urgent", ack: true },
+        { type: "safeguarding_alerts", author: "staff_alicia", body: "Contextual safeguarding briefing: extra awareness around the town-centre location flagged this week. Raise any concerns with the DSL.", h: 12, priority: "urgent", ack: true },
+        { type: "rota_cover", author: "staff_anna", body: "Can anyone cover the waking night this Friday? Please reply here.", h: 7 },
+      ];
+      let i = 0;
+      for (const d of defs) {
+        const ts = at(d.h);
+        store.commsMessages.push({
+          id: `msg_${homeId}_${d.type}_${i++}`, channel_id: chan(d.type), home_id: homeId, author_id: d.author,
+          body: d.body, priority: d.priority ?? "normal", requires_acknowledgement: !!d.ack,
+          linked_child_id: null, linked_incident_id: null, linked_record_type: null, linked_record_id: null,
+          edited: false, edit_history: [], is_deleted: false, deleted_at: null, deleted_by: null,
+          retention_category: "routine_messages", investigation_hold: false, created_at: ts, updated_at: ts,
+        });
+      }
     },
   },
   commsMessageReceipts: {
