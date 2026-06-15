@@ -6,18 +6,54 @@
 // A manager's single view of the whole professional response to an event:
 // deterministic professional oversight, a safe child-addressed version, complete
 // workflow visibility, Cara Intelligence, actions and role-gated sign-off.
-// Loads a deterministic worked example so it works in any environment.
+// Choose a real event to review, or explore the worked example.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { ShieldCheck, Loader2, Lock, Info } from "lucide-react";
-import { useOversightWorkflowExample } from "@/hooks/use-oversight-workflow";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ShieldCheck, Loader2, Lock, Info, ListChecks, Sparkles } from "lucide-react";
+import {
+  useOversightWorkflowExample,
+  useOversightRecordList,
+  useOversightFromRecord,
+} from "@/hooks/use-oversight-workflow";
 import { OversightWorkflowPanel } from "@/components/oversight/oversight-workflow-panel";
+import { OversightRecordPicker } from "@/components/oversight/oversight-record-picker";
 
 export default function OversightWorkflowPage() {
-  const { data, isLoading, isError, error } = useOversightWorkflowExample();
-  const payload = data?.data;
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Deep-link support (?id=) without useSearchParams, so the static page needs no
+  // Suspense boundary. Read once on mount; reflect changes via replaceState.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("id");
+    if (id) setSelectedId(id);
+  }, []);
+
+  function syncUrl(id: string | null) {
+    const url = new URL(window.location.href);
+    if (id) url.searchParams.set("id", id);
+    else url.searchParams.delete("id");
+    window.history.replaceState({}, "", url);
+  }
+  function select(id: string) {
+    setSelectedId(id);
+    syncUrl(id);
+  }
+  function showExample() {
+    setSelectedId(null);
+    syncUrl(null);
+  }
+
+  const list = useOversightRecordList();
+  const fromRecord = useOversightFromRecord(selectedId);
+  const example = useOversightWorkflowExample();
+
+  const usingRecord = !!selectedId;
+  const active = usingRecord ? fromRecord : example;
+  const payload = usingRecord ? fromRecord.data?.data : example.data?.data;
+  const recordMeta = usingRecord ? fromRecord.data?.data.record : undefined;
 
   return (
     <PageShell
@@ -25,21 +61,58 @@ export default function OversightWorkflowPage() {
       subtitle="Management oversight across the whole workflow — deterministic, inspection-ready"
       icon={<ShieldCheck className="h-5 w-5" />}
     >
-      {isLoading && (
+      {/* Record picker */}
+      <Card className="mb-4">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ListChecks className="h-4 w-4 text-[var(--cs-teal,#0d9488)]" />
+            Choose an event to review
+          </CardTitle>
+          <CardDescription>
+            Run management oversight on a real event, or explore the worked example.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {list.isLoading ? (
+            <div className="flex items-center gap-2 py-2 text-sm text-[var(--cs-text-muted)]">
+              <Loader2 className="h-4 w-4 animate-spin" /> Loading recent events…
+            </div>
+          ) : list.isError ? (
+            <p className="text-sm text-[var(--cs-text-muted)]">Recent events are unavailable for your role.</p>
+          ) : (
+            <>
+              <OversightRecordPicker
+                records={list.data?.data.records ?? []}
+                selectedId={selectedId}
+                onSelect={select}
+              />
+              <button
+                onClick={showExample}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--cs-teal,#0d9488)] hover:underline"
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Explore the worked example instead
+              </button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Active oversight */}
+      {active.isLoading && (
         <div className="flex items-center gap-2 py-12 text-[var(--cs-text-muted)]">
           <Loader2 className="h-4 w-4 animate-spin" />
           Preparing the oversight workflow…
         </div>
       )}
 
-      {isError && (
+      {active.isError && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
           <Lock className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" aria-hidden />
           <div>
-            <p className="text-sm font-medium text-amber-900">Management oversight is not available for your role</p>
+            <p className="text-sm font-medium text-amber-900">This oversight is not available</p>
             <p className="text-sm text-amber-800">
-              {(error as Error)?.message ??
-                "You need the add-oversight permission to view workflow assurance."}
+              {(active.error as Error)?.message ??
+                "You need the add-oversight permission, or the record could not be found."}
             </p>
           </div>
         </div>
@@ -49,9 +122,20 @@ export default function OversightWorkflowPage() {
         <div className="space-y-4">
           <div className="flex items-start gap-2 rounded-xl border border-[var(--cs-border-subtle)] bg-[var(--cs-surface)] px-4 py-3">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-teal,#0d9488)]" aria-hidden />
-            <p className="text-xs leading-relaxed text-[var(--cs-text-muted)]">{payload.disclaimer}</p>
+            <div className="space-y-0.5">
+              <p className="text-sm font-medium text-[var(--cs-navy)]">
+                {recordMeta
+                  ? `Reviewing ${recordMeta.reference} — ${recordMeta.type.replace(/_/g, " ")} for ${recordMeta.childName}`
+                  : "Worked example (deterministic)"}
+              </p>
+              <p className="text-xs leading-relaxed text-[var(--cs-text-muted)]">{payload.disclaimer}</p>
+            </div>
           </div>
-          <OversightWorkflowPanel input={payload.input} result={payload.result} />
+          <OversightWorkflowPanel
+            key={selectedId ?? "example"}
+            input={payload.input}
+            result={payload.result}
+          />
         </div>
       )}
     </PageShell>

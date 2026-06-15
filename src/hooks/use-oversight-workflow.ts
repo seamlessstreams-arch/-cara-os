@@ -73,3 +73,48 @@ export function useWorkflowSignOff() {
       api.post<SignOffResponse>("/oversight-workflow/sign-off", vars),
   });
 }
+
+// ─── Oversight from a real record ────────────────────────────────────────────
+
+export interface OversightRecordOption {
+  id: string;
+  recordType: string;
+  reference: string;
+  type: string;
+  severity: string;
+  date: string;
+  childName: string;
+  requiresOversight: boolean;
+  oversightDone: boolean;
+}
+interface RecordListResponse {
+  data: { records: OversightRecordOption[] };
+}
+export interface FromRecordPayload {
+  record: { id: string; reference: string; type: string; severity: string; date: string; childName: string };
+  input: OversightInput;
+  result: OversightResult;
+  disclaimer: string;
+}
+interface FromRecordResponse {
+  data: FromRecordPayload;
+}
+
+/** Recent records (incidents) available to run oversight on — for the picker. */
+export function useOversightRecordList() {
+  return useQuery({
+    queryKey: ["oversight-record-list"],
+    queryFn: () => api.get<RecordListResponse>("/oversight-workflow/from-record"),
+    staleTime: 60 * 1000,
+  });
+}
+
+/** Generate oversight for a specific real record (incident). Enabled only when an id is given. */
+export function useOversightFromRecord(id: string | null) {
+  return useQuery({
+    queryKey: ["oversight-from-record", id],
+    queryFn: () =>
+      api.get<FromRecordResponse>(`/oversight-workflow/from-record?recordType=incident&id=${encodeURIComponent(id!)}`),
+    enabled: !!id,
+  });
+}
