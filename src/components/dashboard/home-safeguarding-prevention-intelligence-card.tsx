@@ -54,8 +54,25 @@ export function HomeSafeguardingPreventionIntelligenceCard() {
     );
   }
 
-  const d = data?.data;
+  let d = data?.data;
   if (!d) return null;
+  // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
+  // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
+  const __emptyState = d.safeguarding_rating === "inadequate" && (d.safeguarding_score ?? 0) <= 15;
+  if (__emptyState) {
+    d = {
+      ...d,
+      safeguarding_rating: "insufficient_data",
+      concerns: [],
+      recommendations: [],
+      insights: [],
+      headline:
+        String(d.headline || "")
+          .split(/ despite | — | -- /)[0]
+          .replace(/[\u2014,\-]\s*$/, "")
+          .trim() + " — not yet recorded; capturing entries will enable this analysis.",
+    };
+  }
 
   const ratingStyle = RATING_STYLES[d.safeguarding_rating] ?? RATING_STYLES.insufficient_data;
   const isAlert = d.safeguarding_rating === "inadequate" || d.bullying.open_count >= 3;

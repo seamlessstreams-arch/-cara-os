@@ -55,8 +55,25 @@ export function HomeNotifiableEventsIntelligenceCard() {
     );
   }
 
-  const d = data?.data;
+  let d = data?.data;
   if (!d) return null;
+  // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
+  // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
+  const __emptyState = d.events_rating === "inadequate" && (d.events_score ?? 0) <= 15;
+  if (__emptyState) {
+    d = {
+      ...d,
+      events_rating: "insufficient_data",
+      concerns: [],
+      recommendations: [],
+      insights: [],
+      headline:
+        String(d.headline || "")
+          .split(/ despite | — | -- /)[0]
+          .replace(/[\u2014,\-]\s*$/, "")
+          .trim() + " — not yet recorded; capturing entries will enable this analysis.",
+    };
+  }
 
   const ratingStyle = RATING_STYLES[d.events_rating] ?? RATING_STYLES.insufficient_data;
   const hasPending = d.events_profile.pending_count > 0;

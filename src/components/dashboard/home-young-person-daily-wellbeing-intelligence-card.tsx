@@ -19,8 +19,25 @@ const INSIGHT_STYLES: Record<string, string> = { critical: "border-red-200 bg-re
 export function HomeYoungPersonDailyWellbeingIntelligenceCard() {
   const { data, isLoading } = useHomeYoungPersonDailyWellbeingIntelligence();
   if (isLoading) return <Card className="overflow-hidden border-slate-200"><CardContent className="flex items-center justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></CardContent></Card>;
-  const d = data?.data ?? data;
+  let d = data?.data ?? data;
   if (!d) return null;
+  // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
+  // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
+  const __emptyState = d.wellbeing_rating === "inadequate" && (d.wellbeing_score ?? 0) <= 15;
+  if (__emptyState) {
+    d = {
+      ...d,
+      wellbeing_rating: "insufficient_data",
+      concerns: [],
+      recommendations: [],
+      insights: [],
+      headline:
+        String(d.headline || "")
+          .split(/ despite | — | -- /)[0]
+          .replace(/[\u2014,\-]\s*$/, "")
+          .trim() + " — not yet recorded; capturing entries will enable this analysis.",
+    };
+  }
   const ratingStyle = RATING_STYLES[d.wellbeing_rating as YPDailyWellbeingRating] ?? RATING_STYLES.insufficient_data;
   const isAlert = d.wellbeing_rating === "inadequate";
 

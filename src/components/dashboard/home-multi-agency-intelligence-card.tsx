@@ -54,8 +54,25 @@ export function HomeMultiAgencyIntelligenceCard() {
     );
   }
 
-  const d = data?.data;
+  let d = data?.data;
   if (!d) return null;
+  // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
+  // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
+  const __emptyState = d.multi_agency_rating === "inadequate" && (d.multi_agency_score ?? 0) <= 15;
+  if (__emptyState) {
+    d = {
+      ...d,
+      multi_agency_rating: "insufficient_data",
+      concerns: [],
+      recommendations: [],
+      insights: [],
+      headline:
+        String(d.headline || "")
+          .split(/ despite | — | -- /)[0]
+          .replace(/[\u2014,\-]\s*$/, "")
+          .trim() + " — not yet recorded; capturing entries will enable this analysis.",
+    };
+  }
 
   const ratingStyle = RATING_STYLES[d.multi_agency_rating] ?? RATING_STYLES.insufficient_data;
   const isAlert = d.multi_agency_rating === "inadequate" || d.iro.overdue_responses >= 3;

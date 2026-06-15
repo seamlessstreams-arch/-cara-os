@@ -55,8 +55,25 @@ export function HomeOnCallGovernanceIntelligenceCard() {
     );
   }
 
-  const d = data?.data;
+  let d = data?.data;
   if (!d) return null;
+  // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
+  // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
+  const __emptyState = d.on_call_rating === "inadequate" && (d.on_call_score ?? 0) <= 15;
+  if (__emptyState) {
+    d = {
+      ...d,
+      on_call_rating: "insufficient_data",
+      concerns: [],
+      recommendations: [],
+      insights: [],
+      headline:
+        String(d.headline || "")
+          .split(/ despite | — | -- /)[0]
+          .replace(/[\u2014,\-]\s*$/, "")
+          .trim() + " — not yet recorded; capturing entries will enable this analysis.",
+    };
+  }
 
   const ratingStyle = RATING_STYLES[d.on_call_rating] ?? RATING_STYLES.insufficient_data;
   const isAlert = d.on_call_rating === "inadequate" || d.workload.critical_incidents_total > 2;

@@ -55,8 +55,25 @@ export function HomePremisesSafetyIntelligenceCard() {
     );
   }
 
-  const d = data?.data;
+  let d = data?.data;
   if (!d) return null;
+  // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
+  // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
+  const __emptyState = d.premises_rating === "inadequate" && (d.premises_score ?? 0) <= 15;
+  if (__emptyState) {
+    d = {
+      ...d,
+      premises_rating: "insufficient_data",
+      concerns: [],
+      recommendations: [],
+      insights: [],
+      headline:
+        String(d.headline || "")
+          .split(/ despite | — | -- /)[0]
+          .replace(/[\u2014,\-]\s*$/, "")
+          .trim() + " — not yet recorded; capturing entries will enable this analysis.",
+    };
+  }
 
   const ratingStyle = RATING_STYLES[d.premises_rating] ?? RATING_STYLES.insufficient_data;
   const hasExpiredCerts = d.certification_profile.expired_count > 0;

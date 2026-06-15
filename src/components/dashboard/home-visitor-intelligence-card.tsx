@@ -56,8 +56,25 @@ export function HomeVisitorIntelligenceCard() {
     );
   }
 
-  const d = data?.data;
+  let d = data?.data;
   if (!d) return null;
+  // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
+  // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
+  const __emptyState = d.visitor_rating === "inadequate" && (d.visitor_score ?? 0) <= 15;
+  if (__emptyState) {
+    d = {
+      ...d,
+      visitor_rating: "insufficient_data",
+      concerns: [],
+      recommendations: [],
+      insights: [],
+      headline:
+        String(d.headline || "")
+          .split(/ despite | — | -- /)[0]
+          .replace(/[\u2014,\-]\s*$/, "")
+          .trim() + " — not yet recorded; capturing entries will enable this analysis.",
+    };
+  }
 
   const ratingStyle = RATING_STYLES[d.visitor_rating] ?? RATING_STYLES.insufficient_data;
   const lowDbs = d.access_compliance.dbs_check_rate < 70 && d.access_compliance.total_visitors_90d > 0;

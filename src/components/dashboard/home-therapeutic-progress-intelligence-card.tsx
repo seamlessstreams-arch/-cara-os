@@ -55,8 +55,25 @@ export function HomeTherapeuticProgressIntelligenceCard() {
     );
   }
 
-  const d = data?.data;
+  let d = data?.data;
   if (!d) return null;
+  // Calm reframe: an empty-with-children engine result (inadequate + score<=15) is
+  // 'not yet recorded', not a failing home — render it as honest, neutral insufficient_data.
+  const __emptyState = d.therapeutic_rating === "inadequate" && (d.therapeutic_score ?? 0) <= 15;
+  if (__emptyState) {
+    d = {
+      ...d,
+      therapeutic_rating: "insufficient_data",
+      concerns: [],
+      recommendations: [],
+      insights: [],
+      headline:
+        String(d.headline || "")
+          .split(/ despite | — | -- /)[0]
+          .replace(/[\u2014,\-]\s*$/, "")
+          .trim() + " — not yet recorded; capturing entries will enable this analysis.",
+    };
+  }
 
   const ratingStyle = RATING_STYLES[d.therapeutic_rating] ?? RATING_STYLES.insufficient_data;
   const isAlert = d.therapeutic_rating === "inadequate" || d.behaviour_map.crisis_count >= 5;
