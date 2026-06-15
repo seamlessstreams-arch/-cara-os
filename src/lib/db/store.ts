@@ -623,6 +623,51 @@ export interface StoredPushSubscription {
   created_at: string;
 }
 
+// ── Writing Assistant audit seed (demo realism) ──────────────────────────────
+
+const WA_AUDIT_SEED: WritingAuditEvent[] = [
+  // staff_darren — daily log entries
+  { id: "waud_s001", user_id: "staff_darren", record_type: "daily_log", field_name: "content", child_id: "yp_alex", issue_type: "safeguarding-quality", action: "accepted", original_text: "kicked off", replacement_text: "became distressed and dysregulated", created_at: daysFromNow(-1) },
+  { id: "waud_s002", user_id: "staff_darren", record_type: "daily_log", field_name: "content", child_id: "yp_alex", issue_type: "tone", action: "accepted", original_text: "attention-seeking", replacement_text: "seeking connection", created_at: daysFromNow(-1) },
+  { id: "waud_s003", user_id: "staff_darren", record_type: "incident", field_name: "description", child_id: "yp_jordan", issue_type: "safeguarding-quality", action: "accepted", original_text: "refusing to engage", replacement_text: "", created_at: daysFromNow(-2) },
+  { id: "waud_s004", user_id: "staff_darren", record_type: "handover", field_name: "key_notes", child_id: "yp_alex", issue_type: "grammar", action: "accepted", original_text: "didnt", replacement_text: "didn't", created_at: daysFromNow(-2) },
+  { id: "waud_s005", user_id: "staff_darren", record_type: "daily_log", field_name: "content", child_id: "yp_casey", issue_type: "clarity", action: "ignored", original_text: "the situation", replacement_text: "", created_at: daysFromNow(-3) },
+  { id: "waud_s006", user_id: "staff_darren", record_type: "incident", field_name: "immediate_action", child_id: "yp_jordan", issue_type: "tone", action: "accepted", original_text: "manipulative", replacement_text: "presenting behaviours that appear controlling", created_at: daysFromNow(-4) },
+  { id: "waud_s007", user_id: "staff_darren", record_type: "return_interview", field_name: "interview_notes", child_id: "yp_alex", issue_type: "safeguarding-quality", action: "accepted", original_text: "returned safe and well", replacement_text: "", created_at: daysFromNow(-5) },
+  { id: "waud_s008", user_id: "staff_darren", record_type: "daily_log", field_name: "content", child_id: "yp_alex", issue_type: "spelling", action: "accepted", original_text: "behavior", replacement_text: "behaviour", created_at: daysFromNow(-6) },
+  { id: "waud_s009", user_id: "staff_darren", record_type: "handover", field_name: "general_notes", issue_type: "professional-language", action: "ignored", original_text: "the kid was fine", replacement_text: "", created_at: daysFromNow(-7) },
+  { id: "waud_s010", user_id: "staff_darren", record_type: "sanction_reward", field_name: "description", child_id: "yp_jordan", issue_type: "writing-to-child", action: "accepted", original_text: "the child", replacement_text: "", created_at: daysFromNow(-8) },
+  // staff_anna — daily log + key-work
+  { id: "waud_s011", user_id: "staff_anna", record_type: "daily_log", field_name: "content", child_id: "yp_jordan", issue_type: "safeguarding-quality", action: "ignored", original_text: "kicked off", replacement_text: "", created_at: daysFromNow(-1) },
+  { id: "waud_s012", user_id: "staff_anna", record_type: "daily_log", field_name: "content", child_id: "yp_jordan", issue_type: "grammar", action: "accepted", original_text: "wouldnt", replacement_text: "wouldn't", created_at: daysFromNow(-2) },
+  { id: "waud_s013", user_id: "staff_anna", record_type: "1to1_keywork", field_name: "child_brought_up", child_id: "yp_jordan", issue_type: "clarity", action: "accepted", original_text: "various things", replacement_text: "", created_at: daysFromNow(-3) },
+  { id: "waud_s014", user_id: "staff_anna", record_type: "daily_log", field_name: "content", child_id: "yp_alex", issue_type: "tone", action: "accepted", original_text: "noncompliant", replacement_text: "not following the agreed boundaries", created_at: daysFromNow(-5) },
+  { id: "waud_s015", user_id: "staff_anna", record_type: "incident", field_name: "description", child_id: "yp_casey", issue_type: "safeguarding-quality", action: "accepted", original_text: "kicked off", replacement_text: "", created_at: daysFromNow(-6) },
+  { id: "waud_s016", user_id: "staff_anna", record_type: "daily_log", field_name: "content", child_id: "yp_alex", issue_type: "spelling", action: "accepted", original_text: "accomodation", replacement_text: "accommodation", created_at: daysFromNow(-9) },
+  { id: "waud_s017", user_id: "staff_anna", record_type: "handover", field_name: "key_notes", child_id: "yp_jordan", issue_type: "writing-to-child", action: "ignored", original_text: "the YP", replacement_text: "", created_at: daysFromNow(-12) },
+  // staff_ryan — incidents + handovers
+  { id: "waud_s018", user_id: "staff_ryan", record_type: "incident", field_name: "description", child_id: "yp_alex", issue_type: "tone", action: "ignored", original_text: "aggressive", replacement_text: "", created_at: daysFromNow(-2) },
+  { id: "waud_s019", user_id: "staff_ryan", record_type: "incident", field_name: "immediate_action", child_id: "yp_alex", issue_type: "safeguarding-quality", action: "accepted", original_text: "de-escalated", replacement_text: "", created_at: daysFromNow(-2) },
+  { id: "waud_s020", user_id: "staff_ryan", record_type: "daily_log", field_name: "content", child_id: "yp_casey", issue_type: "grammar", action: "accepted", original_text: "couldnt", replacement_text: "couldn't", created_at: daysFromNow(-4) },
+  { id: "waud_s021", user_id: "staff_ryan", record_type: "behaviour_log", field_name: "behaviour", child_id: "yp_jordan", issue_type: "safeguarding-quality", action: "accepted", original_text: "kicked off again", replacement_text: "", created_at: daysFromNow(-7) },
+  { id: "waud_s022", user_id: "staff_ryan", record_type: "handover", field_name: "general_notes", issue_type: "clarity", action: "ignored", original_text: "as per usual", replacement_text: "", created_at: daysFromNow(-10) },
+  // staff_chervelle — sanctions + behaviour
+  { id: "waud_s023", user_id: "staff_chervelle", record_type: "sanction_reward", field_name: "description", child_id: "yp_casey", issue_type: "tone", action: "accepted", original_text: "misbehaving", replacement_text: "presenting challenging behaviour", created_at: daysFromNow(-1) },
+  { id: "waud_s024", user_id: "staff_chervelle", record_type: "behaviour_log", field_name: "behaviour", child_id: "yp_casey", issue_type: "safeguarding-quality", action: "accepted", original_text: "went mental", replacement_text: "", created_at: daysFromNow(-3) },
+  { id: "waud_s025", user_id: "staff_chervelle", record_type: "daily_log", field_name: "content", child_id: "yp_casey", issue_type: "spelling", action: "accepted", original_text: "seperate", replacement_text: "separate", created_at: daysFromNow(-5) },
+  { id: "waud_s026", user_id: "staff_chervelle", record_type: "daily_log", field_name: "content", child_id: "yp_alex", issue_type: "writing-to-child", action: "accepted", original_text: "the resident", replacement_text: "", created_at: daysFromNow(-8) },
+  { id: "waud_s027", user_id: "staff_chervelle", record_type: "handover", field_name: "key_notes", child_id: "yp_casey", issue_type: "clarity", action: "ignored", original_text: "things were ok", replacement_text: "", created_at: daysFromNow(-14) },
+  // staff_lackson + staff_edward — recent entries
+  { id: "waud_s028", user_id: "staff_lackson", record_type: "incident", field_name: "description", child_id: "yp_jordan", issue_type: "tone", action: "accepted", original_text: "challenging behaviour", replacement_text: "", created_at: daysFromNow(-3) },
+  { id: "waud_s029", user_id: "staff_lackson", record_type: "daily_log", field_name: "content", child_id: "yp_jordan", issue_type: "grammar", action: "accepted", original_text: "wasnt", replacement_text: "wasn't", created_at: daysFromNow(-6) },
+  { id: "waud_s030", user_id: "staff_lackson", record_type: "daily_log", field_name: "content", child_id: "yp_alex", issue_type: "safeguarding-quality", action: "ignored", original_text: "kicking off", replacement_text: "", created_at: daysFromNow(-10) },
+  { id: "waud_s031", user_id: "staff_edward", record_type: "incident", field_name: "description", child_id: "yp_alex", issue_type: "safeguarding-quality", action: "accepted", original_text: "refused to engage", replacement_text: "", created_at: daysFromNow(-2) },
+  { id: "waud_s032", user_id: "staff_edward", record_type: "daily_log", field_name: "content", child_id: "yp_casey", issue_type: "spelling", action: "accepted", original_text: "recieved", replacement_text: "received", created_at: daysFromNow(-4) },
+  { id: "waud_s033", user_id: "staff_edward", record_type: "return_interview", field_name: "interview_notes", child_id: "yp_casey", issue_type: "safeguarding-quality", action: "accepted", original_text: "came back fine", replacement_text: "", created_at: daysFromNow(-18) },
+  { id: "waud_s034", user_id: "staff_mirela", record_type: "daily_log", field_name: "content", child_id: "yp_jordan", issue_type: "tone", action: "ignored", original_text: "acting out", replacement_text: "", created_at: daysFromNow(-5) },
+  { id: "waud_s035", user_id: "staff_mirela", record_type: "handover", field_name: "key_notes", child_id: "yp_alex", issue_type: "grammar", action: "accepted", original_text: "hasnt", replacement_text: "hasn't", created_at: daysFromNow(-7) },
+];
+
 // ── Mutable collections ───────────────────────────────────────────────────────
 
 const store = {
@@ -647,7 +692,7 @@ const store = {
   cornerstoneEvents: [] as CornerstoneEvent[],
   // ── Writing Assistant ─────────────────────────────────────────────────────
   writingAssistantSettings: {} as Record<string, WritingAssistantSettings>,
-  writingAssistantAuditEvents: [] as WritingAuditEvent[],
+  writingAssistantAuditEvents: [...WA_AUDIT_SEED] as WritingAuditEvent[],
   chronology: [] as ChronologyEntry[],
   handovers: [] as HandoverEntry[],
   // ── Comms Centre (Phase 1) ────────────────────────────────────────────────
@@ -11056,6 +11101,20 @@ export const db = {
         .filter((e) => e.user_id === userId)
         .sort((a, b) => b.created_at.localeCompare(a.created_at))
         .slice(0, limit),
+
+    getAllAuditEvents: (
+      days = 7,
+      filterUserId?: string,
+      filterAction?: "accepted" | "ignored",
+    ): WritingAuditEvent[] => {
+      const cutoff = new Date(Date.now() - days * 86_400_000).toISOString();
+      return store.writingAssistantAuditEvents.filter(
+        (e) =>
+          e.created_at >= cutoff &&
+          (!filterUserId || e.user_id === filterUserId) &&
+          (!filterAction || e.action === filterAction),
+      );
+    },
   },
 
   // ── Cara Events (canonical persisted spine — capture-once write path) ─
