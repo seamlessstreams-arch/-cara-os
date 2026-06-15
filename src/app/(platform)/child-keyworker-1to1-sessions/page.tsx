@@ -16,6 +16,7 @@ import { Users, Clock, MessageCircle, ChevronUp, ChevronDown, ArrowUpDown, Searc
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useKeyworkSessions, useCreateKeyworkSession, type KeyworkSession } from "@/hooks/use-keywork-sessions";
+import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { type KeyworkerSessionFormat, KEYWORKER_SESSION_FORMAT_LABEL } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
@@ -317,6 +318,7 @@ export default function ChildKeyworker1to1SessionsPage() {
                 </SelectContent>
               </Select>
             </div>
+            {nChild && <InlinePracticeReasoning childId={nChild} childName={getYPName(nChild)} />}
             <div>
               <Label htmlFor="session-format">Format</Label>
               <Select value={nFormat} onValueChange={setNFormat}>

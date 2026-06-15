@@ -28,6 +28,7 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useBehaviourLog, useCreateBehaviourEntry } from "@/hooks/use-behaviour-log";
+import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { BehaviourEntry, BehaviourDirection, BehaviourIntensity } from "@/types/extended";
 import {
@@ -446,6 +447,7 @@ export default function BehaviourLogPage() {
                 </Select>
               </div>
             </div>
+            {nChild && <InlinePracticeReasoning childId={nChild} childName={getYPName(nChild)} />}
             <div>
               <label className="text-sm font-medium mb-1 block">Intensity</label>
               <Select value={nIntensity} onValueChange={v => setNIntensity(v as BehaviourIntensity)}>
