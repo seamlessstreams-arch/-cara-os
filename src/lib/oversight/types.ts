@@ -599,6 +599,7 @@ export interface OversightResult {
 
   missingEvidence: string[];
   recordingGaps: RecordingGap[];
+  taskOversights: TaskOversightResult[];
   requiredActions: OversightAction[];
   staffPracticeActions: OversightAction[];
   supportRecommendations: OversightAction[];

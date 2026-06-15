@@ -18,12 +18,14 @@ import {
   FileWarning,
   Heart,
   ListChecks,
+  ClipboardCheck,
   AlertTriangle,
   Tag,
   ShieldCheck,
 } from "lucide-react";
 import { OversightScoreBar } from "./oversight-score-bar";
 import { OversightRecordingGaps } from "./oversight-recording-gaps";
+import { OversightTaskList } from "./oversight-task-list";
 import { ChildAddressedPreview } from "./child-addressed-preview";
 import { OversightSignOffPanel } from "./oversight-sign-off-panel";
 import type { OversightInput, OversightResult, OversightAction } from "@/lib/oversight/types";
@@ -147,6 +149,17 @@ export function OversightWorkflowPanel({
       >
         <OversightRecordingGaps gaps={result.recordingGaps} />
       </SectionCard>
+
+      {/* Task-by-task oversight */}
+      {result.taskOversights.length > 0 && (
+        <SectionCard
+          icon={ClipboardCheck}
+          title="Task-by-task oversight"
+          description="Every task in the workflow, with its own oversight status and suggested comment."
+        >
+          <OversightTaskList tasks={result.taskOversights} />
+        </SectionCard>
+      )}
 
       {/* Complete workflow visibility */}
       {!!hasWorkflowVisibility && (

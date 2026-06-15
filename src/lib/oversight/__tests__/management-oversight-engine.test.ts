@@ -494,6 +494,38 @@ describe("recording gaps", () => {
   });
 });
 
+// ── task-by-task oversight ───────────────────────────────────────────────────
+describe("task-by-task oversight", () => {
+  it("produces a per-task oversight for each workflow item, with correct statuses", () => {
+    const r = generateManagementOversight(
+      base({
+        recordType: "physical_intervention",
+        restraintUsed: true,
+        existingRiskLevel: "high",
+        workflowCompletionContext: {
+          workflowSteps: [
+            { stepName: "Incident record", required: true, completed: true },
+            { stepName: "Manager review", required: true, completed: false },
+          ],
+          associatedPaperwork: [{ paperworkType: "body_map", required: true, status: "outstanding" }],
+          staffDebrief: { required: true, status: "required_completed" },
+          childDebrief: { required: true, status: "required_not_completed" },
+        },
+      }),
+    );
+    const names = r.taskOversights.map((t) => t.taskName);
+    expect(names).toEqual(expect.arrayContaining(["Incident record", "Manager review", "body map", "Staff debrief", "Child debrief"]));
+    expect(r.taskOversights.find((t) => t.taskName === "Incident record")?.oversightStatus).toBe("reviewed_satisfactory");
+    expect(r.taskOversights.find((t) => t.taskName === "Staff debrief")?.oversightStatus).toBe("reviewed_satisfactory");
+    expect(["requires_action", "escalated"]).toContain(r.taskOversights.find((t) => t.taskName === "Child debrief")?.oversightStatus);
+    expect(["requires_action", "escalated"]).toContain(r.taskOversights.find((t) => t.taskName === "body map")?.oversightStatus);
+  });
+
+  it("returns no task oversights when there is no workflow context", () => {
+    expect(generateManagementOversight(base()).taskOversights).toEqual([]);
+  });
+});
+
 // ── sign-off note (for persistence back to the record) ──────────────────────
 describe("buildSignOffNote", () => {
   it("summarises the oversight and attributes the signing role", () => {

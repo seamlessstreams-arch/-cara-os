@@ -96,6 +96,79 @@ function qualityAssuranceRoutes(input: OversightInput, escalationRequired: boole
   return [...routes];
 }
 
+// ─── Per-task items ──────────────────────────────────────────────────────────
+
+/** Derive the structured task list (steps, paperwork, debriefs, key-work) for per-task oversight. */
+function deriveWorkflowTaskItems(input: OversightInput): TaskOversightInput[] {
+  const wf = input.workflowCompletionContext;
+  if (!wf) return [];
+  const items: TaskOversightInput[] = [];
+  const baseRisk: RiskLevel =
+    input.existingRiskLevel === "critical" ? "critical" : input.existingRiskLevel === "high" ? "high" : "medium";
+  const safetyRisk: RiskLevel = input.existingRiskLevel === "critical" ? "critical" : "high";
+
+  for (const s of wf.workflowSteps ?? []) {
+    items.push({
+      taskName: s.stepName,
+      required: s.required,
+      completed: s.completed,
+      completedByRole: s.completedByRole,
+      completedAt: s.completedAt,
+      completedLate: s.completedLate,
+      riskRelevance: baseRisk,
+      recordType: input.recordType,
+    });
+  }
+  for (const p of wf.associatedPaperwork ?? []) {
+    const done = p.status === "complete" || p.status === "completed_late" || p.status === "not_required";
+    const safety = /body_map|injury|physical_intervention|safeguarding|medication/.test(p.paperworkType);
+    items.push({
+      taskName: p.paperworkType.replace(/_/g, " "),
+      required: p.required,
+      completed: done,
+      completedLate: p.status === "completed_late",
+      completedByRole: p.completedByRole,
+      riskRelevance: safety ? safetyRisk : baseRisk,
+      affectsChildSafetyOrDignity: safety,
+      recordType: input.recordType,
+    });
+  }
+  if (wf.staffDebrief?.required) {
+    const st = wf.staffDebrief.status;
+    items.push({
+      taskName: "Staff debrief",
+      required: true,
+      completed: st === "required_completed" || st === "completed_late",
+      completedLate: st === "completed_late",
+      riskRelevance: baseRisk,
+      recordType: input.recordType,
+    });
+  }
+  if (wf.childDebrief?.required) {
+    const ct = wf.childDebrief.status;
+    items.push({
+      taskName: "Child debrief",
+      required: true,
+      completed: ct === "required_completed" || ct === "completed_late" || ct === "offered_declined",
+      completedLate: ct === "completed_late",
+      riskRelevance: safetyRisk,
+      affectsChildSafetyOrDignity: true,
+      recordType: input.recordType,
+    });
+  }
+  if (wf.keyWorkFollowUp?.keyWorkRequired) {
+    items.push({
+      taskName: "Key-work follow-up",
+      required: true,
+      completed: wf.keyWorkFollowUp.keyWorkCompleted,
+      completedByRole: wf.keyWorkFollowUp.completedByRole,
+      riskRelevance: "medium",
+      recordType: input.recordType,
+    });
+  }
+  return items;
+}
+
 // ─── Main generator ────────────────────────────────────────────────────────────
 
 export function generateManagementOversight(input: OversightInput): OversightResult {
@@ -104,6 +177,7 @@ export function generateManagementOversight(input: OversightInput): OversightRes
   const intelligence = buildCaraIntelligence(input);
   const findings = buildFindings(input, scores, risk);
   const recordingGaps = buildRecordingGaps(input);
+  const taskOversights = deriveWorkflowTaskItems(input).map(generateTaskOversight);
   const escalation = deriveEscalation(input, scores, risk);
 
   const workflowCompletionStatus = deriveWorkflowCompletionStatus(input, scores);
@@ -162,6 +236,7 @@ export function generateManagementOversight(input: OversightInput): OversightRes
 
     missingEvidence: findings.missingEvidence,
     recordingGaps,
+    taskOversights,
     requiredActions: findings.requiredActions,
     staffPracticeActions: findings.staffPracticeActions,
     supportRecommendations: findings.supportRecommendations,
