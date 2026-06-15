@@ -64,6 +64,7 @@ import { ChildDailyLifeIntelligenceCard } from "@/components/intelligence/child-
 import { ChildMedicationIntelligenceCard } from "@/components/intelligence/child-medication-intelligence-card";
 import { ChildRestrictivePracticeIntelligenceCard } from "@/components/intelligence/child-restrictive-practice-intelligence-card";
 import { ChildEmotionalWellbeingIntelligenceCard } from "@/components/intelligence/child-emotional-wellbeing-intelligence-card";
+import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -635,6 +636,11 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
             )}
+
+            {/* Practice reasoning — Cara's read of this child across all engines */}
+            <div className="sm:col-span-2">
+              <InlinePracticeReasoning childId={id} childName={displayName} />
+            </div>
 
             {/* Child 360 Intelligence Profile */}
             <div className="sm:col-span-2">
