@@ -150,16 +150,25 @@ export function incidentToOversightInput(incident: Incident, ctx: IncidentHydrat
     summary: incident.description ?? undefined,
     existingRiskLevel: SEVERITIES.includes(incident.severity as RiskLevel) ? (incident.severity as RiskLevel) : undefined,
 
-    // evidence-quality flags (from what the record actually contains)
+    // Evidence-quality flags — honestly derived from what the record actually
+    // contains, so genuine recording gaps surface (false = not evidenced).
     chronologyClear: !!incident.description,
     staffActionsRecorded: !!incident.immediate_action,
     responsiblePersonRecorded: !!incident.reported_by,
     timescaleRecorded: !!(incident.date && incident.time),
-    childVoiceCaptured: childDebriefDone ? true : undefined,
-    childPresentationRecorded: /calm|distress|agitat|settled|presented|mood|upset/.test(text) ? true : undefined,
-    antecedentsIncluded: behaviourLed ? /following|after|when|became|trigger|escalat/.test(text) || undefined : undefined,
+    childVoiceCaptured:
+      childDebriefDone || /\b(said|told|stated|expressed|felt|wanted|asked|disclosed|reported|voiced)\b/i.test(text),
+    childPresentationRecorded: /calm|distress|agitat|settled|presented|mood|upset|anxious|withdrawn|tearful|angry|quiet|happy|cooperat/i.test(
+      text,
+    ),
+    antecedentsIncluded: behaviourLed
+      ? /following|after|when|became|trigger|escalat|led to|in response|prior to|build|leading up/i.test(text)
+      : undefined,
     injuriesRecordedOrRuledOut: incident.body_map_required ? incident.body_map_completed : undefined,
-    notificationsCompleted: (incident.notifications?.length ?? 0) > 0 || undefined,
+    notificationsCompleted: (incident.notifications?.length ?? 0) > 0,
+    outcomeRecorded: incident.status === "closed" ? !!incident.outcome : undefined,
+    lessonsLearnedRecorded: !!incident.lessons_learned,
+    managementActionRecorded: incident.requires_oversight ? !!incident.oversight_note : undefined,
 
     // risk / safeguarding signals
     restraintUsed: restraintUsed || undefined,

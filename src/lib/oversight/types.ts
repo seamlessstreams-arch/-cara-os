@@ -136,6 +136,15 @@ export interface OversightAction {
   impactReviewDueBy?: string;
 }
 
+export type RecordingGapSeverity = "minor" | "moderate" | "significant";
+
+/** A specific documentation/recording gap identified across the workflow. */
+export interface RecordingGap {
+  area: string;
+  gap: string;
+  severity: RecordingGapSeverity;
+}
+
 export type EvidenceSourceType =
   | "incident_record"
   | "daily_log"
@@ -554,6 +563,8 @@ export interface OversightInput {
   managementActionRecorded?: boolean;
   responsiblePersonRecorded?: boolean;
   timescaleRecorded?: boolean;
+  outcomeRecorded?: boolean;
+  lessonsLearnedRecorded?: boolean;
 
   // Risk / safeguarding signals
   allegation?: boolean;
@@ -587,6 +598,7 @@ export interface OversightResult {
   policyComplianceScore: number;
 
   missingEvidence: string[];
+  recordingGaps: RecordingGap[];
   requiredActions: OversightAction[];
   staffPracticeActions: OversightAction[];
   supportRecommendations: OversightAction[];

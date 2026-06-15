@@ -15,6 +15,7 @@ import {
   Workflow,
   Brain,
   FileText,
+  FileWarning,
   Heart,
   ListChecks,
   AlertTriangle,
@@ -22,6 +23,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { OversightScoreBar } from "./oversight-score-bar";
+import { OversightRecordingGaps } from "./oversight-recording-gaps";
 import { ChildAddressedPreview } from "./child-addressed-preview";
 import { OversightSignOffPanel } from "./oversight-sign-off-panel";
 import type { OversightInput, OversightResult, OversightAction } from "@/lib/oversight/types";
@@ -127,6 +129,15 @@ export function OversightWorkflowPanel({ input, result }: { input?: OversightInp
       {/* Summary */}
       <SectionCard icon={ShieldCheck} title="Oversight summary" description="Deterministic assurance across the whole workflow.">
         <OversightScoreBar result={result} />
+      </SectionCard>
+
+      {/* Recording gaps */}
+      <SectionCard
+        icon={FileWarning}
+        title="Recording gaps"
+        description="Documentation gaps identified across the record and connected workflow."
+      >
+        <OversightRecordingGaps gaps={result.recordingGaps} />
       </SectionCard>
 
       {/* Complete workflow visibility */}

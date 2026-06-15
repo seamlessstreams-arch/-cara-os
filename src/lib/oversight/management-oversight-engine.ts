@@ -29,6 +29,7 @@ import {
   deriveRiskLevel,
   deriveEscalation,
   buildFindings,
+  buildRecordingGaps,
   deriveWorkflowCompletionStatus,
   derivePlanAdherenceStatus,
   derivePracticeConcernLevel,
@@ -102,6 +103,7 @@ export function generateManagementOversight(input: OversightInput): OversightRes
   const risk = deriveRiskLevel(input, scores);
   const intelligence = buildCaraIntelligence(input);
   const findings = buildFindings(input, scores, risk);
+  const recordingGaps = buildRecordingGaps(input);
   const escalation = deriveEscalation(input, scores, risk);
 
   const workflowCompletionStatus = deriveWorkflowCompletionStatus(input, scores);
@@ -127,6 +129,7 @@ export function generateManagementOversight(input: OversightInput): OversightRes
       planAdherenceStatus,
       workflowCompletionStatus,
       escalationReasons: escalation.escalationReasons,
+      recordingGaps,
     });
   }
 
@@ -158,6 +161,7 @@ export function generateManagementOversight(input: OversightInput): OversightRes
     policyComplianceScore: scores.policyComplianceScore,
 
     missingEvidence: findings.missingEvidence,
+    recordingGaps,
     requiredActions: findings.requiredActions,
     staffPracticeActions: findings.staffPracticeActions,
     supportRecommendations: findings.supportRecommendations,

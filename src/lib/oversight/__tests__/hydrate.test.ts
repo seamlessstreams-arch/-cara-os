@@ -146,4 +146,49 @@ describe("incidentToOversightInput", () => {
     expect(input.allegation).toBeUndefined();
     expect(input.exploitationConcern).toBeUndefined();
   });
+
+  it("surfaces recording-gap signals honestly from a thin incident record", () => {
+    const inc = mkIncident({
+      type: "behaviour_incident",
+      severity: "high",
+      description: "Behaviour incident occurred.", // no antecedent or child-voice language
+      immediate_action: "", // no staff actions recorded
+      status: "closed",
+      outcome: null, // closed with no outcome
+      lessons_learned: null,
+      requires_oversight: true,
+      oversight_note: null, // no manager oversight note
+      notifications: [],
+    });
+    const input = incidentToOversightInput(inc, { youngPerson: ALEX, today: TODAY });
+    expect(input.staffActionsRecorded).toBe(false);
+    expect(input.childVoiceCaptured).toBe(false);
+    expect(input.antecedentsIncluded).toBe(false);
+    expect(input.outcomeRecorded).toBe(false);
+    expect(input.managementActionRecorded).toBe(false);
+    expect(input.lessonsLearnedRecorded).toBe(false);
+  });
+
+  it("does not over-flag a well-documented incident", () => {
+    const inc = mkIncident({
+      type: "physical_intervention",
+      severity: "high",
+      description: "Alex became agitated following a phone call and said he felt unheard; staff stayed calm.",
+      immediate_action: "Team Teach hold used; Alex supported afterwards.",
+      status: "closed",
+      outcome: "No injuries; Alex settled.",
+      lessons_learned: "Prepare Alex before contact calls.",
+      requires_oversight: true,
+      oversight_note: "Proportionate and least-restrictive.",
+      body_map_required: true,
+      body_map_completed: true,
+    });
+    const input = incidentToOversightInput(inc, { youngPerson: ALEX, today: TODAY });
+    expect(input.antecedentsIncluded).toBe(true); // "following a phone call"
+    expect(input.childVoiceCaptured).toBe(true); // "said he felt"
+    expect(input.outcomeRecorded).toBe(true);
+    expect(input.lessonsLearnedRecorded).toBe(true);
+    expect(input.managementActionRecorded).toBe(true);
+    expect(input.injuriesRecordedOrRuledOut).toBe(true);
+  });
 });

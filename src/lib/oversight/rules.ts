@@ -20,6 +20,7 @@ import type {
   AssociatedPaperwork,
   ReferralOrNotification,
   PlanAdherenceContext,
+  RecordingGap,
 } from "./types";
 import type { OversightScores } from "./scoring";
 
@@ -384,6 +385,85 @@ export function buildFindings(input: OversightInput, scores: OversightScores, ri
   }
 
   return f;
+}
+
+// ─── Recording gaps ────────────────────────────────────────────────────────────
+
+const SEVERITY_RANK: Record<RecordingGap["severity"], number> = { significant: 0, moderate: 1, minor: 2 };
+
+/**
+ * Identify documentation/recording gaps across the whole workflow. Cautious,
+ * "critical friend" wording — these are prompts for the manager to confirm or
+ * close, not conclusions. A recording gap means the record does not *evidence*
+ * something, which is itself a finding worth surfacing.
+ */
+export function buildRecordingGaps(input: OversightInput): RecordingGap[] {
+  const gaps: RecordingGap[] = [];
+  const add = (area: string, gap: string, severity: RecordingGap["severity"]) => gaps.push({ area, gap, severity });
+
+  const behaviourLed =
+    input.recordType === "incident" ||
+    input.recordType === "physical_intervention" ||
+    input.recordType === "sanction_or_consequence";
+  const highStakes =
+    input.existingRiskLevel === "high" ||
+    input.existingRiskLevel === "critical" ||
+    !!input.restraintUsed ||
+    !!input.allegation ||
+    !!input.disclosure ||
+    !!input.missingFromCare;
+
+  // ── Core record completeness ────────────────────────────────────────────
+  if (input.chronologyClear === false) add("Chronology", "The record does not clearly set out what happened and in what order.", "moderate");
+  if (behaviourLed && input.antecedentsIncluded === false)
+    add("Antecedents", "What was happening beforehand (antecedents / triggers) is not clearly recorded.", highStakes ? "significant" : "moderate");
+  if (input.staffActionsRecorded === false) add("Staff actions", "The actions staff took are not clearly recorded.", "moderate");
+  if (input.childVoiceCaptured === false)
+    add("Child's voice", "The child's voice or perspective is not evidenced in this record.", highStakes ? "significant" : "moderate");
+  if (input.childPresentationRecorded === false) add("Child's presentation", "The child's presentation / wellbeing at the time is not recorded.", "minor");
+  if (input.responsiblePersonRecorded === false) add("Accountability", "The responsible person / recorder is not clearly identified.", "minor");
+  if (input.timescaleRecorded === false) add("Timing", "The date / time of the event is not clearly recorded.", "minor");
+
+  // ── Safety-specific records ─────────────────────────────────────────────
+  if ((input.injury || input.restraintUsed) && input.injuriesRecordedOrRuledOut === false)
+    add("Injury check", "An injury check / body map is not evidenced where one would be expected.", "significant");
+  if (
+    (input.allegation || input.disclosure || input.missingFromCare || input.restraintUsed || input.recordType === "safeguarding") &&
+    input.notificationsCompleted === false
+  )
+    add("Notifications", "No notifications are recorded for an event that would usually require them.", "significant");
+
+  // ── Closure, learning and oversight ─────────────────────────────────────
+  if (input.outcomeRecorded === false) add("Outcome", "The record is closed but no outcome is recorded.", "moderate");
+  if (highStakes && input.lessonsLearnedRecorded === false) add("Learning", "No learning / lessons are recorded for a significant event.", "moderate");
+  if (input.managementActionRecorded === false) add("Manager oversight", "Manager oversight is required but no oversight note is recorded.", "moderate");
+
+  // ── Timeliness / consistency ────────────────────────────────────────────
+  if (input.lateRecording) add("Timeliness", "The record appears to have been completed late; the reason should be noted.", "minor");
+  if (input.contradictoryInformation) add("Consistency", "The records contain contradictory information that needs reconciling.", "significant");
+
+  // ── Workflow paperwork + debriefs ───────────────────────────────────────
+  for (const p of input.workflowCompletionContext?.associatedPaperwork ?? []) {
+    if (p.required && (p.status === "outstanding" || p.status === "unclear")) {
+      add("Associated paperwork", `${p.paperworkType.replace(/_/g, " ")} is ${p.status === "unclear" ? "unclear" : "outstanding"}.`, "moderate");
+    }
+  }
+  const sd = input.workflowCompletionContext?.staffDebrief;
+  if (sd?.required && sd.status === "required_not_completed") add("Staff debrief", "A staff debrief is required but is not yet recorded.", "moderate");
+  const cd = input.workflowCompletionContext?.childDebrief;
+  if (cd?.required && cd.status === "required_not_completed")
+    add("Child debrief", "A child debrief is required but is not yet recorded.", highStakes ? "significant" : "moderate");
+
+  // Dedupe by area+gap, then order by severity (significant first).
+  const seen = new Set<string>();
+  return gaps
+    .filter((g) => {
+      const k = `${g.area}|${g.gap}`;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    })
+    .sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]);
 }
 
 function buildPlanAdherenceFindings(pa: PlanAdherenceContext | undefined, f: RuleFindings, risk: RiskLevel): void {

@@ -446,6 +446,53 @@ describe("generateWorkflowSignOff", () => {
   });
 });
 
+// ── recording gaps ───────────────────────────────────────────────────────────
+describe("recording gaps", () => {
+  it("flags missing antecedents, child voice and presentation on a high-risk behaviour incident", () => {
+    const r = generateManagementOversight(
+      base({
+        recordType: "incident",
+        existingRiskLevel: "high",
+        antecedentsIncluded: false,
+        childVoiceCaptured: false,
+        childPresentationRecorded: false,
+      }),
+    );
+    const areas = r.recordingGaps.map((g) => g.area);
+    expect(areas).toEqual(expect.arrayContaining(["Antecedents", "Child's voice", "Child's presentation"]));
+    expect(r.recordingGaps.find((g) => g.area === "Antecedents")?.severity).toBe("significant");
+    expect(r.recordingGaps[0].severity).toBe("significant"); // sorted significant-first
+  });
+
+  it("returns no recording gaps for a fully-evidenced low-risk daily log", () => {
+    expect(generateManagementOversight(base()).recordingGaps).toEqual([]);
+  });
+
+  it("flags a missing injury check where restraint was used", () => {
+    const r = generateManagementOversight(
+      base({ recordType: "physical_intervention", restraintUsed: true, injuriesRecordedOrRuledOut: false }),
+    );
+    expect(r.recordingGaps.some((g) => g.area === "Injury check" && g.severity === "significant")).toBe(true);
+  });
+
+  it("flags missing notifications for a safeguarding event", () => {
+    const r = generateManagementOversight(base({ recordType: "safeguarding", notificationsCompleted: false }));
+    expect(r.recordingGaps.some((g) => g.area === "Notifications" && g.severity === "significant")).toBe(true);
+  });
+
+  it("flags a closed record with no outcome and a missing manager oversight note", () => {
+    const r = generateManagementOversight(base({ outcomeRecorded: false, managementActionRecorded: false }));
+    const areas = r.recordingGaps.map((g) => g.area);
+    expect(areas).toEqual(expect.arrayContaining(["Outcome", "Manager oversight"]));
+  });
+
+  it("includes recording gaps in the professional oversight narrative", () => {
+    const r = generateManagementOversight(base({ recordType: "incident", existingRiskLevel: "high", childVoiceCaptured: false }));
+    expect(r.professionalOversight).toMatch(/Recording gaps/i);
+    expect(r.professionalOversight).toMatch(/Child's voice/i);
+  });
+});
+
 // ── determinism ──────────────────────────────────────────────────────────────
 describe("determinism", () => {
   it("same input → same output (excluding timestamp)", () => {

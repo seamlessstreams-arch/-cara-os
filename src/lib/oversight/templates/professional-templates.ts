@@ -14,6 +14,7 @@ import type {
   OversightOutcome,
   PlanAdherenceStatus,
   WorkflowCompletionStatus,
+  RecordingGap,
 } from "../types";
 import type { OversightScores } from "../scoring";
 import type { RuleFindings } from "../rules";
@@ -29,6 +30,7 @@ export interface ProfessionalTemplateInput {
   planAdherenceStatus: PlanAdherenceStatus;
   workflowCompletionStatus: WorkflowCompletionStatus;
   escalationReasons: string[];
+  recordingGaps: RecordingGap[];
 }
 
 const child = (i: OversightInput) => i.childName ?? "the child";
@@ -96,8 +98,15 @@ export function buildProfessionalOversight(t: ProfessionalTemplateInput): string
   add("3. Evidence quality", [
     `The quality of the record is assessed as ${scores.evidenceQualityScore}/100.`,
     ...f.evidenceFindings,
-    ...(f.missingEvidence.length ? [`Gaps: ${f.missingEvidence.join(" ")}`] : []),
   ]);
+
+  // 3b. Recording gaps — documentation completeness across the whole workflow.
+  add(
+    "3b. Recording gaps",
+    t.recordingGaps.length
+      ? t.recordingGaps.map((g) => `• [${g.severity.toUpperCase()}] ${g.area} — ${g.gap}`)
+      : "No recording gaps were identified; the record and connected workflow appear appropriately documented.",
+  );
 
   // 4–5. Workflow + associated paperwork
   add("4. Paperwork workflow", [
