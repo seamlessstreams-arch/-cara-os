@@ -23,6 +23,7 @@ import {
   TrendingUp, ArrowUpRight, Brain, Link as LinkIcon, ArrowUpDown,
 } from "lucide-react";
 import { useIncidents, useAddOversight, useCreateIncident } from "@/hooks/use-incidents";
+import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
@@ -1058,6 +1059,9 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           </div>
         </div>
       </div>
+
+      {/* Practice reasoning for the selected child — the engine heart at the point of recording */}
+      {form.child_id && <InlinePracticeReasoning childId={form.child_id} childName={getYPName(form.child_id)} />}
 
       {/* Description */}
       <div className="rounded-2xl border bg-white p-5 space-y-4">

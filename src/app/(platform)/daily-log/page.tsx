@@ -20,6 +20,7 @@ import {
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
 import { useDailyLog, useCreateDailyLog } from "@/hooks/use-daily-log";
+import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
@@ -169,6 +170,9 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
               </select>
             </div>
           </div>
+
+          {/* Practice reasoning for the selected child — the engine heart at the point of recording */}
+          {childId && <InlinePracticeReasoning childId={childId} childName={getYPName(childId)} />}
 
           {/* Content */}
           <CaraCompose
