@@ -46,7 +46,12 @@ export async function GET(req: NextRequest) {
   try {
     const signals = buildReasoningSignals({ childId, youngPerson, incidents, dailyLogs, chronology, today });
     const reasoning = reasonOverChild(signals);
-    return NextResponse.json({ data: { signals, reasoning } });
+    // A lightweight child list powers the page's picker in the same call.
+    const children = store.youngPeople
+      .filter((yp) => yp.status === "current" || yp.status === "planned")
+      .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || "Unknown" }));
+    const child = { id: childId, name: signals.childName };
+    return NextResponse.json({ data: { child, children, signals, reasoning } });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to generate practice reasoning", details: String(error) },
