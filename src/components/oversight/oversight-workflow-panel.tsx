@@ -29,6 +29,8 @@ import { OversightTaskList } from "./oversight-task-list";
 import { ChildAddressedPreview } from "./child-addressed-preview";
 import { OversightSignOffPanel } from "./oversight-sign-off-panel";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { InlinePracticeLearning } from "@/components/practice-learning/inline-practice-learning";
+import { KnowledgeGraphInsights } from "@/components/knowledge-graph/knowledge-graph-insights";
 import type { OversightInput, OversightResult, OversightAction } from "@/lib/oversight/types";
 
 function FindingGroup({ title, items }: { title: string; items: string[] }) {
@@ -144,8 +146,10 @@ export function OversightWorkflowPanel({
         <OversightScoreBar result={result} />
       </SectionCard>
 
-      {/* Practice reasoning for this child — the engine heart, at the point of oversight */}
+      {/* The OS spine at the point of oversight: reasoning (now) · learning (past) · wider home patterns */}
       {childId && <InlinePracticeReasoning childId={childId} childName={input?.childName} />}
+      {childId && <InlinePracticeLearning childId={childId} childName={input?.childName} />}
+      <KnowledgeGraphInsights />
 
       {/* Recording gaps */}
       <SectionCard
