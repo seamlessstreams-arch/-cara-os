@@ -17,6 +17,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
+import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { useRiskAssessments, useCreateRiskAssessment } from "@/hooks/use-risk-assessments";
 import { toast } from "sonner";
 import type { RiskAssessment, RiskDomain, RiskLevel, RiskTrend, RiskMitigation } from "@/types/extended";
@@ -86,6 +87,7 @@ export default function RiskAssessmentsPage() {
   const [sortBy, setSortBy] = useState("level");
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [showNew, setShowNew] = useState(false);
+  const [selectedYp, setSelectedYp] = useState("");
 
   const toggle = (id: string) => setExpanded((p) => ({ ...p, [id]: !p[id] }));
 
@@ -348,10 +350,11 @@ export default function RiskAssessmentsPage() {
           }} className="space-y-3">
             <div>
               <label className="text-sm font-medium">Young Person</label>
-              <Select name="child_id"><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
+              <Select name="child_id" value={selectedYp} onValueChange={setSelectedYp}><SelectTrigger><SelectValue placeholder="Select child" /></SelectTrigger>
                 <SelectContent>{children.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
+            {selectedYp && <InlinePracticeReasoning childId={selectedYp} childName={getYPName(selectedYp)} />}
             <div className="grid grid-cols-2 gap-2">
               <div>
                 <label className="text-sm font-medium">Risk Domain</label>
