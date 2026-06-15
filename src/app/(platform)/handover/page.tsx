@@ -31,6 +31,7 @@ import { ShiftSummaryCard } from "@/components/dashboard/shift-summary-card";
 import { CaraHandoverBuilder } from "@/components/handover/cara-handover-builder";
 import { HandoverPrintContext } from "@/components/handover/handover-print-context";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 
 const HANDOVER_EXPORT_COLS: ExportColumn<HandoverEntry>[] = [
   { header: "Shift Date", accessor: (h) => h.shift_date },
@@ -629,6 +630,14 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
                       placeholder={`Key observations for ${yp.preferred_name || yp.first_name}...`}
                       className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
                     />
+                    <WritingAssistantInline
+                      value={cu.key_notes}
+                      onApplyText={(t) => updateChild(yp.id, { key_notes: t })}
+                      recordType="handover"
+                      fieldName="key_notes"
+                      childId={yp.id}
+                      mode="standard"
+                    />
                   </div>
 
                   {/* Alerts */}
@@ -678,6 +687,13 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
               rows={4}
               placeholder="Anything else the incoming team needs to know..."
               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-900 resize-none"
+            />
+            <WritingAssistantInline
+              value={generalNotes}
+              onApplyText={setGeneralNotes}
+              recordType="handover"
+              fieldName="general_notes"
+              mode="standard"
             />
           </div>
 

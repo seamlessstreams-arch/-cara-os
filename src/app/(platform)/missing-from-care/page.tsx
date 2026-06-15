@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 
 const MFC_EXPORT_COLS: ExportColumn<MissingEpisode>[] = [
   { header: "Reference", accessor: (e) => e.reference },
@@ -759,6 +760,14 @@ function RhiDialog({
               placeholder="Record what the young person said, their demeanour, disclosures, and your observations…"
               value={interviewNotes}
               onChange={(e) => setInterviewNotes(e.target.value)}
+            />
+            <WritingAssistantInline
+              value={interviewNotes}
+              onApplyText={setInterviewNotes}
+              recordType="return_interview"
+              fieldName="interview_notes"
+              childId={episode.child_id}
+              mode="safeguarding"
             />
           </div>
 

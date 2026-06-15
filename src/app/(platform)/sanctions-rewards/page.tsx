@@ -38,8 +38,7 @@ import type { SanctionRewardEntry, SRDirection, SRRewardType, SRSanctionType } f
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-
-
+import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -473,6 +472,14 @@ export default function SanctionsRewardsPage() {
             <div>
               <label htmlFor="sr-desc" className="text-sm font-medium mb-1 block">Description *</label>
               <Textarea id="sr-desc" placeholder="What happened..." value={nDesc} onChange={e => setNDesc(e.target.value)} rows={3} />
+              <WritingAssistantInline
+                value={nDesc}
+                onApplyText={setNDesc}
+                recordType="sanction_reward"
+                fieldName="description"
+                childId={nChild || undefined}
+                mode="standard"
+              />
             </div>
             <div>
               <label htmlFor="sr-context" className="text-sm font-medium mb-1 block">Context</label>
