@@ -107,10 +107,9 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ data: { available: true, blocked: false, rewrittenText } });
   } catch (error) {
-    console.error("[writing-assistant] rewrite failed", {
-      length: text.length,
-      message: String(error).slice(0, 200),
-    });
-    return NextResponse.json({ error: "Rewrite failed" }, { status: 500 });
+    const msg = String(error).slice(0, 300);
+    console.error("[writing-assistant] rewrite failed", { length: text.length, message: msg });
+    // Surface enough detail in non-sensitive error so we can debug without log access.
+    return NextResponse.json({ error: "Rewrite failed", detail: msg }, { status: 500 });
   }
 }
