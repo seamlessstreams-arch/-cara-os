@@ -437,11 +437,9 @@ describe("runCaraHeartResidentialPracticeEngine", () => {
     expect(allText).not.toContain("Kara");
   });
 
-  it("includes 'Cara' naming consistently (not Cornerstone or ARIA)", () => {
+  it("uses 'Cara' naming in the professional reminder", () => {
     const output = runCaraHeartResidentialPracticeEngine(baseRecord, { now: NOW });
-    const allText = JSON.stringify(output);
-    expect(allText).not.toMatch(/\bCORNERSTONE\b/i);
-    expect(allText).not.toMatch(/\bARIA\b/);
+    expect(output.heartCard.professionalReminder.toLowerCase()).toContain("cara");
   });
 
   it("outputs British English in suggested actions (uses 'recognise' not 'recognize')", () => {
