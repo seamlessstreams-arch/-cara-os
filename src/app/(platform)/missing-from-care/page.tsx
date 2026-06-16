@@ -44,6 +44,9 @@ import {
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
+import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 
 const MFC_EXPORT_COLS: ExportColumn<MissingEpisode>[] = [
   { header: "Reference", accessor: (e) => e.reference },
@@ -407,6 +410,7 @@ function ReportMissingDialog({
               </SelectContent>
             </Select>
           </div>
+          {childId && <InlinePracticeReasoning childId={childId} childName={youngPeople.find((y) => y.id === childId)?.preferred_name ?? childId} />}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Date Missing *</label>
@@ -552,6 +556,20 @@ function RhiDialog({
   const [context, setContext] = useState("");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const rhiHeartRecord = useMemo<CaraPracticeRecord | null>(() => {
+    if (!episode || interviewNotes.length < 30) return null;
+    return {
+      id: "draft",
+      childId: episode.child_id,
+      type: "missing_episode",
+      dateTime: new Date().toISOString(),
+      severity: ({ low: 2, medium: 3, high: 4, critical: 5 } as Record<string, number>)[episode.risk_level] as 1|2|3|4|5 ?? 3,
+      description: interviewNotes,
+      missingFromCare: true,
+      policeCalled: episode.reported_to_police,
+    };
+  }, [interviewNotes, episode]);
 
   if (!episode) return null;
   const ypName = getYPName(episode.child_id);
@@ -770,6 +788,9 @@ function RhiDialog({
               mode="safeguarding"
             />
           </div>
+
+          {/* Cara Heart — missing episode practice reflection */}
+          <InlineCaraHeartPanel record={rhiHeartRecord} />
 
           {saved && (
             <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-100 p-3">

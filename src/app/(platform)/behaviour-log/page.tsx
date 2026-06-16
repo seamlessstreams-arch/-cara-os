@@ -30,6 +30,8 @@ import { toast } from "sonner";
 import { useBehaviourLog, useCreateBehaviourEntry } from "@/hooks/use-behaviour-log";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
+import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { BehaviourEntry, BehaviourDirection, BehaviourIntensity } from "@/types/extended";
 import {
@@ -79,6 +81,20 @@ export default function BehaviourLogPage() {
   const [nTrigger, setNTrigger] = useState("");
   const [nStrategy, setNStrategy] = useState("");
   const [nOutcome, setNOutcome] = useState("");
+
+  const nHeartRecord = useMemo<CaraPracticeRecord | null>(() => {
+    const desc = [nAntecedent, nBehaviour].filter(Boolean).join(". ");
+    if (!nChild || desc.length < 30) return null;
+    return {
+      id: "draft",
+      childId: nChild,
+      type: "behaviour_record",
+      dateTime: new Date().toISOString(),
+      severity: nDir === "concern" ? 3 : 1,
+      description: desc,
+      staffResponse: nStrategy || undefined,
+    };
+  }, [nChild, nAntecedent, nBehaviour, nStrategy, nDir]);
 
   const childIds = useMemo(() => [...new Set(entries.map(e => e.child_id))], [entries]);
 
@@ -473,6 +489,8 @@ export default function BehaviourLogPage() {
               <Textarea placeholder="What the child did..." value={nBehaviour} onChange={e => setNBehaviour(e.target.value)} rows={2} />
               <WritingAssistantInline value={nBehaviour} onApplyText={setNBehaviour} recordType="behaviour_log" fieldName="behaviour" childId={nChild || undefined} mode="standard" />
             </div>
+            {/* Cara Heart — ABC practice reflection */}
+            <InlineCaraHeartPanel record={nHeartRecord} />
             <div>
               <label className="text-sm font-medium mb-1 block">C — Consequence</label>
               <Textarea placeholder="What happened after..." value={nConsequence} onChange={e => setNConsequence(e.target.value)} rows={2} />

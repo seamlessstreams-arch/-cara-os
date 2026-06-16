@@ -22,6 +22,8 @@ import { cn, formatDate } from "@/lib/utils";
 import { useDailyLog, useCreateDailyLog } from "@/hooks/use-daily-log";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
+import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
@@ -120,6 +122,18 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
   const [moodScore, setMoodScore] = useState<number | null>(null);
   const [isSignificant, setIsSignificant] = useState(false);
 
+  const heartRecord = useMemo<CaraPracticeRecord | null>(() => {
+    if (!childId || content.length < 30) return null;
+    return {
+      id: "draft",
+      childId,
+      type: "daily_log",
+      dateTime: new Date().toISOString(),
+      severity: isSignificant ? 3 : 1,
+      description: content,
+    };
+  }, [childId, content, isSignificant]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!content.trim()) return;
@@ -198,6 +212,9 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
             childId={childId || undefined}
             mode="standard"
           />
+
+          {/* Cara Heart — life space and practice reflection as the entry is written */}
+          <InlineCaraHeartPanel record={heartRecord} />
 
           <div className="flex items-center gap-6">
             {/* Mood score */}
