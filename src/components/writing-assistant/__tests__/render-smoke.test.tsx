@@ -131,6 +131,27 @@ describe("writing-assistant UI render smoke", () => {
     ).not.toThrow();
   });
 
+  it("InlineSuggestions renders Apply all button when 2+ auto-fixable issues are present", () => {
+    const fix = (id: string, start: number, end: number, original: string, replacement: string): WritingIssue => ({
+      id,
+      type: "spelling" as const,
+      severity: "medium" as const,
+      start,
+      end,
+      originalText: original,
+      message: "US spelling",
+      explanation: "Use UK spelling",
+      suggestions: [{ id: `${id}-s`, replacementText: replacement, label: "Fix", rationale: "", preservesMeaning: true }],
+      source: "rule-engine" as const,
+      confidence: 1,
+      requiresHumanJudgement: false,
+    });
+    const issues = [fix("i1", 0, 8, "behavior", "behaviour"), fix("i2", 9, 14, "color", "colour")];
+    const html = r(React.createElement(InlineSuggestions, { issues, onApply: () => {}, onIgnore: () => {}, onApplyAll: () => {} }));
+    expect(html).toContain("Apply all");
+    expect(html).toContain("aria-label=\"Apply all 2 safe fixes\"");
+  });
+
   it("HighlightedTextarea renders without throwing", () => {
     expect(() =>
       r(

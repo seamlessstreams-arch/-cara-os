@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { useWritingAssistant } from "@/hooks/use-writing-assistant";
 import { useWritingAssistantSettings, enabledIssueTypes } from "@/hooks/use-writing-assistant-settings";
 import { InlineSuggestions } from "./inline-suggestions";
+import { applyAutoFixes } from "@/lib/writing-assistant/rewrite-engine";
 import type { WritingIssue, WritingMode, WritingSuggestion } from "@/lib/writing-assistant/types";
 
 export interface CaraWritingFieldProps {
@@ -81,6 +82,16 @@ export function CaraWritingField(props: CaraWritingFieldProps) {
     [logAudit, props.recordType, props.fieldName, props.childId],
   );
 
+  const applyAll = useCallback(() => {
+    const { text: next, applied } = applyAutoFixes(value, issues);
+    if (applied.length === 0) return;
+    onChange(next);
+    applied.forEach((issue) => {
+      ignore(issue.id);
+      logAudit({ action: "accepted", issue_type: issue.type, original_text: issue.originalText, record_type: props.recordType, field_name: props.fieldName, child_id: props.childId });
+    });
+  }, [value, issues, onChange, ignore, logAudit, props.recordType, props.fieldName, props.childId]);
+
   return (
     <div className={className}>
       <textarea
@@ -106,6 +117,7 @@ export function CaraWritingField(props: CaraWritingFieldProps) {
           settings={settings}
           onApply={applySuggestion}
           onIgnore={ignore}
+          onApplyAll={applyAll}
           onToggleCategory={toggleCategory}
           onAddToDictionary={addToDictionary}
           onAudit={handleAudit}

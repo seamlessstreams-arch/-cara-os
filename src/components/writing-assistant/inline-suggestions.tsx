@@ -12,7 +12,7 @@
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Sparkles, Check, X, Loader2, ShieldAlert, Settings2, BookPlus } from "lucide-react";
+import { Sparkles, Check, X, Loader2, ShieldAlert, Settings2, BookPlus, Wand2 } from "lucide-react";
 import {
   type WritingIssue,
   type WritingSuggestion,
@@ -22,6 +22,7 @@ import {
   type WritingAssistantSettings,
   WA_CATEGORY_LABELS,
 } from "@/lib/writing-assistant/types";
+import { countAutoFixes } from "@/lib/writing-assistant/rewrite-engine";
 
 // Colour is never the only signal — every row carries the type label + an icon.
 const TYPE_STYLE: Record<IssueType, { label: string; cls: string }> = {
@@ -53,6 +54,7 @@ export function InlineSuggestions({
   settings,
   onApply,
   onIgnore,
+  onApplyAll,
   onToggleCategory,
   onAddToDictionary,
   onAudit,
@@ -63,11 +65,14 @@ export function InlineSuggestions({
   settings?: WritingAssistantSettings;
   onApply: (issue: WritingIssue, suggestion: WritingSuggestion) => void;
   onIgnore: (id: string) => void;
+  /** Called to apply all auto-fixable issues in one click. */
+  onApplyAll?: () => void;
   onToggleCategory?: (cat: WACategory, enabled: boolean) => void;
   onAddToDictionary?: (word: string) => void;
   onAudit?: (action: "accepted" | "ignored", issue: WritingIssue) => void;
 }) {
   const [showSettings, setShowSettings] = useState(false);
+  const autoFixCount = countAutoFixes(issues);
 
   // Only appear if there is something to say (or the settings panel is open).
   if (!loading && issues.length === 0 && !showSettings) return null;
@@ -146,6 +151,23 @@ export function InlineSuggestions({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Batch-apply strip — only when 2+ fixes can be made safely */}
+      {onApplyAll && autoFixCount >= 2 && (
+        <div className="mb-2 flex items-center justify-between gap-2 rounded-lg border border-[var(--cs-border-subtle)] bg-[var(--cs-surface-elevated)] px-2.5 py-1.5">
+          <span className="text-xs text-[var(--cs-text-muted)]">
+            {autoFixCount} safe fix{autoFixCount === 1 ? "" : "es"} can be applied automatically
+          </span>
+          <button
+            onClick={onApplyAll}
+            aria-label={`Apply all ${autoFixCount} safe fixes`}
+            className="inline-flex items-center gap-1 rounded-lg bg-[var(--cs-teal,#0d9488)] px-2.5 py-1 text-xs font-medium text-white hover:opacity-90 active:opacity-80"
+          >
+            <Wand2 className="h-3 w-3" />
+            Apply all
+          </button>
         </div>
       )}
 
