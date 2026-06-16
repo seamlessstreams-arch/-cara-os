@@ -14,6 +14,7 @@ import React, { useCallback } from "react";
 import { useWritingAssistant } from "@/hooks/use-writing-assistant";
 import { useWritingAssistantSettings, enabledIssueTypes } from "@/hooks/use-writing-assistant-settings";
 import { InlineSuggestions } from "./inline-suggestions";
+import { applyAutoFixes } from "@/lib/writing-assistant/rewrite-engine";
 import type { WritingIssue, WritingMode, WritingSuggestion } from "@/lib/writing-assistant/types";
 
 export interface WritingAssistantInlineProps {
@@ -76,6 +77,16 @@ export function WritingAssistantInline({
     [logAudit, recordType, fieldName, childId],
   );
 
+  const applyAll = useCallback(() => {
+    const { text: next, applied } = applyAutoFixes(value, issues);
+    if (applied.length === 0) return;
+    onApplyText(next);
+    applied.forEach((issue) => {
+      ignore(issue.id);
+      logAudit({ action: "accepted", issue_type: issue.type, original_text: issue.originalText, record_type: recordType, field_name: fieldName, child_id: childId });
+    });
+  }, [value, issues, onApplyText, ignore, logAudit, recordType, fieldName, childId]);
+
   if (!enabled) return null;
   return (
     <InlineSuggestions
@@ -85,6 +96,7 @@ export function WritingAssistantInline({
       settings={settings}
       onApply={apply}
       onIgnore={ignore}
+      onApplyAll={applyAll}
       onToggleCategory={toggleCategory}
       onAddToDictionary={addToDictionary}
       onAudit={handleAudit}
