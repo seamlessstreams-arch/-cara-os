@@ -150,6 +150,8 @@ export const PERMISSIONS = {
   REPORTS_APPROVE: "reports:approve",
   REPORTS_LOCK: "reports:lock",
   REG45_EVIDENCE_CREATE: "reg45:evidence:create",
+  // Candidate self-service
+  VIEW_CANDIDATE_PORTAL: "view_candidate_portal",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -160,6 +162,7 @@ export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
 export const APP_ROLES = [
   "super_admin",
+  "organisation_director",
   "responsible_individual",
   "registered_manager",
   "deputy_manager",
@@ -172,12 +175,14 @@ export const APP_ROLES = [
   "external_partner",
   "auditor",
   "admin", // legacy alias → treated as registered_manager
+  "candidate", // job applicant — self-service portal only
 ] as const;
 
 export type AppRole = (typeof APP_ROLES)[number];
 
 export const APP_ROLE_LABELS: Record<AppRole, string> = {
   super_admin: "Super Admin",
+  organisation_director: "Organisation Director",
   responsible_individual: "Responsible Individual",
   registered_manager: "Registered Manager",
   deputy_manager: "Deputy Manager",
@@ -190,6 +195,7 @@ export const APP_ROLE_LABELS: Record<AppRole, string> = {
   external_partner: "External Professional (Read-only)",
   auditor: "Auditor / Inspector (Read-only)",
   admin: "Administrator",
+  candidate: "Job Applicant",
 };
 
 // ── Full permissions for quick re-use ────────────────────────────────────────
@@ -241,6 +247,10 @@ const CARE_OPS_PERMISSIONS: Permission[] = [
 export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
   // ── Super Admin ──────────────────────────────────────────────────────────────
   super_admin: ALL_PERMISSIONS,
+
+  // ── Organisation Director ────────────────────────────────────────────────────
+  // Multi-home oversight: full operational visibility, no system configuration
+  organisation_director: ALL_PERMISSIONS,
 
   // ── Responsible Individual ───────────────────────────────────────────────────
   responsible_individual: [
@@ -690,6 +700,14 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
     PERMISSIONS.VIEW_INSPECTION,
     PERMISSIONS.VIEW_REPORTS,
     PERMISSIONS.EXPORT_REPORTS,
+  ],
+
+  // ── Job Applicant / Candidate ────────────────────────────────────────────────
+  // Minimal: can only see their own application via the candidate portal
+  candidate: [
+    PERMISSIONS.VIEW_CANDIDATE_PORTAL,
+    PERMISSIONS.VIEW_DOCUMENTS,
+    PERMISSIONS.UPLOAD_DOCUMENTS,
   ],
 
   // ── Admin (legacy alias — same as registered_manager) ────────────────────────
