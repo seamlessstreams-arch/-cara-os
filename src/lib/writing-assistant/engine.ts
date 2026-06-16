@@ -22,6 +22,7 @@ import {
   type IssueType,
 } from "./types";
 import { runCareRules } from "./care-rules";
+import { runCompletenessRules } from "./completeness-rules";
 
 const clamp = (n: number) => Math.max(0, Math.min(100, Math.round(n)));
 const SEVERITY_PENALTY = { high: 12, medium: 7, low: 3 } as const;
@@ -108,7 +109,9 @@ export function checkWriting(input: WritingCheckInput, today = ""): WritingCheck
     };
   }
 
-  const issues = runCareRules(text, input.mode ?? "standard");
+  const careIssues = runCareRules(text, input.mode ?? "standard");
+  const completenessIssues = runCompletenessRules(text, input.recordType, input.fieldName, input.mode);
+  const issues = [...careIssues, ...completenessIssues];
   const score = scoreWriting(text, issues);
   return {
     issues,
