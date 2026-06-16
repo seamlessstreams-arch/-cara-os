@@ -25,6 +25,8 @@ import {
 import { useIncidents, useAddOversight, useCreateIncident } from "@/hooks/use-incidents";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
+import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
+import type { CaraPracticeRecord, CaraPracticeRecordType, ImmediateRisk, RecordSeverity } from "@/lib/cara-heart/types";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useCreateTrainingNeed } from "@/hooks/use-ri-learning";
@@ -862,6 +864,16 @@ function OversightQueueTab() {
 
 // ── Tab 3: Log New Incident ───────────────────────────────────────────────────
 
+// Maps incident form values → CaraPracticeRecord fields for Cara Heart analysis
+const INCIDENT_TYPE_TO_RECORD_TYPE: Record<string, CaraPracticeRecordType> = {
+  missing_from_care: "missing_episode",
+  physical_intervention: "physical_intervention",
+  police_involvement: "police_contact",
+  behaviour_incident: "behaviour_record",
+};
+const SEV_NUM: Record<string, RecordSeverity> = { low: 1, medium: 3, high: 4, critical: 5 };
+const RISK_FROM_SEV: Record<string, ImmediateRisk> = { low: "low", medium: "medium", high: "high", critical: "critical" };
+
 const EMPTY_FORM = {
   child_id: "",
   type: "",
@@ -941,6 +953,27 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   const isValid = form.child_id && form.type && form.description.length > 10 && form.immediate_action.length > 5;
+
+  const heartRecord = React.useMemo<CaraPracticeRecord | null>(() => {
+    if (!form.child_id || !form.type || form.description.length < 30) return null;
+    return {
+      id: "draft",
+      childId: form.child_id,
+      type: INCIDENT_TYPE_TO_RECORD_TYPE[form.type] ?? "incident",
+      dateTime: `${form.date}T${form.time}:00`,
+      severity: SEV_NUM[form.severity] ?? 3,
+      description: form.description,
+      staffResponse: form.immediate_action || undefined,
+      immediateRisk: RISK_FROM_SEV[form.severity] ?? "medium",
+      missingFromCare: form.type === "missing_from_care",
+      restraintUsed: form.type === "physical_intervention",
+      policeCalled:
+        form.type === "police_involvement" ||
+        form.notifications.some((n) => n.role?.toLowerCase().includes("police")),
+      selfHarmConcern: form.type === "self_harm",
+      exploitationConcern: form.type === "exploitation_concern",
+    };
+  }, [form.child_id, form.type, form.description, form.immediate_action, form.severity, form.date, form.time, form.notifications]);
 
   if (successResult) {
     return (
@@ -1145,6 +1178,9 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
           mode="standard"
         />
       </div>
+
+      {/* Cara Heart — live practice intelligence as the record is written */}
+      <InlineCaraHeartPanel record={heartRecord} />
 
       {/* Notifications */}
       <div className="rounded-2xl border bg-white p-5 space-y-4">
