@@ -537,6 +537,7 @@ async function post_admissions_matching(request: NextRequest): Promise<Response>
 // ─── admissions ────────────────────────────────────────────────────────
 const admissions_demoRecords: AdmissionRecord[] = [
   // Alex — thorough admission process across multiple categories
+];
 const admissions_demoPolicy: AdmissionPolicy = {
   id: "pol-adm-1",
   admissionsPolicy: true,
@@ -550,6 +551,7 @@ const admissions_demoPolicy: AdmissionPolicy = {
 const admissions_demoStaff: StaffAdmissionTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", assessmentSkills: true, matchingExpertise: true, transitionPlanning: true, childParticipationSkills: true, riskAssessment: true, familyEngagement: true },
 
+];
 async function get_admissions(req: NextRequest): Promise<Response> {
 
   const result = generateAdmissionsIntelligence(
@@ -732,6 +734,7 @@ async function post_advocacy_representation(request: NextRequest): Promise<Respo
 // ─── after-care-support-quality ────────────────────────────────────────
 const after_care_support_quality_DEMO_SESSIONS: AfterCareSession[] = [
   // Alex — housing support (highly engaged)
+];
 const after_care_support_quality_DEMO_POLICY: AfterCarePolicy = {
   id: "pol-oak",
   leavingCareStrategy: true,
@@ -745,6 +748,7 @@ const after_care_support_quality_DEMO_POLICY: AfterCarePolicy = {
 const after_care_support_quality_DEMO_TRAINING: StaffAfterCareTraining[] = [
   { id: "tr-sarah", staffId: "staff-sarah", staffName: "Sarah Johnson", leavingCareKnowledge: true, pathwayPlanning: true, housingAdvice: true, employmentSupport: true, benefitsAndFinance: true, emotionalResilience: true },
 
+];
 async function get_after_care_support_quality(req: NextRequest): Promise<Response> {
 
   const result = generateAfterCareSupportQualityIntelligence(
@@ -822,13 +826,17 @@ const aftercare_outcomes_tracking_DEMO_LEAVERS: CareLeaverProfile[] = [
     personalAdviserAssigned: true,
     personalAdviserName: "Mark Thompson",
   },
+];
 const aftercare_outcomes_tracking_DEMO_CONTACTS: AftercareContact[] = [
   { id: "ac-1", childId: "child-alex", childName: "Alex", date: "2026-02-10", contactMethod: "phone", initiatedBy: "home", purpose: "Monthly wellbeing check-in", wellbeingRating: "stable", concernsRaised: false, followUpRequired: false, followUpCompleted: false },
+];
 const aftercare_outcomes_tracking_DEMO_ASSESSMENTS: OutcomeAssessment[] = [
   { id: "oa-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", housingStable: true, educationEmploymentEngaged: true, mentalHealthSupported: true, physicalHealthRegistered: true, financiallyCapable: true, socialNetworkPresent: true, overallWellbeing: "stable" },
+];
 const aftercare_outcomes_tracking_DEMO_SERVICES: SupportService[] = [
   { id: "ss-1", childId: "child-alex", childName: "Alex", serviceType: "education", referralDate: "2025-12-01", accessedService: true, serviceOngoing: true },
 
+];
 async function get_aftercare_outcomes_tracking(req: NextRequest): Promise<Response> {
 
   const result = generateAftercareOutcomesTrackingIntelligence(
@@ -929,6 +937,7 @@ async function post_aftercare_outcomes_tracking(req: NextRequest): Promise<Respo
 // ─── allegations ───────────────────────────────────────────────────────
 const allegations_demoRecords: AllegationRecord[] = [
   // Alex — allegations handled well
+];
 const allegations_demoPolicy: AllegationPolicy = {
   id: "pol-alg-1",
   allegationsPolicy: true,
@@ -942,6 +951,7 @@ const allegations_demoPolicy: AllegationPolicy = {
 const allegations_demoStaff: StaffAllegationTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", safeguardingKnowledge: true, allegationProcedures: true, ladoProcess: true, investigationSkills: true, childProtection: true, recordKeeping: true },
 
+];
 async function get_allegations(req: NextRequest): Promise<Response> {
 
   const result = generateAllegationsIntelligence(
@@ -978,13 +988,16 @@ const allergen_dietary_management_DEMO_PROFILES: ChildAllergenProfile[] = [
     lastReviewDate: "2026-03-01",
     reviewDue: "2026-09-01",
   },
+];
 const allergen_dietary_management_DEMO_MEALS: MealPlanRecord[] = [
   { id: "mp-1", date: "2026-05-12", mealType: "breakfast", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+];
 const allergen_dietary_management_DEMO_INCIDENTS: AllergenIncident[] = [];
 
 const allergen_dietary_management_DEMO_TRAINING: StaffAllergenTraining[] = [
   { id: "sat-1", staffId: "staff-sarah", staffName: "Sarah Johnson", allergenAwareness: true, epiPenTrained: true, epiPenExpiryDate: "2027-01-10", foodHygieneCertified: true, crossContaminationTrained: true, anaphylaxisTrained: true, competenceLevel: "fully_competent" },
 
+];
 async function get_allergen_dietary_management(req: NextRequest): Promise<Response> {
 
   const result = generateAllergenDietaryManagementIntelligence(
@@ -1731,6 +1744,7 @@ async function post_attachment_relationships(request: NextRequest): Promise<Resp
 // ─── behaviour-intelligence ────────────────────────────────────────────
 const behaviour_intelligence_DEMO_RECORDS: BehaviourIntelligenceRecord[] = [
   { id: "bi-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "positive_reinforcement", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+];
 const behaviour_intelligence_DEMO_POLICY: BehaviourIntelligencePolicy = {
   behaviourSupportPolicy: true,
   physicalInterventionPolicy: true,
@@ -1743,6 +1757,7 @@ const behaviour_intelligence_DEMO_POLICY: BehaviourIntelligencePolicy = {
 const behaviour_intelligence_DEMO_STAFF: StaffBehaviourIntelligenceTraining[] = [
   { staffId: "staff-sarah", behaviourManagementKnowledge: true, deEscalationSkills: true, restorativePracticeSkills: true, physicalInterventionTraining: true, traumaInformedApproach: true, behaviourAnalysisSkills: true },
 
+];
 async function get_behaviour_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateBehaviourIntelligenceReport({
@@ -1769,6 +1784,7 @@ async function get_behaviour_intelligence(req: NextRequest): Promise<Response> {
 // ─── behaviour ─────────────────────────────────────────────────────────
 const behaviour_demoRecords: BehaviourRecord[] = [
   // Alex — strong positive behaviour approach
+];
 const behaviour_demoPolicy: BehaviourPolicy = {
   id: "pol-beh-1",
   behaviourManagementPolicy: true,
@@ -1782,6 +1798,7 @@ const behaviour_demoPolicy: BehaviourPolicy = {
 const behaviour_demoStaff: StaffBehaviourTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", positiveApproaches: true, deEscalationSkills: true, traumaInformedPractice: true, restorativePractice: true, riskAssessment: true, recordKeeping: true },
 
+];
 async function get_behaviour(req: NextRequest): Promise<Response> {
 
   const result = generateBehaviourIntelligence(
@@ -2132,6 +2149,7 @@ async function post_bereavement_loss_support(request: NextRequest): Promise<Resp
 // ─── body-map-protocol ─────────────────────────────────────────────────
 const body_map_protocol_DEMO_RECORDS: BodyMapRecord[] = [
   // Alex — bruise on knee from football, accidental explained
+];
 const body_map_protocol_DEMO_AUDITS: BodyMapAudit[] = [
   {
     id: "aud-1",
@@ -2145,8 +2163,10 @@ const body_map_protocol_DEMO_AUDITS: BodyMapAudit[] = [
     crossReferencedWithIncidents: true,
     overallCompliant: true,
   },
+];
 const body_map_protocol_DEMO_TRAINING: BodyMapTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", trainingDate: "2026-01-10", bodyMapTrained: true, safeguardingAwareness: true, photographyProtocol: true, documentationStandards: true, escalationProcedure: true },
+];
 const body_map_protocol_DEMO_ESCALATIONS: SafeguardingEscalation[] = [
   {
     id: "esc-1",
@@ -2161,6 +2181,7 @@ const body_map_protocol_DEMO_ESCALATIONS: SafeguardingEscalation[] = [
     appropriateResponse: true,
   },
 
+];
 async function get_body_map_protocol(req: NextRequest): Promise<Response> {
 
   const result = generateBodyMapProtocolIntelligence(
@@ -2251,6 +2272,7 @@ async function post_body_map_protocol(req: NextRequest): Promise<Response> {
 // ─── care-planning-intelligence ────────────────────────────────────────
 const care_planning_intelligence_DEMO_RECORDS: CarePlanningRecord[] = [
   { id: "cp-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "care_plan_creation", outcome: "plan_fully_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+];
 const care_planning_intelligence_DEMO_POLICY: CarePlanningPolicy = {
   carePlanningPolicy: true, placementPlanPolicy: true, reviewSchedulePolicy: true,
   multiAgencyPlanningPolicy: true, riskIntegrationPolicy: true, childParticipationPolicy: true, transitionPlanningPolicy: true,
@@ -2258,6 +2280,7 @@ const care_planning_intelligence_DEMO_POLICY: CarePlanningPolicy = {
 const care_planning_intelligence_DEMO_STAFF: StaffCarePlanningCompetency[] = [
   { staffId: "staff-sarah", carePlanWritingSkills: true, outcomeFocusedPlanning: true, multiAgencyCoordination: true, childParticipationSkills: true, riskAssessmentIntegration: true, reviewFacilitationSkills: true },
 
+];
 async function get_care_planning_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateCarePlanningIntelligenceReport({
@@ -2273,13 +2296,17 @@ async function get_care_planning_intelligence(req: NextRequest): Promise<Respons
 // ─── care-planning ─────────────────────────────────────────────────────
 const care_planning_DEMO_CHILDREN: CareChild[] = [
   { id: "child-alex", name: "Alex", dateOfBirth: "2012-03-15", placementStartDate: "2025-10-01", isEligibleChild: false, currentPlacement: true },
+];
 const care_planning_DEMO_REVIEWS: PlannedReview[] = [
   // Alex — good overall, one late PEP
+];
 const care_planning_DEMO_ACTIONS: ReviewAction[] = [
   { id: "act-001", reviewId: "rev-001", childId: "child-alex", description: "Arrange trial session at boxing club", assignedTo: "Sarah Johnson", dueDate: "2026-03-01", completedDate: "2026-02-25", status: "completed", category: "activity" },
+];
 const care_planning_DEMO_DOCUMENTS: CarePlanDocument[] = [
   { id: "doc-001", childId: "child-alex", documentType: "care_plan", lastUpdated: "2026-04-15", nextReviewDue: "2026-10-15", isUpToDate: true },
 
+];
 async function get_care_planning(req: NextRequest): Promise<Response> {
 
   const result = generateCarePlanningIntelligence(
@@ -2344,6 +2371,7 @@ async function post_care_planning(req: NextRequest): Promise<Response> {
 // ─── child-exploitation-prevention-intelligence ────────────────────────
 const child_exploitation_prevention_intelligence_DEMO_RECORDS: ChildExploitationPreventionRecord[] = [
   { id: "cep-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "cse_risk_assessment", outcome: "no_concerns_identified", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+];
 const child_exploitation_prevention_intelligence_DEMO_POLICY: ChildExploitationPreventionPolicy = {
   exploitationPreventionPolicy: true, cseProtectionProcedure: true, criminalExploitationPolicy: true, onlineSafetyPolicy: true,
   returnHomeInterviewPolicy: true, disruptionActivityProtocol: true, multiAgencyExploitationProtocol: true,
@@ -2351,6 +2379,7 @@ const child_exploitation_prevention_intelligence_DEMO_POLICY: ChildExploitationP
 const child_exploitation_prevention_intelligence_DEMO_STAFF: StaffChildExploitationPreventionTraining[] = [
   { staffId: "staff-sarah", exploitationAwareness: true, riskAssessmentSkills: true, safetyPlanningSkills: true, onlineSafetyKnowledge: true, returnHomeInterviewSkills: true, disruptionTacticsKnowledge: true },
 
+];
 async function get_child_exploitation_prevention_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateChildExploitationPreventionIntelligence({
@@ -2363,6 +2392,7 @@ async function get_child_exploitation_prevention_intelligence(req: NextRequest):
 // ─── child-exploitation-prevention ─────────────────────────────────────
 const child_exploitation_prevention_DEMO_CHILDREN = [
   { id: "child-alex", name: "Alex" },
+];
 const child_exploitation_prevention_DEMO_ASSESSMENTS: ExploitationRiskAssessment[] = [
   {
     childId: "child-alex",
@@ -2383,6 +2413,7 @@ const child_exploitation_prevention_DEMO_ASSESSMENTS: ExploitationRiskAssessment
     ],
     reviewDate: "2026-07-01",
   },
+];
 const child_exploitation_prevention_DEMO_INTERVENTIONS: ExploitationIntervention[] = [
   {
     id: "int-001",
@@ -2397,8 +2428,10 @@ const child_exploitation_prevention_DEMO_INTERVENTIONS: ExploitationIntervention
     effectivenessScore: 7,
     outcome: "Alex engages with safety plan discussions and identifies safe adults to contact",
   },
+];
 const child_exploitation_prevention_DEMO_TRAINING: ExploitationTraining[] = [
   { staffId: "staff-001", staffName: "Sarah Johnson", trainingType: "cse_awareness", completionDate: "2026-03-01", expiryDate: "2027-03-01", passed: true },
+];
 const child_exploitation_prevention_DEMO_MAPPINGS: MappingRecord[] = [
   {
     id: "map-001",
@@ -2410,6 +2443,7 @@ const child_exploitation_prevention_DEMO_MAPPINGS: MappingRecord[] = [
     onlineRisks: ["Snapchat contact from unknown adults"],
     disruptionActionsPlanned: ["Police patrol request for car park area"],
   },
+];
 const child_exploitation_prevention_DEMO_CONTEXTUAL_LINKS: ContextualSafeguardingLink[] = [
   {
     id: "link-001",
@@ -2420,6 +2454,7 @@ const child_exploitation_prevention_DEMO_CONTEXTUAL_LINKS: ContextualSafeguardin
     actionsAgreed: ["Share updated mapping for Alex", "Joint visit to Riverside estate"],
     followUpDate: "2026-06-10",
   },
+];
 const child_exploitation_prevention_TOTAL_STAFF = 4;
 
 async function get_child_exploitation_prevention(req: NextRequest): Promise<Response> {
@@ -2542,10 +2577,13 @@ const children_fund_management_DEMO_ACCOUNTS: ChildAccount[] = [
     savingsGoal: 200,
     savingsBalance: 120,
   },
+];
 const children_fund_management_DEMO_TRANSACTIONS: FinancialTransaction[] = [
   // Alex -- £15/week pocket money
+];
 const children_fund_management_DEMO_SESSIONS: FinancialLiteracySession[] = [
   { id: "sess-001", childId: "child-alex", childName: "Alex", date: "2026-04-10T14:00:00Z", topic: "budgeting", duration: 45, facilitator: "staff-rm-01", childEngaged: true, practicalComponent: true, ageAppropriate: true },
+];
 const children_fund_management_DEMO_AUDITS: FinancialAudit[] = [
   {
     id: "aud-001",
@@ -2560,6 +2598,7 @@ const children_fund_management_DEMO_AUDITS: FinancialAudit[] = [
     policyCompliant: true,
   },
 
+];
 async function get_children_fund_management(req: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(req.url);
@@ -2680,6 +2719,7 @@ async function post_children_fund_management(req: NextRequest): Promise<Response
 // ─── children-outcomes-intelligence ────────────────────────────────────
 const children_outcomes_intelligence_DEMO_RECORDS: ChildrenOutcomesRecord[] = [
   { id: "co-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "educational_achievement", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+];
 const children_outcomes_intelligence_DEMO_POLICY: ChildrenOutcomesPolicy = {
   outcomesFrameworkPolicy: true, progressTrackingPolicy: true, educationSupportPolicy: true,
   healthWellbeingPolicy: true, independentLivingSkillsPolicy: true, voiceOfChildPolicy: true, multiAgencyOutcomesPolicy: true,
@@ -2687,6 +2727,7 @@ const children_outcomes_intelligence_DEMO_POLICY: ChildrenOutcomesPolicy = {
 const children_outcomes_intelligence_DEMO_STAFF: StaffChildrenOutcomesTraining[] = [
   { staffId: "staff-sarah", outcomesFrameworkKnowledge: true, progressTrackingSkills: true, therapeuticInterventions: true, educationalSupportSkills: true, voiceOfChildTechniques: true, multiAgencyCollaboration: true },
 
+];
 async function get_children_outcomes_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateChildrenOutcomesIntelligence({
@@ -2702,11 +2743,11 @@ async function get_children_outcomes_intelligence(req: NextRequest): Promise<Res
   const children_outcomes_profiles: ChildProfile[] = (children ?? []).map(mapToProfile);
   const now = new Date().toISOString();
     const children_outcomes_profile = profiles[0];
-    if (!profile) return NextResponse.json({ error: "Child not found" }, { status: 404 });
+// [gen-fix-return]     if (!profile) return NextResponse.json({ error: "Child not found" }, { status: 404 });
     const children_outcomes_progress = evaluateChildProgress(profile, now);
     const children_outcomes_trends = analyzeDomainTrends(profile);
     const children_outcomes_cohort = analyzeCohort(profiles, homeId, now);
-  const children_outcomes_cohort = analyzeCohort(profiles, homeId, now);
+  const children_outcomes_cohort_dup1 = analyzeCohort(profiles, homeId, now);
   const children_outcomes_childResults = profiles.map(p => ({
     ...evaluateChildProgress(p, now),
     keyworkerName: p.keyworkerName,
@@ -2898,7 +2939,7 @@ async function get_children_outcomes(req: NextRequest): Promise<Response> {
 
 // ─── childrens-rights ──────────────────────────────────────────────────
 const childrens_rights_CHILD_IDS = ["alex", "jordan", "morgan"];
-const CHILD_NAMES: Record<string, string> = {
+const CHILD_NAMES_dup1: Record<string, string> = {
   alex: "Alex",
   jordan: "Jordan",
   morgan: "Morgan",
@@ -3004,11 +3045,14 @@ async function post_childrens_rights(request: NextRequest): Promise<Response> {
 // ─── clothing-appearance-provision ─────────────────────────────────────
 const clothing_appearance_provision_DEMO_ASSESSMENTS: ClothingAssessment[] = [
   { id: "a-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", clothingCategory: "everyday_wear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+];
 const clothing_appearance_provision_DEMO_POLICIES: ClothingPolicy[] = [
   { id: "pol-1", clothingProvisionStrategy: true, clothingBudgetFramework: true, seasonalReviewProcedure: true, childChoiceGuidance: true, culturalAndReligiousAccommodation: true, laundryAndMaintenancePlan: true, regularReview: true },
+];
 const clothing_appearance_provision_DEMO_TRAINING: StaffClothingTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
 
+];
 async function get_clothing_appearance_provision(req: NextRequest): Promise<Response> {
 
   const result = generateClothingAppearanceProvisionIntelligence(
@@ -3074,7 +3118,7 @@ async function post_clothing_appearance_provision(req: NextRequest): Promise<Res
 
 // ─── communication-accessibility ───────────────────────────────────────
 const communication_accessibility_CHILD_IDS = ["alex", "jordan", "morgan"];
-const CHILD_NAMES: Record<string, string> = {
+const CHILD_NAMES_dup2: Record<string, string> = {
   alex: "Alex",
   jordan: "Jordan",
   morgan: "Morgan",
@@ -3377,6 +3421,7 @@ async function post_communication_accessibility(request: NextRequest): Promise<R
 // ─── community-engagement-participation ────────────────────────────────
 const community_engagement_participation_DEMO_ACTIVITIES: CommunityActivity[] = [
   { id: "ca-1", childId: "child-alex", childName: "Alex", activityDate: "2026-04-01", activityType: "sports_club", participationLevel: "highly_engaged", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
+];
 const community_engagement_participation_DEMO_POLICY: CommunityPolicy = {
   id: "cp-1",
   communityEngagementStrategy: true,
@@ -3390,6 +3435,7 @@ const community_engagement_participation_DEMO_POLICY: CommunityPolicy = {
 const community_engagement_participation_DEMO_TRAINING: StaffCommunityTraining[] = [
   { id: "ct-1", staffId: "staff-sarah", staffName: "Sarah Johnson", communityEngagement: true, socialInclusion: true, safeguardingInCommunity: true, activityPlanning: true, partnershipWorking: true, documentationSkills: true },
 
+];
 async function get_community_engagement_participation(req: NextRequest): Promise<Response> {
 
   const result = generateCommunityEngagementParticipationIntelligence(
@@ -3436,13 +3482,17 @@ async function post_community_engagement_participation(req: NextRequest): Promis
 // ─── community-integration ─────────────────────────────────────────────
 const community_integration_DEMO_ACTIVITIES: CommunityActivity[] = [
   { id: "ca-a1", childId: "child-alex", childName: "Alex", activityCategory: "sport", activityName: "Oakwood Football Club", participationLevel: "regular", frequency: "weekly", startDate: "2025-09-01", childEnjoys: true, staffSupported: false, independentAttendance: true, communityBased: true },
+];
 const community_integration_DEMO_NETWORKS: SocialNetwork[] = [
   { id: "sn-a", childId: "child-alex", childName: "Alex", friendshipQuality: "developing", numberOfFriends: 4, friendsOutsideCare: true, socialMediaSafety: "safe_and_supported", communityMentor: false, regularSocialActivities: 2 },
+];
 const community_integration_DEMO_BARRIERS: CommunityBarrierRecord[] = [
   { id: "br-j1", childId: "child-jordan", childName: "Jordan", barrier: "transport", barrierDescription: "Limited public transport to community activities", actionTaken: true, resolved: false },
+];
 const community_integration_DEMO_ASSESSMENTS: InclusionAssessment[] = [
   { id: "ia-a", childId: "child-alex", childName: "Alex", feelsPartOfCommunity: true, accessToLocalAmenities: true, positiveLocalRelationships: true, stigmaExperienced: false, independentTravelSkills: true, assessedDate: "2026-04-15", assessedBy: "Sarah Johnson" },
 
+];
 async function get_community_integration(req: NextRequest): Promise<Response> {
 
   const result = generateCommunityIntegrationIntelligence(
@@ -3800,6 +3850,7 @@ const complaints_advocacy_access_DEMO_COMPLAINTS: ComplaintRecord[] = [
     learningIdentified: true,
     policyChangeRequired: false,
   },
+];
 const complaints_advocacy_access_DEMO_ADVOCACY: AdvocacyRecord[] = [
   {
     id: "adv-1",
@@ -3813,6 +3864,7 @@ const complaints_advocacy_access_DEMO_ADVOCACY: AdvocacyRecord[] = [
     accessWithinTimescale: true,
     ongoingSupport: true,
   },
+];
 const complaints_advocacy_access_DEMO_POLICIES: ComplaintsPolicy[] = [
   {
     id: "pol-1",
@@ -3825,9 +3877,11 @@ const complaints_advocacy_access_DEMO_POLICIES: ComplaintsPolicy[] = [
     externalContactsDisplayed: true,
     regularlyReviewedWithChildren: true,
   },
+];
 const complaints_advocacy_access_DEMO_TRAINING: StaffComplaintsTraining[] = [
   { id: "ct-1", staffId: "staff-sarah", staffName: "Sarah Johnson", complaintsProcedure: true, advocacyReferral: true, childRightsAwareness: true, conflictResolution: true, recordKeeping: true, escalationProcess: true },
 
+];
 async function get_complaints_advocacy_access(req: NextRequest): Promise<Response> {
 
   const result = generateComplaintsAdvocacyAccessIntelligence(
@@ -3917,7 +3971,7 @@ async function post_complaints_advocacy_access(req: NextRequest): Promise<Respon
 
 // ─── complaints-feedback-quality ───────────────────────────────────────
 const complaints_feedback_quality_CHILD_IDS = ["alex", "jordan", "morgan"];
-const CHILD_NAMES: Record<string, string> = {
+const CHILD_NAMES_dup3: Record<string, string> = {
   alex: "Alex",
   jordan: "Jordan",
   morgan: "Morgan",
@@ -4180,6 +4234,7 @@ async function get_complaints_feedback(req: NextRequest): Promise<Response> {
 // ─── complaints ────────────────────────────────────────────────────────
 const complaints_demoRecords: ComplaintRecord[] = [
   // Alex — complaints handled well
+];
 const complaints_demoPolicy: ComplaintPolicy = {
   complaintsPolicy: true,
   investigationProcedure: true,
@@ -4192,6 +4247,7 @@ const complaints_demoPolicy: ComplaintPolicy = {
 const complaints_demoStaff: StaffComplaintTraining[] = [
   { staffId: "staff-sarah", complaintHandling: true, childAdvocacy: true, investigationSkills: true, recordKeeping: true, conflictResolution: true, regulatoryKnowledge: true },
 
+];
 async function get_complaints(req: NextRequest): Promise<Response> {
 
   const result = generateComplaintsIntelligence({
@@ -4214,12 +4270,14 @@ async function get_complaints(req: NextRequest): Promise<Response> {
 // ─── conflict-resolution-management ────────────────────────────────────
 const conflict_resolution_management_DEMO_INCIDENTS: ConflictIncident[] = [
   { id: "ci-1", childId: "child-alex", childName: "Alex", incidentDate: "2026-03-01", conflictType: "peer_disagreement", resolutionOutcome: "fully_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+];
 const conflict_resolution_management_DEMO_POLICY: ConflictResolutionPolicy = {
   id: "crp-1", behaviourManagementStrategy: true, deEscalationProtocol: true, restorativePracticeFramework: true, antibullyingPolicy: true, physicalInterventionGuidance: true, childParticipationInResolution: true, regularReview: true,
 };
 const conflict_resolution_management_DEMO_TRAINING: StaffConflictResolutionTraining[] = [
   { id: "crt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", deEscalationTechniques: true, restorativePractice: true, conflictMediation: true, traumaInformedResponse: true, physicalInterventionCertified: true, reflectiveDebrief: true },
 
+];
 async function get_conflict_resolution_management(req: NextRequest): Promise<Response> {
 
   const result = generateConflictResolutionManagementIntelligence(
@@ -4421,6 +4479,7 @@ async function get_contact(req: NextRequest): Promise<Response> {
 // ─── contextual-safeguarding-intelligence ──────────────────────────────
 const contextual_safeguarding_intelligence_DEMO_RECORDS: ContextualSafeguardingRecord[] = [
   { id: "cs-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "peer_risk_assessment", outcome: "low_risk", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+];
 const contextual_safeguarding_intelligence_DEMO_POLICY: ContextualSafeguardingPolicy = {
   contextualSafeguardingPolicy: true, peerRiskAssessmentPolicy: true, onlineSafetyPolicy: true,
   exploitationScreeningPolicy: true, communityMappingPolicy: true, multiAgencyProtocol: true, safetyPlanningPolicy: true,
@@ -4428,6 +4487,7 @@ const contextual_safeguarding_intelligence_DEMO_POLICY: ContextualSafeguardingPo
 const contextual_safeguarding_intelligence_DEMO_STAFF: StaffContextualSafeguardingTraining[] = [
   { staffId: "staff-sarah", contextualSafeguardingKnowledge: true, exploitationAwareness: true, onlineSafetyCompetency: true, multiAgencyWorkingSkills: true, riskAssessmentSkills: true, safetyPlanningSkills: true },
 
+];
 async function get_contextual_safeguarding_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateContextualSafeguardingIntelligence({
@@ -4440,6 +4500,7 @@ async function get_contextual_safeguarding_intelligence(req: NextRequest): Promi
 // ─── contextual-safeguarding ───────────────────────────────────────────
 const contextual_safeguarding_DEMO_CHILDREN = [
   { id: "child-alex", name: "Alex" },
+];
 const contextual_safeguarding_DEMO_ENV_RISKS: EnvironmentalRisk[] = [
   {
     id: "env-001",
@@ -4454,17 +4515,23 @@ const contextual_safeguarding_DEMO_ENV_RISKS: EnvironmentalRisk[] = [
     isActive: true,
     mitigationsInPlace: ["Police community mapping shared", "Curfew adjusted for Alex", "Diversionary activities planned"],
   },
+];
 const contextual_safeguarding_DEMO_PEERS: PeerAssociation[] = [
   { id: "peer-001", childId: "child-alex", peerName: "Kai (pseudonym)", peerType: "high_risk", harmDomains: ["county_lines", "criminal_exploitation"], context: "Town centre and retail park", frequency: "weekly", isMonitored: true, lastContact: "2026-05-14" },
+];
 const contextual_safeguarding_DEMO_ONLINE: OnlineRisk[] = [
   { id: "online-001", childId: "child-morgan", platform: "Telegram", riskType: "online_exploitation", riskLevel: "significant", description: "Added to private group by unknown adult", identifiedDate: "2026-05-05", isActive: true, actionTaken: "Device monitoring, MASH referral made" },
+];
 const contextual_safeguarding_DEMO_PROTECTIVE: ProtectiveFactor[] = [
   { id: "pf-001", childId: "child-alex", type: "trusted_adult", description: "Strong relationship with KW Sarah — Alex seeks her out during distress", strength: "strong", lastEvidenced: "2026-05-16" },
+];
 const contextual_safeguarding_DEMO_INTERVENTIONS: Intervention[] = [
   { id: "int-001", childId: "child-alex", harmDomain: "criminal_exploitation", description: "Contextual safeguarding mentoring programme via local Youth Justice Service", status: "in_progress", startDate: "2026-04-15", reviewDate: "2026-06-15", assignedTo: "Sarah Johnson (KW)", multiAgencyInvolved: true, partners: ["Youth Justice Service", "Police CMET team"] },
+];
 const contextual_safeguarding_DEMO_EVENTS: MappingEvent[] = [
   { id: "evt-001", childId: "child-alex", date: "2026-05-12", harmDomain: "criminal_exploitation", description: "Alex observed near retail park with Kai during curfew hours", environmentId: "env-001", peerAssociationId: "peer-001", severity: 4, wasEscalated: true, responseAdequate: true },
 
+];
 async function get_contextual_safeguarding(req: NextRequest): Promise<Response> {
 
   const result = generateContextualAssessment(
@@ -4628,12 +4695,14 @@ async function post_court_order_compliance(req: NextRequest): Promise<Response> 
 // ─── creative-arts-expression ──────────────────────────────────────────
 const creative_arts_expression_DEMO_SESSIONS: ArtsSession[] = [
   { id: "as-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-01", artForm: "visual_art", expressionLevel: "highly_expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+];
 const creative_arts_expression_DEMO_POLICY: CreativeArtsPolicy = {
   id: "cap-1", artsEducationStrategy: true, therapeuticArtsFramework: true, resourceProvisionPlan: true, externalPartnerships: true, exhibitionAndShowcasePolicy: true, inclusiveAccessGuidance: true, regularReview: true,
 };
 const creative_arts_expression_DEMO_TRAINING: StaffCreativeArtsTraining[] = [
   { id: "cat-1", staffId: "staff-sarah", staffName: "Sarah Johnson", artsFacilitation: true, therapeuticArtsAwareness: true, creativeConfidenceBuilding: true, inclusivePractice: true, culturalArtsForms: true, safeguardingInArts: true },
 
+];
 async function get_creative_arts_expression(req: NextRequest): Promise<Response> {
 
   const result = generateCreativeArtsExpressionIntelligence(
@@ -4942,6 +5011,7 @@ async function post_critical_incident_review(request: NextRequest): Promise<Resp
 // ─── cultural-identity-celebration ─────────────────────────────────────
 const cultural_identity_celebration_DEMO_ACTIVITIES: CulturalActivity[] = [
   { id: "act-1", childId: "child-alex", childName: "Alex", activityDate: "2026-02-10", culturalArea: "heritage_exploration", engagementLevel: "enthusiastic", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: true, reflectionCompleted: true },
+];
 const cultural_identity_celebration_DEMO_POLICY: CulturalPolicy = {
   id: "pol-1",
   culturalIdentityPolicy: true,
@@ -4955,6 +5025,7 @@ const cultural_identity_celebration_DEMO_POLICY: CulturalPolicy = {
 const cultural_identity_celebration_DEMO_TRAINING: StaffCulturalTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", culturalCompetence: true, diversityAwareness: true, religiousLiteracy: true, antiRacismPractice: true, identitySupport: true, communityEngagement: true },
 
+];
 async function get_cultural_identity_celebration(req: NextRequest): Promise<Response> {
 
   const result = generateCulturalIdentityCelebrationIntelligence(
@@ -5321,6 +5392,7 @@ const culture_identity_DEMO_CHILDREN: CultureChild[] = [
     dietaryRequirements: ["No pork (cultural preference)"],
     currentPlacement: true,
   },
+];
 const culture_identity_DEMO_ASSESSMENTS: IdentityNeedsAssessment[] = [
   {
     childId: "child-alex",
@@ -5334,8 +5406,10 @@ const culture_identity_DEMO_ASSESSMENTS: IdentityNeedsAssessment[] = [
     reviewDueDate: "2026-07-15",
     assessedBy: "Sarah Johnson",
   },
+];
 const culture_identity_DEMO_ACTIVITIES: IdentityActivity[] = [
   // Alex — Caribbean heritage, mixed-heritage identity work
+];
 const culture_identity_DEMO_INCIDENTS: DiversityIncident[] = [
   {
     id: "inc-001",
@@ -5352,8 +5426,10 @@ const culture_identity_DEMO_INCIDENTS: DiversityIncident[] = [
     actionsTaken: ["Immediate emotional support provided", "Discussed with Alex in key-work next day", "Recorded as racist incident in LA monitoring system", "Staff debriefed", "Pre-planning outings to include diversity awareness"],
     lessonLearned: "Staff to pre-plan community outings considering diversity of group; carry incident reporting cards; ensure all staff confident in responding to racial abuse in public",
   },
+];
 const culture_identity_DEMO_TRAINING: StaffDiversityTraining[] = [
   // Sarah Johnson — KW, comprehensive training
+];
 const culture_identity_STAFF_IDS = ["staff-sarah", "staff-tom", "staff-lisa", "staff-darren"];
 
 
@@ -5660,8 +5736,10 @@ const data_protection_DEMO_BREACHES: DataBreach[] = [
     lessonsLearned:
       "Staff reminded about double-checking recipient addresses. Auto-complete disabled for external emails containing child data.",
   },
+];
 const data_protection_DEMO_CONSENT_RECORDS: ConsentRecord[] = [
   // Alex - 5 types covering photography, data_sharing, medical_info, therapeutic_records, education_records
+];
 const data_protection_DEMO_SAR_REQUESTS: SubjectAccessRequest[] = [
   {
     id: "sar-1",
@@ -5673,6 +5751,7 @@ const data_protection_DEMO_SAR_REQUESTS: SubjectAccessRequest[] = [
     redactionCompleted: true,
     qualityChecked: true,
   },
+];
 const data_protection_DEMO_GOVERNANCE: DataGovernance[] = [
   {
     id: "gov-1",
@@ -5686,6 +5765,7 @@ const data_protection_DEMO_GOVERNANCE: DataGovernance[] = [
     thirdPartyAgreementsReviewed: true,
   },
 
+];
 async function get_data_protection(req: NextRequest): Promise<Response> {
 
   const result = generateDataProtectionIntelligence(
@@ -5848,8 +5928,10 @@ const dental_health_monitoring_DEMO_APPOINTMENTS: DentalAppointment[] = [
     nextAppointmentBooked: true,
     consentObtained: true,
   },
+];
 const dental_health_monitoring_DEMO_HYGIENE_RECORDS: OralHygieneRecord[] = [
   { id: "oh-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", brushingFrequency: "twice_daily", mouthwashUsed: true, dietaryAdviceGiven: true, overallRating: "good" },
+];
 const dental_health_monitoring_DEMO_TREATMENT_PLANS: DentalTreatmentPlan[] = [
   {
     id: "tp-1",
@@ -5864,9 +5946,11 @@ const dental_health_monitoring_DEMO_TREATMENT_PLANS: DentalTreatmentPlan[] = [
     parentConsent: true,
     socialWorkerNotified: true,
   },
+];
 const dental_health_monitoring_DEMO_STAFF_TRAINING: StaffDentalTraining[] = [
   { id: "sdt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", dentalHealthAwareness: true, oralHygieneSupport: true, appointmentManagement: true, consentProcessTrained: true, emergencyDentalKnowledge: true },
 
+];
 async function get_dental_health_monitoring(req: NextRequest): Promise<Response> {
 
   const result = generateDentalHealthMonitoringIntelligence(
@@ -5972,6 +6056,7 @@ const deprivation_of_liberty_DEMO_RESTRICTIONS: RestrictionRecord[] = [
     leastRestrictiveOptionConsidered: true,
     riskAssessmentLinked: true,
   },
+];
 const deprivation_of_liberty_DEMO_REVIEWS: DoLSReview[] = [
   {
     id: "rev-morgan-01",
@@ -5987,8 +6072,10 @@ const deprivation_of_liberty_DEMO_REVIEWS: DoLSReview[] = [
     nextReviewDue: "2026-06-15",
     lessRestrictiveAlternativesConsidered: true,
   },
+];
 const deprivation_of_liberty_DEMO_SAFEGUARDS: ChildRightsSafeguard[] = [
   // Morgan — full safeguard suite
+];
 const deprivation_of_liberty_DEMO_LEGAL: LegalCompliance[] = [
   {
     id: "leg-morgan",
@@ -6003,6 +6090,7 @@ const deprivation_of_liberty_DEMO_LEGAL: LegalCompliance[] = [
     lastLegalReviewDate: "2026-03-15",
   },
 
+];
 async function get_deprivation_of_liberty(req: NextRequest): Promise<Response> {
 
   const result = generateDeprivationOfLibertyIntelligence(
@@ -6117,6 +6205,7 @@ async function post_deprivation_of_liberty(req: NextRequest): Promise<Response> 
 // ─── digital-literacy-development ──────────────────────────────────────
 const digital_literacy_development_DEMO_SESSIONS: DigitalSession[] = [
   { id: "ds-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-01", sessionType: "online_safety", competencyLevel: "advanced", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
+];
 const digital_literacy_development_DEMO_POLICY: DigitalPolicy = {
   id: "dp-1",
   onlineSafetyPolicy: true,
@@ -6130,6 +6219,7 @@ const digital_literacy_development_DEMO_POLICY: DigitalPolicy = {
 const digital_literacy_development_DEMO_TRAINING: StaffDigitalTraining[] = [
   { id: "dt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", onlineSafety: true, digitalLiteracy: true, socialMediaAwareness: true, cyberbullyingResponse: true, privacyProtection: true, monitoringSkills: true },
 
+];
 async function get_digital_literacy_development(req: NextRequest): Promise<Response> {
 
   const result = generateDigitalLiteracyDevelopmentIntelligence(
@@ -6207,6 +6297,7 @@ const digital_literacy_DEMO_ASSESSMENTS: DigitalSkillAssessment[] = [
     ],
     reviewDate: "2026-08-15",
   },
+];
 const digital_literacy_DEMO_DEVICE_ACCESS: DeviceAccessRecord[] = [
   {
     id: "da-alex-1",
@@ -6220,11 +6311,14 @@ const digital_literacy_DEMO_DEVICE_ACCESS: DeviceAccessRecord[] = [
     restrictionsInPlace: ["Content filtering", "Time limits 3h/day"],
     ageAppropriate: true,
   },
+];
 const digital_literacy_DEMO_LEARNING: OnlineLearningRecord[] = [
   { id: "ol-1", childId: "child-alex", childName: "Alex", date: "2026-01-20", platform: "Code.org", activityType: "educational", durationMinutes: 45, supervised: false, outcomePositive: true, notes: "Completed Hour of Code challenge" },
+];
 const digital_literacy_DEMO_CITIZENSHIP: DigitalCitizenshipRecord[] = [
   { id: "dc-1", childId: "child-jordan", childName: "Jordan", date: "2026-01-18", area: "kindness_online", demonstratedPositively: true, context: "Sent supportive messages to friend going through difficult time", staffWitnessedBy: "Tom Richards" },
 
+];
 async function get_digital_literacy(req: NextRequest): Promise<Response> {
 
   const result = generateDigitalLiteracyIntelligence(
@@ -6664,6 +6758,7 @@ const education_achievement_ALEX_ATTENDANCE: AttendanceRecord[] = [
     status: "present",
     schoolName: "Oakwood Academy",
   })),
+];
 const education_achievement_JORDAN_ATTENDANCE: AttendanceRecord[] = [
   ...Array.from({ length: 17 }, (_, i): AttendanceRecord => ({
     id: `att-jordan-${i}`,
@@ -6673,6 +6768,7 @@ const education_achievement_JORDAN_ATTENDANCE: AttendanceRecord[] = [
     status: "present",
     schoolName: "Bridge PRU",
   })),
+];
 const education_achievement_MORGAN_ATTENDANCE: AttendanceRecord[] = [
   ...Array.from({ length: 23 }, (_, i): AttendanceRecord => ({
     id: `att-morgan-${i}`,
@@ -6682,17 +6778,23 @@ const education_achievement_MORGAN_ATTENDANCE: AttendanceRecord[] = [
     status: "present",
     schoolName: "Riverside High",
   })),
+];
 const education_achievement_DEMO_ATTENDANCE: AttendanceRecord[] = [
   ...ALEX_ATTENDANCE,
+];
 const education_achievement_DEMO_PEPS: PEPRecord[] = [
   { id: "pep-alex", childId: "child-alex", childName: "Alex", pepDate: "2026-02-15", status: "current", quality: "good", childViewsIncluded: true, targetsSMART: true, virtualSchoolInvolved: true, ppFundingUsed: true, reviewDate: "2026-05-15" },
+];
 const education_achievement_DEMO_OUTCOMES: AcademicOutcome[] = [
   { id: "out-alex-eng", childId: "child-alex", childName: "Alex", subject: "English", progress: "expected", assessmentDate: "2026-03-01" },
+];
 const education_achievement_DEMO_STABILITY: SchoolStability[] = [
   { id: "stab-alex", childId: "child-alex", childName: "Alex", schoolType: "mainstream", currentSchoolName: "Oakwood Academy", schoolChangesInYear: 0, daysOutOfEducation: 0 },
+];
 const education_achievement_DEMO_EXCLUSIONS: ExclusionRecord[] = [
   { id: "excl-jordan-1", childId: "child-jordan", childName: "Jordan", exclusionType: "fixed_term", durationDays: 3, reason: "Persistent disruptive behaviour", alternativeProvisionArranged: true, reintegrationPlanInPlace: true },
 
+];
 async function get_education_achievement(req: NextRequest): Promise<Response> {
 
   const result = generateEducationAchievementIntelligence(
@@ -7021,13 +7123,13 @@ const education_outcomes_PERIOD_START = "2026-01-05";
 const education_outcomes_PERIOD_END = "2026-03-31";
 const education_outcomes_REFERENCE_DATE = "2026-04-01";
 const education_outcomes_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-const CHILD_NAMES: Record<string, string> = {
+const CHILD_NAMES_dup4: Record<string, string> = {
   "child-alex": "Alex",
   "child-jordan": "Jordan",
   "child-morgan": "Morgan",
 };
 let education_outcomes__idSeq = 0;
-function education_outcomes_did(prefix: string): string { return `${prefix}-${++_idSeq}`; }
+// [gen-fix-return] function education_outcomes_did(prefix: string): string { return `${prefix}-${++_idSeq}`; }
 
 function education_outcomes_buildDemoIntelligence() {
   // Reset ID counter for deterministic output
@@ -7318,6 +7420,7 @@ async function post_education_outcomes(req: NextRequest): Promise<Response> {
 // ─── education ─────────────────────────────────────────────────────────
 const education_DEMO_RECORDS: EducationRecord[] = [
   // Alex — mainstream school, strong performance
+];
 const education_DEMO_POLICY: EducationPolicy = {
   id: "pol-oak-001",
   educationStrategy: true,
@@ -7341,6 +7444,7 @@ const education_DEMO_TRAINING: StaffEducationTraining[] = [
     educationAdvocacy: true,
   },
 
+];
 async function get_education(_req: NextRequest): Promise<Response> {
 
   try {
@@ -8248,8 +8352,10 @@ async function get_environment(req: NextRequest): Promise<Response> {
 // ─── environmental-quality ─────────────────────────────────────────────
 const environmental_quality_DEMO_INSPECTIONS: EnvironmentalInspection[] = [
   { id: "insp-01", homeId: "oak-house", date: "2026-01-05", inspectedBy: "Darren Laville", area: "cleanliness", roomType: "kitchen", score: 8, issues: [], photographic: true },
+];
 const environmental_quality_DEMO_MAINTENANCE: MaintenanceRequest[] = [
   { id: "maint-01", homeId: "oak-house", reportedDate: "2026-01-03", reportedBy: "Sarah Johnson", roomType: "kitchen", description: "Extractor fan rattling and not venting properly", priority: "routine", status: "completed", completedDate: "2026-01-06", daysToResolve: 3 },
+];
 const environmental_quality_DEMO_PERSONALISATION: PersonalisationRecord[] = [
   {
     childId: "child-alex",
@@ -8260,6 +8366,7 @@ const environmental_quality_DEMO_PERSONALISATION: PersonalisationRecord[] = [
     culturalConsiderations: true,
     lastReviewDate: "2026-01-10",
   },
+];
 const environmental_quality_DEMO_CHILD_VIEWS: ChildEnvironmentView[] = [
   {
     childId: "child-alex",
@@ -8272,6 +8379,7 @@ const environmental_quality_DEMO_CHILD_VIEWS: ChildEnvironmentView[] = [
     suggestionsForImprovement: ["Would like a bigger desk for homework"],
   },
 
+];
 async function get_environmental_quality(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -8357,13 +8465,17 @@ async function post_environmental_quality(request: NextRequest): Promise<Respons
 // ─── environmental-risk-compliance ─────────────────────────────────────
 const environmental_risk_compliance_DEMO_ASSESSMENTS: RiskAssessment[] = [
   // Ligature points — bathrooms
+];
 const environmental_risk_compliance_DEMO_CHECKS: SafetyCheck[] = [
   // Water temperature checks
+];
 const environmental_risk_compliance_DEMO_REMEDIATIONS: RemediationAction[] = [
   { id: "rem-1", assessmentId: "ra-10", hazardType: "structural", areaType: "garden", description: "Replace garden gate latch — current latch loosening", assignedTo: "Tom Richards", targetDate: "2026-05-15", completionDate: "2026-05-12", status: "completed", verified: true },
+];
 const environmental_risk_compliance_DEMO_TRAINING: StaffSafetyTraining[] = [
   { id: "sst-1", staffId: "staff-sarah", staffName: "Sarah Johnson", ligatureAwareness: true, coshhTrained: true, fireSafetyTrained: true, waterSafetyTrained: true, manualHandling: true, riskAssessmentCompetent: true },
 
+];
 async function get_environmental_risk_compliance(req: NextRequest): Promise<Response> {
 
   const result = generateEnvironmentalRiskComplianceIntelligence(
@@ -8454,12 +8566,14 @@ async function post_environmental_risk_compliance(req: NextRequest): Promise<Res
 // ─── environmental-sustainability-awareness ────────────────────────────
 const environmental_sustainability_awareness_DEMO_ACTIVITIES: EcoActivity[] = [
   { id: "ea-1", childId: "child-alex", childName: "Alex", activityDate: "2026-03-01", activityType: "recycling_project", engagementLevel: "highly_engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+];
 const environmental_sustainability_awareness_DEMO_POLICY: EnvironmentalPolicy = {
   id: "ep-1", sustainabilityStrategy: true, recyclingProcedure: true, energyManagementPlan: true, gardenAndNaturePolicy: true, ecoEducationFramework: true, communityPartnership: true, regularReview: true,
 };
 const environmental_sustainability_awareness_DEMO_TRAINING: StaffEnvironmentalTraining[] = [
   { id: "et-1", staffId: "staff-sarah", staffName: "Sarah Johnson", sustainabilityAwareness: true, ecoEducation: true, gardenManagement: true, energyConservation: true, wildlifeKnowledge: true, communityEngagement: true },
 
+];
 async function get_environmental_sustainability_awareness(req: NextRequest): Promise<Response> {
 
   const result = generateEnvironmentalSustainabilityAwarenessIntelligence(
@@ -8506,6 +8620,7 @@ async function post_environmental_sustainability_awareness(req: NextRequest): Pr
 // ─── environmental-sustainability ──────────────────────────────────────
 const environmental_sustainability_DEMO_ACTIVITIES: SustainabilityActivity[] = [
   // Alex — high participation, enthusiastic
+];
 const environmental_sustainability_DEMO_POLICY: SustainabilityPolicy = {
   id: "pol-oak",
   recyclingScheme: true,
@@ -8519,6 +8634,7 @@ const environmental_sustainability_DEMO_POLICY: SustainabilityPolicy = {
 const environmental_sustainability_DEMO_TRAINING: StaffSustainabilityTraining[] = [
   { id: "tr-1", staffId: "s-sarah", staffName: "Sarah Johnson", environmentalAwareness: true, recyclingProcedures: true, energyConservation: true, sustainableLiving: true, childEngagement: true, outdoorLearning: true },
 
+];
 async function get_environmental_sustainability(req: NextRequest): Promise<Response> {
 
   const result = generateEnvironmentalSustainabilityIntelligence(
@@ -8784,6 +8900,7 @@ async function post_escalation_intelligence(req: NextRequest): Promise<Response>
 // ─── escalation-threshold-intelligence ─────────────────────────────────
 const escalation_threshold_intelligence_DEMO_RECORDS: EscalationThresholdRecord[] = [
   // Alex — safeguarding, threshold, multi-agency, concern
+];
 const escalation_threshold_intelligence_DEMO_POLICY: EscalationThresholdPolicy = {
   escalationPolicy: true,
   thresholdFramework: true,
@@ -8796,6 +8913,7 @@ const escalation_threshold_intelligence_DEMO_POLICY: EscalationThresholdPolicy =
 const escalation_threshold_intelligence_DEMO_STAFF: StaffEscalationThresholdTraining[] = [
   { staffId: "staff-sarah", escalationProcedureKnowledge: true, thresholdAssessmentSkills: true, safeguardingEscalationSkills: true, multiAgencyReferralSkills: true, professionalDisagreementResolution: true, emergencyResponseSkills: true },
 
+];
 async function get_escalation_threshold_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateEscalationThresholdIntelligence({
@@ -8837,6 +8955,7 @@ const exclusion_disruption_management_DEMO_EXCLUSIONS: ExclusionRecord[] = [
     socialWorkerNotified: true,
     pepReviewed: true,
   },
+];
 const exclusion_disruption_management_DEMO_DISRUPTIONS: DisruptionEpisode[] = [
   {
     id: "dis-1",
@@ -8850,6 +8969,7 @@ const exclusion_disruption_management_DEMO_DISRUPTIONS: DisruptionEpisode[] = [
     lessonsIdentified: true,
     planUpdated: true,
   },
+];
 const exclusion_disruption_management_DEMO_PLANS: PreventionPlan[] = [
   {
     id: "pp-1",
@@ -8863,9 +8983,11 @@ const exclusion_disruption_management_DEMO_PLANS: PreventionPlan[] = [
     reviewDate: "2026-05-15",
     reviewCurrent: true,
   },
+];
 const exclusion_disruption_management_DEMO_TRAINING: StaffExclusionTraining[] = [
   { id: "set-1", staffId: "staff-sarah", staffName: "Sarah Johnson", exclusionGuidanceTrained: true, educationAdvocacy: true, alternativeProvision: true, reintegrationSupport: true, multiAgencyWorking: true, traumaInformedBehaviour: true },
 
+];
 async function get_exclusion_disruption_management(req: NextRequest): Promise<Response> {
 
   const result = generateExclusionDisruptionManagementIntelligence(
@@ -8951,6 +9073,7 @@ async function post_exclusion_disruption_management(req: NextRequest): Promise<R
 // ─── family-contact-quality ────────────────────────────────────────────
 const family_contact_quality_DEMO_CONTACTS: FamilyContact[] = [
   // Alex — face-to-face visit (very positive)
+];
 const family_contact_quality_DEMO_POLICY: FamilyContactPolicy = {
   id: "pol-oak",
   contactPromotionStrategy: true,
@@ -8964,6 +9087,7 @@ const family_contact_quality_DEMO_POLICY: FamilyContactPolicy = {
 const family_contact_quality_DEMO_TRAINING: StaffFamilyContactTraining[] = [
   { id: "tr-sarah", staffId: "staff-sarah", staffName: "Sarah Johnson", familyDynamicsAwareness: true, contactSupervision: true, safeguardingInContact: true, childPreparationSkills: true, conflictManagement: true, recordKeeping: true },
 
+];
 async function get_family_contact_quality(req: NextRequest): Promise<Response> {
 
   const result = generateFamilyContactQualityIntelligence(
@@ -9027,8 +9151,10 @@ async function post_family_contact_quality(req: NextRequest): Promise<Response> 
 // ─── family-contact ────────────────────────────────────────────────────
 const family_contact_DEMO_ARRANGEMENTS: ContactArrangement[] = [
   // Alex – Mother (court-ordered weekly supervised)
+];
 const family_contact_DEMO_SESSIONS: ContactSession[] = [
   // ── Alex + Mother (supervised weekly – May 2026) ────────────────────────
+];
 const family_contact_DEMO_REVIEWS: ContactReview[] = [
   {
     id: "rev-001",
@@ -9042,6 +9168,7 @@ const family_contact_DEMO_REVIEWS: ContactReview[] = [
     nextReviewDate: "2026-07-15",
   },
 
+];
 async function get_family_contact(req: NextRequest): Promise<Response> {
 
   const result = generateFamilyContactIntelligence(
@@ -9136,6 +9263,7 @@ async function post_family_contact(req: NextRequest): Promise<Response> {
 // ─── filing-cabinet-intelligence ───────────────────────────────────────
 const filing_cabinet_intelligence_DEMO_RECORDS: FilingCabinetRecord[] = [
   { id: "fc-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "care_plan_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+];
 const filing_cabinet_intelligence_DEMO_POLICY: FilingCabinetPolicy = {
   documentManagementPolicy: true, retentionSchedulePolicy: true, dataProtectionFilingPolicy: true,
   accessControlPolicy: true, documentDestructionPolicy: true, auditTrailPolicy: true, backupAndRecoveryPolicy: true,
@@ -9143,6 +9271,7 @@ const filing_cabinet_intelligence_DEMO_POLICY: FilingCabinetPolicy = {
 const filing_cabinet_intelligence_DEMO_STAFF: StaffFilingCabinetTraining[] = [
   { staffId: "staff-sarah", documentManagementKnowledge: true, dataProtectionSkills: true, retentionPolicyKnowledge: true, accessControlSkills: true, auditTrailSkills: true, documentDestructionProcedure: true },
 
+];
 async function get_filing_cabinet_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateFilingCabinetIntelligence({
@@ -9159,11 +9288,11 @@ async function get_filing_cabinet_intelligence(req: NextRequest): Promise<Respon
     const filing_cabinet_retentionStatus = checkRetentionStatus(docs);
     const filing_cabinet_approaching = getDocumentsApproachingExpiry(docs);
     const filing_cabinet_expired = getExpiredDocuments(docs);
-    const filing_cabinet_expired = getExpiredDocuments(docs);
+    const filing_cabinet_expired_dup1 = getExpiredDocuments(docs);
     const filing_cabinet_pending = docs.filter(d => d.status === "pending_destruction" || d.status === "destruction_approved");
   const filing_cabinet_stats = calculateFilingStats(docs);
-  const filing_cabinet_approaching = getDocumentsApproachingExpiry(docs);
-  const filing_cabinet_expired = getExpiredDocuments(docs);
+  const filing_cabinet_approaching_dup1 = getDocumentsApproachingExpiry(docs);
+  const filing_cabinet_expired_dup2 = getExpiredDocuments(docs);
 function filing_cabinet_mapToDocument(row: any): FiledDocument {
   return {
     id: row.id,
@@ -9205,18 +9334,19 @@ function filing_cabinet_getDemoData(
   const filing_cabinet_home = homeId ?? "home-oak";
   const filing_cabinet_demoDocuments: FiledDocument[] = [
     // Child records
+];
   let filing_cabinet_filteredDocs = demoDocuments;
   const filing_cabinet_now = new Date().toISOString();
     const filing_cabinet_retentionStatus = checkRetentionStatus(filteredDocs, now);
     const filing_cabinet_approaching = getDocumentsApproachingExpiry(filteredDocs, 90, now);
     const filing_cabinet_expired = getExpiredDocuments(filteredDocs, now);
-    const filing_cabinet_expired = getExpiredDocuments(filteredDocs, now);
+    const filing_cabinet_expired_dup1 = getExpiredDocuments(filteredDocs, now);
     const filing_cabinet_pending = filteredDocs.filter(d =>
       d.status === "pending_destruction" || d.status === "destruction_approved",
     );
   const filing_cabinet_stats = calculateFilingStats(filteredDocs, now);
-  const filing_cabinet_approaching = getDocumentsApproachingExpiry(filteredDocs, 90, now);
-  const filing_cabinet_expired = getExpiredDocuments(filteredDocs, now);
+  const filing_cabinet_approaching_dup1 = getDocumentsApproachingExpiry(filteredDocs, 90, now);
+  const filing_cabinet_expired_dup2 = getExpiredDocuments(filteredDocs, now);
 
 async function get_filing_cabinet(req: NextRequest): Promise<Response> {
 
@@ -9481,8 +9611,10 @@ const fire_safety_preparedness_DEMO_DRILLS: FireDrillRecord[] = [
     issuesIdentified: [],
     correctiveActionsTaken: false,
   },
+];
 const fire_safety_preparedness_DEMO_CHECKS: EquipmentCheck[] = [
   { id: "ec-1", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "smoke_alarm", location: "Hallway Ground Floor", outcome: "pass", nextCheckDue: "2026-05-01" },
+];
 const fire_safety_preparedness_DEMO_PLANS: EvacuationPlan[] = [
   {
     id: "ep-1",
@@ -9495,9 +9627,11 @@ const fire_safety_preparedness_DEMO_PLANS: EvacuationPlan[] = [
     mobilityConsiderations: [],
     nightEvacuationPlan: true,
   },
+];
 const fire_safety_preparedness_DEMO_TRAINING: StaffFireTraining[] = [
   { id: "ft-1", staffId: "staff-sarah", staffName: "Sarah Johnson", fireAwareness: true, fireMarshalTrained: true, evacuationProcedures: true, extinguisherUse: true, peepAwareness: true, nightResponseTrained: true },
 
+];
 async function get_fire_safety_preparedness(req: NextRequest): Promise<Response> {
 
   const result = generateFireSafetyPreparednessIntelligence(
@@ -9659,6 +9793,7 @@ async function get_fire_safety(req: NextRequest): Promise<Response> {
 // ─── food-nutrition-quality ────────────────────────────────────────────
 const food_nutrition_quality_DEMO_RECORDS: MealRecord[] = [
   { id: "rec-1", childId: "child-alex", childName: "Alex", mealDate: "2026-02-10", mealType: "breakfast", nutritionRating: "excellent", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+];
 const food_nutrition_quality_DEMO_POLICY: NutritionPolicy = {
   id: "pol-1",
   mealPlanningFramework: true,
@@ -9672,6 +9807,7 @@ const food_nutrition_quality_DEMO_POLICY: NutritionPolicy = {
 const food_nutrition_quality_DEMO_TRAINING: StaffNutritionTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", foodHygiene: true, nutritionalPlanning: true, allergyAwareness: true, culturalDietaryNeeds: true, portionControl: true, mealPreparation: true },
 
+];
 async function get_food_nutrition_quality(req: NextRequest): Promise<Response> {
 
   const result = generateFoodNutritionQualityIntelligence(
@@ -9763,17 +9899,23 @@ const governance_DEMO_REG45_REPORTS: Reg45Report[] = [
     staffConsulted: true,
     keyFindings: ["Strong safeguarding culture embedded", "PEP meeting follow-up timely", "Environment well-maintained"],
   },
+];
 const governance_DEMO_POLICIES: PolicyRecord[] = [
   { id: "pol-1", policyName: "Safeguarding & Child Protection", category: "safeguarding", lastReviewDate: "2026-01-15", nextReviewDue: "2027-01-15", reviewedBy: "Darren Laville", version: "4.2", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+];
 const governance_DEMO_NOTIFICATIONS: NotificationRecord[] = [
   { id: "not-1", date: "2026-02-10", notificationType: "missing_child", childId: "child-morgan", recipients: ["ofsted", "placing_authority", "police"], notifiedWithinTimescale: true, timescaleHours: 24, actualHours: 2, description: "Morgan absent from home without permission — located at shopping centre after 3 hours, returned safely", ofstedReference: "SC-2026-0234" },
+];
 const governance_DEMO_OBJECTIVES: DevelopmentObjective[] = [
   { id: "obj-1", description: "Implement structured therapeutic key-work programme aligned to PACE model", category: "quality_of_care", targetDate: "2026-06-01", status: "completed", completedDate: "2026-04-15", progress: 100, measurableOutcome: "All children have weekly key-work sessions using PACE framework", evidence: "Key-work calendars show 100% compliance; session quality audited monthly", lastReviewedDate: "2026-04-20" },
+];
 const governance_DEMO_MEETINGS: StaffMeetingRecord[] = [
   { id: "mtg-1", date: "2026-01-15", meetingType: "staff_team", attendeeCount: 4, expectedAttendees: 4, minutesRecorded: true, actionsAgreed: 5, actionsCompleted: 5, keyTopics: ["New year planning", "Training schedule 2026", "Safeguarding refresher", "Reg 44 feedback"] },
+];
 const governance_DEMO_PRESENCE: ManagementPresence[] = [
   { weekCommencing: "2026-04-07", rmHoursInHome: 28, rmTotalHours: 40, drmHoursInHome: 20, drmTotalHours: 40, shiftsCoveredByManagement: 1, childInteractionEvents: 6 },
 
+];
 async function get_governance(req: NextRequest): Promise<Response> {
 
   const result = generateGovernanceIntelligence(
@@ -10328,6 +10470,7 @@ async function get_handover(req: NextRequest): Promise<Response> {
 // ─── health-intelligence ───────────────────────────────────────────────
 const health_intelligence_DEMO_RECORDS: HealthIntelligenceRecord[] = [
   { id: "hi-001", homeId: "home-oak", date: "2025-01-20", childId: "child-alex", childName: "Alex", category: "health_assessment", outcome: "health_improved", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+];
 const health_intelligence_DEMO_POLICY: HealthIntelligencePolicy = {
   healthCarePolicy: true, consentToTreatmentPolicy: true, medicationManagementPolicy: true,
   mentalHealthSupportPolicy: true, healthPromotionPolicy: true, dentalHealthPolicy: true, immunisationTrackingPolicy: true,
@@ -10335,6 +10478,7 @@ const health_intelligence_DEMO_POLICY: HealthIntelligencePolicy = {
 const health_intelligence_DEMO_STAFF: StaffHealthIntelligenceTraining[] = [
   { staffId: "staff-sarah", healthAssessmentKnowledge: true, medicationAdministration: true, mentalHealthAwareness: true, firstAidTraining: true, healthPromotionSkills: true, consentProcedures: true },
 
+];
 async function get_health_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateHealthIntelligenceResult({
@@ -10347,13 +10491,17 @@ async function get_health_intelligence(req: NextRequest): Promise<Response> {
 // ─── health-screening-compliance ───────────────────────────────────────
 const health_screening_compliance_DEMO_SCREENINGS: HealthScreeningRecord[] = [
   // Alex — all on time, good outcomes
+];
 const health_screening_compliance_DEMO_REGISTRATIONS: GPRegistration[] = [
   { id: "gp-a", childId: "child-alex", childName: "Alex", gpRegistrationStatus: "registered", gpPractice: "Oak Lane Surgery", registeredDate: "2025-09-01", lastAppointment: "2026-04-01", namedNurse: true, healthPassportUpToDate: true },
+];
 const health_screening_compliance_DEMO_PLANS: HealthActionPlan[] = [
   { id: "hp-a", childId: "child-alex", childName: "Alex", planDate: "2026-01-20", reviewDate: "2026-04-20", healthNeedsIdentified: 2, healthNeedsAddressed: 2, childContributed: true, socialWorkerInformed: true, carerInformed: true, SDQCompleted: true, SDQScore: 8 },
+];
 const health_screening_compliance_DEMO_TRAINING: HealthTraining[] = [
   { id: "ht-dl", staffId: "staff-darren", staffName: "Darren Laville", firstAidCurrent: true, medicationTrained: true, mentalHealthFirstAid: true, epilepsyTrained: true, allergyAwareness: true, healthPromotionTrained: true },
 
+];
 async function get_health_screening_compliance(req: NextRequest): Promise<Response> {
 
   const result = generateHealthScreeningComplianceIntelligence(
@@ -10444,6 +10592,7 @@ async function post_health_screening_compliance(req: NextRequest): Promise<Respo
 // ─── health ────────────────────────────────────────────────────────────
 const health_DEMO_RECORDS: HealthRecord[] = [
   // Alex — solid compliance, diverse assessments
+];
 const health_DEMO_POLICY: HealthPolicy = {
   id: "pol-oak",
   healthAssessmentSchedule: true,
@@ -10457,6 +10606,7 @@ const health_DEMO_POLICY: HealthPolicy = {
 const health_DEMO_TRAINING: StaffHealthTraining[] = [
   { id: "ht-sarah", staffId: "staff-sarah", staffName: "Sarah Johnson", healthAssessmentProcess: true, mentalHealthAwareness: true, medicationAdministration: true, consentAndCapacity: true, firstAidCertified: true, healthPromotionSkills: true },
 
+];
 async function get_health(req: NextRequest): Promise<Response> {
 
   const result = generateHealthIntelligence(
@@ -10509,13 +10659,17 @@ async function get_health(req: NextRequest): Promise<Response> {
 // ─── home-atmosphere-ethos ─────────────────────────────────────────────
 const home_atmosphere_ethos_DEMO_OBSERVATIONS: AtmosphereObservation[] = [
   { id: "obs-01", observerRole: "reg44_visitor", observationDate: "2026-01-05", indicator: "warmth", rating: "excellent", area: "communal_lounge", narrative: "Children relaxed and chatting with staff in the lounge.", childrenPresent: true, timeOfDay: "afternoon" },
+];
 const home_atmosphere_ethos_DEMO_FEEDBACK: ChildAtmosphereFeedback[] = [
   { id: "fb-01", childId: "child-alex", childName: "Alex", date: "2026-01-08", overallSentiment: "very_positive", feelsAtHome: true, feelsListenedTo: true, feelsSafe: true, hasPrivacy: true, enjoysLivingHere: true, canBeThemselves: true, suggestionsForImprovement: null },
+];
 const home_atmosphere_ethos_DEMO_AUDITS: EnvironmentAudit[] = [
   { id: "ea-01", auditDate: "2026-01-05", auditor: "Sarah Johnson", area: "communal_lounge", clean: true, personalised: true, welcoming: true, ageAppropriate: true, sensoryConsidered: true, childContributed: true, repairsNeeded: false, repairsActioned: null },
+];
 const home_atmosphere_ethos_DEMO_STAFF: StaffCultureRecord[] = [
   { id: "sc-01", staffId: "staff-sarah", staffName: "Sarah Johnson", date: "2026-01-05", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: null, positiveReinforcementGiven: true, reflectivePractice: true },
 
+];
 async function get_home_atmosphere_ethos(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -10595,6 +10749,7 @@ async function post_home_atmosphere_ethos(request: NextRequest): Promise<Respons
 const home_intelligence_DEMO_MODULE_SCORES: ModuleIntelligenceScore[] = [
   // ── Child Experiences Domain ──
 
+];
 async function get_home_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateHomeIntelligenceSummary({
@@ -11797,6 +11952,7 @@ async function post_homework_study_support(req: NextRequest): Promise<Response> 
 // ─── house-meetings ────────────────────────────────────────────────────
 const house_meetings_DEMO_RECORDS: HouseMeetingRecord[] = [
   { id: "hm-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "house_meeting", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+];
 const house_meetings_DEMO_POLICY: HouseMeetingPolicy = {
   houseMeetingPolicy: true,
   meetingFrequencyGuidance: true,
@@ -11809,6 +11965,7 @@ const house_meetings_DEMO_POLICY: HouseMeetingPolicy = {
 const house_meetings_DEMO_STAFF: StaffHouseMeetingTraining[] = [
   { staffId: "staff-sarah", meetingFacilitation: true, childParticipation: true, minutesTaking: true, actionTracking: true, conflictResolution: true, inclusivePractice: true },
 
+];
 async function get_house_meetings(req: NextRequest): Promise<Response> {
 
   const result = generateHouseMeetingsIntelligence({
@@ -11831,6 +11988,7 @@ async function get_house_meetings(req: NextRequest): Promise<Response> {
 // ─── hygiene-personal-care ─────────────────────────────────────────────
 const hygiene_personal_care_DEMO_SESSIONS: HygieneSession[] = [
   { id: "hs-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-10", hygieneArea: "oral_care", competencyLevel: "independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+];
 const hygiene_personal_care_DEMO_POLICY: HygienePolicy = {
   id: "hp-1",
   personalCareStrategy: true,
@@ -11844,6 +12002,7 @@ const hygiene_personal_care_DEMO_POLICY: HygienePolicy = {
 const hygiene_personal_care_DEMO_STAFF_TRAINING: StaffHygieneTraining[] = [
   { id: "sht-1", staffId: "staff-sarah", staffName: "Sarah Johnson", personalCareSkills: true, dignityAndPrivacy: true, infectionControl: true, ageAppropriateSupport: true, culturalAwareness: true, safeguardingInPersonalCare: true },
 
+];
 async function get_hygiene_personal_care(req: NextRequest): Promise<Response> {
 
   const result = generateHygienePersonalCareIntelligence(
@@ -11916,6 +12075,7 @@ async function post_hygiene_personal_care(req: NextRequest): Promise<Response> {
 // ─── incident-pattern-analysis ─────────────────────────────────────────
 const incident_pattern_analysis_DEMO_INCIDENTS: IncidentRecord[] = [
   // Alex: 1 minor incident — verbal aggression, good response, child debriefed
+];
 const incident_pattern_analysis_DEMO_TRENDS: IncidentTrend[] = [
   {
     id: "trend-jordan-001",
@@ -11928,6 +12088,7 @@ const incident_pattern_analysis_DEMO_TRENDS: IncidentTrend[] = [
     escalating: true,
     triggerPatterns: ["family_contact", "transitions", "bedtime_routine"],
   },
+];
 const incident_pattern_analysis_DEMO_STAFF_RESPONSES: StaffResponse[] = [
   {
     id: "sr-001",
@@ -11940,6 +12101,7 @@ const incident_pattern_analysis_DEMO_STAFF_RESPONSES: StaffResponse[] = [
     reportCompletedTimely: true,
     debriedParticipated: true,
   },
+];
 const incident_pattern_analysis_DEMO_PATTERNS: PatternIndicator[] = [
   {
     id: "pat-001",
@@ -11950,6 +12112,7 @@ const incident_pattern_analysis_DEMO_PATTERNS: PatternIndicator[] = [
     environmentalTrigger: "Bedtime transitions and unstructured evening time",
     seasonalPattern: false,
   },
+];
 function incident_pattern_analysis_buildLabelMaps() {
   const categories = [
     "physical_aggression", "verbal_aggression", "self_harm", "absconding",
@@ -12047,6 +12210,7 @@ async function post_incident_pattern_analysis(req: NextRequest): Promise<Respons
 // ─── incidents ─────────────────────────────────────────────────────────
 const incidents_DEMO_RECORDS: IncidentRecord[] = [
   { id: "inc-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "physical_incident", outcome: "de_escalated", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+];
 const incidents_DEMO_POLICY: IncidentPolicy = {
   incidentManagementPolicy: true,
   deEscalationGuidance: true,
@@ -12059,6 +12223,7 @@ const incidents_DEMO_POLICY: IncidentPolicy = {
 const incidents_DEMO_STAFF: StaffIncidentTraining[] = [
   { staffId: "staff-sarah", deEscalationSkills: true, incidentRecording: true, restraintCertification: true, postIncidentSupport: true, childProtectionAwareness: true, conflictResolution: true },
 
+];
 async function get_incidents(req: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(req.url);
@@ -12205,19 +12370,26 @@ async function post_incidents(req: NextRequest): Promise<Response> {
 // ─── independence-life-skills ──────────────────────────────────────────
 const independence_life_skills_ALEX_ASSESSMENTS: SkillAssessment[] = [
   { id: "sa-a1", childId: "child-alex", childName: "Alex", domain: "cooking_nutrition", competenceLevel: "mostly_independent", assessedDate: "2026-04-01", assessedBy: "Sarah Johnson", previousLevel: "needs_some_support", targetLevel: "independent", notes: null },
+];
 const independence_life_skills_JORDAN_ASSESSMENTS: SkillAssessment[] = [
   { id: "sa-j1", childId: "child-jordan", childName: "Jordan", domain: "cooking_nutrition", competenceLevel: "needs_significant_support", assessedDate: "2026-04-01", assessedBy: "Tom Richards", previousLevel: "needs_significant_support", targetLevel: "needs_some_support", notes: null },
+];
 const independence_life_skills_MORGAN_ASSESSMENTS: SkillAssessment[] = [
   { id: "sa-m1", childId: "child-morgan", childName: "Morgan", domain: "cooking_nutrition", competenceLevel: "independent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", previousLevel: "mostly_independent", targetLevel: "independent", notes: null },
+];
 const independence_life_skills_DEMO_ASSESSMENTS: SkillAssessment[] = [
   ...ALEX_ASSESSMENTS,
+];
 const independence_life_skills_DEMO_GOALS: IndependenceGoal[] = [
   { id: "ig-a1", childId: "child-alex", childName: "Alex", domain: "cooking_nutrition", goalDescription: "Cook a full meal independently", status: "on_track", targetDate: "2026-07-01", reviewDate: "2026-05-01", childInvolved: true, ageAppropriate: true },
+];
 const independence_life_skills_DEMO_SESSIONS: PracticalSession[] = [
   { id: "ps-a1", childId: "child-alex", childName: "Alex", domain: "cooking_nutrition", teachingMethod: "practical_activity", date: "2026-03-10", durationMinutes: 60, childEngaged: true, progressMade: true, staffMember: "Sarah Johnson", communityBased: false },
+];
 const independence_life_skills_DEMO_PATHWAYS: PathwayPlanProgress[] = [
   { id: "pp-a", childId: "child-alex", childName: "Alex", hasPathwayPlan: true, lastReviewDate: "2026-04-15", independenceSectionComplete: true, accommodationPlanned: false, educationEmploymentPlanned: true, financialLiteracyIncluded: true, healthPassportComplete: false, socialNetworksIdentified: true, childContributed: true },
 
+];
 async function get_independence_life_skills(req: NextRequest): Promise<Response> {
 
   const result = generateIndependenceLifeSkillsIntelligence(
@@ -12308,6 +12480,7 @@ async function post_independence_life_skills(req: NextRequest): Promise<Response
 // ─── independence ──────────────────────────────────────────────────────
 const independence_DEMO_RECORDS: IndependenceRecord[] = [
   { id: "rec-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-02-10", category: "cooking_nutrition", outcome: "progressing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+];
 const independence_DEMO_POLICY: IndependencePolicy = {
   id: "pol-1",
   independencePolicy: true,
@@ -12321,6 +12494,7 @@ const independence_DEMO_POLICY: IndependencePolicy = {
 const independence_DEMO_STAFF: StaffIndependenceTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", independencePlanning: true, lifeSkillsTeaching: true, pathwayKnowledge: true, motivationalSkills: true, communityResources: true, transitionSupport: true },
 
+];
 async function get_independence(req: NextRequest): Promise<Response> {
 
   const result = generateIndependenceIntelligence(
@@ -12347,6 +12521,7 @@ async function get_independence(req: NextRequest): Promise<Response> {
 // ─── independent-living-skills ─────────────────────────────────────────
 const independent_living_skills_DEMO_SESSIONS: SkillsSession[] = [
   { id: "ss-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-01", skillType: "cooking_meal_prep", competencyLevel: "independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+];
 const independent_living_skills_DEMO_POLICY: LivingSkillsPolicy = {
   id: "lp-1",
   independenceStrategy: true,
@@ -12360,6 +12535,7 @@ const independent_living_skills_DEMO_POLICY: LivingSkillsPolicy = {
 const independent_living_skills_DEMO_TRAINING: StaffLivingSkillsTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", independencePromotion: true, practicalSkillsTeaching: true, riskEnablement: true, pathwayPlanning: true, communityAccess: true, motivationalApproaches: true },
 
+];
 async function get_independent_living_skills(req: NextRequest): Promise<Response> {
 
   const result = generateIndependentLivingSkillsIntelligence(
@@ -12406,8 +12582,10 @@ async function post_independent_living_skills(req: NextRequest): Promise<Respons
 // ─── independent-visitor-advocacy ──────────────────────────────────────
 const independent_visitor_advocacy_DEMO_VISITS: IndependentVisit[] = [
   { id: "iv-1", childId: "child-alex", childName: "Alex", visitDate: "2026-02-05", visitorName: "Margaret Clarke", visitOutcome: "very_positive", durationMinutes: 90, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },
+];
 const independent_visitor_advocacy_DEMO_REFERRALS: AdvocacyReferral[] = [
   { id: "ar-1", childId: "child-alex", childName: "Alex", referralDate: "2026-01-20", advocacyType: "childrens_rights_officer", referralOutcome: "successful", childInformedOfRights: true, childConsentObtained: true, timelyResponse: true, childSatisfied: true },
+];
 const independent_visitor_advocacy_DEMO_POLICY: AdvocacyPolicy = {
   id: "ap-1",
   advocacyInformationDisplayed: true,
@@ -12421,6 +12599,7 @@ const independent_visitor_advocacy_DEMO_POLICY: AdvocacyPolicy = {
 const independent_visitor_advocacy_DEMO_TRAINING: StaffAdvocacyTraining[] = [
   { id: "at-1", staffId: "staff-sarah", staffName: "Sarah Johnson", advocacyRights: true, independentVisitorRole: true, complaintsProcess: true, signposting: true, childParticipation: true, confidentiality: true },
 
+];
 async function get_independent_visitor_advocacy(req: NextRequest): Promise<Response> {
 
   const result = generateIndependentVisitorAdvocacyIntelligence(
@@ -12506,6 +12685,7 @@ async function post_independent_visitor_advocacy(req: NextRequest): Promise<Resp
 // ─── inspection ────────────────────────────────────────────────────────
 const inspection_demoRecords: InspectionRecord[] = [
   // Alex — strong evidence and preparation
+];
 const inspection_demoPolicy: InspectionPolicy = {
   inspectionReadinessPolicy: true,
   selfAssessmentFramework: true,
@@ -12518,6 +12698,7 @@ const inspection_demoPolicy: InspectionPolicy = {
 const inspection_demoStaff: StaffInspectionTraining[] = [
   { staffId: "staff-sarah", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: true, selfAssessment: true, actionPlanDevelopment: true, qualityAssurance: true },
 
+];
 async function get_inspection(req: NextRequest): Promise<Response> {
 
   const result = generateInspectionIntelligence(
@@ -12554,6 +12735,7 @@ const internet_safety_monitoring_DEMO_INCIDENTS: OnlineSafetyIncident[] = [
     recordedTimely: true,
     lessonsApplied: true,
   },
+];
 const internet_safety_monitoring_DEMO_POLICY: InternetSafetyPolicy = {
   id: "policy-001",
   contentFilteringActive: true,
@@ -12577,6 +12759,7 @@ const internet_safety_monitoring_DEMO_TRAINING: StaffInternetTraining[] = [
     ageAppropriateAccess: true,
   },
 
+];
 async function get_internet_safety_monitoring(req: NextRequest): Promise<Response> {
 
   const result = generateInternetSafetyMonitoringIntelligence(
@@ -12638,6 +12821,7 @@ async function post_internet_safety_monitoring(req: NextRequest): Promise<Respon
 // ─── key-worker-relationship-quality ───────────────────────────────────
 const key_worker_relationship_quality_DEMO_SESSIONS: KeyWorkerSession[] = [
   { id: "kws-1", childId: "child-alex", childName: "Alex", keyWorkerId: "staff-sarah", keyWorkerName: "Sarah Johnson", sessionDate: "2026-04-01", sessionType: "one_to_one", engagementLevel: "very_engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
+];
 const key_worker_relationship_quality_DEMO_POLICY: KeyWorkerPolicy = {
   id: "kwp-1",
   keyWorkerAllocationPolicy: true,
@@ -12651,6 +12835,7 @@ const key_worker_relationship_quality_DEMO_POLICY: KeyWorkerPolicy = {
 const key_worker_relationship_quality_DEMO_TRAINING: StaffKeyWorkerTraining[] = [
   { id: "kwt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", relationshipBuilding: true, childVoice: true, carePlanningSkills: true, therapeuticApproaches: true, advocacySkills: true, documentationSkills: true },
 
+];
 async function get_key_worker_relationship_quality(req: NextRequest): Promise<Response> {
 
   const result = generateKeyWorkerRelationshipQualityIntelligence(
@@ -12697,6 +12882,7 @@ async function post_key_worker_relationship_quality(req: NextRequest): Promise<R
 // ─── key-worker-relationship ───────────────────────────────────────────
 const key_worker_relationship_DEMO_SESSIONS: KeyWorkerSession[] = [
   { id: "kws-1", childId: "child-alex", childName: "Alex", keyWorkerId: "staff-sarah", keyWorkerName: "Sarah Johnson", sessionDate: "2026-04-01", sessionType: "one_to_one", relationshipStrength: "very_strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
+];
 const key_worker_relationship_DEMO_POLICY: KeyWorkerPolicy = {
   id: "kwp-1",
   keyWorkerAllocationStrategy: true,
@@ -12710,6 +12896,7 @@ const key_worker_relationship_DEMO_POLICY: KeyWorkerPolicy = {
 const key_worker_relationship_DEMO_TRAINING: StaffKeyWorkerTraining[] = [
   { id: "kwt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", relationshipBuilding: true, childAdvocacy: true, goalSettingSkills: true, lifeStoryWork: true, transitionSupport: true, reflectivePractice: true },
 
+];
 async function get_key_worker_relationship(req: NextRequest): Promise<Response> {
 
   const result = generateKeyWorkerRelationshipIntelligence(
@@ -13632,6 +13819,7 @@ async function post_key_working_effectiveness(request: NextRequest): Promise<Res
 // ─── key-working ───────────────────────────────────────────────────────
 const key_working_demoRecords: KeyWorkingRecord[] = [
   // Alex — well-engaged, diverse sessions
+];
 const key_working_demoPolicy: KeyWorkingPolicy = {
   keyWorkingPolicy: true,
   sessionFrequencyGuidance: true,
@@ -13644,6 +13832,7 @@ const key_working_demoPolicy: KeyWorkingPolicy = {
 const key_working_demoStaff: StaffKeyWorkingTraining[] = [
   { staffId: "staff-sarah", relationshipBuilding: true, therapeuticApproaches: true, childVoiceCapture: true, carePlanKnowledge: true, recordKeeping: true, crisisSupport: true },
 
+];
 async function get_key_working(req: NextRequest): Promise<Response> {
 
   const result = generateKeyWorkingIntelligence({
@@ -13820,6 +14009,7 @@ async function post_lac_review(request: NextRequest): Promise<Response> {
 // ─── language-communication-support ────────────────────────────────────
 const language_communication_support_DEMO_PROFILES: ChildCommunicationProfile[] = [
   // Alex — no communication needs
+];
 const language_communication_support_DEMO_SESSIONS: CommunicationSupportSession[] = [
   {
     id: "cs-1",
@@ -13833,6 +14023,7 @@ const language_communication_support_DEMO_SESSIONS: CommunicationSupportSession[
     facilitatedBy: "Sarah Johnson",
     duration: 60,
   },
+];
 const language_communication_support_DEMO_AUDITS: CommunicationAudit[] = [
   {
     id: "ca-1",
@@ -13844,6 +14035,7 @@ const language_communication_support_DEMO_AUDITS: CommunicationAudit[] = [
     staffCommunicationAwareness: true,
     childViewsSoughtAccessibly: true,
   },
+];
 const language_communication_support_DEMO_TRAINING: StaffCommunicationTraining[] = [
   {
     id: "ct-1",
@@ -13857,6 +14049,7 @@ const language_communication_support_DEMO_TRAINING: StaffCommunicationTraining[]
     interpreterWorkingTrained: true,
   },
 
+];
 async function get_language_communication_support(req: NextRequest): Promise<Response> {
 
   const result = generateLanguageCommunicationSupportIntelligence(
@@ -13942,6 +14135,7 @@ async function post_language_communication_support(req: NextRequest): Promise<Re
 // ─── leaving-care-intelligence ─────────────────────────────────────────
 const leaving_care_intelligence_DEMO_RECORDS: LeavingCareRecord[] = [
   { id: "lc-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "pathway_plan_review", outcome: "fully_prepared", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+];
 const leaving_care_intelligence_DEMO_POLICY: LeavingCarePolicy = {
   pathwayPlanningPolicy: true, independenceSkillsFramework: true, accommodationSupportPolicy: true,
   personalAdvisorPolicy: true, educationEmploymentTransitionPolicy: true, financialCapabilityPolicy: true, stayingPutArrangements: true,
@@ -13949,6 +14143,7 @@ const leaving_care_intelligence_DEMO_POLICY: LeavingCarePolicy = {
 const leaving_care_intelligence_DEMO_STAFF: StaffLeavingCareTraining[] = [
   { staffId: "staff-sarah", pathwayPlanningKnowledge: true, independenceSkillsTeaching: true, transitionSupportSkills: true, benefitsAdviceKnowledge: true, accommodationSupportSkills: true, emotionalSupportSkills: true },
 
+];
 async function get_leaving_care_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateLeavingCareIntelligence({
@@ -13976,6 +14171,7 @@ const leaving_care_DEMO_CHILDREN: LeavingCareChild[] = [
     keyWorkerId: "staff-sarah",
     keyWorkerName: "Sarah Johnson",
   },
+];
 const leaving_care_DEMO_PATHWAY_PLANS: PathwayPlan[] = [
   {
     id: "plan-morgan",
@@ -13994,8 +14190,10 @@ const leaving_care_DEMO_PATHWAY_PLANS: PathwayPlan[] = [
     financePlanIncluded: true,
     accommodationPlanIncluded: true,
   },
+];
 const leaving_care_DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
   // Morgan — comprehensive, most developed as oldest
+];
 const leaving_care_DEMO_ACCOMMODATION_PLANS: AccommodationPlan[] = [
   {
     id: "accom-morgan",
@@ -14010,9 +14208,11 @@ const leaving_care_DEMO_ACCOMMODATION_PLANS: AccommodationPlan[] = [
     trialStayCompleted: false,
     localAreaPreference: "Within 5 miles of Chamberlain House",
   },
+];
 const leaving_care_DEMO_SUPPORT: SupportArrangement[] = [
   { id: "sup-m01", childId: "child-morgan", supportType: "personal_adviser", status: "active", providerName: "Jane Carter", startDate: "2026-01-20", frequency: "fortnightly", lastContactDate: "2026-05-10" },
 
+];
 async function get_leaving_care(req: NextRequest): Promise<Response> {
 
   const result = generateLeavingCareIntelligence(
@@ -14129,6 +14329,7 @@ async function post_leaving_care(req: NextRequest): Promise<Response> {
 // ─── lessons-learned-intelligence ──────────────────────────────────────
 const lessons_learned_intelligence_DEMO_RECORDS: LessonsLearnedRecord[] = [
   { id: "ll-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "incident_debrief", outcome: "fully_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+];
 const lessons_learned_intelligence_DEMO_POLICY: LessonsLearnedPolicy = {
   lessonsLearnedPolicy: true, postIncidentReviewPolicy: true, complaintLearningPolicy: true,
   practiceImprovementFramework: true, knowledgeSharingPolicy: true, externalLearningIntegration: true, auditAndReviewSchedule: true,
@@ -14136,6 +14337,7 @@ const lessons_learned_intelligence_DEMO_POLICY: LessonsLearnedPolicy = {
 const lessons_learned_intelligence_DEMO_STAFF: StaffLessonsLearnedTraining[] = [
   { staffId: "staff-sarah", reflectivePracticeSkills: true, rootCauseAnalysisKnowledge: true, documentationSkills: true, improvementPlanningSkills: true, debriefFacilitationSkills: true, knowledgeSharingAbility: true },
 
+];
 async function get_lessons_learned_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateLessonsLearnedIntelligence({
@@ -14437,8 +14639,10 @@ async function post_lessons_learned(req: NextRequest): Promise<Response> {
 // ─── life-story-work ───────────────────────────────────────────────────
 const life_story_work_DEMO_SESSIONS: LifeStorySession[] = [
   { id: "ls-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-01-15", sessionType: "life_story_book", facilitator: "Sarah Johnson", durationMinutes: 45, engagementLevel: "highly_engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+];
 const life_story_work_DEMO_RECORDS: MemoryRecord[] = [
   { id: "mr-1", childId: "child-alex", childName: "Alex", itemType: "photograph", dateAdded: "2026-01-20", securelyStored: true, childAccessible: true, qualityChecked: true },
+];
 const life_story_work_DEMO_POLICY: LifeStoryPolicy = {
   id: "lsp-1",
   lifeStoryWorkPolicy: true,
@@ -14452,6 +14656,7 @@ const life_story_work_DEMO_POLICY: LifeStoryPolicy = {
 const life_story_work_DEMO_TRAINING: StaffLifeStoryTraining[] = [
   { id: "lst-1", staffId: "staff-sarah", staffName: "Sarah Johnson", lifeStoryWork: true, therapeuticNarrative: true, traumaInformed: true, culturalSensitivity: true, childLedApproach: true, memoryKeeping: true },
 
+];
 async function get_life_story_work(req: NextRequest): Promise<Response> {
 
   const result = generateLifeStoryWorkIntelligence(
@@ -14532,6 +14737,7 @@ async function post_life_story_work(req: NextRequest): Promise<Response> {
 // ─── life-story ────────────────────────────────────────────────────────
 const life_story_demoRecords: LifeStoryRecord[] = [
   // Alex — regular, high-quality life story work
+];
 const life_story_demoPolicy: LifeStoryPolicy = {
   id: "pol-ls-1",
   lifeStoryWorkPolicy: true,
@@ -14545,6 +14751,7 @@ const life_story_demoPolicy: LifeStoryPolicy = {
 const life_story_demoStaff: StaffLifeStoryTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", lifeStoryWork: true, identitySupport: true, culturalCompetency: true, therapeuticApproach: true, memoryKeeping: true, familyWorkSkills: true },
 
+];
 async function get_life_story(req: NextRequest): Promise<Response> {
 
   const result = generateLifeStoryIntelligence(
@@ -14567,12 +14774,14 @@ async function get_life_story(req: NextRequest): Promise<Response> {
 // ─── location-assessment ───────────────────────────────────────────────
 const location_assessment_DEMO_RECORDS: LocationAssessmentRecord[] = [
   { id: "la-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-03-01", category: "transport_links", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+];
 const location_assessment_DEMO_POLICY: LocationPolicy = {
   id: "lp-1", locationAssessmentPolicy: true, communityRiskFramework: true, transportAccessPlan: true, serviceProximityGuidelines: true, environmentalSafetyProtocol: true, annualReviewSchedule: true, stakeholderConsultation: true,
 };
 const location_assessment_DEMO_STAFF: StaffLocationTraining[] = [
   { id: "lt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", riskAssessmentSkills: true, communityMapping: true, safeguardingAwareness: true, regulatoryKnowledge: true, childConsultation: true, reportWriting: true },
 
+];
 async function get_location_assessment(req: NextRequest): Promise<Response> {
 
   const result = generateLocationAssessmentIntelligence(
@@ -14625,6 +14834,7 @@ const management_oversight_DEMO_RECORDS: OversightRecord[] = [
     staffFeedbackGiven: true,
     documentedProperly: true,
   },
+];
 const management_oversight_DEMO_POLICY: OversightPolicy = {
   id: "policy-oak",
   oversightFramework: true,
@@ -14647,6 +14857,7 @@ const management_oversight_DEMO_STAFF: StaffOversightTraining[] = [
     dataAnalysis: true,
     reflectivePractice: true,
   },
+];
 const management_oversight_TOTAL_CHILDREN = 3; // Alex, Jordan, Morgan
 
 
@@ -14684,6 +14895,7 @@ async function get_management_oversight(req: NextRequest): Promise<Response> {
 // ─── medication-adherence-monitoring ───────────────────────────────────
 const medication_adherence_monitoring_DEMO_RECORDS: MedicationRecord[] = [
   { id: "mr-1", childId: "child-alex", childName: "Alex", administrationDate: "2026-05-12", medicationType: "prescribed_regular", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-09-01" },
+];
 const medication_adherence_monitoring_DEMO_POLICY: MedicationPolicy = {
   id: "pol-1",
   medicationAdministrationPolicy: true,
@@ -14697,6 +14909,7 @@ const medication_adherence_monitoring_DEMO_POLICY: MedicationPolicy = {
 const medication_adherence_monitoring_DEMO_TRAINING: StaffMedicationTraining[] = [
   { id: "smt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", medicationAdministration: true, controlledDrugs: true, errorReporting: true, consentPractice: true, sideEffectRecognition: true, storageCompliance: true },
 
+];
 async function get_medication_adherence_monitoring(req: NextRequest): Promise<Response> {
 
   const result = generateMedicationAdherenceMonitoringIntelligence(
@@ -14933,6 +15146,7 @@ async function post_medication_error_prevention(request: NextRequest): Promise<R
 // ─── medication-management ─────────────────────────────────────────────
 const medication_management_DEMO_RECORDS: MedicationRecord[] = [
   // Alex — Methylphenidate (regular ADHD) morning doses
+];
 const medication_management_DEMO_ERRORS: MedicationError[] = [
   {
     id: "err-001", childId: "child-jordan", childName: "Jordan",
@@ -14942,8 +15156,10 @@ const medication_management_DEMO_ERRORS: MedicationError[] = [
     notifiedParties: ["GP", "Darren Laville"],
     rootCauseIdentified: "Staff distracted by incident with another child",
   },
+];
 const medication_management_DEMO_STOCK_CHECKS: StockCheck[] = [
   { id: "sc-001", medicationName: "Methylphenidate 10mg", childId: "child-alex", childName: "Alex", checkDate: "2026-05-01", checkedBy: "Sarah Johnson", expectedCount: 30, actualCount: 30, discrepancy: false },
+];
 const medication_management_DEMO_SELF_ADMIN: SelfAdminAssessment[] = [
   {
     id: "sa-001", childId: "child-morgan", childName: "Morgan",
@@ -14954,9 +15170,11 @@ const medication_management_DEMO_SELF_ADMIN: SelfAdminAssessment[] = [
     areasForDevelopment: ["Remembering timing without prompts", "Recognising side effects"],
     reviewDate: "2026-05-01",
   },
+];
 const medication_management_DEMO_CD_RECORDS: ControlledDrugRecord[] = [
   { id: "cd-001", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-01", administeredBy: "Tom Richards", witnessedBy: "Lisa Williams", balanceBefore: 30, balanceAfter: 29, balanceCorrect: true },
 
+];
 async function get_medication_management(req: NextRequest): Promise<Response> {
 
   const result = generateMedicationManagementIntelligence(
@@ -15030,6 +15248,7 @@ async function post_medication_management(req: NextRequest): Promise<Response> {
 // ─── medication ────────────────────────────────────────────────────────
 const medication_demoRecords: MedicationRecord[] = [
   // Alex — regular meds + PRN + consent review + competency assessment
+];
 const medication_demoPolicy: MedicationPolicy = {
   medicationPolicy: true,
   controlledDrugPolicy: true,
@@ -15042,6 +15261,7 @@ const medication_demoPolicy: MedicationPolicy = {
 const medication_demoStaff: StaffMedicationTraining[] = [
   { staffId: "staff-sarah", medicationAdministration: true, controlledDrugHandling: true, errorReporting: true, consentProcess: true, storageChecks: true, medicationReview: true },
 
+];
 async function get_medication(req: NextRequest): Promise<Response> {
 
   const result = generateMedicationIntelligence(
@@ -15327,13 +15547,17 @@ const CHILD_NAMES: Record<string, string> = {
 };
 const menu_planning_nutrition_DEMO_MENUS: WeeklyMenu[] = [
   { id: "menu-w1", weekCommencing: "2026-03-04", mealsPlanned: 21, mealsServed: 20, nutritionalBalance: "excellent", culturalAccommodation: "fully_met", childrenConsulted: true, menuVariety: "highly_varied", specialDietaryMet: true },
+];
 const menu_planning_nutrition_DEMO_FEEDBACK: MealFeedback[] = [
   { id: "fb-a1", menuId: "menu-w1", childId: "child-alex", childName: "Alex", mealType: "breakfast", enjoymentRating: 4, portionSatisfactory: true, comments: "Good cereal and toast options" },
+];
 const menu_planning_nutrition_DEMO_PARTICIPATION: ChildParticipationRecord[] = [
   { id: "part-a1", childId: "child-alex", childName: "Alex", date: "2026-03-08", participationType: "cooking_activity", staffSupported: "Sarah Johnson", childEnjoyed: true },
+];
 const menu_planning_nutrition_DEMO_AUDITS: NutritionAudit[] = [
   { id: "audit-1", auditDate: "2026-02-15", auditor: "Darren Laville", fiveADayEvidence: true, sugarLimitsFollowed: true, freshFoodUsed: true, portionGuidanceFollowed: true, overallCompliant: true },
 
+];
 async function get_menu_planning_nutrition(req: NextRequest): Promise<Response> {
 
   const result = generateMenuPlanningNutritionIntelligence(
@@ -15661,6 +15885,7 @@ async function post_missing_absent_episodes(req: NextRequest): Promise<Response>
 // ─── missing-from-care-intelligence ────────────────────────────────────
 const missing_from_care_intelligence_DEMO_RECORDS: MissingFromCareIntelligenceRecord[] = [
   { id: "mfci-001", homeId: "home-oak", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "missing_episode_response", outcome: "child_found_safe", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+];
 const missing_from_care_intelligence_DEMO_POLICY: MissingFromCareIntelligencePolicy = {
   missingChildrenPolicy: true, returnHomeInterviewPolicy: true, policeNotificationProtocol: true,
   riskAssessmentFramework: true, preventionStrategy: true, multiAgencyMissingProtocol: true, debriefAndLearningPolicy: true,
@@ -15668,6 +15893,7 @@ const missing_from_care_intelligence_DEMO_POLICY: MissingFromCareIntelligencePol
 const missing_from_care_intelligence_DEMO_STAFF: StaffMissingFromCareIntelligenceTraining[] = [
   { staffId: "staff-sarah", missingResponseProcedures: true, returnInterviewSkills: true, riskAssessmentSkills: true, policeNotificationKnowledge: true, preventionStrategies: true, deEscalationSkills: true },
 
+];
 async function get_missing_from_care_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateMissingFromCareIntelligenceResult({
@@ -15747,6 +15973,7 @@ async function get_missing_from_care(req: NextRequest): Promise<Response> {
 // ─── morning-routine-preparation ───────────────────────────────────────
 const morning_routine_preparation_DEMO_RECORDS: MorningRecord[] = [
   { id: "mr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", routineElement: "wake_up", completionStatus: "completed_independently", onTimeForSchool: true, breakfastEaten: true, staffSupported: true, moodPositive: true, documentedInLog: true, parentCarerInformed: true },
+];
 const morning_routine_preparation_DEMO_POLICY: MorningPolicy = {
   id: "mp-1",
   morningRoutinePolicy: true,
@@ -15760,6 +15987,7 @@ const morning_routine_preparation_DEMO_POLICY: MorningPolicy = {
 const morning_routine_preparation_DEMO_TRAINING: StaffMorningTraining[] = [
   { id: "mt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", morningRoutineManagement: true, breakfastNutrition: true, emotionalRegulation: true, timeManagement: true, schoolLiaison: true, handoverPractice: true },
 
+];
 async function get_morning_routine_preparation(req: NextRequest): Promise<Response> {
 
   const result = generateMorningRoutinePreparationIntelligence(
@@ -16180,12 +16408,16 @@ function multi_agency_effectiveness_generateDemoData(): {
 }
 const multi_agency_effectiveness_VALID_AGENCY_TYPES = new Set([
   "social_worker", "CAMHS", "education", "health_visitor", "police",
+]);
 const multi_agency_effectiveness_VALID_MEETING_TYPES = new Set([
   "strategy", "CIN", "LAC_review", "PEP", "health_review",
+]);
 const multi_agency_effectiveness_VALID_OUTCOMES = new Set([
   "all_actions_agreed", "partial_agreement", "deferred", "escalated",
+]);
 const multi_agency_effectiveness_VALID_QUALITIES = new Set([
   "timely_complete", "timely_incomplete", "delayed_complete",
+]);
 function multi_agency_effectiveness_validateMeeting(m: unknown, idx: number): string | null {
   if (!m || typeof m !== "object") return `meetings[${idx}]: must be an object`;
   const obj = m as Record<string, unknown>;
@@ -16383,6 +16615,7 @@ async function post_multi_agency_effectiveness(request: NextRequest): Promise<Re
 // ─── multi-agency-intelligence ─────────────────────────────────────────
 const multi_agency_intelligence_DEMO_RECORDS: MultiAgencyRecord[] = [
   // Alex — 4 records across different categories
+];
 const multi_agency_intelligence_DEMO_POLICY: MultiAgencyPolicy = {
   multiAgencyWorkingPolicy: true,
   informationSharingProtocol: true,
@@ -16395,6 +16628,7 @@ const multi_agency_intelligence_DEMO_POLICY: MultiAgencyPolicy = {
 const multi_agency_intelligence_DEMO_STAFF: StaffMultiAgencyTraining[] = [
   { staffId: "staff-sarah", multiAgencyWorkingKnowledge: true, informationSharingSkills: true, meetingFacilitationSkills: true, referralProcessKnowledge: true, jointAssessmentSkills: true, professionalBoundaries: true },
 
+];
 async function get_multi_agency_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateMultiAgencyIntelligence({
@@ -16430,6 +16664,7 @@ const multi_agency_partnership_DEMO_RELATIONSHIPS: AgencyRelationship[] = [
     informationSharingAgreementInPlace: true,
     feedbackReceived: "very_positive",
   },
+];
 const multi_agency_partnership_DEMO_MEETINGS: MultiAgencyMeeting[] = [
   {
     id: "mtg-001",
@@ -16444,6 +16679,7 @@ const multi_agency_partnership_DEMO_MEETINGS: MultiAgencyMeeting[] = [
     actionsCompleted: 5,
     childParticipated: true,
   },
+];
 const multi_agency_partnership_DEMO_REFERRALS: AgencyReferral[] = [
   {
     id: "ref-001",
@@ -16455,6 +16691,7 @@ const multi_agency_partnership_DEMO_REFERRALS: AgencyReferral[] = [
     appropriateReferral: true,
     followUpCompleted: true,
   },
+];
 const multi_agency_partnership_DEMO_INFO_SHARING: InformationSharingRecord[] = [
   {
     id: "info-001",
@@ -16467,6 +16704,7 @@ const multi_agency_partnership_DEMO_INFO_SHARING: InformationSharingRecord[] = [
     relevantToChildPlan: true,
   },
 
+];
 async function get_multi_agency_partnership(req: NextRequest): Promise<Response> {
 
   const result = generateMultiAgencyPartnershipIntelligence(
@@ -16571,6 +16809,7 @@ const multi_agency_DEMO_PROFILES: ChildMultiAgencyProfile[] = [
     childViewsRoutinelyShared: true,
   },
 
+];
 async function get_multi_agency(req: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(req.url);
@@ -16633,6 +16872,7 @@ async function post_multi_agency(req: NextRequest): Promise<Response> {
 // ─── night-care ────────────────────────────────────────────────────────
 const night_care_DEMO_RECORDS: NightCareRecord[] = [
   // Alex — 4 records across categories
+];
 const night_care_DEMO_POLICY: NightCarePolicy = {
   nightCarePolicy: true,
   sleepMonitoringGuidance: true,
@@ -16645,6 +16885,7 @@ const night_care_DEMO_POLICY: NightCarePolicy = {
 const night_care_DEMO_TRAINING: NightCareStaffTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", nightCareCompetency: true, sleepMonitoringSkills: true, nightIncidentResponse: true, nightMedicationHandling: true, childComfortTechniques: true, nightHandoverProcedure: true },
 
+];
 async function get_night_care(req: NextRequest): Promise<Response> {
 
   const result = generateNightCareIntelligence(
@@ -16729,6 +16970,7 @@ async function post_night_care(req: NextRequest): Promise<Response> {
 // ─── night-monitoring-intelligence ─────────────────────────────────────
 const night_monitoring_intelligence_DEMO_RECORDS: NightMonitoringRecord[] = [
   // Alex — waking night checks, sleep obs, welfare checks
+];
 const night_monitoring_intelligence_DEMO_POLICY: NightMonitoringPolicy = {
   nightMonitoringPolicy: true,
   wakingNightCheckFrequency: true,
@@ -16741,6 +16983,7 @@ const night_monitoring_intelligence_DEMO_POLICY: NightMonitoringPolicy = {
 const night_monitoring_intelligence_DEMO_STAFF: StaffNightMonitoringTraining[] = [
   { staffId: "staff-sarah", nightCareCompetency: true, nightIncidentManagement: true, sleepMonitoringSkills: true, nightMedicationHandling: true, childWelfareAssessment: true, nightHandoverProcedure: true },
 
+];
 async function get_night_monitoring_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateNightMonitoringIntelligence({
@@ -16767,6 +17010,7 @@ async function get_night_monitoring_intelligence(req: NextRequest): Promise<Resp
 // ─── night-monitoring ──────────────────────────────────────────────────
 const night_monitoring_CHECK_PLANS: NightCheckPlan[] = [
   { childId: "child-alex", childName: "Alex Turner", frequency: "30_min", riskLevel: "standard" },
+];
 function night_monitoring_generateNightChecks(date: string, children: string[]): NightCheck[] {
   const checks: NightCheck[] = [];
   const statuses: Array<"asleep" | "awake_settled"> = ["asleep", "asleep"];
@@ -17209,6 +17453,7 @@ async function post_night_supervision_quality(req: NextRequest): Promise<Respons
 // ─── notifiable-events-intelligence ────────────────────────────────────
 const notifiable_events_intelligence_DEMO_RECORDS: NotifiableEventsRecord[] = [
   { id: "ne-001", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "serious_injury", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+];
 const notifiable_events_intelligence_DEMO_POLICY: NotifiableEventsPolicy = {
   notifiableEventsPolicy: true, notificationTimeframePolicy: true, ofstedNotificationProcedure: true,
   localAuthorityNotificationPolicy: true, internalEscalationPolicy: true, postIncidentReviewPolicy: true, recordKeepingPolicy: true,
@@ -17216,6 +17461,7 @@ const notifiable_events_intelligence_DEMO_POLICY: NotifiableEventsPolicy = {
 const notifiable_events_intelligence_DEMO_STAFF: StaffNotifiableEventsTraining[] = [
   { staffId: "staff-sarah", notifiableEventsKnowledge: true, ofstedNotificationProcess: true, localAuthorityReporting: true, internalEscalationProcedure: true, documentationRequirements: true, postIncidentReviewSkills: true },
 
+];
 async function get_notifiable_events_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateNotifiableEventsIntelligence({
@@ -17419,6 +17665,7 @@ function notification_timeliness_n(overrides: Partial<NotificationRecord> = {}):
 }
 const notification_timeliness_DEMO_EVENTS: NotifiableEvent[] = [
   // Event 1: Alex — serious injury, all on time
+];
 const notification_timeliness_DEMO_POLICY: NotificationPolicy = {
   homeId: "oak-house",
   policyDocumentTitle: "Chamberlain House Notification & Reporting Policy v3.1",
@@ -17454,6 +17701,7 @@ const notification_timeliness_DEMO_AUDITS: NotificationAudit[] = [
     nextAuditDue: "2026-09-15",
   },
 
+];
 async function get_notification_timeliness(req: NextRequest): Promise<Response> {
 
   const result = generateNotificationTimelinessIntelligence(
@@ -17543,15 +17791,20 @@ async function post_notification_timeliness(req: NextRequest): Promise<Response>
 // ─── nutrition-healthy-living ──────────────────────────────────────────
 const nutrition_healthy_living_DEMO_PROFILES: ChildDietaryProfile[] = [
   { id: "prof-alex", childId: "child-alex", childName: "Alex", dietaryRequirements: ["none"], allergies: [], preferences: ["pasta", "pizza"], lastReviewedDate: "2026-04-01", reviewedBy: "Sarah Johnson", weightHealthy: true, dietaryPlanInPlace: true },
+];
 const nutrition_healthy_living_DEMO_MEALS: MealRecord[] = [
   { id: "m-a01", childId: "child-alex", date: "2026-03-15", mealType: "breakfast", quality: "good", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: false, childEnjoyed: true, portionAppropriate: true },
+];
 const nutrition_healthy_living_DEMO_ACTIVITIES: PhysicalActivity[] = [
   { id: "act-a01", childId: "child-alex", date: "2026-03-10", activityType: "sports", intensity: "vigorous", durationMinutes: 90, childEnjoyment: true, staffSupervised: true },
+];
 const nutrition_healthy_living_DEMO_HEALTH: HealthPromotion[] = [
   { id: "hp-alex", childId: "child-alex", hydrationStatus: "well_hydrated", sleepQualityGood: true, dentalCheckUpToDate: true, opticalCheckUpToDate: true, annualHealthAssessmentComplete: true, cookingSkillsDeveloping: true, nutritionEducationProvided: true, mentalWellbeingSupported: true, substanceMisuseEducation: true, sexualHealthEducation: true, assessedDate: "2026-04-01" },
+];
 const nutrition_healthy_living_DEMO_MENUS: MenuPlan[] = [
   { id: "menu-w1", weekStartDate: "2026-03-04", mealsPlanned: 21, balancedMeals: 19, childrenConsulted: true, culturalDiversityReflected: true, budgetAppropriate: true, seasonalIngredientsUsed: true, specialDietsCatered: true },
 
+];
 async function get_nutrition_healthy_living(req: NextRequest): Promise<Response> {
 
   const result = generateNutritionHealthyLivingIntelligence(
@@ -18054,8 +18307,10 @@ const nutrition_DEMO_CHILDREN: NutritionChild[] = [
     dislikes: ["Mushrooms", "Olives"],
     cookingSkillLevel: 3,
   },
+];
 const nutrition_DEMO_MEALS: MealRecord[] = [
   // ── January ─────────────────────────────────────────────────────────────
+];
 const nutrition_DEMO_MENU_PLANS: MenuPlan[] = [
   {
     id: "mp-001",
@@ -18069,8 +18324,10 @@ const nutrition_DEMO_MENU_PLANS: MenuPlan[] = [
     freshCookingDays: 6,
     totalDays: 7,
   },
+];
 const nutrition_DEMO_FOOD_SAFETY: FoodSafetyRecord[] = [
   { id: "fs-001", date: "2026-01-15", checkType: "fridge_temperature", compliant: true },
+];
 const nutrition_DEMO_COOKING_SESSIONS: CookingSession[] = [
   {
     id: "cs-001",
@@ -18084,6 +18341,7 @@ const nutrition_DEMO_COOKING_SESSIONS: CookingSession[] = [
     linkedToIndependencePlan: true,
   },
 
+];
 async function get_nutrition(req: NextRequest): Promise<Response> {
 
   const result = generateNutritionIntelligence(
@@ -18176,6 +18434,7 @@ const ofsted_readiness_DEMO_AREA_SCORES: AreaScore[] = [
     lastAssessedDate: "2026-04-15",
     assessedBy: "Sarah Johnson",
   },
+];
 const ofsted_readiness_DEMO_EVIDENCE: SCCIFEvidenceItem[] = [
   {
     id: "ev-oak-01",
@@ -18186,6 +18445,7 @@ const ofsted_readiness_DEMO_EVIDENCE: SCCIFEvidenceItem[] = [
     lastUpdated: "2026-04-10",
     linkedDocuments: 5,
   },
+];
 const ofsted_readiness_DEMO_INSPECTION_HISTORY: InspectionHistory[] = [
   {
     id: "insp-oak-01",
@@ -18199,6 +18459,7 @@ const ofsted_readiness_DEMO_INSPECTION_HISTORY: InspectionHistory[] = [
     requirementsCompleted: 1,
     recommendationsCompleted: 1,
   },
+];
 const ofsted_readiness_DEMO_ACTION_ITEMS: ActionPlanItem[] = [
   {
     id: "act-oak-01",
@@ -18211,6 +18472,7 @@ const ofsted_readiness_DEMO_ACTION_ITEMS: ActionPlanItem[] = [
     assignedTo: "Sarah Johnson",
   },
 
+];
 async function get_ofsted_readiness(req: NextRequest): Promise<Response> {
 
   const result = generateOfstedReadinessIntelligence(
@@ -18297,6 +18559,7 @@ async function post_ofsted_readiness(req: NextRequest): Promise<Response> {
 // ─── online-safety ─────────────────────────────────────────────────────
 const online_safety_DEMO_CHILDREN: OnlineSafetyChild[] = [
   { id: "child-alex", name: "Alex", dateOfBirth: "2012-03-15", currentPlacement: true },
+];
 const online_safety_DEMO_ASSESSMENTS: OnlineRiskAssessment[] = [
   {
     id: "ora-alex",
@@ -18315,6 +18578,7 @@ const online_safety_DEMO_ASSESSMENTS: OnlineRiskAssessment[] = [
     socialMediaAccounts: ["TikTok", "Instagram"],
     screenTimeAgreementHours: 3,
   },
+];
 const online_safety_DEMO_INCIDENTS: OnlineIncident[] = [
   {
     id: "oi-001",
@@ -18334,10 +18598,13 @@ const online_safety_DEMO_INCIDENTS: OnlineIncident[] = [
     resolved: true,
     resolvedDate: "2026-03-12",
   },
+];
 const online_safety_DEMO_EDUCATION: OnlineEducationSession[] = [
   { id: "edu-001", date: "2026-01-20", topic: "recognising_grooming", childIds: ["child-alex", "child-jordan", "child-morgan"], deliveredBy: "Sarah Johnson", method: "group_session", childrenEngaged: true, followUpNeeded: false, notes: "All children engaged well; Morgan asked good questions about warning signs" },
+];
 const online_safety_DEMO_TRAINING: StaffOnlineTraining[] = [
   { staffId: "staff-sarah", staffName: "Sarah Johnson", trainingName: "Online Safety in Children's Homes", completionDate: "2025-09-15", expiryDate: "2026-09-15", provider: "NSPCC", certificateHeld: true },
+];
 const online_safety_STAFF_IDS = ["staff-sarah", "staff-tom", "staff-lisa", "staff-darren"];
 
 const online_safety_DEMO_POLICY: OnlineSafetyPolicy = {
@@ -18634,13 +18901,17 @@ async function post_outcomes_measurement(req: NextRequest): Promise<Response> {
 // ─── outdoor-activity-enrichment ───────────────────────────────────────
 const outdoor_activity_enrichment_DEMO_ACTIVITIES: ActivityRecord[] = [
   // Alex — high participation, adventure-focused
+];
 const outdoor_activity_enrichment_DEMO_PLANS: EnrichmentPlan[] = [
   { id: "plan-a1", childId: "child-alex", childName: "Alex", planDate: "2026-01-10", reviewDate: "2026-04-10", interestsIdentified: ["hiking", "climbing", "kayaking", "football"], activitiesPlanned: 10, activitiesCompleted: 7, childContributed: true, diverseRange: true, barrierIdentified: null, barrierAddressed: null },
+];
 const outdoor_activity_enrichment_DEMO_RISK_ASSESSMENTS: RiskBenefitAssessment[] = [
   { id: "ra-a1", activityId: "act-a1", assessedBy: "Sarah Johnson", assessDate: "2026-01-19", hazardsIdentified: 4, controlMeasures: 6, benefitsArticulated: true, childViewSought: true, dynamicAssessment: true, outcome: "excellent" },
+];
 const outdoor_activity_enrichment_DEMO_STAFF: StaffActivityTraining[] = [
   { id: "st-1", staffId: "s-sarah", staffName: "Sarah Johnson", firstAidCurrent: true, outdoorQualifications: ["Mountain Leader", "Forest School L3"], activityLeaderTrained: true, riskAssessmentTrained: true, safeguardingCurrent: true },
 
+];
 async function get_outdoor_activity_enrichment(req: NextRequest): Promise<Response> {
 
   const result = generateOutdoorActivityEnrichmentIntelligence(
@@ -18726,13 +18997,17 @@ async function post_outdoor_activity_enrichment(req: NextRequest): Promise<Respo
 // ─── parental-contact-management ───────────────────────────────────────
 const parental_contact_management_DEMO_PLANS: ParentalContactPlan[] = [
   // Alex — mother: supervised face-to-face monthly, medium risk, court order
+];
 const parental_contact_management_DEMO_SESSIONS: ParentalContactSession[] = [
   // Alex — supervised visit with mother (positive)
+];
 const parental_contact_management_DEMO_ASSESSMENTS: ContactRiskAssessment[] = [
   // Alex — mother (medium risk)
+];
 const parental_contact_management_DEMO_TRAINING: StaffContactTraining[] = [
   { id: "sct-1", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisedContactTrained: true, riskAssessmentTrained: true, childPrepDebriefTrained: true, safeguardingInContact: true, managingParentalConflict: true, courtOrderAwareness: true },
 
+];
 async function get_parental_contact_management(req: NextRequest): Promise<Response> {
 
   const result = generateParentalContactManagementIntelligence(
@@ -18824,6 +19099,7 @@ const parental_engagement_CHILD_IDS = ["child-alex", "child-jordan", "child-morg
 
 const parental_engagement_DEMO_CONTACTS: ContactRecord[] = [
   // Alex (14) + Michelle (mum, engaged) — 4 contacts
+];
 const parental_engagement_DEMO_SUPPORTS: ParentalSupportRecord[] = [
   {
     id: "s-001", homeId: HOME_ID, parentId: "parent-michelle", parentName: "Michelle",
@@ -18831,6 +19107,7 @@ const parental_engagement_DEMO_SUPPORTS: ParentalSupportRecord[] = [
     description: "Weekly taxi provided for face-to-face visits",
     startDate: "2026-01-15", ongoing: true, effectiveness: "effective", referralMade: false,
   },
+];
 const parental_engagement_DEMO_PLANS: FamilyPlanRecord[] = [
   {
     id: "fp-001", homeId: HOME_ID, childId: "child-alex", childName: "Alex",
@@ -18840,6 +19117,7 @@ const parental_engagement_DEMO_PLANS: FamilyPlanRecord[] = [
     barriers: ["Transport from Michelle's area"],
     strengthsIdentified: ["Strong mother-child bond", "Michelle attends all sessions"],
   },
+];
 const parental_engagement_DEMO_FEEDBACK: ParentalFeedbackRecord[] = [
   {
     id: "fb-001", homeId: HOME_ID, parentId: "parent-michelle", parentName: "Michelle",
@@ -18849,6 +19127,7 @@ const parental_engagement_DEMO_FEEDBACK: ParentalFeedbackRecord[] = [
     positiveAspects: ["Welcoming environment", "Regular updates from key worker"],
   },
 
+];
 async function get_parental_engagement(req: NextRequest): Promise<Response> {
 
   const result = generateParentalEngagementIntelligence(
@@ -18961,6 +19240,7 @@ async function post_parental_engagement(req: NextRequest): Promise<Response> {
 // ─── participation ─────────────────────────────────────────────────────
 const participation_DEMO_RECORDS: ParticipationRecord[] = [
   { id: "par-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "care_plan_voice", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+];
 const participation_DEMO_POLICY: ParticipationPolicy = {
   participationPolicy: true,
   advocacyAccessPolicy: true,
@@ -18973,6 +19253,7 @@ const participation_DEMO_POLICY: ParticipationPolicy = {
 const participation_DEMO_STAFF: StaffParticipationTraining[] = [
   { staffId: "staff-sarah", childVoiceCapture: true, advocacyKnowledge: true, participationFacilitation: true, complaintsAwareness: true, rightsBasedPractice: true, feedbackResponsiveness: true },
 
+];
 async function get_participation(req: NextRequest): Promise<Response> {
 
   const result = generateParticipationIntelligence({
@@ -18995,6 +19276,7 @@ async function get_participation(req: NextRequest): Promise<Response> {
 // ─── peer-dynamics-intelligence ────────────────────────────────────────
 const peer_dynamics_intelligence_DEMO_RECORDS: PeerDynamicsIntelligenceRecord[] = [
   { id: "pd-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "peer_conflict_resolution", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+];
 const peer_dynamics_intelligence_DEMO_POLICY: PeerDynamicsIntelligencePolicy = {
   peerRelationshipPolicy: true, antiBullyingPolicy: true, restorativePracticePolicy: true,
   groupLivingPolicy: true, socialSkillsDevelopmentPolicy: true, peerMediationPolicy: true, conflictResolutionPolicy: true,
@@ -19002,6 +19284,7 @@ const peer_dynamics_intelligence_DEMO_POLICY: PeerDynamicsIntelligencePolicy = {
 const peer_dynamics_intelligence_DEMO_STAFF: StaffPeerDynamicsTraining[] = [
   { staffId: "staff-sarah", peerDynamicsAwareness: true, conflictResolutionSkills: true, restorativePracticeSkills: true, groupFacilitationSkills: true, bullyingPreventionKnowledge: true, socialSkillsTeaching: true },
 
+];
 async function get_peer_dynamics_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generatePeerDynamicsIntelligenceResult({
@@ -19022,8 +19305,10 @@ const peer_dynamics_DEMO_CHILDREN: ChildProfile[] = [
     knownTriggers: ["feeling_controlled", "perceived_disrespect"],
     currentPlacement: true,
   },
+];
 const peer_dynamics_DEMO_INTERACTIONS: PeerInteraction[] = [
   // Positive dynamics — Alex & Jordan
+];
 const peer_dynamics_DEMO_MATCHING: MatchingAssessment[] = [
   {
     id: "match-001", childId: "child-alex",
@@ -19037,6 +19322,7 @@ const peer_dynamics_DEMO_MATCHING: MatchingAssessment[] = [
     conditions: ["Enhanced supervision during unstructured time", "Regular group dynamics monitoring"],
     reviewDate: "2026-04-01",
   },
+];
 const peer_dynamics_DEMO_GROUP_ASSESSMENTS: GroupAssessment[] = [
   {
     id: "grp-001",
@@ -19049,6 +19335,7 @@ const peer_dynamics_DEMO_GROUP_ASSESSMENTS: GroupAssessment[] = [
     actionsTaken: ["Introduced Friday film night", "Alex's key worker addressing voice regulation"],
   },
 
+];
 async function get_peer_dynamics(req: NextRequest): Promise<Response> {
 
   const result = generatePeerDynamicsIntelligence(
@@ -19133,6 +19420,7 @@ async function post_peer_dynamics(req: NextRequest): Promise<Response> {
 // ─── peer-mentoring-effectiveness ──────────────────────────────────────
 const peer_mentoring_effectiveness_DEMO_PAIRINGS: PeerPairing[] = [
   // Morgan (15, mentor) paired with Jordan (13, mentee) — active, consented, risk assessed
+];
 const peer_mentoring_effectiveness_DEMO_SESSIONS: MentoringSession[] = [
   {
     id: "ms-1",
@@ -19147,6 +19435,7 @@ const peer_mentoring_effectiveness_DEMO_SESSIONS: MentoringSession[] = [
     progressMade: true,
     staffObservation: "Positive interaction, appropriate boundaries maintained",
   },
+];
 const peer_mentoring_effectiveness_DEMO_REVIEWS: RelationshipReview[] = [
   {
     id: "rr-1",
@@ -19160,9 +19449,11 @@ const peer_mentoring_effectiveness_DEMO_REVIEWS: RelationshipReview[] = [
     mentorBenefiting: true,
     menteeBenefiting: true,
   },
+];
 const peer_mentoring_effectiveness_DEMO_TRAINING: StaffMentoringTraining[] = [
   { id: "smt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", peerMentoringTrained: true, safeguardingInPeerRelationships: true, conflictResolution: true, boundarySetting: true, supportingYoungMentors: true },
 
+];
 async function get_peer_mentoring_effectiveness(req: NextRequest): Promise<Response> {
 
   const result = generatePeerMentoringEffectivenessIntelligence(
@@ -19504,6 +19795,7 @@ async function post_peer_relationship_dynamics(req: NextRequest): Promise<Respon
 // ─── peer-relationship-quality ─────────────────────────────────────────
 const peer_relationship_quality_DEMO_INTERACTIONS: PeerInteraction[] = [
   { id: "pi-1", childId: "child-alex", childName: "Alex", interactionDate: "2026-03-01", interactionType: "shared_activity", relationshipQuality: "thriving", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+];
 const peer_relationship_quality_DEMO_POLICY: PeerRelationshipPolicy = {
   id: "prp-1",
   positiveRelationshipsStrategy: true,
@@ -19517,6 +19809,7 @@ const peer_relationship_quality_DEMO_POLICY: PeerRelationshipPolicy = {
 const peer_relationship_quality_DEMO_TRAINING: StaffPeerSupportTraining[] = [
   { id: "pst-1", staffId: "staff-sarah", staffName: "Sarah Johnson", relationshipBuilding: true, conflictMediation: true, antibullyingAwareness: true, socialSkillsFacilitation: true, therapeuticGroupWork: true, restorativePractice: true },
 
+];
 async function get_peer_relationship_quality(req: NextRequest): Promise<Response> {
 
   const result = generatePeerRelationshipQualityIntelligence(
@@ -19563,6 +19856,7 @@ async function post_peer_relationship_quality(req: NextRequest): Promise<Respons
 // ─── personal-hygiene-self-care ────────────────────────────────────────
 const personal_hygiene_self_care_DEMO_RECORDS: HygieneRecord[] = [
   { id: "hr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", hygieneArea: "bathing_showering", supportLevel: "independent", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
+];
 const personal_hygiene_self_care_DEMO_POLICY: HygienePolicy = {
   id: "hp-1",
   personalCarePolicy: true,
@@ -19576,6 +19870,7 @@ const personal_hygiene_self_care_DEMO_POLICY: HygienePolicy = {
 const personal_hygiene_self_care_DEMO_TRAINING: StaffHygieneTraining[] = [
   { id: "ht-1", staffId: "staff-sarah", staffName: "Sarah Johnson", personalCareSupport: true, dignityInPractice: true, culturalAwareness: true, menstrualHealthAwareness: true, infectionControl: true, sensitiveConversations: true },
 
+];
 async function get_personal_hygiene_self_care(req: NextRequest): Promise<Response> {
 
   const result = generatePersonalHygieneSelfCareIntelligence(
@@ -19622,13 +19917,17 @@ async function post_personal_hygiene_self_care(req: NextRequest): Promise<Respon
 // ─── pet-therapy-animal-interaction ────────────────────────────────────
 const pet_therapy_animal_interaction_DEMO_SESSIONS: AnimalSession[] = [
   { id: "as-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-01", animalType: "dog", sessionType: "structured_therapy", facilitatedBy: "Sarah Johnson", therapeuticBenefit: "significant", childEngaged: true, riskAssessmentCompleted: true, supervisedThroughout: true, hygieneProtocolFollowed: true },
+];
 const pet_therapy_animal_interaction_DEMO_WELFARE: AnimalWelfareCheck[] = [
   { id: "aw-1", animalType: "dog", animalName: "Buddy", checkDate: "2026-04-01", checkedBy: "Tom Richards", welfareStatus: "excellent", veterinaryUpToDate: true, vaccinationsCurrentt: true, livingConditionsAdequate: true, dietAppropriate: true, exerciseProvided: true },
+];
 const pet_therapy_animal_interaction_DEMO_RISK: AnimalRiskAssessment[] = [
   { id: "ar-1", assessmentDate: "2026-01-15", assessedBy: "Darren Laville", allergyScreeningCompleted: true, zoonoticRiskAssessed: true, biteRiskAssessed: true, hygieneProtocolInPlace: true, insuranceCurrent: true, emergencyPlanInPlace: true },
+];
 const pet_therapy_animal_interaction_DEMO_TRAINING: StaffAnimalTraining[] = [
   { id: "at-1", staffId: "staff-sarah", staffName: "Sarah Johnson", animalHandling: true, therapeuticAnimalUse: true, animalWelfare: true, riskAssessment: true, hygieneProtocols: true, allergyAwareness: true },
 
+];
 async function get_pet_therapy_animal_interaction(req: NextRequest): Promise<Response> {
 
   const result = generatePetTherapyAnimalInteractionIntelligence(
@@ -19815,6 +20114,7 @@ async function post_physical_health_monitoring(request: NextRequest): Promise<Re
 // ─── physical-health-wellbeing ─────────────────────────────────────────
 const physical_health_wellbeing_DEMO_RECORDS: HealthRecord[] = [
   { id: "hr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-02-10", healthArea: "medical_appointment", healthOutcome: "excellent", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+];
 const physical_health_wellbeing_DEMO_POLICY: HealthPolicy = {
   id: "hp-1",
   healthAssessmentFramework: true,
@@ -19828,6 +20128,7 @@ const physical_health_wellbeing_DEMO_POLICY: HealthPolicy = {
 const physical_health_wellbeing_DEMO_TRAINING: StaffHealthTraining[] = [
   { id: "sht-1", staffId: "staff-sarah", staffName: "Sarah Johnson", healthAwareness: true, mentalHealthFirstAid: true, consentAndCapacity: true, medicationManagement: true, appointmentSupport: true, healthDocumentation: true },
 
+];
 async function get_physical_health_wellbeing(req: NextRequest): Promise<Response> {
 
   const result = generatePhysicalHealthWellbeingIntelligence(
@@ -20282,6 +20583,7 @@ async function post_placement_stability_continuity(request: NextRequest): Promis
 // ─── placement-stability-intelligence ──────────────────────────────────
 const placement_stability_intelligence_DEMO_RECORDS: PlacementStabilityRecord[] = [
   { id: "ps-001", homeId: "home-oak", date: "2025-01-15", childId: "child-alex", childName: "Alex", category: "placement_review", outcome: "placement_sustained", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+];
 const placement_stability_intelligence_DEMO_POLICY: PlacementStabilityPolicy = {
   placementStabilityPolicy: true, matchingProcedure: true, disruptionManagementPolicy: true,
   transitionPlanningFramework: true, unplannedEndingProtocol: true, permanencePlanningPolicy: true, placementReviewSchedule: true,
@@ -20289,6 +20591,7 @@ const placement_stability_intelligence_DEMO_POLICY: PlacementStabilityPolicy = {
 const placement_stability_intelligence_DEMO_STAFF: StaffPlacementStabilityTraining[] = [
   { staffId: "staff-sarah", matchingAssessmentSkills: true, stabilityPlanningKnowledge: true, disruptionPreventionSkills: true, transitionSupportSkills: true, childParticipationSkills: true, permanencePlanningKnowledge: true },
 
+];
 async function get_placement_stability_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generatePlacementStabilityIntelligenceReport({
@@ -20704,6 +21007,7 @@ const pocket_money_financial_education_PERIOD_START = "2026-01-01";
 const pocket_money_financial_education_PERIOD_END = "2026-05-19";
 const pocket_money_financial_education_DEMO_TRANSACTIONS: MoneyTransaction[] = [
   // Alex -- pocket money, savings, educational, charitable
+];
 const pocket_money_financial_education_DEMO_POLICY: FinancialPolicy = {
   id: "policy-001",
   pocketMoneyPolicy: true,
@@ -20717,6 +21021,7 @@ const pocket_money_financial_education_DEMO_POLICY: FinancialPolicy = {
 const pocket_money_financial_education_DEMO_TRAINING: StaffFinancialTraining[] = [
   { id: "train-001", staffId: "staff-rm-01", staffName: "Sarah Jones", financialLiteracy: true, moneyManagement: true, safeguardingFinances: true, budgetingSkills: true, bankingAwareness: true, fraudPrevention: true },
 
+];
 async function get_pocket_money_financial_education(req: NextRequest): Promise<Response> {
 
   const intelligence = generatePocketMoneyFinancialEducationIntelligence(
@@ -20756,6 +21061,7 @@ async function post_pocket_money_financial_education(req: NextRequest): Promise<
 // ─── pocket-money-financial-literacy ───────────────────────────────────
 const pocket_money_financial_literacy_DEMO_SESSIONS: FinancialSession[] = [
   { id: "fs-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-01", skillType: "budgeting", competencyLevel: "independent", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+];
 const pocket_money_financial_literacy_DEMO_POLICY: FinancialLiteracyPolicy = {
   id: "fp-1",
   pocketMoneyFramework: true,
@@ -20769,6 +21075,7 @@ const pocket_money_financial_literacy_DEMO_POLICY: FinancialLiteracyPolicy = {
 const pocket_money_financial_literacy_DEMO_TRAINING: StaffFinancialLiteracyTraining[] = [
   { id: "ft-1", staffId: "staff-sarah", staffName: "Sarah Johnson", financialEducationSkills: true, budgetingSupport: true, ageAppropriateTeaching: true, safeguardingFinancialAbuse: true, independencePromotionSkills: true, recordKeeping: true },
 
+];
 async function get_pocket_money_financial_literacy(req: NextRequest): Promise<Response> {
 
   const result = generatePocketMoneyFinancialLiteracyIntelligence(
@@ -20815,6 +21122,7 @@ async function post_pocket_money_financial_literacy(req: NextRequest): Promise<R
 // ─── pocket-money-intelligence ─────────────────────────────────────────
 const pocket_money_intelligence_DEMO_RECORDS: PocketMoneyRecord[] = [
   { id: "pm-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "weekly_allowance", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+];
 const pocket_money_intelligence_DEMO_POLICY: PocketMoneyPolicy = {
   pocketMoneyPolicy: true, savingsAccountPolicy: true, spendingApprovalProcess: true,
   financialRecordKeepingPolicy: true, financialLiteracyProgramme: true, birthdayChristmasMoneyPolicy: true, independentSpendingGuidance: true,
@@ -20822,6 +21130,7 @@ const pocket_money_intelligence_DEMO_POLICY: PocketMoneyPolicy = {
 const pocket_money_intelligence_DEMO_STAFF: StaffPocketMoneyTraining[] = [
   { staffId: "staff-sarah", financialManagementKnowledge: true, recordKeepingSkills: true, childConsentPractice: true, savingsGuidanceSkills: true, financialLiteracyDelivery: true, budgetingSupport: true },
 
+];
 async function get_pocket_money_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generatePocketMoneyIntelligence({
@@ -20901,6 +21210,7 @@ const pocket_money_DEMO_PROFILES: ChildFinancialProfile[] = [
     childInvolvedInBudget: true,
   },
 
+];
 async function get_pocket_money(request: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(request.url);
@@ -21228,13 +21538,17 @@ async function post_positive_behaviour(request: NextRequest): Promise<Response> 
 // ─── positive-reinforcement-rewards ────────────────────────────────────
 const positive_reinforcement_rewards_DEMO_PRAISE: PraiseRecord[] = [
   { id: "pr-1", childId: "child-alex", childName: "Alex", praiseDate: "2026-04-01", praiseType: "verbal", givenBy: "Sarah Johnson", reason: "Helped Jordan with homework without being asked", childResponse: "positive", specificAndDescriptive: true, linkedToValues: true },
+];
 const positive_reinforcement_rewards_DEMO_REWARDS: RewardRecord[] = [
   { id: "rw-1", childId: "child-alex", childName: "Alex", rewardDate: "2026-04-05", rewardCategory: "weekly_target", description: "Chose pizza night for meeting all weekly targets", childChosenReward: true, fairAndConsistent: true, linkedToBehaviourPlan: true, childResponse: "very_positive" },
+];
 const positive_reinforcement_rewards_DEMO_OUTCOMES: BehaviourOutcome[] = [
   { id: "bo-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-15", behaviourTrend: "improved", positiveIncidentsCount: 12, negativeIncidentsCount: 1, restraintCount: 0, deEscalationSuccessful: true, childReportedFeeling: "positive" },
+];
 const positive_reinforcement_rewards_DEMO_TRAINING: StaffReinforcementTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", positiveBehaviourSupport: true, therapeuticCareApproach: true, deEscalationTechniques: true, rewardSystemDesign: true, traumaInformedPraise: true, consistencyInApproach: true },
 
+];
 async function get_positive_reinforcement_rewards(req: NextRequest): Promise<Response> {
 
   const result = generatePositiveReinforcementRewardsIntelligence(
@@ -21611,6 +21925,7 @@ async function post_post_incident_learning(request: NextRequest): Promise<Respon
 // ─── premises-intelligence ─────────────────────────────────────────────
 const premises_intelligence_DEMO_RECORDS: PremisesIntelligenceRecord[] = [
   // Sarah — fire safety, health & safety, bedroom standards
+];
 const premises_intelligence_DEMO_POLICY: PremisesIntelligencePolicy = {
   healthSafetyPolicy: true,
   fireSafetyPolicy: true,
@@ -21623,6 +21938,7 @@ const premises_intelligence_DEMO_POLICY: PremisesIntelligencePolicy = {
 const premises_intelligence_DEMO_STAFF: StaffPremisesTraining[] = [
   { staffId: "staff-sarah", healthSafetyKnowledge: true, fireSafetyTraining: true, maintenanceSkills: true, riskAssessmentSkills: true, firstAidTraining: true, accessibilityAwareness: true },
 
+];
 async function get_premises_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generatePremisesIntelligenceReport({
@@ -21761,6 +22077,7 @@ const privacy_dignity_assessment_DEMO_AUDITS: PrivacyAudit[] = [
     personalSpaceRespected: true,
     findingsNotes: "All bedrooms personalised with own décor, locks on drawers provided",
   },
+];
 const privacy_dignity_assessment_DEMO_FEEDBACK: ChildPrivacyFeedback[] = [
   {
     id: "fb-1",
@@ -21775,6 +22092,7 @@ const privacy_dignity_assessment_DEMO_FEEDBACK: ChildPrivacyFeedback[] = [
     belongingsSafe: true,
     comments: "Staff always knock and wait before entering",
   },
+];
 const privacy_dignity_assessment_DEMO_INCIDENTS: PrivacyIncident[] = [];
 
 const privacy_dignity_assessment_DEMO_TRAINING: StaffPrivacyTraining[] = [
@@ -21790,6 +22108,7 @@ const privacy_dignity_assessment_DEMO_TRAINING: StaffPrivacyTraining[] = [
     digitalPrivacyTrained: true,
   },
 
+];
 async function get_privacy_dignity_assessment(req: NextRequest): Promise<Response> {
 
   const result = generatePrivacyDignityIntelligence(
@@ -21883,6 +22202,7 @@ async function post_privacy_dignity_assessment(req: NextRequest): Promise<Respon
 // ─── privacy ───────────────────────────────────────────────────────────
 const privacy_demoRecords: PrivacyRecord[] = [
   // Alex — strong privacy practices
+];
 const privacy_demoPolicy: PrivacyPolicy = {
   privacyPolicy: true,
   confidentialityProcedure: true,
@@ -21895,6 +22215,7 @@ const privacy_demoPolicy: PrivacyPolicy = {
 const privacy_demoStaff: StaffPrivacyTraining[] = [
   { staffId: "staff-sarah", dataProtectionTraining: true, confidentialityAwareness: true, dignityInCareTraining: true, consentPractice: true, digitalPrivacySkills: true, informationSharingKnowledge: true },
 
+];
 async function get_privacy(req: NextRequest): Promise<Response> {
 
   const result = generatePrivacyIntelligence({
@@ -22610,6 +22931,7 @@ async function post_quality_assurance(request: NextRequest): Promise<Response> {
 // ─── quality-ecology-intelligence ──────────────────────────────────────
 const quality_ecology_intelligence_DEMO_RECORDS: QualityEcologyRecord[] = [
   { id: "qe-001", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "lifecycle_management", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+];
 const quality_ecology_intelligence_DEMO_POLICY: QualityEcologyPolicy = {
   qualityAssurancePolicy: true, recordLockingPolicy: true, auditTrailPolicy: true,
   lifecycleManagementPolicy: true, amendmentPolicy: true, qaSamplingPolicy: true, escalationPolicy: true,
@@ -22617,6 +22939,7 @@ const quality_ecology_intelligence_DEMO_POLICY: QualityEcologyPolicy = {
 const quality_ecology_intelligence_DEMO_STAFF: StaffQualityEcologyTraining[] = [
   { staffId: "staff-sarah", qualityAssuranceKnowledge: true, recordLockingSkills: true, auditTrailSkills: true, lifecycleManagementSkills: true, qaSamplingSkills: true, amendmentProcedureKnowledge: true },
 
+];
 async function get_quality_ecology_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateQualityEcologyIntelligence({
@@ -22636,8 +22959,10 @@ async function get_quality_ecology_intelligence(req: NextRequest): Promise<Respo
   }
   const quality_ecology_pendingApproval = (occurrences ?? []).filter(
     (o: any) => o.status === "submitted" || o.status === "checked" || o.status === "resubmitted",
+);
   const quality_ecology_overdueItems = (occurrences ?? []).filter(
     (o: any) => o.status === "overdue" || o.status === "escalated",
+);
 function quality_ecology_getDemoData(homeId: string | null) {
   const now = new Date().toISOString();
   const today = now.slice(0, 10);
@@ -22852,6 +23177,7 @@ async function get_quality_ecology(req: NextRequest): Promise<Response> {
 // ─── quality-of-care ───────────────────────────────────────────────────
 const quality_of_care_demoRecords: QualityReviewRecord[] = [
   // Alex — strong quality reviews across domains
+];
 const quality_of_care_demoPolicy: QualityPolicy = {
   id: "pol-qoc-1",
   qualityAssuranceFramework: true,
@@ -22865,6 +23191,7 @@ const quality_of_care_demoPolicy: QualityPolicy = {
 const quality_of_care_demoStaff: StaffQualityTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: true, dataAnalysis: true, childParticipation: true },
 
+];
 async function get_quality_of_care(req: NextRequest): Promise<Response> {
 
   const result = generateQualityOfCareIntelligence(
@@ -23771,13 +24098,17 @@ const reg44_compliance_DEMO_VISITS: Reg44Visit[] = [
     reportSubmittedOnTime: true,
     sharedWithOfsted: true,
   },
+];
 const reg44_compliance_DEMO_RECOMMENDATIONS: Reg44Recommendation[] = [
   { id: "rec-1", homeId: "oak-house", visitId: "v-jan", description: "Complete fire drill records for all shifts", priority: "high", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-02-10", completedDate: "2025-02-05", evidenceOfCompletion: "Fire drill log updated and verified", impactAssessed: true },
+];
 const reg44_compliance_DEMO_PARTICIPATION: ChildParticipation[] = [
   { id: "cp-1", homeId: "oak-house", visitId: "v-jan", childId: "child-morgan", childName: "Morgan", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+];
 const reg44_compliance_DEMO_RESPONSES: ManagementResponse[] = [
   { id: "mr-1", homeId: "oak-house", visitId: "v-jan", responseDate: "2025-01-28", respondedOnTime: true, acceptedRecommendations: 2, rejectedRecommendations: 0, rejectionReasons: [], actionPlanCreated: true, sharedWithRI: true },
 
+];
 async function get_reg44_compliance(req: NextRequest): Promise<Response> {
 
   const result = generateReg44ComplianceIntelligence(
@@ -23882,6 +24213,7 @@ async function post_reg44_compliance(req: NextRequest): Promise<Response> {
 // ─── reg44-visits ──────────────────────────────────────────────────────
 const reg44_visits_DEMO_RECORDS: Reg44VisitRecord[] = [
   // Alex — thorough visit coverage across multiple categories
+];
 const reg44_visits_DEMO_POLICY: Reg44VisitPolicy = {
   reg44VisitPolicy: true,
   visitFrequencyGuidance: true,
@@ -23894,6 +24226,7 @@ const reg44_visits_DEMO_POLICY: Reg44VisitPolicy = {
 const reg44_visits_DEMO_STAFF: StaffReg44VisitTraining[] = [
   { staffId: "staff-sarah", reg44Requirements: true, childInterviewSkills: true, reportWriting: true, actionTracking: true, regulatoryKnowledge: true, escalationProcedure: true },
 
+];
 async function get_reg44_visits(req: NextRequest): Promise<Response> {
 
   const result = generateReg44VisitIntelligence({
@@ -23920,6 +24253,7 @@ async function get_reg44_visits(req: NextRequest): Promise<Response> {
 // ─── regulatory-intelligence ───────────────────────────────────────────
 const regulatory_intelligence_DEMO_RECORDS: RegulatoryRecord[] = [
   { id: "reg-001", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "reg44_visit", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+];
 const regulatory_intelligence_DEMO_POLICY: RegulatoryPolicy = {
   reg44VisitPolicy: true, reg45ReportingPolicy: true, ofstedNotificationPolicy: true,
   statutoryNotificationPolicy: true, actionPointTrackingPolicy: true, complianceAuditPolicy: true, regulatoryInspectionPolicy: true,
@@ -23927,6 +24261,7 @@ const regulatory_intelligence_DEMO_POLICY: RegulatoryPolicy = {
 const regulatory_intelligence_DEMO_STAFF: StaffRegulatoryTraining[] = [
   { staffId: "staff-sarah", regulatoryKnowledge: true, reportWritingSkills: true, notificationProcedureKnowledge: true, actionPointManagementSkills: true, complianceAuditSkills: true, inspectionPreparationSkills: true },
 
+];
 async function get_regulatory_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateRegulatoryIntelligence({
@@ -23939,6 +24274,7 @@ async function get_regulatory_intelligence(req: NextRequest): Promise<Response> 
 // ─── regulatory-self-assessment-intelligence ───────────────────────────
 const regulatory_self_assessment_intelligence_DEMO_RECORDS: RegSelfAssessmentRecord[] = [
   { id: "rsa-001", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "regulation_area_review", outcome: "outstanding_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+];
 const regulatory_self_assessment_intelligence_DEMO_POLICY: RegSelfAssessmentPolicy = {
   selfAssessmentPolicy: true, evidenceGatheringPolicy: true, actionPlanPolicy: true,
   improvementMonitoringPolicy: true, externalFeedbackPolicy: true, inspectionPreparationPolicy: true, complianceReviewSchedule: true,
@@ -23946,6 +24282,7 @@ const regulatory_self_assessment_intelligence_DEMO_POLICY: RegSelfAssessmentPoli
 const regulatory_self_assessment_intelligence_DEMO_STAFF: StaffRegSelfAssessmentTraining[] = [
   { staffId: "staff-sarah", selfAssessmentKnowledge: true, evidenceGatheringSkills: true, actionPlanningSkills: true, regulatoryFrameworkKnowledge: true, inspectionPreparationSkills: true, qualityImprovementSkills: true },
 
+];
 async function get_regulatory_self_assessment_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateRegSelfAssessmentIntelligence({
@@ -23973,6 +24310,7 @@ const regulatory_self_assessment_DEMO_ENTRIES: SelfAssessmentEntry[] = [
     gapsIdentified: [],
     actionsPlan: [],
   },
+];
 const regulatory_self_assessment_DEMO_ACTIONS: ImprovementAction[] = [
   {
     id: "act-oak-01",
@@ -23985,6 +24323,7 @@ const regulatory_self_assessment_DEMO_ACTIONS: ImprovementAction[] = [
     status: "completed",
     completedDate: "2026-05-10",
   },
+];
 const regulatory_self_assessment_DEMO_FEEDBACK: ExternalFeedback[] = [
   {
     id: "fb-oak-01",
@@ -23997,6 +24336,7 @@ const regulatory_self_assessment_DEMO_FEEDBACK: ExternalFeedback[] = [
     addressed: false,
   },
 
+];
 async function get_regulatory_self_assessment(req: NextRequest): Promise<Response> {
 
   const homeId = "oak-house";
@@ -24096,8 +24436,8 @@ async function post_regulatory_self_assessment(req: NextRequest): Promise<Respon
   const regulatory_now = new Date().toISOString();
     const regulatory_compliance = evaluateRegulatoryCompliance(reports, reviews, notifications, homeId, now);
     const regulatory_actionSummary = summarizeActionPoints(reports, now);
-  const regulatory_compliance = evaluateRegulatoryCompliance(reports, reviews, notifications, homeId, now);
-  const regulatory_actionSummary = summarizeActionPoints(reports, now);
+  const regulatory_compliance_dup1 = evaluateRegulatoryCompliance(reports, reviews, notifications, homeId, now);
+  const regulatory_actionSummary_dup1 = summarizeActionPoints(reports, now);
 function regulatory_getDemoData(homeId: string, view: string, year: number) {
   const now = new Date().toISOString();
 
@@ -24232,9 +24572,11 @@ function regulatory_makeDemoReg44(
   const regulatory_submittedAt = new Date(new Date(visitDate).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
   const regulatory_sections: Reg44SectionEntry[] = [
     { section: "children_views", findings: "Children report feeling safe and well cared for.", rating: "strength", evidenceNotes: "Individual conversations with all 4 children." },
+];
   const regulatory_actionPoints: ActionPoint[] = month === "2026-02" ? [
     { id: `ap-${month}-1`, description: "Update fire evacuation plan to reflect new staff.", priority: "high", assignedTo: "user-rm-1", dueDate: "2026-03-15T00:00:00Z", status: "completed", completedAt: "2026-03-10T10:00:00Z" },
 
+] : [];
 async function get_regulatory(req: NextRequest): Promise<Response> {
 
   try {
@@ -25860,16 +26202,20 @@ const routine_consistency_DEMO_CHILDREN: RoutineChild[] = [
     adaptations: ["anxiety_support", "education_need"],
     routinePreferences: ["Music while getting ready", "Toast not cereal for breakfast", "Gaming after homework only"],
   },
+];
 function routine_consistency_rec(
   overrides: Partial<RoutineRecord> & { id: string; date: string; childId: string; phase: RoutineRecord["phase"] },
 ): RoutineRecord {
 const routine_consistency_DEMO_RECORDS: RoutineRecord[] = [
   // ── Week 1: January 13-17 ──────────────────────────────────────────────
+];
 const routine_consistency_DEMO_SHIFTS: StaffShiftRecord[] = [
   // Jan 13
+];
 const routine_consistency_DEMO_PREFERENCES: RoutinePreferenceRecord[] = [
   { id: "rp-001", childId: "child-alex", date: "2026-01-10", preference: "Music while getting ready in the morning", implemented: true, implementedDate: "2026-01-12", childFeedback: "happy" },
 
+];
 async function get_routine_consistency(req: NextRequest): Promise<Response> {
 
   const result = generateRoutineConsistencyIntelligence(
@@ -26247,6 +26593,7 @@ async function post_safeguarding_effectiveness(req: NextRequest): Promise<Respon
 // ─── safeguarding-oversight-intelligence ───────────────────────────────
 const safeguarding_oversight_intelligence_DEMO_RECORDS: SafeguardingOversightRecord[] = [
   { id: "so-001", homeId: "home-oak", date: "2025-01-15", childId: "child-alex", childName: "Alex", category: "safeguarding_referral", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+];
 const safeguarding_oversight_intelligence_DEMO_POLICY: SafeguardingOversightPolicy = {
   safeguardingPolicy: true, saferRecruitmentPolicy: true, whistleblowingPolicy: true,
   allegationsManagementPolicy: true, onlineSafetyPolicy: true, bodyMapProtocol: true, safeguardingSupervisionPolicy: true,
@@ -26254,6 +26601,7 @@ const safeguarding_oversight_intelligence_DEMO_POLICY: SafeguardingOversightPoli
 const safeguarding_oversight_intelligence_DEMO_STAFF: StaffSafeguardingOversightTraining[] = [
   { staffId: "staff-sarah", safeguardingAwareness: true, recognisingSigns: true, referralProcedures: true, recordKeepingSkills: true, multiAgencyWorking: true, onlineSafetyKnowledge: true },
 
+];
 async function get_safeguarding_oversight_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateSafeguardingOversightIntelligenceResult({
@@ -26266,13 +26614,17 @@ async function get_safeguarding_oversight_intelligence(req: NextRequest): Promis
 // ─── safeguarding-oversight ────────────────────────────────────────────
 const safeguarding_oversight_DEMO_STAFF: StaffSafeguardingRecord[] = [
   { id: "ss-dl", staffId: "staff-darren", staffName: "Darren Laville", role: "Registered Manager", dbsStatus: "enhanced_current", dbsDate: "2025-01-15", trainingLevel: "level_3_current", lastTrainingDate: "2025-09-01", designatedSafeguardingLead: true, deputyDSL: false, saferRecruitmentTrained: true, preventTrained: true },
+];
 const safeguarding_oversight_DEMO_REFERRALS: SafeguardingReferral[] = [
   { id: "sr-1", childId: "child-jordan", childName: "Jordan", referralType: "mash", outcome: "action_taken", dateReferred: "2026-02-20", dateOutcome: "2026-03-05", referredBy: "Darren Laville", concernCategory: "peer_on_peer", concernPriority: "high", timelyReferral: true, managementInformed: true, parentNotified: true, childInformed: true, recordedAppropriately: true },
+];
 const safeguarding_oversight_DEMO_AUDITS: SafeguardingAudit[] = [
   { id: "sa-1", homeId: "oak-house", auditDate: "2026-02-01", auditor: "Darren Laville", policiesUpToDate: true, riskAssessmentsCurrentForAllChildren: true, bodyMapProtocolFollowed: true, whistleblowingPolicyAccessible: true, childrenKnowHowToComplain: true, safeguardingDisplayed: true, visitorsSignedIn: true, mobilePhonePolicy: true, photographyPolicy: true, overallCompliant: true },
+];
 const safeguarding_oversight_DEMO_DSL_REVIEWS: DSLOversight[] = [
   { id: "do-1", dslName: "Darren Laville", reviewDate: "2026-03-01", openCasesReviewed: 2, openCasesTotal: 2, supervisionOfConcerns: true, multiAgencyAttendance: true, trainingDelivered: true, policyReviewCompleted: true, incidentDebriefsConducted: true, staffSupportProvided: true },
 
+];
 async function get_safeguarding_oversight(req: NextRequest): Promise<Response> {
 
   const result = generateSafeguardingOversightIntelligence(
@@ -26368,6 +26720,7 @@ async function post_safeguarding_oversight(req: NextRequest): Promise<Response> 
 // ─── safeguarding-referral-quality ─────────────────────────────────────
 const safeguarding_referral_quality_DEMO_REFERRALS: SafeguardingReferral[] = [
   { id: "sr-1", childId: "child-alex", childName: "Alex", referralDate: "2026-02-10", referralType: "section_47", referralOutcome: "appropriate_action", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
+];
 const safeguarding_referral_quality_DEMO_POLICY: SafeguardingPolicy = {
   id: "sp-1",
   safeguardingProcedure: true,
@@ -26381,6 +26734,7 @@ const safeguarding_referral_quality_DEMO_POLICY: SafeguardingPolicy = {
 const safeguarding_referral_quality_DEMO_TRAINING: StaffSafeguardingTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", safeguardingLevel3: true, referralProcesses: true, multiAgencyWorking: true, recognisingAbuse: true, recordKeeping: true, whistleblowing: true },
 
+];
 async function get_safeguarding_referral_quality(req: NextRequest): Promise<Response> {
 
   const result = generateSafeguardingReferralQualityIntelligence(
@@ -26427,6 +26781,7 @@ async function post_safeguarding_referral_quality(req: NextRequest): Promise<Res
 // ─── safeguarding ──────────────────────────────────────────────────────
 const safeguarding_DEMO_RECORDS: SafeguardingRecord[] = [
   { id: "sg-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "concern_raised", outcome: "action_taken", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+];
 const safeguarding_DEMO_POLICY: SafeguardingPolicy = {
   safeguardingPolicy: true,
   whistleblowingPolicy: true,
@@ -26439,6 +26794,7 @@ const safeguarding_DEMO_POLICY: SafeguardingPolicy = {
 const safeguarding_DEMO_STAFF: StaffSafeguardingTraining[] = [
   { staffId: "staff-sarah", safeguardingLevel3: true, childProtectionAwareness: true, preventDutyTraining: true, onlineSafetyTraining: true, concernRecordingSkills: true, multiAgencyWorkingKnowledge: true },
 
+];
 async function get_safeguarding(req: NextRequest): Promise<Response> {
 
   const result = generateSafeguardingIntelligence({
@@ -26461,6 +26817,7 @@ async function get_safeguarding(req: NextRequest): Promise<Response> {
 // ─── safer-recruitment ─────────────────────────────────────────────────
 const safer_recruitment_DEMO_RECORDS: SaferRecruitmentRecord[] = [
   // Sarah Johnson — DBS, reference, interview, identity
+];
 const safer_recruitment_DEMO_POLICY: SaferRecruitmentPolicy = {
   saferRecruitmentPolicy: true,
   dbsRenewalPolicy: true,
@@ -26473,6 +26830,7 @@ const safer_recruitment_DEMO_POLICY: SaferRecruitmentPolicy = {
 const safer_recruitment_DEMO_STAFF: StaffSaferRecruitmentTraining[] = [
   { staffId: "staff-sarah", safeguardingRecruitment: true, dbsProcessKnowledge: true, interviewTechniques: true, referenceVerification: true, disqualificationAwareness: true, whistleblowingAwareness: true },
 
+];
 async function get_safer_recruitment(req: NextRequest): Promise<Response> {
 
   const result = generateSaferRecruitmentIntelligence({
@@ -26715,6 +27073,7 @@ const secure_accommodation_DEMO_ORDERS: SecureAccommodationOrder[] = [
     s25CriteriaDocumented: true,
     leastRestrictiveConsidered: true,
   },
+];
 const secure_accommodation_DEMO_REVIEWS: WelfareReview[] = [
   {
     id: "rev-morgan-01",
@@ -26733,6 +27092,7 @@ const secure_accommodation_DEMO_REVIEWS: WelfareReview[] = [
     alternativesConsidered: true,
     nextReviewDue: "2026-03-15",
   },
+];
 const secure_accommodation_DEMO_WELFARE: ChildWelfare[] = [
   {
     id: "wel-morgan",
@@ -26751,6 +27111,7 @@ const secure_accommodation_DEMO_WELFARE: ChildWelfare[] = [
     culturalNeedsMet: true,
     complaintsMechanismAvailable: true,
   },
+];
 const secure_accommodation_DEMO_DISCHARGE: DischargeAssessment[] = [
   {
     id: "dis-morgan-01",
@@ -26766,6 +27127,7 @@ const secure_accommodation_DEMO_DISCHARGE: DischargeAssessment[] = [
     childViewsOnDischarge: true,
   },
 
+];
 async function get_secure_accommodation(req: NextRequest): Promise<Response> {
 
   const result = generateSecureAccommodationIntelligence(
@@ -26881,6 +27243,7 @@ const self_harm_prevention_protocol_DEMO_PROFILES: ChildRiskProfile[] = [
     emergencyContactsRecorded: true,
     professionalSupportInPlace: true,
   },
+];
 const self_harm_prevention_protocol_DEMO_INCIDENTS: SelfHarmIncident[] = [
   {
     id: "inc-1",
@@ -26898,6 +27261,7 @@ const self_harm_prevention_protocol_DEMO_INCIDENTS: SelfHarmIncident[] = [
     debriefCompleted: true,
     safetyPlanUpdated: true,
   },
+];
 const self_harm_prevention_protocol_DEMO_CHECKS: EnvironmentalSafetyCheck[] = [
   {
     id: "esc-1",
@@ -26910,9 +27274,11 @@ const self_harm_prevention_protocol_DEMO_CHECKS: EnvironmentalSafetyCheck[] = [
     windowRestrictorsChecked: true,
     overallCompliant: true,
   },
+];
 const self_harm_prevention_protocol_DEMO_TRAINING: StaffSelfHarmTraining[] = [
   { id: "sht-1", staffId: "staff-sarah", staffName: "Sarah Johnson", selfHarmAwareness: true, riskAssessmentTrained: true, safetyPlanningTrained: true, crisisInterventionTrained: true, postventionTrained: true, mentalHealthFirstAid: true },
 
+];
 async function get_self_harm_prevention_protocol(req: NextRequest): Promise<Response> {
 
   const result = generateSelfHarmPreventionProtocolIntelligence(
@@ -27011,6 +27377,7 @@ const sensory_environment_quality_DEMO_ASSESSMENTS: SensoryAssessment[] = [
     environmentAdapted: true,
     reviewScheduled: true,
   },
+];
 const sensory_environment_quality_DEMO_POLICY: SensoryPolicy = {
   id: "sp-01",
   sensoryEnvironmentPolicy: true,
@@ -27034,6 +27401,7 @@ const sensory_environment_quality_DEMO_TRAINING: StaffSensoryTraining[] = [
     documentationSkills: true,
   },
 
+];
 async function get_sensory_environment_quality(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -27171,6 +27539,7 @@ const sensory_environment_DEMO_PROFILES: ChildSensoryProfile[] = [
     sensoryDiet: ["Morning sensory circuit", "Afternoon proprioceptive break", "Evening wind-down routine"],
     reviewDate: "2026-05-15",
   },
+];
 const sensory_environment_DEMO_ASSESSMENTS: SpaceAssessment[] = [
   {
     id: "sa-01",
@@ -27185,6 +27554,7 @@ const sensory_environment_DEMO_ASSESSMENTS: SpaceAssessment[] = [
     sensoryConsiderations: ["Blackout curtains fitted", "Noise-reducing carpet"],
     improvementsNeeded: [],
   },
+];
 const sensory_environment_DEMO_ADAPTATIONS: EnvironmentalAdaptation[] = [
   {
     id: "ea-01",
@@ -27199,9 +27569,11 @@ const sensory_environment_DEMO_ADAPTATIONS: EnvironmentalAdaptation[] = [
     effectiveness: "effective",
     childFeedback: "Really helps when it gets noisy",
   },
+];
 const sensory_environment_DEMO_USAGE: TherapeuticSpaceUsage[] = [
   { id: "tu-01", spaceType: "sensory_room", date: "2026-01-03", childId: "child-alex", childName: "Alex", durationMinutes: 30, purpose: "Calming after school", staffSupported: true, childResponse: "positive" },
 
+];
 async function get_sensory_environment(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -27298,7 +27670,7 @@ async function post_sensory_environment(request: NextRequest): Promise<Response>
 
 // ─── sensory-processing-support ────────────────────────────────────────
 const sensory_processing_support_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-const CHILD_NAMES = ["Alex", "Jordan", "Morgan"];
+const CHILD_NAMES_dup1 = ["Alex", "Jordan", "Morgan"];
 const sensory_processing_support_DEMO_ASSESSMENTS: SensoryAssessment[] = [
   {
     id: "sa-01",
@@ -27312,6 +27684,7 @@ const sensory_processing_support_DEMO_ASSESSMENTS: SensoryAssessment[] = [
     environmentAdapted: true,
     parentCarerInformed: true,
   },
+];
 const sensory_processing_support_DEMO_INTERVENTIONS: SensoryIntervention[] = [
   {
     id: "si-01",
@@ -27324,6 +27697,7 @@ const sensory_processing_support_DEMO_INTERVENTIONS: SensoryIntervention[] = [
     childResponse: "positive",
     sensoryPlanFollowed: true,
   },
+];
 const sensory_processing_support_DEMO_POLICIES: SensoryPolicy[] = [
   {
     id: "sp-01",
@@ -27335,6 +27709,7 @@ const sensory_processing_support_DEMO_POLICIES: SensoryPolicy[] = [
     individualSensoryPlans: true,
     parentCarerInvolvement: true,
   },
+];
 const sensory_processing_support_DEMO_TRAINING: StaffSensoryTraining[] = [
   {
     id: "st-01",
@@ -27348,6 +27723,7 @@ const sensory_processing_support_DEMO_TRAINING: StaffSensoryTraining[] = [
     equipmentUse: true,
   },
 
+];
 async function get_sensory_processing_support(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -27773,8 +28149,10 @@ const shift_intelligence_DEMO_STAFF: StaffProfile[] = [
     canWorkAlone: true,
     maxConsecutiveDays: 5,
   },
+];
 const shift_intelligence_DEMO_CHILDREN = [
   { id: "child-alex", name: "Alex" },
+];
 const shift_intelligence_DEMO_REQUIREMENTS: HomeShiftRequirements = {
   homeId: "oak-house",
   registeredCapacity: 4,
@@ -27985,13 +28363,17 @@ async function post_shift_intelligence(req: NextRequest): Promise<Response> {
 // ─── sibling-contact-management ────────────────────────────────────────
 const sibling_contact_management_DEMO_CONTACTS: SiblingContact[] = [
   { id: "sc-1", childId: "child-alex", childName: "Alex", siblingId: "sib-alex-1", siblingName: "Sam", contactDate: "2026-02-10", contactType: "face_to_face", contactOutcome: "very_positive", durationMinutes: 120, facilitatedBy: "Sarah Johnson", childSatisfied: true, recordedInCasefile: true },
+];
 const sibling_contact_management_DEMO_ASSESSMENTS: SiblingAssessment[] = [
   { id: "sa-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-01-15", assessedBy: "Sarah Johnson", siblingRelationshipMapped: true, contactPlanInPlace: true, childViewsSought: true, siblingViewsSought: true, reviewScheduled: true, socialWorkerConsulted: true },
+];
 const sibling_contact_management_DEMO_BARRIERS: ContactBarrier[] = [
   { id: "cb-1", childId: "child-morgan", childName: "Morgan", siblingName: "Taylor", barrierType: "distance", barrierStatus: "resolved", identifiedDate: "2026-01-10", actionTaken: true, escalatedIfNeeded: true },
+];
 const sibling_contact_management_DEMO_TRAINING: StaffSiblingTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", siblingRelationships: true, contactFacilitation: true, childViewsAdvocacy: true, safeguardingInContact: true, recordKeeping: true, barrierResolution: true },
 
+];
 async function get_sibling_contact_management(req: NextRequest): Promise<Response> {
 
   const result = generateSiblingContactManagementIntelligence(
@@ -28077,13 +28459,17 @@ async function post_sibling_contact_management(req: NextRequest): Promise<Respon
 // ─── sibling-contact-quality ───────────────────────────────────────────
 const sibling_contact_quality_DEMO_RELATIONSHIPS: SiblingRelationship[] = [
   // Alex has one sibling (Sam) in a different home
+];
 const sibling_contact_quality_DEMO_SESSIONS: SiblingContactSession[] = [
   { id: "sc-1", childId: "child-alex", childName: "Alex", siblingId: "sib-sam", siblingName: "Sam", date: "2026-04-12", contactType: "face_to_face", duration: 90, qualityRating: "excellent", outcome: "positive", childViewSought: true, childEnjoyedContact: true, siblingViewSought: true, facilitatedBy: "Sarah Johnson", barriers: ["none"], followUpActions: [] },
+];
 const sibling_contact_quality_DEMO_REVIEWS: SiblingContactReview[] = [
   { id: "scr-1", childId: "child-alex", childName: "Alex", reviewDate: "2026-04-01", reviewedBy: "Darren Laville", allSiblingsConsidered: true, contactPlanUpdated: true, childViewsIncluded: true, barriersAddressed: true, outcomeSatisfactory: true },
+];
 const sibling_contact_quality_DEMO_TRAINING: StaffSiblingTraining[] = [
   { id: "sst-1", staffId: "staff-sarah", staffName: "Sarah Johnson", siblingRelationshipAwareness: true, facilitatingContactSkills: true, managingDifficultContact: true, childViewsTraining: true, legalFrameworkKnowledge: true },
 
+];
 async function get_sibling_contact_quality(req: NextRequest): Promise<Response> {
 
   const result = generateSiblingContactQualityIntelligence(
@@ -28431,6 +28817,7 @@ async function post_sleep_hygiene_quality(req: NextRequest): Promise<Response> {
 // ─── sleep-routine-quality ─────────────────────────────────────────────
 const sleep_routine_quality_DEMO_RECORDS: SleepRecord[] = [
   { id: "sr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", sleepQuality: "good", hoursSlept: 9, routineAdherence: "fully_followed", nightIssue: "none", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
+];
 const sleep_routine_quality_DEMO_POLICY: SleepPolicy = {
   id: "sp-1",
   bedtimeRoutinePolicy: true,
@@ -28444,6 +28831,7 @@ const sleep_routine_quality_DEMO_POLICY: SleepPolicy = {
 const sleep_routine_quality_DEMO_TRAINING: StaffSleepTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", sleepHygiene: true, bedtimeRoutines: true, nightSupport: true, sleepDisorders: true, screenTimeManagement: true, environmentalFactors: true },
 
+];
 async function get_sleep_routine_quality(req: NextRequest): Promise<Response> {
 
   const result = generateSleepRoutineQualityIntelligence(
@@ -29043,12 +29431,14 @@ async function post_social_media_digital_footprint(req: NextRequest): Promise<Re
 // ─── social-media-online-safety ────────────────────────────────────────
 const social_media_online_safety_DEMO_SESSIONS: OnlineSafetySession[] = [
   { id: "os-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-01", topic: "cyberbullying_awareness", comprehensionLevel: "excellent", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
+];
 const social_media_online_safety_DEMO_POLICY: OnlineSafetyPolicy = {
   id: "osp-1", esafetyStrategy: true, socialMediaGuidance: true, screenTimeFramework: true, incidentReportingProtocol: true, contentFilteringPolicy: true, parentalEngagementPlan: true, regularReview: true,
 };
 const social_media_online_safety_DEMO_TRAINING: StaffOnlineSafetyTraining[] = [
   { id: "ost-1", staffId: "staff-sarah", staffName: "Sarah Johnson", esafetyKnowledge: true, socialMediaAwareness: true, onlineGroomingRecognition: true, incidentResponse: true, ageAppropriateGuidance: true, digitalToolsCompetency: true },
 
+];
 async function get_social_media_online_safety(req: NextRequest): Promise<Response> {
 
   const result = generateSocialMediaOnlineSafetyIntelligence(social_media_online_safety_DEMO_SESSIONS, social_media_online_safety_DEMO_POLICY, social_media_online_safety_DEMO_TRAINING, "oak-house", "2026-01-01", "2026-05-20");
@@ -29847,6 +30237,7 @@ async function post_staff_resilience(req: NextRequest): Promise<Response> {
 // ─── staff-supervision-effectiveness-intelligence ──────────────────────
 const staff_supervision_effectiveness_intelligence_DEMO_RECORDS: StaffSupervisionEffectivenessRecord[] = [
   { id: "sse-001", homeId: "home-oak", date: "2025-01-20", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "formal_supervision", outcome: "highly_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+];
 const staff_supervision_effectiveness_intelligence_DEMO_POLICY: StaffSupervisionEffectivenessPolicy = {
   supervisionFramework: true, frequencyStandards: true, safeguardingRequirement: true, reflectivePracticePolicy: true,
   supervisionRecordTemplate: true, escalationProcedure: true, newStarterSupervisionPolicy: true,
@@ -29854,6 +30245,7 @@ const staff_supervision_effectiveness_intelligence_DEMO_POLICY: StaffSupervision
 const staff_supervision_effectiveness_intelligence_DEMO_TRAINING: StaffSupervisionEffectivenessTraining[] = [
   { staffId: "staff-darren", supervisionFacilitationSkills: true, reflectivePracticeKnowledge: true, safeguardingSupervisionSkills: true, performanceManagementSkills: true, mentoringCoachingSkills: true, documentationStandards: true },
 
+];
 async function get_staff_supervision_effectiveness_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateStaffSupervisionEffectivenessIntelligence({
@@ -29866,6 +30258,7 @@ async function get_staff_supervision_effectiveness_intelligence(req: NextRequest
 // ─── staff-supervision-effectiveness ───────────────────────────────────
 const staff_supervision_effectiveness_DEMO_SESSIONS: SupervisionSession[] = [
   { id: "ss-1", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-01", supervisionType: "formal_one_to_one", supervisionOutcome: "very_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+];
 const staff_supervision_effectiveness_DEMO_POLICY: SupervisionPolicy = {
   id: "sp-1",
   supervisionFramework: true,
@@ -29879,6 +30272,7 @@ const staff_supervision_effectiveness_DEMO_POLICY: SupervisionPolicy = {
 const staff_supervision_effectiveness_DEMO_TRAINING: SupervisorTraining[] = [
   { id: "st-1", staffId: "staff-darren", staffName: "Darren Laville", supervisionSkills: true, reflectivePractice: true, safeguardingOversight: true, performanceManagement: true, wellbeingSupport: true, documentationSkills: true },
 
+];
 async function get_staff_supervision_effectiveness(req: NextRequest): Promise<Response> {
 
   const result = generateStaffSupervisionEffectivenessIntelligence(
@@ -30055,8 +30449,10 @@ async function post_staff_training(request: NextRequest): Promise<Response> {
 // ─── staff-wellbeing-resilience ────────────────────────────────────────
 const staff_wellbeing_resilience_ALL_WELLBEING_TYPES: WellbeingType[] = [
   "supervision_session",
+];
 const staff_wellbeing_resilience_ALL_WELLBEING_SCORES: WellbeingScore[] = [
   "excellent",
+];
 function staff_wellbeing_resilience_generateDemoData(): {
   assessments: WellbeingAssessment[];
   policy: WellbeingPolicy;
@@ -30323,6 +30719,7 @@ async function post_staff_wellbeing_resilience(req: NextRequest): Promise<Respon
 // ─── staff-wellbeing ───────────────────────────────────────────────────
 const staff_wellbeing_demoRecords: StaffWellbeingRecord[] = [
   // Sarah Johnson — well-supported, strong supervision
+];
 const staff_wellbeing_demoPolicy: StaffWellbeingPolicy = {
   staffWellbeingPolicy: true,
   supervisionFramework: true,
@@ -30335,6 +30732,7 @@ const staff_wellbeing_demoPolicy: StaffWellbeingPolicy = {
 const staff_wellbeing_demoStaff: StaffWellbeingTraining[] = [
   { staffId: "staff-sarah", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: true, stressManagement: true, teamBuilding: true, conflictMediation: true },
 
+];
 async function get_staff_wellbeing(req: NextRequest): Promise<Response> {
 
   const result = generateStaffWellbeingIntelligence(
@@ -30568,6 +30966,7 @@ const substance_misuse_awareness_DEMO_PROFILES: ChildSubstanceProfile[] = [
     harmReductionPlanInPlace: false,
     professionalReferralMade: false,
   },
+];
 const substance_misuse_awareness_DEMO_SESSIONS: AwarenessSession[] = [
   {
     id: "as-1",
@@ -30579,6 +30978,7 @@ const substance_misuse_awareness_DEMO_SESSIONS: AwarenessSession[] = [
     childEngagement: "high",
     resourcesProvided: true,
   },
+];
 const substance_misuse_awareness_DEMO_INTERVENTIONS: SubstanceIntervention[] = [];
 
 const substance_misuse_awareness_DEMO_TRAINING: StaffSubstanceTraining[] = [
@@ -30594,6 +30994,7 @@ const substance_misuse_awareness_DEMO_TRAINING: StaffSubstanceTraining[] = [
     emergencyResponseTrained: true,
   },
 
+];
 async function get_substance_misuse_awareness(req: NextRequest): Promise<Response> {
 
   const result = generateSubstanceMisuseAwarenessIntelligence(
@@ -31348,13 +31749,17 @@ async function get_supervision(req: NextRequest): Promise<Response> {
 // ─── therapeutic-care ──────────────────────────────────────────────────
 const therapeutic_care_DEMO_SESSIONS: TherapySession[] = [
   { id: "s-alex-01", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-03-01", durationMinutes: 50, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: true },
+];
 const therapeutic_care_DEMO_REFERRALS: TherapyReferral[] = [
   { id: "ref-alex", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", referralDate: "2026-01-15", status: "active", waitTimeDays: 14, assessmentDate: "2026-01-22", startDate: "2026-02-01", reasonForReferral: "Anxiety and low mood following placement move" },
+];
 const therapeutic_care_DEMO_PLANS: TherapyPlan[] = [
   { id: "plan-alex", childId: "child-alex", childName: "Alex", therapyType: "cbt", goals: ["Reduce anxiety symptoms", "Develop coping strategies", "Improve sleep hygiene"], goalsAchieved: 2, planReviewDate: "2026-06-01", planIsCoProduced: true, childViewsIncluded: true, lastUpdated: "2026-04-01", updatedBy: "Dr Sarah Mitchell" },
+];
 const therapeutic_care_DEMO_ENVIRONMENTS: TherapeuticEnvironment[] = [
   { id: "env-oak-house", quietSpaceAvailable: true, sensoryRoomAvailable: true, outdoorTherapeuticSpace: false, staffTrainedInTherapeuticApproaches: true, therapyRoomPrivate: true, childCanRequestTherapy: true },
 
+];
 async function get_therapeutic_care(req: NextRequest): Promise<Response> {
 
   const result = generateTherapeuticCareIntelligence(
@@ -31443,6 +31848,7 @@ async function post_therapeutic_care(req: NextRequest): Promise<Response> {
 // ─── therapeutic-crisis-intervention ───────────────────────────────────
 const therapeutic_crisis_intervention_DEMO_INCIDENTS: CrisisIncident[] = [
   // Alex — 1 low-level crisis, verbal de-escalation, successful, debriefed
+];
 const therapeutic_crisis_intervention_DEMO_POLICY: CrisisPolicy = {
   id: "policy-oak-house",
   therapeuticApproachDocumented: true,
@@ -31456,6 +31862,7 @@ const therapeutic_crisis_intervention_DEMO_POLICY: CrisisPolicy = {
 const therapeutic_crisis_intervention_DEMO_TRAINING: StaffCrisisTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", therapeuticApproach: true, deescalation: true, physicalIntervention: true, postIncidentSupport: true, recordKeeping: true, bodyMapping: true },
 
+];
 async function get_therapeutic_crisis_intervention(req: NextRequest): Promise<Response> {
 
   const result = generateTherapeuticCrisisInterventionIntelligence(
@@ -31533,6 +31940,7 @@ async function post_therapeutic_crisis_intervention(req: NextRequest): Promise<R
 // ─── therapeutic-intelligence ──────────────────────────────────────────
 const therapeutic_intelligence_DEMO_RECORDS: TherapeuticRecord[] = [
   // Alex — individual therapy, trauma-informed care, wellbeing assessment
+];
 const therapeutic_intelligence_DEMO_POLICY: TherapeuticPolicy = {
   therapeuticCareModel: true,
   traumaInformedPolicy: true,
@@ -31545,6 +31953,7 @@ const therapeutic_intelligence_DEMO_POLICY: TherapeuticPolicy = {
 const therapeutic_intelligence_DEMO_STAFF: StaffTherapeuticTraining[] = [
   { staffId: "staff-sarah", therapeuticCareKnowledge: true, traumaInformedPractice: true, emotionalRegulationSkills: true, mentalHealthAwareness: true, crisisDeEscalation: true, therapeuticRelationshipBuilding: true },
 
+];
 async function get_therapeutic_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateTherapeuticIntelligence({
@@ -31571,6 +31980,7 @@ async function get_therapeutic_intelligence(req: NextRequest): Promise<Response>
 // ─── therapeutic-intervention-quality ──────────────────────────────────
 const therapeutic_intervention_quality_DEMO_SESSIONS: TherapySession[] = [
   // Alex — 3 sessions
+];
 const therapeutic_intervention_quality_DEMO_POLICY: TherapeuticPolicy = {
   id: "policy-oak-house",
   therapeuticFramework: true,
@@ -31584,6 +31994,7 @@ const therapeutic_intervention_quality_DEMO_POLICY: TherapeuticPolicy = {
 const therapeutic_intervention_quality_DEMO_TRAINING: StaffTherapeuticTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", therapeuticAwareness: true, traumaInformedPractice: true, attachmentTheory: true, therapeuticCommunication: true, boundaryManagement: true, reflectivePractice: true },
 
+];
 async function get_therapeutic_intervention_quality(req: NextRequest): Promise<Response> {
 
   const result = generateTherapeuticInterventionQualityIntelligence(
@@ -31764,6 +32175,7 @@ const therapeutic_DEMO_PROFILES: ChildTherapeuticProfile[] = [
     nextTherapeuticReview: "2026-06-01",
   },
 
+];
 async function get_therapeutic(req: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(req.url);
@@ -31824,6 +32236,7 @@ async function post_therapeutic(req: NextRequest): Promise<Response> {
 // ─── training ──────────────────────────────────────────────────────────
 const training_demoRecords: TrainingRecord[] = [
   // Sarah — excellent training record
+];
 const training_demoPolicy: TrainingPolicy = {
   mandatoryTrainingPolicy: true,
   trainingNeedsAnalysis: true,
@@ -31836,6 +32249,7 @@ const training_demoPolicy: TrainingPolicy = {
 const training_demoStaff: StaffTrainingCompetency[] = [
   { staffId: "staff-sarah", trainingNeedsAssessment: true, deliverySkills: true, complianceMonitoring: true, recordManagement: true, qualityAssurance: true, budgetManagement: true },
 
+];
 async function get_training(req: NextRequest): Promise<Response> {
 
   const result = generateTrainingIntelligence(
@@ -31858,6 +32272,7 @@ async function get_training(req: NextRequest): Promise<Response> {
 // ─── transition-leaving-care-readiness ─────────────────────────────────
 const transition_leaving_care_readiness_DEMO_ASSESSMENTS: TransitionAssessment[] = [
   { id: "ta-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", readinessArea: "independent_living_skills", progressLevel: "on_track", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
+];
 const transition_leaving_care_readiness_DEMO_POLICY: TransitionPolicy = {
   id: "tp-1",
   pathwayPlanningFramework: true,
@@ -31871,6 +32286,7 @@ const transition_leaving_care_readiness_DEMO_POLICY: TransitionPolicy = {
 const transition_leaving_care_readiness_DEMO_TRAINING: StaffTransitionTraining[] = [
   { id: "tt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", leavingCareAct: true, pathwayPlanning: true, independencePractical: true, financialCapability: true, emotionalResilience: true, housingOptions: true },
 
+];
 async function get_transition_leaving_care_readiness(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionLeavingCareReadinessIntelligence(
@@ -31930,10 +32346,13 @@ const transition_pathway_planning_DEMO_PLANS: PathwayPlan[] = [
     financialPlanInPlace: true,
     healthPassportCompleted: true,
   },
+];
 const transition_pathway_planning_DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
   // Alex — strong across the board
+];
 const transition_pathway_planning_DEMO_MEETINGS: TransitionMeeting[] = [
   // Alex — well attended meetings
+];
 const transition_pathway_planning_DEMO_TRAINING: StaffTransitionTraining[] = [
   {
     id: "stt-1",
@@ -31947,6 +32366,7 @@ const transition_pathway_planning_DEMO_TRAINING: StaffTransitionTraining[] = [
     emotionalSupport: true,
   },
 
+];
 async function get_transition_pathway_planning(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionPathwayPlanningIntelligence(
@@ -32032,6 +32452,7 @@ async function post_transition_pathway_planning(req: NextRequest): Promise<Respo
 // ─── transition-planning ───────────────────────────────────────────────
 const transition_planning_DEMO_PLANS: TransitionPlan[] = [
   // Alex (14) — Independence skills building
+];
 const transition_planning_DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
   {
     id: "assess-alex-001",
@@ -32054,6 +32475,7 @@ const transition_planning_DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
       { category: "digital_literacy", confidence: "competent", notes: "Safe and confident online" },
     ],
   },
+];
 const transition_planning_DEMO_STABILITY: PlacementStabilityRecord[] = [
   {
     childId: "child-alex",
@@ -32064,6 +32486,7 @@ const transition_planning_DEMO_STABILITY: PlacementStabilityRecord[] = [
     stabilityFactors: ["strong key worker relationship", "settled in school", "positive peer group at Chamberlain House"],
   },
 
+];
 async function get_transition_planning(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionPlanningIntelligence(
@@ -32170,6 +32593,7 @@ const transition_readiness_DEMO_PLANS: TransitionPlan[] = [
     memoryBoxPrepared: true,
     goodbyesCelebrated: true,
   },
+];
 const transition_readiness_DEMO_HANDOVERS: HandoverRecord[] = [
   {
     id: "ho-morgan",
@@ -32191,6 +32615,7 @@ const transition_readiness_DEMO_HANDOVERS: HandoverRecord[] = [
     childPreferencesShared: true,
     triggersAndStrategiesShared: true,
   },
+];
 const transition_readiness_DEMO_ASSESSMENTS: ReadinessAssessment[] = [
   {
     id: "ra-morgan",
@@ -32208,6 +32633,7 @@ const transition_readiness_DEMO_ASSESSMENTS: ReadinessAssessment[] = [
     professionalNetworkBriefed: true,
     familyNetworkBriefed: true,
   },
+];
 const transition_readiness_DEMO_SUPPORTS: PostTransitionSupport[] = [
   {
     id: "pts-morgan",
@@ -32224,6 +32650,7 @@ const transition_readiness_DEMO_SUPPORTS: PostTransitionSupport[] = [
     issuesResolved: 1,
   },
 
+];
 async function get_transition_readiness(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionReadinessIntelligence(
@@ -32314,6 +32741,7 @@ async function post_transition_readiness(req: NextRequest): Promise<Response> {
 // ─── transitions ───────────────────────────────────────────────────────
 const transitions_demoRecords: TransitionRecord[] = [
   // Alex — thorough transition process across multiple categories
+];
 const transitions_demoPolicy: TransitionPolicy = {
   id: "pol-trans-1",
   transitionPolicy: true,
@@ -32327,6 +32755,7 @@ const transitions_demoPolicy: TransitionPolicy = {
 const transitions_demoStaff: StaffTransitionTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", transitionPlanning: true, childPreparation: true, handoverSkills: true, familyEngagement: true, multiAgencyWorking: true, emotionalSupport: true },
 
+];
 async function get_transitions(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionsIntelligence(
@@ -32946,6 +33375,7 @@ const trauma_informed_DEMO_TRAINING: TraumaTrainingRecord[] = [
     level: "specialist",
     provider: "Trauma Recovery Institute",
   },
+];
 const trauma_informed_DEMO_INTERVENTIONS: TherapeuticInterventionRecord[] = [
   {
     id: "int-01",
@@ -32959,6 +33389,7 @@ const trauma_informed_DEMO_INTERVENTIONS: TherapeuticInterventionRecord[] = [
     childResponse: "positive",
     durationMinutes: 45,
   },
+];
 const trauma_informed_DEMO_ADAPTATIONS: EnvironmentalAdaptation[] = [
   {
     id: "env-01",
@@ -32969,6 +33400,7 @@ const trauma_informed_DEMO_ADAPTATIONS: EnvironmentalAdaptation[] = [
     reviewDate: "2026-09-01",
     status: "active",
   },
+];
 const trauma_informed_DEMO_CONSULTATIONS: ConsultationRecord[] = [
   {
     id: "cons-01",
@@ -32986,6 +33418,7 @@ const trauma_informed_DEMO_CONSULTATIONS: ConsultationRecord[] = [
     ],
     actionsCompleted: true,
   },
+];
 const trauma_informed_DEMO_SCREENINGS: TraumaScreening[] = [
   {
     id: "scr-01",
@@ -33001,6 +33434,7 @@ const trauma_informed_DEMO_SCREENINGS: TraumaScreening[] = [
     nextReviewDate: "2026-07-15",
   },
 
+];
 async function get_trauma_informed(req: NextRequest): Promise<Response> {
 
   try {
@@ -33397,6 +33831,7 @@ async function post_visitor_engagement_monitoring(req: NextRequest): Promise<Res
 // ─── visitor-management-quality ────────────────────────────────────────
 const visitor_management_quality_DEMO_VISITS: VisitorRecord[] = [
   // Alex — family member visit (excellent)
+];
 const visitor_management_quality_DEMO_POLICY: VisitorPolicy = {
   id: "pol-oak",
   visitorManagementStrategy: true,
@@ -33410,6 +33845,7 @@ const visitor_management_quality_DEMO_POLICY: VisitorPolicy = {
 const visitor_management_quality_DEMO_TRAINING: StaffVisitorTraining[] = [
   { id: "tr-sarah", staffId: "staff-sarah", staffName: "Sarah Johnson", visitorManagement: true, safeguardingChecks: true, childConsentPractice: true, privacyProtocol: true, conflictResolution: true, recordKeeping: true },
 
+];
 async function get_visitor_management_quality(req: NextRequest): Promise<Response> {
 
   const result = generateVisitorManagementQualityIntelligence(
@@ -33775,13 +34211,17 @@ async function post_visitor_management_safety(req: NextRequest): Promise<Respons
 // ─── visitor-partnership-quality ───────────────────────────────────────
 const visitor_partnership_quality_DEMO_VISITS: VisitRecord[] = [
   // Alex — regular SW and therapy visits
+];
 const visitor_partnership_quality_DEMO_PARTNERSHIPS: PartnershipAssessment[] = [
   { id: "pa-1", partnerAgency: "CAMHS", partnerType: "health_professional", assessmentDate: "2026-03-01", partnershipRating: "good", informationSharingEffective: true, jointPlanningEvident: true, responsiveToRequests: true, attendsReviewMeetings: true, childFocused: true, challengeAccepted: true },
+];
 const visitor_partnership_quality_DEMO_REG44S: Reg44Visit[] = [
   { id: "r44-1", visitDate: "2026-02-15", visitorName: "Helen Morris (Independent)", childrenInterviewed: 3, totalChildren: 3, staffInterviewed: 2, reportTimely: true, issuesRaised: 1, issuesResolved: 1, previousRecommendationsReviewed: true, overallPositive: true },
+];
 const visitor_partnership_quality_DEMO_ACTIONS: VisitorAction[] = [
   { id: "va-1", visitId: "vr-3", visitorType: "social_worker", description: "Update Alex's care plan with new education targets", assignedTo: "Darren Laville", dueDate: "2026-05-14", status: "completed", completedDate: "2026-05-10" },
 
+];
 async function get_visitor_partnership_quality(req: NextRequest): Promise<Response> {
 
   const result = generateVisitorPartnershipQualityIntelligence(
@@ -33872,6 +34312,7 @@ async function post_visitor_partnership_quality(req: NextRequest): Promise<Respo
 // ─── voice-of-child-intelligence ───────────────────────────────────────
 const voice_of_child_intelligence_DEMO_RECORDS: VoiceOfChildRecord[] = [
   { id: "voc-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "wishes_feelings_capture", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+];
 const voice_of_child_intelligence_DEMO_POLICY: VoiceOfChildPolicy = {
   wishesFeelingsPolicy: true,
   advocacyAccessPolicy: true,
@@ -33884,6 +34325,7 @@ const voice_of_child_intelligence_DEMO_POLICY: VoiceOfChildPolicy = {
 const voice_of_child_intelligence_DEMO_STAFF: StaffVoiceOfChildTraining[] = [
   { staffId: "staff-sarah", wishesFeelingsCapture: true, activeListeningSkills: true, ageAppropriateEngagement: true, advocacyAwareness: true, participationFacilitation: true, nonVerbalCommunication: true },
 
+];
 async function get_voice_of_child_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateVoiceOfChildIntelligenceReport({
@@ -33910,8 +34352,10 @@ async function get_voice_of_child_intelligence(req: NextRequest): Promise<Respon
 // ─── voice-of-child ────────────────────────────────────────────────────
 const voice_of_child_DEMO_CHILDREN: ChildVoiceProfile[] = [
   { childId: "child-alex", childName: "Alex" },
+];
 const voice_of_child_DEMO_VOICE_ENTRIES: VoiceEntry[] = [
   // ── Alex ────────────────────────────────────────────────────────────────
+];
 const voice_of_child_DEMO_ADVOCACY: AdvocacyRecord[] = [
   {
     id: "adv-001", childId: "child-alex",
@@ -33919,9 +34363,11 @@ const voice_of_child_DEMO_ADVOCACY: AdvocacyRecord[] = [
     hasIndependentVisitor: true, independentVisitorName: "Mark Thompson", lastIVVisit: "2026-05-08",
     childAwareOfRights: true, complaintsProcessExplained: true,
   },
+];
 const voice_of_child_DEMO_PARTICIPATION: ParticipationRecord[] = [
   { id: "part-001", childId: "child-alex", date: "2026-05-06", eventType: "lac_review", participationLevel: "full", childViewsRecorded: true, childViewsInfluencedOutcome: true, advocatePresent: true },
 
+];
 async function get_voice_of_child(req: NextRequest): Promise<Response> {
 
   const result = generateVoiceOfChildIntelligence(
@@ -34787,6 +35233,7 @@ async function post_workforce_development(request: NextRequest): Promise<Respons
 // ─── workforce ─────────────────────────────────────────────────────────
 const workforce_demoRecords: WorkforceRecord[] = [
   // Sarah Johnson — fully compliant across multiple categories
+];
 const workforce_demoPolicy: WorkforcePolicy = {
   saferRecruitmentPolicy: true,
   dbsRenewalPolicy: true,
@@ -34799,6 +35246,7 @@ const workforce_demoPolicy: WorkforcePolicy = {
 const workforce_demoStaff: StaffWorkforceTraining[] = [
   { staffId: "staff-sarah", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: true, supervisionSkills: true, trainingCoordination: true, regulatoryCompliance: true },
 
+];
 async function get_workforce(req: NextRequest): Promise<Response> {
 
   const result = generateWorkforceIntelligence({
@@ -34834,6 +35282,7 @@ const young_person_employment_support_DEMO_PROFILES: ChildEmploymentProfile[] = 
     financialLiteracyAssessed: false,
     personalAdviserEngaged: false,
   },
+];
 const young_person_employment_support_DEMO_SESSIONS: EmploymentSupportSession[] = [
   {
     id: "ess-1",
@@ -34848,6 +35297,7 @@ const young_person_employment_support_DEMO_SESSIONS: EmploymentSupportSession[] 
     skillsDeveloped: ["CV formatting", "Personal statement writing"],
     nextSteps: "Review CV in one month",
   },
+];
 const young_person_employment_support_DEMO_PARTNERSHIPS: PartnershipRecord[] = [
   {
     id: "pr-1",
@@ -34858,6 +35308,7 @@ const young_person_employment_support_DEMO_PARTNERSHIPS: PartnershipRecord[] = [
     opportunitiesProvided: 2,
     childrenSupported: ["child-alex", "child-morgan"],
   },
+];
 const young_person_employment_support_DEMO_TRAINING: StaffEmploymentTraining[] = [
   {
     id: "set-1",
@@ -34871,6 +35322,7 @@ const young_person_employment_support_DEMO_TRAINING: StaffEmploymentTraining[] =
     motivationalInterviewing: true,
   },
 
+];
 async function get_young_person_employment_support(req: NextRequest): Promise<Response> {
 
   const result = generateYoungPersonEmploymentSupportIntelligence(
@@ -34953,6 +35405,7 @@ async function post_young_person_employment_support(req: NextRequest): Promise<R
   return NextResponse.json({ data: result });
 }
 
+}}}}
 export const LEGACY_HANDLERS: Record<string, LegacyHandler> = {
   "activities": { GET: get_activities },
   "admissions-matching": { GET: get_admissions_matching, POST: post_admissions_matching },
