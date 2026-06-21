@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
   // bookmarks, PWA shortcuts, deep links and any cached/external API callers
   // working (308 preserves method + body, so POSTs survive). More specific
   // sources are listed before their wildcards.
+  async rewrites() {
+    return [
+      // Consolidation: 303 home-* routes collapsed into one catch-all at /api/v1/home/[engine]
+      // This keeps URLs backward-compatible while reducing Vercel's routing table size.
+      { source: "/api/v1/home-:engine", destination: "/api/v1/home/:engine" },
+    ];
+  },
+
   async redirects() {
     return [
       // ── pages ──
