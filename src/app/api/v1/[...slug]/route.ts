@@ -13,6 +13,7 @@ import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
 import { createServerClient } from "@/lib/supabase/server";
 import * as sq from "@/lib/supabase/queries";
+import { dispatchHomeHandler } from "@/lib/intelligence-api/home-dispatcher";
 
 // ---------------------------------------------------------------------------
 // Slug -> db collection mapping (434 entries)
@@ -667,6 +668,16 @@ export async function GET(req: NextRequest, ctx: RouteContext) {
   try {
     const { slug } = await ctx.params;
     const slugKey = slug[0];
+
+    // Proxy /api/v1/home/[engine] to the home intelligence dispatcher.
+    // This handles Vercel routing when the dedicated home/[engine] route
+    // is bypassed in favour of this catch-all.
+    if (slugKey === "home" && slug.length >= 2) {
+      const handler = dispatchHomeHandler(slug[1]);
+      if (!handler) return json({ error: `Unknown intelligence engine: ${slug[1]}` }, 404);
+      return handler();
+    }
+
     meterApiCall(slugKey, req.method);
     const collection = resolveAccessor(slugKey);
     if (!collection) return notFound(slugKey);
