@@ -27424,6 +27424,467 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   
   },
 
+  "lgbtq-inclusion-identity-affirming-intelligence": async () => {
+    try {
+      const store = getStore();
+      const youngPeople = store.youngPeople ?? [];
+      const lgbtqRecords = store.lgbtqInclusionRecords ?? [];
+
+      const totalChildren = youngPeople.length;
+      const recordCount = lgbtqRecords.length;
+
+      // Pronoun and preferred name consistency
+      const pronounsConsistent = lgbtqRecords.filter((r: any) => r.pronouns_used_consistently === true).length;
+      const nameConsistent = lgbtqRecords.filter((r: any) => r.preferred_name_used_consistently === true).length;
+
+      // Affirming actions in place
+      const withAffirmingActions = lgbtqRecords.filter(
+        (r: any) => Array.isArray(r.identity_affirming_actions) && r.identity_affirming_actions.length > 0
+      ).length;
+
+      // Challenges documented (indicator of honest recording)
+      const challengesDocumented = lgbtqRecords.filter(
+        (r: any) => Array.isArray(r.challenges_faced) && r.challenges_faced.length > 0
+      ).length;
+
+      // External support linked
+      const externalSupportLinked = lgbtqRecords.filter(
+        (r: any) => Array.isArray(r.external_support) && r.external_support.length > 0
+      ).length;
+
+      // Child voice captured
+      const childVoiceCaptured = lgbtqRecords.filter(
+        (r: any) => r.child_voice && r.child_voice.trim().length > 10
+      ).length;
+
+      const pronounsRate = recordCount > 0 ? Math.round((pronounsConsistent / recordCount) * 100) : null;
+      const nameRate = recordCount > 0 ? Math.round((nameConsistent / recordCount) * 100) : null;
+
+      let overallStatus = "outstanding";
+      if (recordCount === 0) overallStatus = "good";
+      else if (pronounsRate !== null && pronounsRate < 100) overallStatus = "adequate";
+      else if (nameRate !== null && nameRate < 100) overallStatus = "adequate";
+      else if (withAffirmingActions === recordCount && childVoiceCaptured === recordCount) overallStatus = "outstanding";
+      else overallStatus = "good";
+
+      return NextResponse.json({
+        data: {
+          overall_status: overallStatus,
+          total_children: totalChildren,
+          lgbtq_records: recordCount,
+          pronouns_consistent: pronounsConsistent,
+          pronouns_consistent_rate_pct: pronounsRate,
+          preferred_name_consistent: nameConsistent,
+          preferred_name_rate_pct: nameRate,
+          with_affirming_actions: withAffirmingActions,
+          challenges_documented: challengesDocumented,
+          external_support_linked: externalSupportLinked,
+          child_voice_captured: childVoiceCaptured,
+          regulatory_ref: "Children Act 1989; Equality Act 2010 (Protected Characteristics); Care Planning, Placement and Case Review Regulations 2010; Ofsted ILACS 2.11; UN CRC Art. 8 — Identity; NICE PH50 — LGBT-inclusive care",
+        },
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message ?? "Internal server error" }, { status: 500 });
+    }
+  },
+
+  "anti-bullying-cyberbullying-intelligence": async () => {
+    try {
+      const store = getStore();
+      const youngPeople = store.youngPeople ?? [];
+      const bullyingIncidents = store.bullyingIncidents ?? [];
+
+      const totalChildren = youngPeople.length;
+      const totalIncidents = bullyingIncidents.length;
+
+      // Type breakdown
+      const typeBreakdown: Record<string, number> = {};
+      for (const b of bullyingIncidents) {
+        const t = (b as any).bullying_type ?? "unknown";
+        typeBreakdown[t] = (typeBreakdown[t] ?? 0) + 1;
+      }
+
+      const cyberbullyingCount = bullyingIncidents.filter(
+        (b: any) => b.bullying_type === "online_cyber" || b.bullying_type === "social_media"
+      ).length;
+      const resolvedCount = bullyingIncidents.filter((b: any) => b.status === "resolved" || b.status === "closed").length;
+      const openCount = bullyingIncidents.filter((b: any) => b.status === "open" || b.status === "ongoing" || b.status === "monitoring").length;
+      const restorativeAttempted = bullyingIncidents.filter(
+        (b: any) => b.restorative_approach_attempted && b.restorative_approach_attempted.trim().length > 5
+      ).length;
+      const schoolNotified = bullyingIncidents.filter((b: any) => b.school_notified === true).length;
+      const patternIndicators = bullyingIncidents.filter(
+        (b: any) => b.pattern_indicator && b.pattern_indicator.trim().length > 0
+      ).length;
+      const childVoiceCaptured = bullyingIncidents.filter(
+        (b: any) => b.child_words_used && b.child_words_used.trim().length > 5
+      ).length;
+
+      const resolutionRate = totalIncidents > 0 ? Math.round((resolvedCount / totalIncidents) * 100) : null;
+      const restorativeRate = totalIncidents > 0 ? Math.round((restorativeAttempted / totalIncidents) * 100) : null;
+
+      let overallStatus = "outstanding";
+      if (totalIncidents === 0) overallStatus = "outstanding";
+      else if (openCount > 2 || cyberbullyingCount > 1) overallStatus = "inadequate";
+      else if (openCount > 0 || resolutionRate !== null && resolutionRate < 70) overallStatus = "adequate";
+      else if (restorativeRate !== null && restorativeRate >= 80 && resolvedCount === totalIncidents) overallStatus = "outstanding";
+      else overallStatus = "good";
+
+      return NextResponse.json({
+        data: {
+          overall_status: overallStatus,
+          total_children: totalChildren,
+          bullying_incidents: totalIncidents,
+          cyberbullying_count: cyberbullyingCount,
+          open_incidents: openCount,
+          resolved_incidents: resolvedCount,
+          resolution_rate_pct: resolutionRate,
+          restorative_approach_attempted: restorativeAttempted,
+          restorative_rate_pct: restorativeRate,
+          school_notified: schoolNotified,
+          pattern_indicators_recorded: patternIndicators,
+          child_voice_captured: childVoiceCaptured,
+          type_breakdown: typeBreakdown,
+          regulatory_ref: "Keeping Children Safe in Education 2024; Anti-Bullying Alliance / DfE Guidance 2017; Children Act 1989 s47; Reg 12 SCCR 2015; Ofsted ILACS 2.14",
+        },
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message ?? "Internal server error" }, { status: 500 });
+    }
+  },
+
+  "aspiration-future-planning-intelligence": async () => {
+    try {
+      const store = getStore();
+      const youngPeople = store.youngPeople ?? [];
+      const aspirationRecords = store.aspirationRecords ?? [];
+
+      const totalChildren = youngPeople.length;
+      const totalRecords = aspirationRecords.length;
+
+      // Domain coverage
+      const domainBreakdown: Record<string, number> = {};
+      for (const a of aspirationRecords) {
+        const d = (a as any).domain ?? "unknown";
+        domainBreakdown[d] = (domainBreakdown[d] ?? 0) + 1;
+      }
+
+      const childChoseOwn = aspirationRecords.filter((a: any) => a.child_chose === true).length;
+      const withStepsNext = aspirationRecords.filter(
+        (a: any) => Array.isArray(a.steps_next) && a.steps_next.length > 0
+      ).length;
+      const withBlockers = aspirationRecords.filter(
+        (a: any) => Array.isArray(a.blockers) && a.blockers.length > 0
+      ).length;
+
+      const today = new Date().toISOString().split("T")[0];
+      const overdueReviews = aspirationRecords.filter(
+        (a: any) => a.review_date && a.review_date < today
+      ).length;
+
+      const noAspiration = youngPeople.filter(
+        (yp: any) => !aspirationRecords.some((a: any) => a.child_id === yp.id)
+      ).length;
+
+      const childChoseRate = totalRecords > 0 ? Math.round((childChoseOwn / totalRecords) * 100) : null;
+      const stepsPresentRate = totalRecords > 0 ? Math.round((withStepsNext / totalRecords) * 100) : null;
+
+      let overallStatus = "good";
+      if (noAspiration >= 2 || overdueReviews >= 2) overallStatus = "inadequate";
+      else if (noAspiration === 1 || overdueReviews === 1) overallStatus = "adequate";
+      else if (childChoseRate !== null && childChoseRate >= 90 && stepsPresentRate !== null && stepsPresentRate >= 80) overallStatus = "outstanding";
+      else overallStatus = "good";
+
+      return NextResponse.json({
+        data: {
+          overall_status: overallStatus,
+          total_children: totalChildren,
+          aspiration_records: totalRecords,
+          child_chose_own: childChoseOwn,
+          child_chose_rate_pct: childChoseRate,
+          with_next_steps: withStepsNext,
+          next_steps_rate_pct: stepsPresentRate,
+          blockers_identified: withBlockers,
+          overdue_reviews: overdueReviews,
+          no_aspiration_record: noAspiration,
+          domain_breakdown: domainBreakdown,
+          regulatory_ref: "Children Act 1989 s22; Care Planning Regulations 2010; Pathway Planning (Children (Leaving Care) Act 2000); Ofsted ILACS 2.10; UN CRC Art. 12 — aspirations voiced; Positive Care Environments NCVCCO",
+        },
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message ?? "Internal server error" }, { status: 500 });
+    }
+  },
+
+  "life-story-work-intelligence": async () => {
+    try {
+      const store = getStore();
+      const youngPeople = store.youngPeople ?? [];
+      const lifeStoryEntries = store.lifeStoryEntries ?? [];
+
+      const totalChildren = youngPeople.length;
+      const totalEntries = lifeStoryEntries.length;
+
+      // Completion status
+      const completedEntries = lifeStoryEntries.filter((e: any) => e.status === "completed").length;
+      const inProgressEntries = lifeStoryEntries.filter((e: any) => e.status === "in_progress").length;
+      const linkedToBook = lifeStoryEntries.filter((e: any) => e.linked_to_book === true).length;
+
+      // Child voice captured
+      const withChildVoice = lifeStoryEntries.filter(
+        (e: any) => e.child_voice && e.child_voice.trim().length > 10
+      ).length;
+
+      // Type coverage
+      const typeBreakdown: Record<string, number> = {};
+      for (const e of lifeStoryEntries) {
+        const t = (e as any).type ?? "unknown";
+        typeBreakdown[t] = (typeBreakdown[t] ?? 0) + 1;
+      }
+
+      const uniqueChildrenWithEntries = new Set(lifeStoryEntries.map((e: any) => e.child_id)).size;
+      const noLifeStoryWork = totalChildren - uniqueChildrenWithEntries;
+
+      const completionRate = totalEntries > 0 ? Math.round((completedEntries / totalEntries) * 100) : null;
+      const childVoiceRate = totalEntries > 0 ? Math.round((withChildVoice / totalEntries) * 100) : null;
+
+      let overallStatus = "good";
+      if (noLifeStoryWork >= 2) overallStatus = "inadequate";
+      else if (noLifeStoryWork === 1) overallStatus = "adequate";
+      else if (completionRate !== null && completionRate >= 70 && childVoiceRate !== null && childVoiceRate >= 80) overallStatus = "outstanding";
+      else overallStatus = "good";
+
+      return NextResponse.json({
+        data: {
+          overall_status: overallStatus,
+          total_children: totalChildren,
+          life_story_entries: totalEntries,
+          completed_entries: completedEntries,
+          in_progress_entries: inProgressEntries,
+          linked_to_book: linkedToBook,
+          with_child_voice: withChildVoice,
+          child_voice_rate_pct: childVoiceRate,
+          completion_rate_pct: completionRate,
+          children_with_life_story: uniqueChildrenWithEntries,
+          no_life_story_work: noLifeStoryWork,
+          type_breakdown: typeBreakdown,
+          regulatory_ref: "Children Act 1989 s22(4); Care Planning Regulations 2010 Reg 6; Life Story Work — BAAF Best Practice Guide; Statutory Guidance for Looked After Children 2015 §3.12; Ofsted ILACS 2.10",
+        },
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message ?? "Internal server error" }, { status: 500 });
+    }
+  },
+
+  "medication-error-prevention-intelligence": async () => {
+    try {
+      const store = getStore();
+      const medicationErrors = store.medicationErrors ?? [];
+      const youngPeople = store.youngPeople ?? [];
+
+      const totalErrors = medicationErrors.length;
+
+      // Severity breakdown
+      const severityBreakdown: Record<string, number> = {};
+      for (const e of medicationErrors) {
+        const s = (e as any).severity ?? "unknown";
+        severityBreakdown[s] = (severityBreakdown[s] ?? 0) + 1;
+      }
+
+      // Type breakdown
+      const typeBreakdown: Record<string, number> = {};
+      for (const e of medicationErrors) {
+        const t = (e as any).error_type ?? "unknown";
+        typeBreakdown[t] = (typeBreakdown[t] ?? 0) + 1;
+      }
+
+      const highSeverity = medicationErrors.filter(
+        (e: any) => e.severity === "moderate" || e.severity === "severe" || e.severity === "critical"
+      ).length;
+      const openErrors = medicationErrors.filter(
+        (e: any) => e.status === "open" || e.status === "action_required" || e.status === "under_review"
+      ).length;
+      const dutyOfCandourComplete = medicationErrors.filter((e: any) => e.duty_of_candour === true && e.duty_of_candour_completed != null).length;
+      const dutyOfCandourRequired = medicationErrors.filter((e: any) => e.duty_of_candour === true).length;
+      const lessonsLearned = medicationErrors.filter(
+        (e: any) => e.lessons_learned && e.lessons_learned.trim().length > 10
+      ).length;
+      const remedialActionsComplete = medicationErrors.filter(
+        (e: any) => Array.isArray(e.remedial_actions) && e.remedial_actions.length > 0 &&
+          e.remedial_actions.every((a: any) => a.status === "completed")
+      ).length;
+
+      const docRate = dutyOfCandourRequired > 0
+        ? Math.round((dutyOfCandourComplete / dutyOfCandourRequired) * 100)
+        : null;
+
+      // Last 90 days frequency
+      const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+      const recentErrors = medicationErrors.filter((e: any) => e.date_occurred >= ninetyDaysAgo).length;
+
+      let overallStatus = "good";
+      if (highSeverity > 0 || openErrors > 1) overallStatus = "inadequate";
+      else if (openErrors === 1 || recentErrors > 2) overallStatus = "adequate";
+      else if (totalErrors === 0 || (lessonsLearned === totalErrors && remedialActionsComplete === totalErrors)) overallStatus = "outstanding";
+
+      return NextResponse.json({
+        data: {
+          overall_status: overallStatus,
+          total_children: youngPeople.length,
+          total_errors: totalErrors,
+          high_severity: highSeverity,
+          open_errors: openErrors,
+          recent_errors_90d: recentErrors,
+          duty_of_candour_required: dutyOfCandourRequired,
+          duty_of_candour_complete: dutyOfCandourComplete,
+          duty_of_candour_rate_pct: docRate,
+          lessons_learned_documented: lessonsLearned,
+          remedial_actions_all_complete: remedialActionsComplete,
+          severity_breakdown: severityBreakdown,
+          type_breakdown: typeBreakdown,
+          regulatory_ref: "Medicines Act 1968; NMC Standards for Medicines Management; CQC Regulation 12; Children's Homes (England) Regulations 2015 Reg 10 & 28; Duty of Candour (Health & Social Care Act 2008 s20); Ofsted ILACS 2.18",
+        },
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message ?? "Internal server error" }, { status: 500 });
+    }
+  },
+
+  "camhs-mental-health-pathway-intelligence": async () => {
+    try {
+      const store = getStore();
+      const youngPeople = store.youngPeople ?? [];
+      const camhsReferrals = store.camhsReferrals ?? [];
+      const appointments = store.appointments ?? [];
+      const medications = store.medications ?? [];
+
+      const totalChildren = youngPeople.length;
+      const totalReferrals = camhsReferrals.length;
+
+      // Mental health / CAMHS appointments
+      const camhsKeywords = ["camhs", "mental health", "therapy", "cbt", "emdr", "ddp", "trauma", "play therapy", "psychiatry", "psychologist"];
+      const matchCamhs = (text: string) => camhsKeywords.some((k) => text?.toLowerCase().includes(k));
+      const camhsAppointments = appointments.filter(
+        (a: any) => matchCamhs(a.appointment_type ?? "") || matchCamhs(a.provider ?? "") || matchCamhs(a.notes ?? "")
+      );
+      const uniqueChildrenWithCamhs = new Set(camhsAppointments.map((a: any) => a.child_id)).size;
+
+      // Psychiatric / CAMHS medications
+      const psyMedications = medications.filter(
+        (m: any) => matchCamhs(m.reason ?? "") || m.classification === "psychiatric" || m.classification === "controlled"
+      );
+
+      // Referral breakdown if data exists
+      const activeReferrals = camhsReferrals.filter((r: any) => r.status === "active_engagement" || r.status === "on_waiting_list" || r.status === "triaged").length;
+      const crisisReferrals = camhsReferrals.filter((r: any) => r.urgency === "urgent" || r.urgency === "emergency").length;
+      const strongEngagement = camhsReferrals.filter((r: any) => r.engagement_level === "strong" || r.engagement_level === "building").length;
+
+      // Children with identified mental health need but no CAMHS engagement
+      const mhInHistory = youngPeople.filter(
+        (yp: any) => matchCamhs(yp.diagnoses ?? "") || matchCamhs(yp.background ?? "") || matchCamhs(yp.care_plan ?? "")
+      ).length;
+      const mhWithoutCamhs = Math.max(0, mhInHistory - uniqueChildrenWithCamhs);
+
+      let overallStatus = "good";
+      if (crisisReferrals > 0 && activeReferrals === 0) overallStatus = "inadequate";
+      else if (mhWithoutCamhs > 1) overallStatus = "adequate";
+      else if (uniqueChildrenWithCamhs > 0 && camhsAppointments.length > 0) overallStatus = "good";
+      else if (totalReferrals === 0 && uniqueChildrenWithCamhs === 0 && mhInHistory === 0) overallStatus = "outstanding";
+
+      return NextResponse.json({
+        data: {
+          overall_status: overallStatus,
+          total_children: totalChildren,
+          camhs_referrals: totalReferrals,
+          active_referrals: activeReferrals,
+          crisis_referrals: crisisReferrals,
+          strong_engagement: strongEngagement,
+          camhs_appointments: camhsAppointments.length,
+          children_with_camhs_engagement: uniqueChildrenWithCamhs,
+          psychiatric_medications: psyMedications.length,
+          mh_identified_in_history: mhInHistory,
+          mh_without_camhs_engagement: mhWithoutCamhs,
+          regulatory_ref: "Children Act 1989 s17/s47; NHS Long Term Plan 2019 (CAMHS Access); NICE NG163; Working Together 2023 ch. 3; Ofsted ILACS 2.18; CYP IAPT Participation Model",
+        },
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message ?? "Internal server error" }, { status: 500 });
+    }
+  },
+
+  "regulation-44-inspection-readiness-intelligence": async () => {
+    try {
+      const store = getStore();
+      const reg44Reports = store.reg44VisitReports ?? [];
+      const incidents = store.incidents ?? [];
+      const complaints = store.complaints ?? [];
+      const youngPeople = store.youngPeople ?? [];
+
+      const totalReports = reg44Reports.length;
+      const today = new Date().toISOString().split("T")[0];
+
+      // Most recent visit
+      const sortedReports = [...reg44Reports].sort((a: any, b: any) => b.visit_date.localeCompare(a.visit_date));
+      const latestReport = sortedReports[0] ?? null;
+      const latestVisitDate = latestReport?.visit_date ?? null;
+      const daysSinceLastVisit = latestVisitDate
+        ? Math.floor((Date.now() - new Date(latestVisitDate).getTime()) / 86400000)
+        : null;
+
+      // Recommendations across all reports
+      const allRecs = reg44Reports.flatMap((r: any) => Array.isArray(r.recommendations) ? r.recommendations : []);
+      const openRecs = allRecs.filter((rec: any) => rec.status === "pending" || rec.status === "in_progress").length;
+      const completedRecs = allRecs.filter((rec: any) => rec.status === "completed").length;
+      const highPriorityOpen = allRecs.filter(
+        (rec: any) => rec.priority === "high" && (rec.status === "pending" || rec.status === "in_progress")
+      ).length;
+
+      // Report sent to Ofsted rate
+      const sentToOfsted = reg44Reports.filter((r: any) => r.report_sent_to_ofsted === true).length;
+      const sentRate = totalReports > 0 ? Math.round((sentToOfsted / totalReports) * 100) : null;
+
+      // Positive judgements
+      const goodOrBetter = reg44Reports.filter((r: any) => {
+        const j = (r.overall_judgement ?? "").toLowerCase();
+        return j.includes("good") || j.includes("outstanding");
+      }).length;
+
+      // Children spoken to rate (latest report)
+      const latestChildrenSpoken = latestReport?.children_spoken ?? null;
+
+      // Overdue — Reg 44 requires monthly visits (no more than 28 days between)
+      const overdue = daysSinceLastVisit !== null && daysSinceLastVisit > 28;
+
+      let overallStatus = "good";
+      if (overdue || highPriorityOpen > 0) overallStatus = "inadequate";
+      else if (openRecs > 2 || sentRate !== null && sentRate < 100) overallStatus = "adequate";
+      else if (totalReports > 0 && openRecs === 0 && sentRate === 100 && goodOrBetter === totalReports) overallStatus = "outstanding";
+
+      return NextResponse.json({
+        data: {
+          overall_status: overallStatus,
+          total_children: youngPeople.length,
+          reg44_reports: totalReports,
+          latest_visit_date: latestVisitDate,
+          days_since_last_visit: daysSinceLastVisit,
+          visit_overdue: overdue,
+          total_recommendations: allRecs.length,
+          open_recommendations: openRecs,
+          completed_recommendations: completedRecs,
+          high_priority_open: highPriorityOpen,
+          sent_to_ofsted: sentToOfsted,
+          sent_to_ofsted_rate_pct: sentRate,
+          good_or_better_judgements: goodOrBetter,
+          latest_children_spoken: latestChildrenSpoken,
+          latest_judgement: latestReport?.overall_judgement ?? null,
+          regulatory_ref: "Children's Homes (England) Regulations 2015 Reg 44; The Care Standards Act 2000 s16; Independent Person (Children's Homes) Regulations 2013; Ofsted ILACS 1.5 — Quality of Care; Monthly independent visit requirement",
+        },
+      });
+    } catch (err: any) {
+      return NextResponse.json({ error: err.message ?? "Internal server error" }, { status: 500 });
+    }
+  },
+
 };
 
 export function dispatchHomeHandler(engine: string): HomeHandler | null {
