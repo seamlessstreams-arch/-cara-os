@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { useRecordOnce } from "@/contexts/record-once-context";
 import { SmartFormField } from "@/components/forms/smart-form-field";
 import { ChildContextCard } from "@/components/forms/child-context-card";
+import { InlineRelationalPanel } from "@/components/relational-timeline/inline-relational-panel";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -248,6 +249,9 @@ export function QuickDailyLog({
     <div className={cn("space-y-4", className)}>
       {/* Child context card */}
       <ChildContextCard defaultExpanded={false} />
+
+      {/* Point-of-work: this child's relationships, kept in view as the day is recorded */}
+      <InlineRelationalPanel childId={childId} />
 
       <Card className="overflow-hidden border-[var(--cs-border)]">
         <CardHeader className="pb-3 bg-[var(--cs-surface)]/50">
