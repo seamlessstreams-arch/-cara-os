@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
@@ -52,6 +52,11 @@ export default function RelationshipIntelligencePage() {
     [ypQuery.data],
   );
   const [selectedChildId, setSelectedChildId] = useState<string>("");
+  // Deep-link: ?child=<id> (e.g. from the Home Relationships overview).
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("child");
+    if (p) setSelectedChildId(p);
+  }, []);
   const childId = selectedChildId || youngPeople[0]?.id || "";
 
   const { data: rel, isLoading: relLoading } = useRelationalTimeline(childId);
@@ -138,7 +143,7 @@ export default function RelationshipIntelligencePage() {
                     <span>· {rel.stability.repairCount} repair</span>
                     <span>· {rel.stability.ruptureCount} rupture</span>
                   </div>
-                  <Link href="/intelligence/cara/relational-timeline" className="inline-flex items-center gap-1 text-sm font-medium text-[var(--cs-cara-gold,#b45309)]">
+                  <Link href={`/intelligence/cara/relational-timeline?child=${childId}`} className="inline-flex items-center gap-1 text-sm font-medium text-[var(--cs-cara-gold,#b45309)]">
                     View relational timeline <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </CardContent>
@@ -177,7 +182,7 @@ export default function RelationshipIntelligencePage() {
                       </div>
                     </div>
                   </div>
-                  <Link href="/intelligence/cara/emotional-safety" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--cs-cara-gold,#b45309)]">
+                  <Link href={`/intelligence/cara/emotional-safety?child=${childId}`} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-[var(--cs-cara-gold,#b45309)]">
                     View emotional safety <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </CardContent>
