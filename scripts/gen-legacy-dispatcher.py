@@ -36,13 +36,179 @@ def safe_name(slug):
 # ── Extraction helpers ────────────────────────────────────────────────────────
 
 def extract_imports(content):
-    """Return import lines, excluding next/server."""
+    """Return full import STATEMENTS (single- or multi-line), excluding next/server.
+
+    A multi-line import —
+        import {
+          analyzeCohort,
+          evaluateChildProgress,
+        } from "@/lib/children-outcomes";
+    — has no `from` on its first line, so the old single-line scan silently
+    DROPPED it, leaving those names undefined at runtime (the reference lives
+    inside a handler body, so the build never catches it — only a 500 at
+    request time does).  Collect every line of the statement up to and
+    including the line carrying ` from `.
+    """
     result = []
-    for line in content.split("\n"):
-        s = line.strip()
-        if s.startswith("import ") and "from " in s and "next/server" not in s:
-            result.append(line)
+    lines = content.split("\n")
+    # The statement ends on the line carrying the module specifier `from "…"`.
+    # Match THAT (not a bare " from ", which can appear in a comment or name
+    # inside the brace list and would truncate the statement, leaving `{` open).
+    from_re = re.compile(r'\bfrom\s+["\']')
+    i, n = 0, len(lines)
+    while i < n:
+        s = lines[i].strip()
+        if s.startswith("import "):
+            stmt = [lines[i]]
+            while not from_re.search(lines[i]) and i + 1 < n:
+                i += 1
+                stmt.append(lines[i])
+            full = "\n".join(stmt)
+            if "next/server" not in full:
+                result.append(full)
+        i += 1
     return result
+
+
+def alias_for(name, module):
+    """Deterministic per-module alias for a colliding value import.
+
+    The same identifier is exported (with different implementations) from
+    several modules — e.g. `generateLeavingCareIntelligence` from both the
+    barrel `@/lib/leaving-care` and the engine `@/lib/leaving-care/…-engine`.
+    In separate route files that's fine; concatenated into one dispatcher it's
+    a single binding, so whichever import wins, every other route calls the
+    WRONG function (→ `e.filter is not a function`).  Alias each colliding name
+    by its module so all versions coexist, and rewrite each route's body to the
+    alias matching ITS import.
+    """
+    return f"{name}__{re.sub(r'[^A-Za-z0-9]', '_', module)}"
+
+
+def parse_value_imports(statements):
+    """Return {bound_name: module} for VALUE (non-type) named imports."""
+    out = {}
+    mod_re = re.compile(r'from\s+["\']([^"\']+)["\']')
+    for stmt in statements:
+        flat = " ".join(re.sub(r'//.*', '', p) for p in stmt.split("\n"))
+        if re.match(r'\s*import\s+type\b', flat):
+            continue
+        m = mod_re.search(flat)
+        br = re.search(r'\{([^}]*)\}', flat)
+        if not (m and br):
+            continue
+        module = m.group(1)
+        for raw in br.group(1).split(","):
+            nm = raw.strip()
+            if nm:
+                bound = nm.split(" as ")[-1].strip()
+                out[bound] = module
+    return out
+
+
+def consolidate_imports(statements, collisions=frozenset()):
+    """Merge imports per (module, type-or-value) so no name is bound twice.
+
+    Many routes import overlapping names from the same shared lib module; emitting
+    each statement verbatim would produce duplicate bindings (`import { X } …;
+    import { X, Y } …;`) — a SyntaxError.  Group named imports by module + kind
+    (`import {…}` vs `import type {…}`), union the names, and re-emit one line each.
+    Default / namespace / side-effect imports are passed through, de-duped by text.
+    """
+    # module -> {"value": set(names), "type": set(names)}
+    named = {}
+    passthrough = []
+    seen_pass = set()
+    mod_re = re.compile(r'from\s+["\']([^"\']+)["\']')
+
+    def strip_line_comment(s):
+        # Drop a // comment (outside quotes).  A multi-line import can carry a
+        # `// NB: …` note after `import {`; flattening to one line would
+        # otherwise comment out the rest of the statement (closing } + from).
+        out, j, q = [], 0, None
+        while j < len(s):
+            c = s[j]
+            if q:
+                out.append(c)
+                if c == q:
+                    q = None
+            elif c in "\"'`":
+                q = c
+                out.append(c)
+            elif c == "/" and j + 1 < len(s) and s[j + 1] == "/":
+                break
+            else:
+                out.append(c)
+            j += 1
+        return "".join(out)
+
+    for stmt in statements:
+        flat = " ".join(strip_line_comment(part).strip() for part in stmt.split("\n"))
+        m = mod_re.search(flat)
+        module = m.group(1) if m else None
+        brace = re.search(r'\{([^}]*)\}', flat)
+        if module and brace:
+            is_type = bool(re.match(r'import\s+type\b', flat))
+            kind = "type" if is_type else "value"
+            slot = named.setdefault(module, {"value": set(), "type": set()})
+            for raw in brace.group(1).split(","):
+                name = raw.strip()
+                if name:
+                    slot[kind].add(name)
+            # A mixed `import Default, { … }` keeps its default via passthrough below.
+            head = flat[: brace.start()]
+            if re.search(r'import\s+(?:type\s+)?\w+\s*,', head):
+                # default + named — emit the default separately
+                dm = re.match(r'import\s+(?:type\s+)?(\w+)\s*,', head)
+                if dm and module:
+                    line = f'import {dm.group(1)} from "{module}";'
+                    if line not in seen_pass:
+                        seen_pass.add(line)
+                        passthrough.append(line)
+        else:
+            # default-only, namespace, or side-effect import — pass through verbatim
+            line = flat.rstrip(";") + ";"
+            if line not in seen_pass:
+                seen_pass.add(line)
+                passthrough.append(line)
+
+    # Emit with GLOBAL name de-dup so no identifier is ever bound twice
+    # (which is a SyntaxError).  De-dup key is the BOUND name — for `X as Y`
+    # that is `Y`.  Value imports are emitted first so they win the name over a
+    # same-named type import (values are needed at runtime; types are erased).
+    def bound_name(spec):
+        return spec.split(" as ")[-1].strip()
+
+    out = list(passthrough)
+    emitted = set()
+    for line in passthrough:
+        m = re.match(r'import\s+(\w+)\s', line)
+        if m:
+            emitted.add(m.group(1))
+
+    for kind, type_kw in (("value", ""), ("type", "type ")):
+        for module in sorted(named):
+            names = []
+            for spec in sorted(named[module][kind]):
+                bn = bound_name(spec)
+                if kind == "value" and bn in collisions:
+                    # Colliding value name → import under a per-module alias so
+                    # all module versions coexist (route bodies are rewritten to
+                    # the matching alias via name_map).
+                    alias = alias_for(bn, module)
+                    if alias in emitted:
+                        continue
+                    emitted.add(alias)
+                    orig = spec.split(" as ")[0].strip()
+                    names.append(f"{orig} as {alias}")
+                else:
+                    if bn in emitted:
+                        continue
+                    emitted.add(bn)
+                    names.append(spec)
+            if names:
+                out.append(f'import {type_kw}{{ {", ".join(names)} }} from "{module}";')
+    return out
 
 def _find_block_end(content, open_pos):
     """Find the closing } for the { at open_pos."""
@@ -58,14 +224,18 @@ def _find_block_end(content, open_pos):
         i += 1
     return len(content) - 1
 
-def extract_module_consts(content, safe_prefix):
+def extract_module_consts(content, safe_prefix, seed_name_map=None):
     """
     Find all module-level non-export, non-import statements (const/let/function/type).
     Returns (blocks, name_map) where blocks is a list of prefixed declarations,
     and name_map maps original name → prefixed name.
+
+    seed_name_map seeds name_map with per-route import aliases (colliding value
+    imports) so the second pass rewrites BOTH const blocks and (via the returned
+    map) function bodies to the right per-module alias.
     """
     lines = content.split("\n")
-    name_map = {}
+    name_map = dict(seed_name_map) if seed_name_map else {}
     blocks = []
 
     i = 0
@@ -248,16 +418,31 @@ def main():
     all_imports_set = []  # ordered, deduplicated
     seen_imports = set()
 
+    # ── Pre-pass: detect value-import name collisions across all routes ──────
+    # A bound name imported from >1 module collides when the routes are merged
+    # into one file; those get per-module aliases so every route calls the
+    # version IT imported.
+    name_modules = {}
+    contents = {}
+    for rp in route_paths:
+        try:
+            with open(os.path.join(REPO_ROOT, rp), 'r') as f:
+                contents[rp] = f.read()
+        except FileNotFoundError:
+            continue
+        for bound, module in parse_value_imports(extract_imports(contents[rp])).items():
+            name_modules.setdefault(bound, set()).add(module)
+    collisions = frozenset(n for n, mods in name_modules.items() if len(mods) > 1)
+    print(f"Value-import name collisions aliased: {len(collisions)}")
+
     route_data = []
     for rp in route_paths:
         full_path = os.path.join(REPO_ROOT, rp)
         slug = slug_for_path(rp)
         name = safe_name(slug)
 
-        try:
-            with open(full_path, 'r') as f:
-                content = f.read()
-        except FileNotFoundError:
+        content = contents.get(rp)
+        if content is None:
             print(f"WARNING: not found: {full_path}", file=sys.stderr)
             continue
 
@@ -268,8 +453,16 @@ def main():
                 seen_imports.add(imp)
                 all_imports_set.append(imp)
 
+        # Per-route aliases for colliding value imports (rewrite body to the
+        # alias matching THIS route's module).
+        import_aliases = {
+            bound: alias_for(bound, module)
+            for bound, module in parse_value_imports(imports).items()
+            if bound in collisions
+        }
+
         # Module-level constants
-        const_blocks, name_map = extract_module_consts(content, name)
+        const_blocks, name_map = extract_module_consts(content, name, seed_name_map=import_aliases)
 
         # GET and POST
         get_body, get_req = extract_function(content, "GET", name, name_map)
@@ -301,7 +494,7 @@ def main():
         f.write("// @ts-nocheck\n\n")
         f.write('import { NextRequest, NextResponse } from "next/server";\n\n')
 
-        for imp in all_imports_set:
+        for imp in consolidate_imports(all_imports_set, collisions):
             f.write(imp + "\n")
         f.write("\n")
 
