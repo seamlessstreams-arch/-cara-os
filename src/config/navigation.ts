@@ -368,6 +368,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Interview Builder",    href: "/interview-builder",           icon: "ListChecks",    module: "recruitment"  },
       { label: "Candidate Portal",     href: "/candidate-portal",            icon: "UserCircle",    module: "recruitment"  },
       { label: "Development Hub",      href: "/staff-development",           icon: "TrendingUp",    module: "staff"        },
+      { label: "Recording Quality",    href: "/staff-recording-quality-pathway", icon: "BookOpen",  module: "staff"        },
       { label: "Workforce Intel",      href: "/workforce",                   icon: "Network",       module: "staff"        },
       { label: "Career Pathways",      href: "/workforce/pathway",           icon: "Milestone",     module: "staff"        },
       { label: "Appraisals",           href: "/workforce/appraisals",        icon: "UserCheck",     module: "staff"        },
