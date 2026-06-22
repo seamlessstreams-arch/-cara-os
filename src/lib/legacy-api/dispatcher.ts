@@ -6,131 +6,470 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
+import { generateActivitiesIntelligence } from "@/lib/activities";
+import { generateAdmissionsIntelligence } from "@/lib/admissions";
 import { generateAdmissionsMatchingIntelligence } from "@/lib/admissions-matching";
-import type { AdmissionRecord, AdmissionPolicy, StaffAdmissionTraining } from "@/lib/admissions";
 import { generateAdvocacyRepresentationIntelligence } from "@/lib/advocacy-representation/advocacy-representation-engine";
-import type { AllegationRecord, AllegationPolicy, StaffAllegationTraining } from "@/lib/allegations";
+import { generateAfterCareSupportQualityIntelligence, getEngagementLevelLabels as getEngagementLevelLabels____lib_after_care_support_quality, getRatingLabels as getRatingLabels____lib_after_care_support_quality, getSupportTypeLabels as getSupportTypeLabels____lib_after_care_support_quality } from "@/lib/after-care-support-quality";
+import { generateAftercareOutcomesTrackingIntelligence, getContactFrequencyLabel, getContactMethodLabel, getEmploymentEducationStatusLabel, getHousingStatusLabel, getLeavingReasonLabel, getRatingLabel as getRatingLabel____lib_aftercare_outcomes_tracking, getServiceTypeLabel, getWellbeingRatingLabel } from "@/lib/aftercare-outcomes-tracking";
+import { generateAllegationsIntelligence } from "@/lib/allegations";
+import { generateAllergenDietaryManagementIntelligence, getAllergenTypeLabel, getDietaryRequirementLabel as getDietaryRequirementLabel____lib_allergen_dietary_management, getEmergencyPlanStatusLabel, getMealComplianceStatusLabel, getRatingLabel as getRatingLabel____lib_allergen_dietary_management, getSeverityLevelLabel, getTrainingCompetenceLabel } from "@/lib/allergen-dietary-management";
+import { generateAnnualDevelopmentReviewIntelligence, getGoalStatusLabel as getGoalStatusLabel____lib_annual_development_review, getParticipationLevelLabel as getParticipationLevelLabel____lib_annual_development_review, getRatingLabel as getRatingLabel____lib_annual_development_review, getReviewTypeLabel as getReviewTypeLabel____lib_annual_development_review } from "@/lib/annual-development-review";
+import { generateAntiBullyingEffectivenessIntelligence, getBullyingTypeLabel, getRatingLabel as getRatingLabel____lib_anti_bullying_effectiveness, getResolutionLabel, getSeverityLabel as getSeverityLabel____lib_anti_bullying_effectiveness } from "@/lib/anti-bullying-effectiveness";
 import { generateAttachmentRelationshipsIntelligence } from "@/lib/attachment-relationships/attachment-relationships-engine";
-import type { BehaviourRecord, BehaviourPolicy, StaffBehaviourTraining } from "@/lib/behaviour";
-import { generateChildExploitationPreventionIntelligence } from "@/lib/child-exploitation-prevention";
-import type { ChildExploitationPreventionRecord, ChildExploitationPreventionPolicy, StaffChildExploitationPreventionTraining } from "@/lib/child-exploitation-prevention";
-import { generateChildrenOutcomesIntelligence } from "@/lib/children-outcomes";
-import type { ChildrenOutcomesRecord, ChildrenOutcomesPolicy, StaffChildrenOutcomesTraining } from "@/lib/children-outcomes";
-import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
-import type { ChildProfile, OutcomeDomain, ProgressRating } from "@/lib/children-outcomes";
+import { generateBehaviourIntelligence } from "@/lib/behaviour";
+import { generateBehaviourIntelligenceReport, type BehaviourIntelligencePolicy, type BehaviourIntelligenceRecord, type StaffBehaviourIntelligenceTraining } from "@/lib/behaviour/behaviour-intelligence-engine";
+import { generateBereavementLossSupportIntelligence, getGriefStageLabels, getLossTypeLabels, getRatingLabels as getRatingLabels____lib_bereavement_loss_support, getSupportOutcomeLabels, getSupportTypeLabels as getSupportTypeLabels____lib_bereavement_loss_support } from "@/lib/bereavement-loss-support";
+import { generateBodyMapProtocolIntelligence, getActionTakenLabel, getBodyRegionLabel, getDocumentationQualityLabel, getMarkOriginLabel, getMarkTypeLabel, getRatingLabel as getRatingLabel____lib_body_map_protocol } from "@/lib/body-map-protocol";
+import { generateCarePlanningIntelligence, getReviewStatusLabel as getReviewStatusLabel____lib_care_planning, getReviewTypeLabel as getReviewTypeLabel____lib_care_planning } from "@/lib/care-planning";
+import { generateCarePlanningIntelligenceReport, type CarePlanningPolicy, type CarePlanningRecord, type StaffCarePlanningCompetency } from "@/lib/care-planning/care-planning-intelligence-engine";
+import { generateChildExploitationPreventionIntelligence, generateExploitationPreventionAssessment, getExploitationTypeLabel, getRiskLevelLabel as getRiskLevelLabel____lib_child_exploitation_prevention } from "@/lib/child-exploitation-prevention";
+import { buildChildFinancialProfiles, evaluateAccountManagement, evaluateAuditCompliance, evaluateFinancialLiteracy, evaluateTransactionIntegrity, generateChildrenFundManagementIntelligence } from "@/lib/children-fund-management";
+import { analyzeCohort, analyzeDomainTrends, evaluateChildProgress, generateChildrenOutcomesIntelligence, getAllDomains, getDomainLabel } from "@/lib/children-outcomes";
 import { generateChildrensRightsIntelligence } from "@/lib/childrens-rights/childrens-rights-engine";
+import { generateClothingAppearanceProvisionIntelligence, getClothingCategoryLabel, getProvisionQualityLabel, getRatingLabel as getRatingLabel____lib_clothing_appearance_provision } from "@/lib/clothing-appearance-provision";
 import { generateCommunicationAccessibilityIntelligence } from "@/lib/communication-accessibility/communication-accessibility-engine";
+import { generateCommunityEngagementParticipationIntelligence, getActivityTypeLabel as getActivityTypeLabel____lib_community_engagement_participation, getParticipationLevelLabel as getParticipationLevelLabel____lib_community_engagement_participation, getRatingLabel as getRatingLabel____lib_community_engagement_participation } from "@/lib/community-engagement-participation";
+import { generateCommunityIntegrationIntelligence, getActivityCategoryLabel as getActivityCategoryLabel____lib_community_integration, getCommunityBarrierLabel, getFriendshipQualityLabel, getParticipationLevelLabel as getParticipationLevelLabel____lib_community_integration, getSocialMediaSafetyLabel } from "@/lib/community-integration";
+import { generateComplaintResolutionEffectivenessIntelligence, getComplaintSourceLabel, getRatingLabel as getRatingLabel____lib_complaint_resolution_effectiveness, getResolutionOutcomeLabel as getResolutionOutcomeLabel____lib_complaint_resolution_effectiveness } from "@/lib/complaint-resolution-effectiveness";
+import { generateComplaintsIntelligence } from "@/lib/complaints";
+import { generateComplaintsAdvocacyAccessIntelligence, getAdvocacyTypeLabel as getAdvocacyTypeLabel____lib_complaints_advocacy_access, getComplaintStatusLabel, getComplaintTypeLabel, getRatingLabel as getRatingLabel____lib_complaints_advocacy_access, getResolutionOutcomeLabel as getResolutionOutcomeLabel____lib_complaints_advocacy_access, getSatisfactionLevelLabel } from "@/lib/complaints-advocacy-access";
+import { generateComplaintsFeedbackIntelligence } from "@/lib/complaints-feedback";
 import { generateComplaintsFeedbackQualityIntelligence } from "@/lib/complaints-feedback-quality/complaints-feedback-quality-engine";
-import type { ComplaintRecord, ComplaintPolicy, StaffComplaintTraining } from "@/lib/complaints";
-import { generateContextualSafeguardingIntelligence } from "@/lib/contextual-safeguarding";
-import type { ContextualSafeguardingRecord, ContextualSafeguardingPolicy, StaffContextualSafeguardingTraining } from "@/lib/contextual-safeguarding";
+import { generateConflictResolutionManagementIntelligence, getConflictTypeLabel, getRatingLabel as getRatingLabel____lib_conflict_resolution_management, getResolutionOutcomeLabel as getResolutionOutcomeLabel____lib_conflict_resolution_management } from "@/lib/conflict-resolution-management";
+import { generateConsentManagementIntelligence } from "@/lib/consent-management/consent-management-engine";
+import { generateContactIntelligence } from "@/lib/contact";
+import { generateContextualAssessment, generateContextualSafeguardingIntelligence, getHarmDomainLabel, getRiskLevelLabel as getRiskLevelLabel____lib_contextual_safeguarding } from "@/lib/contextual-safeguarding";
+import { generateCourtOrderComplianceIntelligence, generateDemoData, getComplianceStatusLabel as getComplianceStatusLabel____lib_court_order_compliance, getOrderTypeLabel, getRatingLabel as getRatingLabel____lib_court_order_compliance } from "@/lib/court-order-compliance";
+import { generateCreativeArtsExpressionIntelligence, getArtFormLabel, getExpressionLevelLabel, getRatingLabel as getRatingLabel____lib_creative_arts_expression } from "@/lib/creative-arts-expression";
 import { generateCriticalIncidentReviewIntelligence } from "@/lib/critical-incident-review/critical-incident-review-engine";
+import { generateCulturalIdentityCelebrationIntelligence, getCulturalAreaLabel, getEngagementLevelLabel as getEngagementLevelLabel____lib_cultural_identity_celebration, getRatingLabel as getRatingLabel____lib_cultural_identity_celebration } from "@/lib/cultural-identity-celebration";
 import { generateCulturalIdentitySupportIntelligence } from "@/lib/cultural-identity-support/cultural-identity-support-engine";
+import { generateCultureIdentityIntelligence, getActivityTypeLabel as getActivityTypeLabel____lib_culture_identity, getIdentityDimensionLabel, getIncidentTypeLabel as getIncidentTypeLabel____lib_culture_identity, getTrainingTypeLabel } from "@/lib/culture-identity";
+import { generateDailyLogIntelligence } from "@/lib/daily-log";
 import { createDailyLog, type CreateDailyLogInput } from "@/lib/daily-log/daily-log-orchestrator";
-import { persistRecord, persistAuditEntry } from "@/lib/orchestrator/record-persistence";
 import { generateDataProtectionIntelligence } from "@/lib/data-protection";
-import { generateDigitalLiteracyIntelligence } from "@/lib/digital-literacy";
-import { generateEscalationThresholdIntelligence } from "@/lib/escalation-intelligence";
-import { generateFilingCabinetIntelligence } from "@/lib/filing-cabinet";
-import type { FilingCabinetRecord, FilingCabinetPolicy, StaffFilingCabinetTraining } from "@/lib/filing-cabinet";
-import { generateFinancialStewardshipIntelligence } from "@/lib/financial-stewardship/financial-stewardship-engine";
-import { generateHandoverCommunicationQualityIntelligence } from "@/lib/handover-communication-quality/handover-communication-quality-engine";
-import { generateHealthIntelligenceResult } from "@/lib/health";
-import type { HealthIntelligenceRecord, HealthIntelligencePolicy, StaffHealthIntelligenceTraining } from "@/lib/health";
-import { generateHomeMatchingImpactIntelligence } from "@/lib/home-matching-impact";
-import { generateHouseMeetingsIntelligence } from "@/lib/house-meetings";
-import type { HouseMeetingRecord, HouseMeetingPolicy, StaffHouseMeetingTraining } from "@/lib/house-meetings";
-import { generateIncidentIntelligence } from "@/lib/incidents";
-import type { IncidentRecord, IncidentPolicy, StaffIncidentTraining } from "@/lib/incidents";
-import { createIncident, type CreateIncidentInput } from "@/lib/incidents/incident-orchestrator";
 import { db } from "@/lib/db/store";
+import { generateDelegatedAuthorityIntelligence, getAuthorityCategoryLabel, getDecisionOutcomeLabel, getRatingLabel as getRatingLabel____lib_delegated_authority } from "@/lib/delegated-authority";
+import { generateDentalHealthMonitoringIntelligence, getAppointmentOutcomeLabel, getAppointmentTypeLabel, getBrushingFrequencyLabel, getOralHygieneRatingLabel, getRatingLabel as getRatingLabel____lib_dental_health_monitoring, getTreatmentStatusLabel } from "@/lib/dental-health-monitoring";
+import { generateDeprivationOfLibertyIntelligence, getAuthorisationStatusLabel, getChildViewStatusLabel, getProportionalityLabel, getRestrictionTypeLabel, getReviewOutcomeLabel, getSafeguardTypeLabel } from "@/lib/deprivation-of-liberty";
+import { generateDigitalLiteracyIntelligence } from "@/lib/digital-literacy";
+import { generateDigitalLiteracyDevelopmentIntelligence, getCompetencyLevelLabel as getCompetencyLevelLabel____lib_digital_literacy_development, getRatingLabel as getRatingLabel____lib_digital_literacy_development, getSessionTypeLabel as getSessionTypeLabel____lib_digital_literacy_development } from "@/lib/digital-literacy-development";
+import { adjustmentStatusLabels, disabilityTypeLabels, equipmentConditionLabels, generateDisabilityReasonableAdjustmentsIntelligence, ratingLabels, reviewOutcomeLabels } from "@/lib/disability-reasonable-adjustments/disability-reasonable-adjustments-engine";
+import { generateEducationIntelligence, getAttainmentLabel, getPlacementLabel } from "@/lib/education";
+import { generateEducationAchievementIntelligence, getAcademicProgressLabel, getAttendanceStatusLabel, getExclusionTypeLabel as getExclusionTypeLabel____lib_education_achievement, getPEPQualityLabel, getPEPStatusLabel, getRatingLabel as getRatingLabel____lib_education_achievement, getSchoolTypeLabel } from "@/lib/education-achievement";
+import { generateEducationAttainmentProgressIntelligence, getEducationAreaLabel, getProgressLevelLabel as getProgressLevelLabel____lib_education_attainment_progress, getRatingLabel as getRatingLabel____lib_education_attainment_progress } from "@/lib/education-attainment-progress";
+import { generateEducationOutcomesIntelligence } from "@/lib/education-outcomes";
+import { generateEmergencyPreparednessIntelligence } from "@/lib/emergency-preparedness";
+import { generateEmotionalRegulationDevelopmentIntelligence, getEmotionalStateLabels, getRatingLabels as getRatingLabels____lib_emotional_regulation_development, getRegulationStrategyLabels } from "@/lib/emotional-regulation-development";
+import { generateEmotionalRegulationSupportIntelligence, getOutcomeLevelLabels, getRatingLabels as getRatingLabels____lib_emotional_regulation_support, getStrategyTypeLabels } from "@/lib/emotional-regulation-support";
+import { generateEnvironmentIntelligence } from "@/lib/environment";
+import { generateEnvironmentalQualityIntelligence } from "@/lib/environmental-quality";
+import { generateEnvironmentalRiskComplianceIntelligence, getAreaTypeLabel, getCheckStatusLabel, getHazardTypeLabel, getRatingLabel as getRatingLabel____lib_environmental_risk_compliance, getRemediationStatusLabel, getRiskLevelLabel as getRiskLevelLabel____lib_environmental_risk_compliance } from "@/lib/environmental-risk-compliance";
+import { generateEnvironmentalSustainabilityIntelligence, getActivityTypeLabel as getActivityTypeLabel____lib_environmental_sustainability, getEngagementLevelLabel as getEngagementLevelLabel____lib_environmental_sustainability, getRatingLabel as getRatingLabel____lib_environmental_sustainability } from "@/lib/environmental-sustainability";
+import { generateEnvironmentalSustainabilityAwarenessIntelligence, getActivityTypeLabel as getActivityTypeLabel____lib_environmental_sustainability_awareness, getEngagementLevelLabel as getEngagementLevelLabel____lib_environmental_sustainability_awareness, getRatingLabel as getRatingLabel____lib_environmental_sustainability_awareness } from "@/lib/environmental-sustainability-awareness";
+import { generateEqualityDiversityIntelligence, getDemoAudits, getDemoIncidents, getDemoProfiles, getDemoTrainingRecords } from "@/lib/equality-diversity";
+import { generateEscalationMetrics, generateEscalationThresholdIntelligence, getConcernCategoryLabel as getConcernCategoryLabel____lib_escalation_intelligence, getOutcomeLabel as getOutcomeLabel____lib_escalation_intelligence, getThresholdLevelLabel } from "@/lib/escalation-intelligence";
+import { generateExclusionDisruptionManagementIntelligence, getDisruptionTypeLabel, getExclusionTypeLabel as getExclusionTypeLabel____lib_exclusion_disruption_management, getPreventionStrategyLabel, getRatingLabel as getRatingLabel____lib_exclusion_disruption_management, getReintegrationStatusLabel } from "@/lib/exclusion-disruption-management";
+import { generateFamilyContactIntelligence, getContactOutcomeLabel as getContactOutcomeLabel____lib_family_contact, getContactTypeLabel as getContactTypeLabel____lib_family_contact, getFamilyMemberLabel, getImpactIndicatorLabel } from "@/lib/family-contact";
+import { generateFamilyContactQualityIntelligence, getContactOutcomeLabels, getContactTypeLabels, getRatingLabels as getRatingLabels____lib_family_contact_quality } from "@/lib/family-contact-quality";
+import { RETENTION_POLICIES, calculateFilingStats, checkRetentionStatus, generateFilingCabinetIntelligence, getCategoryLabel as getCategoryLabel____lib_filing_cabinet, getDocumentsApproachingExpiry, getExpiredDocuments, getRetentionPolicy } from "@/lib/filing-cabinet";
+import { generateFinancialStewardshipIntelligence } from "@/lib/financial-stewardship/financial-stewardship-engine";
+import { generateFireSafetyIntelligence } from "@/lib/fire-safety";
+import { generateFireSafetyPreparednessIntelligence, getCheckOutcomeLabel as getCheckOutcomeLabel____lib_fire_safety_preparedness, getDrillOutcomeLabel, getDrillTypeLabel, getEquipmentTypeLabel, getPeepStatusLabel, getRatingLabel as getRatingLabel____lib_fire_safety_preparedness } from "@/lib/fire-safety-preparedness";
+import { generateFoodNutritionQualityIntelligence, getMealTypeLabel as getMealTypeLabel____lib_food_nutrition_quality, getNutritionRatingLabel, getRatingLabel as getRatingLabel____lib_food_nutrition_quality } from "@/lib/food-nutrition-quality";
+import { generateGovernanceIntelligence, getNotificationTypeLabel as getNotificationTypeLabel____lib_governance, getPolicyCategoryLabel } from "@/lib/governance";
+import { generateHandoverIntelligence } from "@/lib/handover";
+import { generateHandoverCommunicationQualityIntelligence } from "@/lib/handover-communication-quality/handover-communication-quality-engine";
+import { generateHealthIntelligence, generateHealthIntelligenceResult, getAssessmentTypeLabel, getOutcomeLabel as getOutcomeLabel____lib_health, getRatingLabel as getRatingLabel____lib_health } from "@/lib/health";
+import { generateHealthScreeningComplianceIntelligence, getConsentStatusLabel as getConsentStatusLabel____lib_health_screening_compliance, getGPRegistrationStatusLabel, getRatingLabel as getRatingLabel____lib_health_screening_compliance, getScreeningOutcomeLabel as getScreeningOutcomeLabel____lib_health_screening_compliance, getScreeningStatusLabel, getScreeningTypeLabel } from "@/lib/health-screening-compliance";
+import { generateHomeAtmosphereEthosIntelligence } from "@/lib/home-atmosphere-ethos";
+import { generateHomeIntelligenceSummary, type ModuleIntelligenceScore } from "@/lib/home-intelligence";
+import { generateHomeMatchingImpactIntelligence } from "@/lib/home-matching-impact";
+import { generateHomeworkAcademicSupportIntelligence, getCompletionLabel, getProgressLabel, getRatingLabel as getRatingLabel____lib_homework_academic_support, getSubjectLabel } from "@/lib/homework-academic-support";
+import { generateHomeworkLearningSupportIntelligence, getEngagementLevelLabel as getEngagementLevelLabel____lib_homework_learning_support, getRatingLabel as getRatingLabel____lib_homework_learning_support, getSubjectAreaLabel } from "@/lib/homework-learning-support";
+import { generateHomeworkStudySupportIntelligence, getEngagementLevelLabel as getEngagementLevelLabel____lib_homework_study_support, getRatingLabel as getRatingLabel____lib_homework_study_support, getStudyActivityTypeLabel } from "@/lib/homework-study-support";
+import { generateHouseMeetingsIntelligence } from "@/lib/house-meetings";
+import { generateHygienePersonalCareIntelligence, getCompetencyLevelLabel as getCompetencyLevelLabel____lib_hygiene_personal_care, getHygieneAreaLabel as getHygieneAreaLabel____lib_hygiene_personal_care, getRatingLabel as getRatingLabel____lib_hygiene_personal_care } from "@/lib/hygiene-personal-care";
+import { generateIncidentPatternAnalysisIntelligence, getDeEscalationOutcomeLabel, getIncidentCategoryLabel, getIncidentSeverityLabel as getIncidentSeverityLabel____lib_incident_pattern_analysis, getNotificationStatusLabel, getPostIncidentActionLabel, getRatingLabel as getRatingLabel____lib_incident_pattern_analysis, getResponseQualityLabel } from "@/lib/incident-pattern-analysis";
+import { generateIncidentIntelligence } from "@/lib/incidents";
+import { createIncident, type CreateIncidentInput } from "@/lib/incidents/incident-orchestrator";
 import { generateIndependenceIntelligence } from "@/lib/independence";
-import type { InspectionRecord, InspectionPolicy, StaffInspectionTraining } from "@/lib/inspection";
-import type { KeyWorkingRecord, KeyWorkingPolicy, StaffKeyWorkingTraining } from "@/lib/key-working";
+import { generateIndependenceLifeSkillsIntelligence, getAssessmentFrequencyLabel, getCompetenceLevelLabel, getGoalStatusLabel as getGoalStatusLabel____lib_independence_life_skills, getRatingLabel as getRatingLabel____lib_independence_life_skills, getSkillDomainLabel, getTeachingMethodLabel } from "@/lib/independence-life-skills";
+import { generateIndependentLivingSkillsIntelligence, getCompetencyLevelLabel as getCompetencyLevelLabel____lib_independent_living_skills, getRatingLabel as getRatingLabel____lib_independent_living_skills, getSkillTypeLabel } from "@/lib/independent-living-skills";
+import { generateIndependentVisitorAdvocacyIntelligence, getAdvocacyTypeLabel as getAdvocacyTypeLabel____lib_independent_visitor_advocacy, getRatingLabel as getRatingLabel____lib_independent_visitor_advocacy, getReferralOutcomeLabel as getReferralOutcomeLabel____lib_independent_visitor_advocacy, getVisitOutcomeLabel as getVisitOutcomeLabel____lib_independent_visitor_advocacy, getVisitorStatusLabel } from "@/lib/independent-visitor-advocacy";
+import { generateInspectionIntelligence } from "@/lib/inspection";
+import { generateInternetSafetyMonitoringIntelligence } from "@/lib/internet-safety-monitoring";
+import { buildChildKeyWorkerProfiles, evaluateChildVoice, evaluateGoalProgress, evaluateRelationshipQuality, evaluateSessionConsistency, generateKeyWorkerIntelligence } from "@/lib/key-worker";
+import { generateKeyWorkerRelationshipIntelligence, getRatingLabel as getRatingLabel____lib_key_worker_relationship, getRelationshipStrengthLabel, getSessionTypeLabel as getSessionTypeLabel____lib_key_worker_relationship } from "@/lib/key-worker-relationship";
+import { generateKeyWorkerRelationshipQualityIntelligence, getEngagementLevelLabel as getEngagementLevelLabel____lib_key_worker_relationship_quality, getRatingLabel as getRatingLabel____lib_key_worker_relationship_quality, getSessionTypeLabel as getSessionTypeLabel____lib_key_worker_relationship_quality } from "@/lib/key-worker-relationship-quality";
+import { generateKeyWorkingIntelligence } from "@/lib/key-working";
+import { generateKeyWorkingEffectivenessIntelligence, getCarePlanInputLabel, getChildEngagementLabel as getChildEngagementLabel____lib_key_working_effectiveness, getChildVoiceEvidenceLabel, getRatingLabel as getRatingLabel____lib_key_working_effectiveness, getRelationshipQualityLabel as getRelationshipQualityLabel____lib_key_working_effectiveness, getSessionQualityLabel, getSessionTypeLabel as getSessionTypeLabel____lib_key_working_effectiveness } from "@/lib/key-working-effectiveness";
 import { generateLACReviewIntelligence } from "@/lib/lac-review/lac-review-engine";
-import { generateLessonsLearnedIntelligence } from "@/lib/lessons-learned";
-import type { LessonsLearnedRecord, LessonsLearnedPolicy, StaffLessonsLearnedTraining } from "@/lib/lessons-learned";
-import type { LifeStoryRecord, LifeStoryPolicy, StaffLifeStoryTraining } from "@/lib/life-story";
+import { generateLanguageCommunicationSupportIntelligence, getCommunicationNeedLabel, getRatingLabel as getRatingLabel____lib_language_communication_support, getReviewStatusLabel as getReviewStatusLabel____lib_language_communication_support, getSupportQualityLabel, getSupportTypeLabel as getSupportTypeLabel____lib_language_communication_support } from "@/lib/language-communication-support";
+import { generateLeavingCareIntelligence as generateLeavingCareIntelligence____lib_leaving_care, getAccommodationStatusLabel, getAccommodationTypeLabel, getPathwayPlanStatusLabel, getSkillCategoryLabel as getSkillCategoryLabel____lib_leaving_care, getSkillLevelLabel as getSkillLevelLabel____lib_leaving_care, getSupportTypeLabel as getSupportTypeLabel____lib_leaving_care } from "@/lib/leaving-care";
+import { generateLeavingCareIntelligence as generateLeavingCareIntelligence____lib_leaving_care_leaving_care_intelligence_engine, type LeavingCarePolicy, type LeavingCareRecord, type StaffLeavingCareTraining } from "@/lib/leaving-care/leaving-care-intelligence-engine";
+import { generateLearningOrganisationScore, generateLessonsLearnedIntelligence, getCategoryLabel as getCategoryLabel____lib_lessons_learned, getRatingLabel as getRatingLabel____lib_lessons_learned } from "@/lib/lessons-learned";
+import { generateLifeStoryIntelligence } from "@/lib/life-story";
+import { generateLifeStoryWorkIntelligence, getEngagementLevelLabel as getEngagementLevelLabel____lib_life_story_work, getMemoryItemTypeLabel, getRatingLabel as getRatingLabel____lib_life_story_work, getSessionTypeLabel as getSessionTypeLabel____lib_life_story_work } from "@/lib/life-story-work";
+import { generateLocationAssessmentIntelligence, getCategoryLabel as getCategoryLabel____lib_location_assessment, getOutcomeLabel as getOutcomeLabel____lib_location_assessment, getRatingLabel as getRatingLabel____lib_location_assessment } from "@/lib/location-assessment";
 import { generateManagementOversightIntelligence } from "@/lib/management-oversight/management-oversight-engine";
+import { generateMedicationIntelligence } from "@/lib/medication";
+import { generateMedicationAdherenceMonitoringIntelligence, getAdministrationOutcomeLabel, getMedicationTypeLabel, getRatingLabel as getRatingLabel____lib_medication_adherence_monitoring } from "@/lib/medication-adherence-monitoring";
 import { generateMedicationErrorPreventionIntelligence } from "@/lib/medication-error-prevention/medication-error-prevention-engine";
 import { generateMedicationManagementIntelligence } from "@/lib/medication-management";
-import type { MedicationRecord, MedicationPolicy, StaffMedicationTraining } from "@/lib/medication";
 import { generateMentalHealthIntelligence } from "@/lib/mental-health-wellbeing";
+import { generateMenuPlanningNutritionIntelligence, getChildParticipationLabel, getCulturalAccommodationLabel, getMealTypeLabel as getMealTypeLabel____lib_menu_planning_nutrition, getMenuVarietyLabel, getNutritionalBalanceLabel, getRatingLabel as getRatingLabel____lib_menu_planning_nutrition } from "@/lib/menu-planning-nutrition";
+import { generateMissingAbsentEpisodesIntelligence, getEpisodeOutcomeLabel, getEpisodeTypeLabel, getRatingLabel as getRatingLabel____lib_missing_absent_episodes, getRiskLevelLabel as getRiskLevelLabel____lib_missing_absent_episodes } from "@/lib/missing-absent-episodes";
+import { generateMissingFromCareIntelligence } from "@/lib/missing-from-care";
 import { generateMissingFromCareIntelligenceResult } from "@/lib/missing-from-care/missing-from-care-intelligence-engine";
-import type { MissingFromCareIntelligenceRecord, MissingFromCareIntelligencePolicy, StaffMissingFromCareIntelligenceTraining } from "@/lib/missing-from-care/missing-from-care-intelligence-engine";
-import { generateMultiAgencyIntelligence } from "@/lib/multi-agency";
-import type { MultiAgencyRecord, MultiAgencyPolicy, StaffMultiAgencyTraining } from "@/lib/multi-agency";
-import type { ChildMultiAgencyProfile } from "@/lib/multi-agency";
-import { generateNightMonitoringIntelligence } from "@/lib/night-monitoring";
-import type { NightShift, NightCheckPlan, NightCheck, NightIncident, SleepPattern } from "@/lib/night-monitoring";
-import { generateNotifiableEventsIntelligence } from "@/lib/notifiable-events";
-import type { NotifiableEventsRecord, NotifiableEventsPolicy, StaffNotifiableEventsTraining } from "@/lib/notifiable-events";
-import type { NotifiableEvent } from "@/lib/notifiable-events";
+import { generateMorningRoutinePreparationIntelligence, getCompletionStatusLabel, getRatingLabel as getRatingLabel____lib_morning_routine_preparation, getRoutineElementLabel } from "@/lib/morning-routine-preparation";
+import { calculateHomeMultiAgencyMetrics, evaluateMultiAgencyCompliance, generateMultiAgencyIntelligence } from "@/lib/multi-agency";
+import { generateMultiAgencyEffectivenessIntelligence } from "@/lib/multi-agency-effectiveness";
+import { generateMultiAgencyPartnershipIntelligence, getAgencyTypeLabel, getEngagementQualityLabel, getMeetingTypeLabel, getReferralOutcomeLabel as getReferralOutcomeLabel____lib_multi_agency_partnership } from "@/lib/multi-agency-partnership";
+import { generateNightCareIntelligence, getCategoryLabel as getCategoryLabel____lib_night_care, getOutcomeLabel as getOutcomeLabel____lib_night_care, getRatingLabel as getRatingLabel____lib_night_care } from "@/lib/night-care";
+import { calculateHomeNightMetrics, evaluateNightShiftCompliance, generateNightMonitoringIntelligence, getNightIncidentTypeLabel, getSleepStatusLabel } from "@/lib/night-monitoring";
+import { generateNightSupervisionQualityIntelligence, getCheckOutcomeLabel as getCheckOutcomeLabel____lib_night_supervision_quality, getNightCheckTypeLabel, getRatingLabel as getRatingLabel____lib_night_supervision_quality } from "@/lib/night-supervision-quality";
+import { buildNotificationTimeline, calculateNotifiableEventsMetrics, evaluateNotificationCompliance, generateNotifiableEventsIntelligence, getRequiredNotifications } from "@/lib/notifiable-events";
+import { generateNotificationTimelinessIntelligence, getNotificationTypeLabel as getNotificationTypeLabel____lib_notification_timeliness, getRatingLabel as getRatingLabel____lib_notification_timeliness, getRecipientLabel } from "@/lib/notification-timeliness";
+import { generateNutritionIntelligence, getDietaryLabel, getQualityFactorLabel } from "@/lib/nutrition";
+import { generateNutritionHealthyLivingIntelligence, getActivityTypeLabel as getActivityTypeLabel____lib_nutrition_healthy_living, getDietaryRequirementLabel as getDietaryRequirementLabel____lib_nutrition_healthy_living, getHydrationStatusLabel, getMealTypeLabel as getMealTypeLabel____lib_nutrition_healthy_living } from "@/lib/nutrition-healthy-living";
+import { generateNutritionHydrationMonitoringIntelligence, getMealTypeLabel as getMealTypeLabel____lib_nutrition_hydration_monitoring, getNutritionQualityLabel, getPortionConsumedLabel, getRatingLabel as getRatingLabel____lib_nutrition_hydration_monitoring } from "@/lib/nutrition-hydration-monitoring";
+import { generateOfstedReadinessIntelligence } from "@/lib/ofsted-readiness/ofsted-readiness-engine";
+import { generateOnlineSafetyIntelligence, getEducationTopicLabel, getIncidentTypeLabel as getIncidentTypeLabel____lib_online_safety } from "@/lib/online-safety";
+import { persistAuditEntry, persistRecord } from "@/lib/orchestrator/record-persistence";
+import { generateOutcomesMeasurementIntelligence } from "@/lib/outcomes-measurement/outcomes-measurement-engine";
+import { generateOutdoorActivityEnrichmentIntelligence, getActivityCategoryLabel as getActivityCategoryLabel____lib_outdoor_activity_enrichment, getActivityFrequencyLabel, getChildEngagementLabel as getChildEngagementLabel____lib_outdoor_activity_enrichment, getRiskBenefitOutcomeLabel, getWeatherConditionLabel } from "@/lib/outdoor-activity-enrichment";
+import { generateParentalContactManagementIntelligence, getComplianceStatusLabel as getComplianceStatusLabel____lib_parental_contact_management, getContactOutcomeLabel as getContactOutcomeLabel____lib_parental_contact_management, getContactTypeLabel as getContactTypeLabel____lib_parental_contact_management, getRatingLabel as getRatingLabel____lib_parental_contact_management, getRiskLevelLabel as getRiskLevelLabel____lib_parental_contact_management } from "@/lib/parental-contact-management";
+import { generateParentalEngagementIntelligence, getContactOutcomeLabel as getContactOutcomeLabel____lib_parental_engagement, getContactTypeLabel as getContactTypeLabel____lib_parental_engagement, getEffectivenessLabel, getEngagementLevelLabel as getEngagementLevelLabel____lib_parental_engagement, getRelationshipLabel, getSupportTypeLabel as getSupportTypeLabel____lib_parental_engagement } from "@/lib/parental-engagement";
 import { generateParticipationIntelligence } from "@/lib/participation";
-import type { ParticipationRecord, ParticipationPolicy, StaffParticipationTraining } from "@/lib/participation";
-import { generatePeerDynamicsIntelligenceResult } from "@/lib/peer-dynamics";
-import type { PeerDynamicsIntelligenceRecord, PeerDynamicsIntelligencePolicy, StaffPeerDynamicsTraining } from "@/lib/peer-dynamics";
+import { generatePeerDynamicsIntelligence, generatePeerDynamicsIntelligenceResult, getInteractionTypeLabel as getInteractionTypeLabel____lib_peer_dynamics, getRelationshipHealthLabel } from "@/lib/peer-dynamics";
+import { generatePeerMentoringEffectivenessIntelligence, getMentoringRoleLabel, getPairingStatusLabel, getRatingLabel as getRatingLabel____lib_peer_mentoring_effectiveness, getSafeguardingConcernLabel, getSessionOutcomeLabel as getSessionOutcomeLabel____lib_peer_mentoring_effectiveness } from "@/lib/peer-mentoring-effectiveness";
+import { generatePeerRelationshipDynamicsIntelligence, getInteractionTypeLabel as getInteractionTypeLabel____lib_peer_relationship_dynamics, getOutcomeLevelLabel, getRatingLabel as getRatingLabel____lib_peer_relationship_dynamics } from "@/lib/peer-relationship-dynamics";
+import { generatePeerRelationshipQualityIntelligence, getInteractionTypeLabel as getInteractionTypeLabel____lib_peer_relationship_quality, getRatingLabel as getRatingLabel____lib_peer_relationship_quality, getRelationshipQualityLabel as getRelationshipQualityLabel____lib_peer_relationship_quality } from "@/lib/peer-relationship-quality";
+import { generatePersonalHygieneSelfCareIntelligence, getHygieneAreaLabel as getHygieneAreaLabel____lib_personal_hygiene_self_care, getRatingLabel as getRatingLabel____lib_personal_hygiene_self_care, getSupportLevelLabel } from "@/lib/personal-hygiene-self-care";
+import { generatePetTherapyAnimalInteractionIntelligence, getAnimalTypeLabel, getRatingLabel as getRatingLabel____lib_pet_therapy_animal_interaction, getSessionTypeLabel as getSessionTypeLabel____lib_pet_therapy_animal_interaction, getTherapeuticBenefitLabel, getWelfareStatusLabel } from "@/lib/pet-therapy-animal-interaction";
 import { generatePhysicalHealthIntelligence } from "@/lib/physical-health-monitoring/physical-health-monitoring-engine";
+import { generatePhysicalHealthWellbeingIntelligence, getHealthAreaLabel, getHealthOutcomeLabel, getRatingLabel as getRatingLabel____lib_physical_health_wellbeing } from "@/lib/physical-health-wellbeing";
 import { generatePlacementMatchingQualityIntelligence } from "@/lib/placement-matching-quality";
-import { generatePlacementStabilityIntelligenceReport } from "@/lib/placement-stability/placement-stability-intelligence-engine";
-import type { PlacementStabilityRecord, PlacementStabilityPolicy, StaffPlacementStabilityTraining } from "@/lib/placement-stability/placement-stability-intelligence-engine";
 import { generatePlacementStabilityIntelligence } from "@/lib/placement-stability";
-import { generatePocketMoneyIntelligence } from "@/lib/pocket-money";
-import type { PocketMoneyRecord, PocketMoneyPolicy, StaffPocketMoneyTraining } from "@/lib/pocket-money";
+import { generatePlacementStabilityContinuityIntelligence, getRatingLabel as getRatingLabel____lib_placement_stability_continuity_placement_stability_continuity_engine, getReviewTypeLabel as getReviewTypeLabel____lib_placement_stability_continuity_placement_stability_continuity_engine, getStabilityStatusLabel } from "@/lib/placement-stability-continuity/placement-stability-continuity-engine";
+import { generatePlacementStabilityIntelligenceReport } from "@/lib/placement-stability/placement-stability-intelligence-engine";
+import { calculateHomeFinancialMetrics, evaluateChildFinancialCompliance, generatePocketMoneyIntelligence } from "@/lib/pocket-money";
+import { generatePocketMoneyFinancialEducationIntelligence } from "@/lib/pocket-money-financial-education";
+import { generatePocketMoneyFinancialLiteracyIntelligence, getCompetencyLevelLabel as getCompetencyLevelLabel____lib_pocket_money_financial_literacy, getFinancialSkillTypeLabel, getRatingLabel as getRatingLabel____lib_pocket_money_financial_literacy } from "@/lib/pocket-money-financial-literacy";
 import { generatePositiveBehaviourIntelligence } from "@/lib/positive-behaviour/positive-behaviour-engine";
+import { generatePositiveReinforcementRewardsIntelligence, getBehaviourTrendLabel, getChildResponseLabel, getPraiseTypeLabel, getRatingLabel as getRatingLabel____lib_positive_reinforcement_rewards, getRewardCategoryLabel } from "@/lib/positive-reinforcement-rewards";
 import { generatePostIncidentLearningIntelligence } from "@/lib/post-incident-learning/post-incident-learning-engine";
 import { generatePremisesIntelligenceReport } from "@/lib/premises";
 import { generatePremisesIntelligence } from "@/lib/premises/premises-engine";
-import type { PrivacyRecord, PrivacyPolicy, StaffPrivacyTraining } from "@/lib/privacy";
+import { generatePrivacyIntelligence } from "@/lib/privacy";
+import { generatePrivacyDignityIntelligence, getAuditOutcomeLabel, getChildFeedbackRatingLabel, getComplianceStatusLabel as getComplianceStatusLabel____lib_privacy_dignity_assessment, getIncidentTypeLabel as getIncidentTypeLabel____lib_privacy_dignity_assessment, getPrivacyDomainLabel, getRatingLabel as getRatingLabel____lib_privacy_dignity_assessment } from "@/lib/privacy-dignity-assessment";
+import { generateProfessionalBoundaryComplianceIntelligence, getBoundaryAreaLabel, getComplianceLevelLabel, getRatingLabel as getRatingLabel____lib_professional_boundary_compliance } from "@/lib/professional-boundary-compliance";
 import { generateProfessionalDevelopmentIntelligence } from "@/lib/professional-development/professional-development-engine";
 import { generatePropertyDamageAssessmentIntelligence } from "@/lib/property-damage-assessment/property-damage-assessment-engine";
 import { generateQualityAssuranceIntelligence } from "@/lib/quality-assurance/quality-assurance-engine";
-import { generateQualityEcologyIntelligence } from "@/lib/quality-ecology";
-import type { QualityEcologyRecord, QualityEcologyPolicy, StaffQualityEcologyTraining } from "@/lib/quality-ecology";
-import { calculateCompliance } from "@/lib/quality-ecology";
-import type { ScheduledOccurrence, LifecycleStatus } from "@/lib/quality-ecology";
-import type { QualityReviewRecord, QualityPolicy, StaffQualityTraining } from "@/lib/quality-of-care";
+import { calculateCompliance, generateQualityEcologyIntelligence } from "@/lib/quality-ecology";
+import { generateQualityOfCareIntelligence } from "@/lib/quality-of-care";
+import { generateRecordQualityIntelligence } from "@/lib/record-quality/record-quality-engine";
+import { generateRecreationalLeisureAccessIntelligence, getActivityTypeLabel as getActivityTypeLabel____lib_recreational_leisure_access, getParticipationLevelLabel as getParticipationLevelLabel____lib_recreational_leisure_access, getRatingLabel as getRatingLabel____lib_recreational_leisure_access } from "@/lib/recreational-leisure-access";
 import { generateReflectivePracticeIntelligence } from "@/lib/reflective-practice/reflective-practice-engine";
-import type { ReflectiveActivity, PracticeDevelopmentGoal, StaffProfile } from "@/lib/reflective-practice/reflective-practice-engine";
+import { generateReg44ComplianceIntelligence, getRecommendationPriorityLabel, getRecommendationStatusLabel, getVisitFocusLabel } from "@/lib/reg44-compliance";
 import { generateReg44VisitIntelligence } from "@/lib/reg44-visits";
-import type { Reg44VisitRecord, Reg44VisitPolicy, StaffReg44VisitTraining } from "@/lib/reg44-visits";
-import { generateRegulatoryIntelligence } from "@/lib/regulatory/regulatory-intelligence-engine";
-import type { RegulatoryRecord, RegulatoryPolicy, StaffRegulatoryTraining } from "@/lib/regulatory/regulatory-intelligence-engine";
+import { evaluateRegulatoryCompliance, generateReg44Schedule, getNotificationTypeLabel as getNotificationTypeLabel____lib_regulatory, getReg44SectionLabel, summarizeActionPoints, validateReg44Report } from "@/lib/regulatory";
 import { generateRegSelfAssessmentIntelligence } from "@/lib/regulatory-self-assessment";
-import type { RegSelfAssessmentRecord, RegSelfAssessmentPolicy, StaffRegSelfAssessmentTraining } from "@/lib/regulatory-self-assessment";
+import { analyseSelfAssessment, getCriticalActions, getOverdueActions, getUnaddressedFeedback } from "@/lib/regulatory-self-assessment/regulatory-self-assessment-engine";
+import { generateRegulatoryIntelligence } from "@/lib/regulatory/regulatory-intelligence-engine";
 import { generateReligiousSpiritualNeedsIntelligence } from "@/lib/religious-spiritual-needs/religious-spiritual-needs-engine";
 import { generateReligiousSpiritualSupportIntelligence } from "@/lib/religious-spiritual-support/religious-spiritual-support-engine";
 import { generateRestorativePracticeIntelligence } from "@/lib/restorative-practice/restorative-practice-engine";
-import type { RestorativeConversation, IncidentLink } from "@/lib/restorative-practice/restorative-practice-engine";
+import { generateRestraintIntelligence } from "@/lib/restraint";
 import { generateRestraintAnalysisIntelligence } from "@/lib/restraint-analysis/restraint-analysis-engine";
 import { generateReturnHomeInterviewQualityIntelligence } from "@/lib/return-home-interview-quality/return-home-interview-quality-engine";
-import { generateSafeguardingOversightIntelligenceResult } from "@/lib/safeguarding-oversight/safeguarding-oversight-intelligence-engine";
-import type { SafeguardingOversightRecord, SafeguardingOversightPolicy, StaffSafeguardingOversightTraining } from "@/lib/safeguarding-oversight/safeguarding-oversight-intelligence-engine";
+import { generateRoomStandardsPersonalisationIntelligence, getFurnitureConditionLabel, getInspectionOutcomeLabel, getPersonalisationLevelLabel, getRatingLabel as getRatingLabel____lib_room_standards_personalisation, getRoomConditionLabel } from "@/lib/room-standards-personalisation";
+import { generateRoutineConsistencyIntelligence, getAdaptationLabel, getDisruptionLabel, getPhaseLabel } from "@/lib/routine-consistency";
 import { generateSafeguardingIntelligence } from "@/lib/safeguarding";
-import type { SafeguardingRecord, SafeguardingPolicy, StaffSafeguardingTraining } from "@/lib/safeguarding";
+import { generateSafeguardingEffectivenessIntelligence, getOfstedRatingLabel, getReferralOutcomeLabel as getReferralOutcomeLabel____lib_safeguarding_effectiveness, getReferralTypeLabel as getReferralTypeLabel____lib_safeguarding_effectiveness } from "@/lib/safeguarding-effectiveness";
+import { generateSafeguardingOversightIntelligence, getConcernCategoryLabel as getConcernCategoryLabel____lib_safeguarding_oversight, getConcernPriorityLabel, getDBSStatusLabel, getRatingLabel as getRatingLabel____lib_safeguarding_oversight, getReferralOutcomeLabel as getReferralOutcomeLabel____lib_safeguarding_oversight, getReferralTypeLabel as getReferralTypeLabel____lib_safeguarding_oversight, getTrainingLevelLabel } from "@/lib/safeguarding-oversight";
+import { generateSafeguardingOversightIntelligenceResult } from "@/lib/safeguarding-oversight/safeguarding-oversight-intelligence-engine";
+import { generateSafeguardingReferralQualityIntelligence, getRatingLabel as getRatingLabel____lib_safeguarding_referral_quality, getReferralOutcomeLabel as getReferralOutcomeLabel____lib_safeguarding_referral_quality, getReferralTypeLabel as getReferralTypeLabel____lib_safeguarding_referral_quality } from "@/lib/safeguarding-referral-quality";
 import { generateSaferRecruitmentIntelligence } from "@/lib/safer-recruitment";
 import { generateSanctionsIntelligence } from "@/lib/sanctions";
+import { generateSecureAccommodationIntelligence, getDischargeReadinessLabel, getProgressOutcomeLabel, getRestrictionJustificationLabel, getReviewParticipantLabel, getSecureOrderStatusLabel, getWelfareReviewStatusLabel } from "@/lib/secure-accommodation";
+import { generateSelfHarmPreventionProtocolIntelligence, getInterventionOutcomeLabel as getInterventionOutcomeLabel____lib_self_harm_prevention_protocol, getRatingLabel as getRatingLabel____lib_self_harm_prevention_protocol, getRiskLevelLabel as getRiskLevelLabel____lib_self_harm_prevention_protocol, getSafetyPlanStatusLabel, getSelfHarmTypeLabel } from "@/lib/self-harm-prevention-protocol";
+import { generateSensoryEnvironmentIntelligence } from "@/lib/sensory-environment";
+import { generateSensoryEnvironmentQualityIntelligence, getEffectivenessLevelLabel, getRatingLabel as getRatingLabel____lib_sensory_environment_quality, getSensoryAreaLabel } from "@/lib/sensory-environment-quality";
+import { generateSensoryProcessingSupportIntelligence } from "@/lib/sensory-processing-support";
+import { generateSexualHealthRelationshipsEducationIntelligence, getAgeAppropriatenessLabels, getDeliveryMethodLabels, getEngagementLevelLabels as getEngagementLevelLabels____lib_sexual_health_relationships_education, getRatingLabel as getRatingLabel____lib_sexual_health_relationships_education, getRatingLabels as getRatingLabels____lib_sexual_health_relationships_education, getTopicAreaLabels } from "@/lib/sexual-health-relationships-education";
+import { evaluateFatigueRisk, generateDeploymentIntelligence, getComplianceRatingLabel, getFatigueRiskLabel, getShiftTypeLabel } from "@/lib/shift-intelligence";
+import { generateSiblingContactManagementIntelligence, getBarrierStatusLabel, getBarrierTypeLabel as getBarrierTypeLabel____lib_sibling_contact_management, getContactOutcomeLabel as getContactOutcomeLabel____lib_sibling_contact_management, getContactTypeLabel as getContactTypeLabel____lib_sibling_contact_management, getRatingLabel as getRatingLabel____lib_sibling_contact_management } from "@/lib/sibling-contact-management";
+import { generateSiblingContactQualityIntelligence, getBarrierTypeLabel as getBarrierTypeLabel____lib_sibling_contact_quality, getContactOutcomeLabel as getContactOutcomeLabel____lib_sibling_contact_quality, getContactQualityLabel, getContactTypeLabel as getContactTypeLabel____lib_sibling_contact_quality, getFrequencyComplianceLabel, getRatingLabel as getRatingLabel____lib_sibling_contact_quality } from "@/lib/sibling-contact-quality";
+import { generateSleepHygieneQualityIntelligence, getRatingLabel as getRatingLabel____lib_sleep_hygiene_quality, getSleepQualityLabel as getSleepQualityLabel____lib_sleep_hygiene_quality, getSleepTypeLabel } from "@/lib/sleep-hygiene-quality";
+import { generateSleepRoutineQualityIntelligence, getNightIssueLabel, getRatingLabel as getRatingLabel____lib_sleep_routine_quality, getRoutineAdherenceLabel, getSleepQualityLabel as getSleepQualityLabel____lib_sleep_routine_quality } from "@/lib/sleep-routine-quality";
 import { generateSleepWellbeingIntelligence } from "@/lib/sleep-wellbeing/sleep-wellbeing-engine";
-import type { NightRecord, SleepPlan } from "@/lib/sleep-wellbeing/sleep-wellbeing-engine";
-import type { OnlineSafetySession, OnlineSafetyPolicy, StaffOnlineSafetyTraining } from "@/lib/social-media-online-safety";
+import { generateSocialMediaDigitalFootprintIntelligence, getConsentStatusLabel as getConsentStatusLabel____lib_social_media_digital_footprint, getConsentTypeLabel, getRatingLabel as getRatingLabel____lib_social_media_digital_footprint, getRiskCategoryLabel, getSeverityLabel as getSeverityLabel____lib_social_media_digital_footprint } from "@/lib/social-media-digital-footprint";
+import { generateSocialMediaOnlineSafetyIntelligence, getComprehensionLevelLabel, getOnlineSafetyTopicLabel, getRatingLabel as getRatingLabel____lib_social_media_online_safety } from "@/lib/social-media-online-safety";
+import { generateSpiritualWellbeingDevelopmentIntelligence, getEngagementLevelLabels as getEngagementLevelLabels____lib_spiritual_wellbeing_development, getRatingLabels as getRatingLabels____lib_spiritual_wellbeing_development, getSpiritualActivityTypeLabels } from "@/lib/spiritual-wellbeing-development";
 import { generateStaffDeploymentIntelligence } from "@/lib/staff-deployment";
 import { generateStaffPerformanceIntelligence } from "@/lib/staff-performance/staff-performance-engine";
 import { generateStaffResilienceIntelligence } from "@/lib/staff-resilience";
+import { generateLegacyStaffSupervisionEffectivenessIntelligence as generateStaffSupervisionEffectivenessIntelligence____lib_staff_supervision_effectiveness, getRatingLabel as getRatingLabel____lib_staff_supervision_effectiveness, getSupervisionOutcomeLabel, getSupervisionTypeLabel } from "@/lib/staff-supervision-effectiveness";
+import { generateStaffSupervisionEffectivenessIntelligence as generateStaffSupervisionEffectivenessIntelligence____lib_staff_supervision_effectiveness_staff_supervision_effectiveness_intelligence_engine } from "@/lib/staff-supervision-effectiveness/staff-supervision-effectiveness-intelligence-engine";
 import { generateStaffTrainingIntelligence } from "@/lib/staff-training/staff-training-engine";
-import type { StaffMember, TrainingRecord, ChildNeed } from "@/lib/staff-training/staff-training-engine";
-import type { StaffWellbeingRecord, StaffWellbeingPolicy, StaffWellbeingTraining } from "@/lib/staff-wellbeing";
+import { generateStaffWellbeingIntelligence } from "@/lib/staff-wellbeing";
+import { generateStaffWellbeingResilienceIntelligence, getRatingLabel as getRatingLabel____lib_staff_wellbeing_resilience, getWellbeingScoreLabel, getWellbeingTypeLabel } from "@/lib/staff-wellbeing-resilience";
 import { generateStatementOfPurposeAlignmentIntelligence } from "@/lib/statement-of-purpose-alignment/statement-of-purpose-alignment-engine";
+import { generateSubstanceMisuseAwarenessIntelligence, getInterventionOutcomeLabel as getInterventionOutcomeLabel____lib_substance_misuse_awareness, getRatingLabel as getRatingLabel____lib_substance_misuse_awareness, getRiskLevelLabel as getRiskLevelLabel____lib_substance_misuse_awareness, getScreeningOutcomeLabel as getScreeningOutcomeLabel____lib_substance_misuse_awareness, getSessionTypeLabel as getSessionTypeLabel____lib_substance_misuse_awareness, getSubstanceTypeLabel } from "@/lib/substance-misuse-awareness";
+import { generateSubstanceMisusePreventionIntelligence } from "@/lib/substance-misuse-prevention";
+import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { generateSupervisionQualityIntelligence } from "@/lib/supervision-quality/supervision-quality-engine";
 import { generateSupervisionIntelligence } from "@/lib/supervision/supervision-engine";
-import { generateTherapeuticIntelligence } from "@/lib/therapeutic";
-import type { TrainingRecord, TrainingPolicy, StaffTrainingCompetency } from "@/lib/training";
-import type { TransitionRecord, TransitionPolicy, StaffTransitionTraining } from "@/lib/transitions";
+import { calculateHomeTherapeuticMetrics, evaluateTherapeuticCompliance, generateTherapeuticIntelligence } from "@/lib/therapeutic";
+import { generateTherapeuticCareIntelligence, getReferralStatusLabel, getSessionOutcomeLabel as getSessionOutcomeLabel____lib_therapeutic_care, getTherapistRoleLabel, getTherapyProviderLabel, getTherapyTypeLabel as getTherapyTypeLabel____lib_therapeutic_care } from "@/lib/therapeutic-care";
+import { generateTherapeuticCrisisInterventionIntelligence, getDeescalationOutcomeLabel, getIncidentSeverityLabel as getIncidentSeverityLabel____lib_therapeutic_crisis_intervention, getInterventionTypeLabel, getRatingLabel as getRatingLabel____lib_therapeutic_crisis_intervention } from "@/lib/therapeutic-crisis-intervention";
+import { generateTherapeuticInterventionQualityIntelligence, getProgressLevelLabel as getProgressLevelLabel____lib_therapeutic_intervention_quality, getRatingLabel as getRatingLabel____lib_therapeutic_intervention_quality, getTherapyTypeLabel as getTherapyTypeLabel____lib_therapeutic_intervention_quality } from "@/lib/therapeutic-intervention-quality";
+import { generateTrainingIntelligence } from "@/lib/training";
+import { generateTransitionLeavingCareReadinessIntelligence, getProgressLevelLabel as getProgressLevelLabel____lib_transition_leaving_care_readiness, getRatingLabel as getRatingLabel____lib_transition_leaving_care_readiness, getReadinessAreaLabel } from "@/lib/transition-leaving-care-readiness";
+import { generateTransitionPathwayPlanningIntelligence, getPathwayStatusLabel, getRatingLabel as getRatingLabel____lib_transition_pathway_planning, getSkillAreaLabel, getSkillLevelLabel as getSkillLevelLabel____lib_transition_pathway_planning, getTransitionTypeLabel as getTransitionTypeLabel____lib_transition_pathway_planning } from "@/lib/transition-pathway-planning";
+import { generateTransitionPlanningIntelligence, getConfidenceLevelLabel, getPlanStatusLabel, getSkillCategoryLabel as getSkillCategoryLabel____lib_transition_planning, getTransitionTypeLabel as getTransitionTypeLabel____lib_transition_planning } from "@/lib/transition-planning";
+import { generateTransitionReadinessIntelligence, getChildFeelingLabel, getHandoverQualityLabel, getReadinessLevelLabel, getSupportPlanStatusLabel, getTransitionStatusLabel, getTransitionTypeLabel as getTransitionTypeLabel____lib_transition_readiness } from "@/lib/transition-readiness";
+import { generateTransitionsIntelligence } from "@/lib/transitions";
 import { generateTransportSafetyComplianceIntelligence } from "@/lib/transport-safety-compliance";
 import { generateTransportTravelArrangementsIntelligence } from "@/lib/transport-travel-arrangements";
+import { generateTraumaInformedIntelligence } from "@/lib/trauma-informed";
+import { generateVisitorEngagementMonitoringIntelligence, getRatingLabel as getRatingLabel____lib_visitor_engagement_monitoring, getVisitOutcomeLabel as getVisitOutcomeLabel____lib_visitor_engagement_monitoring, getVisitorTypeLabel as getVisitorTypeLabel____lib_visitor_engagement_monitoring } from "@/lib/visitor-engagement-monitoring";
+import { generateVisitorManagementQualityIntelligence, getRatingLabels as getRatingLabels____lib_visitor_management_quality, getVisitQualityLabels, getVisitorTypeLabels } from "@/lib/visitor-management-quality";
+import { generateVisitorManagementSafetyIntelligence, getIncidentTypeLabel as getIncidentTypeLabel____lib_visitor_management_safety, getRatingLabel as getRatingLabel____lib_visitor_management_safety, getVerificationStatusLabel, getVisitOutcomeLabel as getVisitOutcomeLabel____lib_visitor_management_safety, getVisitPurposeLabel as getVisitPurposeLabel____lib_visitor_management_safety, getVisitorTypeLabel as getVisitorTypeLabel____lib_visitor_management_safety } from "@/lib/visitor-management-safety";
+import { generateVisitorPartnershipQualityIntelligence, getActionStatusLabel, getPartnershipRatingLabel, getRatingLabel as getRatingLabel____lib_visitor_partnership_quality, getVisitOutcomeLabel as getVisitOutcomeLabel____lib_visitor_partnership_quality, getVisitPurposeLabel as getVisitPurposeLabel____lib_visitor_partnership_quality, getVisitorTypeLabel as getVisitorTypeLabel____lib_visitor_partnership_quality } from "@/lib/visitor-partnership-quality";
+import { generateVoiceOfChildIntelligence, getInfluenceLabel, getVoiceDomainLabel, getVoiceMethodLabel } from "@/lib/voice-of-child";
+import { generateVoiceOfChildIntelligenceReport, type StaffVoiceOfChildTraining, type VoiceOfChildPolicy, type VoiceOfChildRecord } from "@/lib/voice-of-child/voice-of-child-intelligence-engine";
 import { generateWaterSafetyLegionellaIntelligence } from "@/lib/water-safety-legionella";
+import { generateWhistleblowingConcernsIntelligence, getConcernCategoryLabel as getConcernCategoryLabel____lib_whistleblowing_concerns, getConcernSeverityLabel, getConcernStatusLabel, getDemoWhistleblowingConcernsData, getProtectionStatusLabel, getReporterTypeLabel, getResolutionOutcomeLabel as getResolutionOutcomeLabel____lib_whistleblowing_concerns } from "@/lib/whistleblowing-concerns";
 import { generateWhistleblowingIntelligence } from "@/lib/whistleblowing/whistleblowing-engine";
+import { generateWorkforceIntelligence } from "@/lib/workforce";
 import { generateWorkforceDevelopmentIntelligence } from "@/lib/workforce-development/workforce-development-engine";
-import type { WorkforceRecord, WorkforcePolicy, StaffWorkforceTraining } from "@/lib/workforce";
+import { generateYoungPersonEmploymentSupportIntelligence, getCareersPlanStatusLabel, getEngagementLevelLabel as getEngagementLevelLabel____lib_young_person_employment_support, getOutcomeStatusLabel, getRatingLabel as getRatingLabel____lib_young_person_employment_support, getSupportTypeLabel as getSupportTypeLabel____lib_young_person_employment_support } from "@/lib/young-person-employment-support";
+import type { ActivityPolicy, ActivityRecord, StaffActivityTraining } from "@/lib/activities";
+import type { AdmissionPolicy, AdmissionRecord, StaffAdmissionTraining } from "@/lib/admissions";
+import type { AdmissionOutcome, IntroductionPlan, MatchingAssessment, MatchingScore, Referral } from "@/lib/admissions-matching";
+import type { AdvocacyAwareness, AdvocacyPolicy, AdvocacyReferral, ChildParentalContact, IndependentVisitor } from "@/lib/advocacy-representation/advocacy-representation-engine";
+import type { AfterCarePolicy, AfterCareSession, StaffAfterCareTraining } from "@/lib/after-care-support-quality";
+import type { AftercareContact, CareLeaverProfile, OutcomeAssessment, SupportService } from "@/lib/aftercare-outcomes-tracking";
+import type { AllegationPolicy, AllegationRecord, StaffAllegationTraining } from "@/lib/allegations";
+import type { AllergenIncident, ChildAllergenProfile, MealPlanRecord, StaffAllergenTraining } from "@/lib/allergen-dietary-management";
+import type { GoalRecord, ReviewPolicy, ReviewRecord, StaffReviewTraining } from "@/lib/annual-development-review";
+import type { AntiBullyingPolicy, BullyingIncident, ChildBullyingSurvey, StaffAntiBullyingTraining } from "@/lib/anti-bullying-effectiveness";
+import type { AttachmentAssessment, PeerRelationship, RelationshipInteraction, RelationshipRecord, StabilityIndicator } from "@/lib/attachment-relationships/attachment-relationships-engine";
+import type { BehaviourPolicy, BehaviourRecord, StaffBehaviourTraining } from "@/lib/behaviour";
+import type { BereavementPolicy, LossEvent, StaffBereavementTraining, SupportIntervention } from "@/lib/bereavement-loss-support";
+import type { BodyMapAudit, BodyMapRecord, BodyMapTraining, SafeguardingEscalation } from "@/lib/body-map-protocol";
+import type { CareChild, CarePlanDocument, PlannedReview, ReviewAction } from "@/lib/care-planning";
+import type { ChildExploitationPreventionPolicy, ChildExploitationPreventionRecord, ContextualSafeguardingLink, ExploitationIntervention, ExploitationRiskAssessment, ExploitationTraining, MappingRecord, StaffChildExploitationPreventionTraining } from "@/lib/child-exploitation-prevention";
+import type { ChildAccount, FinancialAudit, FinancialLiteracySession, FinancialTransaction } from "@/lib/children-fund-management";
+import type { ChildProfile, ChildrenOutcomesPolicy, ChildrenOutcomesRecord, OutcomeDomain, ProgressRating, StaffChildrenOutcomesTraining } from "@/lib/children-outcomes";
+import type { AdvocacyRecord, ChildrensGuide, ComplaintAccessRecord, FeedbackRecord, ParticipationRecord, RightsAwarenessAssessment } from "@/lib/childrens-rights/childrens-rights-engine";
+import type { ClothingAssessment, ClothingPolicy, StaffClothingTraining } from "@/lib/clothing-appearance-provision";
+import type { AccessibleDocument, ChildCommunicationProfile, CommunicationAssessment, CommunicationTraining } from "@/lib/communication-accessibility/communication-accessibility-engine";
+import type { CommunityActivity, CommunityPolicy, StaffCommunityTraining } from "@/lib/community-engagement-participation";
+import type { CommunityBarrierRecord, InclusionAssessment, SocialNetwork } from "@/lib/community-integration";
+import type { ComplaintPolicy, ComplaintRecord, StaffComplaintTraining } from "@/lib/complaint-resolution-effectiveness";
+import type { ComplaintsPolicy, StaffComplaintsTraining } from "@/lib/complaints-advocacy-access";
+import type { LessonLearned } from "@/lib/complaints-feedback-quality/complaints-feedback-quality-engine";
+import type { ConflictIncident, ConflictResolutionPolicy, StaffConflictResolutionTraining } from "@/lib/conflict-resolution-management";
+import type { ConsentPolicy, ConsentRecord, StaffConsentTraining } from "@/lib/consent-management/consent-management-engine";
+import type { ContactPolicy, ContactRecord, StaffContactTraining } from "@/lib/contact";
+import type { ContextualSafeguardingPolicy, ContextualSafeguardingRecord, EnvironmentalRisk, Intervention, MappingEvent, OnlineRisk, PeerAssociation, ProtectiveFactor, StaffContextualSafeguardingTraining } from "@/lib/contextual-safeguarding";
+import type { CourtOrder, LegalMeeting, LegalTraining, OrderConditionReview } from "@/lib/court-order-compliance";
+import type { ArtsSession, CreativeArtsPolicy, StaffCreativeArtsTraining } from "@/lib/creative-arts-expression";
+import type { CriticalIncident, IncidentDebrief, LearningOutcome, PracticeChange } from "@/lib/critical-incident-review/critical-incident-review-engine";
+import type { CulturalActivity, CulturalPolicy, StaffCulturalTraining } from "@/lib/cultural-identity-celebration";
+import type { CulturalNeedsAssessment, IdentityPlan } from "@/lib/cultural-identity-support/cultural-identity-support-engine";
+import type { CultureChild, DiversityIncident, IdentityActivity, IdentityNeedsAssessment, StaffDiversityTraining } from "@/lib/culture-identity";
+import type { DailyLogPolicy, DailyLogRecord, StaffDailyLogTraining } from "@/lib/daily-log";
+import type { DataBreach, DataGovernance, SubjectAccessRequest } from "@/lib/data-protection/data-protection-engine";
+import type { AuthorityDecision, AuthorityPolicy, StaffAuthorityTraining } from "@/lib/delegated-authority";
+import type { DentalAppointment, DentalTreatmentPlan, OralHygieneRecord, StaffDentalTraining } from "@/lib/dental-health-monitoring";
+import type { ChildRightsSafeguard, DoLSReview, LegalCompliance, RestrictionRecord } from "@/lib/deprivation-of-liberty";
+import type { DeviceAccessRecord, DigitalCitizenshipRecord, DigitalSkillAssessment, OnlineLearningRecord } from "@/lib/digital-literacy";
+import type { DigitalPolicy, DigitalSession, StaffDigitalTraining } from "@/lib/digital-literacy-development";
+import type { AccessibilityAudit, AdjustmentRecord, EquipmentRecord, StaffDisabilityTraining } from "@/lib/disability-reasonable-adjustments/disability-reasonable-adjustments-engine";
+import type { EducationPolicy, EducationRecord, StaffEducationTraining } from "@/lib/education";
+import type { AcademicOutcome, AttendanceRecord, ExclusionRecord, PEPRecord, SchoolStability } from "@/lib/education-achievement";
+import type { AchievementRecord, AchievementType, AttendanceStatus, ExclusionType, PEPStatus, SENDCategory, SENDSupportRecord } from "@/lib/education-outcomes";
+import type { EmergencyDrill, EmergencyPolicy, StaffEmergencyTraining } from "@/lib/emergency-preparedness";
+import type { EmotionalRegulationPolicy, RegulationSession, StaffEmotionalRegulationTraining } from "@/lib/emotional-regulation-development";
+import type { RegulationPolicy, StaffRegulationTraining } from "@/lib/emotional-regulation-support";
+import type { EnvironmentPolicy, EnvironmentRecord, StaffEnvironmentTraining } from "@/lib/environment";
+import type { ChildEnvironmentView, EnvironmentalInspection, MaintenanceRequest, PersonalisationRecord } from "@/lib/environmental-quality";
+import type { RemediationAction, RiskAssessment, SafetyCheck, StaffSafetyTraining } from "@/lib/environmental-risk-compliance";
+import type { StaffSustainabilityTraining, SustainabilityActivity, SustainabilityPolicy } from "@/lib/environmental-sustainability";
+import type { EcoActivity, EnvironmentalPolicy, StaffEnvironmentalTraining } from "@/lib/environmental-sustainability-awareness";
+import type { ConcernRecord, EscalationRecord, EscalationThresholdPolicy, EscalationThresholdRecord, StaffEscalationThresholdTraining } from "@/lib/escalation-intelligence";
+import type { DisruptionEpisode, PreventionPlan, StaffExclusionTraining } from "@/lib/exclusion-disruption-management";
+import type { ContactArrangement, ContactReview, ContactSession } from "@/lib/family-contact";
+import type { FamilyContact, FamilyContactPolicy, StaffFamilyContactTraining } from "@/lib/family-contact-quality";
+import type { DocumentStatus, FiledDocument, FilingCabinetPolicy, FilingCabinetRecord, FilingCategory, StaffFilingCabinetTraining } from "@/lib/filing-cabinet";
+import type { AllowancePolicy, ChildFinancialProfile } from "@/lib/financial-stewardship/financial-stewardship-engine";
+import type { FireSafetyPolicy, FireSafetyRecord, FireSafetyStaffTraining } from "@/lib/fire-safety";
+import type { EquipmentCheck, EvacuationPlan, FireDrillRecord, StaffFireTraining } from "@/lib/fire-safety-preparedness";
+import type { MealRecord, NutritionPolicy, StaffNutritionTraining } from "@/lib/food-nutrition-quality";
+import type { DevelopmentObjective, ManagementPresence, NotificationRecord, PolicyRecord, Reg45Report, StaffMeetingRecord, StatementOfPurpose } from "@/lib/governance";
+import type { HandoverPolicy, HandoverRecord, StaffHandoverTraining } from "@/lib/handover";
+import type { CommunicationRecord, InformationGovernance, TeamMeetingRecord } from "@/lib/handover-communication-quality/handover-communication-quality-engine";
+import type { HealthIntelligencePolicy, HealthIntelligenceRecord, HealthPolicy, HealthRecord, StaffHealthIntelligenceTraining, StaffHealthTraining } from "@/lib/health";
+import type { GPRegistration, HealthActionPlan, HealthScreeningRecord, HealthTraining } from "@/lib/health-screening-compliance";
+import type { AtmosphereObservation, ChildAtmosphereFeedback, EnvironmentAudit, StaffCultureRecord } from "@/lib/home-atmosphere-ethos";
+import type { ImpactMonitoring, ResidentConsultation } from "@/lib/home-matching-impact";
+import type { AcademicIntervention, EducationalResource, HomeworkRecord } from "@/lib/homework-academic-support";
+import type { HomeworkSession, LearningPolicy, StaffLearningTraining } from "@/lib/homework-learning-support";
+import type { StaffStudySupportTraining, StudySession, StudySupportPolicy } from "@/lib/homework-study-support";
+import type { HouseMeetingPolicy, HouseMeetingRecord, StaffHouseMeetingTraining } from "@/lib/house-meetings";
+import type { HygienePolicy, HygieneSession, StaffHygieneTraining } from "@/lib/hygiene-personal-care";
+import type { IncidentRecord, IncidentTrend, PatternIndicator, StaffResponse } from "@/lib/incident-pattern-analysis";
+import type { IncidentPolicy, StaffIncidentTraining } from "@/lib/incidents";
+import type { IndependencePolicy, IndependenceRecord, StaffIndependenceTraining } from "@/lib/independence";
+import type { IndependenceGoal, PathwayPlanProgress, PracticalSession, SkillAssessment } from "@/lib/independence-life-skills";
+import type { LivingSkillsPolicy, SkillsSession, StaffLivingSkillsTraining } from "@/lib/independent-living-skills";
+import type { IndependentVisit, StaffAdvocacyTraining } from "@/lib/independent-visitor-advocacy";
+import type { InspectionPolicy, InspectionRecord, StaffInspectionTraining } from "@/lib/inspection";
+import type { InternetSafetyPolicy, OnlineSafetyIncident, StaffInternetTraining } from "@/lib/internet-safety-monitoring";
+import type { KeyWorkerAssignment, KeyWorkerGoal, KeyWorkerSession } from "@/lib/key-worker";
+import type { KeyWorkerPolicy, StaffKeyWorkerTraining } from "@/lib/key-worker-relationship";
+import type { KeyWorkingPolicy, KeyWorkingRecord, StaffKeyWorkingTraining } from "@/lib/key-working";
+import type { CarePlanContribution, KeyWorkSession, KeyWorkerDevelopment, KeyWorkerRelationship } from "@/lib/key-working-effectiveness";
+import type { IROActivity, LACReview, ReviewRecommendation } from "@/lib/lac-review/lac-review-engine";
+import type { CommunicationAudit, CommunicationSupportSession, StaffCommunicationTraining } from "@/lib/language-communication-support";
+import type { AccommodationPlan, IndependenceSkillAssessment, LeavingCareChild, PathwayPlan, SupportArrangement } from "@/lib/leaving-care";
+import type { LessonAction, LessonsLearnedPolicy, LessonsLearnedRecord, PostIncidentReview, StaffLessonsLearnedTraining } from "@/lib/lessons-learned";
+import type { LifeStoryPolicy, LifeStoryRecord, StaffLifeStoryTraining } from "@/lib/life-story";
+import type { LifeStorySession, MemoryRecord } from "@/lib/life-story-work";
+import type { LocationAssessmentRecord, LocationPolicy, StaffLocationTraining } from "@/lib/location-assessment";
+import type { OversightPolicy, OversightRecord, StaffOversightTraining } from "@/lib/management-oversight/management-oversight-engine";
+import type { MedicationPolicy, MedicationRecord, StaffMedicationTraining } from "@/lib/medication";
+import type { MedicationAdministration, MedicationError, StorageAudit } from "@/lib/medication-error-prevention/medication-error-prevention-engine";
+import type { ControlledDrugRecord, SelfAdminAssessment, StockCheck } from "@/lib/medication-management";
+import type { TherapeuticIntervention, WellbeingAssessment, WellbeingSafetyPlan } from "@/lib/mental-health-wellbeing";
+import type { ChildParticipationRecord, MealFeedback, NutritionAudit, WeeklyMenu } from "@/lib/menu-planning-nutrition";
+import type { MissingEpisode, MissingPolicy, StaffMissingTraining } from "@/lib/missing-absent-episodes";
+import type { MissingFromCarePolicy, MissingFromCareRecord, StaffMissingFromCareTraining } from "@/lib/missing-from-care";
+import type { MissingFromCareIntelligencePolicy, MissingFromCareIntelligenceRecord, StaffMissingFromCareIntelligenceTraining } from "@/lib/missing-from-care/missing-from-care-intelligence-engine";
+import type { MorningPolicy, MorningRecord, StaffMorningTraining } from "@/lib/morning-routine-preparation";
+import type { ChildMultiAgencyProfile, MultiAgencyPolicy, MultiAgencyRecord, StaffMultiAgencyTraining } from "@/lib/multi-agency";
+import type { Escalation, InformationSharingRecord, MultiAgencyMeeting, ProfessionalRelationship } from "@/lib/multi-agency-effectiveness";
+import type { AgencyReferral, AgencyRelationship } from "@/lib/multi-agency-partnership";
+import type { NightCarePolicy, NightCareRecord, NightCareStaffTraining } from "@/lib/night-care";
+import type { NightCheck, NightCheckPlan, NightIncident, NightMonitoringPolicy, NightMonitoringRecord, NightShift, SleepPattern, StaffNightMonitoringTraining } from "@/lib/night-monitoring";
+import type { NightPolicy, StaffNightTraining } from "@/lib/night-supervision-quality";
+import type { NotifiableEvent, NotifiableEventsPolicy, NotifiableEventsRecord, StaffNotifiableEventsTraining } from "@/lib/notifiable-events";
+import type { NotificationAudit, NotificationPolicy } from "@/lib/notification-timeliness";
+import type { CookingSession, FoodSafetyRecord, MenuPlan, NutritionChild } from "@/lib/nutrition";
+import type { ChildDietaryProfile, HealthPromotion, PhysicalActivity } from "@/lib/nutrition-healthy-living";
+import type { HydrationRecord } from "@/lib/nutrition-hydration-monitoring";
+import type { ActionPlanItem, AreaScore, InspectionHistory, SCCIFEvidenceItem } from "@/lib/ofsted-readiness/ofsted-readiness-engine";
+import type { OnlineEducationSession, OnlineIncident, OnlineRiskAssessment, OnlineSafetyChild, OnlineSafetyPolicy, StaffOnlineTraining } from "@/lib/online-safety";
+import type { ChildOutcomePlan, OutcomeBaseline, OutcomeMeasurement, OutcomeTarget } from "@/lib/outcomes-measurement/outcomes-measurement-engine";
+import type { EnrichmentPlan, RiskBenefitAssessment } from "@/lib/outdoor-activity-enrichment";
+import type { ContactRiskAssessment, ParentalContactPlan, ParentalContactSession } from "@/lib/parental-contact-management";
+import type { FamilyPlanRecord, ParentalFeedbackRecord, ParentalSupportRecord } from "@/lib/parental-engagement";
+import type { ParticipationPolicy, StaffParticipationTraining } from "@/lib/participation";
+import type { GroupAssessment, PeerDynamicsIntelligencePolicy, PeerDynamicsIntelligenceRecord, PeerInteraction, StaffPeerDynamicsTraining } from "@/lib/peer-dynamics";
+import type { MentoringSession, PeerPairing, RelationshipReview, StaffMentoringTraining } from "@/lib/peer-mentoring-effectiveness";
+import type { PeerPolicy, StaffPeerTraining } from "@/lib/peer-relationship-dynamics";
+import type { PeerRelationshipPolicy, StaffPeerSupportTraining } from "@/lib/peer-relationship-quality";
+import type { HygieneRecord } from "@/lib/personal-hygiene-self-care";
+import type { AnimalRiskAssessment, AnimalSession, AnimalWelfareCheck, StaffAnimalTraining } from "@/lib/pet-therapy-animal-interaction";
+import type { HealthAppointment, HealthAssessment, HealthNeed, ImmunisationRecord } from "@/lib/physical-health-monitoring/physical-health-monitoring-engine";
+import type { CompatibilityReview, DisruptionRecord, PlacementMatch, PlacementStability } from "@/lib/placement-matching-quality";
+import type { DisruptionEvent, MatchingFactorScore, MatchingRecord, Placement, PlacementOutcome, StabilitySupport } from "@/lib/placement-stability";
+import type { PlacementPolicy, PlacementReview, Rating, ReviewType, StabilityStatus, StaffPlacementTraining } from "@/lib/placement-stability-continuity/placement-stability-continuity-engine";
+import type { PlacementStabilityPolicy, PlacementStabilityRecord, StaffPlacementStabilityTraining } from "@/lib/placement-stability/placement-stability-intelligence-engine";
+import type { LiteracySession, PocketMoneyPolicy, PocketMoneyRecord, StaffPocketMoneyTraining } from "@/lib/pocket-money";
+import type { FinancialPolicy, MoneyTransaction, StaffFinancialTraining } from "@/lib/pocket-money-financial-education";
+import type { FinancialLiteracyPolicy, FinancialSession, StaffFinancialLiteracyTraining } from "@/lib/pocket-money-financial-literacy";
+import type { BehaviourIncident, BehaviourSupportPlan, DeEscalationRecord, RecognitionRecord, SanctionRecord } from "@/lib/positive-behaviour/positive-behaviour-engine";
+import type { BehaviourOutcome, PraiseRecord, RewardRecord, StaffReinforcementTraining } from "@/lib/positive-reinforcement-rewards";
+import type { LearningAction, PatternAnalysis, TeamLearningSession } from "@/lib/post-incident-learning/post-incident-learning-engine";
+import type { PremisesIntelligencePolicy, PremisesIntelligenceRecord, StaffPremisesTraining } from "@/lib/premises";
+import type { PremisesCheck } from "@/lib/premises/premises-engine";
+import type { PrivacyPolicy, PrivacyRecord, StaffPrivacyTraining } from "@/lib/privacy";
+import type { ChildPrivacyFeedback, PrivacyAudit, PrivacyIncident } from "@/lib/privacy-dignity-assessment";
+import type { BoundaryAudit, BoundaryPolicy, StaffBoundaryTraining } from "@/lib/professional-boundary-compliance";
+import type { CPDRecord, LearningCulture, QualificationProgress, SupervisionDevelopment } from "@/lib/professional-development/professional-development-engine";
+import type { DamageIncident, DamagePreventionMeasure, PropertyInspection, RepairRecord } from "@/lib/property-damage-assessment/property-damage-assessment-engine";
+import type { InternalAudit, QualityImprovementInitiative, QualityMonitoringRecord, SelfEvaluationRecord } from "@/lib/quality-assurance/quality-assurance-engine";
+import type { LifecycleStatus, QualityEcologyPolicy, QualityEcologyRecord, ScheduledOccurrence, StaffQualityEcologyTraining } from "@/lib/quality-ecology";
+import type { QualityPolicy, QualityReviewRecord, StaffQualityTraining } from "@/lib/quality-of-care";
+import type { RecordEntry, RecordExpectation } from "@/lib/record-quality/record-quality-engine";
+import type { LeisureActivity, LeisurePolicy, StaffLeisureTraining } from "@/lib/recreational-leisure-access";
+import type { PracticeDevelopmentGoal, ReflectiveActivity, StaffProfile } from "@/lib/reflective-practice/reflective-practice-engine";
+import type { ChildParticipation, ManagementResponse, Reg44Recommendation, Reg44Visit } from "@/lib/reg44-compliance";
+import type { Reg44VisitPolicy, Reg44VisitRecord, StaffReg44VisitTraining } from "@/lib/reg44-visits";
+import type { ActionPoint, Reg44Report, Reg44SectionEntry, Reg45Review, StatutoryNotification } from "@/lib/regulatory";
+import type { RegSelfAssessmentPolicy, RegSelfAssessmentRecord, StaffRegSelfAssessmentTraining } from "@/lib/regulatory-self-assessment";
+import type { ExternalFeedback, ImprovementAction, SelfAssessmentEntry } from "@/lib/regulatory-self-assessment/regulatory-self-assessment-engine";
+import type { RegulatoryPolicy, RegulatoryRecord, StaffRegulatoryTraining } from "@/lib/regulatory/regulatory-intelligence-engine";
+import type { ReligiousPolicy, ReligiousSpiritualAssessment, ReligiousSupportRecord, StaffReligiousTraining } from "@/lib/religious-spiritual-needs/religious-spiritual-needs-engine";
+import type { ChildFaithProfile, FestivalObservance, ReligiousSupportActivity } from "@/lib/religious-spiritual-support/religious-spiritual-support-engine";
+import type { IncidentLink, RestorativeConversation } from "@/lib/restorative-practice/restorative-practice-engine";
+import type { RestraintPolicy, RestraintRecord, StaffRestraintTraining } from "@/lib/restraint";
+import type { RestraintReduction, RestraintTraining } from "@/lib/restraint-analysis/restraint-analysis-engine";
+import type { PreventionMeasure, ReturnHomeInterview, StrategyMeeting } from "@/lib/return-home-interview-quality/return-home-interview-quality-engine";
+import type { RoomInspection, RoomPolicy, RoomRecord, StaffRoomTraining } from "@/lib/room-standards-personalisation";
+import type { RoutineChild, RoutinePreferenceRecord, RoutineRecord, StaffShiftRecord } from "@/lib/routine-consistency";
+import type { SafeguardingPolicy, SafeguardingRecord, StaffSafeguardingTraining } from "@/lib/safeguarding";
+import type { SafeguardingAudit, SafeguardingReferral, SafeguardingSupervision, SafeguardingTraining } from "@/lib/safeguarding-effectiveness";
+import type { DSLOversight, StaffSafeguardingRecord } from "@/lib/safeguarding-oversight";
+import type { SafeguardingOversightPolicy, SafeguardingOversightRecord, StaffSafeguardingOversightTraining } from "@/lib/safeguarding-oversight/safeguarding-oversight-intelligence-engine";
+import type { SaferRecruitmentPolicy, SaferRecruitmentRecord, StaffSaferRecruitmentTraining } from "@/lib/safer-recruitment";
+import type { SanctionPolicy, StaffSanctionTraining } from "@/lib/sanctions";
+import type { ChildWelfare, DischargeAssessment, SecureAccommodationOrder, WelfareReview } from "@/lib/secure-accommodation";
+import type { ChildRiskProfile, EnvironmentalSafetyCheck, SelfHarmIncident, StaffSelfHarmTraining } from "@/lib/self-harm-prevention-protocol";
+import type { ChildSensoryProfile, EnvironmentalAdaptation, SpaceAssessment, TherapeuticSpaceUsage } from "@/lib/sensory-environment";
+import type { SensoryAssessment, SensoryPolicy, StaffSensoryTraining } from "@/lib/sensory-environment-quality";
+import type { SensoryIntervention } from "@/lib/sensory-processing-support";
+import type { RSEPolicy, RSESession, SexualHealthReferral, StaffRSETraining } from "@/lib/sexual-health-relationships-education";
+import type { HomeShiftRequirements, ShiftRecord } from "@/lib/shift-intelligence";
+import type { ContactBarrier, SiblingAssessment, SiblingContact, StaffSiblingTraining } from "@/lib/sibling-contact-management";
+import type { SiblingContactReview, SiblingContactSession, SiblingRelationship } from "@/lib/sibling-contact-quality";
+import type { SleepPolicy, SleepRecord, StaffSleepTraining } from "@/lib/sleep-hygiene-quality";
+import type { NightRecord, SleepPlan } from "@/lib/sleep-wellbeing/sleep-wellbeing-engine";
+import type { DigitalSafetyIncident, DigitalSafetyPolicy, ImageConsentRecord } from "@/lib/social-media-digital-footprint";
+import type { OnlineSafetySession, StaffOnlineSafetyTraining } from "@/lib/social-media-online-safety";
+import type { SpiritualActivity, SpiritualWellbeingPolicy, StaffSpiritualWellbeingTraining } from "@/lib/spiritual-wellbeing-development";
+import type { AgencyUsage, ConsistencyRecord, ShiftRota, StaffMember, StaffingIncident } from "@/lib/staff-deployment";
+import type { CompetencyAssessment, PDPGoal, PerformanceReview, QualificationRecord } from "@/lib/staff-performance/staff-performance-engine";
+import type { SecondaryTraumaScreen, StaffAbsenceRecord, SupervisionRecord, SupportAccessRecord, TeamHealthCheck } from "@/lib/staff-resilience";
+import type { SupervisionPolicy, SupervisionSession, SupervisorTraining } from "@/lib/staff-supervision-effectiveness";
+import type { StaffSupervisionEffectivenessPolicy, StaffSupervisionEffectivenessRecord, StaffSupervisionEffectivenessTraining } from "@/lib/staff-supervision-effectiveness/staff-supervision-effectiveness-intelligence-engine";
+import type { ChildNeed, TrainingRecord } from "@/lib/staff-training/staff-training-engine";
+import type { StaffWellbeingPolicy, StaffWellbeingRecord, StaffWellbeingTraining } from "@/lib/staff-wellbeing";
+import type { StaffResilienceTraining, WellbeingPolicy, WellbeingScore, WellbeingType } from "@/lib/staff-wellbeing-resilience";
+import type { AlignmentLevel, EvidenceQuality, OfstedRecommendation, SoPAlignmentAssessment, SoPReviewRecord, SoPSection, StakeholderFeedback, StakeholderType } from "@/lib/statement-of-purpose-alignment/statement-of-purpose-alignment-engine";
+import type { AwarenessSession, ChildSubstanceProfile, StaffSubstanceTraining, SubstanceIntervention } from "@/lib/substance-misuse-awareness";
+import type { PreventionPolicy, PreventionSession, PreventionTopic, StaffPreventionTraining } from "@/lib/substance-misuse-prevention";
+import type { StaffDevelopmentOutcome, SupervisionAction, SupervisionSchedule } from "@/lib/supervision-quality/supervision-quality-engine";
+import type { StaffSupervisionTraining } from "@/lib/supervision/supervision-engine";
+import type { ChildTherapeuticProfile, HomeTherapeuticConfig, StaffTherapeuticTraining, TherapeuticPolicy, TherapeuticRecord } from "@/lib/therapeutic";
+import type { TherapeuticEnvironment, TherapyPlan, TherapyReferral, TherapySession } from "@/lib/therapeutic-care";
+import type { CrisisIncident, CrisisPolicy, StaffCrisisTraining } from "@/lib/therapeutic-crisis-intervention";
+import type { StaffTrainingCompetency, TrainingPolicy } from "@/lib/training";
+import type { StaffTransitionTraining, TransitionAssessment, TransitionPolicy } from "@/lib/transition-leaving-care-readiness";
+import type { TransitionMeeting } from "@/lib/transition-pathway-planning";
+import type { TransitionPlan } from "@/lib/transition-planning";
+import type { PostTransitionSupport, ReadinessAssessment } from "@/lib/transition-readiness";
+import type { TransitionRecord } from "@/lib/transitions";
+import type { DriverRecord, JourneyRecord, TransportIncident, VehicleRecord } from "@/lib/transport-safety-compliance";
+import type { StaffTravelTraining, TravelPolicy, TravelRecord, VehicleCheck } from "@/lib/transport-travel-arrangements";
+import type { ConsultationRecord, TherapeuticInterventionRecord, TraumaScreening, TraumaTrainingRecord } from "@/lib/trauma-informed";
+import type { StaffVisitorTraining, VisitorPolicy, VisitorRecord } from "@/lib/visitor-engagement-monitoring";
+import type { VisitorIncident } from "@/lib/visitor-management-safety";
+import type { PartnershipAssessment, VisitRecord, VisitorAction } from "@/lib/visitor-partnership-quality";
+import type { ChildVoiceProfile, VoiceEntry } from "@/lib/voice-of-child";
+import type { LegionellaAssessment, StaffWaterSafetyTraining, TemperatureCheck, WaterSafetyPolicy } from "@/lib/water-safety-legionella";
+import type { CultureIndicator, ProfessionalCourageRecord, StaffAwarenessRecord, WhistleblowingConcern, WhistleblowingPolicy } from "@/lib/whistleblowing/whistleblowing-engine";
+import type { StaffWorkforceTraining, WorkforcePolicy, WorkforceRecord } from "@/lib/workforce";
+import type { DevelopmentPlan, PracticeObservation, StaffQualification } from "@/lib/workforce-development/workforce-development-engine";
+import type { ChildEmploymentProfile, EmploymentSupportSession, PartnershipRecord, StaffEmploymentTraining } from "@/lib/young-person-employment-support";
 
 type LegacyHandler = {
   GET?: (req: NextRequest) => Promise<Response>;
@@ -801,9 +1140,9 @@ async function get_after_care_support_quality(req: NextRequest): Promise<Respons
     data: {
       ...result,
       meta: {
-        supportTypeLabels: getSupportTypeLabels(),
-        engagementLevelLabels: getEngagementLevelLabels(),
-        ratingLabels: getRatingLabels(),
+        supportTypeLabels: getSupportTypeLabels____lib_after_care_support_quality(),
+        engagementLevelLabels: getEngagementLevelLabels____lib_after_care_support_quality(),
+        ratingLabels: getRatingLabels____lib_after_care_support_quality(),
       },
     },
   });
@@ -951,7 +1290,7 @@ async function get_aftercare_outcomes_tracking(req: NextRequest): Promise<Respon
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_aftercare_outcomes_tracking(r)],
           ),
         ),
       },
@@ -1144,7 +1483,7 @@ async function get_allergen_dietary_management(req: NextRequest): Promise<Respon
         ),
         dietaryRequirementLabels: Object.fromEntries(
           (["halal", "kosher", "vegetarian", "vegan", "gluten_free", "dairy_free", "medical_diet", "cultural_preference", "none"] as const).map(
-            (d) => [d, getDietaryRequirementLabel(d)],
+            (d) => [d, getDietaryRequirementLabel____lib_allergen_dietary_management(d)],
           ),
         ),
         severityLevelLabels: Object.fromEntries(
@@ -1169,7 +1508,7 @@ async function get_allergen_dietary_management(req: NextRequest): Promise<Respon
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_allergen_dietary_management(r)],
           ),
         ),
       },
@@ -1495,18 +1834,18 @@ async function get_annual_development_review(req: NextRequest): Promise<Response
           id: r.id,
           childName: r.childName,
           reviewDate: r.reviewDate,
-          reviewType: getReviewTypeLabel(r.reviewType),
-          participation: getParticipationLevelLabel(r.childParticipation),
+          reviewType: getReviewTypeLabel____lib_annual_development_review(r.reviewType),
+          participation: getParticipationLevelLabel____lib_annual_development_review(r.childParticipation),
           heldOnTime: r.heldOnTime,
         })),
         goalSummary: goals.map((g) => ({
           id: g.id,
           childName: g.childName,
           description: g.goalDescription,
-          status: getGoalStatusLabel(g.goalStatus),
+          status: getGoalStatusLabel____lib_annual_development_review(g.goalStatus),
           responsiblePerson: g.responsiblePerson,
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_annual_development_review(result.rating),
       },
     },
   });
@@ -1711,10 +2050,10 @@ async function get_anti_bullying_effectiveness(req: NextRequest): Promise<Respon
           id: i.id,
           date: i.date,
           type: getBullyingTypeLabel(i.bullyingType),
-          severity: getSeverityLabel(i.severity),
+          severity: getSeverityLabel____lib_anti_bullying_effectiveness(i.severity),
           outcome: getResolutionLabel(i.resolutionOutcome),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_anti_bullying_effectiveness(result.rating),
       },
     },
   });
@@ -2240,10 +2579,10 @@ async function get_bereavement_loss_support(req: NextRequest): Promise<Response>
       ...result,
       meta: {
         lossTypeLabels: getLossTypeLabels(),
-        supportTypeLabels: getSupportTypeLabels(),
+        supportTypeLabels: getSupportTypeLabels____lib_bereavement_loss_support(),
         griefStageLabels: getGriefStageLabels(),
         supportOutcomeLabels: getSupportOutcomeLabels(),
-        ratingLabels: getRatingLabels(),
+        ratingLabels: getRatingLabels____lib_bereavement_loss_support(),
       },
     });
   } catch (error) {
@@ -2288,10 +2627,10 @@ async function post_bereavement_loss_support(request: NextRequest): Promise<Resp
       ...result,
       meta: {
         lossTypeLabels: getLossTypeLabels(),
-        supportTypeLabels: getSupportTypeLabels(),
+        supportTypeLabels: getSupportTypeLabels____lib_bereavement_loss_support(),
         griefStageLabels: getGriefStageLabels(),
         supportOutcomeLabels: getSupportOutcomeLabels(),
-        ratingLabels: getRatingLabels(),
+        ratingLabels: getRatingLabels____lib_bereavement_loss_support(),
       },
     });
   } catch (error) {
@@ -2505,7 +2844,7 @@ async function get_body_map_protocol(req: NextRequest): Promise<Response> {
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_body_map_protocol(r)],
           ),
         ),
       },
@@ -2644,7 +2983,7 @@ async function get_care_planning(req: NextRequest): Promise<Response> {
 
   const enrichedTypeBreakdown = result.reviewTypeBreakdown.map((t) => ({
     ...t,
-    reviewTypeLabel: getReviewTypeLabel(t.reviewType),
+    reviewTypeLabel: getReviewTypeLabel____lib_care_planning(t.reviewType),
   }));
 
   return NextResponse.json({
@@ -2654,7 +2993,7 @@ async function get_care_planning(req: NextRequest): Promise<Response> {
       meta: {
         statusLabels: Object.fromEntries(
           (["completed_on_time", "completed_late", "overdue", "scheduled", "cancelled"] as const).map(
-            (s) => [s, getReviewStatusLabel(s)],
+            (s) => [s, getReviewStatusLabel____lib_care_planning(s)],
           ),
         ),
       },
@@ -2943,7 +3282,7 @@ async function get_child_exploitation_prevention(req: NextRequest): Promise<Resp
           ([level, count]) => ({
             level,
             count,
-            label: getRiskLevelLabel(level as "no_identified_risk" | "emerging" | "moderate" | "significant" | "critical"),
+            label: getRiskLevelLabel____lib_child_exploitation_prevention(level as "no_identified_risk" | "emerging" | "moderate" | "significant" | "critical"),
           }),
         ),
       },
@@ -3651,7 +3990,7 @@ async function get_clothing_appearance_provision(req: NextRequest): Promise<Resp
           (["excellent", "good", "adequate", "poor", "not_assessed"] as const).map((q) => [q, getProvisionQualityLabel(q)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_clothing_appearance_provision(r)]),
         ),
       },
     },
@@ -4032,13 +4371,13 @@ async function get_community_engagement_participation(req: NextRequest): Promise
       ...result,
       meta: {
         activityTypeLabels: Object.fromEntries(
-          (["sports_club", "youth_group", "volunteering", "cultural_event", "religious_group", "hobby_class", "community_project", "social_outing"] as const).map((t) => [t, getActivityTypeLabel(t)]),
+          (["sports_club", "youth_group", "volunteering", "cultural_event", "religious_group", "hobby_class", "community_project", "social_outing"] as const).map((t) => [t, getActivityTypeLabel____lib_community_engagement_participation(t)]),
         ),
         participationLevelLabels: Object.fromEntries(
-          (["highly_engaged", "regular_participant", "occasional", "reluctant", "non_participant"] as const).map((p) => [p, getParticipationLevelLabel(p)]),
+          (["highly_engaged", "regular_participant", "occasional", "reluctant", "non_participant"] as const).map((p) => [p, getParticipationLevelLabel____lib_community_engagement_participation(p)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_community_engagement_participation(r)]),
         ),
       },
     },
@@ -4108,12 +4447,12 @@ async function get_community_integration(req: NextRequest): Promise<Response> {
       meta: {
         activityCategoryLabels: Object.fromEntries(
           (["sport", "arts_culture", "music", "faith", "volunteering", "youth_group", "social_club", "employment", "training", "community_event"] as const).map(
-            (c) => [c, getActivityCategoryLabel(c)],
+            (c) => [c, getActivityCategoryLabel____lib_community_integration(c)],
           ),
         ),
         participationLevelLabels: Object.fromEntries(
           (["regular", "occasional", "tried_once", "refused", "not_offered"] as const).map(
-            (p) => [p, getParticipationLevelLabel(p)],
+            (p) => [p, getParticipationLevelLabel____lib_community_integration(p)],
           ),
         ),
         friendshipQualityLabels: Object.fromEntries(
@@ -4376,9 +4715,9 @@ async function get_complaint_resolution_effectiveness(req: NextRequest): Promise
           childName: r.childName,
           date: r.complaintDate,
           source: getComplaintSourceLabel(r.complaintSource),
-          outcome: getResolutionOutcomeLabel(r.resolutionOutcome),
+          outcome: getResolutionOutcomeLabel____lib_complaint_resolution_effectiveness(r.resolutionOutcome),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_complaint_resolution_effectiveness(result.rating),
       },
     },
   });
@@ -4568,12 +4907,12 @@ async function get_complaints_advocacy_access(req: NextRequest): Promise<Respons
         ),
         resolutionOutcomeLabels: Object.fromEntries(
           (["upheld", "partially_upheld", "not_upheld", "withdrawn", "pending"] as const).map(
-            (o) => [o, getResolutionOutcomeLabel(o)],
+            (o) => [o, getResolutionOutcomeLabel____lib_complaints_advocacy_access(o)],
           ),
         ),
         advocacyTypeLabels: Object.fromEntries(
           (["independent_advocate", "childrens_rights_officer", "irp", "ofsted_direct", "childline", "peer_advocacy"] as const).map(
-            (t) => [t, getAdvocacyTypeLabel(t)],
+            (t) => [t, getAdvocacyTypeLabel____lib_complaints_advocacy_access(t)],
           ),
         ),
         satisfactionLevelLabels: Object.fromEntries(
@@ -4583,7 +4922,7 @@ async function get_complaints_advocacy_access(req: NextRequest): Promise<Respons
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_complaints_advocacy_access(r)],
           ),
         ),
       },
@@ -4979,10 +5318,10 @@ async function get_conflict_resolution_management(req: NextRequest): Promise<Res
           (["peer_disagreement", "staff_child_conflict", "bullying_incident", "property_dispute", "boundary_challenge", "group_tension", "verbal_altercation", "physical_altercation"] as const).map((t) => [t, getConflictTypeLabel(t)]),
         ),
         resolutionOutcomeLabels: Object.fromEntries(
-          (["fully_resolved", "partially_resolved", "ongoing_management", "escalated", "unresolved"] as const).map((o) => [o, getResolutionOutcomeLabel(o)]),
+          (["fully_resolved", "partially_resolved", "ongoing_management", "escalated", "unresolved"] as const).map((o) => [o, getResolutionOutcomeLabel____lib_conflict_resolution_management(o)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_conflict_resolution_management(r)]),
         ),
       },
     },
@@ -5296,7 +5635,7 @@ async function get_contextual_safeguarding(req: NextRequest): Promise<Response> 
         harmDomainLabels: result.harmDomainBreakdown.map((h) => ({
           ...h,
           label: getHarmDomainLabel(h.domain),
-          riskLabel: getRiskLevelLabel(h.riskLevel),
+          riskLabel: getRiskLevelLabel____lib_contextual_safeguarding(h.riskLevel),
         })),
       },
     },
@@ -5378,10 +5717,10 @@ async function get_court_order_compliance(req: NextRequest): Promise<Response> {
           conditionCount: o.conditions.length,
           complianceBreakdown: o.conditions.map((c) => ({
             type: c.conditionType,
-            status: getComplianceStatusLabel(c.complianceStatus),
+            status: getComplianceStatusLabel____lib_court_order_compliance(c.complianceStatus),
           })),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_court_order_compliance(result.rating),
       },
     },
   });
@@ -5472,7 +5811,7 @@ async function get_creative_arts_expression(req: NextRequest): Promise<Response>
           (["highly_expressive", "expressive", "moderate", "limited", "disengaged"] as const).map((e) => [e, getExpressionLevelLabel(e)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_creative_arts_expression(r)]),
         ),
       },
     },
@@ -5807,10 +6146,10 @@ async function get_cultural_identity_celebration(req: NextRequest): Promise<Resp
           (["heritage_exploration", "language_support", "food_traditions", "religious_observance", "cultural_events", "identity_work", "community_connections", "arts_expression"] as const).map((a) => [a, getCulturalAreaLabel(a)]),
         ),
         engagementLevelLabels: Object.fromEntries(
-          (["enthusiastic", "willing", "neutral", "reluctant", "refused"] as const).map((e) => [e, getEngagementLevelLabel(e)]),
+          (["enthusiastic", "willing", "neutral", "reluctant", "refused"] as const).map((e) => [e, getEngagementLevelLabel____lib_cultural_identity_celebration(e)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_cultural_identity_celebration(r)]),
         ),
       },
     },
@@ -6313,7 +6652,7 @@ async function get_culture_identity(req: NextRequest): Promise<Response> {
   // Enrich with labels
   const enrichedActivityBreakdown = result.activityProvision.activityTypeBreakdown.map((a) => ({
     ...a,
-    activityTypeLabel: getActivityTypeLabel(a.activityType),
+    activityTypeLabel: getActivityTypeLabel____lib_culture_identity(a.activityType),
   }));
   const enrichedDimensionBreakdown = result.activityProvision.dimensionBreakdown.map((d) => ({
     ...d,
@@ -6321,7 +6660,7 @@ async function get_culture_identity(req: NextRequest): Promise<Response> {
   }));
   const enrichedIncidentTypes = result.incidentAnalysis.typeBreakdown.map((t) => ({
     ...t,
-    incidentTypeLabel: getIncidentTypeLabel(t.incidentType),
+    incidentTypeLabel: getIncidentTypeLabel____lib_culture_identity(t.incidentType),
   }));
   const enrichedTrainingTypes = result.staffCompetence.trainingTypeBreakdown.map((t) => ({
     ...t,
@@ -6921,7 +7260,7 @@ async function get_dental_health_monitoring(req: NextRequest): Promise<Response>
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_dental_health_monitoring(r)],
           ),
         ),
       },
@@ -7251,13 +7590,13 @@ async function get_digital_literacy_development(req: NextRequest): Promise<Respo
       ...result,
       meta: {
         sessionTypeLabels: Object.fromEntries(
-          (["online_safety", "coding_skills", "digital_creativity", "research_skills", "social_media_awareness", "cyberbullying_education", "privacy_management", "digital_communication"] as const).map((t) => [t, getSessionTypeLabel(t)]),
+          (["online_safety", "coding_skills", "digital_creativity", "research_skills", "social_media_awareness", "cyberbullying_education", "privacy_management", "digital_communication"] as const).map((t) => [t, getSessionTypeLabel____lib_digital_literacy_development(t)]),
         ),
         competencyLevelLabels: Object.fromEntries(
-          (["advanced", "proficient", "developing", "beginner", "not_assessed"] as const).map((c) => [c, getCompetencyLevelLabel(c)]),
+          (["advanced", "proficient", "developing", "beginner", "not_assessed"] as const).map((c) => [c, getCompetencyLevelLabel____lib_digital_literacy_development(c)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_digital_literacy_development(r)]),
         ),
       },
     },
@@ -8043,12 +8382,12 @@ async function get_education_achievement(req: NextRequest): Promise<Response> {
         ),
         exclusionTypeLabels: Object.fromEntries(
           (["fixed_term", "permanent", "internal"] as const).map(
-            (t) => [t, getExclusionTypeLabel(t)],
+            (t) => [t, getExclusionTypeLabel____lib_education_achievement(t)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_education_achievement(r)],
           ),
         ),
       },
@@ -8246,9 +8585,9 @@ async function get_education_attainment_progress(req: NextRequest): Promise<Resp
           childName: r.childName,
           date: r.recordDate,
           area: getEducationAreaLabel(r.educationArea),
-          progress: getProgressLevelLabel(r.progressLevel),
+          progress: getProgressLevelLabel____lib_education_attainment_progress(r.progressLevel),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_education_attainment_progress(result.rating),
       },
     },
   });
@@ -9253,7 +9592,7 @@ async function get_emotional_regulation_development(req: NextRequest): Promise<R
         meta: {
           regulationStrategyLabels: getRegulationStrategyLabels(),
           emotionalStateLabels: getEmotionalStateLabels(),
-          ratingLabels: getRatingLabels(),
+          ratingLabels: getRatingLabels____lib_emotional_regulation_development(),
         },
       },
     });
@@ -9300,7 +9639,7 @@ async function post_emotional_regulation_development(request: NextRequest): Prom
         meta: {
           regulationStrategyLabels: getRegulationStrategyLabels(),
           emotionalStateLabels: getEmotionalStateLabels(),
-          ratingLabels: getRatingLabels(),
+          ratingLabels: getRatingLabels____lib_emotional_regulation_development(),
         },
       },
     });
@@ -9550,7 +9889,7 @@ async function get_emotional_regulation_support(req: NextRequest): Promise<Respo
       meta: {
         strategyTypeLabels: getStrategyTypeLabels(),
         outcomeLevelLabels: getOutcomeLevelLabels(),
-        ratingLabels: getRatingLabels(),
+        ratingLabels: getRatingLabels____lib_emotional_regulation_support(),
       },
     });
   } catch (error) {
@@ -9595,7 +9934,7 @@ async function post_emotional_regulation_support(request: NextRequest): Promise<
       meta: {
         strategyTypeLabels: getStrategyTypeLabels(),
         outcomeLevelLabels: getOutcomeLevelLabels(),
-        ratingLabels: getRatingLabels(),
+        ratingLabels: getRatingLabels____lib_emotional_regulation_support(),
       },
     });
   } catch (error) {
@@ -9951,7 +10290,7 @@ async function get_environmental_risk_compliance(req: NextRequest): Promise<Resp
         ),
         riskLevelLabels: Object.fromEntries(
           (["low", "medium", "high", "critical"] as const).map(
-            (l) => [l, getRiskLevelLabel(l)],
+            (l) => [l, getRiskLevelLabel____lib_environmental_risk_compliance(l)],
           ),
         ),
         checkStatusLabels: Object.fromEntries(
@@ -9971,7 +10310,7 @@ async function get_environmental_risk_compliance(req: NextRequest): Promise<Resp
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_environmental_risk_compliance(r)],
           ),
         ),
       },
@@ -10047,13 +10386,13 @@ async function get_environmental_sustainability_awareness(req: NextRequest): Pro
       ...result,
       meta: {
         activityTypeLabels: Object.fromEntries(
-          (["recycling_project", "garden_maintenance", "energy_conservation", "nature_walk", "wildlife_care", "eco_workshop", "sustainability_discussion", "community_cleanup"] as const).map((t) => [t, getActivityTypeLabel(t)]),
+          (["recycling_project", "garden_maintenance", "energy_conservation", "nature_walk", "wildlife_care", "eco_workshop", "sustainability_discussion", "community_cleanup"] as const).map((t) => [t, getActivityTypeLabel____lib_environmental_sustainability_awareness(t)]),
         ),
         engagementLevelLabels: Object.fromEntries(
-          (["highly_engaged", "engaged", "moderate", "minimal", "disengaged"] as const).map((e) => [e, getEngagementLevelLabel(e)]),
+          (["highly_engaged", "engaged", "moderate", "minimal", "disengaged"] as const).map((e) => [e, getEngagementLevelLabel____lib_environmental_sustainability_awareness(e)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_environmental_sustainability_awareness(r)]),
         ),
       },
     },
@@ -10138,17 +10477,17 @@ async function get_environmental_sustainability(req: NextRequest): Promise<Respo
       meta: {
         activityTypeLabels: Object.fromEntries(
           (["recycling", "energy_saving", "gardening", "composting", "water_conservation", "sustainable_shopping", "nature_walk", "environmental_project"] as const).map(
-            (t) => [t, getActivityTypeLabel(t)],
+            (t) => [t, getActivityTypeLabel____lib_environmental_sustainability(t)],
           ),
         ),
         engagementLevelLabels: Object.fromEntries(
           (["highly_engaged", "engaged", "partially_engaged", "reluctant", "refused"] as const).map(
-            (e) => [e, getEngagementLevelLabel(e)],
+            (e) => [e, getEngagementLevelLabel____lib_environmental_sustainability(e)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_environmental_sustainability(r)],
           ),
         ),
       },
@@ -10331,14 +10670,14 @@ async function get_escalation_intelligence(req: NextRequest): Promise<Response> 
         concernSummary: concerns.map((c) => ({
           id: c.id,
           date: c.date,
-          category: getConcernCategoryLabel(c.category),
+          category: getConcernCategoryLabel____lib_escalation_intelligence(c.category),
           severity: c.severity,
           childName: c.childName,
         })),
         assessmentSummary: result.assessments.map((a) => ({
           concernId: a.concernId,
           level: getThresholdLevelLabel(a.determinedLevel),
-          outcome: getOutcomeLabel(a.outcome),
+          outcome: getOutcomeLabel____lib_escalation_intelligence(a.outcome),
           missingCount: a.missingEscalations.length,
         })),
       },
@@ -10538,7 +10877,7 @@ async function get_exclusion_disruption_management(req: NextRequest): Promise<Re
       meta: {
         exclusionTypeLabels: Object.fromEntries(
           (["fixed_term", "permanent", "internal", "informal", "managed_move"] as const).map(
-            (t) => [t, getExclusionTypeLabel(t)],
+            (t) => [t, getExclusionTypeLabel____lib_exclusion_disruption_management(t)],
           ),
         ),
         disruptionTypeLabels: Object.fromEntries(
@@ -10558,7 +10897,7 @@ async function get_exclusion_disruption_management(req: NextRequest): Promise<Re
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_exclusion_disruption_management(r)],
           ),
         ),
       },
@@ -10655,7 +10994,7 @@ async function get_family_contact_quality(req: NextRequest): Promise<Response> {
       meta: {
         contactTypeLabels: getContactTypeLabels(),
         contactOutcomeLabels: getContactOutcomeLabels(),
-        ratingLabels: getRatingLabels(),
+        ratingLabels: getRatingLabels____lib_family_contact_quality(),
       },
     },
   });
@@ -11079,7 +11418,7 @@ async function get_family_contact(req: NextRequest): Promise<Response> {
 
   const patternLabels = result.impact.impactPatterns.map((p) => ({
     ...p,
-    contactTypeLabel: getContactTypeLabel(p.contactType),
+    contactTypeLabel: getContactTypeLabel____lib_family_contact(p.contactType),
   }));
 
   return NextResponse.json({
@@ -11090,12 +11429,12 @@ async function get_family_contact(req: NextRequest): Promise<Response> {
         patternLabels,
         contactTypeLabels: Object.fromEntries(
           (["face_to_face", "telephone", "video_call", "letter", "supervised_visit", "unsupervised_visit", "overnight_stay", "community_contact", "indirect"] as const).map(
-            (t) => [t, getContactTypeLabel(t)],
+            (t) => [t, getContactTypeLabel____lib_family_contact(t)],
           ),
         ),
         outcomeLabels: Object.fromEntries(
           (["positive", "mixed", "negative", "neutral", "distressing", "cancelled_by_family", "cancelled_by_home", "cancelled_by_authority", "child_refused", "no_show"] as const).map(
-            (o) => [o, getContactOutcomeLabel(o)],
+            (o) => [o, getContactOutcomeLabel____lib_family_contact(o)],
           ),
         ),
         familyMemberLabels: Object.fromEntries(
@@ -11484,7 +11823,7 @@ function filing_cabinet_getDemoData(
     return {
       policies: RETENTION_POLICIES.map(p => ({
         ...p,
-        categoryLabel: getCategoryLabel(p.category),
+        categoryLabel: getCategoryLabel____lib_filing_cabinet(p.category),
       })),
     };
   }
@@ -11503,7 +11842,7 @@ function filing_cabinet_getDemoData(
       .slice(0, 10),
     categoryBreakdown: RETENTION_POLICIES.map(p => ({
       category: p.category,
-      label: getCategoryLabel(p.category),
+      label: getCategoryLabel____lib_filing_cabinet(p.category),
       count: filteredDocs.filter(d => d.category === p.category).length,
       retentionYears: p.defaultRetentionYears,
       basis: p.basis,
@@ -11899,7 +12238,7 @@ async function get_fire_safety_preparedness(req: NextRequest): Promise<Response>
         ),
         checkOutcomeLabels: Object.fromEntries(
           (["pass", "minor_fault", "major_fault", "out_of_service"] as const).map(
-            (o) => [o, getCheckOutcomeLabel(o)],
+            (o) => [o, getCheckOutcomeLabel____lib_fire_safety_preparedness(o)],
           ),
         ),
         peepStatusLabels: Object.fromEntries(
@@ -11909,7 +12248,7 @@ async function get_fire_safety_preparedness(req: NextRequest): Promise<Response>
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_fire_safety_preparedness(r)],
           ),
         ),
       },
@@ -12070,13 +12409,13 @@ async function get_food_nutrition_quality(req: NextRequest): Promise<Response> {
       ...result,
       meta: {
         mealTypeLabels: Object.fromEntries(
-          (["breakfast", "lunch", "dinner", "snack", "special_dietary", "cultural_meal", "celebration", "packed_lunch"] as const).map((t) => [t, getMealTypeLabel(t)]),
+          (["breakfast", "lunch", "dinner", "snack", "special_dietary", "cultural_meal", "celebration", "packed_lunch"] as const).map((t) => [t, getMealTypeLabel____lib_food_nutrition_quality(t)]),
         ),
         nutritionRatingLabels: Object.fromEntries(
           (["excellent", "good", "adequate", "poor", "not_assessed"] as const).map((r) => [r, getNutritionRatingLabel(r)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_food_nutrition_quality(r)]),
         ),
       },
     },
@@ -12261,7 +12600,7 @@ async function get_governance(req: NextRequest): Promise<Response> {
   // Enrich notification type breakdown with labels
   const enrichedNotificationTypes = result.notificationCompliance.typeBreakdown.map((t) => ({
     ...t,
-    notificationTypeLabel: getNotificationTypeLabel(t.notificationType),
+    notificationTypeLabel: getNotificationTypeLabel____lib_governance(t.notificationType),
   }));
 
   // Enrich overdue policies with category labels
@@ -12890,7 +13229,7 @@ async function get_health_screening_compliance(req: NextRequest): Promise<Respon
         ),
         screeningOutcomeLabels: Object.fromEntries(
           (["no_concerns", "minor_concerns", "referral_made", "treatment_required", "follow_up_needed", "awaiting_results"] as const).map(
-            (o) => [o, getScreeningOutcomeLabel(o)],
+            (o) => [o, getScreeningOutcomeLabel____lib_health_screening_compliance(o)],
           ),
         ),
         gpRegistrationLabels: Object.fromEntries(
@@ -12900,12 +13239,12 @@ async function get_health_screening_compliance(req: NextRequest): Promise<Respon
         ),
         consentStatusLabels: Object.fromEntries(
           (["consent_given", "consent_refused", "gillick_competent", "awaiting_consent", "delegated_authority"] as const).map(
-            (c) => [c, getConsentStatusLabel(c)],
+            (c) => [c, getConsentStatusLabel____lib_health_screening_compliance(c)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_health_screening_compliance(r)],
           ),
         ),
       },
@@ -13022,7 +13361,7 @@ async function get_health(req: NextRequest): Promise<Response> {
             "overdue",
             "missed",
             "not_due",
-          ] as const).map((o) => [o, getOutcomeLabel(o)]),
+          ] as const).map((o) => [o, getOutcomeLabel____lib_health(o)]),
         ),
         ratingLabels: Object.fromEntries(
           ([
@@ -13030,7 +13369,7 @@ async function get_health(req: NextRequest): Promise<Response> {
             "good",
             "requires_improvement",
             "inadequate",
-          ] as const).map((r) => [r, getRatingLabel(r)]),
+          ] as const).map((r) => [r, getRatingLabel____lib_health(r)]),
         ),
       },
     },
@@ -13820,7 +14159,7 @@ async function get_homework_academic_support(req: NextRequest): Promise<Response
           type: i.interventionType,
           progress: getProgressLabel(i.progressMade),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_homework_academic_support(result.rating),
       },
     },
   });
@@ -14077,10 +14416,10 @@ async function get_homework_learning_support(req: NextRequest): Promise<Response
           childName: s.childName,
           date: s.sessionDate,
           subject: getSubjectAreaLabel(s.subjectArea),
-          engagement: getEngagementLevelLabel(s.engagementLevel),
+          engagement: getEngagementLevelLabel____lib_homework_learning_support(s.engagementLevel),
           completed: s.taskCompleted,
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_homework_learning_support(result.rating),
       },
     },
   });
@@ -14334,10 +14673,10 @@ async function get_homework_study_support(req: NextRequest): Promise<Response> {
           childName: s.childName,
           date: s.sessionDate,
           activityType: getStudyActivityTypeLabel(s.activityType),
-          engagement: getEngagementLevelLabel(s.engagementLevel),
+          engagement: getEngagementLevelLabel____lib_homework_study_support(s.engagementLevel),
           progressNoted: s.progressNoted,
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_homework_study_support(result.rating),
       },
     },
   });
@@ -14482,17 +14821,17 @@ async function get_hygiene_personal_care(req: NextRequest): Promise<Response> {
       meta: {
         hygieneAreaLabels: Object.fromEntries(
           (["oral_care", "bathing_showering", "hand_washing", "hair_care", "skincare", "nail_care", "clothing_laundry", "menstrual_hygiene"] as const).map(
-            (a) => [a, getHygieneAreaLabel(a)],
+            (a) => [a, getHygieneAreaLabel____lib_hygiene_personal_care(a)],
           ),
         ),
         competencyLevelLabels: Object.fromEntries(
           (["independent", "mostly_independent", "developing", "requires_support", "not_started"] as const).map(
-            (c) => [c, getCompetencyLevelLabel(c)],
+            (c) => [c, getCompetencyLevelLabel____lib_hygiene_personal_care(c)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_hygiene_personal_care(r)],
           ),
         ),
       },
@@ -14749,12 +15088,12 @@ function incident_pattern_analysis_buildLabelMaps() {
 
   return {
     incidentCategory: Object.fromEntries(categories.map((c) => [c, getIncidentCategoryLabel(c)])),
-    incidentSeverity: Object.fromEntries(severities.map((s) => [s, getIncidentSeverityLabel(s)])),
+    incidentSeverity: Object.fromEntries(severities.map((s) => [s, getIncidentSeverityLabel____lib_incident_pattern_analysis(s)])),
     responseQuality: Object.fromEntries(qualities.map((q) => [q, getResponseQualityLabel(q)])),
     notificationStatus: Object.fromEntries(notificationStatuses.map((n) => [n, getNotificationStatusLabel(n)])),
     deEscalationOutcome: Object.fromEntries(deEscOutcomes.map((d) => [d, getDeEscalationOutcomeLabel(d)])),
     postIncidentAction: Object.fromEntries(postActions.map((p) => [p, getPostIncidentActionLabel(p)])),
-    rating: Object.fromEntries(ratings.map((r) => [r, getRatingLabel(r)])),
+    rating: Object.fromEntries(ratings.map((r) => [r, getRatingLabel____lib_incident_pattern_analysis(r)])),
   };
 }
 
@@ -15089,7 +15428,7 @@ async function get_independence_life_skills(req: NextRequest): Promise<Response>
         ),
         goalStatusLabels: Object.fromEntries(
           (["achieved", "on_track", "behind", "not_started", "abandoned"] as const).map(
-            (s) => [s, getGoalStatusLabel(s)],
+            (s) => [s, getGoalStatusLabel____lib_independence_life_skills(s)],
           ),
         ),
         teachingMethodLabels: Object.fromEntries(
@@ -15099,7 +15438,7 @@ async function get_independence_life_skills(req: NextRequest): Promise<Response>
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_independence_life_skills(r)],
           ),
         ),
       },
@@ -15240,10 +15579,10 @@ async function get_independent_living_skills(req: NextRequest): Promise<Response
           (["cooking_meal_prep", "cleaning_tidying", "laundry_clothing_care", "budgeting_money", "personal_hygiene", "shopping_errands", "travel_navigation", "home_maintenance"] as const).map((t) => [t, getSkillTypeLabel(t)]),
         ),
         competencyLevelLabels: Object.fromEntries(
-          (["independent", "mostly_independent", "developing", "requires_support", "not_started"] as const).map((c) => [c, getCompetencyLevelLabel(c)]),
+          (["independent", "mostly_independent", "developing", "requires_support", "not_started"] as const).map((c) => [c, getCompetencyLevelLabel____lib_independent_living_skills(c)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_independent_living_skills(r)]),
         ),
       },
     },
@@ -15324,22 +15663,22 @@ async function get_independent_visitor_advocacy(req: NextRequest): Promise<Respo
         ),
         visitOutcomeLabels: Object.fromEntries(
           (["very_positive", "positive", "neutral", "difficult", "did_not_happen"] as const).map(
-            (o) => [o, getVisitOutcomeLabel(o)],
+            (o) => [o, getVisitOutcomeLabel____lib_independent_visitor_advocacy(o)],
           ),
         ),
         advocacyTypeLabels: Object.fromEntries(
           (["formal_advocate", "independent_visitor", "childrens_rights_officer", "complaints_advocacy", "legal_advocacy", "peer_advocacy", "other"] as const).map(
-            (t) => [t, getAdvocacyTypeLabel(t)],
+            (t) => [t, getAdvocacyTypeLabel____lib_independent_visitor_advocacy(t)],
           ),
         ),
         referralOutcomeLabels: Object.fromEntries(
           (["successful", "in_progress", "declined_by_child", "no_service_available", "not_needed"] as const).map(
-            (o) => [o, getReferralOutcomeLabel(o)],
+            (o) => [o, getReferralOutcomeLabel____lib_independent_visitor_advocacy(o)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_independent_visitor_advocacy(r)],
           ),
         ),
       },
@@ -15655,13 +15994,13 @@ async function get_key_worker_relationship_quality(req: NextRequest): Promise<Re
       ...result,
       meta: {
         sessionTypeLabels: Object.fromEntries(
-          (["one_to_one", "care_planning", "emotional_support", "advocacy", "goal_setting", "review_preparation", "crisis_support", "recreational"] as const).map((s) => [s, getSessionTypeLabel(s)]),
+          (["one_to_one", "care_planning", "emotional_support", "advocacy", "goal_setting", "review_preparation", "crisis_support", "recreational"] as const).map((s) => [s, getSessionTypeLabel____lib_key_worker_relationship_quality(s)]),
         ),
         engagementLevelLabels: Object.fromEntries(
-          (["very_engaged", "engaged", "somewhat_engaged", "disengaged", "refused"] as const).map((e) => [e, getEngagementLevelLabel(e)]),
+          (["very_engaged", "engaged", "somewhat_engaged", "disengaged", "refused"] as const).map((e) => [e, getEngagementLevelLabel____lib_key_worker_relationship_quality(e)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_key_worker_relationship_quality(r)]),
         ),
       },
     },
@@ -15726,13 +16065,13 @@ async function get_key_worker_relationship(req: NextRequest): Promise<Response> 
       ...result,
       meta: {
         sessionTypeLabels: Object.fromEntries(
-          (["one_to_one", "activity_based", "goal_review", "crisis_support", "advocacy", "life_story_work", "transition_planning", "wellbeing_check"] as const).map((t) => [t, getSessionTypeLabel(t)]),
+          (["one_to_one", "activity_based", "goal_review", "crisis_support", "advocacy", "life_story_work", "transition_planning", "wellbeing_check"] as const).map((t) => [t, getSessionTypeLabel____lib_key_worker_relationship(t)]),
         ),
         relationshipStrengthLabels: Object.fromEntries(
           (["very_strong", "strong", "developing", "fragile", "disengaged"] as const).map((s) => [s, getRelationshipStrengthLabel(s)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_key_worker_relationship(r)]),
         ),
       },
     },
@@ -16532,11 +16871,11 @@ async function get_key_working_effectiveness(req: NextRequest): Promise<Response
     return NextResponse.json({
       data: result,
       meta: {
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_key_working_effectiveness(result.rating),
         labelMaps: {
           sessionTypes: Object.fromEntries(
             (["one_to_one", "informal_check_in", "care_plan_review", "activity_based", "crisis_support", "life_story_work", "independence_planning", "advocacy"] as const).map(
-              (t) => [t, getSessionTypeLabel(t)],
+              (t) => [t, getSessionTypeLabel____lib_key_working_effectiveness(t)],
             ),
           ),
           sessionQualities: Object.fromEntries(
@@ -16546,12 +16885,12 @@ async function get_key_working_effectiveness(req: NextRequest): Promise<Response
           ),
           relationshipQualities: Object.fromEntries(
             (["strong_and_trusting", "developing", "inconsistent", "difficult", "not_established"] as const).map(
-              (q) => [q, getRelationshipQualityLabel(q)],
+              (q) => [q, getRelationshipQualityLabel____lib_key_working_effectiveness(q)],
             ),
           ),
           childEngagements: Object.fromEntries(
             (["fully_engaged", "mostly_engaged", "partially_engaged", "reluctant", "refused"] as const).map(
-              (e) => [e, getChildEngagementLabel(e)],
+              (e) => [e, getChildEngagementLabel____lib_key_working_effectiveness(e)],
             ),
           ),
           carePlanInputs: Object.fromEntries(
@@ -16624,7 +16963,7 @@ async function post_key_working_effectiveness(request: NextRequest): Promise<Res
 
     return NextResponse.json({
       data: result,
-      meta: { ratingLabel: getRatingLabel(result.rating) },
+      meta: { ratingLabel: getRatingLabel____lib_key_working_effectiveness(result.rating) },
     });
   } catch (err) {
     return NextResponse.json(
@@ -17030,7 +17369,7 @@ async function get_language_communication_support(req: NextRequest): Promise<Res
         ),
         supportTypeLabels: Object.fromEntries(
           (["speech_therapy", "interpreter", "augmentative_device", "visual_aids", "sign_language", "easy_read", "social_stories", "communication_passport"] as const).map(
-            (t) => [t, getSupportTypeLabel(t)],
+            (t) => [t, getSupportTypeLabel____lib_language_communication_support(t)],
           ),
         ),
         supportQualityLabels: Object.fromEntries(
@@ -17040,12 +17379,12 @@ async function get_language_communication_support(req: NextRequest): Promise<Res
         ),
         reviewStatusLabels: Object.fromEntries(
           (["current", "overdue", "not_applicable"] as const).map(
-            (s) => [s, getReviewStatusLabel(s)],
+            (s) => [s, getReviewStatusLabel____lib_language_communication_support(s)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_language_communication_support(r)],
           ),
         ),
       },
@@ -17117,7 +17456,7 @@ const leaving_care_intelligence_DEMO_STAFF: StaffLeavingCareTraining[] = [
 
 async function get_leaving_care_intelligence(req: NextRequest): Promise<Response> {
 
-  const result = generateLeavingCareIntelligence({
+  const result = generateLeavingCareIntelligence____lib_leaving_care_leaving_care_intelligence_engine({
     homeId: "home-oak-house", periodStart: "2025-01-01", periodEnd: "2025-12-31",
     records: leaving_care_intelligence_DEMO_RECORDS, policy: leaving_care_intelligence_DEMO_POLICY, staff: leaving_care_intelligence_DEMO_STAFF,
   });
@@ -17234,7 +17573,7 @@ const leaving_care_DEMO_SUPPORT: SupportArrangement[] = [
 
 async function get_leaving_care(req: NextRequest): Promise<Response> {
 
-  const result = generateLeavingCareIntelligence(
+  const result = generateLeavingCareIntelligence____lib_leaving_care(
     leaving_care_DEMO_CHILDREN,
     leaving_care_DEMO_PATHWAY_PLANS,
     leaving_care_DEMO_ASSESSMENTS,
@@ -17247,7 +17586,7 @@ async function get_leaving_care(req: NextRequest): Promise<Response> {
 
   const enrichedCategoryBreakdown = result.independenceSkills.categoryBreakdown.map((c) => ({
     ...c,
-    skillLabel: getSkillCategoryLabel(c.skill),
+    skillLabel: getSkillCategoryLabel____lib_leaving_care(c.skill),
   }));
 
   const enrichedProfiles = result.childProfiles.map((p) => ({
@@ -17274,7 +17613,7 @@ async function get_leaving_care(req: NextRequest): Promise<Response> {
       meta: {
         skillLevelLabels: Object.fromEntries(
           (["not_assessed", "emerging", "developing", "competent", "independent"] as const).map(
-            (l) => [l, getSkillLevelLabel(l)],
+            (l) => [l, getSkillLevelLabel____lib_leaving_care(l)],
           ),
         ),
         supportTypeLabels: Object.fromEntries(
@@ -17282,7 +17621,7 @@ async function get_leaving_care(req: NextRequest): Promise<Response> {
             "personal_adviser", "mentor", "independent_visitor", "social_worker",
             "family_contact", "peer_support", "community_group",
             "education_support", "employment_support", "health_support",
-          ] as const).map((t) => [t, getSupportTypeLabel(t)]),
+          ] as const).map((t) => [t, getSupportTypeLabel____lib_leaving_care(t)]),
         ),
       },
     },
@@ -17331,7 +17670,7 @@ async function post_leaving_care(req: NextRequest): Promise<Response> {
     );
   }
 
-  const result = generateLeavingCareIntelligence(
+  const result = generateLeavingCareIntelligence____lib_leaving_care(
     children,
     pathwayPlans ?? [],
     assessments ?? [],
@@ -17609,12 +17948,12 @@ async function get_lessons_learned(req: NextRequest): Promise<Response> {
         incidentSummary: incidents.map((i) => ({
           id: i.id,
           date: i.date,
-          category: getCategoryLabel(i.category),
+          category: getCategoryLabel____lib_lessons_learned(i.category),
           severity: i.severity,
           childName: i.childName,
         })),
         reviewCount: reviews.length,
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_lessons_learned(result.rating),
       },
     },
   });
@@ -17725,12 +18064,12 @@ async function get_life_story_work(req: NextRequest): Promise<Response> {
       meta: {
         sessionTypeLabels: Object.fromEntries(
           (["life_story_book", "memory_box", "photo_work", "therapeutic_narrative", "timeline_work", "family_tree", "identity_exploration", "digital_story"] as const).map(
-            (s) => [s, getSessionTypeLabel(s)],
+            (s) => [s, getSessionTypeLabel____lib_life_story_work(s)],
           ),
         ),
         engagementLevelLabels: Object.fromEntries(
           (["highly_engaged", "engaged", "partially_engaged", "reluctant", "refused"] as const).map(
-            (e) => [e, getEngagementLevelLabel(e)],
+            (e) => [e, getEngagementLevelLabel____lib_life_story_work(e)],
           ),
         ),
         memoryItemTypeLabels: Object.fromEntries(
@@ -17740,7 +18079,7 @@ async function get_life_story_work(req: NextRequest): Promise<Response> {
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_life_story_work(r)],
           ),
         ),
       },
@@ -18181,7 +18520,7 @@ async function get_medication_adherence_monitoring(req: NextRequest): Promise<Re
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_medication_adherence_monitoring(r)],
           ),
         ),
       },
@@ -18944,7 +19283,7 @@ async function get_menu_planning_nutrition(req: NextRequest): Promise<Response> 
       ...result,
       meta: {
         mealTypeLabels: Object.fromEntries(
-          (["breakfast", "lunch", "dinner", "snack", "supper"] as const).map((t) => [t, getMealTypeLabel(t)]),
+          (["breakfast", "lunch", "dinner", "snack", "supper"] as const).map((t) => [t, getMealTypeLabel____lib_menu_planning_nutrition(t)]),
         ),
         nutritionalBalanceLabels: Object.fromEntries(
           (["excellent", "good", "adequate", "poor"] as const).map((b) => [b, getNutritionalBalanceLabel(b)]),
@@ -18959,7 +19298,7 @@ async function get_menu_planning_nutrition(req: NextRequest): Promise<Response> 
           (["menu_planning", "cooking_activity", "food_shopping", "growing_food", "none"] as const).map((p) => [p, getChildParticipationLabel(p)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_menu_planning_nutrition(r)]),
         ),
       },
     },
@@ -19195,11 +19534,11 @@ async function get_missing_absent_episodes(req: NextRequest): Promise<Response> 
           id: e.id,
           date: e.reportedDate,
           type: getEpisodeTypeLabel(e.episodeType),
-          riskLevel: getRiskLevelLabel(e.riskLevel),
+          riskLevel: getRiskLevelLabel____lib_missing_absent_episodes(e.riskLevel),
           outcome: getEpisodeOutcomeLabel(e.outcome),
           child: e.childName,
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_missing_absent_episodes(result.rating),
       },
     },
   });
@@ -19396,7 +19735,7 @@ async function get_morning_routine_preparation(req: NextRequest): Promise<Respon
           (["completed_independently", "completed_with_support", "partially_completed", "not_completed", "refused"] as const).map((c) => [c, getCompletionStatusLabel(c)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_morning_routine_preparation(r)]),
         ),
       },
     },
@@ -20279,7 +20618,7 @@ async function get_multi_agency_partnership(req: NextRequest): Promise<Response>
         referralLabels: multi_agency_partnership_DEMO_REFERRALS.map((r) => ({
           id: r.id,
           agencyLabel: getAgencyTypeLabel(r.referredTo),
-          outcomeLabel: getReferralOutcomeLabel(r.outcome),
+          outcomeLabel: getReferralOutcomeLabel____lib_multi_agency_partnership(r.outcome),
         })),
       },
     },
@@ -20629,17 +20968,17 @@ async function get_night_care(req: NextRequest): Promise<Response> {
         version: "2.0.0",
         categoryLabels: Object.fromEntries(
           (["night_check", "sleep_monitoring", "night_incident", "waking_night_support", "night_medication", "bedtime_routine", "night_handover", "disturbance_response"] as const).map(
-            (v) => [v, getCategoryLabel(v)],
+            (v) => [v, getCategoryLabel____lib_night_care(v)],
           ),
         ),
         outcomeLabels: Object.fromEntries(
           (["settled_night", "minor_disturbance", "significant_incident", "support_provided", "not_applicable"] as const).map(
-            (v) => [v, getOutcomeLabel(v)],
+            (v) => [v, getOutcomeLabel____lib_night_care(v)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_night_care(r)],
           ),
         ),
       },
@@ -21142,9 +21481,9 @@ async function get_night_supervision_quality(req: NextRequest): Promise<Response
           staffName: c.staffName,
           date: c.checkDate,
           type: getNightCheckTypeLabel(c.nightCheckType),
-          outcome: getCheckOutcomeLabel(c.checkOutcome),
+          outcome: getCheckOutcomeLabel____lib_night_supervision_quality(c.checkOutcome),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_night_supervision_quality(result.rating),
       },
     },
   });
@@ -21596,10 +21935,10 @@ async function get_notification_timeliness(req: NextRequest): Promise<Response> 
     data: {
       ...result,
       meta: {
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_notification_timeliness(result.rating),
         notificationTypeLabels: Object.fromEntries(
           (["death", "serious_injury", "serious_illness", "allegation_against_staff", "child_protection", "police_involvement", "absconding", "serious_complaint", "deprivation_of_liberty", "accommodation_change", "manager_change", "closure", "other"] as const).map(
-            (t) => [t, getNotificationTypeLabel(t)],
+            (t) => [t, getNotificationTypeLabel____lib_notification_timeliness(t)],
           ),
         ),
         recipientLabels: Object.fromEntries(
@@ -21660,7 +21999,7 @@ async function post_notification_timeliness(req: NextRequest): Promise<Response>
     data: {
       ...result,
       meta: {
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_notification_timeliness(result.rating),
       },
     },
   });
@@ -21723,19 +22062,19 @@ async function get_nutrition_healthy_living(req: NextRequest): Promise<Response>
       ...result,
       meta: {
         mealTypeLabels: Object.fromEntries(
-          (["breakfast", "lunch", "dinner", "snack"] as const).map((t) => [t, getMealTypeLabel(t)]),
+          (["breakfast", "lunch", "dinner", "snack"] as const).map((t) => [t, getMealTypeLabel____lib_nutrition_healthy_living(t)]),
         ),
         dietaryRequirementLabels: Object.fromEntries(
           ([
             "vegetarian", "vegan", "halal", "kosher", "gluten_free", "dairy_free",
             "nut_free", "egg_free", "diabetic", "low_sugar", "high_calorie", "texture_modified", "none",
-          ] as const).map((d) => [d, getDietaryRequirementLabel(d)]),
+          ] as const).map((d) => [d, getDietaryRequirementLabel____lib_nutrition_healthy_living(d)]),
         ),
         activityTypeLabels: Object.fromEntries(
           ([
             "sports", "swimming", "walking", "cycling", "gym", "dance",
             "outdoor_play", "gardening", "yoga", "martial_arts", "team_games", "other",
-          ] as const).map((a) => [a, getActivityTypeLabel(a)]),
+          ] as const).map((a) => [a, getActivityTypeLabel____lib_nutrition_healthy_living(a)]),
         ),
         hydrationStatusLabels: Object.fromEntries(
           (["well_hydrated", "adequate", "needs_improvement", "concern"] as const).map(
@@ -22137,11 +22476,11 @@ async function get_nutrition_hydration_monitoring(req: NextRequest): Promise<Res
           id: m.id,
           date: m.mealDate,
           child: m.childName,
-          type: getMealTypeLabel(m.mealType),
+          type: getMealTypeLabel____lib_nutrition_hydration_monitoring(m.mealType),
           quality: getNutritionQualityLabel(m.nutritionQuality),
           portion: getPortionConsumedLabel(m.portionConsumed),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_nutrition_hydration_monitoring(result.rating),
       },
     },
   });
@@ -23273,7 +23612,7 @@ async function get_online_safety(req: NextRequest): Promise<Response> {
   // Enrich with labels
   const enrichedIncidentTypes = result.incidentAnalysis.typeBreakdown.map((t) => ({
     ...t,
-    incidentTypeLabel: getIncidentTypeLabel(t.incidentType),
+    incidentTypeLabel: getIncidentTypeLabel____lib_online_safety(t.incidentType),
   }));
   const enrichedTopics = result.education.topicBreakdown.map((t) => ({
     ...t,
@@ -23607,7 +23946,7 @@ async function get_outdoor_activity_enrichment(req: NextRequest): Promise<Respon
       meta: {
         activityCategoryLabels: Object.fromEntries(
           (["outdoor_adventure", "sports", "creative_arts", "cultural_visit", "nature_environment", "community_service", "educational_trip", "social_event", "therapeutic_activity", "life_skill_practice"] as const).map(
-            (c) => [c, getActivityCategoryLabel(c)],
+            (c) => [c, getActivityCategoryLabel____lib_outdoor_activity_enrichment(c)],
           ),
         ),
         riskBenefitOutcomeLabels: Object.fromEntries(
@@ -23617,7 +23956,7 @@ async function get_outdoor_activity_enrichment(req: NextRequest): Promise<Respon
         ),
         childEngagementLabels: Object.fromEntries(
           (["enthusiastic", "willing", "reluctant", "refused", "not_offered"] as const).map(
-            (e) => [e, getChildEngagementLabel(e)],
+            (e) => [e, getChildEngagementLabel____lib_outdoor_activity_enrichment(e)],
           ),
         ),
         activityFrequencyLabels: Object.fromEntries(
@@ -23733,27 +24072,27 @@ async function get_parental_contact_management(req: NextRequest): Promise<Respon
       meta: {
         contactTypeLabels: Object.fromEntries(
           (["face_to_face_supervised", "face_to_face_unsupervised", "telephone", "video_call", "letter", "no_contact_order"] as const).map(
-            (t) => [t, getContactTypeLabel(t)],
+            (t) => [t, getContactTypeLabel____lib_parental_contact_management(t)],
           ),
         ),
         contactOutcomeLabels: Object.fromEntries(
           (["positive", "mixed", "negative", "cancelled_by_parent", "cancelled_by_child", "cancelled_by_authority"] as const).map(
-            (o) => [o, getContactOutcomeLabel(o)],
+            (o) => [o, getContactOutcomeLabel____lib_parental_contact_management(o)],
           ),
         ),
         riskLevelLabels: Object.fromEntries(
           (["low", "medium", "high", "very_high"] as const).map(
-            (r) => [r, getRiskLevelLabel(r)],
+            (r) => [r, getRiskLevelLabel____lib_parental_contact_management(r)],
           ),
         ),
         complianceStatusLabels: Object.fromEntries(
           (["fully_compliant", "mostly_compliant", "partially_compliant", "non_compliant"] as const).map(
-            (c) => [c, getComplianceStatusLabel(c)],
+            (c) => [c, getComplianceStatusLabel____lib_parental_contact_management(c)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_parental_contact_management(r)],
           ),
         ),
       },
@@ -24038,22 +24377,22 @@ async function get_parental_engagement(req: NextRequest): Promise<Response> {
       meta: {
         contactTypeLabels: Object.fromEntries(
           (["face_to_face", "phone", "video_call", "letter", "email", "supervised", "community_outing"] as const).map(
-            (t) => [t, getContactTypeLabel(t)],
+            (t) => [t, getContactTypeLabel____lib_parental_engagement(t)],
           ),
         ),
         outcomeLabels: Object.fromEntries(
           (["positive", "neutral", "negative", "child_refused", "parent_no_show", "cancelled_by_professional"] as const).map(
-            (o) => [o, getContactOutcomeLabel(o)],
+            (o) => [o, getContactOutcomeLabel____lib_parental_engagement(o)],
           ),
         ),
         engagementLevelLabels: Object.fromEntries(
           (["highly_engaged", "engaged", "inconsistent", "disengaged", "hostile", "no_contact"] as const).map(
-            (e) => [e, getEngagementLevelLabel(e)],
+            (e) => [e, getEngagementLevelLabel____lib_parental_engagement(e)],
           ),
         ),
         supportTypeLabels: Object.fromEntries(
           (["transport", "venue", "mediation", "parenting_support", "therapeutic", "financial", "practical"] as const).map(
-            (s) => [s, getSupportTypeLabel(s)],
+            (s) => [s, getSupportTypeLabel____lib_parental_engagement(s)],
           ),
         ),
         relationshipLabels: Object.fromEntries(
@@ -24420,7 +24759,7 @@ async function get_peer_dynamics(req: NextRequest): Promise<Response> {
 
   const enrichedBullying = result.bullyingPatterns.map((b) => ({
     ...b,
-    interactionTypeLabels: b.interactionTypes.map(getInteractionTypeLabel),
+    interactionTypeLabels: b.interactionTypes.map(getInteractionTypeLabel____lib_peer_dynamics),
   }));
 
   return NextResponse.json({
@@ -24431,7 +24770,7 @@ async function get_peer_dynamics(req: NextRequest): Promise<Response> {
       meta: {
         interactionTypeLabels: Object.fromEntries(
           (["positive_social", "cooperative_activity", "mutual_support", "conflict", "verbal_aggression", "physical_aggression", "bullying", "exclusion", "coercion", "sexual_behaviour", "exploitation_dynamic"] as const).map(
-            (t) => [t, getInteractionTypeLabel(t)],
+            (t) => [t, getInteractionTypeLabel____lib_peer_dynamics(t)],
           ),
         ),
       },
@@ -24621,7 +24960,7 @@ async function get_peer_mentoring_effectiveness(req: NextRequest): Promise<Respo
         ),
         sessionOutcomeLabels: Object.fromEntries(
           (["positive", "mixed", "negative", "cancelled"] as const).map(
-            (o) => [o, getSessionOutcomeLabel(o)],
+            (o) => [o, getSessionOutcomeLabel____lib_peer_mentoring_effectiveness(o)],
           ),
         ),
         pairingStatusLabels: Object.fromEntries(
@@ -24636,7 +24975,7 @@ async function get_peer_mentoring_effectiveness(req: NextRequest): Promise<Respo
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_peer_mentoring_effectiveness(r)],
           ),
         ),
       },
@@ -24883,10 +25222,10 @@ async function get_peer_relationship_dynamics(req: NextRequest): Promise<Respons
           id: i.id,
           childName: i.childName,
           date: i.interactionDate,
-          type: getInteractionTypeLabel(i.interactionType),
+          type: getInteractionTypeLabel____lib_peer_relationship_dynamics(i.interactionType),
           outcome: getOutcomeLevelLabel(i.outcomeLevel),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_peer_relationship_dynamics(result.rating),
       },
     },
   });
@@ -24975,13 +25314,13 @@ async function get_peer_relationship_quality(req: NextRequest): Promise<Response
       ...result,
       meta: {
         interactionTypeLabels: Object.fromEntries(
-          (["shared_activity", "conflict_resolution", "cooperative_play", "peer_mentoring", "group_project", "social_event", "team_sport", "creative_collaboration"] as const).map((t) => [t, getInteractionTypeLabel(t)]),
+          (["shared_activity", "conflict_resolution", "cooperative_play", "peer_mentoring", "group_project", "social_event", "team_sport", "creative_collaboration"] as const).map((t) => [t, getInteractionTypeLabel____lib_peer_relationship_quality(t)]),
         ),
         relationshipQualityLabels: Object.fromEntries(
-          (["thriving", "positive", "developing", "strained", "isolated"] as const).map((q) => [q, getRelationshipQualityLabel(q)]),
+          (["thriving", "positive", "developing", "strained", "isolated"] as const).map((q) => [q, getRelationshipQualityLabel____lib_peer_relationship_quality(q)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_peer_relationship_quality(r)]),
         ),
       },
     },
@@ -25046,13 +25385,13 @@ async function get_personal_hygiene_self_care(req: NextRequest): Promise<Respons
       ...result,
       meta: {
         hygieneAreaLabels: Object.fromEntries(
-          (["bathing_showering", "dental_care", "hair_care", "skincare", "nail_care", "clothing_cleanliness", "menstrual_hygiene", "handwashing"] as const).map((h) => [h, getHygieneAreaLabel(h)]),
+          (["bathing_showering", "dental_care", "hair_care", "skincare", "nail_care", "clothing_cleanliness", "menstrual_hygiene", "handwashing"] as const).map((h) => [h, getHygieneAreaLabel____lib_personal_hygiene_self_care(h)]),
         ),
         supportLevelLabels: Object.fromEntries(
           (["independent", "prompted", "assisted", "fully_supported", "refused"] as const).map((s) => [s, getSupportLevelLabel(s)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_personal_hygiene_self_care(r)]),
         ),
       },
     },
@@ -25125,7 +25464,7 @@ async function get_pet_therapy_animal_interaction(req: NextRequest): Promise<Res
         ),
         sessionTypeLabels: Object.fromEntries(
           (["structured_therapy", "informal_interaction", "equine_therapy", "animal_assisted_learning", "care_responsibility", "visiting_animal", "other"] as const).map(
-            (t) => [t, getSessionTypeLabel(t)],
+            (t) => [t, getSessionTypeLabel____lib_pet_therapy_animal_interaction(t)],
           ),
         ),
         therapeuticBenefitLabels: Object.fromEntries(
@@ -25140,7 +25479,7 @@ async function get_pet_therapy_animal_interaction(req: NextRequest): Promise<Res
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_pet_therapy_animal_interaction(r)],
           ),
         ),
       },
@@ -25342,7 +25681,7 @@ async function get_physical_health_wellbeing(req: NextRequest): Promise<Response
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_physical_health_wellbeing(r)],
           ),
         ),
       },
@@ -25699,9 +26038,9 @@ function placement_stability_continuity_buildMeta() {
   ];
 
   return {
-    reviewTypeLabels: Object.fromEntries(reviewTypes.map((t) => [t, getReviewTypeLabel(t)])),
+    reviewTypeLabels: Object.fromEntries(reviewTypes.map((t) => [t, getReviewTypeLabel____lib_placement_stability_continuity_placement_stability_continuity_engine(t)])),
     stabilityStatusLabels: Object.fromEntries(stabilityStatuses.map((s) => [s, getStabilityStatusLabel(s)])),
-    ratingLabels: Object.fromEntries(ratings.map((r) => [r, getRatingLabel(r)])),
+    ratingLabels: Object.fromEntries(ratings.map((r) => [r, getRatingLabel____lib_placement_stability_continuity_placement_stability_continuity_engine(r)])),
   };
 }
 
@@ -26317,10 +26656,10 @@ async function get_pocket_money_financial_literacy(req: NextRequest): Promise<Re
           (["budgeting", "saving", "spending_decisions", "banking_basics", "comparison_shopping", "earning_income", "charity_giving", "financial_planning"] as const).map((t) => [t, getFinancialSkillTypeLabel(t)]),
         ),
         competencyLevelLabels: Object.fromEntries(
-          (["independent", "confident", "developing", "emerging", "not_started"] as const).map((c) => [c, getCompetencyLevelLabel(c)]),
+          (["independent", "confident", "developing", "emerging", "not_started"] as const).map((c) => [c, getCompetencyLevelLabel____lib_pocket_money_financial_literacy(c)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_pocket_money_financial_literacy(r)]),
         ),
       },
     },
@@ -26923,7 +27262,7 @@ async function get_positive_reinforcement_rewards(req: NextRequest): Promise<Res
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_positive_reinforcement_rewards(r)],
           ),
         ),
       },
@@ -27633,7 +27972,7 @@ async function get_privacy_dignity_assessment(req: NextRequest): Promise<Respons
         ),
         complianceStatusLabels: Object.fromEntries(
           (["fully_compliant", "mostly_compliant", "partially_compliant", "non_compliant"] as const).map(
-            (s) => [s, getComplianceStatusLabel(s)],
+            (s) => [s, getComplianceStatusLabel____lib_privacy_dignity_assessment(s)],
           ),
         ),
         auditOutcomeLabels: Object.fromEntries(
@@ -27648,12 +27987,12 @@ async function get_privacy_dignity_assessment(req: NextRequest): Promise<Respons
         ),
         incidentTypeLabels: Object.fromEntries(
           (["unauthorised_room_entry", "belongings_searched_without_consent", "communication_intercepted", "information_disclosed", "bodily_autonomy_breach", "digital_privacy_breach", "mail_opened", "other"] as const).map(
-            (t) => [t, getIncidentTypeLabel(t)],
+            (t) => [t, getIncidentTypeLabel____lib_privacy_dignity_assessment(t)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_privacy_dignity_assessment(r)],
           ),
         ),
       },
@@ -27961,7 +28300,7 @@ async function get_professional_boundary_compliance(req: NextRequest): Promise<R
           area: getBoundaryAreaLabel(a.boundaryArea),
           compliance: getComplianceLevelLabel(a.complianceLevel),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_professional_boundary_compliance(result.rating),
       },
     },
   });
@@ -29469,11 +29808,11 @@ async function get_recreational_leisure_access(req: NextRequest): Promise<Respon
           id: a.id,
           childName: a.childName,
           date: a.activityDate,
-          type: getActivityTypeLabel(a.activityType),
-          participation: getParticipationLevelLabel(a.participationLevel),
+          type: getActivityTypeLabel____lib_recreational_leisure_access(a.activityType),
+          participation: getParticipationLevelLabel____lib_recreational_leisure_access(a.participationLevel),
           enjoyed: a.childEnjoyed,
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_recreational_leisure_access(result.rating),
       },
     },
   });
@@ -32259,7 +32598,7 @@ async function get_room_standards_personalisation(req: NextRequest): Promise<Res
         room_standards_personalisation_inspectionOutcomeLabels,
         room_standards_personalisation_furnitureConditionLabels,
         room_standards_personalisation_ratingLabels,
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_room_standards_personalisation(result.rating),
         roomSummary: rooms.map((r) => ({
           id: r.id,
           childName: r.childName,
@@ -32820,9 +33159,9 @@ async function get_safeguarding_effectiveness(req: NextRequest): Promise<Respons
         referralSummary: referrals.map((r) => ({
           id: r.id,
           date: r.referralDate,
-          type: getReferralTypeLabel(r.referralType),
+          type: getReferralTypeLabel____lib_safeguarding_effectiveness(r.referralType),
           childName: r.childName,
-          outcome: getReferralOutcomeLabel(r.outcome),
+          outcome: getReferralOutcomeLabel____lib_safeguarding_effectiveness(r.outcome),
         })),
         ratingLabel: getOfstedRatingLabel(result.rating),
       },
@@ -32966,17 +33305,17 @@ async function get_safeguarding_oversight(req: NextRequest): Promise<Response> {
         ),
         referralTypeLabels: Object.fromEntries(
           (["lado", "mash", "police", "social_care", "prevent", "channel", "camhs", "nspcc", "internal_safeguarding"] as const).map(
-            (t) => [t, getReferralTypeLabel(t)],
+            (t) => [t, getReferralTypeLabel____lib_safeguarding_oversight(t)],
           ),
         ),
         referralOutcomeLabels: Object.fromEntries(
           (["action_taken", "no_further_action", "ongoing_investigation", "referred_on", "awaiting_outcome", "withdrawn"] as const).map(
-            (o) => [o, getReferralOutcomeLabel(o)],
+            (o) => [o, getReferralOutcomeLabel____lib_safeguarding_oversight(o)],
           ),
         ),
         concernCategoryLabels: Object.fromEntries(
           (["physical_abuse", "emotional_abuse", "sexual_abuse", "neglect", "exploitation", "radicalisation", "online_harm", "peer_on_peer", "self_harm", "domestic_abuse", "honour_based", "fgm", "trafficking"] as const).map(
-            (c) => [c, getConcernCategoryLabel(c)],
+            (c) => [c, getConcernCategoryLabel____lib_safeguarding_oversight(c)],
           ),
         ),
         concernPriorityLabels: Object.fromEntries(
@@ -32986,7 +33325,7 @@ async function get_safeguarding_oversight(req: NextRequest): Promise<Response> {
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_safeguarding_oversight(r)],
           ),
         ),
       },
@@ -33069,13 +33408,13 @@ async function get_safeguarding_referral_quality(req: NextRequest): Promise<Resp
       ...result,
       meta: {
         referralTypeLabels: Object.fromEntries(
-          (["section_47", "section_17", "lado", "police_referral", "multi_agency", "early_help", "internal_concern", "external_disclosure"] as const).map((t) => [t, getReferralTypeLabel(t)]),
+          (["section_47", "section_17", "lado", "police_referral", "multi_agency", "early_help", "internal_concern", "external_disclosure"] as const).map((t) => [t, getReferralTypeLabel____lib_safeguarding_referral_quality(t)]),
         ),
         referralOutcomeLabels: Object.fromEntries(
-          (["appropriate_action", "investigation_opened", "no_further_action", "escalated", "pending"] as const).map((o) => [o, getReferralOutcomeLabel(o)]),
+          (["appropriate_action", "investigation_opened", "no_further_action", "escalated", "pending"] as const).map((o) => [o, getReferralOutcomeLabel____lib_safeguarding_referral_quality(o)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_safeguarding_referral_quality(r)]),
         ),
       },
     },
@@ -33727,7 +34066,7 @@ async function get_self_harm_prevention_protocol(req: NextRequest): Promise<Resp
       meta: {
         riskLevelLabels: Object.fromEntries(
           (["low", "medium", "high", "very_high"] as const).map(
-            (r) => [r, getRiskLevelLabel(r)],
+            (r) => [r, getRiskLevelLabel____lib_self_harm_prevention_protocol(r)],
           ),
         ),
         selfHarmTypeLabels: Object.fromEntries(
@@ -33737,7 +34076,7 @@ async function get_self_harm_prevention_protocol(req: NextRequest): Promise<Resp
         ),
         interventionOutcomeLabels: Object.fromEntries(
           (["prevented", "interrupted", "required_medical", "hospitalised"] as const).map(
-            (o) => [o, getInterventionOutcomeLabel(o)],
+            (o) => [o, getInterventionOutcomeLabel____lib_self_harm_prevention_protocol(o)],
           ),
         ),
         safetyPlanStatusLabels: Object.fromEntries(
@@ -33747,7 +34086,7 @@ async function get_self_harm_prevention_protocol(req: NextRequest): Promise<Resp
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_self_harm_prevention_protocol(r)],
           ),
         ),
       },
@@ -34013,7 +34352,7 @@ async function get_sensory_environment_quality(req: NextRequest): Promise<Respon
             "requires_improvement",
             "inadequate",
           ] as const
-        ).map((r) => [r, getRatingLabel(r)]),
+        ).map((r) => [r, getRatingLabel____lib_sensory_environment_quality(r)]),
       ),
     },
   });
@@ -35103,9 +35442,9 @@ async function get_sexual_health_relationships_education(req: NextRequest): Prom
         topicAreaLabels: getTopicAreaLabels(),
         deliveryMethodLabels: getDeliveryMethodLabels(),
         ageAppropriatenessLabels: getAgeAppropriatenessLabels(),
-        engagementLevelLabels: getEngagementLevelLabels(),
-        ratingLabels: getRatingLabels(),
-        ratingLabel: getRatingLabel(result.rating),
+        engagementLevelLabels: getEngagementLevelLabels____lib_sexual_health_relationships_education(),
+        ratingLabels: getRatingLabels____lib_sexual_health_relationships_education(),
+        ratingLabel: getRatingLabel____lib_sexual_health_relationships_education(result.rating),
       },
     },
   });
@@ -35472,17 +35811,17 @@ async function get_sibling_contact_management(req: NextRequest): Promise<Respons
       meta: {
         contactTypeLabels: Object.fromEntries(
           (["face_to_face", "video_call", "phone_call", "letter_email", "shared_activity", "overnight_stay", "supervised_visit", "other"] as const).map(
-            (t) => [t, getContactTypeLabel(t)],
+            (t) => [t, getContactTypeLabel____lib_sibling_contact_management(t)],
           ),
         ),
         contactOutcomeLabels: Object.fromEntries(
           (["very_positive", "positive", "mixed", "difficult", "did_not_happen"] as const).map(
-            (o) => [o, getContactOutcomeLabel(o)],
+            (o) => [o, getContactOutcomeLabel____lib_sibling_contact_management(o)],
           ),
         ),
         barrierTypeLabels: Object.fromEntries(
           (["distance", "court_order", "safeguarding_concern", "placement_policy", "child_refusal", "sibling_refusal", "scheduling_conflict", "transport", "other"] as const).map(
-            (b) => [b, getBarrierTypeLabel(b)],
+            (b) => [b, getBarrierTypeLabel____lib_sibling_contact_management(b)],
           ),
         ),
         barrierStatusLabels: Object.fromEntries(
@@ -35492,7 +35831,7 @@ async function get_sibling_contact_management(req: NextRequest): Promise<Respons
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_sibling_contact_management(r)],
           ),
         ),
       },
@@ -35582,7 +35921,7 @@ async function get_sibling_contact_quality(req: NextRequest): Promise<Response> 
       meta: {
         contactTypeLabels: Object.fromEntries(
           (["face_to_face", "supervised", "unsupervised", "virtual_video", "telephone", "letter_email", "shared_activity", "overnight_stay"] as const).map(
-            (t) => [t, getContactTypeLabel(t)],
+            (t) => [t, getContactTypeLabel____lib_sibling_contact_quality(t)],
           ),
         ),
         contactQualityLabels: Object.fromEntries(
@@ -35592,12 +35931,12 @@ async function get_sibling_contact_quality(req: NextRequest): Promise<Response> 
         ),
         barrierTypeLabels: Object.fromEntries(
           (["distance", "local_authority_decision", "court_order", "child_wishes", "sibling_wishes", "safeguarding_concern", "placement_restriction", "scheduling_difficulty", "none"] as const).map(
-            (b) => [b, getBarrierTypeLabel(b)],
+            (b) => [b, getBarrierTypeLabel____lib_sibling_contact_quality(b)],
           ),
         ),
         contactOutcomeLabels: Object.fromEntries(
           (["positive", "mixed", "negative", "cancelled_by_child", "cancelled_by_sibling", "cancelled_by_authority", "no_show"] as const).map(
-            (o) => [o, getContactOutcomeLabel(o)],
+            (o) => [o, getContactOutcomeLabel____lib_sibling_contact_quality(o)],
           ),
         ),
         frequencyComplianceLabels: Object.fromEntries(
@@ -35607,7 +35946,7 @@ async function get_sibling_contact_quality(req: NextRequest): Promise<Response> 
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_sibling_contact_quality(r)],
           ),
         ),
       },
@@ -35854,10 +36193,10 @@ async function get_sleep_hygiene_quality(req: NextRequest): Promise<Response> {
           (["bedtime_routine", "night_check", "morning_wakeup", "sleep_environment_review", "sleep_concern_assessment", "relaxation_activity", "screen_time_management", "sleep_hygiene_education"] as const).map((t) => [t, getSleepTypeLabel(t)]),
         ),
         sleepQualityLabels: Object.fromEntries(
-          (["excellent", "good", "fair", "poor", "very_poor"] as const).map((q) => [q, getSleepQualityLabel(q)]),
+          (["excellent", "good", "fair", "poor", "very_poor"] as const).map((q) => [q, getSleepQualityLabel____lib_sleep_hygiene_quality(q)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_sleep_hygiene_quality(r)]),
         ),
       },
     },
@@ -35947,7 +36286,7 @@ async function get_sleep_routine_quality(req: NextRequest): Promise<Response> {
       ...result,
       meta: {
         sleepQualityLabels: Object.fromEntries(
-          (["excellent", "good", "fair", "poor", "very_poor"] as const).map((s) => [s, getSleepQualityLabel(s)]),
+          (["excellent", "good", "fair", "poor", "very_poor"] as const).map((s) => [s, getSleepQualityLabel____lib_sleep_routine_quality(s)]),
         ),
         routineAdherenceLabels: Object.fromEntries(
           (["fully_followed", "mostly_followed", "partially_followed", "not_followed"] as const).map((r) => [r, getRoutineAdherenceLabel(r)]),
@@ -35956,7 +36295,7 @@ async function get_sleep_routine_quality(req: NextRequest): Promise<Response> {
           (["difficulty_settling", "night_waking", "nightmares", "early_waking", "sleepwalking", "refusal_to_sleep", "screen_use", "none"] as const).map((n) => [n, getNightIssueLabel(n)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_sleep_routine_quality(r)]),
         ),
       },
     },
@@ -36469,7 +36808,7 @@ async function get_social_media_digital_footprint(req: NextRequest): Promise<Res
           id: c.id,
           childName: c.childName,
           type: getConsentTypeLabel(c.consentType),
-          status: getConsentStatusLabel(c.consentStatus),
+          status: getConsentStatusLabel____lib_social_media_digital_footprint(c.consentStatus),
           reviewDate: c.reviewDate,
         })),
         incidentSummary: incidents.map((i) => ({
@@ -36477,9 +36816,9 @@ async function get_social_media_digital_footprint(req: NextRequest): Promise<Res
           childName: i.childName,
           date: i.incidentDate,
           category: getRiskCategoryLabel(i.riskCategory),
-          severity: getSeverityLabel(i.severity),
+          severity: getSeverityLabel____lib_social_media_digital_footprint(i.severity),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_social_media_digital_footprint(result.rating),
       },
     },
   });
@@ -36567,7 +36906,7 @@ async function get_social_media_online_safety(req: NextRequest): Promise<Respons
           (["excellent", "good", "developing", "limited", "not_assessed"] as const).map((l) => [l, getComprehensionLevelLabel(l)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_social_media_online_safety(r)]),
         ),
       },
     },
@@ -36783,8 +37122,8 @@ async function get_spiritual_wellbeing_development(req: NextRequest): Promise<Re
         ...result,
         meta: {
           spiritualActivityTypeLabels: getSpiritualActivityTypeLabels(),
-          engagementLevelLabels: getEngagementLevelLabels(),
-          ratingLabels: getRatingLabels(),
+          engagementLevelLabels: getEngagementLevelLabels____lib_spiritual_wellbeing_development(),
+          ratingLabels: getRatingLabels____lib_spiritual_wellbeing_development(),
         },
       },
     });
@@ -36837,8 +37176,8 @@ async function post_spiritual_wellbeing_development(request: NextRequest): Promi
         ...result,
         meta: {
           spiritualActivityTypeLabels: getSpiritualActivityTypeLabels(),
-          engagementLevelLabels: getEngagementLevelLabels(),
-          ratingLabels: getRatingLabels(),
+          engagementLevelLabels: getEngagementLevelLabels____lib_spiritual_wellbeing_development(),
+          ratingLabels: getRatingLabels____lib_spiritual_wellbeing_development(),
         },
       },
     });
@@ -37376,7 +37715,7 @@ const staff_supervision_effectiveness_intelligence_DEMO_TRAINING: StaffSupervisi
 
 async function get_staff_supervision_effectiveness_intelligence(req: NextRequest): Promise<Response> {
 
-  const result = generateStaffSupervisionEffectivenessIntelligence({
+  const result = generateStaffSupervisionEffectivenessIntelligence____lib_staff_supervision_effectiveness_staff_supervision_effectiveness_intelligence_engine({
     homeId: "home-oak", periodStart: "2025-01-01", periodEnd: "2025-12-31",
     records: staff_supervision_effectiveness_intelligence_DEMO_RECORDS, policy: staff_supervision_effectiveness_intelligence_DEMO_POLICY, training: staff_supervision_effectiveness_intelligence_DEMO_TRAINING,
   });
@@ -37415,7 +37754,7 @@ const staff_supervision_effectiveness_DEMO_TRAINING: SupervisorTraining[] = [
 
 async function get_staff_supervision_effectiveness(req: NextRequest): Promise<Response> {
 
-  const result = generateStaffSupervisionEffectivenessIntelligence(
+  const result = generateStaffSupervisionEffectivenessIntelligence____lib_staff_supervision_effectiveness(
     staff_supervision_effectiveness_DEMO_SESSIONS, staff_supervision_effectiveness_DEMO_POLICY, staff_supervision_effectiveness_DEMO_TRAINING, "oak-house", "2026-01-01", "2026-05-19",
   );
 
@@ -37430,7 +37769,7 @@ async function get_staff_supervision_effectiveness(req: NextRequest): Promise<Re
           (["very_effective", "effective", "partially_effective", "ineffective", "not_attended"] as const).map((o) => [o, getSupervisionOutcomeLabel(o)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_staff_supervision_effectiveness(r)]),
         ),
       },
     },
@@ -37449,7 +37788,7 @@ async function post_staff_supervision_effectiveness(req: NextRequest): Promise<R
 
   if (!periodStart || !periodEnd) return NextResponse.json({ error: "periodStart and periodEnd are required" }, { status: 400 });
 
-  const result = generateStaffSupervisionEffectivenessIntelligence(
+  const result = generateStaffSupervisionEffectivenessIntelligence____lib_staff_supervision_effectiveness(
     sessions ?? [], policy ?? null, training ?? [], homeId ?? "unknown", periodStart, periodEnd,
   );
 
@@ -37809,7 +38148,7 @@ async function get_staff_wellbeing_resilience(req: NextRequest): Promise<Respons
           type: getWellbeingTypeLabel(a.wellbeingType),
           score: getWellbeingScoreLabel(a.wellbeingScore),
         })),
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_staff_wellbeing_resilience(result.rating),
         labelMaps: {
           wellbeingTypes: Object.fromEntries(
             staff_wellbeing_resilience_ALL_WELLBEING_TYPES.map((t) => [t, getWellbeingTypeLabel(t)]),
@@ -38280,27 +38619,27 @@ async function get_substance_misuse_awareness(req: NextRequest): Promise<Respons
         ),
         riskLevelLabels: Object.fromEntries(
           (["no_concerns", "low", "medium", "high", "active_use"] as const).map(
-            (l) => [l, getRiskLevelLabel(l)],
+            (l) => [l, getRiskLevelLabel____lib_substance_misuse_awareness(l)],
           ),
         ),
         screeningOutcomeLabels: Object.fromEntries(
           (["no_concerns", "monitoring", "referral_made", "intervention_active", "recovery"] as const).map(
-            (o) => [o, getScreeningOutcomeLabel(o)],
+            (o) => [o, getScreeningOutcomeLabel____lib_substance_misuse_awareness(o)],
           ),
         ),
         sessionTypeLabels: Object.fromEntries(
           (["group_education", "individual_awareness", "peer_education", "external_speaker", "resource_sharing", "harm_reduction"] as const).map(
-            (t) => [t, getSessionTypeLabel(t)],
+            (t) => [t, getSessionTypeLabel____lib_substance_misuse_awareness(t)],
           ),
         ),
         interventionOutcomeLabels: Object.fromEntries(
           (["engaged", "partially_engaged", "declined", "completed", "ongoing"] as const).map(
-            (o) => [o, getInterventionOutcomeLabel(o)],
+            (o) => [o, getInterventionOutcomeLabel____lib_substance_misuse_awareness(o)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_substance_misuse_awareness(r)],
           ),
         ),
       },
@@ -39058,7 +39397,7 @@ async function get_therapeutic_care(req: NextRequest): Promise<Response> {
             "cbt", "dbt", "play_therapy", "art_therapy", "emdr",
             "family_therapy", "group_therapy", "life_story", "psychodynamic",
             "trauma_focused_cbt", "sensory_integration", "other",
-          ] as const).map((t) => [t, getTherapyTypeLabel(t)]),
+          ] as const).map((t) => [t, getTherapyTypeLabel____lib_therapeutic_care(t)]),
         ),
         therapyProviderLabels: Object.fromEntries(
           ([
@@ -39068,7 +39407,7 @@ async function get_therapeutic_care(req: NextRequest): Promise<Response> {
         sessionOutcomeLabels: Object.fromEntries(
           ([
             "positive", "good_progress", "maintaining", "no_change", "deteriorated", "did_not_attend",
-          ] as const).map((o) => [o, getSessionOutcomeLabel(o)]),
+          ] as const).map((o) => [o, getSessionOutcomeLabel____lib_therapeutic_care(o)]),
         ),
         therapistRoleLabels: Object.fromEntries(
           ([
@@ -39248,7 +39587,7 @@ async function get_therapeutic_crisis_intervention(req: NextRequest): Promise<Re
         ),
         incidentSeverityLabels: Object.fromEntries(
           (["low", "medium", "high", "critical"] as const).map(
-            (v) => [v, getIncidentSeverityLabel(v)],
+            (v) => [v, getIncidentSeverityLabel____lib_therapeutic_crisis_intervention(v)],
           ),
         ),
         deescalationOutcomeLabels: Object.fromEntries(
@@ -39258,7 +39597,7 @@ async function get_therapeutic_crisis_intervention(req: NextRequest): Promise<Re
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_therapeutic_crisis_intervention(r)],
           ),
         ),
       },
@@ -39511,17 +39850,17 @@ async function get_therapeutic_intervention_quality(req: NextRequest): Promise<R
       meta: {
         therapyTypeLabels: Object.fromEntries(
           (["cbt", "play_therapy", "art_therapy", "emdr", "family_therapy", "dialectical_behaviour", "psychodynamic", "occupational_therapy"] as const).map(
-            (v) => [v, getTherapyTypeLabel(v)],
+            (v) => [v, getTherapyTypeLabel____lib_therapeutic_intervention_quality(v)],
           ),
         ),
         progressLevelLabels: Object.fromEntries(
           (["significant_progress", "good_progress", "some_progress", "minimal_progress", "no_progress"] as const).map(
-            (v) => [v, getProgressLevelLabel(v)],
+            (v) => [v, getProgressLevelLabel____lib_therapeutic_intervention_quality(v)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_therapeutic_intervention_quality(r)],
           ),
         ),
       },
@@ -40093,10 +40432,10 @@ async function get_transition_leaving_care_readiness(req: NextRequest): Promise<
           (["independent_living_skills", "financial_literacy", "education_employment", "health_management", "housing_planning", "social_networks", "emotional_resilience", "identity_belonging"] as const).map((a) => [a, getReadinessAreaLabel(a)]),
         ),
         progressLevelLabels: Object.fromEntries(
-          (["exceeding", "on_track", "developing", "behind", "not_started"] as const).map((p) => [p, getProgressLevelLabel(p)]),
+          (["exceeding", "on_track", "developing", "behind", "not_started"] as const).map((p) => [p, getProgressLevelLabel____lib_transition_leaving_care_readiness(p)]),
         ),
         ratingLabels: Object.fromEntries(
-          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel(r)]),
+          (["outstanding", "good", "requires_improvement", "inadequate"] as const).map((r) => [r, getRatingLabel____lib_transition_leaving_care_readiness(r)]),
         ),
       },
     },
@@ -40266,7 +40605,7 @@ async function get_transition_pathway_planning(req: NextRequest): Promise<Respon
       meta: {
         transitionTypeLabels: Object.fromEntries(
           (["leaving_care", "step_down", "foster_care", "semi_independence", "supported_living", "return_home", "adoption", "other"] as const).map(
-            (v) => [v, getTransitionTypeLabel(v)],
+            (v) => [v, getTransitionTypeLabel____lib_transition_pathway_planning(v)],
           ),
         ),
         pathwayStatusLabels: Object.fromEntries(
@@ -40281,12 +40620,12 @@ async function get_transition_pathway_planning(req: NextRequest): Promise<Respon
         ),
         skillLevelLabels: Object.fromEntries(
           (["not_started", "developing", "competent", "independent"] as const).map(
-            (v) => [v, getSkillLevelLabel(v)],
+            (v) => [v, getSkillLevelLabel____lib_transition_pathway_planning(v)],
           ),
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_transition_pathway_planning(r)],
           ),
         ),
       },
@@ -40513,7 +40852,7 @@ async function get_transition_planning(req: NextRequest): Promise<Response> {
       meta: {
         transitionTypeLabels: Object.fromEntries(
           (["leaving_care", "placement_move", "step_down", "step_up", "independence", "education_transition", "family_reunification", "supported_living"] as const).map(
-            (t) => [t, getTransitionTypeLabel(t)],
+            (t) => [t, getTransitionTypeLabel____lib_transition_planning(t)],
           ),
         ),
         planStatusLabels: Object.fromEntries(
@@ -40523,7 +40862,7 @@ async function get_transition_planning(req: NextRequest): Promise<Response> {
         ),
         skillCategoryLabels: Object.fromEntries(
           (["cooking", "budgeting", "hygiene", "laundry", "travel", "appointments", "communication", "employment", "tenancy", "emotional_regulation", "social_skills", "digital_literacy"] as const).map(
-            (c) => [c, getSkillCategoryLabel(c)],
+            (c) => [c, getSkillCategoryLabel____lib_transition_planning(c)],
           ),
         ),
         confidenceLevelLabels: Object.fromEntries(
@@ -40736,7 +41075,7 @@ async function get_transition_readiness(req: NextRequest): Promise<Response> {
       meta: {
         transitionTypeLabels: Object.fromEntries(
           (["placement_move", "step_down", "step_up", "return_home", "foster_care", "semi_independent", "independent_living", "adult_services", "education_transition", "emergency_move"] as const).map(
-            (t) => [t, getTransitionTypeLabel(t)],
+            (t) => [t, getTransitionTypeLabel____lib_transition_readiness(t)],
           ),
         ),
         transitionStatusLabels: Object.fromEntries(
@@ -42204,16 +42543,16 @@ async function get_visitor_engagement_monitoring(req: NextRequest): Promise<Resp
     data: {
       ...result,
       meta: {
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_visitor_engagement_monitoring(result.rating),
         labelMaps: {
           visitorTypes: Object.fromEntries(
             (["family_member", "social_worker", "independent_visitor", "therapist", "advocate", "inspector", "professional", "other"] as const).map(
-              (t) => [t, getVisitorTypeLabel(t)],
+              (t) => [t, getVisitorTypeLabel____lib_visitor_engagement_monitoring(t)],
             ),
           ),
           visitOutcomes: Object.fromEntries(
             (["very_positive", "positive", "neutral", "concerning", "safeguarding_issue"] as const).map(
-              (o) => [o, getVisitOutcomeLabel(o)],
+              (o) => [o, getVisitOutcomeLabel____lib_visitor_engagement_monitoring(o)],
             ),
           ),
         },
@@ -42266,7 +42605,7 @@ async function post_visitor_engagement_monitoring(req: NextRequest): Promise<Res
   return NextResponse.json({
     data: {
       ...result,
-      meta: { ratingLabel: getRatingLabel(result.rating) },
+      meta: { ratingLabel: getRatingLabel____lib_visitor_engagement_monitoring(result.rating) },
     },
   });
 }
@@ -42324,7 +42663,7 @@ async function get_visitor_management_quality(req: NextRequest): Promise<Respons
       meta: {
         visitorTypeLabels: getVisitorTypeLabels(),
         visitQualityLabels: getVisitQualityLabels(),
-        ratingLabels: getRatingLabels(),
+        ratingLabels: getRatingLabels____lib_visitor_management_quality(),
       },
     },
   });
@@ -42575,16 +42914,16 @@ async function get_visitor_management_safety(req: NextRequest): Promise<Response
     data: {
       ...result,
       meta: {
-        ratingLabel: getRatingLabel(result.rating),
+        ratingLabel: getRatingLabel____lib_visitor_management_safety(result.rating),
         labelMaps: {
           visitorTypes: Object.fromEntries(
             (["parent", "social_worker", "professional", "family_member", "friend", "contractor", "inspector", "volunteer", "other"] as const).map(
-              (t) => [t, getVisitorTypeLabel(t)],
+              (t) => [t, getVisitorTypeLabel____lib_visitor_management_safety(t)],
             ),
           ),
           visitPurposes: Object.fromEntries(
             (["contact", "review", "assessment", "maintenance", "inspection", "therapy", "education", "social", "other"] as const).map(
-              (p) => [p, getVisitPurposeLabel(p)],
+              (p) => [p, getVisitPurposeLabel____lib_visitor_management_safety(p)],
             ),
           ),
           verificationStatuses: Object.fromEntries(
@@ -42594,12 +42933,12 @@ async function get_visitor_management_safety(req: NextRequest): Promise<Response
           ),
           visitOutcomes: Object.fromEntries(
             (["completed", "shortened", "cancelled", "refused", "supervised_throughout"] as const).map(
-              (o) => [o, getVisitOutcomeLabel(o)],
+              (o) => [o, getVisitOutcomeLabel____lib_visitor_management_safety(o)],
             ),
           ),
           incidentTypes: Object.fromEntries(
             (["unauthorised_access", "safeguarding_concern", "policy_breach", "complaint", "other"] as const).map(
-              (t) => [t, getIncidentTypeLabel(t)],
+              (t) => [t, getIncidentTypeLabel____lib_visitor_management_safety(t)],
             ),
           ),
         },
@@ -42664,7 +43003,7 @@ async function post_visitor_management_safety(req: NextRequest): Promise<Respons
   return NextResponse.json({
     data: {
       ...result,
-      meta: { ratingLabel: getRatingLabel(result.rating) },
+      meta: { ratingLabel: getRatingLabel____lib_visitor_management_safety(result.rating) },
     },
   });
 }
@@ -42720,17 +43059,17 @@ async function get_visitor_partnership_quality(req: NextRequest): Promise<Respon
       meta: {
         visitorTypeLabels: Object.fromEntries(
           (["reg44_visitor", "social_worker", "iro", "therapist", "advocate", "family_member", "education_professional", "health_professional", "ofsted_inspector", "police_liaison"] as const).map(
-            (t) => [t, getVisitorTypeLabel(t)],
+            (t) => [t, getVisitorTypeLabel____lib_visitor_partnership_quality(t)],
           ),
         ),
         visitPurposeLabels: Object.fromEntries(
           (["statutory_visit", "review_meeting", "therapy_session", "care_planning", "safeguarding", "education_support", "health_appointment", "family_contact", "inspection", "general_support"] as const).map(
-            (p) => [p, getVisitPurposeLabel(p)],
+            (p) => [p, getVisitPurposeLabel____lib_visitor_partnership_quality(p)],
           ),
         ),
         visitOutcomeLabels: Object.fromEntries(
           (["positive", "constructive", "concerns_raised", "action_required", "follow_up_needed", "cancelled", "no_show"] as const).map(
-            (o) => [o, getVisitOutcomeLabel(o)],
+            (o) => [o, getVisitOutcomeLabel____lib_visitor_partnership_quality(o)],
           ),
         ),
         partnershipRatingLabels: Object.fromEntries(
@@ -42745,7 +43084,7 @@ async function get_visitor_partnership_quality(req: NextRequest): Promise<Respon
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_visitor_partnership_quality(r)],
           ),
         ),
       },
@@ -43345,7 +43684,7 @@ async function get_whistleblowing_concerns(request: NextRequest): Promise<Respon
       "bullying_harassment", "fraud_financial", "health_safety",
       "data_protection", "discrimination", "management_conduct", "staffing_levels",
     ] as const;
-    const labels = categories.map((c) => ({ value: c, label: getConcernCategoryLabel(c) }));
+    const labels = categories.map((c) => ({ value: c, label: getConcernCategoryLabel____lib_whistleblowing_concerns(c) }));
     return NextResponse.json({ ok: true, data: labels });
   }
 
@@ -43369,7 +43708,7 @@ async function get_whistleblowing_concerns(request: NextRequest): Promise<Respon
       "substantiated", "partially_substantiated", "unsubstantiated",
       "inconclusive", "withdrawn",
     ] as const;
-    const labels = outcomes.map((o) => ({ value: o, label: getResolutionOutcomeLabel(o) }));
+    const labels = outcomes.map((o) => ({ value: o, label: getResolutionOutcomeLabel____lib_whistleblowing_concerns(o) }));
     return NextResponse.json({ ok: true, data: labels });
   }
 
@@ -44044,12 +44383,12 @@ async function get_young_person_employment_support(req: NextRequest): Promise<Re
       meta: {
         supportTypeLabels: Object.fromEntries(
           (["work_experience", "cv_writing", "interview_skills", "careers_guidance", "financial_literacy", "apprenticeship_search", "college_application", "volunteering"] as const).map(
-            (t) => [t, getSupportTypeLabel(t)],
+            (t) => [t, getSupportTypeLabel____lib_young_person_employment_support(t)],
           ),
         ),
         engagementLevelLabels: Object.fromEntries(
           (["highly_engaged", "engaged", "partially_engaged", "disengaged"] as const).map(
-            (e) => [e, getEngagementLevelLabel(e)],
+            (e) => [e, getEngagementLevelLabel____lib_young_person_employment_support(e)],
           ),
         ),
         outcomeStatusLabels: Object.fromEntries(
@@ -44064,7 +44403,7 @@ async function get_young_person_employment_support(req: NextRequest): Promise<Re
         ),
         ratingLabels: Object.fromEntries(
           (["outstanding", "good", "requires_improvement", "inadequate"] as const).map(
-            (r) => [r, getRatingLabel(r)],
+            (r) => [r, getRatingLabel____lib_young_person_employment_support(r)],
           ),
         ),
       },
