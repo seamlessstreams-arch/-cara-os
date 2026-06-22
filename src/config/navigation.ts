@@ -900,6 +900,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Recording Gap Intelligence", href: "/intelligence/cara/recording-gap-intelligence", icon: "AlertCircle", module: "dashboard" },
       { label: "Recording Quality", href: "/intelligence/cara/recording-quality-intelligence", icon: "ClipboardList", module: "staff" },
       { label: "Recruitment Audit", href: "/intelligence/cara/recruitment-audit-trail-intelligence", icon: "UserCheck", module: "staff" },
+      { label: "Emotional Safety", href: "/intelligence/cara/emotional-safety", icon: "HeartPulse", module: "young-people" },
       { label: "Relational Safety Map", href: "/intelligence/cara/relational-safety-map", icon: "HeartHandshake", module: "young-people" },
       { label: "Relational Timeline", href: "/intelligence/cara/relational-timeline", icon: "Link2", module: "young-people" },
       { label: "Religious & Spiritual Wellbeing", href: "/intelligence/cara/religious-spiritual-wellbeing-intelligence", icon: "Sparkles", module: "young-people" },

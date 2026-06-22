@@ -11,6 +11,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EnterOnceIndicator } from "@/components/forms/enter-once-indicator";
+import { InlineEmotionalSafetyPanel } from "@/components/emotional-safety/inline-emotional-safety-panel";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -417,6 +418,9 @@ export function QuickIncidentForm({
               className="col-span-2"
             />
           </div>
+
+          {/* ── Point-of-work: emotional safety profile for this child ──── */}
+          <InlineEmotionalSafetyPanel childId={childId} className="mb-4" />
 
           {/* ── Step content ──────────────────────────────────────────── */}
           <div className="min-h-[200px]">
