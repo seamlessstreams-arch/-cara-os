@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useYoungPeople } from "@/hooks/use-young-people";
@@ -63,6 +63,10 @@ export default function EmotionalSafetyPage() {
   );
 
   const [selectedChildId, setSelectedChildId] = useState<string>("");
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search).get("child");
+    if (p) setSelectedChildId(p);
+  }, []);
   const childId = selectedChildId || youngPeople[0]?.id || "";
 
   const { data: a, isLoading } = useEmotionalSafety(childId);
