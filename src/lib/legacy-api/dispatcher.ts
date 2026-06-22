@@ -537,6 +537,22 @@ async function post_admissions_matching(request: NextRequest): Promise<Response>
 // ─── admissions ────────────────────────────────────────────────────────
 const admissions_demoRecords: AdmissionRecord[] = [
   // Alex — thorough admission process across multiple categories
+  { id: "adm-1", childId: "child-alex", childName: "Alex", admissionDate: "2026-01-15", category: "pre_admission_assessment", thoroughAssessment: true, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: true, timelyProcess: true },
+  { id: "adm-2", childId: "child-alex", childName: "Alex", admissionDate: "2026-01-15", category: "matching_process", thoroughAssessment: true, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: true, timelyProcess: true },
+  { id: "adm-3", childId: "child-alex", childName: "Alex", admissionDate: "2026-01-15", category: "child_participation", thoroughAssessment: true, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: true, timelyProcess: true },
+  { id: "adm-4", childId: "child-alex", childName: "Alex", admissionDate: "2026-01-15", category: "impact_assessment", thoroughAssessment: true, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: true, timelyProcess: true },
+
+  // Jordan — mostly good but some gaps in process
+  { id: "adm-5", childId: "child-jordan", childName: "Jordan", admissionDate: "2026-02-20", category: "pre_admission_assessment", thoroughAssessment: true, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: true, timelyProcess: true },
+  { id: "adm-6", childId: "child-jordan", childName: "Jordan", admissionDate: "2026-02-20", category: "matching_process", thoroughAssessment: true, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: false, documentationComplete: true, timelyProcess: true },
+  { id: "adm-7", childId: "child-jordan", childName: "Jordan", admissionDate: "2026-02-20", category: "transition_planning", thoroughAssessment: true, childConsulted: false, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: true, timelyProcess: false },
+  { id: "adm-8", childId: "child-jordan", childName: "Jordan", admissionDate: "2026-02-20", category: "family_consultation", thoroughAssessment: false, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: false, timelyProcess: true },
+
+  // Morgan — emergency placement, some areas incomplete
+  { id: "adm-9", childId: "child-morgan", childName: "Morgan", admissionDate: "2026-03-10", category: "pre_admission_assessment", thoroughAssessment: true, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: false, documentationComplete: true, timelyProcess: true },
+  { id: "adm-10", childId: "child-morgan", childName: "Morgan", admissionDate: "2026-03-10", category: "placement_planning", thoroughAssessment: true, childConsulted: true, impactOnResidentsConsidered: false, transitionPlanInPlace: false, documentationComplete: true, timelyProcess: false },
+  { id: "adm-11", childId: "child-morgan", childName: "Morgan", admissionDate: "2026-03-10", category: "information_gathering", thoroughAssessment: true, childConsulted: false, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: true, timelyProcess: true },
+  { id: "adm-12", childId: "child-morgan", childName: "Morgan", admissionDate: "2026-03-10", category: "child_participation", thoroughAssessment: false, childConsulted: true, impactOnResidentsConsidered: true, transitionPlanInPlace: true, documentationComplete: false, timelyProcess: true },
 ];
 const admissions_demoPolicy: AdmissionPolicy = {
   id: "pol-adm-1",
@@ -550,8 +566,11 @@ const admissions_demoPolicy: AdmissionPolicy = {
 };
 const admissions_demoStaff: StaffAdmissionTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", assessmentSkills: true, matchingExpertise: true, transitionPlanning: true, childParticipationSkills: true, riskAssessment: true, familyEngagement: true },
-
+  { id: "t-2", staffId: "staff-tom", staffName: "Tom Richards", assessmentSkills: true, matchingExpertise: true, transitionPlanning: true, childParticipationSkills: false, riskAssessment: true, familyEngagement: false },
+  { id: "t-3", staffId: "staff-lisa", staffName: "Lisa Williams", assessmentSkills: true, matchingExpertise: true, transitionPlanning: true, childParticipationSkills: true, riskAssessment: false, familyEngagement: true },
+  { id: "t-4", staffId: "staff-darren", staffName: "Darren Laville", assessmentSkills: true, matchingExpertise: true, transitionPlanning: true, childParticipationSkills: true, riskAssessment: true, familyEngagement: true },
 ];
+
 async function get_admissions(req: NextRequest): Promise<Response> {
 
   const result = generateAdmissionsIntelligence(
@@ -573,7 +592,7 @@ async function get_admissions(req: NextRequest): Promise<Response> {
 
 // ─── advocacy-representation ───────────────────────────────────────────
 const advocacy_representation_CHILD_IDS = ["alex", "jordan", "morgan"];
-const CHILD_NAMES: Record<string, string> = {
+const advocacy_representation_CHILD_NAMES: Record<string, string> = {
   alex: "Alex",
   jordan: "Jordan",
   morgan: "Morgan",
@@ -667,7 +686,7 @@ async function get_advocacy_representation(req: NextRequest): Promise<Response> 
     const referenceDate = new Date().toISOString().split("T")[0];
     const result = generateAdvocacyRepresentationIntelligence(
       referrals, visitors, awareness, policy, parentalContact,
-      advocacy_representation_CHILD_IDS, CHILD_NAMES,
+      advocacy_representation_CHILD_IDS, advocacy_representation_CHILD_NAMES,
       "oak-house", "2025-01-01", "2025-06-30", referenceDate,
     );
     return NextResponse.json(result);
@@ -734,6 +753,21 @@ async function post_advocacy_representation(request: NextRequest): Promise<Respo
 // ─── after-care-support-quality ────────────────────────────────────────
 const after_care_support_quality_DEMO_SESSIONS: AfterCareSession[] = [
   // Alex — housing support (highly engaged)
+  { id: "acs-001", childId: "child-alex", childName: "Alex", sessionDate: "2026-02-10", supportType: "housing_support", engagementLevel: "highly_engaged", needsAssessed: true, goalsSet: true, progressTracked: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  // Alex — education continuation (engaged)
+  { id: "acs-002", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-05", supportType: "education_continuation", engagementLevel: "engaged", needsAssessed: true, goalsSet: true, progressTracked: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  // Alex — financial advice (highly engaged)
+  { id: "acs-003", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-12", supportType: "financial_advice", engagementLevel: "highly_engaged", needsAssessed: true, goalsSet: true, progressTracked: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  // Jordan — employment guidance (engaged)
+  { id: "acs-004", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-02-20", supportType: "employment_guidance", engagementLevel: "engaged", needsAssessed: true, goalsSet: true, progressTracked: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  // Jordan — emotional wellbeing (moderate)
+  { id: "acs-005", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-03-15", supportType: "emotional_wellbeing", engagementLevel: "moderate", needsAssessed: true, goalsSet: true, progressTracked: false, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  // Jordan — practical skills (engaged)
+  { id: "acs-006", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-20", supportType: "practical_skills", engagementLevel: "engaged", needsAssessed: true, goalsSet: true, progressTracked: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  // Morgan — health access (highly engaged)
+  { id: "acs-007", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-03-01", supportType: "health_access", engagementLevel: "highly_engaged", needsAssessed: true, goalsSet: true, progressTracked: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  // Morgan — social network (engaged)
+  { id: "acs-008", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-08", supportType: "social_network", engagementLevel: "engaged", needsAssessed: true, goalsSet: true, progressTracked: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
 ];
 const after_care_support_quality_DEMO_POLICY: AfterCarePolicy = {
   id: "pol-oak",
@@ -747,8 +781,11 @@ const after_care_support_quality_DEMO_POLICY: AfterCarePolicy = {
 };
 const after_care_support_quality_DEMO_TRAINING: StaffAfterCareTraining[] = [
   { id: "tr-sarah", staffId: "staff-sarah", staffName: "Sarah Johnson", leavingCareKnowledge: true, pathwayPlanning: true, housingAdvice: true, employmentSupport: true, benefitsAndFinance: true, emotionalResilience: true },
-
+  { id: "tr-tom", staffId: "staff-tom", staffName: "Tom Richards", leavingCareKnowledge: true, pathwayPlanning: true, housingAdvice: true, employmentSupport: true, benefitsAndFinance: true, emotionalResilience: true },
+  { id: "tr-lisa", staffId: "staff-lisa", staffName: "Lisa Williams", leavingCareKnowledge: true, pathwayPlanning: true, housingAdvice: true, employmentSupport: true, benefitsAndFinance: true, emotionalResilience: true },
+  { id: "tr-darren", staffId: "staff-darren", staffName: "Darren Laville", leavingCareKnowledge: true, pathwayPlanning: true, housingAdvice: true, employmentSupport: true, benefitsAndFinance: true, emotionalResilience: true },
 ];
+
 async function get_after_care_support_quality(req: NextRequest): Promise<Response> {
 
   const result = generateAfterCareSupportQualityIntelligence(
@@ -826,17 +863,41 @@ const aftercare_outcomes_tracking_DEMO_LEAVERS: CareLeaverProfile[] = [
     personalAdviserAssigned: true,
     personalAdviserName: "Mark Thompson",
   },
+  {
+    id: "cl-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    dateOfBirth: "2008-09-22",
+    leavingDate: "2026-02-18",
+    leavingReason: "placement_move",
+    currentAge: 17,
+    housingStatus: "temporary",
+    employmentEducationStatus: "neet",
+    hasPathwayPlan: true,
+    pathwayPlanReviewDate: "2025-12-01",
+    personalAdviserAssigned: true,
+    personalAdviserName: "Sarah Johnson",
+  },
 ];
 const aftercare_outcomes_tracking_DEMO_CONTACTS: AftercareContact[] = [
   { id: "ac-1", childId: "child-alex", childName: "Alex", date: "2026-02-10", contactMethod: "phone", initiatedBy: "home", purpose: "Monthly wellbeing check-in", wellbeingRating: "stable", concernsRaised: false, followUpRequired: false, followUpCompleted: false },
+  { id: "ac-2", childId: "child-alex", childName: "Alex", date: "2026-03-14", contactMethod: "visit", initiatedBy: "home", purpose: "Pathway plan review visit", wellbeingRating: "stable", concernsRaised: false, followUpRequired: false, followUpCompleted: false },
+  { id: "ac-3", childId: "child-alex", childName: "Alex", date: "2026-04-18", contactMethod: "phone", initiatedBy: "child", purpose: "Alex called for advice on college application", wellbeingRating: "thriving", concernsRaised: false, followUpRequired: false, followUpCompleted: false },
+  { id: "ac-4", childId: "child-jordan", childName: "Jordan", date: "2026-03-20", contactMethod: "phone", initiatedBy: "home", purpose: "Wellbeing check-in", wellbeingRating: "struggling", concernsRaised: true, followUpRequired: true, followUpCompleted: true },
+  { id: "ac-5", childId: "child-jordan", childName: "Jordan", date: "2026-04-15", contactMethod: "video", initiatedBy: "adviser", purpose: "Housing support discussion", wellbeingRating: "struggling", concernsRaised: true, followUpRequired: true, followUpCompleted: false },
+  { id: "ac-6", childId: "child-jordan", childName: "Jordan", date: "2026-05-10", contactMethod: "visit", initiatedBy: "home", purpose: "Face-to-face wellbeing check", wellbeingRating: "stable", concernsRaised: false, followUpRequired: false, followUpCompleted: false },
 ];
 const aftercare_outcomes_tracking_DEMO_ASSESSMENTS: OutcomeAssessment[] = [
   { id: "oa-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", housingStable: true, educationEmploymentEngaged: true, mentalHealthSupported: true, physicalHealthRegistered: true, financiallyCapable: true, socialNetworkPresent: true, overallWellbeing: "stable" },
+  { id: "oa-2", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-15", housingStable: false, educationEmploymentEngaged: false, mentalHealthSupported: true, physicalHealthRegistered: true, financiallyCapable: false, socialNetworkPresent: false, overallWellbeing: "struggling" },
 ];
 const aftercare_outcomes_tracking_DEMO_SERVICES: SupportService[] = [
   { id: "ss-1", childId: "child-alex", childName: "Alex", serviceType: "education", referralDate: "2025-12-01", accessedService: true, serviceOngoing: true },
-
+  { id: "ss-2", childId: "child-jordan", childName: "Jordan", serviceType: "housing", referralDate: "2026-03-01", accessedService: true, serviceOngoing: true },
+  { id: "ss-3", childId: "child-jordan", childName: "Jordan", serviceType: "employment", referralDate: "2026-03-15", accessedService: false, serviceOngoing: false },
+  { id: "ss-4", childId: "child-jordan", childName: "Jordan", serviceType: "mental_health", referralDate: "2026-04-01", accessedService: true, serviceOngoing: true },
 ];
+
 async function get_aftercare_outcomes_tracking(req: NextRequest): Promise<Response> {
 
   const result = generateAftercareOutcomesTrackingIntelligence(
@@ -937,6 +998,22 @@ async function post_aftercare_outcomes_tracking(req: NextRequest): Promise<Respo
 // ─── allegations ───────────────────────────────────────────────────────
 const allegations_demoRecords: AllegationRecord[] = [
   // Alex — allegations handled well
+  { id: "alg-1", childId: "child-alex", childName: "Alex", reportDate: "2026-02-05", category: "physical_abuse", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: true },
+  { id: "alg-2", childId: "child-alex", childName: "Alex", reportDate: "2026-03-12", category: "emotional_abuse", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: true },
+  { id: "alg-3", childId: "child-alex", childName: "Alex", reportDate: "2026-04-08", category: "inappropriate_restraint", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: false },
+  { id: "alg-4", childId: "child-alex", childName: "Alex", reportDate: "2026-05-01", category: "professional_boundary", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: false, documentationComplete: true, timelyInvestigation: true },
+
+  // Jordan — some gaps in process
+  { id: "alg-5", childId: "child-jordan", childName: "Jordan", reportDate: "2026-02-20", category: "failure_to_safeguard", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: true },
+  { id: "alg-6", childId: "child-jordan", childName: "Jordan", reportDate: "2026-03-18", category: "neglect", ladoReferralMade: true, ofstedNotified: false, childSupportOffered: true, staffSupportProvided: true, documentationComplete: false, timelyInvestigation: true },
+  { id: "alg-7", childId: "child-jordan", childName: "Jordan", reportDate: "2026-04-22", category: "whistleblowing_concern", ladoReferralMade: false, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: true },
+  { id: "alg-8", childId: "child-jordan", childName: "Jordan", reportDate: "2026-05-10", category: "sexual_abuse", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: true },
+
+  // Morgan — newer, fewer records
+  { id: "alg-9", childId: "child-morgan", childName: "Morgan", reportDate: "2026-03-25", category: "physical_abuse", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: true },
+  { id: "alg-10", childId: "child-morgan", childName: "Morgan", reportDate: "2026-04-15", category: "emotional_abuse", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: false, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: false },
+  { id: "alg-11", childId: "child-morgan", childName: "Morgan", reportDate: "2026-05-02", category: "neglect", ladoReferralMade: true, ofstedNotified: false, childSupportOffered: true, staffSupportProvided: true, documentationComplete: true, timelyInvestigation: true },
+  { id: "alg-12", childId: "child-morgan", childName: "Morgan", reportDate: "2026-05-15", category: "inappropriate_restraint", ladoReferralMade: true, ofstedNotified: true, childSupportOffered: true, staffSupportProvided: true, documentationComplete: false, timelyInvestigation: true },
 ];
 const allegations_demoPolicy: AllegationPolicy = {
   id: "pol-alg-1",
@@ -950,8 +1027,11 @@ const allegations_demoPolicy: AllegationPolicy = {
 };
 const allegations_demoStaff: StaffAllegationTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", safeguardingKnowledge: true, allegationProcedures: true, ladoProcess: true, investigationSkills: true, childProtection: true, recordKeeping: true },
-
+  { id: "t-2", staffId: "staff-tom", staffName: "Tom Richards", safeguardingKnowledge: true, allegationProcedures: true, ladoProcess: true, investigationSkills: false, childProtection: false, recordKeeping: true },
+  { id: "t-3", staffId: "staff-lisa", staffName: "Lisa Williams", safeguardingKnowledge: true, allegationProcedures: true, ladoProcess: false, investigationSkills: true, childProtection: true, recordKeeping: false },
+  { id: "t-4", staffId: "staff-darren", staffName: "Darren Laville", safeguardingKnowledge: true, allegationProcedures: true, ladoProcess: true, investigationSkills: true, childProtection: true, recordKeeping: true },
 ];
+
 async function get_allegations(req: NextRequest): Promise<Response> {
 
   const result = generateAllegationsIntelligence(
@@ -988,16 +1068,59 @@ const allergen_dietary_management_DEMO_PROFILES: ChildAllergenProfile[] = [
     lastReviewDate: "2026-03-01",
     reviewDue: "2026-09-01",
   },
+  {
+    id: "ap-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    allergens: ["dairy"],
+    severities: { dairy: "moderate" },
+    dietaryRequirements: ["dairy_free"],
+    emergencyPlanStatus: "current",
+    epiPenAvailable: null,
+    epiPenExpiryDate: null,
+    gpNotified: true,
+    socialWorkerNotified: true,
+    lastReviewDate: "2026-02-15",
+    reviewDue: "2026-08-15",
+  },
+  {
+    id: "ap-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    allergens: [],
+    severities: {},
+    dietaryRequirements: ["vegetarian"],
+    emergencyPlanStatus: "current",
+    epiPenAvailable: null,
+    epiPenExpiryDate: null,
+    gpNotified: false,
+    socialWorkerNotified: false,
+    lastReviewDate: "2026-04-01",
+    reviewDue: "2026-10-01",
+  },
 ];
 const allergen_dietary_management_DEMO_MEALS: MealPlanRecord[] = [
   { id: "mp-1", date: "2026-05-12", mealType: "breakfast", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-2", date: "2026-05-12", mealType: "lunch", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-3", date: "2026-05-12", mealType: "dinner", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: false, complianceStatus: "fully_compliant" },
+  { id: "mp-4", date: "2026-05-13", mealType: "breakfast", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-5", date: "2026-05-13", mealType: "lunch", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-6", date: "2026-05-13", mealType: "dinner", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-7", date: "2026-05-14", mealType: "breakfast", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-8", date: "2026-05-14", mealType: "lunch", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-9", date: "2026-05-14", mealType: "dinner", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-10", date: "2026-05-15", mealType: "breakfast", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-11", date: "2026-05-15", mealType: "lunch", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
+  { id: "mp-12", date: "2026-05-15", mealType: "dinner", allergenLabelled: true, dietaryRequirementsMet: true, crossContaminationPrevented: true, childConsulted: true, complianceStatus: "fully_compliant" },
 ];
 const allergen_dietary_management_DEMO_INCIDENTS: AllergenIncident[] = [];
-
 const allergen_dietary_management_DEMO_TRAINING: StaffAllergenTraining[] = [
   { id: "sat-1", staffId: "staff-sarah", staffName: "Sarah Johnson", allergenAwareness: true, epiPenTrained: true, epiPenExpiryDate: "2027-01-10", foodHygieneCertified: true, crossContaminationTrained: true, anaphylaxisTrained: true, competenceLevel: "fully_competent" },
-
+  { id: "sat-2", staffId: "staff-tom", staffName: "Tom Richards", allergenAwareness: true, epiPenTrained: true, epiPenExpiryDate: "2027-01-10", foodHygieneCertified: true, crossContaminationTrained: true, anaphylaxisTrained: true, competenceLevel: "fully_competent" },
+  { id: "sat-3", staffId: "staff-lisa", staffName: "Lisa Williams", allergenAwareness: true, epiPenTrained: true, epiPenExpiryDate: "2027-01-10", foodHygieneCertified: true, crossContaminationTrained: true, anaphylaxisTrained: true, competenceLevel: "fully_competent" },
+  { id: "sat-4", staffId: "staff-darren", staffName: "Darren Laville", allergenAwareness: true, epiPenTrained: true, epiPenExpiryDate: "2027-01-10", foodHygieneCertified: true, crossContaminationTrained: true, anaphylaxisTrained: true, competenceLevel: "fully_competent" },
 ];
+
 async function get_allergen_dietary_management(req: NextRequest): Promise<Response> {
 
   const result = generateAllergenDietaryManagementIntelligence(
@@ -1744,6 +1867,17 @@ async function post_attachment_relationships(request: NextRequest): Promise<Resp
 // ─── behaviour-intelligence ────────────────────────────────────────────
 const behaviour_intelligence_DEMO_RECORDS: BehaviourIntelligenceRecord[] = [
   { id: "bi-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "positive_reinforcement", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "bi-002", homeId: "home-oak-house", date: "2025-03-05", childId: "child-alex", childName: "Alex", category: "de_escalation", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "bi-003", homeId: "home-oak-house", date: "2025-04-12", childId: "child-alex", childName: "Alex", category: "behaviour_support_plan", outcome: "behaviour_maintained", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: false, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "bi-004", homeId: "home-oak-house", date: "2025-05-20", childId: "child-alex", childName: "Alex", category: "restorative_practice", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: false },
+  { id: "bi-005", homeId: "home-oak-house", date: "2025-02-18", childId: "child-jordan", childName: "Jordan", category: "physical_intervention", outcome: "partial_improvement", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "bi-006", homeId: "home-oak-house", date: "2025-03-22", childId: "child-jordan", childName: "Jordan", category: "sanctions_review", outcome: "behaviour_maintained", childViewIncluded: true, deEscalationAttempted: false, positiveReinforcementUsed: false, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "bi-007", homeId: "home-oak-house", date: "2025-05-10", childId: "child-jordan", childName: "Jordan", category: "reward_system", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "bi-008", homeId: "home-oak-house", date: "2025-06-15", childId: "child-jordan", childName: "Jordan", category: "behaviour_analysis", outcome: "partial_improvement", childViewIncluded: false, deEscalationAttempted: true, positiveReinforcementUsed: false, supportPlanFollowed: true, documentationComplete: false, timelyRecording: true },
+  { id: "bi-009", homeId: "home-oak-house", date: "2025-03-01", childId: "child-morgan", childName: "Morgan", category: "positive_reinforcement", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "bi-010", homeId: "home-oak-house", date: "2025-04-28", childId: "child-morgan", childName: "Morgan", category: "de_escalation", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "bi-011", homeId: "home-oak-house", date: "2025-06-01", childId: "child-morgan", childName: "Morgan", category: "behaviour_support_plan", outcome: "behaviour_maintained", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: false, documentationComplete: true, timelyRecording: true },
+  { id: "bi-012", homeId: "home-oak-house", date: "2025-07-10", childId: "child-morgan", childName: "Morgan", category: "restorative_practice", outcome: "behaviour_improved", childViewIncluded: true, deEscalationAttempted: true, positiveReinforcementUsed: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
 ];
 const behaviour_intelligence_DEMO_POLICY: BehaviourIntelligencePolicy = {
   behaviourSupportPolicy: true,
@@ -1756,8 +1890,11 @@ const behaviour_intelligence_DEMO_POLICY: BehaviourIntelligencePolicy = {
 };
 const behaviour_intelligence_DEMO_STAFF: StaffBehaviourIntelligenceTraining[] = [
   { staffId: "staff-sarah", behaviourManagementKnowledge: true, deEscalationSkills: true, restorativePracticeSkills: true, physicalInterventionTraining: true, traumaInformedApproach: true, behaviourAnalysisSkills: true },
-
+  { staffId: "staff-tom", behaviourManagementKnowledge: true, deEscalationSkills: true, restorativePracticeSkills: true, physicalInterventionTraining: true, traumaInformedApproach: false, behaviourAnalysisSkills: true },
+  { staffId: "staff-lisa", behaviourManagementKnowledge: true, deEscalationSkills: true, restorativePracticeSkills: true, physicalInterventionTraining: false, traumaInformedApproach: true, behaviourAnalysisSkills: false },
+  { staffId: "staff-darren", behaviourManagementKnowledge: true, deEscalationSkills: true, restorativePracticeSkills: true, physicalInterventionTraining: true, traumaInformedApproach: true, behaviourAnalysisSkills: true },
 ];
+
 async function get_behaviour_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateBehaviourIntelligenceReport({
@@ -1784,6 +1921,22 @@ async function get_behaviour_intelligence(req: NextRequest): Promise<Response> {
 // ─── behaviour ─────────────────────────────────────────────────────────
 const behaviour_demoRecords: BehaviourRecord[] = [
   // Alex — strong positive behaviour approach
+  { id: "beh-1", childId: "child-alex", childName: "Alex", recordDate: "2026-02-10", category: "positive_reinforcement", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "beh-2", childId: "child-alex", childName: "Alex", recordDate: "2026-03-05", category: "de_escalation", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "beh-3", childId: "child-alex", childName: "Alex", recordDate: "2026-03-22", category: "behaviour_support_plan", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "beh-4", childId: "child-alex", childName: "Alex", recordDate: "2026-04-15", category: "restorative_practice", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: false, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+
+  // Jordan — mixed results, some gaps
+  { id: "beh-5", childId: "child-jordan", childName: "Jordan", recordDate: "2026-02-18", category: "de_escalation", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "beh-6", childId: "child-jordan", childName: "Jordan", recordDate: "2026-03-10", category: "risk_assessment", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: false, supportPlanFollowed: false, documentationComplete: true, timelyRecording: false },
+  { id: "beh-7", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-02", category: "therapeutic_intervention", positiveApproachUsed: false, deEscalationAttempted: true, childViewCaptured: true, supportPlanFollowed: true, documentationComplete: false, timelyRecording: true },
+  { id: "beh-8", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-25", category: "child_consultation", positiveApproachUsed: true, deEscalationAttempted: false, childViewCaptured: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — newer, fewer records
+  { id: "beh-9", childId: "child-morgan", childName: "Morgan", recordDate: "2026-03-15", category: "positive_reinforcement", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: true, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "beh-10", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-08", category: "staff_debriefing", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: true, supportPlanFollowed: false, documentationComplete: true, timelyRecording: false },
+  { id: "beh-11", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-28", category: "behaviour_support_plan", positiveApproachUsed: true, deEscalationAttempted: true, childViewCaptured: false, supportPlanFollowed: true, documentationComplete: true, timelyRecording: true },
+  { id: "beh-12", childId: "child-morgan", childName: "Morgan", recordDate: "2026-05-10", category: "restorative_practice", positiveApproachUsed: false, deEscalationAttempted: true, childViewCaptured: true, supportPlanFollowed: true, documentationComplete: false, timelyRecording: true },
 ];
 const behaviour_demoPolicy: BehaviourPolicy = {
   id: "pol-beh-1",
@@ -1797,8 +1950,11 @@ const behaviour_demoPolicy: BehaviourPolicy = {
 };
 const behaviour_demoStaff: StaffBehaviourTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", positiveApproaches: true, deEscalationSkills: true, traumaInformedPractice: true, restorativePractice: true, riskAssessment: true, recordKeeping: true },
-
+  { id: "t-2", staffId: "staff-tom", staffName: "Tom Richards", positiveApproaches: true, deEscalationSkills: true, traumaInformedPractice: true, restorativePractice: false, riskAssessment: false, recordKeeping: true },
+  { id: "t-3", staffId: "staff-lisa", staffName: "Lisa Williams", positiveApproaches: true, deEscalationSkills: true, traumaInformedPractice: false, restorativePractice: true, riskAssessment: true, recordKeeping: false },
+  { id: "t-4", staffId: "staff-darren", staffName: "Darren Laville", positiveApproaches: true, deEscalationSkills: true, traumaInformedPractice: true, restorativePractice: true, riskAssessment: true, recordKeeping: true },
 ];
+
 async function get_behaviour(req: NextRequest): Promise<Response> {
 
   const result = generateBehaviourIntelligence(
@@ -2149,6 +2305,115 @@ async function post_bereavement_loss_support(request: NextRequest): Promise<Resp
 // ─── body-map-protocol ─────────────────────────────────────────────────
 const body_map_protocol_DEMO_RECORDS: BodyMapRecord[] = [
   // Alex — bruise on knee from football, accidental explained
+  {
+    id: "bm-1",
+    childId: "child-alex",
+    childName: "Alex",
+    dateRecorded: "2026-02-15",
+    recordedBy: "Sarah Johnson",
+    markType: "bruise",
+    markOrigin: "accidental_explained",
+    bodyRegion: "lower_limbs",
+    documentationQuality: "thorough",
+    childExplanationSought: true,
+    childExplanationRecorded: true,
+    witnessPresent: true,
+    photographTaken: true,
+    dateDiscovered: "2026-02-15",
+    timelyRecording: true,
+    actionsTaken: ["monitoring_only"],
+    managerInformed: true,
+    followUpRequired: false,
+    followUpCompleted: null,
+  },
+  // Jordan — self-inflicted scratch on forearm
+  {
+    id: "bm-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    dateRecorded: "2026-03-10",
+    recordedBy: "Tom Richards",
+    markType: "scratch",
+    markOrigin: "self_inflicted",
+    bodyRegion: "upper_limbs",
+    documentationQuality: "thorough",
+    childExplanationSought: true,
+    childExplanationRecorded: true,
+    witnessPresent: false,
+    photographTaken: true,
+    dateDiscovered: "2026-03-10",
+    timelyRecording: true,
+    actionsTaken: ["social_worker_notified", "monitoring_only"],
+    managerInformed: true,
+    followUpRequired: true,
+    followUpCompleted: true,
+  },
+  // Jordan — unexplained bruise on upper arm
+  {
+    id: "bm-3",
+    childId: "child-jordan",
+    childName: "Jordan",
+    dateRecorded: "2026-04-05",
+    recordedBy: "Lisa Williams",
+    markType: "bruise",
+    markOrigin: "accidental_unexplained",
+    bodyRegion: "upper_limbs",
+    documentationQuality: "thorough",
+    childExplanationSought: true,
+    childExplanationRecorded: true,
+    witnessPresent: false,
+    photographTaken: true,
+    dateDiscovered: "2026-04-05",
+    timelyRecording: true,
+    actionsTaken: ["social_worker_notified", "photograph_taken"],
+    managerInformed: true,
+    followUpRequired: true,
+    followUpCompleted: true,
+  },
+  // Morgan — minor cut from cooking activity
+  {
+    id: "bm-4",
+    childId: "child-morgan",
+    childName: "Morgan",
+    dateRecorded: "2026-03-22",
+    recordedBy: "Sarah Johnson",
+    markType: "cut",
+    markOrigin: "accidental_explained",
+    bodyRegion: "hands_feet",
+    documentationQuality: "thorough",
+    childExplanationSought: true,
+    childExplanationRecorded: true,
+    witnessPresent: true,
+    photographTaken: false,
+    dateDiscovered: "2026-03-22",
+    timelyRecording: true,
+    actionsTaken: ["monitoring_only"],
+    managerInformed: true,
+    followUpRequired: false,
+    followUpCompleted: null,
+  },
+  // Alex — swelling on hand from sports
+  {
+    id: "bm-5",
+    childId: "child-alex",
+    childName: "Alex",
+    dateRecorded: "2026-04-18",
+    recordedBy: "Tom Richards",
+    markType: "swelling",
+    markOrigin: "accidental_explained",
+    bodyRegion: "hands_feet",
+    documentationQuality: "thorough",
+    childExplanationSought: true,
+    childExplanationRecorded: true,
+    witnessPresent: true,
+    photographTaken: true,
+    dateDiscovered: "2026-04-18",
+    timelyRecording: true,
+    actionsTaken: ["gp_referral", "monitoring_only"],
+    managerInformed: true,
+    followUpRequired: true,
+    followUpCompleted: true,
+  },
 ];
 const body_map_protocol_DEMO_AUDITS: BodyMapAudit[] = [
   {
@@ -2163,9 +2428,24 @@ const body_map_protocol_DEMO_AUDITS: BodyMapAudit[] = [
     crossReferencedWithIncidents: true,
     overallCompliant: true,
   },
+  {
+    id: "aud-2",
+    auditDate: "2026-05-01",
+    auditor: "Darren Laville",
+    protocolAccessible: true,
+    staffTrained: true,
+    templatesCurrent: true,
+    storageSecure: true,
+    retentionCompliant: true,
+    crossReferencedWithIncidents: true,
+    overallCompliant: true,
+  },
 ];
 const body_map_protocol_DEMO_TRAINING: BodyMapTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", trainingDate: "2026-01-10", bodyMapTrained: true, safeguardingAwareness: true, photographyProtocol: true, documentationStandards: true, escalationProcedure: true },
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", trainingDate: "2026-01-10", bodyMapTrained: true, safeguardingAwareness: true, photographyProtocol: true, documentationStandards: true, escalationProcedure: true },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", trainingDate: "2026-01-10", bodyMapTrained: true, safeguardingAwareness: true, photographyProtocol: true, documentationStandards: true, escalationProcedure: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", trainingDate: "2026-01-10", bodyMapTrained: true, safeguardingAwareness: true, photographyProtocol: true, documentationStandards: true, escalationProcedure: true },
 ];
 const body_map_protocol_DEMO_ESCALATIONS: SafeguardingEscalation[] = [
   {
@@ -2180,8 +2460,8 @@ const body_map_protocol_DEMO_ESCALATIONS: SafeguardingEscalation[] = [
     timelyEscalation: true,
     appropriateResponse: true,
   },
-
 ];
+
 async function get_body_map_protocol(req: NextRequest): Promise<Response> {
 
   const result = generateBodyMapProtocolIntelligence(
@@ -2272,6 +2552,17 @@ async function post_body_map_protocol(req: NextRequest): Promise<Response> {
 // ─── care-planning-intelligence ────────────────────────────────────────
 const care_planning_intelligence_DEMO_RECORDS: CarePlanningRecord[] = [
   { id: "cp-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "care_plan_creation", outcome: "plan_fully_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "cp-002", homeId: "home-oak-house", date: "2025-03-15", childId: "child-alex", childName: "Alex", category: "care_plan_review", outcome: "plan_fully_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "cp-003", homeId: "home-oak-house", date: "2025-04-20", childId: "child-alex", childName: "Alex", category: "placement_plan", outcome: "plan_partially_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: false, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "cp-004", homeId: "home-oak-house", date: "2025-05-25", childId: "child-alex", childName: "Alex", category: "risk_assessment_integration", outcome: "plan_requires_update", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: false, documentationComplete: true, timelyRecording: false },
+  { id: "cp-005", homeId: "home-oak-house", date: "2025-02-18", childId: "child-jordan", childName: "Jordan", category: "health_plan", outcome: "plan_fully_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "cp-006", homeId: "home-oak-house", date: "2025-03-22", childId: "child-jordan", childName: "Jordan", category: "education_plan", outcome: "plan_fully_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "cp-007", homeId: "home-oak-house", date: "2025-05-10", childId: "child-jordan", childName: "Jordan", category: "contact_plan", outcome: "plan_partially_implemented", childViewIncorporated: true, measurableOutcomesSet: false, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "cp-008", homeId: "home-oak-house", date: "2025-06-15", childId: "child-jordan", childName: "Jordan", category: "transition_plan", outcome: "plan_fully_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: false, timelyRecording: true },
+  { id: "cp-009", homeId: "home-oak-house", date: "2025-03-01", childId: "child-morgan", childName: "Morgan", category: "care_plan_creation", outcome: "plan_fully_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "cp-010", homeId: "home-oak-house", date: "2025-04-28", childId: "child-morgan", childName: "Morgan", category: "care_plan_review", outcome: "plan_fully_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "cp-011", homeId: "home-oak-house", date: "2025-06-01", childId: "child-morgan", childName: "Morgan", category: "placement_plan", outcome: "plan_requires_update", childViewIncorporated: false, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: false, documentationComplete: true, timelyRecording: true },
+  { id: "cp-012", homeId: "home-oak-house", date: "2025-07-10", childId: "child-morgan", childName: "Morgan", category: "health_plan", outcome: "plan_partially_implemented", childViewIncorporated: true, measurableOutcomesSet: true, multiAgencyInputIncluded: true, reviewDateSet: true, documentationComplete: true, timelyRecording: true },
 ];
 const care_planning_intelligence_DEMO_POLICY: CarePlanningPolicy = {
   carePlanningPolicy: true, placementPlanPolicy: true, reviewSchedulePolicy: true,
@@ -2279,8 +2570,11 @@ const care_planning_intelligence_DEMO_POLICY: CarePlanningPolicy = {
 };
 const care_planning_intelligence_DEMO_STAFF: StaffCarePlanningCompetency[] = [
   { staffId: "staff-sarah", carePlanWritingSkills: true, outcomeFocusedPlanning: true, multiAgencyCoordination: true, childParticipationSkills: true, riskAssessmentIntegration: true, reviewFacilitationSkills: true },
-
+  { staffId: "staff-tom", carePlanWritingSkills: true, outcomeFocusedPlanning: true, multiAgencyCoordination: true, childParticipationSkills: false, riskAssessmentIntegration: true, reviewFacilitationSkills: true },
+  { staffId: "staff-lisa", carePlanWritingSkills: true, outcomeFocusedPlanning: true, multiAgencyCoordination: false, childParticipationSkills: true, riskAssessmentIntegration: false, reviewFacilitationSkills: true },
+  { staffId: "staff-darren", carePlanWritingSkills: true, outcomeFocusedPlanning: true, multiAgencyCoordination: true, childParticipationSkills: true, riskAssessmentIntegration: true, reviewFacilitationSkills: true },
 ];
+
 async function get_care_planning_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateCarePlanningIntelligenceReport({
@@ -2296,17 +2590,51 @@ async function get_care_planning_intelligence(req: NextRequest): Promise<Respons
 // ─── care-planning ─────────────────────────────────────────────────────
 const care_planning_DEMO_CHILDREN: CareChild[] = [
   { id: "child-alex", name: "Alex", dateOfBirth: "2012-03-15", placementStartDate: "2025-10-01", isEligibleChild: false, currentPlacement: true },
+  { id: "child-jordan", name: "Jordan", dateOfBirth: "2013-07-22", placementStartDate: "2025-11-01", isEligibleChild: false, currentPlacement: true },
+  { id: "child-morgan", name: "Morgan", dateOfBirth: "2010-12-01", placementStartDate: "2026-01-10", isEligibleChild: true, currentPlacement: true },
 ];
 const care_planning_DEMO_REVIEWS: PlannedReview[] = [
   // Alex — good overall, one late PEP
+  { id: "rev-001", childId: "child-alex", reviewType: "lac_review", dueDate: "2026-02-15", actualDate: "2026-02-14", status: "completed_on_time", chairedBy: "IRO Patricia Smith", childParticipated: true, childViewsRecorded: true, parentInvited: true, parentAttended: true, socialWorkerAttended: true, iroConducted: true, actionsAgreed: 4, keyDecisions: ["Maintain current placement", "Increase contact with mother to community setting"] },
+  { id: "rev-002", childId: "child-alex", reviewType: "pep_review", dueDate: "2026-03-01", actualDate: "2026-03-10", status: "completed_late", childParticipated: true, childViewsRecorded: true, parentInvited: true, parentAttended: false, socialWorkerAttended: true, actionsAgreed: 3, keyDecisions: ["Additional English tutoring", "Alex to attend homework club"] },
+  { id: "rev-003", childId: "child-alex", reviewType: "health_review", dueDate: "2026-04-01", actualDate: "2026-04-01", status: "completed_on_time", childParticipated: true, childViewsRecorded: true, parentInvited: false, parentAttended: false, socialWorkerAttended: true, actionsAgreed: 2 },
+  { id: "rev-004", childId: "child-alex", reviewType: "risk_assessment_review", dueDate: "2026-05-10", actualDate: "2026-05-09", status: "completed_on_time", childParticipated: true, childViewsRecorded: true, parentInvited: false, parentAttended: false, socialWorkerAttended: true, actionsAgreed: 3 },
+
+  // Jordan — all on time
+  { id: "rev-005", childId: "child-jordan", reviewType: "lac_review", dueDate: "2026-01-20", actualDate: "2026-01-20", status: "completed_on_time", chairedBy: "IRO David Jones", childParticipated: true, childViewsRecorded: true, parentInvited: true, parentAttended: true, socialWorkerAttended: true, iroConducted: true, actionsAgreed: 5, keyDecisions: ["Increase Grandmother contact to weekly", "Art therapy referral"] },
+  { id: "rev-006", childId: "child-jordan", reviewType: "care_plan_review", dueDate: "2026-03-15", actualDate: "2026-03-14", status: "completed_on_time", childParticipated: true, childViewsRecorded: true, parentInvited: true, parentAttended: true, socialWorkerAttended: true, actionsAgreed: 3 },
+  { id: "rev-007", childId: "child-jordan", reviewType: "pep_review", dueDate: "2026-04-01", actualDate: "2026-04-01", status: "completed_on_time", childParticipated: true, childViewsRecorded: true, parentInvited: true, parentAttended: false, socialWorkerAttended: true, actionsAgreed: 2, keyDecisions: ["Request additional SENCO support", "Jordan to take GCSE art"] },
+  { id: "rev-008", childId: "child-jordan", reviewType: "behaviour_support_review", dueDate: "2026-05-01", actualDate: "2026-05-01", status: "completed_on_time", childParticipated: true, childViewsRecorded: true, parentInvited: false, parentAttended: false, socialWorkerAttended: true, actionsAgreed: 2 },
+
+  // Morgan — one overdue pathway plan
+  { id: "rev-009", childId: "child-morgan", reviewType: "lac_review", dueDate: "2026-02-01", actualDate: "2026-02-01", status: "completed_on_time", chairedBy: "IRO Patricia Smith", childParticipated: true, childViewsRecorded: true, parentInvited: false, parentAttended: false, socialWorkerAttended: true, iroConducted: true, actionsAgreed: 4 },
+  { id: "rev-010", childId: "child-morgan", reviewType: "pathway_plan_review", dueDate: "2026-04-15", status: "overdue", childParticipated: false, childViewsRecorded: false, parentInvited: false, parentAttended: false, socialWorkerAttended: false, actionsAgreed: 0 },
+  { id: "rev-011", childId: "child-morgan", reviewType: "health_review", dueDate: "2026-05-10", actualDate: "2026-05-10", status: "completed_on_time", childParticipated: true, childViewsRecorded: true, parentInvited: false, parentAttended: false, socialWorkerAttended: true, actionsAgreed: 1 },
 ];
 const care_planning_DEMO_ACTIONS: ReviewAction[] = [
   { id: "act-001", reviewId: "rev-001", childId: "child-alex", description: "Arrange trial session at boxing club", assignedTo: "Sarah Johnson", dueDate: "2026-03-01", completedDate: "2026-02-25", status: "completed", category: "activity" },
+  { id: "act-002", reviewId: "rev-001", childId: "child-alex", description: "Submit contact venue change request to PA", assignedTo: "Darren Laville", dueDate: "2026-03-01", completedDate: "2026-02-28", status: "completed", category: "contact" },
+  { id: "act-003", reviewId: "rev-002", childId: "child-alex", description: "Arrange English tutoring", assignedTo: "Sarah Johnson", dueDate: "2026-04-01", completedDate: "2026-03-20", status: "completed", category: "education" },
+  { id: "act-004", reviewId: "rev-004", childId: "child-alex", description: "Update exploitation risk assessment", assignedTo: "Darren Laville", dueDate: "2026-05-15", completedDate: "2026-05-12", status: "completed", category: "assessment" },
+  { id: "act-005", reviewId: "rev-005", childId: "child-jordan", description: "Request art therapy referral via CAMHS", assignedTo: "Lisa Williams", dueDate: "2026-02-15", completedDate: "2026-02-10", status: "completed", category: "therapy" },
+  { id: "act-006", reviewId: "rev-005", childId: "child-jordan", description: "Increase grandmother contact to weekly", assignedTo: "Tom Richards", dueDate: "2026-02-01", completedDate: "2026-01-25", status: "completed", category: "contact" },
+  { id: "act-007", reviewId: "rev-007", childId: "child-jordan", description: "Request additional SENCO time", assignedTo: "Tom Richards", dueDate: "2026-04-15", status: "in_progress", category: "education" },
+  { id: "act-008", reviewId: "rev-009", childId: "child-morgan", description: "Complete independence skills assessment", assignedTo: "Lisa Williams", dueDate: "2026-03-01", completedDate: "2026-02-28", status: "completed", category: "assessment" },
+  { id: "act-009", reviewId: "rev-009", childId: "child-morgan", description: "Arrange work experience placement", assignedTo: "Lisa Williams", dueDate: "2026-04-15", status: "overdue", category: "independence" },
 ];
 const care_planning_DEMO_DOCUMENTS: CarePlanDocument[] = [
   { id: "doc-001", childId: "child-alex", documentType: "care_plan", lastUpdated: "2026-04-15", nextReviewDue: "2026-10-15", isUpToDate: true },
-
+  { id: "doc-002", childId: "child-alex", documentType: "placement_plan", lastUpdated: "2026-03-01", nextReviewDue: "2026-09-01", isUpToDate: true },
+  { id: "doc-003", childId: "child-alex", documentType: "pep", lastUpdated: "2026-03-10", nextReviewDue: "2026-06-10", isUpToDate: true },
+  { id: "doc-004", childId: "child-alex", documentType: "risk_assessment", lastUpdated: "2026-05-12", nextReviewDue: "2026-08-12", isUpToDate: true },
+  { id: "doc-005", childId: "child-jordan", documentType: "care_plan", lastUpdated: "2026-03-15", nextReviewDue: "2026-09-15", isUpToDate: true },
+  { id: "doc-006", childId: "child-jordan", documentType: "behaviour_support_plan", lastUpdated: "2026-05-01", nextReviewDue: "2026-08-01", isUpToDate: true },
+  { id: "doc-007", childId: "child-jordan", documentType: "pep", lastUpdated: "2026-04-01", nextReviewDue: "2026-07-01", isUpToDate: true },
+  { id: "doc-008", childId: "child-morgan", documentType: "care_plan", lastUpdated: "2026-04-15", nextReviewDue: "2026-10-15", isUpToDate: true },
+  { id: "doc-009", childId: "child-morgan", documentType: "pathway_plan", lastUpdated: "2025-10-01", nextReviewDue: "2026-04-01", isUpToDate: false },
+  { id: "doc-010", childId: "child-morgan", documentType: "health_plan", lastUpdated: "2026-05-10", nextReviewDue: "2026-11-10", isUpToDate: true },
 ];
+
 async function get_care_planning(req: NextRequest): Promise<Response> {
 
   const result = generateCarePlanningIntelligence(
@@ -2371,6 +2699,17 @@ async function post_care_planning(req: NextRequest): Promise<Response> {
 // ─── child-exploitation-prevention-intelligence ────────────────────────
 const child_exploitation_prevention_intelligence_DEMO_RECORDS: ChildExploitationPreventionRecord[] = [
   { id: "cep-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "cse_risk_assessment", outcome: "no_concerns_identified", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "online_exploitation_review", outcome: "low_level_concerns", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "return_home_interview", outcome: "no_concerns_identified", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "disruption_activity", outcome: "no_concerns_identified", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "criminal_exploitation_screening", outcome: "active_concerns", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "county_lines_assessment", outcome: "low_level_concerns", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "peer_exploitation_assessment", outcome: "low_level_concerns", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: false, documentationComplete: true, timelyRecording: false },
+  { id: "cep-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "cse_risk_assessment", outcome: "low_level_concerns", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "trafficking_screening", outcome: "no_concerns_identified", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "online_exploitation_review", outcome: "low_level_concerns", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "return_home_interview", outcome: "no_concerns_identified", riskAssessmentCompleted: true, safetyPlanInPlace: false, multiAgencyInformed: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "cep-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "disruption_activity", outcome: "low_level_concerns", riskAssessmentCompleted: true, safetyPlanInPlace: true, multiAgencyInformed: false, childViewCaptured: true, documentationComplete: false, timelyRecording: true },
 ];
 const child_exploitation_prevention_intelligence_DEMO_POLICY: ChildExploitationPreventionPolicy = {
   exploitationPreventionPolicy: true, cseProtectionProcedure: true, criminalExploitationPolicy: true, onlineSafetyPolicy: true,
@@ -2378,8 +2717,11 @@ const child_exploitation_prevention_intelligence_DEMO_POLICY: ChildExploitationP
 };
 const child_exploitation_prevention_intelligence_DEMO_STAFF: StaffChildExploitationPreventionTraining[] = [
   { staffId: "staff-sarah", exploitationAwareness: true, riskAssessmentSkills: true, safetyPlanningSkills: true, onlineSafetyKnowledge: true, returnHomeInterviewSkills: true, disruptionTacticsKnowledge: true },
-
+  { staffId: "staff-tom", exploitationAwareness: true, riskAssessmentSkills: true, safetyPlanningSkills: true, onlineSafetyKnowledge: true, returnHomeInterviewSkills: true, disruptionTacticsKnowledge: false },
+  { staffId: "staff-lisa", exploitationAwareness: true, riskAssessmentSkills: true, safetyPlanningSkills: true, onlineSafetyKnowledge: true, returnHomeInterviewSkills: false, disruptionTacticsKnowledge: true },
+  { staffId: "staff-darren", exploitationAwareness: true, riskAssessmentSkills: true, safetyPlanningSkills: true, onlineSafetyKnowledge: true, returnHomeInterviewSkills: true, disruptionTacticsKnowledge: true },
 ];
+
 async function get_child_exploitation_prevention_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateChildExploitationPreventionIntelligence({
@@ -2392,6 +2734,8 @@ async function get_child_exploitation_prevention_intelligence(req: NextRequest):
 // ─── child-exploitation-prevention ─────────────────────────────────────
 const child_exploitation_prevention_DEMO_CHILDREN = [
   { id: "child-alex", name: "Alex" },
+  { id: "child-jordan", name: "Jordan" },
+  { id: "child-morgan", name: "Morgan" },
 ];
 const child_exploitation_prevention_DEMO_ASSESSMENTS: ExploitationRiskAssessment[] = [
   {
@@ -2413,6 +2757,57 @@ const child_exploitation_prevention_DEMO_ASSESSMENTS: ExploitationRiskAssessment
     ],
     reviewDate: "2026-07-01",
   },
+  {
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2026-04-20",
+    assessedBy: "Tom Davies",
+    exploitationType: "cce",
+    riskLevel: "no_identified_risk",
+    riskIndicators: [],
+    protectiveFactors: [
+      "Stable placement for 8 months",
+      "Positive peer group through school",
+      "Attending school regularly with good engagement",
+    ],
+    reviewDate: "2026-07-20",
+  },
+  {
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2026-05-05",
+    assessedBy: "Lisa Williams",
+    exploitationType: "cce",
+    riskLevel: "moderate",
+    riskIndicators: [
+      "New phone of unknown origin",
+      "Late returns from school on multiple occasions",
+      "Association with older peers outside the local area",
+      "Reluctance to discuss whereabouts",
+    ],
+    protectiveFactors: [
+      "Engaged with CAMHS therapeutic support",
+      "Trust established with key worker Lisa",
+    ],
+    reviewDate: "2026-06-15",
+  },
+  {
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2026-05-10",
+    assessedBy: "Lisa Williams",
+    exploitationType: "county_lines",
+    riskLevel: "moderate",
+    riskIndicators: [
+      "Travelling to unfamiliar areas without explanation",
+      "Two missing episodes in the last month",
+      "Small amounts of unexplained cash",
+    ],
+    protectiveFactors: [
+      "Return home interviews completed after each missing episode",
+    ],
+    reviewDate: "2026-06-20",
+  },
 ];
 const child_exploitation_prevention_DEMO_INTERVENTIONS: ExploitationIntervention[] = [
   {
@@ -2428,9 +2823,42 @@ const child_exploitation_prevention_DEMO_INTERVENTIONS: ExploitationIntervention
     effectivenessScore: 7,
     outcome: "Alex engages with safety plan discussions and identifies safe adults to contact",
   },
+  {
+    id: "int-002",
+    childId: "child-morgan",
+    childName: "Morgan",
+    interventionType: "multi_agency_meeting",
+    startDate: "2026-05-06",
+    status: "ongoing",
+    leadProfessional: "Lisa Williams",
+    multiAgencyInvolved: true,
+    childEngaged: true,
+    effectivenessScore: 6,
+    outcome: "Agreed disruption plan and return home interview protocol for Morgan",
+  },
+  {
+    id: "int-003",
+    childId: "child-morgan",
+    childName: "Morgan",
+    interventionType: "mentoring",
+    startDate: "2026-04-20",
+    status: "active",
+    leadProfessional: "Youth Worker Jake",
+    multiAgencyInvolved: false,
+    childEngaged: true,
+    effectivenessScore: 7,
+    outcome: "Morgan attending weekly sessions and showing improved engagement with positive activities",
+  },
 ];
 const child_exploitation_prevention_DEMO_TRAINING: ExploitationTraining[] = [
   { staffId: "staff-001", staffName: "Sarah Johnson", trainingType: "cse_awareness", completionDate: "2026-03-01", expiryDate: "2027-03-01", passed: true },
+  { staffId: "staff-001", staffName: "Sarah Johnson", trainingType: "cce_awareness", completionDate: "2026-02-15", expiryDate: "2027-02-15", passed: true },
+  { staffId: "staff-002", staffName: "Tom Davies", trainingType: "cse_awareness", completionDate: "2026-01-20", expiryDate: "2027-01-20", passed: true },
+  { staffId: "staff-002", staffName: "Tom Davies", trainingType: "county_lines", completionDate: "2026-03-10", expiryDate: "2027-03-10", passed: true },
+  { staffId: "staff-003", staffName: "Lisa Williams", trainingType: "cse_awareness", completionDate: "2026-02-01", expiryDate: "2027-02-01", passed: true },
+  { staffId: "staff-003", staffName: "Lisa Williams", trainingType: "prevent_duty", completionDate: "2026-04-01", expiryDate: "2027-04-01", passed: true },
+  { staffId: "staff-004", staffName: "Darren Laville", trainingType: "nrm_process", completionDate: "2026-03-15", expiryDate: "2027-03-15", passed: true },
+  { staffId: "staff-004", staffName: "Darren Laville", trainingType: "online_exploitation", completionDate: "2026-04-10", expiryDate: "2027-04-10", passed: true },
 ];
 const child_exploitation_prevention_DEMO_MAPPINGS: MappingRecord[] = [
   {
@@ -2443,6 +2871,19 @@ const child_exploitation_prevention_DEMO_MAPPINGS: MappingRecord[] = [
     onlineRisks: ["Snapchat contact from unknown adults"],
     disruptionActionsPlanned: ["Police patrol request for car park area"],
   },
+  {
+    id: "map-002",
+    childId: "child-morgan",
+    childName: "Morgan",
+    recordDate: "2026-05-08",
+    associatesIdentified: 5,
+    locationsOfConcern: ["Station Road area", "Out-of-borough address"],
+    onlineRisks: [],
+    disruptionActionsPlanned: [
+      "Request police intelligence on Station Road",
+      "Liaise with transport police re: county lines routes",
+    ],
+  },
 ];
 const child_exploitation_prevention_DEMO_CONTEXTUAL_LINKS: ContextualSafeguardingLink[] = [
   {
@@ -2453,6 +2894,24 @@ const child_exploitation_prevention_DEMO_CONTEXTUAL_LINKS: ContextualSafeguardin
     purpose: "Monthly exploitation intelligence sharing",
     actionsAgreed: ["Share updated mapping for Alex", "Joint visit to Riverside estate"],
     followUpDate: "2026-06-10",
+  },
+  {
+    id: "link-002",
+    homeId: "oak-house",
+    date: "2026-04-15",
+    partnerAgency: "Local Authority Exploitation Team",
+    purpose: "Morgan case multi-agency discussion",
+    actionsAgreed: ["Joint risk assessment", "Agreed return home interview protocol"],
+    followUpDate: "2026-05-15",
+  },
+  {
+    id: "link-003",
+    homeId: "oak-house",
+    date: "2026-05-01",
+    partnerAgency: "Youth Justice Service",
+    purpose: "Quarterly exploitation prevention partnership",
+    actionsAgreed: ["Assign mentor for Morgan", "Review diversion programme referrals"],
+    followUpDate: "2026-08-01",
   },
 ];
 const child_exploitation_prevention_TOTAL_STAFF = 4;
@@ -2577,12 +3036,69 @@ const children_fund_management_DEMO_ACCOUNTS: ChildAccount[] = [
     savingsGoal: 200,
     savingsBalance: 120,
   },
+  {
+    id: "acc-002",
+    childId: "child-jordan",
+    childName: "Jordan",
+    accountStatus: "active",
+    balance: 28.0,
+    lastReconciled: "2026-05-10T10:00:00Z",
+    reconciliationFrequency: "weekly",
+    childHasAccess: true,
+    signedAgreement: true,
+    savingsGoal: 150,
+    savingsBalance: 65,
+  },
+  {
+    id: "acc-003",
+    childId: "child-morgan",
+    childName: "Morgan",
+    accountStatus: "active",
+    balance: 55.0,
+    lastReconciled: "2026-05-12T10:00:00Z",
+    reconciliationFrequency: "weekly",
+    childHasAccess: true,
+    signedAgreement: true,
+    savingsGoal: 300,
+    savingsBalance: 185,
+  },
 ];
 const children_fund_management_DEMO_TRANSACTIONS: FinancialTransaction[] = [
   // Alex -- £15/week pocket money
+  { id: "txn-001", childId: "child-alex", childName: "Alex", date: "2026-05-05T10:00:00Z", transactionType: "pocket_money", amount: 15, description: "Weekly pocket money", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-002", childId: "child-alex", childName: "Alex", date: "2026-05-12T10:00:00Z", transactionType: "pocket_money", amount: 15, description: "Weekly pocket money", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-003", childId: "child-alex", childName: "Alex", date: "2026-05-06T14:00:00Z", transactionType: "savings_deposit", amount: 10, description: "Voluntary savings deposit", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-02", twoSignatures: true },
+  { id: "txn-004", childId: "child-alex", childName: "Alex", date: "2026-05-08T16:00:00Z", transactionType: "personal_purchase", amount: 8.99, description: "Art supplies from WHSmith", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-005", childId: "child-alex", childName: "Alex", date: "2026-04-15T10:00:00Z", transactionType: "birthday_gift", amount: 25, description: "Birthday money from grandmother", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-006", childId: "child-alex", childName: "Alex", date: "2026-05-01T10:00:00Z", transactionType: "clothing_allowance", amount: 40, description: "Monthly clothing allowance", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-02", twoSignatures: true },
+
+  // Jordan -- £12/week pocket money
+  { id: "txn-007", childId: "child-jordan", childName: "Jordan", date: "2026-05-05T10:00:00Z", transactionType: "pocket_money", amount: 12, description: "Weekly pocket money", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-008", childId: "child-jordan", childName: "Jordan", date: "2026-05-12T10:00:00Z", transactionType: "pocket_money", amount: 12, description: "Weekly pocket money", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-009", childId: "child-jordan", childName: "Jordan", date: "2026-05-07T15:00:00Z", transactionType: "activity_allowance", amount: 15, description: "Swimming club monthly fee", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-02", twoSignatures: true },
+  { id: "txn-010", childId: "child-jordan", childName: "Jordan", date: "2026-05-09T11:00:00Z", transactionType: "personal_purchase", amount: 6.5, description: "Minecraft book from Waterstones", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-011", childId: "child-jordan", childName: "Jordan", date: "2026-05-10T10:00:00Z", transactionType: "savings_deposit", amount: 5, description: "Weekly savings deposit", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-02", twoSignatures: true },
+
+  // Morgan -- £20/week pocket money
+  { id: "txn-012", childId: "child-morgan", childName: "Morgan", date: "2026-05-05T10:00:00Z", transactionType: "pocket_money", amount: 20, description: "Weekly pocket money", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-013", childId: "child-morgan", childName: "Morgan", date: "2026-05-12T10:00:00Z", transactionType: "pocket_money", amount: 20, description: "Weekly pocket money", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-014", childId: "child-morgan", childName: "Morgan", date: "2026-05-06T14:00:00Z", transactionType: "savings_deposit", amount: 15, description: "Voluntary savings -- saving for headphones", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-02", twoSignatures: true },
+  { id: "txn-015", childId: "child-morgan", childName: "Morgan", date: "2026-05-10T16:00:00Z", transactionType: "personal_purchase", amount: 12.99, description: "Phone case from Amazon", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
+  { id: "txn-016", childId: "child-morgan", childName: "Morgan", date: "2026-05-01T10:00:00Z", transactionType: "clothing_allowance", amount: 50, description: "Monthly clothing allowance", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-02", twoSignatures: true },
+  { id: "txn-017", childId: "child-morgan", childName: "Morgan", date: "2026-05-03T11:00:00Z", transactionType: "savings_withdrawal", amount: 30, description: "Withdrawal for birthday outing", receiptRetained: true, childConsent: "informed_consent", authorisedBy: "staff-rm-01", twoSignatures: true },
 ];
 const children_fund_management_DEMO_SESSIONS: FinancialLiteracySession[] = [
   { id: "sess-001", childId: "child-alex", childName: "Alex", date: "2026-04-10T14:00:00Z", topic: "budgeting", duration: 45, facilitator: "staff-rm-01", childEngaged: true, practicalComponent: true, ageAppropriate: true },
+  { id: "sess-002", childId: "child-alex", childName: "Alex", date: "2026-04-24T14:00:00Z", topic: "saving", duration: 40, facilitator: "staff-rm-02", childEngaged: true, practicalComponent: true, ageAppropriate: true },
+  { id: "sess-003", childId: "child-alex", childName: "Alex", date: "2026-05-08T14:00:00Z", topic: "online_safety_financial", duration: 50, facilitator: "staff-rm-01", childEngaged: true, practicalComponent: true, ageAppropriate: true },
+
+  { id: "sess-004", childId: "child-jordan", childName: "Jordan", date: "2026-04-10T15:00:00Z", topic: "value_of_money", duration: 35, facilitator: "staff-rm-01", childEngaged: true, practicalComponent: true, ageAppropriate: true },
+  { id: "sess-005", childId: "child-jordan", childName: "Jordan", date: "2026-04-24T15:00:00Z", topic: "spending_decisions", duration: 40, facilitator: "staff-rm-02", childEngaged: true, practicalComponent: true, ageAppropriate: true },
+  { id: "sess-006", childId: "child-jordan", childName: "Jordan", date: "2026-05-08T15:00:00Z", topic: "banking", duration: 45, facilitator: "staff-rm-01", childEngaged: false, practicalComponent: true, ageAppropriate: true },
+
+  { id: "sess-007", childId: "child-morgan", childName: "Morgan", date: "2026-04-10T16:00:00Z", topic: "budgeting", duration: 50, facilitator: "staff-rm-02", childEngaged: true, practicalComponent: true, ageAppropriate: true },
+  { id: "sess-008", childId: "child-morgan", childName: "Morgan", date: "2026-04-24T16:00:00Z", topic: "benefits_entitlements", duration: 45, facilitator: "staff-rm-01", childEngaged: true, practicalComponent: true, ageAppropriate: true },
+  { id: "sess-009", childId: "child-morgan", childName: "Morgan", date: "2026-05-08T16:00:00Z", topic: "debt_awareness", duration: 40, facilitator: "staff-rm-02", childEngaged: true, practicalComponent: false, ageAppropriate: true },
 ];
 const children_fund_management_DEMO_AUDITS: FinancialAudit[] = [
   {
@@ -2597,8 +3113,20 @@ const children_fund_management_DEMO_AUDITS: FinancialAudit[] = [
     discrepanciesResolved: 1,
     policyCompliant: true,
   },
-
+  {
+    id: "aud-002",
+    auditDate: "2026-04-15T10:00:00Z",
+    auditor: "Linda Thompson (Independent)",
+    allAccountsReconciled: true,
+    receiptRetentionCompliant: true,
+    twoSignatureCompliant: true,
+    childAccessVerified: true,
+    discrepanciesFound: 0,
+    discrepanciesResolved: 0,
+    policyCompliant: true,
+  },
 ];
+
 async function get_children_fund_management(req: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(req.url);
@@ -2719,6 +3247,17 @@ async function post_children_fund_management(req: NextRequest): Promise<Response
 // ─── children-outcomes-intelligence ────────────────────────────────────
 const children_outcomes_intelligence_DEMO_RECORDS: ChildrenOutcomesRecord[] = [
   { id: "co-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "educational_achievement", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "health_wellbeing", outcome: "exceptional_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "emotional_development", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "social_skills", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "independent_living", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "identity_belonging", outcome: "steady_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "positive_relationships", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: false, documentationComplete: true, timelyRecording: false },
+  { id: "co-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "safety_stability", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "educational_achievement", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "health_wellbeing", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "emotional_development", outcome: "steady_progress", outcomeMeasured: true, progressEvidenced: false, interventionAligned: true, voiceOfChildCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "co-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "social_skills", outcome: "good_progress", outcomeMeasured: true, progressEvidenced: true, interventionAligned: false, voiceOfChildCaptured: true, documentationComplete: false, timelyRecording: true },
 ];
 const children_outcomes_intelligence_DEMO_POLICY: ChildrenOutcomesPolicy = {
   outcomesFrameworkPolicy: true, progressTrackingPolicy: true, educationSupportPolicy: true,
@@ -2726,8 +3265,11 @@ const children_outcomes_intelligence_DEMO_POLICY: ChildrenOutcomesPolicy = {
 };
 const children_outcomes_intelligence_DEMO_STAFF: StaffChildrenOutcomesTraining[] = [
   { staffId: "staff-sarah", outcomesFrameworkKnowledge: true, progressTrackingSkills: true, therapeuticInterventions: true, educationalSupportSkills: true, voiceOfChildTechniques: true, multiAgencyCollaboration: true },
-
+  { staffId: "staff-tom", outcomesFrameworkKnowledge: true, progressTrackingSkills: true, therapeuticInterventions: true, educationalSupportSkills: true, voiceOfChildTechniques: true, multiAgencyCollaboration: false },
+  { staffId: "staff-lisa", outcomesFrameworkKnowledge: true, progressTrackingSkills: true, therapeuticInterventions: true, educationalSupportSkills: true, voiceOfChildTechniques: false, multiAgencyCollaboration: true },
+  { staffId: "staff-darren", outcomesFrameworkKnowledge: true, progressTrackingSkills: true, therapeuticInterventions: true, educationalSupportSkills: true, voiceOfChildTechniques: true, multiAgencyCollaboration: true },
 ];
+
 async function get_children_outcomes_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateChildrenOutcomesIntelligence({
@@ -2738,20 +3280,44 @@ async function get_children_outcomes_intelligence(req: NextRequest): Promise<Res
 }
 
 // ─── children-outcomes ─────────────────────────────────────────────────
-  let children_outcomes_query = (sb.from("child_profiles") as SB)
+async function children_outcomes_handleLiveData(sb: any, homeId: string, childId: string | null, view: string) {
+  let query = (sb.from("child_profiles") as SB)
     .select("*, child_outcomes(*), child_goals(*), child_reviews(*)");
-  const children_outcomes_profiles: ChildProfile[] = (children ?? []).map(mapToProfile);
+  if (homeId) query = query.eq("home_id", homeId);
+  if (childId) query = query.eq("id", childId);
+
+  const { data: children, error } = await query;
+  if (error) throw error;
+
+  const profiles: ChildProfile[] = (children ?? []).map(children_outcomes_mapToProfile);
   const now = new Date().toISOString();
-    const children_outcomes_profile = profiles[0];
-// [gen-fix-return]     if (!profile) return NextResponse.json({ error: "Child not found" }, { status: 404 });
-    const children_outcomes_progress = evaluateChildProgress(profile, now);
-    const children_outcomes_trends = analyzeDomainTrends(profile);
-    const children_outcomes_cohort = analyzeCohort(profiles, homeId, now);
-  const children_outcomes_cohort_dup1 = analyzeCohort(profiles, homeId, now);
-  const children_outcomes_childResults = profiles.map(p => ({
+
+  if (view === "child" && childId) {
+    const profile = profiles[0];
+    if (!profile) return NextResponse.json({ error: "Child not found" }, { status: 404 });
+    const progress = evaluateChildProgress(profile, now);
+    const trends = analyzeDomainTrends(profile);
+    return NextResponse.json({ profile, progress, trends });
+  }
+
+  if (view === "cohort") {
+    const cohort = analyzeCohort(profiles, homeId, now);
+    return NextResponse.json({ cohort });
+  }
+
+  // Overview
+  const cohort = analyzeCohort(profiles, homeId, now);
+  const childResults = profiles.map(p => ({
     ...evaluateChildProgress(p, now),
     keyworkerName: p.keyworkerName,
   }));
+
+  return NextResponse.json({
+    cohort,
+    children: childResults,
+    domains: getAllDomains().map(d => ({ domain: d, label: getDomainLabel(d) })),
+  });
+}
 function children_outcomes_mapToProfile(row: any): ChildProfile {
   return {
     childId: row.id,
@@ -2925,7 +3491,7 @@ async function get_children_outcomes(req: NextRequest): Promise<Response> {
     const sb = createServerClient();
 
     if (sb && isSupabaseEnabled()) {
-      return await handleLiveData(sb, homeId, childId, view);
+      return await children_outcomes_handleLiveData(sb, homeId, childId, view);
     }
 
     return NextResponse.json(children_outcomes_getDemoData(homeId, childId, view));
@@ -2939,7 +3505,7 @@ async function get_children_outcomes(req: NextRequest): Promise<Response> {
 
 // ─── childrens-rights ──────────────────────────────────────────────────
 const childrens_rights_CHILD_IDS = ["alex", "jordan", "morgan"];
-const CHILD_NAMES_dup1: Record<string, string> = {
+const childrens_rights_CHILD_NAMES: Record<string, string> = {
   alex: "Alex",
   jordan: "Jordan",
   morgan: "Morgan",
@@ -2994,7 +3560,7 @@ async function get_childrens_rights(req: NextRequest): Promise<Response> {
     const referenceDate = new Date().toISOString().split("T")[0];
     const result = generateChildrensRightsIntelligence(
       guides, advocacy, awareness, participation, complaintAccess, feedback,
-      childrens_rights_CHILD_IDS, CHILD_NAMES,
+      childrens_rights_CHILD_IDS, childrens_rights_CHILD_NAMES,
       "oak-house", "2025-01-01", "2025-06-30", referenceDate,
     );
     return NextResponse.json(result);
@@ -3045,14 +3611,24 @@ async function post_childrens_rights(request: NextRequest): Promise<Response> {
 // ─── clothing-appearance-provision ─────────────────────────────────────
 const clothing_appearance_provision_DEMO_ASSESSMENTS: ClothingAssessment[] = [
   { id: "a-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", clothingCategory: "everyday_wear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-2", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", clothingCategory: "school_uniform", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-3", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", clothingCategory: "seasonal_clothing", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-4", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-01", clothingCategory: "footwear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-5", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-01", clothingCategory: "sleepwear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-6", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-01", clothingCategory: "sportswear", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-7", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-01", clothingCategory: "formal_occasion", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
+  { id: "a-8", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-01", clothingCategory: "cultural_religious", provisionQuality: "excellent", childChoiceRespected: true, ageAppropriate: true, culturalNeedsMet: true, documentedInPlan: true, staffAssessed: true, feedbackGiven: true },
 ];
 const clothing_appearance_provision_DEMO_POLICIES: ClothingPolicy[] = [
   { id: "pol-1", clothingProvisionStrategy: true, clothingBudgetFramework: true, seasonalReviewProcedure: true, childChoiceGuidance: true, culturalAndReligiousAccommodation: true, laundryAndMaintenancePlan: true, regularReview: true },
 ];
 const clothing_appearance_provision_DEMO_TRAINING: StaffClothingTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
-
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", clothingAssessment: true, childChoiceFacilitation: true, budgetManagement: true, culturalAwareness: true, ageAppropriateGuidance: true, recordKeeping: true },
 ];
+
 async function get_clothing_appearance_provision(req: NextRequest): Promise<Response> {
 
   const result = generateClothingAppearanceProvisionIntelligence(
@@ -3118,13 +3694,12 @@ async function post_clothing_appearance_provision(req: NextRequest): Promise<Res
 
 // ─── communication-accessibility ───────────────────────────────────────
 const communication_accessibility_CHILD_IDS = ["alex", "jordan", "morgan"];
-const CHILD_NAMES_dup2: Record<string, string> = {
+const communication_accessibility_CHILD_NAMES: Record<string, string> = {
   alex: "Alex",
   jordan: "Jordan",
   morgan: "Morgan",
 };
 const communication_accessibility_STAFF_IDS = ["staff-01", "staff-02", "staff-03"];
-
 function communication_accessibility_getDemoData() {
   // Alex: speech & language needs, receiving speech therapy
   // Jordan: no significant communication needs
@@ -3310,7 +3885,7 @@ async function get_communication_accessibility(req: NextRequest): Promise<Respon
       documents,
       training,
       communication_accessibility_CHILD_IDS,
-      CHILD_NAMES,
+      communication_accessibility_CHILD_NAMES,
       communication_accessibility_STAFF_IDS,
       "oak-house",
       "2025-01-01",
@@ -3421,6 +3996,13 @@ async function post_communication_accessibility(request: NextRequest): Promise<R
 // ─── community-engagement-participation ────────────────────────────────
 const community_engagement_participation_DEMO_ACTIVITIES: CommunityActivity[] = [
   { id: "ca-1", childId: "child-alex", childName: "Alex", activityDate: "2026-04-01", activityType: "sports_club", participationLevel: "highly_engaged", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
+  { id: "ca-2", childId: "child-alex", childName: "Alex", activityDate: "2026-04-08", activityType: "youth_group", participationLevel: "regular_participant", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
+  { id: "ca-3", childId: "child-alex", childName: "Alex", activityDate: "2026-04-15", activityType: "volunteering", participationLevel: "highly_engaged", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
+  { id: "ca-4", childId: "child-jordan", childName: "Jordan", activityDate: "2026-04-01", activityType: "cultural_event", participationLevel: "highly_engaged", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
+  { id: "ca-5", childId: "child-jordan", childName: "Jordan", activityDate: "2026-04-08", activityType: "religious_group", participationLevel: "regular_participant", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
+  { id: "ca-6", childId: "child-jordan", childName: "Jordan", activityDate: "2026-04-15", activityType: "hobby_class", participationLevel: "highly_engaged", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
+  { id: "ca-7", childId: "child-morgan", childName: "Morgan", activityDate: "2026-04-01", activityType: "community_project", participationLevel: "highly_engaged", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
+  { id: "ca-8", childId: "child-morgan", childName: "Morgan", activityDate: "2026-04-08", activityType: "social_outing", participationLevel: "regular_participant", childInitiated: true, socialSkillsDeveloped: true, communityLinksStrengthened: true, documentedInPlan: true, staffSupported: true, feedbackObtained: true },
 ];
 const community_engagement_participation_DEMO_POLICY: CommunityPolicy = {
   id: "cp-1",
@@ -3434,8 +4016,11 @@ const community_engagement_participation_DEMO_POLICY: CommunityPolicy = {
 };
 const community_engagement_participation_DEMO_TRAINING: StaffCommunityTraining[] = [
   { id: "ct-1", staffId: "staff-sarah", staffName: "Sarah Johnson", communityEngagement: true, socialInclusion: true, safeguardingInCommunity: true, activityPlanning: true, partnershipWorking: true, documentationSkills: true },
-
+  { id: "ct-2", staffId: "staff-tom", staffName: "Tom Richards", communityEngagement: true, socialInclusion: true, safeguardingInCommunity: true, activityPlanning: true, partnershipWorking: true, documentationSkills: true },
+  { id: "ct-3", staffId: "staff-lisa", staffName: "Lisa Williams", communityEngagement: true, socialInclusion: true, safeguardingInCommunity: true, activityPlanning: true, partnershipWorking: true, documentationSkills: true },
+  { id: "ct-4", staffId: "staff-darren", staffName: "Darren Laville", communityEngagement: true, socialInclusion: true, safeguardingInCommunity: true, activityPlanning: true, partnershipWorking: true, documentationSkills: true },
 ];
+
 async function get_community_engagement_participation(req: NextRequest): Promise<Response> {
 
   const result = generateCommunityEngagementParticipationIntelligence(
@@ -3482,17 +4067,29 @@ async function post_community_engagement_participation(req: NextRequest): Promis
 // ─── community-integration ─────────────────────────────────────────────
 const community_integration_DEMO_ACTIVITIES: CommunityActivity[] = [
   { id: "ca-a1", childId: "child-alex", childName: "Alex", activityCategory: "sport", activityName: "Oakwood Football Club", participationLevel: "regular", frequency: "weekly", startDate: "2025-09-01", childEnjoys: true, staffSupported: false, independentAttendance: true, communityBased: true },
+  { id: "ca-a2", childId: "child-alex", childName: "Alex", activityCategory: "youth_group", activityName: "Friday Youth Club", participationLevel: "regular", frequency: "weekly", startDate: "2025-11-01", childEnjoys: true, staffSupported: true, independentAttendance: false, communityBased: true },
+  { id: "ca-a3", childId: "child-alex", childName: "Alex", activityCategory: "arts_culture", activityName: "Art Workshop", participationLevel: "occasional", frequency: "monthly", startDate: "2026-01-15", childEnjoys: true, staffSupported: true, independentAttendance: false, communityBased: true },
+  { id: "ca-j1", childId: "child-jordan", childName: "Jordan", activityCategory: "social_club", activityName: "Gaming Club", participationLevel: "regular", frequency: "weekly", startDate: "2026-02-01", childEnjoys: true, staffSupported: true, independentAttendance: false, communityBased: false },
+  { id: "ca-j2", childId: "child-jordan", childName: "Jordan", activityCategory: "sport", activityName: "Swimming", participationLevel: "tried_once", frequency: "ad_hoc", startDate: "2026-03-10", childEnjoys: false, staffSupported: true, independentAttendance: false, communityBased: true },
+  { id: "ca-m1", childId: "child-morgan", childName: "Morgan", activityCategory: "arts_culture", activityName: "Drama Club", participationLevel: "regular", frequency: "weekly", startDate: "2025-10-01", childEnjoys: true, staffSupported: false, independentAttendance: true, communityBased: true },
+  { id: "ca-m2", childId: "child-morgan", childName: "Morgan", activityCategory: "volunteering", activityName: "Charity Shop", participationLevel: "regular", frequency: "weekly", startDate: "2026-03-01", childEnjoys: true, staffSupported: true, independentAttendance: true, communityBased: true },
+  { id: "ca-m3", childId: "child-morgan", childName: "Morgan", activityCategory: "music", activityName: "Guitar Lessons", participationLevel: "regular", frequency: "weekly", startDate: "2026-01-10", childEnjoys: true, staffSupported: false, independentAttendance: true, communityBased: true },
 ];
 const community_integration_DEMO_NETWORKS: SocialNetwork[] = [
   { id: "sn-a", childId: "child-alex", childName: "Alex", friendshipQuality: "developing", numberOfFriends: 4, friendsOutsideCare: true, socialMediaSafety: "safe_and_supported", communityMentor: false, regularSocialActivities: 2 },
+  { id: "sn-j", childId: "child-jordan", childName: "Jordan", friendshipQuality: "limited", numberOfFriends: 1, friendsOutsideCare: false, socialMediaSafety: "some_concerns", communityMentor: false, regularSocialActivities: 1 },
+  { id: "sn-m", childId: "child-morgan", childName: "Morgan", friendshipQuality: "strong", numberOfFriends: 6, friendsOutsideCare: true, socialMediaSafety: "safe_and_supported", communityMentor: true, regularSocialActivities: 3 },
 ];
 const community_integration_DEMO_BARRIERS: CommunityBarrierRecord[] = [
   { id: "br-j1", childId: "child-jordan", childName: "Jordan", barrier: "transport", barrierDescription: "Limited public transport to community activities", actionTaken: true, resolved: false },
+  { id: "br-j2", childId: "child-jordan", childName: "Jordan", barrier: "behaviour", barrierDescription: "Anxiety about new social situations", actionTaken: true, resolved: false },
 ];
 const community_integration_DEMO_ASSESSMENTS: InclusionAssessment[] = [
   { id: "ia-a", childId: "child-alex", childName: "Alex", feelsPartOfCommunity: true, accessToLocalAmenities: true, positiveLocalRelationships: true, stigmaExperienced: false, independentTravelSkills: true, assessedDate: "2026-04-15", assessedBy: "Sarah Johnson" },
-
+  { id: "ia-j", childId: "child-jordan", childName: "Jordan", feelsPartOfCommunity: false, accessToLocalAmenities: true, positiveLocalRelationships: false, stigmaExperienced: true, independentTravelSkills: false, assessedDate: "2026-04-15", assessedBy: "Tom Richards" },
+  { id: "ia-m", childId: "child-morgan", childName: "Morgan", feelsPartOfCommunity: true, accessToLocalAmenities: true, positiveLocalRelationships: true, stigmaExperienced: false, independentTravelSkills: true, assessedDate: "2026-04-15", assessedBy: "Lisa Williams" },
 ];
+
 async function get_community_integration(req: NextRequest): Promise<Response> {
 
   const result = generateCommunityIntegrationIntelligence(
@@ -3850,6 +4447,40 @@ const complaints_advocacy_access_DEMO_COMPLAINTS: ComplaintRecord[] = [
     learningIdentified: true,
     policyChangeRequired: false,
   },
+  {
+    id: "comp-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    complaintDate: "2026-03-05",
+    complaintType: "privacy",
+    description: "Staff knocked but entered bedroom without waiting",
+    status: "resolved",
+    resolutionOutcome: "upheld",
+    resolvedWithinTimescale: true,
+    daysToResolve: 3,
+    childSatisfaction: "very_satisfied",
+    advocacyOffered: true,
+    advocacyAccepted: true,
+    learningIdentified: true,
+    policyChangeRequired: true,
+  },
+  {
+    id: "comp-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    complaintDate: "2026-04-12",
+    complaintType: "activities",
+    description: "Weekend activities not varied enough",
+    status: "resolved",
+    resolutionOutcome: "partially_upheld",
+    resolvedWithinTimescale: true,
+    daysToResolve: 7,
+    childSatisfaction: "satisfied",
+    advocacyOffered: true,
+    advocacyAccepted: false,
+    learningIdentified: true,
+    policyChangeRequired: false,
+  },
 ];
 const complaints_advocacy_access_DEMO_ADVOCACY: AdvocacyRecord[] = [
   {
@@ -3858,6 +4489,30 @@ const complaints_advocacy_access_DEMO_ADVOCACY: AdvocacyRecord[] = [
     childName: "Jordan",
     advocacyType: "independent_advocate",
     referralDate: "2026-03-06",
+    contactMade: true,
+    independentFromHome: true,
+    childInformed: true,
+    accessWithinTimescale: true,
+    ongoingSupport: true,
+  },
+  {
+    id: "adv-2",
+    childId: "child-alex",
+    childName: "Alex",
+    advocacyType: "childrens_rights_officer",
+    referralDate: "2026-01-15",
+    contactMade: true,
+    independentFromHome: true,
+    childInformed: true,
+    accessWithinTimescale: true,
+    ongoingSupport: false,
+  },
+  {
+    id: "adv-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    advocacyType: "childline",
+    referralDate: "2026-02-20",
     contactMade: true,
     independentFromHome: true,
     childInformed: true,
@@ -3880,8 +4535,11 @@ const complaints_advocacy_access_DEMO_POLICIES: ComplaintsPolicy[] = [
 ];
 const complaints_advocacy_access_DEMO_TRAINING: StaffComplaintsTraining[] = [
   { id: "ct-1", staffId: "staff-sarah", staffName: "Sarah Johnson", complaintsProcedure: true, advocacyReferral: true, childRightsAwareness: true, conflictResolution: true, recordKeeping: true, escalationProcess: true },
-
+  { id: "ct-2", staffId: "staff-tom", staffName: "Tom Richards", complaintsProcedure: true, advocacyReferral: true, childRightsAwareness: true, conflictResolution: true, recordKeeping: true, escalationProcess: true },
+  { id: "ct-3", staffId: "staff-lisa", staffName: "Lisa Williams", complaintsProcedure: true, advocacyReferral: true, childRightsAwareness: true, conflictResolution: true, recordKeeping: true, escalationProcess: true },
+  { id: "ct-4", staffId: "staff-darren", staffName: "Darren Laville", complaintsProcedure: true, advocacyReferral: true, childRightsAwareness: true, conflictResolution: true, recordKeeping: true, escalationProcess: true },
 ];
+
 async function get_complaints_advocacy_access(req: NextRequest): Promise<Response> {
 
   const result = generateComplaintsAdvocacyAccessIntelligence(
@@ -3971,7 +4629,7 @@ async function post_complaints_advocacy_access(req: NextRequest): Promise<Respon
 
 // ─── complaints-feedback-quality ───────────────────────────────────────
 const complaints_feedback_quality_CHILD_IDS = ["alex", "jordan", "morgan"];
-const CHILD_NAMES_dup3: Record<string, string> = {
+const complaints_feedback_quality_CHILD_NAMES: Record<string, string> = {
   alex: "Alex",
   jordan: "Jordan",
   morgan: "Morgan",
@@ -4106,7 +4764,7 @@ async function get_complaints_feedback_quality(req: NextRequest): Promise<Respon
     const { complaints, feedback, lessons, policy } = complaints_feedback_quality_getDemoData();
     const result = generateComplaintsFeedbackQualityIntelligence(
       complaints, feedback, lessons, policy,
-      complaints_feedback_quality_CHILD_IDS, CHILD_NAMES,
+      complaints_feedback_quality_CHILD_IDS, complaints_feedback_quality_CHILD_NAMES,
       "oak-house", "2025-01-01", "2025-06-30",
     );
     return NextResponse.json(result);
@@ -4234,6 +4892,22 @@ async function get_complaints_feedback(req: NextRequest): Promise<Response> {
 // ─── complaints ────────────────────────────────────────────────────────
 const complaints_demoRecords: ComplaintRecord[] = [
   // Alex — complaints handled well
+  { id: "cmp-1", homeId: "home-oak", date: "2026-02-05", childId: "child-alex", childName: "Alex", category: "care_quality", outcome: "resolved_upheld", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: true },
+  { id: "cmp-2", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "staff_conduct", outcome: "resolved_not_upheld", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: true },
+  { id: "cmp-3", homeId: "home-oak", date: "2026-04-08", childId: "child-alex", childName: "Alex", category: "privacy_dignity", outcome: "resolved_partially", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: false },
+  { id: "cmp-4", homeId: "home-oak", date: "2026-05-01", childId: "child-alex", childName: "Alex", category: "family_contact", outcome: "resolved_upheld", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: false, documentationComplete: true, timelyResolution: true },
+
+  // Jordan — some gaps in process
+  { id: "cmp-5", homeId: "home-oak", date: "2026-02-20", childId: "child-jordan", childName: "Jordan", category: "food_nutrition", outcome: "resolved_upheld", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: true },
+  { id: "cmp-6", homeId: "home-oak", date: "2026-03-18", childId: "child-jordan", childName: "Jordan", category: "environmental", outcome: "resolved_partially", acknowledgedWithinTarget: true, investigationThorough: false, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: false, timelyResolution: true },
+  { id: "cmp-7", homeId: "home-oak", date: "2026-04-22", childId: "child-jordan", childName: "Jordan", category: "health_medication", outcome: "ongoing", acknowledgedWithinTarget: false, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: true },
+  { id: "cmp-8", homeId: "home-oak", date: "2026-05-10", childId: "child-jordan", childName: "Jordan", category: "safeguarding_concern", outcome: "resolved_upheld", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: true },
+
+  // Morgan — newer, fewer records
+  { id: "cmp-9", homeId: "home-oak", date: "2026-03-25", childId: "child-morgan", childName: "Morgan", category: "care_quality", outcome: "resolved_upheld", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: true },
+  { id: "cmp-10", homeId: "home-oak", date: "2026-04-15", childId: "child-morgan", childName: "Morgan", category: "staff_conduct", outcome: "resolved_not_upheld", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: false, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: false },
+  { id: "cmp-11", homeId: "home-oak", date: "2026-05-02", childId: "child-morgan", childName: "Morgan", category: "food_nutrition", outcome: "withdrawn", acknowledgedWithinTarget: true, investigationThorough: false, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: true, timelyResolution: true },
+  { id: "cmp-12", homeId: "home-oak", date: "2026-05-15", childId: "child-morgan", childName: "Morgan", category: "environmental", outcome: "ongoing", acknowledgedWithinTarget: true, investigationThorough: true, childViewCaptured: true, outcomeExplainedToChild: true, documentationComplete: false, timelyResolution: true },
 ];
 const complaints_demoPolicy: ComplaintPolicy = {
   complaintsPolicy: true,
@@ -4246,8 +4920,11 @@ const complaints_demoPolicy: ComplaintPolicy = {
 };
 const complaints_demoStaff: StaffComplaintTraining[] = [
   { staffId: "staff-sarah", complaintHandling: true, childAdvocacy: true, investigationSkills: true, recordKeeping: true, conflictResolution: true, regulatoryKnowledge: true },
-
+  { staffId: "staff-tom", complaintHandling: true, childAdvocacy: true, investigationSkills: true, recordKeeping: false, conflictResolution: false, regulatoryKnowledge: true },
+  { staffId: "staff-lisa", complaintHandling: true, childAdvocacy: true, investigationSkills: false, recordKeeping: true, conflictResolution: true, regulatoryKnowledge: false },
+  { staffId: "staff-darren", complaintHandling: true, childAdvocacy: true, investigationSkills: true, recordKeeping: true, conflictResolution: true, regulatoryKnowledge: true },
 ];
+
 async function get_complaints(req: NextRequest): Promise<Response> {
 
   const result = generateComplaintsIntelligence({
@@ -4270,14 +4947,24 @@ async function get_complaints(req: NextRequest): Promise<Response> {
 // ─── conflict-resolution-management ────────────────────────────────────
 const conflict_resolution_management_DEMO_INCIDENTS: ConflictIncident[] = [
   { id: "ci-1", childId: "child-alex", childName: "Alex", incidentDate: "2026-03-01", conflictType: "peer_disagreement", resolutionOutcome: "fully_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ci-2", childId: "child-alex", childName: "Alex", incidentDate: "2026-03-15", conflictType: "boundary_challenge", resolutionOutcome: "fully_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ci-3", childId: "child-alex", childName: "Alex", incidentDate: "2026-04-10", conflictType: "verbal_altercation", resolutionOutcome: "partially_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ci-4", childId: "child-jordan", childName: "Jordan", incidentDate: "2026-03-05", conflictType: "property_dispute", resolutionOutcome: "fully_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ci-5", childId: "child-jordan", childName: "Jordan", incidentDate: "2026-03-20", conflictType: "group_tension", resolutionOutcome: "fully_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ci-6", childId: "child-jordan", childName: "Jordan", incidentDate: "2026-04-15", conflictType: "staff_child_conflict", resolutionOutcome: "fully_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ci-7", childId: "child-morgan", childName: "Morgan", incidentDate: "2026-03-12", conflictType: "bullying_incident", resolutionOutcome: "fully_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ci-8", childId: "child-morgan", childName: "Morgan", incidentDate: "2026-04-20", conflictType: "physical_altercation", resolutionOutcome: "partially_resolved", deEscalationUsed: true, childVoiceHeard: true, restorativePractice: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
 ];
 const conflict_resolution_management_DEMO_POLICY: ConflictResolutionPolicy = {
   id: "crp-1", behaviourManagementStrategy: true, deEscalationProtocol: true, restorativePracticeFramework: true, antibullyingPolicy: true, physicalInterventionGuidance: true, childParticipationInResolution: true, regularReview: true,
 };
 const conflict_resolution_management_DEMO_TRAINING: StaffConflictResolutionTraining[] = [
   { id: "crt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", deEscalationTechniques: true, restorativePractice: true, conflictMediation: true, traumaInformedResponse: true, physicalInterventionCertified: true, reflectiveDebrief: true },
-
+  { id: "crt-2", staffId: "staff-tom", staffName: "Tom Richards", deEscalationTechniques: true, restorativePractice: true, conflictMediation: true, traumaInformedResponse: true, physicalInterventionCertified: true, reflectiveDebrief: true },
+  { id: "crt-3", staffId: "staff-lisa", staffName: "Lisa Williams", deEscalationTechniques: true, restorativePractice: true, conflictMediation: true, traumaInformedResponse: true, physicalInterventionCertified: true, reflectiveDebrief: true },
+  { id: "crt-4", staffId: "staff-darren", staffName: "Darren Laville", deEscalationTechniques: true, restorativePractice: true, conflictMediation: true, traumaInformedResponse: true, physicalInterventionCertified: true, reflectiveDebrief: true },
 ];
+
 async function get_conflict_resolution_management(req: NextRequest): Promise<Response> {
 
   const result = generateConflictResolutionManagementIntelligence(
@@ -4479,6 +5166,17 @@ async function get_contact(req: NextRequest): Promise<Response> {
 // ─── contextual-safeguarding-intelligence ──────────────────────────────
 const contextual_safeguarding_intelligence_DEMO_RECORDS: ContextualSafeguardingRecord[] = [
   { id: "cs-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "peer_risk_assessment", outcome: "low_risk", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "online_safety_assessment", outcome: "no_risk_identified", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "community_risk_mapping", outcome: "no_risk_identified", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "school_safety_assessment", outcome: "no_risk_identified", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "gang_exploitation_screening", outcome: "moderate_risk", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "county_lines_assessment", outcome: "low_risk", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "environmental_mapping", outcome: "low_risk", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: false, documentationComplete: true, timelyRecording: false },
+  { id: "cs-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "peer_risk_assessment", outcome: "low_risk", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "family_network_analysis", outcome: "no_risk_identified", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "online_safety_assessment", outcome: "low_risk", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "school_safety_assessment", outcome: "no_risk_identified", riskAssessmentCompleted: true, protectiveFactorsIdentified: false, multiAgencyInvolved: true, safetyPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "cs-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "community_risk_mapping", outcome: "low_risk", riskAssessmentCompleted: true, protectiveFactorsIdentified: true, multiAgencyInvolved: false, safetyPlanInPlace: true, documentationComplete: false, timelyRecording: true },
 ];
 const contextual_safeguarding_intelligence_DEMO_POLICY: ContextualSafeguardingPolicy = {
   contextualSafeguardingPolicy: true, peerRiskAssessmentPolicy: true, onlineSafetyPolicy: true,
@@ -4486,8 +5184,11 @@ const contextual_safeguarding_intelligence_DEMO_POLICY: ContextualSafeguardingPo
 };
 const contextual_safeguarding_intelligence_DEMO_STAFF: StaffContextualSafeguardingTraining[] = [
   { staffId: "staff-sarah", contextualSafeguardingKnowledge: true, exploitationAwareness: true, onlineSafetyCompetency: true, multiAgencyWorkingSkills: true, riskAssessmentSkills: true, safetyPlanningSkills: true },
-
+  { staffId: "staff-tom", contextualSafeguardingKnowledge: true, exploitationAwareness: true, onlineSafetyCompetency: true, multiAgencyWorkingSkills: true, riskAssessmentSkills: true, safetyPlanningSkills: false },
+  { staffId: "staff-lisa", contextualSafeguardingKnowledge: true, exploitationAwareness: true, onlineSafetyCompetency: true, multiAgencyWorkingSkills: true, riskAssessmentSkills: false, safetyPlanningSkills: true },
+  { staffId: "staff-darren", contextualSafeguardingKnowledge: true, exploitationAwareness: true, onlineSafetyCompetency: true, multiAgencyWorkingSkills: true, riskAssessmentSkills: true, safetyPlanningSkills: true },
 ];
+
 async function get_contextual_safeguarding_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateContextualSafeguardingIntelligence({
@@ -4500,6 +5201,8 @@ async function get_contextual_safeguarding_intelligence(req: NextRequest): Promi
 // ─── contextual-safeguarding ───────────────────────────────────────────
 const contextual_safeguarding_DEMO_CHILDREN = [
   { id: "child-alex", name: "Alex" },
+  { id: "child-jordan", name: "Jordan" },
+  { id: "child-morgan", name: "Morgan" },
 ];
 const contextual_safeguarding_DEMO_ENV_RISKS: EnvironmentalRisk[] = [
   {
@@ -4515,23 +5218,62 @@ const contextual_safeguarding_DEMO_ENV_RISKS: EnvironmentalRisk[] = [
     isActive: true,
     mitigationsInPlace: ["Police community mapping shared", "Curfew adjusted for Alex", "Diversionary activities planned"],
   },
+  {
+    id: "env-002",
+    type: "peer_group",
+    name: "Park Lane Estate Group",
+    description: "Group of 5-7 young people aged 14-17, linked to antisocial behaviour and suspected drug running",
+    harmDomains: ["criminal_exploitation", "gang_affiliation"],
+    riskLevel: "significant",
+    lastAssessed: "2026-05-10",
+    associatedChildren: ["child-alex", "child-jordan"],
+    isActive: true,
+    mitigationsInPlace: ["Multi-agency intel shared", "Key work sessions on exploitation awareness"],
+  },
+  {
+    id: "env-003",
+    type: "online_space",
+    name: "Private Telegram Group",
+    description: "Closed messaging group sharing inappropriate content and arranging meetups",
+    harmDomains: ["online_exploitation", "sexual_exploitation"],
+    riskLevel: "significant",
+    lastAssessed: "2026-05-08",
+    associatedChildren: ["child-morgan"],
+    isActive: true,
+    mitigationsInPlace: ["Device monitoring enhanced", "E-safety discussion completed"],
+  },
 ];
 const contextual_safeguarding_DEMO_PEERS: PeerAssociation[] = [
   { id: "peer-001", childId: "child-alex", peerName: "Kai (pseudonym)", peerType: "high_risk", harmDomains: ["county_lines", "criminal_exploitation"], context: "Town centre and retail park", frequency: "weekly", isMonitored: true, lastContact: "2026-05-14" },
+  { id: "peer-002", childId: "child-alex", peerName: "Remi (pseudonym)", peerType: "concerning", harmDomains: ["criminal_exploitation"], context: "School and online", frequency: "daily", isMonitored: true, lastContact: "2026-05-16" },
+  { id: "peer-003", childId: "child-alex", peerName: "Tyler", peerType: "positive", harmDomains: [], context: "Football club", frequency: "weekly", isMonitored: false },
+  { id: "peer-004", childId: "child-jordan", peerName: "Jayden (pseudonym)", peerType: "concerning", harmDomains: ["gang_affiliation"], context: "Park Lane Estate", frequency: "occasional", isMonitored: true, lastContact: "2026-05-11" },
+  { id: "peer-005", childId: "child-morgan", peerName: "Online contact 'L'", peerType: "high_risk", harmDomains: ["online_exploitation"], context: "Telegram / Snapchat", frequency: "online_only", isMonitored: true, lastContact: "2026-05-13" },
 ];
 const contextual_safeguarding_DEMO_ONLINE: OnlineRisk[] = [
   { id: "online-001", childId: "child-morgan", platform: "Telegram", riskType: "online_exploitation", riskLevel: "significant", description: "Added to private group by unknown adult", identifiedDate: "2026-05-05", isActive: true, actionTaken: "Device monitoring, MASH referral made" },
+  { id: "online-002", childId: "child-alex", platform: "Snapchat", riskType: "criminal_exploitation", riskLevel: "moderate", description: "Receiving disappearing messages from contacts linked to county lines network", identifiedDate: "2026-05-10", isActive: true, actionTaken: "Phone checked with consent, intel shared with police" },
 ];
 const contextual_safeguarding_DEMO_PROTECTIVE: ProtectiveFactor[] = [
   { id: "pf-001", childId: "child-alex", type: "trusted_adult", description: "Strong relationship with KW Sarah — Alex seeks her out during distress", strength: "strong", lastEvidenced: "2026-05-16" },
+  { id: "pf-002", childId: "child-alex", type: "structured_activity", description: "Football training 2x weekly — positive peer group and routine", strength: "moderate", lastEvidenced: "2026-05-15" },
+  { id: "pf-003", childId: "child-alex", type: "safety_plan", description: "Exploitation safety plan with Alex — reviewed monthly", strength: "moderate", lastEvidenced: "2026-05-01" },
+  { id: "pf-004", childId: "child-jordan", type: "trusted_adult", description: "Good rapport with Tom (KW) — uses check-ins after school", strength: "moderate", lastEvidenced: "2026-05-14" },
+  { id: "pf-005", childId: "child-jordan", type: "education_engagement", description: "Attending school consistently, engaged in art coursework", strength: "strong", lastEvidenced: "2026-05-16" },
+  { id: "pf-006", childId: "child-morgan", type: "therapeutic_support", description: "Weekly CAMHS sessions — processing trauma history", strength: "moderate", lastEvidenced: "2026-05-13" },
+  { id: "pf-007", childId: "child-morgan", type: "trusted_adult", description: "Trusts Lisa (KW) — disclosed online contact to her", strength: "strong", lastEvidenced: "2026-05-08" },
 ];
 const contextual_safeguarding_DEMO_INTERVENTIONS: Intervention[] = [
   { id: "int-001", childId: "child-alex", harmDomain: "criminal_exploitation", description: "Contextual safeguarding mentoring programme via local Youth Justice Service", status: "in_progress", startDate: "2026-04-15", reviewDate: "2026-06-15", assignedTo: "Sarah Johnson (KW)", multiAgencyInvolved: true, partners: ["Youth Justice Service", "Police CMET team"] },
+  { id: "int-002", childId: "child-alex", harmDomain: "county_lines", description: "NRM referral submitted for county lines exploitation", status: "in_progress", startDate: "2026-05-10", assignedTo: "Darren Laville (RM)", multiAgencyInvolved: true, partners: ["Modern Slavery Unit", "Placing Authority"] },
+  { id: "int-003", childId: "child-morgan", harmDomain: "online_exploitation", description: "Enhanced device monitoring and digital literacy programme", status: "effective", startDate: "2026-04-01", assignedTo: "Lisa Williams (KW)", multiAgencyInvolved: false, impactEvidence: "Morgan proactively disclosed new contact and handed phone for checking" },
 ];
 const contextual_safeguarding_DEMO_EVENTS: MappingEvent[] = [
   { id: "evt-001", childId: "child-alex", date: "2026-05-12", harmDomain: "criminal_exploitation", description: "Alex observed near retail park with Kai during curfew hours", environmentId: "env-001", peerAssociationId: "peer-001", severity: 4, wasEscalated: true, responseAdequate: true },
-
+  { id: "evt-002", childId: "child-alex", date: "2026-05-14", harmDomain: "county_lines", description: "Alex returned to home with new phone and unexplained cash (£40)", severity: 4, wasEscalated: true, responseAdequate: true },
+  { id: "evt-003", childId: "child-morgan", date: "2026-05-08", harmDomain: "online_exploitation", description: "Morgan disclosed being asked for photos by online contact 'L'", peerAssociationId: "peer-005", severity: 3, wasEscalated: true, responseAdequate: true },
 ];
+
 async function get_contextual_safeguarding(req: NextRequest): Promise<Response> {
 
   const result = generateContextualAssessment(
@@ -4695,14 +5437,24 @@ async function post_court_order_compliance(req: NextRequest): Promise<Response> 
 // ─── creative-arts-expression ──────────────────────────────────────────
 const creative_arts_expression_DEMO_SESSIONS: ArtsSession[] = [
   { id: "as-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-01", artForm: "visual_art", expressionLevel: "highly_expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "as-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-15", artForm: "music", expressionLevel: "expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "as-3", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-10", artForm: "creative_writing", expressionLevel: "highly_expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "as-4", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-03-05", artForm: "drama", expressionLevel: "highly_expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "as-5", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-03-20", artForm: "dance", expressionLevel: "expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "as-6", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-15", artForm: "photography", expressionLevel: "highly_expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "as-7", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-03-12", artForm: "craft_design", expressionLevel: "expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "as-8", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-20", artForm: "digital_media", expressionLevel: "highly_expressive", creativityDemonstrated: true, confidenceGrown: true, therapeuticBenefit: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
 ];
 const creative_arts_expression_DEMO_POLICY: CreativeArtsPolicy = {
   id: "cap-1", artsEducationStrategy: true, therapeuticArtsFramework: true, resourceProvisionPlan: true, externalPartnerships: true, exhibitionAndShowcasePolicy: true, inclusiveAccessGuidance: true, regularReview: true,
 };
 const creative_arts_expression_DEMO_TRAINING: StaffCreativeArtsTraining[] = [
   { id: "cat-1", staffId: "staff-sarah", staffName: "Sarah Johnson", artsFacilitation: true, therapeuticArtsAwareness: true, creativeConfidenceBuilding: true, inclusivePractice: true, culturalArtsForms: true, safeguardingInArts: true },
-
+  { id: "cat-2", staffId: "staff-tom", staffName: "Tom Richards", artsFacilitation: true, therapeuticArtsAwareness: true, creativeConfidenceBuilding: true, inclusivePractice: true, culturalArtsForms: true, safeguardingInArts: true },
+  { id: "cat-3", staffId: "staff-lisa", staffName: "Lisa Williams", artsFacilitation: true, therapeuticArtsAwareness: true, creativeConfidenceBuilding: true, inclusivePractice: true, culturalArtsForms: true, safeguardingInArts: true },
+  { id: "cat-4", staffId: "staff-darren", staffName: "Darren Laville", artsFacilitation: true, therapeuticArtsAwareness: true, creativeConfidenceBuilding: true, inclusivePractice: true, culturalArtsForms: true, safeguardingInArts: true },
 ];
+
 async function get_creative_arts_expression(req: NextRequest): Promise<Response> {
 
   const result = generateCreativeArtsExpressionIntelligence(
@@ -5011,6 +5763,13 @@ async function post_critical_incident_review(request: NextRequest): Promise<Resp
 // ─── cultural-identity-celebration ─────────────────────────────────────
 const cultural_identity_celebration_DEMO_ACTIVITIES: CulturalActivity[] = [
   { id: "act-1", childId: "child-alex", childName: "Alex", activityDate: "2026-02-10", culturalArea: "heritage_exploration", engagementLevel: "enthusiastic", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: true, reflectionCompleted: true },
+  { id: "act-2", childId: "child-alex", childName: "Alex", activityDate: "2026-03-05", culturalArea: "food_traditions", engagementLevel: "enthusiastic", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: false, reflectionCompleted: true },
+  { id: "act-3", childId: "child-alex", childName: "Alex", activityDate: "2026-04-12", culturalArea: "arts_expression", engagementLevel: "willing", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: true, reflectionCompleted: true },
+  { id: "act-4", childId: "child-jordan", childName: "Jordan", activityDate: "2026-02-18", culturalArea: "language_support", engagementLevel: "enthusiastic", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: true, reflectionCompleted: true },
+  { id: "act-5", childId: "child-jordan", childName: "Jordan", activityDate: "2026-03-22", culturalArea: "religious_observance", engagementLevel: "willing", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: true, reflectionCompleted: false },
+  { id: "act-6", childId: "child-jordan", childName: "Jordan", activityDate: "2026-04-30", culturalArea: "cultural_events", engagementLevel: "enthusiastic", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: true, reflectionCompleted: true },
+  { id: "act-7", childId: "child-morgan", childName: "Morgan", activityDate: "2026-01-20", culturalArea: "identity_work", engagementLevel: "enthusiastic", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: false, reflectionCompleted: true },
+  { id: "act-8", childId: "child-morgan", childName: "Morgan", activityDate: "2026-03-15", culturalArea: "community_connections", engagementLevel: "willing", childLedChoice: true, identityAffirmed: true, documentedInPlan: true, staffFacilitated: true, communityInvolved: true, reflectionCompleted: true },
 ];
 const cultural_identity_celebration_DEMO_POLICY: CulturalPolicy = {
   id: "pol-1",
@@ -5024,8 +5783,11 @@ const cultural_identity_celebration_DEMO_POLICY: CulturalPolicy = {
 };
 const cultural_identity_celebration_DEMO_TRAINING: StaffCulturalTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", culturalCompetence: true, diversityAwareness: true, religiousLiteracy: true, antiRacismPractice: true, identitySupport: true, communityEngagement: true },
-
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", culturalCompetence: true, diversityAwareness: true, religiousLiteracy: true, antiRacismPractice: false, identitySupport: true, communityEngagement: true },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", culturalCompetence: true, diversityAwareness: true, religiousLiteracy: true, antiRacismPractice: true, identitySupport: true, communityEngagement: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", culturalCompetence: true, diversityAwareness: true, religiousLiteracy: true, antiRacismPractice: true, identitySupport: true, communityEngagement: true },
 ];
+
 async function get_cultural_identity_celebration(req: NextRequest): Promise<Response> {
 
   const result = generateCulturalIdentityCelebrationIntelligence(
@@ -5392,6 +6154,31 @@ const culture_identity_DEMO_CHILDREN: CultureChild[] = [
     dietaryRequirements: ["No pork (cultural preference)"],
     currentPlacement: true,
   },
+  {
+    id: "child-jordan",
+    name: "Jordan",
+    dateOfBirth: "2013-07-22",
+    ethnicHeritage: "White British",
+    religion: "Christian (Church of England)",
+    firstLanguage: "English",
+    genderIdentity: "Non-binary",
+    pronouns: "they/them",
+    currentPlacement: true,
+  },
+  {
+    id: "child-morgan",
+    name: "Morgan",
+    dateOfBirth: "2010-12-01",
+    ethnicHeritage: "Pakistani British",
+    religion: "Islam",
+    firstLanguage: "Urdu",
+    additionalLanguages: ["English"],
+    genderIdentity: "Female",
+    pronouns: "she/her",
+    culturalTraditions: ["Eid celebrations", "Ramadan", "Mehndi art"],
+    dietaryRequirements: ["Halal only"],
+    currentPlacement: true,
+  },
 ];
 const culture_identity_DEMO_ASSESSMENTS: IdentityNeedsAssessment[] = [
   {
@@ -5406,9 +6193,54 @@ const culture_identity_DEMO_ASSESSMENTS: IdentityNeedsAssessment[] = [
     reviewDueDate: "2026-07-15",
     assessedBy: "Sarah Johnson",
   },
+  {
+    childId: "child-jordan",
+    assessmentDate: "2026-02-01",
+    dimensionsAssessed: ["ethnic_heritage", "religious_belief", "gender_identity", "language"],
+    needsIdentified: [
+      { dimension: "gender_identity", description: "Jordan identifies as non-binary, uses they/them pronouns. Needs consistent affirmation and appropriate support", priority: "high", status: "met", supportPlan: "All staff briefed on pronouns; pronouns on all records; GIDS referral progressing; LGBTQ+ youth group weekly" },
+      { dimension: "religious_belief", description: "Active member of local church youth group — important for peer connection and sense of belonging", priority: "medium", status: "met", supportPlan: "Weekly transport arranged; youth worker liaison established" },
+    ],
+    reviewDueDate: "2026-08-01",
+    assessedBy: "Tom Richards",
+  },
+  {
+    childId: "child-morgan",
+    assessmentDate: "2026-01-20",
+    dimensionsAssessed: ["ethnic_heritage", "religious_belief", "language", "cultural_traditions"],
+    needsIdentified: [
+      { dimension: "religious_belief", description: "Practising Muslim — requires prayer times respected, halal food, Ramadan support, mosque access", priority: "high", status: "met", supportPlan: "Prayer space in room; halal menu; Ramadan plan; Friday mosque transport arranged" },
+      { dimension: "language", description: "Urdu first language — some academic English vocabulary gaps; wants to maintain Urdu fluency", priority: "high", status: "partially_met", supportPlan: "Urdu mentor fortnightly; bilingual books; school ESOL support in place; seeking community Urdu class" },
+      { dimension: "cultural_traditions", description: "Eid celebrations, Ramadan observance, traditional dress and Mehndi art are important to Morgan", priority: "medium", status: "met", supportPlan: "Eid celebrations planned; cultural clothing budget allocated; Mehndi sessions arranged with community volunteer" },
+      { dimension: "ethnic_heritage", description: "Links with local Pakistani community to maintain cultural connection", priority: "medium", status: "unmet", supportPlan: "Seeking appropriate community group — limited local options being explored" },
+    ],
+    reviewDueDate: "2026-07-20",
+    assessedBy: "Lisa Williams",
+  },
 ];
 const culture_identity_DEMO_ACTIVITIES: IdentityActivity[] = [
   // Alex — Caribbean heritage, mixed-heritage identity work
+  { id: "act-001", childId: "child-alex", date: "2026-02-01", activityType: "cultural_food_provided", dimension: "ethnic_heritage", description: "Caribbean cooking session with key worker — jerk chicken and rice & peas. Alex taught recipe from grandmother", childEngaged: true, childInitiated: true, outcome: "Alex enjoyed teaching staff; talked about grandmother's cooking" },
+  { id: "act-002", childId: "child-alex", date: "2026-02-15", activityType: "life_story_identity", dimension: "ethnic_heritage", description: "Life story session exploring mixed heritage identity — looked at family photos and talked about Jamaican traditions", childEngaged: true, childInitiated: false, outcome: "Engaged well; asked to do more next month" },
+  { id: "act-003", childId: "child-alex", date: "2026-03-15", activityType: "heritage_activity", dimension: "ethnic_heritage", description: "Visit to Black cultural exhibition at local museum", childEngaged: true, childInitiated: false, outcome: "Alex proud to share knowledge with other children" },
+  { id: "act-004", childId: "child-alex", date: "2026-04-01", activityType: "cultural_food_provided", dimension: "ethnic_heritage", description: "Monthly Caribbean cooking — ackee and saltfish. Alex FaceTimed grandmother for recipe tips", childEngaged: true, childInitiated: true, outcome: "Beautiful connection with family heritage through food" },
+  { id: "act-005", childId: "child-alex", date: "2026-04-20", activityType: "community_link", dimension: "cultural_traditions", description: "First visit to local Caribbean community group with key worker", childEngaged: true, childInitiated: true, outcome: "Met other young people; wants to return" },
+
+  // Jordan — gender identity support, religious community
+  { id: "act-006", childId: "child-jordan", date: "2026-01-15", activityType: "identity_exploration", dimension: "gender_identity", description: "Session with gender identity support worker — exploring non-binary identity and expression", childEngaged: true, childInitiated: true, outcome: "Jordan felt validated and supported; positive session" },
+  { id: "act-007", childId: "child-jordan", date: "2026-02-10", activityType: "community_link", dimension: "gender_identity", description: "First session at local LGBTQ+ youth group — met other non-binary young people", childEngaged: true, childInitiated: true, outcome: "Jordan made connections; keen to attend weekly" },
+  { id: "act-008", childId: "child-jordan", date: "2026-03-01", activityType: "worship_facilitated", dimension: "religious_belief", description: "Weekly transport to church youth group continued", childEngaged: true, childInitiated: false },
+  { id: "act-009", childId: "child-jordan", date: "2026-03-20", activityType: "resource_provision", dimension: "gender_identity", description: "Non-binary identity books and affirming items purchased for Jordan's room", childEngaged: true, childInitiated: false, outcome: "Jordan appreciated the acknowledgement of their identity" },
+  { id: "act-010", childId: "child-jordan", date: "2026-04-15", activityType: "identity_exploration", dimension: "gender_identity", description: "House meeting discussion on pronouns and respectful language — Jordan led the conversation", childEngaged: true, childInitiated: true, outcome: "Empowering for Jordan; good learning for all children" },
+
+  // Morgan — Islamic faith, Pakistani heritage, language support
+  { id: "act-011", childId: "child-morgan", date: "2026-01-25", activityType: "worship_facilitated", dimension: "religious_belief", description: "Prayer space set up in Morgan's room; Friday prayer times protected in home routine", childEngaged: true, childInitiated: false },
+  { id: "act-012", childId: "child-morgan", date: "2026-02-10", activityType: "language_support", dimension: "language", description: "Urdu-speaking mentor session — homework support in first language", childEngaged: true, childInitiated: false, outcome: "Morgan more confident discussing complex topics in Urdu" },
+  { id: "act-013", childId: "child-morgan", date: "2026-03-01", activityType: "celebration_observed", dimension: "cultural_traditions", description: "Ramadan began — meal times adjusted, staff supported fasting, special iftar meals", childEngaged: true, childInitiated: true, outcome: "Morgan felt respected and supported in her faith" },
+  { id: "act-014", childId: "child-morgan", date: "2026-03-15", activityType: "language_support", dimension: "language", description: "Urdu mentor session — Morgan also helping staff learn basic Urdu greetings", childEngaged: true, childInitiated: true, outcome: "Staff learning greetings made Morgan feel valued" },
+  { id: "act-015", childId: "child-morgan", date: "2026-04-01", activityType: "celebration_observed", dimension: "cultural_traditions", description: "Eid al-Fitr — gifts, new salwar kameez, special meal, Mehndi art session with community volunteer", childEngaged: true, childInitiated: true, outcome: "Wonderful celebration; all children participated in Mehndi" },
+  { id: "act-016", childId: "child-morgan", date: "2026-04-20", activityType: "cultural_food_provided", dimension: "ethnic_heritage", description: "Halal menu expanded — Morgan helped plan weekly menu incorporating Pakistani dishes", childEngaged: true, childInitiated: true, outcome: "Morgan took pride in contributing; biryani now on rotation" },
+  { id: "act-017", childId: "child-morgan", date: "2026-05-01", activityType: "heritage_activity", dimension: "cultural_traditions", description: "Mehndi art workshop — Morgan taught other children basic patterns", childEngaged: true, childInitiated: true, outcome: "Cross-cultural sharing; all children enjoyed learning" },
 ];
 const culture_identity_DEMO_INCIDENTS: DiversityIncident[] = [
   {
@@ -5426,12 +6258,43 @@ const culture_identity_DEMO_INCIDENTS: DiversityIncident[] = [
     actionsTaken: ["Immediate emotional support provided", "Discussed with Alex in key-work next day", "Recorded as racist incident in LA monitoring system", "Staff debriefed", "Pre-planning outings to include diversity awareness"],
     lessonLearned: "Staff to pre-plan community outings considering diversity of group; carry incident reporting cards; ensure all staff confident in responding to racial abuse in public",
   },
+  {
+    id: "inc-002",
+    date: "2026-04-15",
+    incidentType: "transphobia",
+    perpetrator: "child",
+    victimChildIds: ["child-jordan"],
+    reported: true,
+    reportedDate: "2026-04-15",
+    investigated: true,
+    investigationOutcome: "Alex deliberately used wrong pronouns for Jordan during mealtime after being reminded. Key work session addressed this — Alex apologised and committed to using they/them",
+    resolved: true,
+    resolvedDate: "2026-04-20",
+    actionsTaken: ["Immediate gentle correction by staff", "Key work session with Alex about respectful language", "Support session for Jordan", "Group house meeting on pronouns added to agenda", "Revisited pronoun awareness with all staff"],
+    lessonLearned: "Regular reinforcement of pronoun respect needed — added as standing house meeting agenda item; positive peer culture around diversity to be actively promoted",
+  },
 ];
 const culture_identity_DEMO_TRAINING: StaffDiversityTraining[] = [
   // Sarah Johnson — KW, comprehensive training
+  { staffId: "staff-sarah", staffName: "Sarah Johnson", trainingType: "equality_diversity", completionDate: "2025-09-15", expiryDate: "2027-09-15", certificateHeld: true },
+  { staffId: "staff-sarah", staffName: "Sarah Johnson", trainingType: "cultural_competence", completionDate: "2025-11-01", certificateHeld: true },
+  { staffId: "staff-sarah", staffName: "Sarah Johnson", trainingType: "anti_racism", completionDate: "2026-03-15", certificateHeld: true },
+
+  // Tom Richards — trained with LGBTQ+ focus for Jordan
+  { staffId: "staff-tom", staffName: "Tom Richards", trainingType: "equality_diversity", completionDate: "2025-08-20", expiryDate: "2027-08-20", certificateHeld: true },
+  { staffId: "staff-tom", staffName: "Tom Richards", trainingType: "lgbtq_awareness", completionDate: "2026-01-10", certificateHeld: true },
+
+  // Lisa Williams — trained with religious literacy for Morgan
+  { staffId: "staff-lisa", staffName: "Lisa Williams", trainingType: "equality_diversity", completionDate: "2025-10-01", expiryDate: "2027-10-01", certificateHeld: true },
+  { staffId: "staff-lisa", staffName: "Lisa Williams", trainingType: "religious_literacy", completionDate: "2025-12-15", certificateHeld: true },
+
+  // Darren Laville (RM) — broad training portfolio
+  { staffId: "staff-darren", staffName: "Darren Laville", trainingType: "equality_diversity", completionDate: "2025-07-01", expiryDate: "2027-07-01", certificateHeld: true },
+  { staffId: "staff-darren", staffName: "Darren Laville", trainingType: "anti_racism", completionDate: "2025-11-20", certificateHeld: true },
+  { staffId: "staff-darren", staffName: "Darren Laville", trainingType: "unconscious_bias", completionDate: "2026-01-05", certificateHeld: true },
+  { staffId: "staff-darren", staffName: "Darren Laville", trainingType: "lgbtq_awareness", completionDate: "2026-02-15", certificateHeld: true },
 ];
 const culture_identity_STAFF_IDS = ["staff-sarah", "staff-tom", "staff-lisa", "staff-darren"];
-
 
 async function get_culture_identity(req: NextRequest): Promise<Response> {
 
@@ -5739,6 +6602,23 @@ const data_protection_DEMO_BREACHES: DataBreach[] = [
 ];
 const data_protection_DEMO_CONSENT_RECORDS: ConsentRecord[] = [
   // Alex - 5 types covering photography, data_sharing, medical_info, therapeutic_records, education_records
+  { id: "consent-alex-1", childId: "child-alex", childName: "Alex", consentType: "photography", status: "given", obtainedDate: "2026-01-10", reviewDate: "2027-01-10", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  { id: "consent-alex-2", childId: "child-alex", childName: "Alex", consentType: "data_sharing", status: "given", obtainedDate: "2026-01-10", reviewDate: "2027-01-10", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  { id: "consent-alex-3", childId: "child-alex", childName: "Alex", consentType: "medical_info", status: "given", obtainedDate: "2026-01-10", reviewDate: "2027-01-10", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  { id: "consent-alex-4", childId: "child-alex", childName: "Alex", consentType: "therapeutic_records", status: "given", obtainedDate: "2026-01-10", reviewDate: "2027-01-10", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  { id: "consent-alex-5", childId: "child-alex", childName: "Alex", consentType: "education_records", status: "given", obtainedDate: "2026-01-10", reviewDate: "2027-01-10", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  // Jordan - 5 types
+  { id: "consent-jordan-1", childId: "child-jordan", childName: "Jordan", consentType: "photography", status: "given", obtainedDate: "2026-02-01", reviewDate: "2027-02-01", obtainedFrom: "Parent", ageAppropriateExplained: true },
+  { id: "consent-jordan-2", childId: "child-jordan", childName: "Jordan", consentType: "data_sharing", status: "given", obtainedDate: "2026-02-01", reviewDate: "2027-02-01", obtainedFrom: "Parent", ageAppropriateExplained: true },
+  { id: "consent-jordan-3", childId: "child-jordan", childName: "Jordan", consentType: "medical_info", status: "given", obtainedDate: "2026-02-01", reviewDate: "2027-02-01", obtainedFrom: "Parent", ageAppropriateExplained: true },
+  { id: "consent-jordan-4", childId: "child-jordan", childName: "Jordan", consentType: "therapeutic_records", status: "given", obtainedDate: "2026-02-01", reviewDate: "2027-02-01", obtainedFrom: "Parent", ageAppropriateExplained: true },
+  { id: "consent-jordan-5", childId: "child-jordan", childName: "Jordan", consentType: "education_records", status: "given", obtainedDate: "2026-02-01", reviewDate: "2027-02-01", obtainedFrom: "Parent", ageAppropriateExplained: true },
+  // Morgan - 5 types
+  { id: "consent-morgan-1", childId: "child-morgan", childName: "Morgan", consentType: "photography", status: "given", obtainedDate: "2026-01-20", reviewDate: "2027-01-20", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  { id: "consent-morgan-2", childId: "child-morgan", childName: "Morgan", consentType: "data_sharing", status: "given", obtainedDate: "2026-01-20", reviewDate: "2027-01-20", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  { id: "consent-morgan-3", childId: "child-morgan", childName: "Morgan", consentType: "medical_info", status: "given", obtainedDate: "2026-01-20", reviewDate: "2027-01-20", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  { id: "consent-morgan-4", childId: "child-morgan", childName: "Morgan", consentType: "therapeutic_records", status: "given", obtainedDate: "2026-01-20", reviewDate: "2027-01-20", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
+  { id: "consent-morgan-5", childId: "child-morgan", childName: "Morgan", consentType: "education_records", status: "given", obtainedDate: "2026-01-20", reviewDate: "2027-01-20", obtainedFrom: "Social Worker", ageAppropriateExplained: true },
 ];
 const data_protection_DEMO_SAR_REQUESTS: SubjectAccessRequest[] = [
   {
@@ -5764,8 +6644,8 @@ const data_protection_DEMO_GOVERNANCE: DataGovernance[] = [
     dataProcessingRegisterMaintained: true,
     thirdPartyAgreementsReviewed: true,
   },
-
 ];
+
 async function get_data_protection(req: NextRequest): Promise<Response> {
 
   const result = generateDataProtectionIntelligence(
@@ -5928,9 +6808,53 @@ const dental_health_monitoring_DEMO_APPOINTMENTS: DentalAppointment[] = [
     nextAppointmentBooked: true,
     consentObtained: true,
   },
+  {
+    id: "da-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    appointmentDate: "2026-04-10",
+    appointmentType: "routine_checkup",
+    dentistName: "Dr Patel",
+    outcome: "attended",
+    treatmentNeeded: true,
+    treatmentStatus: "in_progress",
+    nextAppointmentBooked: true,
+    consentObtained: true,
+  },
+  {
+    id: "da-3",
+    childId: "child-jordan",
+    childName: "Jordan",
+    appointmentDate: "2026-05-08",
+    appointmentType: "orthodontic",
+    dentistName: "Dr Rahman",
+    outcome: "attended",
+    treatmentNeeded: true,
+    treatmentStatus: "in_progress",
+    nextAppointmentBooked: true,
+    consentObtained: true,
+  },
+  {
+    id: "da-4",
+    childId: "child-morgan",
+    childName: "Morgan",
+    appointmentDate: "2026-04-22",
+    appointmentType: "routine_checkup",
+    dentistName: "Dr Patel",
+    outcome: "attended",
+    treatmentNeeded: true,
+    treatmentStatus: "completed",
+    nextAppointmentBooked: true,
+    consentObtained: true,
+  },
 ];
 const dental_health_monitoring_DEMO_HYGIENE_RECORDS: OralHygieneRecord[] = [
   { id: "oh-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", brushingFrequency: "twice_daily", mouthwashUsed: true, dietaryAdviceGiven: true, overallRating: "good" },
+  { id: "oh-2", childId: "child-alex", childName: "Alex", recordDate: "2026-05-01", brushingFrequency: "twice_daily", mouthwashUsed: true, dietaryAdviceGiven: true, overallRating: "good" },
+  { id: "oh-3", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-01", brushingFrequency: "twice_daily", mouthwashUsed: true, dietaryAdviceGiven: true, overallRating: "good" },
+  { id: "oh-4", childId: "child-jordan", childName: "Jordan", recordDate: "2026-05-01", brushingFrequency: "twice_daily", mouthwashUsed: true, dietaryAdviceGiven: true, overallRating: "good" },
+  { id: "oh-5", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-01", brushingFrequency: "twice_daily", mouthwashUsed: true, dietaryAdviceGiven: true, overallRating: "excellent" },
+  { id: "oh-6", childId: "child-morgan", childName: "Morgan", recordDate: "2026-05-01", brushingFrequency: "twice_daily", mouthwashUsed: true, dietaryAdviceGiven: true, overallRating: "excellent" },
 ];
 const dental_health_monitoring_DEMO_TREATMENT_PLANS: DentalTreatmentPlan[] = [
   {
@@ -5949,8 +6873,11 @@ const dental_health_monitoring_DEMO_TREATMENT_PLANS: DentalTreatmentPlan[] = [
 ];
 const dental_health_monitoring_DEMO_STAFF_TRAINING: StaffDentalTraining[] = [
   { id: "sdt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", dentalHealthAwareness: true, oralHygieneSupport: true, appointmentManagement: true, consentProcessTrained: true, emergencyDentalKnowledge: true },
-
+  { id: "sdt-2", staffId: "staff-tom", staffName: "Tom Richards", dentalHealthAwareness: true, oralHygieneSupport: true, appointmentManagement: true, consentProcessTrained: true, emergencyDentalKnowledge: true },
+  { id: "sdt-3", staffId: "staff-lisa", staffName: "Lisa Williams", dentalHealthAwareness: true, oralHygieneSupport: true, appointmentManagement: true, consentProcessTrained: true, emergencyDentalKnowledge: true },
+  { id: "sdt-4", staffId: "staff-darren", staffName: "Darren Laville", dentalHealthAwareness: true, oralHygieneSupport: true, appointmentManagement: true, consentProcessTrained: true, emergencyDentalKnowledge: true },
 ];
+
 async function get_dental_health_monitoring(req: NextRequest): Promise<Response> {
 
   const result = generateDentalHealthMonitoringIntelligence(
@@ -6056,6 +6983,38 @@ const deprivation_of_liberty_DEMO_RESTRICTIONS: RestrictionRecord[] = [
     leastRestrictiveOptionConsidered: true,
     riskAssessmentLinked: true,
   },
+  {
+    id: "rest-morgan-02",
+    childId: "child-morgan",
+    childName: "Morgan",
+    restrictionType: "locked_doors",
+    startDate: "2026-02-01",
+    isActive: true,
+    authorisationStatus: "court_authorised",
+    authorisedBy: "Family Court — Judge Thompson",
+    authorisationDate: "2026-01-28",
+    authorisationExpiryDate: "2026-07-28",
+    proportionality: "proportionate",
+    bestInterestsAssessmentCompleted: true,
+    leastRestrictiveOptionConsidered: true,
+    riskAssessmentLinked: true,
+  },
+  {
+    id: "rest-alex-01",
+    childId: "child-alex",
+    childName: "Alex",
+    restrictionType: "technology_monitoring",
+    startDate: "2026-03-01",
+    isActive: true,
+    authorisationStatus: "local_authority_authorised",
+    authorisedBy: "Placing Authority Social Worker",
+    authorisationDate: "2026-02-28",
+    authorisationExpiryDate: "2026-08-28",
+    proportionality: "proportionate",
+    bestInterestsAssessmentCompleted: true,
+    leastRestrictiveOptionConsidered: true,
+    riskAssessmentLinked: true,
+  },
 ];
 const deprivation_of_liberty_DEMO_REVIEWS: DoLSReview[] = [
   {
@@ -6072,9 +7031,49 @@ const deprivation_of_liberty_DEMO_REVIEWS: DoLSReview[] = [
     nextReviewDue: "2026-06-15",
     lessRestrictiveAlternativesConsidered: true,
   },
+  {
+    id: "rev-morgan-02",
+    restrictionId: "rest-morgan-02",
+    childId: "child-morgan",
+    reviewDate: "2026-03-15",
+    reviewedBy: "Darren Laville",
+    outcome: "modified",
+    childViewStatus: "views_obtained",
+    familyConsulted: true,
+    independentPersonInvolved: true,
+    proportionalityReassessed: true,
+    nextReviewDue: "2026-06-15",
+    lessRestrictiveAlternativesConsidered: true,
+  },
+  {
+    id: "rev-alex-01",
+    restrictionId: "rest-alex-01",
+    childId: "child-alex",
+    reviewDate: "2026-04-01",
+    reviewedBy: "Sarah Johnson",
+    outcome: "continued",
+    childViewStatus: "views_obtained",
+    familyConsulted: true,
+    independentPersonInvolved: false,
+    proportionalityReassessed: true,
+    nextReviewDue: "2026-07-01",
+    lessRestrictiveAlternativesConsidered: true,
+  },
 ];
 const deprivation_of_liberty_DEMO_SAFEGUARDS: ChildRightsSafeguard[] = [
   // Morgan — full safeguard suite
+  { id: "sg-m01", childId: "child-morgan", restrictionId: "rest-morgan-01", safeguardType: "advocacy", inPlace: true, arrangedDate: "2026-02-01", providerName: "NYAS" },
+  { id: "sg-m02", childId: "child-morgan", restrictionId: "rest-morgan-01", safeguardType: "legal_representation", inPlace: true, arrangedDate: "2026-01-25", providerName: "Howard & Partners Solicitors" },
+  { id: "sg-m03", childId: "child-morgan", restrictionId: "rest-morgan-01", safeguardType: "rights_information_given", inPlace: true, arrangedDate: "2026-02-01" },
+  { id: "sg-m04", childId: "child-morgan", restrictionId: "rest-morgan-01", safeguardType: "family_notification", inPlace: true, arrangedDate: "2026-01-28" },
+  { id: "sg-m05", childId: "child-morgan", restrictionId: "rest-morgan-01", safeguardType: "ofsted_notification", inPlace: true, arrangedDate: "2026-01-29" },
+  { id: "sg-m06", childId: "child-morgan", restrictionId: "rest-morgan-01", safeguardType: "independent_reviewer", inPlace: true, arrangedDate: "2026-02-05", providerName: "IRO — Jane Carter" },
+  { id: "sg-m07", childId: "child-morgan", restrictionId: "rest-morgan-01", safeguardType: "complaints_process_explained", inPlace: true, arrangedDate: "2026-02-01" },
+  // Alex — core safeguards
+  { id: "sg-a01", childId: "child-alex", restrictionId: "rest-alex-01", safeguardType: "advocacy", inPlace: true, arrangedDate: "2026-03-01", providerName: "NYAS" },
+  { id: "sg-a02", childId: "child-alex", restrictionId: "rest-alex-01", safeguardType: "rights_information_given", inPlace: true, arrangedDate: "2026-03-01" },
+  { id: "sg-a03", childId: "child-alex", restrictionId: "rest-alex-01", safeguardType: "family_notification", inPlace: true, arrangedDate: "2026-03-01" },
+  { id: "sg-a04", childId: "child-alex", restrictionId: "rest-alex-01", safeguardType: "ofsted_notification", inPlace: true, arrangedDate: "2026-03-02" },
 ];
 const deprivation_of_liberty_DEMO_LEGAL: LegalCompliance[] = [
   {
@@ -6089,8 +7088,19 @@ const deprivation_of_liberty_DEMO_LEGAL: LegalCompliance[] = [
     cafeassInvolved: true,
     lastLegalReviewDate: "2026-03-15",
   },
-
+  {
+    id: "leg-alex",
+    childId: "child-alex",
+    courtOrderInPlace: false,
+    s25ApplicationMade: false,
+    s25Outcome: "not_applicable",
+    localAuthorityNotified: true,
+    ofstedNotified: true,
+    cafeassInvolved: false,
+    lastLegalReviewDate: "2026-04-01",
+  },
 ];
+
 async function get_deprivation_of_liberty(req: NextRequest): Promise<Response> {
 
   const result = generateDeprivationOfLibertyIntelligence(
@@ -6205,6 +7215,13 @@ async function post_deprivation_of_liberty(req: NextRequest): Promise<Response> 
 // ─── digital-literacy-development ──────────────────────────────────────
 const digital_literacy_development_DEMO_SESSIONS: DigitalSession[] = [
   { id: "ds-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-01", sessionType: "online_safety", competencyLevel: "advanced", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
+  { id: "ds-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-08", sessionType: "coding_skills", competencyLevel: "proficient", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
+  { id: "ds-3", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-15", sessionType: "digital_creativity", competencyLevel: "advanced", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
+  { id: "ds-4", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-01", sessionType: "research_skills", competencyLevel: "advanced", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
+  { id: "ds-5", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-08", sessionType: "social_media_awareness", competencyLevel: "proficient", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
+  { id: "ds-6", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-15", sessionType: "cyberbullying_education", competencyLevel: "advanced", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
+  { id: "ds-7", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-01", sessionType: "privacy_management", competencyLevel: "advanced", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
+  { id: "ds-8", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-08", sessionType: "digital_communication", competencyLevel: "proficient", onlineSafetyDemonstrated: true, ageAppropriateContent: true, supervisedAccess: true, documentedInPlan: true, staffSupported: true, progressRecorded: true },
 ];
 const digital_literacy_development_DEMO_POLICY: DigitalPolicy = {
   id: "dp-1",
@@ -6218,8 +7235,11 @@ const digital_literacy_development_DEMO_POLICY: DigitalPolicy = {
 };
 const digital_literacy_development_DEMO_TRAINING: StaffDigitalTraining[] = [
   { id: "dt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", onlineSafety: true, digitalLiteracy: true, socialMediaAwareness: true, cyberbullyingResponse: true, privacyProtection: true, monitoringSkills: true },
-
+  { id: "dt-2", staffId: "staff-tom", staffName: "Tom Richards", onlineSafety: true, digitalLiteracy: true, socialMediaAwareness: true, cyberbullyingResponse: true, privacyProtection: true, monitoringSkills: true },
+  { id: "dt-3", staffId: "staff-lisa", staffName: "Lisa Williams", onlineSafety: true, digitalLiteracy: true, socialMediaAwareness: true, cyberbullyingResponse: true, privacyProtection: true, monitoringSkills: true },
+  { id: "dt-4", staffId: "staff-darren", staffName: "Darren Laville", onlineSafety: true, digitalLiteracy: true, socialMediaAwareness: true, cyberbullyingResponse: true, privacyProtection: true, monitoringSkills: true },
 ];
+
 async function get_digital_literacy_development(req: NextRequest): Promise<Response> {
 
   const result = generateDigitalLiteracyDevelopmentIntelligence(
@@ -6265,7 +7285,7 @@ async function post_digital_literacy_development(req: NextRequest): Promise<Resp
 
 // ─── digital-literacy ──────────────────────────────────────────────────
 const digital_literacy_DEMO_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-const DEMO_CHILD_NAMES: Record<string, string> = {
+const digital_literacy_DEMO_CHILD_NAMES: Record<string, string> = {
   "child-alex": "Alex",
   "child-jordan": "Jordan",
   "child-morgan": "Morgan",
@@ -6297,6 +7317,56 @@ const digital_literacy_DEMO_ASSESSMENTS: DigitalSkillAssessment[] = [
     ],
     reviewDate: "2026-08-15",
   },
+  {
+    id: "dsa-jordan",
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2026-03-01",
+    assessedBy: "Tom Richards",
+    skills: [
+      { category: "online_safety_awareness", level: "competent" },
+      { category: "communication", level: "developing" },
+      { category: "content_creation", level: "developing" },
+      { category: "information_literacy", level: "developing" },
+      { category: "coding", level: "beginner" },
+      { category: "productivity_tools", level: "developing" },
+      { category: "social_media_literacy", level: "competent" },
+      { category: "digital_wellbeing", level: "competent" },
+      { category: "privacy_management", level: "developing" },
+      { category: "critical_thinking", level: "developing" },
+    ],
+    overallLevel: "developing",
+    developmentGoals: [
+      "Learn basic coding with Scratch",
+      "Improve information literacy for homework research",
+    ],
+    reviewDate: "2026-09-01",
+  },
+  {
+    id: "dsa-morgan",
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2026-01-20",
+    assessedBy: "Lisa Williams",
+    skills: [
+      { category: "online_safety_awareness", level: "proficient" },
+      { category: "communication", level: "proficient" },
+      { category: "content_creation", level: "competent" },
+      { category: "information_literacy", level: "proficient" },
+      { category: "coding", level: "competent" },
+      { category: "productivity_tools", level: "proficient" },
+      { category: "social_media_literacy", level: "competent" },
+      { category: "digital_wellbeing", level: "proficient" },
+      { category: "privacy_management", level: "competent" },
+      { category: "critical_thinking", level: "proficient" },
+    ],
+    overallLevel: "proficient",
+    developmentGoals: [
+      "Develop advanced spreadsheet skills for GCSE coursework",
+      "Create digital portfolio for college applications",
+    ],
+    reviewDate: "2026-07-20",
+  },
 ];
 const digital_literacy_DEMO_DEVICE_ACCESS: DeviceAccessRecord[] = [
   {
@@ -6311,14 +7381,128 @@ const digital_literacy_DEMO_DEVICE_ACCESS: DeviceAccessRecord[] = [
     restrictionsInPlace: ["Content filtering", "Time limits 3h/day"],
     ageAppropriate: true,
   },
+  {
+    id: "da-alex-2",
+    childId: "child-alex",
+    childName: "Alex",
+    deviceType: "smartphone",
+    accessLevel: "independent_with_checks",
+    agreementSigned: true,
+    agreementDate: "2026-01-10",
+    reviewDate: "2026-07-10",
+    restrictionsInPlace: ["App restrictions", "Location sharing off"],
+    ageAppropriate: true,
+  },
+  {
+    id: "da-alex-3",
+    childId: "child-alex",
+    childName: "Alex",
+    deviceType: "gaming_console",
+    accessLevel: "monitored",
+    agreementSigned: true,
+    agreementDate: "2026-01-10",
+    reviewDate: "2026-07-10",
+    restrictionsInPlace: ["Communal area only", "No online chat with strangers"],
+    ageAppropriate: true,
+  },
+  {
+    id: "da-jordan-1",
+    childId: "child-jordan",
+    childName: "Jordan",
+    deviceType: "tablet",
+    accessLevel: "supervised",
+    agreementSigned: true,
+    agreementDate: "2026-02-01",
+    reviewDate: "2026-08-01",
+    restrictionsInPlace: ["Content filtering", "Parental controls active"],
+    ageAppropriate: true,
+  },
+  {
+    id: "da-jordan-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    deviceType: "laptop",
+    accessLevel: "supervised",
+    agreementSigned: true,
+    agreementDate: "2026-02-01",
+    reviewDate: "2026-08-01",
+    restrictionsInPlace: ["Content filtering", "Supervised use only for homework"],
+    ageAppropriate: true,
+  },
+  {
+    id: "da-morgan-1",
+    childId: "child-morgan",
+    childName: "Morgan",
+    deviceType: "laptop",
+    accessLevel: "independent_with_checks",
+    agreementSigned: true,
+    agreementDate: "2026-01-05",
+    reviewDate: "2026-07-05",
+    restrictionsInPlace: ["Weekly check-in on usage"],
+    ageAppropriate: true,
+  },
+  {
+    id: "da-morgan-2",
+    childId: "child-morgan",
+    childName: "Morgan",
+    deviceType: "smartphone",
+    accessLevel: "independent_with_checks",
+    agreementSigned: true,
+    agreementDate: "2026-01-05",
+    reviewDate: "2026-07-05",
+    restrictionsInPlace: ["Monthly review of apps and usage"],
+    ageAppropriate: true,
+  },
+  {
+    id: "da-morgan-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    deviceType: "desktop",
+    accessLevel: "fully_independent",
+    agreementSigned: true,
+    agreementDate: "2026-01-05",
+    reviewDate: "2026-07-05",
+    restrictionsInPlace: [],
+    ageAppropriate: true,
+  },
 ];
 const digital_literacy_DEMO_LEARNING: OnlineLearningRecord[] = [
   { id: "ol-1", childId: "child-alex", childName: "Alex", date: "2026-01-20", platform: "Code.org", activityType: "educational", durationMinutes: 45, supervised: false, outcomePositive: true, notes: "Completed Hour of Code challenge" },
+  { id: "ol-2", childId: "child-alex", childName: "Alex", date: "2026-02-05", platform: "Scratch", activityType: "creative", durationMinutes: 60, supervised: false, outcomePositive: true, notes: "Built animation project — shared with Code Club" },
+  { id: "ol-3", childId: "child-alex", childName: "Alex", date: "2026-02-20", platform: "BBC Bitesize", activityType: "educational", durationMinutes: 30, supervised: true, outcomePositive: true },
+  { id: "ol-4", childId: "child-alex", childName: "Alex", date: "2026-03-10", platform: "Python IDLE", activityType: "educational", durationMinutes: 50, supervised: false, outcomePositive: true, notes: "Created first Python text-based game" },
+  { id: "ol-5", childId: "child-alex", childName: "Alex", date: "2026-04-01", platform: "Google Scholar", activityType: "research", durationMinutes: 25, supervised: true, outcomePositive: true },
+  { id: "ol-6", childId: "child-alex", childName: "Alex", date: "2026-04-15", platform: "National Careers Service", activityType: "career_exploration", durationMinutes: 30, supervised: true, outcomePositive: true, notes: "Explored software development careers" },
+  { id: "ol-7", childId: "child-jordan", childName: "Jordan", date: "2026-01-25", platform: "BBC Bitesize", activityType: "educational", durationMinutes: 40, supervised: true, outcomePositive: true },
+  { id: "ol-8", childId: "child-jordan", childName: "Jordan", date: "2026-02-10", platform: "Canva", activityType: "creative", durationMinutes: 35, supervised: true, outcomePositive: true, notes: "Designed birthday card for friend" },
+  { id: "ol-9", childId: "child-jordan", childName: "Jordan", date: "2026-03-05", platform: "YouTube Learning", activityType: "educational", durationMinutes: 20, supervised: true, outcomePositive: true },
+  { id: "ol-10", childId: "child-jordan", childName: "Jordan", date: "2026-04-10", platform: "Teams", activityType: "social", durationMinutes: 30, supervised: false, outcomePositive: true, notes: "Video call with social worker" },
+  { id: "ol-11", childId: "child-jordan", childName: "Jordan", date: "2026-05-01", platform: "Google Docs", activityType: "educational", durationMinutes: 45, supervised: true, outcomePositive: false, notes: "Struggled with formatting — needs follow-up support" },
+  { id: "ol-12", childId: "child-morgan", childName: "Morgan", date: "2026-01-15", platform: "Google Classroom", activityType: "educational", durationMinutes: 60, supervised: false, outcomePositive: true },
+  { id: "ol-13", childId: "child-morgan", childName: "Morgan", date: "2026-01-28", platform: "Khan Academy", activityType: "educational", durationMinutes: 45, supervised: false, outcomePositive: true, notes: "GCSE maths revision — completed unit on algebra" },
+  { id: "ol-14", childId: "child-morgan", childName: "Morgan", date: "2026-02-14", platform: "JSTOR", activityType: "research", durationMinutes: 40, supervised: false, outcomePositive: true },
+  { id: "ol-15", childId: "child-morgan", childName: "Morgan", date: "2026-03-01", platform: "UCAS", activityType: "career_exploration", durationMinutes: 50, supervised: true, outcomePositive: true, notes: "Explored sixth-form college courses" },
+  { id: "ol-16", childId: "child-morgan", childName: "Morgan", date: "2026-03-20", platform: "Google Slides", activityType: "creative", durationMinutes: 55, supervised: false, outcomePositive: true, notes: "Created science presentation for school" },
+  { id: "ol-17", childId: "child-morgan", childName: "Morgan", date: "2026-04-05", platform: "BBC Bitesize", activityType: "educational", durationMinutes: 30, supervised: false, outcomePositive: true },
+  { id: "ol-18", childId: "child-morgan", childName: "Morgan", date: "2026-04-20", platform: "Teams", activityType: "social", durationMinutes: 25, supervised: false, outcomePositive: true, notes: "Peer study group for exam prep" },
+  { id: "ol-19", childId: "child-morgan", childName: "Morgan", date: "2026-05-10", platform: "LinkedIn Learning", activityType: "career_exploration", durationMinutes: 40, supervised: false, outcomePositive: true },
 ];
 const digital_literacy_DEMO_CITIZENSHIP: DigitalCitizenshipRecord[] = [
   { id: "dc-1", childId: "child-jordan", childName: "Jordan", date: "2026-01-18", area: "kindness_online", demonstratedPositively: true, context: "Sent supportive messages to friend going through difficult time", staffWitnessedBy: "Tom Richards" },
-
+  { id: "dc-2", childId: "child-jordan", childName: "Jordan", date: "2026-02-05", area: "reporting_concerns", demonstratedPositively: true, context: "Reported suspicious message from unknown account to staff immediately", staffWitnessedBy: "Sarah Johnson" },
+  { id: "dc-3", childId: "child-jordan", childName: "Jordan", date: "2026-02-20", area: "balanced_usage", demonstratedPositively: true, context: "Voluntarily put phone away during family activity evening", staffWitnessedBy: "Lisa Williams" },
+  { id: "dc-4", childId: "child-jordan", childName: "Jordan", date: "2026-03-10", area: "respecting_privacy", demonstratedPositively: true, context: "Asked permission before sharing group photo online", staffWitnessedBy: "Tom Richards" },
+  { id: "dc-5", childId: "child-jordan", childName: "Jordan", date: "2026-04-01", area: "critical_evaluation", demonstratedPositively: true, context: "Questioned misleading news article and fact-checked before sharing", staffWitnessedBy: "Sarah Johnson" },
+  { id: "dc-6", childId: "child-alex", childName: "Alex", date: "2026-01-25", area: "digital_footprint", demonstratedPositively: true, context: "Reviewed and cleaned up old social media posts proactively", staffWitnessedBy: "Sarah Johnson" },
+  { id: "dc-7", childId: "child-alex", childName: "Alex", date: "2026-02-15", area: "balanced_usage", demonstratedPositively: false, context: "Exceeded screen time agreement by 2 hours on gaming — discussed in key-work session", staffWitnessedBy: "Darren Laville" },
+  { id: "dc-8", childId: "child-alex", childName: "Alex", date: "2026-03-05", area: "kindness_online", demonstratedPositively: true, context: "Helped younger child learn to use video calling app to speak with family", staffWitnessedBy: "Tom Richards" },
+  { id: "dc-9", childId: "child-alex", childName: "Alex", date: "2026-04-10", area: "critical_evaluation", demonstratedPositively: true, context: "Identified phishing email and reported it to staff", staffWitnessedBy: "Lisa Williams" },
+  { id: "dc-10", childId: "child-morgan", childName: "Morgan", date: "2026-01-22", area: "digital_footprint", demonstratedPositively: true, context: "Set up professional LinkedIn profile for career exploration with staff support", staffWitnessedBy: "Lisa Williams" },
+  { id: "dc-11", childId: "child-morgan", childName: "Morgan", date: "2026-02-28", area: "respecting_privacy", demonstratedPositively: true, context: "Ensured all research sources were properly cited in coursework", staffWitnessedBy: "Darren Laville" },
+  { id: "dc-12", childId: "child-morgan", childName: "Morgan", date: "2026-03-15", area: "balanced_usage", demonstratedPositively: true, context: "Maintained agreed screen time limits during exam revision period", staffWitnessedBy: "Sarah Johnson" },
+  { id: "dc-13", childId: "child-morgan", childName: "Morgan", date: "2026-04-20", area: "reporting_concerns", demonstratedPositively: true, context: "Flagged inappropriate content on study forum to moderators", staffWitnessedBy: "Tom Richards" },
 ];
+
 async function get_digital_literacy(req: NextRequest): Promise<Response> {
 
   const result = generateDigitalLiteracyIntelligence(
@@ -6327,7 +7511,7 @@ async function get_digital_literacy(req: NextRequest): Promise<Response> {
     digital_literacy_DEMO_LEARNING,
     digital_literacy_DEMO_CITIZENSHIP,
     digital_literacy_DEMO_CHILD_IDS,
-    DEMO_CHILD_NAMES,
+    digital_literacy_DEMO_CHILD_NAMES,
     "oak-house",
     "2026-01-01",
     "2026-05-18",
@@ -6758,6 +7942,7 @@ const education_achievement_ALEX_ATTENDANCE: AttendanceRecord[] = [
     status: "present",
     schoolName: "Oakwood Academy",
   })),
+  { id: "att-alex-20", childId: "child-alex", childName: "Alex", date: "2026-03-20", status: "authorised_absence", schoolName: "Oakwood Academy" },
 ];
 const education_achievement_JORDAN_ATTENDANCE: AttendanceRecord[] = [
   ...Array.from({ length: 17 }, (_, i): AttendanceRecord => ({
@@ -6768,6 +7953,9 @@ const education_achievement_JORDAN_ATTENDANCE: AttendanceRecord[] = [
     status: "present",
     schoolName: "Bridge PRU",
   })),
+  { id: "att-jordan-18", childId: "child-jordan", childName: "Jordan", date: "2026-03-18", status: "unauthorised_absence", schoolName: "Bridge PRU" },
+  { id: "att-jordan-19", childId: "child-jordan", childName: "Jordan", date: "2026-03-19", status: "unauthorised_absence", schoolName: "Bridge PRU" },
+  { id: "att-jordan-20", childId: "child-jordan", childName: "Jordan", date: "2026-03-20", status: "excluded", schoolName: "Bridge PRU" },
 ];
 const education_achievement_MORGAN_ATTENDANCE: AttendanceRecord[] = [
   ...Array.from({ length: 23 }, (_, i): AttendanceRecord => ({
@@ -6778,23 +7966,39 @@ const education_achievement_MORGAN_ATTENDANCE: AttendanceRecord[] = [
     status: "present",
     schoolName: "Riverside High",
   })),
+  { id: "att-morgan-24", childId: "child-morgan", childName: "Morgan", date: "2026-03-24", status: "authorised_absence", schoolName: "Riverside High" },
+  { id: "att-morgan-25", childId: "child-morgan", childName: "Morgan", date: "2026-03-25", status: "authorised_absence", schoolName: "Riverside High" },
 ];
 const education_achievement_DEMO_ATTENDANCE: AttendanceRecord[] = [
-  ...ALEX_ATTENDANCE,
+  ...education_achievement_ALEX_ATTENDANCE,
+  ...education_achievement_JORDAN_ATTENDANCE,
+  ...education_achievement_MORGAN_ATTENDANCE,
 ];
 const education_achievement_DEMO_PEPS: PEPRecord[] = [
   { id: "pep-alex", childId: "child-alex", childName: "Alex", pepDate: "2026-02-15", status: "current", quality: "good", childViewsIncluded: true, targetsSMART: true, virtualSchoolInvolved: true, ppFundingUsed: true, reviewDate: "2026-05-15" },
+  { id: "pep-jordan", childId: "child-jordan", childName: "Jordan", pepDate: "2025-11-01", status: "overdue", quality: "requires_improvement", childViewsIncluded: false, targetsSMART: false, virtualSchoolInvolved: false, ppFundingUsed: false, reviewDate: "2026-02-01" },
+  { id: "pep-morgan", childId: "child-morgan", childName: "Morgan", pepDate: "2026-03-01", status: "current", quality: "outstanding", childViewsIncluded: true, targetsSMART: true, virtualSchoolInvolved: true, ppFundingUsed: true, reviewDate: "2026-06-01" },
 ];
 const education_achievement_DEMO_OUTCOMES: AcademicOutcome[] = [
   { id: "out-alex-eng", childId: "child-alex", childName: "Alex", subject: "English", progress: "expected", assessmentDate: "2026-03-01" },
+  { id: "out-alex-maths", childId: "child-alex", childName: "Alex", subject: "Maths", progress: "expected", assessmentDate: "2026-03-01" },
+  { id: "out-alex-sci", childId: "child-alex", childName: "Alex", subject: "Science", progress: "expected", assessmentDate: "2026-03-01" },
+  { id: "out-jordan-eng", childId: "child-jordan", childName: "Jordan", subject: "English", progress: "below_expected", assessmentDate: "2026-03-01" },
+  { id: "out-jordan-maths", childId: "child-jordan", childName: "Jordan", subject: "Maths", progress: "below_expected", assessmentDate: "2026-03-01" },
+  { id: "out-morgan-eng", childId: "child-morgan", childName: "Morgan", subject: "English", progress: "exceeding", assessmentDate: "2026-03-01" },
+  { id: "out-morgan-maths", childId: "child-morgan", childName: "Morgan", subject: "Maths", progress: "exceeding", assessmentDate: "2026-03-01" },
+  { id: "out-morgan-sci", childId: "child-morgan", childName: "Morgan", subject: "Science", progress: "expected", assessmentDate: "2026-03-01" },
+  { id: "out-morgan-hist", childId: "child-morgan", childName: "Morgan", subject: "History", progress: "expected", assessmentDate: "2026-03-01" },
 ];
 const education_achievement_DEMO_STABILITY: SchoolStability[] = [
   { id: "stab-alex", childId: "child-alex", childName: "Alex", schoolType: "mainstream", currentSchoolName: "Oakwood Academy", schoolChangesInYear: 0, daysOutOfEducation: 0 },
+  { id: "stab-jordan", childId: "child-jordan", childName: "Jordan", schoolType: "pupil_referral_unit", currentSchoolName: "Bridge PRU", schoolChangesInYear: 1, reasonForChange: "Moved from mainstream following exclusion", daysOutOfEducation: 5 },
+  { id: "stab-morgan", childId: "child-morgan", childName: "Morgan", schoolType: "mainstream", currentSchoolName: "Riverside High", schoolChangesInYear: 0, daysOutOfEducation: 0 },
 ];
 const education_achievement_DEMO_EXCLUSIONS: ExclusionRecord[] = [
   { id: "excl-jordan-1", childId: "child-jordan", childName: "Jordan", exclusionType: "fixed_term", durationDays: 3, reason: "Persistent disruptive behaviour", alternativeProvisionArranged: true, reintegrationPlanInPlace: true },
-
 ];
+
 async function get_education_achievement(req: NextRequest): Promise<Response> {
 
   const result = generateEducationAchievementIntelligence(
@@ -7123,30 +8327,29 @@ const education_outcomes_PERIOD_START = "2026-01-05";
 const education_outcomes_PERIOD_END = "2026-03-31";
 const education_outcomes_REFERENCE_DATE = "2026-04-01";
 const education_outcomes_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-const CHILD_NAMES_dup4: Record<string, string> = {
+const education_outcomes_CHILD_NAMES: Record<string, string> = {
   "child-alex": "Alex",
   "child-jordan": "Jordan",
   "child-morgan": "Morgan",
 };
 let education_outcomes__idSeq = 0;
-// [gen-fix-return] function education_outcomes_did(prefix: string): string { return `${prefix}-${++_idSeq}`; }
-
+function education_outcomes_did(prefix: string): string { return `${prefix}-${++education_outcomes__idSeq}`; }
 function education_outcomes_buildDemoIntelligence() {
   // Reset ID counter for deterministic output
-  _idSeq = 0;
+  education_outcomes__idSeq = 0;
 
   return generateEducationOutcomesIntelligence(
-    buildAttendance(),
-    buildExclusions(),
-    buildPEPs(),
-    buildSENDSupport(),
-    buildAchievements(),
-    CHILD_IDS,
-    CHILD_NAMES,
-    HOME_ID,
-    PERIOD_START,
-    PERIOD_END,
-    REFERENCE_DATE,
+    education_outcomes_buildAttendance(),
+    education_outcomes_buildExclusions(),
+    education_outcomes_buildPEPs(),
+    education_outcomes_buildSENDSupport(),
+    education_outcomes_buildAchievements(),
+    education_outcomes_CHILD_IDS,
+    education_outcomes_CHILD_NAMES,
+    education_outcomes_HOME_ID,
+    education_outcomes_PERIOD_START,
+    education_outcomes_PERIOD_END,
+    education_outcomes_REFERENCE_DATE,
   );
 }
 function education_outcomes_buildAttendance(): AttendanceRecord[] {
@@ -7154,7 +8357,7 @@ function education_outcomes_buildAttendance(): AttendanceRecord[] {
   const start = new Date("2026-01-05");
 
   // Alex — 14, good attendance (~93%), some lateness, 1 EOTAS
-  records.push(...generateChildAttendance("child-alex", "Alex", start, 60, (i) => {
+  records.push(...education_outcomes_generateChildAttendance("child-alex", "Alex", start, 60, (i) => {
     if (i === 10 || i === 11) return "excluded";
     if (i === 20 || i === 45) return "late";
     if (i === 30) return "authorised_absence";
@@ -7164,13 +8367,13 @@ function education_outcomes_buildAttendance(): AttendanceRecord[] {
   }));
 
   // Jordan — 13, excellent attendance (~99%)
-  records.push(...generateChildAttendance("child-jordan", "Jordan", start, 60, (i) => {
+  records.push(...education_outcomes_generateChildAttendance("child-jordan", "Jordan", start, 60, (i) => {
     if (i === 35) return "authorised_absence";
     return "present";
   }));
 
   // Morgan — 15, patchy attendance (~83%), more unauthorised
-  records.push(...generateChildAttendance("child-morgan", "Morgan", start, 60, (i) => {
+  records.push(...education_outcomes_generateChildAttendance("child-morgan", "Morgan", start, 60, (i) => {
     if (i % 7 === 0 && i > 0) return "unauthorised_absence";
     if (i === 15 || i === 16) return "authorised_absence";
     if (i === 25 || i === 50) return "late";
@@ -7186,14 +8389,31 @@ function education_outcomes_generateChildAttendance(
   targetDays: number,
   statusFn: (dayIndex: number) => AttendanceStatus,
 ): AttendanceRecord[] {
-  const education_outcomes_records: AttendanceRecord[] = [];
+  const records: AttendanceRecord[] = [];
   let dayOffset = 0;
-  let education_outcomes_schoolDay = 0;
-    const education_outcomes_d = new Date(start.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+  let schoolDay = 0;
+
+  while (schoolDay < targetDays) {
+    const d = new Date(start.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+    dayOffset++;
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
+
+    records.push({
+      id: education_outcomes_did("att"),
+      childId,
+      childName,
+      date: d.toISOString().slice(0, 10),
+      status: statusFn(schoolDay),
+    });
+    schoolDay++;
+  }
+
+  return records;
+}
 function education_outcomes_buildExclusions(): ExclusionRecord[] {
   return [
     {
-      id: did("exc"),
+      id: education_outcomes_did("exc"),
       childId: "child-alex",
       childName: "Alex",
       startDate: "2026-02-10",
@@ -7206,12 +8426,12 @@ function education_outcomes_buildExclusions(): ExclusionRecord[] {
       challengedByHome: true,
     },
     {
-      id: did("exc"),
+      id: education_outcomes_did("exc"),
       childId: "child-morgan",
       childName: "Morgan",
       startDate: "2026-01-20",
       exclusionType: "informal",
-      reason: "Sent home early — school did not formally record",
+      reason: "Sent home early — school education_outcomes_did not formally record",
       daysExcluded: 1,
       alternativeProvision: false,
       reintegrationMeeting: false,
@@ -7222,7 +8442,7 @@ function education_outcomes_buildExclusions(): ExclusionRecord[] {
 function education_outcomes_buildPEPs(): PEPRecord[] {
   return [
     {
-      id: did("pep"),
+      id: education_outcomes_did("pep"),
       childId: "child-alex",
       childName: "Alex",
       reviewDate: "2026-03-01",
@@ -7236,7 +8456,7 @@ function education_outcomes_buildPEPs(): PEPRecord[] {
       nextReviewDate: "2026-06-01",
     },
     {
-      id: did("pep"),
+      id: education_outcomes_did("pep"),
       childId: "child-jordan",
       childName: "Jordan",
       reviewDate: "2026-03-05",
@@ -7250,7 +8470,7 @@ function education_outcomes_buildPEPs(): PEPRecord[] {
       nextReviewDate: "2026-06-10",
     },
     {
-      id: did("pep"),
+      id: education_outcomes_did("pep"),
       childId: "child-morgan",
       childName: "Morgan",
       reviewDate: "2025-11-01",
@@ -7267,7 +8487,7 @@ function education_outcomes_buildPEPs(): PEPRecord[] {
 function education_outcomes_buildSENDSupport(): SENDSupportRecord[] {
   return [
     {
-      id: did("send"),
+      id: education_outcomes_did("send"),
       childId: "child-alex",
       childName: "Alex",
       sendCategory: "SEMH",
@@ -7279,7 +8499,7 @@ function education_outcomes_buildSENDSupport(): SENDSupportRecord[] {
       childView: "The sessions help me when I get stressed at school",
     },
     {
-      id: did("send"),
+      id: education_outcomes_did("send"),
       childId: "child-morgan",
       childName: "Morgan",
       sendCategory: "SpLD",
@@ -7289,10 +8509,10 @@ function education_outcomes_buildSENDSupport(): SENDSupportRecord[] {
       providerName: "Learning Support Service",
       hoursPerWeek: 3,
       effectivenessRating: "adequate",
-      childView: "It helps a bit but I wish we did more reading together",
+      childView: "It helps a bit but I wish we education_outcomes_did more reading together",
     },
     {
-      id: did("send"),
+      id: education_outcomes_did("send"),
       childId: "child-morgan",
       childName: "Morgan",
       sendCategory: "SpLD",
@@ -7309,19 +8529,19 @@ function education_outcomes_buildAchievements(): AchievementRecord[] {
   return [
     // Alex — 3 achievements
     {
-      id: did("ach"), childId: "child-alex", childName: "Alex",
+      id: education_outcomes_did("ach"), childId: "child-alex", childName: "Alex",
       date: "2026-02-15", achievementType: "academic",
       description: "Improved maths mock grade from D to C",
       recognisedBy: "Sarah Johnson", celebrated: true, evidenceRecorded: true,
     },
     {
-      id: did("ach"), childId: "child-alex", childName: "Alex",
+      id: education_outcomes_did("ach"), childId: "child-alex", childName: "Alex",
       date: "2026-03-01", achievementType: "personal",
       description: "Managed anger in a difficult peer situation without escalation",
       recognisedBy: "Tom Richards", celebrated: true, evidenceRecorded: true,
     },
     {
-      id: did("ach"), childId: "child-alex", childName: "Alex",
+      id: education_outcomes_did("ach"), childId: "child-alex", childName: "Alex",
       date: "2026-03-20", achievementType: "physical",
       description: "Completed Couch to 5K programme",
       recognisedBy: "Darren Laville", celebrated: true, evidenceRecorded: true,
@@ -7329,25 +8549,25 @@ function education_outcomes_buildAchievements(): AchievementRecord[] {
 
     // Jordan — 4 achievements
     {
-      id: did("ach"), childId: "child-jordan", childName: "Jordan",
+      id: education_outcomes_did("ach"), childId: "child-jordan", childName: "Jordan",
       date: "2026-01-20", achievementType: "academic",
       description: "Top marks in year-group science assessment",
       recognisedBy: "Lisa Williams", celebrated: true, evidenceRecorded: true,
     },
     {
-      id: did("ach"), childId: "child-jordan", childName: "Jordan",
+      id: education_outcomes_did("ach"), childId: "child-jordan", childName: "Jordan",
       date: "2026-02-14", achievementType: "social",
       description: "Volunteered at local food bank two weekends running",
       recognisedBy: "Sarah Johnson", celebrated: true, evidenceRecorded: true,
     },
     {
-      id: did("ach"), childId: "child-jordan", childName: "Jordan",
+      id: education_outcomes_did("ach"), childId: "child-jordan", childName: "Jordan",
       date: "2026-03-05", achievementType: "creative",
       description: "Art piece selected for school exhibition",
       recognisedBy: "Tom Richards", celebrated: true, evidenceRecorded: false,
     },
     {
-      id: did("ach"), childId: "child-jordan", childName: "Jordan",
+      id: education_outcomes_did("ach"), childId: "child-jordan", childName: "Jordan",
       date: "2026-03-15", achievementType: "life_skills",
       description: "Cooked a full Sunday roast independently for the house",
       recognisedBy: "Darren Laville", celebrated: true, evidenceRecorded: true,
@@ -7355,19 +8575,19 @@ function education_outcomes_buildAchievements(): AchievementRecord[] {
 
     // Morgan — 3 achievements
     {
-      id: did("ach"), childId: "child-morgan", childName: "Morgan",
+      id: education_outcomes_did("ach"), childId: "child-morgan", childName: "Morgan",
       date: "2026-01-30", achievementType: "vocational",
       description: "Successfully completed work experience placement at local garage",
       recognisedBy: "Sarah Johnson", celebrated: false, evidenceRecorded: true,
     },
     {
-      id: did("ach"), childId: "child-morgan", childName: "Morgan",
+      id: education_outcomes_did("ach"), childId: "child-morgan", childName: "Morgan",
       date: "2026-02-20", achievementType: "personal",
       description: "Attended all counselling sessions for the month",
       recognisedBy: "Lisa Williams", celebrated: false, evidenceRecorded: false,
     },
     {
-      id: did("ach"), childId: "child-morgan", childName: "Morgan",
+      id: education_outcomes_did("ach"), childId: "child-morgan", childName: "Morgan",
       date: "2026-03-10", achievementType: "physical",
       description: "Joined the school rugby team and attended first training",
       recognisedBy: "Tom Richards", celebrated: true, evidenceRecorded: true,
@@ -7420,6 +8640,92 @@ async function post_education_outcomes(req: NextRequest): Promise<Response> {
 // ─── education ─────────────────────────────────────────────────────────
 const education_DEMO_RECORDS: EducationRecord[] = [
   // Alex — mainstream school, strong performance
+  {
+    id: "rec-001",
+    childId: "child-alex",
+    childName: "Alex",
+    termDate: "2026-04-01",
+    placement: "mainstream_school",
+    attainment: "expected",
+    pepReviewedThisTerm: true,
+    attendanceAbove95: true,
+    pupilPremiumAllocated: true,
+    designatedTeacherEngaged: true,
+    exclusionThisTerm: false,
+    virtualSchoolInvolved: true,
+  },
+  {
+    id: "rec-002",
+    childId: "child-alex",
+    childName: "Alex",
+    termDate: "2026-01-15",
+    placement: "mainstream_school",
+    attainment: "expected",
+    pepReviewedThisTerm: true,
+    attendanceAbove95: true,
+    pupilPremiumAllocated: true,
+    designatedTeacherEngaged: true,
+    exclusionThisTerm: false,
+    virtualSchoolInvolved: true,
+  },
+  // Jordan — alternative provision, some concerns
+  {
+    id: "rec-003",
+    childId: "child-jordan",
+    childName: "Jordan",
+    termDate: "2026-04-01",
+    placement: "alternative_provision",
+    attainment: "developing",
+    pepReviewedThisTerm: true,
+    attendanceAbove95: false,
+    pupilPremiumAllocated: true,
+    designatedTeacherEngaged: true,
+    exclusionThisTerm: true,
+    virtualSchoolInvolved: true,
+  },
+  {
+    id: "rec-004",
+    childId: "child-jordan",
+    childName: "Jordan",
+    termDate: "2026-01-15",
+    placement: "alternative_provision",
+    attainment: "below_expected",
+    pepReviewedThisTerm: false,
+    attendanceAbove95: false,
+    pupilPremiumAllocated: true,
+    designatedTeacherEngaged: false,
+    exclusionThisTerm: true,
+    virtualSchoolInvolved: false,
+  },
+  // Morgan — special school, good engagement
+  {
+    id: "rec-005",
+    childId: "child-morgan",
+    childName: "Morgan",
+    termDate: "2026-04-01",
+    placement: "special_school",
+    attainment: "exceeding",
+    pepReviewedThisTerm: true,
+    attendanceAbove95: true,
+    pupilPremiumAllocated: true,
+    designatedTeacherEngaged: true,
+    exclusionThisTerm: false,
+    virtualSchoolInvolved: true,
+  },
+  {
+    id: "rec-006",
+    childId: "child-morgan",
+    childName: "Morgan",
+    termDate: "2026-01-15",
+    placement: "special_school",
+    attainment: "expected",
+    pepReviewedThisTerm: true,
+    attendanceAbove95: true,
+    pupilPremiumAllocated: true,
+    designatedTeacherEngaged: true,
+    exclusionThisTerm: false,
+    virtualSchoolInvolved: true,
+  },
 ];
 const education_DEMO_POLICY: EducationPolicy = {
   id: "pol-oak-001",
@@ -7443,8 +8749,41 @@ const education_DEMO_TRAINING: StaffEducationTraining[] = [
     virtualSchoolLiaison: true,
     educationAdvocacy: true,
   },
-
+  {
+    id: "tr-002",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    educationRegulations: true,
+    pepProcess: true,
+    attendanceSupport: true,
+    senAwareness: false,
+    virtualSchoolLiaison: false,
+    educationAdvocacy: false,
+  },
+  {
+    id: "tr-003",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    educationRegulations: true,
+    pepProcess: true,
+    attendanceSupport: true,
+    senAwareness: true,
+    virtualSchoolLiaison: true,
+    educationAdvocacy: true,
+  },
+  {
+    id: "tr-004",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    educationRegulations: true,
+    pepProcess: true,
+    attendanceSupport: true,
+    senAwareness: true,
+    virtualSchoolLiaison: true,
+    educationAdvocacy: true,
+  },
 ];
+
 async function get_education(_req: NextRequest): Promise<Response> {
 
   try {
@@ -8352,9 +9691,42 @@ async function get_environment(req: NextRequest): Promise<Response> {
 // ─── environmental-quality ─────────────────────────────────────────────
 const environmental_quality_DEMO_INSPECTIONS: EnvironmentalInspection[] = [
   { id: "insp-01", homeId: "oak-house", date: "2026-01-05", inspectedBy: "Darren Laville", area: "cleanliness", roomType: "kitchen", score: 8, issues: [], photographic: true },
+  { id: "insp-02", homeId: "oak-house", date: "2026-01-05", inspectedBy: "Darren Laville", area: "safety", roomType: "kitchen", score: 9, issues: [], photographic: true },
+  { id: "insp-03", homeId: "oak-house", date: "2026-01-05", inspectedBy: "Darren Laville", area: "maintenance", roomType: "kitchen", score: 7, issues: ["Extractor fan rattling"], photographic: true },
+  { id: "insp-04", homeId: "oak-house", date: "2026-01-06", inspectedBy: "Sarah Johnson", area: "cleanliness", roomType: "bedroom", score: 9, issues: [], photographic: true },
+  { id: "insp-05", homeId: "oak-house", date: "2026-01-06", inspectedBy: "Sarah Johnson", area: "personalisation", roomType: "bedroom", score: 9, issues: [], photographic: true },
+  { id: "insp-06", homeId: "oak-house", date: "2026-01-06", inspectedBy: "Sarah Johnson", area: "furniture_condition", roomType: "bedroom", score: 8, issues: [], photographic: true },
+  { id: "insp-07", homeId: "oak-house", date: "2026-01-07", inspectedBy: "Lisa Williams", area: "lighting", roomType: "lounge", score: 8, issues: [], photographic: false },
+  { id: "insp-08", homeId: "oak-house", date: "2026-01-07", inspectedBy: "Lisa Williams", area: "temperature", roomType: "lounge", score: 7, issues: ["Radiator thermostat not responding in corner area"], photographic: false },
+  { id: "insp-09", homeId: "oak-house", date: "2026-01-08", inspectedBy: "Tom Richards", area: "outdoor_space", roomType: "garden", score: 7, issues: ["Fence panel needs replacing on west boundary"], photographic: true },
+  { id: "insp-10", homeId: "oak-house", date: "2026-01-08", inspectedBy: "Tom Richards", area: "safety", roomType: "garden", score: 8, issues: [], photographic: true },
+  { id: "insp-11", homeId: "oak-house", date: "2026-01-10", inspectedBy: "Darren Laville", area: "cleanliness", roomType: "bathroom", score: 9, issues: [], photographic: true },
+  { id: "insp-12", homeId: "oak-house", date: "2026-01-10", inspectedBy: "Darren Laville", area: "ventilation", roomType: "bathroom", score: 8, issues: [], photographic: true },
+  { id: "insp-13", homeId: "oak-house", date: "2026-01-12", inspectedBy: "Sarah Johnson", area: "decoration", roomType: "lounge", score: 8, issues: [], photographic: true },
+  { id: "insp-14", homeId: "oak-house", date: "2026-01-12", inspectedBy: "Sarah Johnson", area: "storage", roomType: "bedroom", score: 7, issues: ["Additional shelving needed in Room 2"], photographic: false },
+  { id: "insp-15", homeId: "oak-house", date: "2026-01-14", inspectedBy: "Lisa Williams", area: "accessibility", roomType: "hallway", score: 9, issues: [], photographic: true },
+  { id: "insp-16", homeId: "oak-house", date: "2026-01-15", inspectedBy: "Tom Richards", area: "maintenance", roomType: "utility", score: 7, issues: ["Washing machine door seal degraded"], photographic: true },
+  { id: "insp-17", homeId: "oak-house", date: "2026-01-18", inspectedBy: "Darren Laville", area: "cleanliness", roomType: "dining_room", score: 9, issues: [], photographic: true },
+  { id: "insp-18", homeId: "oak-house", date: "2026-01-18", inspectedBy: "Darren Laville", area: "furniture_condition", roomType: "dining_room", score: 8, issues: [], photographic: true },
+  { id: "insp-19", homeId: "oak-house", date: "2026-01-20", inspectedBy: "Sarah Johnson", area: "personalisation", roomType: "quiet_room", score: 9, issues: [], photographic: true },
+  { id: "insp-20", homeId: "oak-house", date: "2026-01-22", inspectedBy: "Lisa Williams", area: "safety", roomType: "activity_room", score: 8, issues: [], photographic: true },
+  { id: "insp-21", homeId: "oak-house", date: "2026-01-25", inspectedBy: "Tom Richards", area: "lighting", roomType: "bedroom", score: 8, issues: [], photographic: false },
+  { id: "insp-22", homeId: "oak-house", date: "2026-01-27", inspectedBy: "Darren Laville", area: "temperature", roomType: "bedroom", score: 8, issues: [], photographic: false },
+  { id: "insp-23", homeId: "oak-house", date: "2026-01-28", inspectedBy: "Sarah Johnson", area: "decoration", roomType: "hallway", score: 7, issues: ["Noticeboard needs updating with current photos"], photographic: true },
+  { id: "insp-24", homeId: "oak-house", date: "2026-01-30", inspectedBy: "Lisa Williams", area: "ventilation", roomType: "kitchen", score: 7, issues: [], photographic: true },
 ];
 const environmental_quality_DEMO_MAINTENANCE: MaintenanceRequest[] = [
   { id: "maint-01", homeId: "oak-house", reportedDate: "2026-01-03", reportedBy: "Sarah Johnson", roomType: "kitchen", description: "Extractor fan rattling and not venting properly", priority: "routine", status: "completed", completedDate: "2026-01-06", daysToResolve: 3 },
+  { id: "maint-02", homeId: "oak-house", reportedDate: "2026-01-05", reportedBy: "Lisa Williams", roomType: "bathroom", description: "Shower head leaking when turned off", priority: "routine", status: "completed", completedDate: "2026-01-07", daysToResolve: 2 },
+  { id: "maint-03", homeId: "oak-house", reportedDate: "2026-01-08", reportedBy: "Tom Richards", roomType: "garden", description: "Fence panel damaged on west boundary — security risk", priority: "urgent", status: "completed", completedDate: "2026-01-10", daysToResolve: 2 },
+  { id: "maint-04", homeId: "oak-house", reportedDate: "2026-01-10", reportedBy: "Darren Laville", roomType: "lounge", description: "Radiator thermostat in corner not responding", priority: "routine", status: "completed", completedDate: "2026-01-14", daysToResolve: 4 },
+  { id: "maint-05", homeId: "oak-house", reportedDate: "2026-01-12", reportedBy: "Sarah Johnson", roomType: "bedroom", description: "Wardrobe door hinge loose in Room 2", priority: "routine", status: "completed", completedDate: "2026-01-13", daysToResolve: 1 },
+  { id: "maint-06", homeId: "oak-house", reportedDate: "2026-01-15", reportedBy: "Tom Richards", roomType: "utility", description: "Washing machine door seal degraded — water pooling on floor", priority: "urgent", status: "completed", completedDate: "2026-01-17", daysToResolve: 2 },
+  { id: "maint-07", homeId: "oak-house", reportedDate: "2026-01-18", reportedBy: "Lisa Williams", roomType: "hallway", description: "Light bulb blown in upstairs hallway", priority: "routine", status: "completed", completedDate: "2026-01-18", daysToResolve: 0 },
+  { id: "maint-08", homeId: "oak-house", reportedDate: "2026-01-20", reportedBy: "Darren Laville", roomType: "bedroom", description: "Shelving unit requested for Room 2", priority: "planned_improvement", status: "scheduled" },
+  { id: "maint-09", homeId: "oak-house", reportedDate: "2026-01-22", reportedBy: "Sarah Johnson", roomType: "dining_room", description: "Chair leg wobbly at dining table", priority: "routine", status: "completed", completedDate: "2026-01-23", daysToResolve: 1 },
+  { id: "maint-10", homeId: "oak-house", reportedDate: "2026-01-25", reportedBy: "Tom Richards", roomType: "garden", description: "Gate latch stiff and difficult for children to open", priority: "routine", status: "overdue" },
+  { id: "maint-11", homeId: "oak-house", reportedDate: "2026-01-28", reportedBy: "Lisa Williams", roomType: "hallway", description: "Noticeboard frame cracked — needs replacement", priority: "planned_improvement", status: "scheduled" },
 ];
 const environmental_quality_DEMO_PERSONALISATION: PersonalisationRecord[] = [
   {
@@ -8365,6 +9737,24 @@ const environmental_quality_DEMO_PERSONALISATION: PersonalisationRecord[] = [
     personalItems: true,
     culturalConsiderations: true,
     lastReviewDate: "2026-01-10",
+  },
+  {
+    childId: "child-jordan",
+    childName: "Jordan",
+    bedroomPersonalised: true,
+    choiceInDecor: true,
+    personalItems: true,
+    culturalConsiderations: true,
+    lastReviewDate: "2026-01-12",
+  },
+  {
+    childId: "child-morgan",
+    childName: "Morgan",
+    bedroomPersonalised: true,
+    choiceInDecor: true,
+    personalItems: true,
+    culturalConsiderations: true,
+    lastReviewDate: "2025-12-20",
   },
 ];
 const environmental_quality_DEMO_CHILD_VIEWS: ChildEnvironmentView[] = [
@@ -8378,8 +9768,28 @@ const environmental_quality_DEMO_CHILD_VIEWS: ChildEnvironmentView[] = [
     feelsSafe: true,
     suggestionsForImprovement: ["Would like a bigger desk for homework"],
   },
-
+  {
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-01-15",
+    overallSatisfaction: 9,
+    feelsHomely: true,
+    feelsPrivate: true,
+    feelsSafe: true,
+    suggestionsForImprovement: [],
+  },
+  {
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-01-15",
+    overallSatisfaction: 8,
+    feelsHomely: true,
+    feelsPrivate: true,
+    feelsSafe: true,
+    suggestionsForImprovement: ["More fairy lights in the lounge would be nice"],
+  },
 ];
+
 async function get_environmental_quality(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -8465,17 +9875,59 @@ async function post_environmental_quality(request: NextRequest): Promise<Respons
 // ─── environmental-risk-compliance ─────────────────────────────────────
 const environmental_risk_compliance_DEMO_ASSESSMENTS: RiskAssessment[] = [
   // Ligature points — bathrooms
+  { id: "ra-1", areaType: "bathroom", areaName: "Main Bathroom", assessmentDate: "2026-04-01", assessedBy: "Sarah Johnson", hazardType: "ligature_point", riskLevel: "high", mitigationInPlace: true, mitigationDescription: "Anti-ligature fittings installed on all fixtures", nextReviewDate: "2026-07-01", reviewCurrent: true },
+  { id: "ra-2", areaType: "bathroom", areaName: "Main Bathroom", assessmentDate: "2026-04-01", assessedBy: "Sarah Johnson", hazardType: "water_temperature", riskLevel: "medium", mitigationInPlace: true, mitigationDescription: "TMV valves fitted, max 44C at outlet", nextReviewDate: "2026-07-01", reviewCurrent: true },
+  // Water temp — kitchen + bathroom
+  { id: "ra-3", areaType: "kitchen", areaName: "Kitchen", assessmentDate: "2026-04-05", assessedBy: "Tom Richards", hazardType: "water_temperature", riskLevel: "medium", mitigationInPlace: true, mitigationDescription: "TMV valves fitted, regular temperature checks", nextReviewDate: "2026-07-05", reviewCurrent: true },
+  // COSHH — utility + kitchen
+  { id: "ra-4", areaType: "utility", areaName: "Utility Room", assessmentDate: "2026-03-20", assessedBy: "Lisa Williams", hazardType: "coshh", riskLevel: "high", mitigationInPlace: true, mitigationDescription: "Locked COSHH cabinet, inventory maintained", nextReviewDate: "2026-06-20", reviewCurrent: true },
+  { id: "ra-5", areaType: "kitchen", areaName: "Kitchen", assessmentDate: "2026-03-20", assessedBy: "Lisa Williams", hazardType: "coshh", riskLevel: "medium", mitigationInPlace: true, mitigationDescription: "Cleaning products stored in locked cupboard", nextReviewDate: "2026-06-20", reviewCurrent: true },
+  // Window restrictors — all bedrooms
+  { id: "ra-6", areaType: "bedroom", areaName: "Alex's Bedroom", assessmentDate: "2026-04-10", assessedBy: "Darren Laville", hazardType: "window_restrictor", riskLevel: "high", mitigationInPlace: true, mitigationDescription: "Window restrictors fitted, max 100mm opening", nextReviewDate: "2026-07-10", reviewCurrent: true },
+  { id: "ra-7", areaType: "bedroom", areaName: "Jordan's Bedroom", assessmentDate: "2026-04-10", assessedBy: "Darren Laville", hazardType: "window_restrictor", riskLevel: "high", mitigationInPlace: true, mitigationDescription: "Window restrictors fitted, max 100mm opening", nextReviewDate: "2026-07-10", reviewCurrent: true },
+  { id: "ra-8", areaType: "bedroom", areaName: "Morgan's Bedroom", assessmentDate: "2026-04-10", assessedBy: "Darren Laville", hazardType: "window_restrictor", riskLevel: "high", mitigationInPlace: true, mitigationDescription: "Window restrictors fitted, max 100mm opening", nextReviewDate: "2026-07-10", reviewCurrent: true },
+  // Garden
+  { id: "ra-9", areaType: "garden", areaName: "Garden", assessmentDate: "2026-04-15", assessedBy: "Tom Richards", hazardType: "slip_trip", riskLevel: "low", mitigationInPlace: true, mitigationDescription: "Paths maintained, lighting adequate", nextReviewDate: "2026-07-15", reviewCurrent: true },
+  { id: "ra-10", areaType: "garden", areaName: "Garden", assessmentDate: "2026-04-15", assessedBy: "Tom Richards", hazardType: "structural", riskLevel: "medium", mitigationInPlace: true, mitigationDescription: "Fencing secure, gate latch functional", nextReviewDate: "2026-07-15", reviewCurrent: true },
+  // Communal area
+  { id: "ra-11", areaType: "communal", areaName: "Living Room", assessmentDate: "2026-04-12", assessedBy: "Sarah Johnson", hazardType: "fire_equipment", riskLevel: "low", mitigationInPlace: true, mitigationDescription: "Smoke detectors tested, fire blanket accessible", nextReviewDate: "2026-07-12", reviewCurrent: true },
+  { id: "ra-12", areaType: "communal", areaName: "Living Room", assessmentDate: "2026-04-12", assessedBy: "Sarah Johnson", hazardType: "electrical", riskLevel: "low", mitigationInPlace: true, mitigationDescription: "PAT tested, socket covers in place", nextReviewDate: "2026-07-12", reviewCurrent: true },
 ];
 const environmental_risk_compliance_DEMO_CHECKS: SafetyCheck[] = [
   // Water temperature checks
+  { id: "sc-1", areaType: "bathroom", areaName: "Main Bathroom", checkDate: "2026-05-01", checkedBy: "Sarah Johnson", checkType: "water_temperature", status: "compliant", reading: 43.2, notes: "Hot water at 43.2C — within safe range", actionRequired: false, actionCompleted: false },
+  { id: "sc-2", areaType: "kitchen", areaName: "Kitchen", checkDate: "2026-05-01", checkedBy: "Sarah Johnson", checkType: "water_temperature", status: "compliant", reading: 42.8, notes: "Hot water at 42.8C — within safe range", actionRequired: false, actionCompleted: false },
+  { id: "sc-3", areaType: "bathroom", areaName: "Main Bathroom", checkDate: "2026-05-08", checkedBy: "Tom Richards", checkType: "water_temperature", status: "compliant", reading: 43.5, notes: "Within safe range", actionRequired: false, actionCompleted: false },
+  { id: "sc-4", areaType: "kitchen", areaName: "Kitchen", checkDate: "2026-05-08", checkedBy: "Tom Richards", checkType: "water_temperature", status: "compliant", reading: 43.0, notes: "Within safe range", actionRequired: false, actionCompleted: false },
+  { id: "sc-5", areaType: "bathroom", areaName: "Main Bathroom", checkDate: "2026-05-15", checkedBy: "Lisa Williams", checkType: "water_temperature", status: "compliant", reading: 43.1, notes: "Within safe range", actionRequired: false, actionCompleted: false },
+  // Fire equipment checks
+  { id: "sc-6", areaType: "communal", areaName: "Living Room", checkDate: "2026-05-01", checkedBy: "Darren Laville", checkType: "fire_equipment", status: "compliant", reading: null, notes: "Smoke detectors tested — all functional", actionRequired: false, actionCompleted: false },
+  { id: "sc-7", areaType: "kitchen", areaName: "Kitchen", checkDate: "2026-05-01", checkedBy: "Darren Laville", checkType: "fire_equipment", status: "compliant", reading: null, notes: "Fire blanket accessible, extinguisher in date", actionRequired: false, actionCompleted: false },
+  // Window restrictor checks
+  { id: "sc-8", areaType: "bedroom", areaName: "Alex's Bedroom", checkDate: "2026-05-05", checkedBy: "Tom Richards", checkType: "window_restrictor", status: "compliant", reading: null, notes: "Restrictors secure, max 100mm confirmed", actionRequired: false, actionCompleted: false },
+  { id: "sc-9", areaType: "bedroom", areaName: "Jordan's Bedroom", checkDate: "2026-05-05", checkedBy: "Tom Richards", checkType: "window_restrictor", status: "compliant", reading: null, notes: "Restrictors secure", actionRequired: false, actionCompleted: false },
+  { id: "sc-10", areaType: "bedroom", areaName: "Morgan's Bedroom", checkDate: "2026-05-05", checkedBy: "Tom Richards", checkType: "window_restrictor", status: "compliant", reading: null, notes: "Restrictors secure", actionRequired: false, actionCompleted: false },
+  // COSHH checks
+  { id: "sc-11", areaType: "utility", areaName: "Utility Room", checkDate: "2026-05-03", checkedBy: "Lisa Williams", checkType: "coshh", status: "compliant", reading: null, notes: "Cabinet locked, inventory current, MSDS available", actionRequired: false, actionCompleted: false },
+  { id: "sc-12", areaType: "kitchen", areaName: "Kitchen", checkDate: "2026-05-03", checkedBy: "Lisa Williams", checkType: "coshh", status: "compliant", reading: null, notes: "Products secured", actionRequired: false, actionCompleted: false },
+  // Garden checks
+  { id: "sc-13", areaType: "garden", areaName: "Garden", checkDate: "2026-05-10", checkedBy: "Tom Richards", checkType: "structural", status: "minor_issue", reading: null, notes: "Gate latch slightly loose — tightened but monitor", actionRequired: true, actionCompleted: true },
+  // Additional checks
+  { id: "sc-14", areaType: "communal", areaName: "Living Room", checkDate: "2026-05-10", checkedBy: "Sarah Johnson", checkType: "electrical", status: "compliant", reading: null, notes: "All sockets and appliances safe", actionRequired: false, actionCompleted: false },
+  { id: "sc-15", areaType: "garden", areaName: "Garden", checkDate: "2026-05-12", checkedBy: "Darren Laville", checkType: "slip_trip", status: "compliant", reading: null, notes: "Paths clear, lighting working", actionRequired: false, actionCompleted: false },
 ];
 const environmental_risk_compliance_DEMO_REMEDIATIONS: RemediationAction[] = [
   { id: "rem-1", assessmentId: "ra-10", hazardType: "structural", areaType: "garden", description: "Replace garden gate latch — current latch loosening", assignedTo: "Tom Richards", targetDate: "2026-05-15", completionDate: "2026-05-12", status: "completed", verified: true },
+  { id: "rem-2", assessmentId: "ra-4", hazardType: "coshh", areaType: "utility", description: "Fit additional lock to COSHH cabinet — secondary security measure", assignedTo: "Darren Laville", targetDate: "2026-05-30", completionDate: null, status: "in_progress", verified: false },
+  { id: "rem-3", assessmentId: "ra-1", hazardType: "ligature_point", areaType: "bathroom", description: "Install improved extractor fan cover — anti-ligature design", assignedTo: "Sarah Johnson", targetDate: "2026-06-15", completionDate: null, status: "planned", verified: false },
 ];
 const environmental_risk_compliance_DEMO_TRAINING: StaffSafetyTraining[] = [
   { id: "sst-1", staffId: "staff-sarah", staffName: "Sarah Johnson", ligatureAwareness: true, coshhTrained: true, fireSafetyTrained: true, waterSafetyTrained: true, manualHandling: true, riskAssessmentCompetent: true },
-
+  { id: "sst-2", staffId: "staff-tom", staffName: "Tom Richards", ligatureAwareness: true, coshhTrained: false, fireSafetyTrained: true, waterSafetyTrained: true, manualHandling: true, riskAssessmentCompetent: true },
+  { id: "sst-3", staffId: "staff-lisa", staffName: "Lisa Williams", ligatureAwareness: true, coshhTrained: true, fireSafetyTrained: true, waterSafetyTrained: true, manualHandling: true, riskAssessmentCompetent: true },
+  { id: "sst-4", staffId: "staff-darren", staffName: "Darren Laville", ligatureAwareness: true, coshhTrained: true, fireSafetyTrained: true, waterSafetyTrained: true, manualHandling: true, riskAssessmentCompetent: true },
 ];
+
 async function get_environmental_risk_compliance(req: NextRequest): Promise<Response> {
 
   const result = generateEnvironmentalRiskComplianceIntelligence(
@@ -8566,14 +10018,24 @@ async function post_environmental_risk_compliance(req: NextRequest): Promise<Res
 // ─── environmental-sustainability-awareness ────────────────────────────
 const environmental_sustainability_awareness_DEMO_ACTIVITIES: EcoActivity[] = [
   { id: "ea-1", childId: "child-alex", childName: "Alex", activityDate: "2026-03-01", activityType: "recycling_project", engagementLevel: "highly_engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ea-2", childId: "child-alex", childName: "Alex", activityDate: "2026-03-15", activityType: "garden_maintenance", engagementLevel: "engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ea-3", childId: "child-alex", childName: "Alex", activityDate: "2026-04-10", activityType: "energy_conservation", engagementLevel: "highly_engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ea-4", childId: "child-jordan", childName: "Jordan", activityDate: "2026-03-05", activityType: "nature_walk", engagementLevel: "highly_engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ea-5", childId: "child-jordan", childName: "Jordan", activityDate: "2026-03-20", activityType: "wildlife_care", engagementLevel: "engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ea-6", childId: "child-jordan", childName: "Jordan", activityDate: "2026-04-15", activityType: "eco_workshop", engagementLevel: "highly_engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ea-7", childId: "child-morgan", childName: "Morgan", activityDate: "2026-03-12", activityType: "sustainability_discussion", engagementLevel: "engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ea-8", childId: "child-morgan", childName: "Morgan", activityDate: "2026-04-20", activityType: "community_cleanup", engagementLevel: "highly_engaged", knowledgeDemonstrated: true, initiativeTaken: true, habitsFormed: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
 ];
 const environmental_sustainability_awareness_DEMO_POLICY: EnvironmentalPolicy = {
   id: "ep-1", sustainabilityStrategy: true, recyclingProcedure: true, energyManagementPlan: true, gardenAndNaturePolicy: true, ecoEducationFramework: true, communityPartnership: true, regularReview: true,
 };
 const environmental_sustainability_awareness_DEMO_TRAINING: StaffEnvironmentalTraining[] = [
   { id: "et-1", staffId: "staff-sarah", staffName: "Sarah Johnson", sustainabilityAwareness: true, ecoEducation: true, gardenManagement: true, energyConservation: true, wildlifeKnowledge: true, communityEngagement: true },
-
+  { id: "et-2", staffId: "staff-tom", staffName: "Tom Richards", sustainabilityAwareness: true, ecoEducation: true, gardenManagement: true, energyConservation: true, wildlifeKnowledge: true, communityEngagement: true },
+  { id: "et-3", staffId: "staff-lisa", staffName: "Lisa Williams", sustainabilityAwareness: true, ecoEducation: true, gardenManagement: true, energyConservation: true, wildlifeKnowledge: true, communityEngagement: true },
+  { id: "et-4", staffId: "staff-darren", staffName: "Darren Laville", sustainabilityAwareness: true, ecoEducation: true, gardenManagement: true, energyConservation: true, wildlifeKnowledge: true, communityEngagement: true },
 ];
+
 async function get_environmental_sustainability_awareness(req: NextRequest): Promise<Response> {
 
   const result = generateEnvironmentalSustainabilityAwarenessIntelligence(
@@ -8620,6 +10082,28 @@ async function post_environmental_sustainability_awareness(req: NextRequest): Pr
 // ─── environmental-sustainability ──────────────────────────────────────
 const environmental_sustainability_DEMO_ACTIVITIES: SustainabilityActivity[] = [
   // Alex — high participation, enthusiastic
+  { id: "act-a1", childId: "child-alex", childName: "Alex", activityDate: "2026-01-15", activityType: "recycling", engagementLevel: "highly_engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-a2", childId: "child-alex", childName: "Alex", activityDate: "2026-02-03", activityType: "energy_saving", engagementLevel: "highly_engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-a3", childId: "child-alex", childName: "Alex", activityDate: "2026-02-18", activityType: "composting", engagementLevel: "engaged", childInitiated: false, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-a4", childId: "child-alex", childName: "Alex", activityDate: "2026-03-08", activityType: "sustainable_shopping", engagementLevel: "highly_engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: false },
+  { id: "act-a5", childId: "child-alex", childName: "Alex", activityDate: "2026-03-25", activityType: "environmental_project", engagementLevel: "highly_engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-a6", childId: "child-alex", childName: "Alex", activityDate: "2026-04-10", activityType: "water_conservation", engagementLevel: "engaged", childInitiated: false, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-a7", childId: "child-alex", childName: "Alex", activityDate: "2026-04-28", activityType: "nature_walk", engagementLevel: "highly_engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: true },
+
+  // Jordan — reluctant, lower engagement
+  { id: "act-j1", childId: "child-jordan", childName: "Jordan", activityDate: "2026-01-22", activityType: "recycling", engagementLevel: "partially_engaged", childInitiated: false, learningOutcomeRecorded: false, staffSupported: true },
+  { id: "act-j2", childId: "child-jordan", childName: "Jordan", activityDate: "2026-02-14", activityType: "nature_walk", engagementLevel: "reluctant", childInitiated: false, learningOutcomeRecorded: false, staffSupported: true },
+  { id: "act-j3", childId: "child-jordan", childName: "Jordan", activityDate: "2026-03-05", activityType: "gardening", engagementLevel: "engaged", childInitiated: false, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-j4", childId: "child-jordan", childName: "Jordan", activityDate: "2026-03-30", activityType: "energy_saving", engagementLevel: "partially_engaged", childInitiated: false, learningOutcomeRecorded: false, staffSupported: true },
+  { id: "act-j5", childId: "child-jordan", childName: "Jordan", activityDate: "2026-04-20", activityType: "recycling", engagementLevel: "refused", childInitiated: false, learningOutcomeRecorded: false, staffSupported: false },
+
+  // Morgan — creative engagement, gardening focus
+  { id: "act-m1", childId: "child-morgan", childName: "Morgan", activityDate: "2026-01-18", activityType: "gardening", engagementLevel: "highly_engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-m2", childId: "child-morgan", childName: "Morgan", activityDate: "2026-02-05", activityType: "composting", engagementLevel: "engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-m3", childId: "child-morgan", childName: "Morgan", activityDate: "2026-02-22", activityType: "nature_walk", engagementLevel: "highly_engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: false },
+  { id: "act-m4", childId: "child-morgan", childName: "Morgan", activityDate: "2026-03-12", activityType: "water_conservation", engagementLevel: "engaged", childInitiated: false, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-m5", childId: "child-morgan", childName: "Morgan", activityDate: "2026-04-02", activityType: "gardening", engagementLevel: "highly_engaged", childInitiated: true, learningOutcomeRecorded: true, staffSupported: true },
+  { id: "act-m6", childId: "child-morgan", childName: "Morgan", activityDate: "2026-04-25", activityType: "environmental_project", engagementLevel: "engaged", childInitiated: false, learningOutcomeRecorded: true, staffSupported: true },
 ];
 const environmental_sustainability_DEMO_POLICY: SustainabilityPolicy = {
   id: "pol-oak",
@@ -8633,8 +10117,10 @@ const environmental_sustainability_DEMO_POLICY: SustainabilityPolicy = {
 };
 const environmental_sustainability_DEMO_TRAINING: StaffSustainabilityTraining[] = [
   { id: "tr-1", staffId: "s-sarah", staffName: "Sarah Johnson", environmentalAwareness: true, recyclingProcedures: true, energyConservation: true, sustainableLiving: true, childEngagement: true, outdoorLearning: true },
-
+  { id: "tr-2", staffId: "s-tom", staffName: "Tom Richards", environmentalAwareness: true, recyclingProcedures: true, energyConservation: true, sustainableLiving: false, childEngagement: true, outdoorLearning: false },
+  { id: "tr-3", staffId: "s-lisa", staffName: "Lisa Williams", environmentalAwareness: true, recyclingProcedures: false, energyConservation: false, sustainableLiving: false, childEngagement: false, outdoorLearning: true },
 ];
+
 async function get_environmental_sustainability(req: NextRequest): Promise<Response> {
 
   const result = generateEnvironmentalSustainabilityIntelligence(
@@ -8900,6 +10386,22 @@ async function post_escalation_intelligence(req: NextRequest): Promise<Response>
 // ─── escalation-threshold-intelligence ─────────────────────────────────
 const escalation_threshold_intelligence_DEMO_RECORDS: EscalationThresholdRecord[] = [
   // Alex — safeguarding, threshold, multi-agency, concern
+  { id: "et-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "safeguarding_escalation", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "et-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "threshold_assessment", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "et-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "multi_agency_referral", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "et-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "concern_escalation", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+
+  // Jordan — professional disagreement, management, ofsted, emergency
+  { id: "et-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "professional_disagreement", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "et-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "management_escalation", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "et-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "ofsted_notification", outcome: "partially_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: false },
+  { id: "et-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "emergency_response", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — mixed
+  { id: "et-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "safeguarding_escalation", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "et-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "threshold_assessment", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "et-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "concern_escalation", outcome: "delayed_escalation", thresholdCorrectlyIdentified: false, escalationTimelyCompleted: true, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "et-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "multi_agency_referral", outcome: "appropriately_escalated", thresholdCorrectlyIdentified: true, escalationTimelyCompleted: false, appropriateRecipientNotified: true, outcomeRecorded: true, documentationComplete: false, timelyRecording: true },
 ];
 const escalation_threshold_intelligence_DEMO_POLICY: EscalationThresholdPolicy = {
   escalationPolicy: true,
@@ -8912,8 +10414,11 @@ const escalation_threshold_intelligence_DEMO_POLICY: EscalationThresholdPolicy =
 };
 const escalation_threshold_intelligence_DEMO_STAFF: StaffEscalationThresholdTraining[] = [
   { staffId: "staff-sarah", escalationProcedureKnowledge: true, thresholdAssessmentSkills: true, safeguardingEscalationSkills: true, multiAgencyReferralSkills: true, professionalDisagreementResolution: true, emergencyResponseSkills: true },
-
+  { staffId: "staff-tom", escalationProcedureKnowledge: true, thresholdAssessmentSkills: true, safeguardingEscalationSkills: true, multiAgencyReferralSkills: true, professionalDisagreementResolution: true, emergencyResponseSkills: false },
+  { staffId: "staff-lisa", escalationProcedureKnowledge: true, thresholdAssessmentSkills: true, safeguardingEscalationSkills: true, multiAgencyReferralSkills: true, professionalDisagreementResolution: false, emergencyResponseSkills: true },
+  { staffId: "staff-darren", escalationProcedureKnowledge: true, thresholdAssessmentSkills: true, safeguardingEscalationSkills: true, multiAgencyReferralSkills: true, professionalDisagreementResolution: true, emergencyResponseSkills: true },
 ];
+
 async function get_escalation_threshold_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateEscalationThresholdIntelligence({
@@ -8983,11 +10488,38 @@ const exclusion_disruption_management_DEMO_PLANS: PreventionPlan[] = [
     reviewDate: "2026-05-15",
     reviewCurrent: true,
   },
+  {
+    id: "pp-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    planDate: "2026-03-01",
+    earlyWarningSignsDocumented: true,
+    triggersIdentified: true,
+    strategiesAgreed: ["early_warning_meeting", "behaviour_support_plan", "mediation"],
+    schoolEngaged: true,
+    reviewDate: "2026-05-01",
+    reviewCurrent: true,
+  },
+  {
+    id: "pp-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    planDate: "2026-02-20",
+    earlyWarningSignsDocumented: true,
+    triggersIdentified: true,
+    strategiesAgreed: ["pep_review", "therapeutic_intervention"],
+    schoolEngaged: true,
+    reviewDate: "2026-05-20",
+    reviewCurrent: true,
+  },
 ];
 const exclusion_disruption_management_DEMO_TRAINING: StaffExclusionTraining[] = [
   { id: "set-1", staffId: "staff-sarah", staffName: "Sarah Johnson", exclusionGuidanceTrained: true, educationAdvocacy: true, alternativeProvision: true, reintegrationSupport: true, multiAgencyWorking: true, traumaInformedBehaviour: true },
-
+  { id: "set-2", staffId: "staff-tom", staffName: "Tom Richards", exclusionGuidanceTrained: true, educationAdvocacy: true, alternativeProvision: true, reintegrationSupport: true, multiAgencyWorking: true, traumaInformedBehaviour: true },
+  { id: "set-3", staffId: "staff-lisa", staffName: "Lisa Williams", exclusionGuidanceTrained: true, educationAdvocacy: true, alternativeProvision: true, reintegrationSupport: true, multiAgencyWorking: true, traumaInformedBehaviour: true },
+  { id: "set-4", staffId: "staff-darren", staffName: "Darren Laville", exclusionGuidanceTrained: true, educationAdvocacy: true, alternativeProvision: true, reintegrationSupport: true, multiAgencyWorking: true, traumaInformedBehaviour: true },
 ];
+
 async function get_exclusion_disruption_management(req: NextRequest): Promise<Response> {
 
   const result = generateExclusionDisruptionManagementIntelligence(
@@ -9073,6 +10605,21 @@ async function post_exclusion_disruption_management(req: NextRequest): Promise<R
 // ─── family-contact-quality ────────────────────────────────────────────
 const family_contact_quality_DEMO_CONTACTS: FamilyContact[] = [
   // Alex — face-to-face visit (very positive)
+  { id: "fc-001", childId: "child-alex", childName: "Alex", contactDate: "2026-02-10", contactType: "face_to_face_visit", contactOutcome: "very_positive", childPrepared: true, childConsulted: true, supportProvided: true, documentedInPlan: true, staffSupervised: true, feedbackRecorded: true },
+  // Alex — video call (positive)
+  { id: "fc-002", childId: "child-alex", childName: "Alex", contactDate: "2026-03-05", contactType: "video_call", contactOutcome: "positive", childPrepared: true, childConsulted: true, supportProvided: true, documentedInPlan: true, staffSupervised: true, feedbackRecorded: true },
+  // Alex — sibling contact (very positive)
+  { id: "fc-003", childId: "child-alex", childName: "Alex", contactDate: "2026-04-12", contactType: "sibling_contact", contactOutcome: "very_positive", childPrepared: true, childConsulted: true, supportProvided: true, documentedInPlan: true, staffSupervised: true, feedbackRecorded: true },
+  // Jordan — supervised contact (positive)
+  { id: "fc-004", childId: "child-jordan", childName: "Jordan", contactDate: "2026-02-20", contactType: "supervised_contact", contactOutcome: "positive", childPrepared: true, childConsulted: true, supportProvided: true, documentedInPlan: true, staffSupervised: true, feedbackRecorded: true },
+  // Jordan — phone call (very positive)
+  { id: "fc-005", childId: "child-jordan", childName: "Jordan", contactDate: "2026-03-15", contactType: "phone_call", contactOutcome: "very_positive", childPrepared: true, childConsulted: true, supportProvided: true, documentedInPlan: true, staffSupervised: true, feedbackRecorded: true },
+  // Jordan — family activity (positive)
+  { id: "fc-006", childId: "child-jordan", childName: "Jordan", contactDate: "2026-04-20", contactType: "family_activity", contactOutcome: "positive", childPrepared: true, childConsulted: true, supportProvided: true, documentedInPlan: true, staffSupervised: true, feedbackRecorded: true },
+  // Morgan — letter/email (very positive)
+  { id: "fc-007", childId: "child-morgan", childName: "Morgan", contactDate: "2026-03-01", contactType: "letter_email", contactOutcome: "very_positive", childPrepared: true, childConsulted: true, supportProvided: true, documentedInPlan: true, staffSupervised: true, feedbackRecorded: true },
+  // Morgan — unsupervised contact (positive)
+  { id: "fc-008", childId: "child-morgan", childName: "Morgan", contactDate: "2026-04-08", contactType: "unsupervised_contact", contactOutcome: "positive", childPrepared: true, childConsulted: true, supportProvided: true, documentedInPlan: true, staffSupervised: true, feedbackRecorded: true },
 ];
 const family_contact_quality_DEMO_POLICY: FamilyContactPolicy = {
   id: "pol-oak",
@@ -9086,8 +10633,11 @@ const family_contact_quality_DEMO_POLICY: FamilyContactPolicy = {
 };
 const family_contact_quality_DEMO_TRAINING: StaffFamilyContactTraining[] = [
   { id: "tr-sarah", staffId: "staff-sarah", staffName: "Sarah Johnson", familyDynamicsAwareness: true, contactSupervision: true, safeguardingInContact: true, childPreparationSkills: true, conflictManagement: true, recordKeeping: true },
-
+  { id: "tr-tom", staffId: "staff-tom", staffName: "Tom Richards", familyDynamicsAwareness: true, contactSupervision: true, safeguardingInContact: true, childPreparationSkills: true, conflictManagement: true, recordKeeping: true },
+  { id: "tr-lisa", staffId: "staff-lisa", staffName: "Lisa Williams", familyDynamicsAwareness: true, contactSupervision: true, safeguardingInContact: true, childPreparationSkills: true, conflictManagement: true, recordKeeping: true },
+  { id: "tr-darren", staffId: "staff-darren", staffName: "Darren Laville", familyDynamicsAwareness: true, contactSupervision: true, safeguardingInContact: true, childPreparationSkills: true, conflictManagement: true, recordKeeping: true },
 ];
+
 async function get_family_contact_quality(req: NextRequest): Promise<Response> {
 
   const result = generateFamilyContactQualityIntelligence(
@@ -9151,9 +10701,337 @@ async function post_family_contact_quality(req: NextRequest): Promise<Response> 
 // ─── family-contact ────────────────────────────────────────────────────
 const family_contact_DEMO_ARRANGEMENTS: ContactArrangement[] = [
   // Alex – Mother (court-ordered weekly supervised)
+  {
+    id: "arr-001",
+    childId: "child-alex",
+    childName: "Alex",
+    familyMemberId: "fm-001",
+    familyMemberName: "Michelle (Mother)",
+    familyMemberType: "mother",
+    contactType: "supervised_visit",
+    agreedFrequency: "weekly",
+    isCourtOrdered: true,
+    supervisedRequired: true,
+    conditions: ["Supervisor must be Level 3 trained", "No discussion of court proceedings"],
+    placingAuthorityAgreed: true,
+    startDate: "2026-01-15",
+    reviewDate: "2026-05-20",
+  },
+  // Alex – Father (fortnightly telephone, not court-ordered)
+  {
+    id: "arr-002",
+    childId: "child-alex",
+    childName: "Alex",
+    familyMemberId: "fm-002",
+    familyMemberName: "David (Father)",
+    familyMemberType: "father",
+    contactType: "telephone",
+    agreedFrequency: "fortnightly",
+    isCourtOrdered: false,
+    supervisedRequired: false,
+    placingAuthorityAgreed: true,
+    startDate: "2026-02-01",
+    reviewDate: "2026-06-01",
+  },
+  // Jordan – Grandmother (weekly face-to-face, court-ordered)
+  {
+    id: "arr-003",
+    childId: "child-jordan",
+    childName: "Jordan",
+    familyMemberId: "fm-003",
+    familyMemberName: "Pat (Grandmother)",
+    familyMemberType: "grandparent",
+    contactType: "face_to_face",
+    agreedFrequency: "weekly",
+    isCourtOrdered: true,
+    supervisedRequired: false,
+    placingAuthorityAgreed: true,
+    startDate: "2025-11-01",
+    reviewDate: "2026-05-15",
+  },
+  // Jordan – Mother (monthly supervised, court-ordered with conditions)
+  {
+    id: "arr-004",
+    childId: "child-jordan",
+    childName: "Jordan",
+    familyMemberId: "fm-004",
+    familyMemberName: "Tracey (Mother)",
+    familyMemberType: "mother",
+    contactType: "supervised_visit",
+    agreedFrequency: "monthly",
+    isCourtOrdered: true,
+    supervisedRequired: true,
+    conditions: ["Mother must not attend under influence of substances", "Contact to end immediately if child becomes distressed"],
+    placingAuthorityAgreed: true,
+    startDate: "2025-12-01",
+    reviewDate: "2026-04-30",
+  },
+  // Morgan – Sibling (fortnightly video call)
+  {
+    id: "arr-005",
+    childId: "child-morgan",
+    childName: "Morgan",
+    familyMemberId: "fm-005",
+    familyMemberName: "Kian (Brother, placed separately)",
+    familyMemberType: "sibling",
+    contactType: "video_call",
+    agreedFrequency: "fortnightly",
+    isCourtOrdered: false,
+    supervisedRequired: false,
+    placingAuthorityAgreed: true,
+    startDate: "2026-01-10",
+    reviewDate: "2026-06-10",
+  },
+  // Morgan – Mother (no contact order)
+  {
+    id: "arr-006",
+    childId: "child-morgan",
+    childName: "Morgan",
+    familyMemberId: "fm-006",
+    familyMemberName: "Claire (Mother)",
+    familyMemberType: "mother",
+    contactType: "indirect",
+    agreedFrequency: "no_contact_order",
+    isCourtOrdered: true,
+    supervisedRequired: false,
+    conditions: ["Letters only via placing authority", "No direct contact until further court review"],
+    placingAuthorityAgreed: true,
+    startDate: "2025-09-01",
+    reviewDate: "2026-06-01",
+  },
 ];
 const family_contact_DEMO_SESSIONS: ContactSession[] = [
   // ── Alex + Mother (supervised weekly – May 2026) ────────────────────────
+  {
+    id: "sess-001",
+    arrangementId: "arr-001",
+    childId: "child-alex",
+    scheduledDate: "2026-05-03",
+    scheduledTime: "14:00",
+    actualDate: "2026-05-03",
+    duration: 60,
+    contactType: "supervised_visit",
+    outcome: "positive",
+    familyMemberPresent: true,
+    supervisorPresent: true,
+    childPrepared: true,
+    impactIndicators: ["settled_after", "positive_mood"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Alex said he enjoyed playing cards with Mum and asked when he could see her next",
+    staffObservations: "Warm interaction. Michelle was emotionally available throughout.",
+    placingAuthorityInformed: true,
+  },
+  {
+    id: "sess-002",
+    arrangementId: "arr-001",
+    childId: "child-alex",
+    scheduledDate: "2026-05-10",
+    scheduledTime: "14:00",
+    actualDate: "2026-05-10",
+    duration: 55,
+    contactType: "supervised_visit",
+    outcome: "mixed",
+    familyMemberPresent: true,
+    supervisorPresent: true,
+    childPrepared: true,
+    impactIndicators: ["unsettled_after"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Alex said he felt upset because Mum cried at the end",
+    staffObservations: "Michelle became tearful discussing care proceedings. Alex comforted her but became withdrawn afterwards.",
+    followUpActions: ["Key worker debrief with Alex", "Remind Michelle of contact conditions"],
+    placingAuthorityInformed: true,
+  },
+  {
+    id: "sess-003",
+    arrangementId: "arr-001",
+    childId: "child-alex",
+    scheduledDate: "2026-05-17",
+    scheduledTime: "14:00",
+    actualDate: "2026-05-17",
+    duration: 60,
+    contactType: "supervised_visit",
+    outcome: "positive",
+    familyMemberPresent: true,
+    supervisorPresent: true,
+    childPrepared: true,
+    impactIndicators: ["settled_after", "positive_mood"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Alex said this was 'the best visit' because they went to the park",
+    placingAuthorityInformed: true,
+  },
+  // ── Alex + Father (fortnightly phone – May) ────────────────────────────
+  {
+    id: "sess-004",
+    arrangementId: "arr-002",
+    childId: "child-alex",
+    scheduledDate: "2026-05-04",
+    scheduledTime: "18:00",
+    duration: 15,
+    contactType: "telephone",
+    outcome: "neutral",
+    familyMemberPresent: true,
+    childPrepared: false,
+    impactIndicators: [],
+    childVoiceRecorded: false,
+    placingAuthorityInformed: false,
+  },
+  {
+    id: "sess-005",
+    arrangementId: "arr-002",
+    childId: "child-alex",
+    scheduledDate: "2026-05-18",
+    scheduledTime: "18:00",
+    contactType: "telephone",
+    outcome: "no_show",
+    familyMemberPresent: false,
+    childPrepared: true,
+    impactIndicators: ["withdrawn_after"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Alex said he's not surprised because Dad always lets him down",
+    staffObservations: "Alex was clearly disappointed. Spent rest of evening in his room.",
+    followUpActions: ["Follow up with David (Father) re commitment", "Discuss with Alex in key work session"],
+    placingAuthorityInformed: true,
+  },
+  // ── Jordan + Grandmother (weekly face-to-face – May) ────────────────────
+  {
+    id: "sess-006",
+    arrangementId: "arr-003",
+    childId: "child-jordan",
+    scheduledDate: "2026-05-01",
+    scheduledTime: "16:00",
+    actualDate: "2026-05-01",
+    duration: 90,
+    contactType: "face_to_face",
+    outcome: "positive",
+    familyMemberPresent: true,
+    childPrepared: true,
+    impactIndicators: ["settled_after", "positive_mood"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Jordan said Nan always makes her feel safe and happy",
+    placingAuthorityInformed: true,
+  },
+  {
+    id: "sess-007",
+    arrangementId: "arr-003",
+    childId: "child-jordan",
+    scheduledDate: "2026-05-08",
+    scheduledTime: "16:00",
+    actualDate: "2026-05-08",
+    duration: 90,
+    contactType: "face_to_face",
+    outcome: "positive",
+    familyMemberPresent: true,
+    childPrepared: true,
+    impactIndicators: ["settled_after", "positive_mood", "improved_engagement"],
+    childVoiceRecorded: true,
+    placingAuthorityInformed: true,
+  },
+  {
+    id: "sess-008",
+    arrangementId: "arr-003",
+    childId: "child-jordan",
+    scheduledDate: "2026-05-15",
+    scheduledTime: "16:00",
+    actualDate: "2026-05-15",
+    duration: 85,
+    contactType: "face_to_face",
+    outcome: "positive",
+    familyMemberPresent: true,
+    childPrepared: true,
+    impactIndicators: ["settled_after", "positive_mood"],
+    childVoiceRecorded: true,
+    placingAuthorityInformed: true,
+  },
+  // ── Jordan + Mother (monthly supervised – triggered concern) ────────────
+  {
+    id: "sess-009",
+    arrangementId: "arr-004",
+    childId: "child-jordan",
+    scheduledDate: "2026-05-05",
+    scheduledTime: "11:00",
+    actualDate: "2026-05-05",
+    duration: 40,
+    contactType: "supervised_visit",
+    outcome: "distressing",
+    familyMemberPresent: true,
+    supervisorPresent: true,
+    childPrepared: true,
+    impactIndicators: ["dysregulated_after", "sleep_disrupted", "absconding_risk"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Jordan became tearful and asked to leave early. Later said 'Mum doesn't care about me, she just pretends'",
+    staffObservations: "Tracey appeared under influence. Contact ended early per conditions. Jordan was dysregulated for remainder of day — attempted to leave the home at 21:30.",
+    followUpActions: ["Urgent notification to placing authority", "Review contact arrangement with IRO", "Therapeutic debrief with Jordan"],
+    placingAuthorityInformed: true,
+  },
+  // ── Morgan + Brother (fortnightly video – May) ──────────────────────────
+  {
+    id: "sess-010",
+    arrangementId: "arr-005",
+    childId: "child-morgan",
+    scheduledDate: "2026-05-02",
+    scheduledTime: "17:00",
+    actualDate: "2026-05-02",
+    duration: 30,
+    contactType: "video_call",
+    outcome: "positive",
+    familyMemberPresent: true,
+    childPrepared: true,
+    impactIndicators: ["positive_mood", "settled_after"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Morgan said seeing Kian made them feel less alone",
+    placingAuthorityInformed: true,
+  },
+  {
+    id: "sess-011",
+    arrangementId: "arr-005",
+    childId: "child-morgan",
+    scheduledDate: "2026-05-16",
+    scheduledTime: "17:00",
+    actualDate: "2026-05-16",
+    duration: 25,
+    contactType: "video_call",
+    outcome: "mixed",
+    familyMemberPresent: true,
+    childPrepared: true,
+    impactIndicators: ["unsettled_after"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Morgan said they miss Kian and it's not fair they can't live together",
+    staffObservations: "Morgan became teary at end of call. Needed 20 minutes with KW afterwards to de-escalate.",
+    placingAuthorityInformed: true,
+  },
+  // ── Morgan + Mother (indirect only – letter received) ──────────────────
+  {
+    id: "sess-012",
+    arrangementId: "arr-006",
+    childId: "child-morgan",
+    scheduledDate: "2026-05-10",
+    contactType: "indirect",
+    outcome: "distressing",
+    familyMemberPresent: false,
+    childPrepared: false,
+    impactIndicators: ["dysregulated_after", "self_harm_risk"],
+    childVoiceRecorded: true,
+    childWishesFeelings: "Morgan said reading the letter made them feel like everything was their fault",
+    staffObservations: "Letter contained guilt-inducing language. Morgan self-isolated and expressed fleeting suicidal ideation. Crisis protocol activated.",
+    followUpActions: ["Placing authority notified immediately", "Review letter-screening process", "Extra CAMHS session arranged", "Safety plan reviewed with Morgan"],
+    placingAuthorityInformed: true,
+  },
+  // ── Cancelled session — home (creates compliance concern) ──────────────
+  {
+    id: "sess-013",
+    arrangementId: "arr-003",
+    childId: "child-jordan",
+    scheduledDate: "2026-05-04",
+    scheduledTime: "16:00",
+    contactType: "face_to_face",
+    outcome: "cancelled_by_home",
+    familyMemberPresent: false,
+    childPrepared: false,
+    impactIndicators: [],
+    childVoiceRecorded: false,
+    staffObservations: "Cancelled due to staffing issues — lone worker unable to transport. Rescheduled for following day but clashes with Nan's work.",
+    placingAuthorityInformed: true,
+  },
 ];
 const family_contact_DEMO_REVIEWS: ContactReview[] = [
   {
@@ -9167,8 +11045,20 @@ const family_contact_DEMO_REVIEWS: ContactReview[] = [
     typeAppropriate: true,
     nextReviewDate: "2026-07-15",
   },
-
+  {
+    id: "rev-002",
+    arrangementId: "arr-003",
+    reviewDate: "2026-03-20",
+    reviewedBy: "Darren Laville (RM)",
+    overallAssessment: "meeting_needs",
+    childViewConsidered: true,
+    frequencyAppropriate: true,
+    typeAppropriate: true,
+    nextReviewDate: "2026-06-20",
+  },
+  // NOTE: arr-004 (Jordan + Mother) review is OVERDUE (due 2026-04-30)
 ];
+
 async function get_family_contact(req: NextRequest): Promise<Response> {
 
   const result = generateFamilyContactIntelligence(
@@ -9263,6 +11153,17 @@ async function post_family_contact(req: NextRequest): Promise<Response> {
 // ─── filing-cabinet-intelligence ───────────────────────────────────────
 const filing_cabinet_intelligence_DEMO_RECORDS: FilingCabinetRecord[] = [
   { id: "fc-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "care_plan_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "risk_assessment_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "medical_record_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: false },
+  { id: "fc-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "education_record_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "safeguarding_record_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "placement_record_filing", outcome: "partially_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "correspondence_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: false },
+  { id: "fc-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "legal_document_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: false, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "care_plan_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "medical_record_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "education_record_filing", outcome: "misfiled", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: false, accessControlSet: true, documentationComplete: true, timelyRecording: true },
+  { id: "fc-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "safeguarding_record_filing", outcome: "correctly_filed", correctCategoryAssigned: true, retentionPolicyApplied: true, sensitivityMarked: true, accessControlSet: false, documentationComplete: false, timelyRecording: true },
 ];
 const filing_cabinet_intelligence_DEMO_POLICY: FilingCabinetPolicy = {
   documentManagementPolicy: true, retentionSchedulePolicy: true, dataProtectionFilingPolicy: true,
@@ -9270,8 +11171,11 @@ const filing_cabinet_intelligence_DEMO_POLICY: FilingCabinetPolicy = {
 };
 const filing_cabinet_intelligence_DEMO_STAFF: StaffFilingCabinetTraining[] = [
   { staffId: "staff-sarah", documentManagementKnowledge: true, dataProtectionSkills: true, retentionPolicyKnowledge: true, accessControlSkills: true, auditTrailSkills: true, documentDestructionProcedure: true },
-
+  { staffId: "staff-tom", documentManagementKnowledge: true, dataProtectionSkills: true, retentionPolicyKnowledge: true, accessControlSkills: true, auditTrailSkills: true, documentDestructionProcedure: false },
+  { staffId: "staff-lisa", documentManagementKnowledge: true, dataProtectionSkills: true, retentionPolicyKnowledge: true, accessControlSkills: false, auditTrailSkills: true, documentDestructionProcedure: true },
+  { staffId: "staff-darren", documentManagementKnowledge: true, dataProtectionSkills: true, retentionPolicyKnowledge: true, accessControlSkills: true, auditTrailSkills: true, documentDestructionProcedure: true },
 ];
+
 async function get_filing_cabinet_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateFilingCabinetIntelligence({
@@ -9282,17 +11186,48 @@ async function get_filing_cabinet_intelligence(req: NextRequest): Promise<Respon
 }
 
 // ─── filing-cabinet ────────────────────────────────────────────────────
-  let filing_cabinet_query = (sb.from("filed_documents") as SB).select("*");
-  const filing_cabinet_docs: FiledDocument[] = (documents ?? []).map(mapToDocument);
+async function filing_cabinet_handleLiveData(
+  sb: any,
+  homeId: string | null,
+  childId: string | null,
+  category: FilingCategory | null,
+  view: string,
+) {
+  let query = (sb.from("filed_documents") as SB).select("*");
+  if (homeId) query = query.eq("home_id", homeId);
+  if (childId) query = query.eq("child_id", childId);
+  if (category) query = query.eq("category", category);
 
-    const filing_cabinet_retentionStatus = checkRetentionStatus(docs);
-    const filing_cabinet_approaching = getDocumentsApproachingExpiry(docs);
-    const filing_cabinet_expired = getExpiredDocuments(docs);
-    const filing_cabinet_expired_dup1 = getExpiredDocuments(docs);
-    const filing_cabinet_pending = docs.filter(d => d.status === "pending_destruction" || d.status === "destruction_approved");
-  const filing_cabinet_stats = calculateFilingStats(docs);
-  const filing_cabinet_approaching_dup1 = getDocumentsApproachingExpiry(docs);
-  const filing_cabinet_expired_dup2 = getExpiredDocuments(docs);
+  const { data: documents, error } = await query;
+  if (error) throw error;
+
+  const docs: FiledDocument[] = (documents ?? []).map(filing_cabinet_mapToDocument);
+
+  if (view === "retention") {
+    const retentionStatus = checkRetentionStatus(docs);
+    const approaching = getDocumentsApproachingExpiry(docs);
+    const expired = getExpiredDocuments(docs);
+    return NextResponse.json({ retentionStatus, approaching, expired });
+  }
+
+  if (view === "destruction") {
+    const expired = getExpiredDocuments(docs);
+    const pending = docs.filter(d => d.status === "pending_destruction" || d.status === "destruction_approved");
+    return NextResponse.json({ expired, pendingDestruction: pending });
+  }
+
+  // Default overview
+  const stats = calculateFilingStats(docs);
+  const approaching = getDocumentsApproachingExpiry(docs);
+  const expired = getExpiredDocuments(docs);
+
+  return NextResponse.json({
+    stats,
+    approachingExpiry: approaching.slice(0, 20),
+    expiredDocuments: expired.slice(0, 20),
+    retentionPolicies: RETENTION_POLICIES,
+  });
+}
 function filing_cabinet_mapToDocument(row: any): FiledDocument {
   return {
     id: row.id,
@@ -9331,22 +11266,251 @@ function filing_cabinet_getDemoData(
   category: FilingCategory | null,
   view: string,
 ) {
-  const filing_cabinet_home = homeId ?? "home-oak";
-  const filing_cabinet_demoDocuments: FiledDocument[] = [
+  const home = homeId ?? "home-oak";
+
+  const demoDocuments: FiledDocument[] = [
     // Child records
-];
-  let filing_cabinet_filteredDocs = demoDocuments;
-  const filing_cabinet_now = new Date().toISOString();
-    const filing_cabinet_retentionStatus = checkRetentionStatus(filteredDocs, now);
-    const filing_cabinet_approaching = getDocumentsApproachingExpiry(filteredDocs, 90, now);
-    const filing_cabinet_expired = getExpiredDocuments(filteredDocs, now);
-    const filing_cabinet_expired_dup1 = getExpiredDocuments(filteredDocs, now);
-    const filing_cabinet_pending = filteredDocs.filter(d =>
+    {
+      id: "doc-cr-001",
+      title: "Jordan Williams — LAC Care Record",
+      category: "child_record",
+      sensitivity: "highly_sensitive",
+      homeId: home,
+      childId: "child-jordan",
+      filedBy: "user-rsw-1",
+      filedAt: "2024-01-15T10:00:00Z",
+      status: "active",
+      retentionExpiresAt: "2085-06-15T00:00:00Z",
+      retentionBasis: "chr_2015_schedule_3",
+      retentionYears: 75,
+      tags: ["lac", "primary-record"],
+      version: 1,
+      accessCount: 45,
+      lastAccessedAt: "2026-05-15T14:30:00Z",
+      lastAccessedBy: "user-tl-1",
+    },
+    {
+      id: "doc-cp-001",
+      title: "Jordan Williams — Placement Plan Q2 2026",
+      category: "care_plan",
+      sensitivity: "highly_sensitive",
+      homeId: home,
+      childId: "child-jordan",
+      filedBy: "user-tl-1",
+      filedAt: "2026-04-01T09:00:00Z",
+      status: "active",
+      retentionExpiresAt: "2085-06-15T00:00:00Z",
+      retentionBasis: "chr_2015_schedule_3",
+      retentionYears: 75,
+      tags: ["placement-plan", "q2-2026"],
+      version: 3,
+      previousVersionId: "doc-cp-001-v2",
+      accessCount: 12,
+    },
+    // Safeguarding
+    {
+      id: "doc-sg-001",
+      title: "Safeguarding Referral SR-2026-003 — Jordan",
+      category: "safeguarding",
+      sensitivity: "restricted",
+      homeId: home,
+      childId: "child-jordan",
+      filedBy: "user-tl-1",
+      filedAt: "2026-03-22T16:45:00Z",
+      status: "active",
+      retentionExpiresAt: "2125-03-22T16:45:00Z",
+      retentionBasis: "safeguarding_indefinite",
+      retentionYears: 99,
+      tags: ["safeguarding", "referral", "disclosure"],
+      version: 1,
+      accessCount: 8,
+    },
+    // Daily records
+    {
+      id: "doc-dl-001",
+      title: "Daily Log — Morning Shift 16 May 2026",
+      category: "daily_record",
+      sensitivity: "standard",
+      homeId: home,
+      filedBy: "user-rsw-2",
+      filedAt: "2026-05-16T14:30:00Z",
+      status: "active",
+      retentionExpiresAt: "2041-05-16T14:30:00Z",
+      retentionBasis: "chr_2015_schedule_3",
+      retentionYears: 15,
+      tags: ["daily", "shift-morning", "may-2026"],
+      version: 1,
+      accessCount: 2,
+    },
+    // Incident
+    {
+      id: "doc-inc-001",
+      title: "Incident Report — Restraint IR-2026-008",
+      category: "incident",
+      sensitivity: "sensitive",
+      homeId: home,
+      childId: "child-jordan",
+      filedBy: "user-rsw-1",
+      filedAt: "2026-02-14T20:15:00Z",
+      status: "active",
+      retentionExpiresAt: "2051-02-14T20:15:00Z",
+      retentionBasis: "limitation_act",
+      retentionYears: 25,
+      tags: ["incident", "restraint", "pi"],
+      version: 1,
+      accessCount: 15,
+    },
+    // Staff personnel
+    {
+      id: "doc-sp-001",
+      title: "Sarah Mitchell — Supervision Record May 2026",
+      category: "staff_personnel",
+      sensitivity: "sensitive",
+      homeId: home,
+      staffId: "staff-sarah",
+      filedBy: "user-tl-1",
+      filedAt: "2026-05-10T11:00:00Z",
+      status: "active",
+      retentionExpiresAt: "2033-05-10T11:00:00Z",
+      retentionBasis: "employment_law",
+      retentionYears: 7,
+      tags: ["supervision", "may-2026"],
+      version: 1,
+      accessCount: 3,
+    },
+    // Regulatory
+    {
+      id: "doc-reg-001",
+      title: "Reg 44 Report — April 2026",
+      category: "regulatory",
+      sensitivity: "standard",
+      homeId: home,
+      filedBy: "user-reg44-1",
+      filedAt: "2026-04-28T10:00:00Z",
+      status: "active",
+      retentionExpiresAt: "2041-04-28T10:00:00Z",
+      retentionBasis: "chr_2015_schedule_3",
+      retentionYears: 15,
+      tags: ["reg44", "april-2026", "visitor-report"],
+      version: 1,
+      accessCount: 7,
+    },
+    // Document approaching expiry
+    {
+      id: "doc-pol-001",
+      title: "Behaviour Management Policy v4 (superseded)",
+      category: "policy",
+      sensitivity: "standard",
+      homeId: home,
+      filedBy: "user-rm-1",
+      filedAt: "2019-06-01T09:00:00Z",
+      status: "archived",
+      retentionExpiresAt: "2026-06-01T09:00:00Z",
+      retentionBasis: "organisational",
+      retentionYears: 7,
+      tags: ["policy", "behaviour", "superseded"],
+      version: 4,
+      accessCount: 1,
+    },
+    // Document on hold
+    {
+      id: "doc-hold-001",
+      title: "Correspondence — Social Worker re: Placement",
+      category: "correspondence",
+      sensitivity: "sensitive",
+      homeId: home,
+      childId: "child-jordan",
+      filedBy: "user-rm-1",
+      filedAt: "2023-11-15T14:00:00Z",
+      status: "hold",
+      retentionExpiresAt: "2030-11-15T14:00:00Z",
+      retentionBasis: "organisational",
+      retentionYears: 7,
+      tags: ["correspondence", "social-worker", "placement"],
+      version: 1,
+      holdReason: "Subject Access Request in progress — do not destroy",
+      holdPlacedBy: "user-rm-1",
+      holdPlacedAt: "2026-04-01T09:00:00Z",
+      accessCount: 5,
+    },
+    // Medication
+    {
+      id: "doc-med-001",
+      title: "MAR Chart — Jordan — May 2026",
+      category: "medication",
+      sensitivity: "sensitive",
+      homeId: home,
+      childId: "child-jordan",
+      filedBy: "user-rsw-1",
+      filedAt: "2026-05-01T08:00:00Z",
+      status: "active",
+      retentionExpiresAt: "2051-05-01T08:00:00Z",
+      retentionBasis: "chr_2015_schedule_3",
+      retentionYears: 25,
+      tags: ["mar", "medication", "may-2026"],
+      version: 1,
+      accessCount: 30,
+      lastAccessedAt: "2026-05-16T08:05:00Z",
+    },
+  ];
+
+  // Filter by child if requested
+  let filteredDocs = demoDocuments;
+  if (childId) {
+    filteredDocs = filteredDocs.filter(d => d.childId === childId);
+  }
+  if (category) {
+    filteredDocs = filteredDocs.filter(d => d.category === category);
+  }
+
+  const now = new Date().toISOString();
+
+  if (view === "retention") {
+    const retentionStatus = checkRetentionStatus(filteredDocs, now);
+    const approaching = getDocumentsApproachingExpiry(filteredDocs, 90, now);
+    const expired = getExpiredDocuments(filteredDocs, now);
+    return { retentionStatus, approaching, expired };
+  }
+
+  if (view === "destruction") {
+    const expired = getExpiredDocuments(filteredDocs, now);
+    const pending = filteredDocs.filter(d =>
       d.status === "pending_destruction" || d.status === "destruction_approved",
     );
-  const filing_cabinet_stats = calculateFilingStats(filteredDocs, now);
-  const filing_cabinet_approaching_dup1 = getDocumentsApproachingExpiry(filteredDocs, 90, now);
-  const filing_cabinet_expired_dup2 = getExpiredDocuments(filteredDocs, now);
+    return { expired, pendingDestruction: pending };
+  }
+
+  if (view === "policies") {
+    return {
+      policies: RETENTION_POLICIES.map(p => ({
+        ...p,
+        categoryLabel: getCategoryLabel(p.category),
+      })),
+    };
+  }
+
+  // Default overview
+  const stats = calculateFilingStats(filteredDocs, now);
+  const approaching = getDocumentsApproachingExpiry(filteredDocs, 90, now);
+  const expired = getExpiredDocuments(filteredDocs, now);
+
+  return {
+    stats,
+    approachingExpiry: approaching,
+    expiredDocuments: expired,
+    recentDocuments: filteredDocs
+      .sort((a, b) => new Date(b.filedAt).getTime() - new Date(a.filedAt).getTime())
+      .slice(0, 10),
+    categoryBreakdown: RETENTION_POLICIES.map(p => ({
+      category: p.category,
+      label: getCategoryLabel(p.category),
+      count: filteredDocs.filter(d => d.category === p.category).length,
+      retentionYears: p.defaultRetentionYears,
+      basis: p.basis,
+    })).filter(c => c.count > 0),
+    holdCount: filteredDocs.filter(d => d.status === "hold").length,
+  };
+}
 
 async function get_filing_cabinet(req: NextRequest): Promise<Response> {
 
@@ -9360,7 +11524,7 @@ async function get_filing_cabinet(req: NextRequest): Promise<Response> {
     const sb = createServerClient();
 
     if (sb && isSupabaseEnabled()) {
-      return await handleLiveData(sb, homeId, childId, category, view);
+      return await filing_cabinet_handleLiveData(sb, homeId, childId, category, view);
     }
 
     return NextResponse.json(filing_cabinet_getDemoData(homeId, childId, category, view));
@@ -9611,9 +11775,54 @@ const fire_safety_preparedness_DEMO_DRILLS: FireDrillRecord[] = [
     issuesIdentified: [],
     correctiveActionsTaken: false,
   },
+  {
+    id: "fd-2",
+    drillDate: "2026-03-10",
+    drillType: "unannounced",
+    conductedBy: "Sarah Johnson",
+    outcome: "successful",
+    evacuationTimeSeconds: 110,
+    allChildrenParticipated: true,
+    allStaffParticipated: true,
+    issuesIdentified: ["Fire door propped open in kitchen"],
+    correctiveActionsTaken: true,
+  },
+  {
+    id: "fd-3",
+    drillDate: "2026-04-05",
+    drillType: "night_drill",
+    conductedBy: "Tom Richards",
+    outcome: "successful",
+    evacuationTimeSeconds: 140,
+    allChildrenParticipated: true,
+    allStaffParticipated: true,
+    issuesIdentified: [],
+    correctiveActionsTaken: false,
+  },
+  {
+    id: "fd-4",
+    drillDate: "2026-05-01",
+    drillType: "partial_evacuation",
+    conductedBy: "Lisa Williams",
+    outcome: "successful",
+    evacuationTimeSeconds: 85,
+    allChildrenParticipated: true,
+    allStaffParticipated: true,
+    issuesIdentified: [],
+    correctiveActionsTaken: false,
+  },
 ];
 const fire_safety_preparedness_DEMO_CHECKS: EquipmentCheck[] = [
   { id: "ec-1", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "smoke_alarm", location: "Hallway Ground Floor", outcome: "pass", nextCheckDue: "2026-05-01" },
+  { id: "ec-2", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "smoke_alarm", location: "Hallway First Floor", outcome: "pass", nextCheckDue: "2026-05-01" },
+  { id: "ec-3", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "fire_extinguisher", location: "Kitchen", outcome: "pass", nextCheckDue: "2026-10-01" },
+  { id: "ec-4", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "fire_extinguisher", location: "Staff Office", outcome: "pass", nextCheckDue: "2026-10-01" },
+  { id: "ec-5", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "fire_blanket", location: "Kitchen", outcome: "pass", nextCheckDue: "2026-10-01" },
+  { id: "ec-6", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "emergency_lighting", location: "All Corridors", outcome: "pass", nextCheckDue: "2026-07-01" },
+  { id: "ec-7", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "fire_door", location: "Kitchen", outcome: "pass", nextCheckDue: "2026-07-01" },
+  { id: "ec-8", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "fire_door", location: "Lounge", outcome: "pass", nextCheckDue: "2026-07-01" },
+  { id: "ec-9", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "signage", location: "All Floors", outcome: "pass", nextCheckDue: "2026-10-01" },
+  { id: "ec-10", checkDate: "2026-04-01", checkedBy: "Tom Richards", equipmentType: "break_glass_point", location: "Main Entrance", outcome: "pass", nextCheckDue: "2026-07-01" },
 ];
 const fire_safety_preparedness_DEMO_PLANS: EvacuationPlan[] = [
   {
@@ -9627,11 +11836,36 @@ const fire_safety_preparedness_DEMO_PLANS: EvacuationPlan[] = [
     mobilityConsiderations: [],
     nightEvacuationPlan: true,
   },
+  {
+    id: "ep-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    peepStatus: "current",
+    lastReviewDate: "2026-03-15",
+    assemblyPointKnown: true,
+    escapeRouteAccessible: true,
+    mobilityConsiderations: [],
+    nightEvacuationPlan: true,
+  },
+  {
+    id: "ep-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    peepStatus: "current",
+    lastReviewDate: "2026-04-10",
+    assemblyPointKnown: true,
+    escapeRouteAccessible: true,
+    mobilityConsiderations: ["Sensory sensitivity to alarms — staff to provide reassurance"],
+    nightEvacuationPlan: true,
+  },
 ];
 const fire_safety_preparedness_DEMO_TRAINING: StaffFireTraining[] = [
   { id: "ft-1", staffId: "staff-sarah", staffName: "Sarah Johnson", fireAwareness: true, fireMarshalTrained: true, evacuationProcedures: true, extinguisherUse: true, peepAwareness: true, nightResponseTrained: true },
-
+  { id: "ft-2", staffId: "staff-tom", staffName: "Tom Richards", fireAwareness: true, fireMarshalTrained: true, evacuationProcedures: true, extinguisherUse: true, peepAwareness: true, nightResponseTrained: true },
+  { id: "ft-3", staffId: "staff-lisa", staffName: "Lisa Williams", fireAwareness: true, fireMarshalTrained: true, evacuationProcedures: true, extinguisherUse: true, peepAwareness: true, nightResponseTrained: true },
+  { id: "ft-4", staffId: "staff-darren", staffName: "Darren Laville", fireAwareness: true, fireMarshalTrained: true, evacuationProcedures: true, extinguisherUse: true, peepAwareness: true, nightResponseTrained: true },
 ];
+
 async function get_fire_safety_preparedness(req: NextRequest): Promise<Response> {
 
   const result = generateFireSafetyPreparednessIntelligence(
@@ -9793,6 +12027,15 @@ async function get_fire_safety(req: NextRequest): Promise<Response> {
 // ─── food-nutrition-quality ────────────────────────────────────────────
 const food_nutrition_quality_DEMO_RECORDS: MealRecord[] = [
   { id: "rec-1", childId: "child-alex", childName: "Alex", mealDate: "2026-02-10", mealType: "breakfast", nutritionRating: "excellent", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-2", childId: "child-alex", childName: "Alex", mealDate: "2026-02-10", mealType: "lunch", nutritionRating: "good", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-3", childId: "child-alex", childName: "Alex", mealDate: "2026-03-05", mealType: "dinner", nutritionRating: "excellent", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-4", childId: "child-jordan", childName: "Jordan", mealDate: "2026-02-18", mealType: "snack", nutritionRating: "good", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-5", childId: "child-jordan", childName: "Jordan", mealDate: "2026-03-22", mealType: "special_dietary", nutritionRating: "excellent", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-6", childId: "child-jordan", childName: "Jordan", mealDate: "2026-04-30", mealType: "cultural_meal", nutritionRating: "excellent", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-7", childId: "child-morgan", childName: "Morgan", mealDate: "2026-01-20", mealType: "celebration", nutritionRating: "good", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-8", childId: "child-morgan", childName: "Morgan", mealDate: "2026-03-15", mealType: "packed_lunch", nutritionRating: "excellent", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-9", childId: "child-morgan", childName: "Morgan", mealDate: "2026-04-12", mealType: "breakfast", nutritionRating: "excellent", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
+  { id: "rec-10", childId: "child-alex", childName: "Alex", mealDate: "2026-05-01", mealType: "snack", nutritionRating: "good", dietaryNeedsMet: true, childChoiceOffered: true, portionAppropriate: true, freshIngredientsUsed: true, documentedInRecord: true, childSatisfied: true },
 ];
 const food_nutrition_quality_DEMO_POLICY: NutritionPolicy = {
   id: "pol-1",
@@ -9806,8 +12049,11 @@ const food_nutrition_quality_DEMO_POLICY: NutritionPolicy = {
 };
 const food_nutrition_quality_DEMO_TRAINING: StaffNutritionTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", foodHygiene: true, nutritionalPlanning: true, allergyAwareness: true, culturalDietaryNeeds: true, portionControl: true, mealPreparation: true },
-
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", foodHygiene: true, nutritionalPlanning: true, allergyAwareness: true, culturalDietaryNeeds: false, portionControl: true, mealPreparation: true },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", foodHygiene: true, nutritionalPlanning: true, allergyAwareness: true, culturalDietaryNeeds: true, portionControl: true, mealPreparation: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", foodHygiene: true, nutritionalPlanning: true, allergyAwareness: true, culturalDietaryNeeds: true, portionControl: true, mealPreparation: true },
 ];
+
 async function get_food_nutrition_quality(req: NextRequest): Promise<Response> {
 
   const result = generateFoodNutritionQualityIntelligence(
@@ -9899,23 +12145,104 @@ const governance_DEMO_REG45_REPORTS: Reg45Report[] = [
     staffConsulted: true,
     keyFindings: ["Strong safeguarding culture embedded", "PEP meeting follow-up timely", "Environment well-maintained"],
   },
+  {
+    id: "r45-feb",
+    monthCovered: "2026-02",
+    completedDate: "2026-03-12",
+    dueDate: "2026-03-15",
+    submittedToOfsted: true,
+    submissionDate: "2026-03-14",
+    areasReviewed: ["behaviour", "activities", "contact", "staffing"],
+    actionsIdentified: 3,
+    actionsCompleted: 3,
+    childrenConsulted: true,
+    staffConsulted: true,
+    keyFindings: ["Positive behaviour trends continuing", "Activity provision diverse and child-led", "Family contact well managed"],
+  },
+  {
+    id: "r45-mar",
+    monthCovered: "2026-03",
+    completedDate: "2026-04-08",
+    dueDate: "2026-04-15",
+    submittedToOfsted: true,
+    submissionDate: "2026-04-10",
+    areasReviewed: ["supervision", "training", "workforce", "therapeutics"],
+    actionsIdentified: 5,
+    actionsCompleted: 4,
+    childrenConsulted: true,
+    staffConsulted: true,
+    keyFindings: ["Supervision compliance improving — 95%", "One training gap identified for agency staff", "PACE model consistently applied"],
+  },
+  {
+    id: "r45-apr",
+    monthCovered: "2026-04",
+    completedDate: "2026-05-10",
+    dueDate: "2026-05-15",
+    submittedToOfsted: true,
+    submissionDate: "2026-05-12",
+    areasReviewed: ["independence", "leaving_care", "health_safety", "privacy"],
+    actionsIdentified: 3,
+    actionsCompleted: 2,
+    childrenConsulted: true,
+    staffConsulted: false,
+    keyFindings: ["Morgan's independence plan progressing well", "Health & safety checks current", "Privacy audit shows good practice"],
+  },
+  {
+    id: "r45-may",
+    monthCovered: "2026-05",
+    dueDate: "2026-06-15",
+    submittedToOfsted: false,
+    areasReviewed: [],
+    actionsIdentified: 0,
+    actionsCompleted: 0,
+    childrenConsulted: false,
+    staffConsulted: false,
+    keyFindings: [],
+  },
 ];
 const governance_DEMO_POLICIES: PolicyRecord[] = [
   { id: "pol-1", policyName: "Safeguarding & Child Protection", category: "safeguarding", lastReviewDate: "2026-01-15", nextReviewDue: "2027-01-15", reviewedBy: "Darren Laville", version: "4.2", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+  { id: "pol-2", policyName: "Behaviour Management & De-escalation", category: "behaviour_management", lastReviewDate: "2025-11-01", nextReviewDue: "2026-11-01", reviewedBy: "Darren Laville", version: "3.1", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+  { id: "pol-3", policyName: "Missing Children Protocol", category: "missing_children", lastReviewDate: "2025-09-01", nextReviewDue: "2026-09-01", reviewedBy: "Darren Laville", version: "2.5", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 3, totalStaff: 4 },
+  { id: "pol-4", policyName: "Complaints Procedure", category: "complaints", lastReviewDate: "2026-02-01", nextReviewDue: "2027-02-01", reviewedBy: "Darren Laville", version: "2.0", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+  { id: "pol-5", policyName: "Fire Safety & Emergency Procedures", category: "fire_safety", lastReviewDate: "2025-12-01", nextReviewDue: "2026-12-01", reviewedBy: "Darren Laville", version: "3.0", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+  { id: "pol-6", policyName: "Medication Management", category: "medication", lastReviewDate: "2026-01-20", nextReviewDue: "2027-01-20", reviewedBy: "Darren Laville", version: "2.3", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+  { id: "pol-7", policyName: "Equality, Diversity & Inclusion", category: "equality_diversity", lastReviewDate: "2025-10-15", nextReviewDue: "2026-10-15", reviewedBy: "Darren Laville", version: "2.1", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+  { id: "pol-8", policyName: "Whistleblowing & Escalation", category: "whistleblowing", lastReviewDate: "2025-11-15", nextReviewDue: "2026-11-15", reviewedBy: "Darren Laville", version: "1.4", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+  { id: "pol-9", policyName: "Data Protection & GDPR", category: "data_protection", lastReviewDate: "2026-03-01", nextReviewDue: "2027-03-01", reviewedBy: "Darren Laville", version: "3.0", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
+  { id: "pol-10", policyName: "Physical Intervention & Restraint", category: "restraint", lastReviewDate: "2026-02-15", nextReviewDue: "2027-02-15", reviewedBy: "Darren Laville", version: "2.8", approvedBy: "RI Board", staffAcknowledged: true, staffAcknowledgedCount: 4, totalStaff: 4 },
 ];
 const governance_DEMO_NOTIFICATIONS: NotificationRecord[] = [
   { id: "not-1", date: "2026-02-10", notificationType: "missing_child", childId: "child-morgan", recipients: ["ofsted", "placing_authority", "police"], notifiedWithinTimescale: true, timescaleHours: 24, actualHours: 2, description: "Morgan absent from home without permission — located at shopping centre after 3 hours, returned safely", ofstedReference: "SC-2026-0234" },
+  { id: "not-2", date: "2026-03-15", notificationType: "restraint", childId: "child-alex", recipients: ["ofsted", "placing_authority", "parent_carer"], notifiedWithinTimescale: true, timescaleHours: 24, actualHours: 4, description: "Physical intervention (brief hold) — Alex escalated following contact session; de-escalation attempted first; hold lasted 45 seconds" },
+  { id: "not-3", date: "2026-04-20", notificationType: "allegation_against_staff", recipients: ["ofsted", "placing_authority", "lado"], notifiedWithinTimescale: true, timescaleHours: 24, actualHours: 3, description: "Allegation of inappropriate restraint by agency worker — LADO referral made same day" },
 ];
 const governance_DEMO_OBJECTIVES: DevelopmentObjective[] = [
   { id: "obj-1", description: "Implement structured therapeutic key-work programme aligned to PACE model", category: "quality_of_care", targetDate: "2026-06-01", status: "completed", completedDate: "2026-04-15", progress: 100, measurableOutcome: "All children have weekly key-work sessions using PACE framework", evidence: "Key-work calendars show 100% compliance; session quality audited monthly", lastReviewedDate: "2026-04-20" },
+  { id: "obj-2", description: "Achieve Outstanding rating across all safeguarding KPIs", category: "safeguarding", targetDate: "2026-09-01", status: "in_progress", progress: 70, measurableOutcome: "All safeguarding metrics at outstanding threshold for 3 consecutive months", lastReviewedDate: "2026-05-01" },
+  { id: "obj-3", description: "Complete therapeutic parenting Level 3 training for all permanent staff", category: "workforce", targetDate: "2026-03-31", status: "completed", completedDate: "2026-03-20", progress: 100, measurableOutcome: "All permanent staff hold Level 3 therapeutic parenting certificate", evidence: "Training records updated; certificates on file for all 4 staff", lastReviewedDate: "2026-04-01" },
+  { id: "obj-4", description: "Improve family contact quality metrics above 80% for all children", category: "quality_of_care", targetDate: "2026-07-01", status: "in_progress", progress: 55, measurableOutcome: "Contact quality score above 80% for all children every month", lastReviewedDate: "2026-05-10" },
+  { id: "obj-5", description: "Establish children's council with elected representatives and charter", category: "participation", targetDate: "2026-04-01", status: "completed", completedDate: "2026-03-25", progress: 100, measurableOutcome: "Monthly children's council meetings with documented outcomes influencing practice", evidence: "3 meetings held; children's council charter signed by all; menu changes implemented", lastReviewedDate: "2026-04-15" },
+  { id: "obj-6", description: "Reduce use of physical intervention by 30% through enhanced de-escalation", category: "safeguarding", targetDate: "2026-12-31", status: "in_progress", progress: 40, measurableOutcome: "Physical intervention rate reduced from baseline by 30%", lastReviewedDate: "2026-05-05" },
 ];
 const governance_DEMO_MEETINGS: StaffMeetingRecord[] = [
   { id: "mtg-1", date: "2026-01-15", meetingType: "staff_team", attendeeCount: 4, expectedAttendees: 4, minutesRecorded: true, actionsAgreed: 5, actionsCompleted: 5, keyTopics: ["New year planning", "Training schedule 2026", "Safeguarding refresher", "Reg 44 feedback"] },
+  { id: "mtg-2", date: "2026-02-12", meetingType: "staff_team", attendeeCount: 3, expectedAttendees: 4, minutesRecorded: true, actionsAgreed: 4, actionsCompleted: 3, keyTopics: ["Reg 44 February feedback", "Activity planning", "Key-work review", "Missing protocol update"] },
+  { id: "mtg-3", date: "2026-03-05", meetingType: "management", attendeeCount: 2, expectedAttendees: 2, minutesRecorded: true, actionsAgreed: 3, actionsCompleted: 3, keyTopics: ["Budget Q1 review", "Ofsted preparation plan", "Staff wellbeing check", "Development plan review"] },
+  { id: "mtg-4", date: "2026-03-19", meetingType: "staff_team", attendeeCount: 4, expectedAttendees: 4, minutesRecorded: true, actionsAgreed: 6, actionsCompleted: 5, keyTopics: ["Therapeutic model embedding", "Incident analysis Q1", "Training feedback", "Ramadan preparation"] },
+  { id: "mtg-5", date: "2026-04-16", meetingType: "staff_team", attendeeCount: 4, expectedAttendees: 4, minutesRecorded: true, actionsAgreed: 4, actionsCompleted: 4, keyTopics: ["Peer dynamics update", "Missing protocol review", "Summer activities", "Eid celebration planning"] },
+  { id: "mtg-6", date: "2026-05-07", meetingType: "children_meeting", attendeeCount: 3, expectedAttendees: 3, minutesRecorded: true, actionsAgreed: 3, actionsCompleted: 2, keyTopics: ["Menu choices", "Activity requests", "House rules feedback", "Garden improvements"] },
+  { id: "mtg-7", date: "2026-05-14", meetingType: "staff_team", attendeeCount: 3, expectedAttendees: 4, minutesRecorded: true, actionsAgreed: 5, actionsCompleted: 3, keyTopics: ["Quality audit outcomes", "Supervision catch-up", "Forthcoming transitions", "Agency worker review"] },
 ];
 const governance_DEMO_PRESENCE: ManagementPresence[] = [
   { weekCommencing: "2026-04-07", rmHoursInHome: 28, rmTotalHours: 40, drmHoursInHome: 20, drmTotalHours: 40, shiftsCoveredByManagement: 1, childInteractionEvents: 6 },
-
+  { weekCommencing: "2026-04-14", rmHoursInHome: 25, rmTotalHours: 40, drmHoursInHome: 22, drmTotalHours: 40, shiftsCoveredByManagement: 0, childInteractionEvents: 5 },
+  { weekCommencing: "2026-04-21", rmHoursInHome: 30, rmTotalHours: 40, drmHoursInHome: 18, drmTotalHours: 40, shiftsCoveredByManagement: 2, childInteractionEvents: 7 },
+  { weekCommencing: "2026-04-28", rmHoursInHome: 22, rmTotalHours: 40, drmHoursInHome: 24, drmTotalHours: 40, shiftsCoveredByManagement: 0, childInteractionEvents: 5 },
+  { weekCommencing: "2026-05-05", rmHoursInHome: 26, rmTotalHours: 40, drmHoursInHome: 20, drmTotalHours: 40, shiftsCoveredByManagement: 1, childInteractionEvents: 6 },
+  { weekCommencing: "2026-05-12", rmHoursInHome: 24, rmTotalHours: 40, drmHoursInHome: 22, drmTotalHours: 40, shiftsCoveredByManagement: 0, childInteractionEvents: 5 },
 ];
+
 async function get_governance(req: NextRequest): Promise<Response> {
 
   const result = generateGovernanceIntelligence(
@@ -10016,7 +12343,7 @@ async function post_governance(req: NextRequest): Promise<Response> {
 
 // ─── handover-communication-quality ────────────────────────────────────
 const handover_communication_quality_STAFF_IDS = ["darren", "sarah", "tom", "lisa"];
-const STAFF_NAMES: Record<string, string> = {
+const handover_communication_quality_STAFF_NAMES: Record<string, string> = {
   darren: "Darren",
   sarah: "Sarah",
   tom: "Tom",
@@ -10290,7 +12617,7 @@ async function get_handover_communication_quality(req: NextRequest): Promise<Res
       meetings,
       assessments,
       handover_communication_quality_STAFF_IDS,
-      STAFF_NAMES,
+      handover_communication_quality_STAFF_NAMES,
       "oak-house",
       "2025-01-01",
       "2025-06-30",
@@ -10470,6 +12797,17 @@ async function get_handover(req: NextRequest): Promise<Response> {
 // ─── health-intelligence ───────────────────────────────────────────────
 const health_intelligence_DEMO_RECORDS: HealthIntelligenceRecord[] = [
   { id: "hi-001", homeId: "home-oak", date: "2025-01-20", childId: "child-alex", childName: "Alex", category: "health_assessment", outcome: "health_improved", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+  { id: "hi-002", homeId: "home-oak", date: "2025-03-05", childId: "child-alex", childName: "Alex", category: "dental_check", outcome: "health_maintained", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+  { id: "hi-003", homeId: "home-oak", date: "2025-05-12", childId: "child-alex", childName: "Alex", category: "mental_health_screening", outcome: "health_maintained", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: false },
+  { id: "hi-004", homeId: "home-oak", date: "2025-07-18", childId: "child-alex", childName: "Alex", category: "immunisation_review", outcome: "health_improved", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: false, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+  { id: "hi-005", homeId: "home-oak", date: "2025-02-10", childId: "child-jordan", childName: "Jordan", category: "medical_appointment", outcome: "health_concern_identified", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+  { id: "hi-006", homeId: "home-oak", date: "2025-04-22", childId: "child-jordan", childName: "Jordan", category: "health_action_plan", outcome: "health_improved", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+  { id: "hi-007", homeId: "home-oak", date: "2025-06-15", childId: "child-jordan", childName: "Jordan", category: "medication_review", outcome: "health_maintained", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: false, documentationComplete: true, timelyRecording: true },
+  { id: "hi-008", homeId: "home-oak", date: "2025-09-01", childId: "child-jordan", childName: "Jordan", category: "health_promotion", outcome: "health_improved", healthNeedsAssessed: true, consentObtained: false, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+  { id: "hi-009", homeId: "home-oak", date: "2025-01-30", childId: "child-morgan", childName: "Morgan", category: "health_assessment", outcome: "health_maintained", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+  { id: "hi-010", homeId: "home-oak", date: "2025-04-05", childId: "child-morgan", childName: "Morgan", category: "dental_check", outcome: "health_maintained", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: false, timelyRecording: true },
+  { id: "hi-011", homeId: "home-oak", date: "2025-06-20", childId: "child-morgan", childName: "Morgan", category: "mental_health_screening", outcome: "health_concern_identified", healthNeedsAssessed: true, consentObtained: true, childViewIncluded: false, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
+  { id: "hi-012", homeId: "home-oak", date: "2025-10-10", childId: "child-morgan", childName: "Morgan", category: "medication_review", outcome: "health_improved", healthNeedsAssessed: false, consentObtained: true, childViewIncluded: true, followUpPlanned: true, documentationComplete: true, timelyRecording: true },
 ];
 const health_intelligence_DEMO_POLICY: HealthIntelligencePolicy = {
   healthCarePolicy: true, consentToTreatmentPolicy: true, medicationManagementPolicy: true,
@@ -10477,8 +12815,11 @@ const health_intelligence_DEMO_POLICY: HealthIntelligencePolicy = {
 };
 const health_intelligence_DEMO_STAFF: StaffHealthIntelligenceTraining[] = [
   { staffId: "staff-sarah", healthAssessmentKnowledge: true, medicationAdministration: true, mentalHealthAwareness: true, firstAidTraining: true, healthPromotionSkills: true, consentProcedures: true },
-
+  { staffId: "staff-tom", healthAssessmentKnowledge: true, medicationAdministration: true, mentalHealthAwareness: true, firstAidTraining: true, healthPromotionSkills: true, consentProcedures: false },
+  { staffId: "staff-lisa", healthAssessmentKnowledge: true, medicationAdministration: true, mentalHealthAwareness: true, firstAidTraining: false, healthPromotionSkills: true, consentProcedures: true },
+  { staffId: "staff-darren", healthAssessmentKnowledge: true, medicationAdministration: true, mentalHealthAwareness: true, firstAidTraining: true, healthPromotionSkills: true, consentProcedures: true },
 ];
+
 async function get_health_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateHealthIntelligenceResult({
@@ -10491,17 +12832,36 @@ async function get_health_intelligence(req: NextRequest): Promise<Response> {
 // ─── health-screening-compliance ───────────────────────────────────────
 const health_screening_compliance_DEMO_SCREENINGS: HealthScreeningRecord[] = [
   // Alex — all on time, good outcomes
+  { id: "hs-a1", childId: "child-alex", childName: "Alex", screeningType: "dental_check", status: "completed_on_time", scheduledDate: "2026-02-15", completedDate: "2026-02-15", outcome: "no_concerns", provider: "NHS Community Dental", consentStatus: "consent_given", referralMade: false, referralFollowedUp: null, documentedInCareFile: true },
+  { id: "hs-a2", childId: "child-alex", childName: "Alex", screeningType: "optical_check", status: "completed_on_time", scheduledDate: "2026-03-10", completedDate: "2026-03-10", outcome: "minor_concerns", provider: "Specsavers", consentStatus: "consent_given", referralMade: true, referralFollowedUp: true, documentedInCareFile: true },
+  { id: "hs-a3", childId: "child-alex", childName: "Alex", screeningType: "annual_health_assessment", status: "completed_on_time", scheduledDate: "2026-01-20", completedDate: "2026-01-20", outcome: "no_concerns", provider: "LAC Nurse Team", consentStatus: "consent_given", referralMade: false, referralFollowedUp: null, documentedInCareFile: true },
+  { id: "hs-a4", childId: "child-alex", childName: "Alex", screeningType: "immunisation", status: "completed_on_time", scheduledDate: "2026-04-01", completedDate: "2026-04-01", outcome: "no_concerns", provider: "GP Surgery", consentStatus: "consent_given", referralMade: false, referralFollowedUp: null, documentedInCareFile: true },
+  // Jordan — some late, one overdue
+  { id: "hs-j1", childId: "child-jordan", childName: "Jordan", screeningType: "dental_check", status: "completed_late", scheduledDate: "2026-02-01", completedDate: "2026-02-20", outcome: "treatment_required", provider: "NHS Community Dental", consentStatus: "consent_given", referralMade: true, referralFollowedUp: true, documentedInCareFile: true },
+  { id: "hs-j2", childId: "child-jordan", childName: "Jordan", screeningType: "mental_health_screening", status: "completed_on_time", scheduledDate: "2026-03-15", completedDate: "2026-03-15", outcome: "referral_made", provider: "CAMHS Liaison", consentStatus: "gillick_competent", referralMade: true, referralFollowedUp: true, documentedInCareFile: true },
+  { id: "hs-j3", childId: "child-jordan", childName: "Jordan", screeningType: "optical_check", status: "overdue", scheduledDate: "2026-04-01", completedDate: null, outcome: null, provider: null, consentStatus: "consent_given", referralMade: false, referralFollowedUp: null, documentedInCareFile: false },
+  // Morgan — good compliance
+  { id: "hs-m1", childId: "child-morgan", childName: "Morgan", screeningType: "dental_check", status: "completed_on_time", scheduledDate: "2026-02-10", completedDate: "2026-02-10", outcome: "no_concerns", provider: "NHS Community Dental", consentStatus: "consent_given", referralMade: false, referralFollowedUp: null, documentedInCareFile: true },
+  { id: "hs-m2", childId: "child-morgan", childName: "Morgan", screeningType: "annual_health_assessment", status: "completed_on_time", scheduledDate: "2026-03-01", completedDate: "2026-03-01", outcome: "no_concerns", provider: "LAC Nurse Team", consentStatus: "consent_given", referralMade: false, referralFollowedUp: null, documentedInCareFile: true },
+  { id: "hs-m3", childId: "child-morgan", childName: "Morgan", screeningType: "hearing_test", status: "completed_on_time", scheduledDate: "2026-04-15", completedDate: "2026-04-15", outcome: "no_concerns", provider: "Audiology", consentStatus: "consent_given", referralMade: false, referralFollowedUp: null, documentedInCareFile: true },
 ];
 const health_screening_compliance_DEMO_REGISTRATIONS: GPRegistration[] = [
   { id: "gp-a", childId: "child-alex", childName: "Alex", gpRegistrationStatus: "registered", gpPractice: "Oak Lane Surgery", registeredDate: "2025-09-01", lastAppointment: "2026-04-01", namedNurse: true, healthPassportUpToDate: true },
+  { id: "gp-j", childId: "child-jordan", childName: "Jordan", gpRegistrationStatus: "registered", gpPractice: "Oak Lane Surgery", registeredDate: "2025-11-15", lastAppointment: "2026-03-15", namedNurse: true, healthPassportUpToDate: true },
+  { id: "gp-m", childId: "child-morgan", childName: "Morgan", gpRegistrationStatus: "registered", gpPractice: "Riverside Medical Centre", registeredDate: "2025-10-01", lastAppointment: "2026-03-01", namedNurse: false, healthPassportUpToDate: true },
 ];
 const health_screening_compliance_DEMO_PLANS: HealthActionPlan[] = [
   { id: "hp-a", childId: "child-alex", childName: "Alex", planDate: "2026-01-20", reviewDate: "2026-04-20", healthNeedsIdentified: 2, healthNeedsAddressed: 2, childContributed: true, socialWorkerInformed: true, carerInformed: true, SDQCompleted: true, SDQScore: 8 },
+  { id: "hp-j", childId: "child-jordan", childName: "Jordan", planDate: "2026-02-01", reviewDate: "2026-05-01", healthNeedsIdentified: 4, healthNeedsAddressed: 3, childContributed: true, socialWorkerInformed: true, carerInformed: true, SDQCompleted: true, SDQScore: 18 },
+  { id: "hp-m", childId: "child-morgan", childName: "Morgan", planDate: "2026-03-01", reviewDate: "2026-06-01", healthNeedsIdentified: 1, healthNeedsAddressed: 1, childContributed: true, socialWorkerInformed: true, carerInformed: true, SDQCompleted: true, SDQScore: 6 },
 ];
 const health_screening_compliance_DEMO_TRAINING: HealthTraining[] = [
   { id: "ht-dl", staffId: "staff-darren", staffName: "Darren Laville", firstAidCurrent: true, medicationTrained: true, mentalHealthFirstAid: true, epilepsyTrained: true, allergyAwareness: true, healthPromotionTrained: true },
-
+  { id: "ht-sj", staffId: "staff-sarah", staffName: "Sarah Johnson", firstAidCurrent: true, medicationTrained: true, mentalHealthFirstAid: true, epilepsyTrained: false, allergyAwareness: true, healthPromotionTrained: true },
+  { id: "ht-tr", staffId: "staff-tom", staffName: "Tom Richards", firstAidCurrent: true, medicationTrained: true, mentalHealthFirstAid: false, epilepsyTrained: false, allergyAwareness: true, healthPromotionTrained: false },
+  { id: "ht-lw", staffId: "staff-lisa", staffName: "Lisa Williams", firstAidCurrent: true, medicationTrained: true, mentalHealthFirstAid: true, epilepsyTrained: true, allergyAwareness: true, healthPromotionTrained: true },
 ];
+
 async function get_health_screening_compliance(req: NextRequest): Promise<Response> {
 
   const result = generateHealthScreeningComplianceIntelligence(
@@ -10592,6 +12952,24 @@ async function post_health_screening_compliance(req: NextRequest): Promise<Respo
 // ─── health ────────────────────────────────────────────────────────────
 const health_DEMO_RECORDS: HealthRecord[] = [
   // Alex — solid compliance, diverse assessments
+  { id: "hr-a1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-01-15", assessmentType: "initial_health_assessment", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+  { id: "hr-a2", childId: "child-alex", childName: "Alex", assessmentDate: "2026-02-20", assessmentType: "dental_check", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+  { id: "hr-a3", childId: "child-alex", childName: "Alex", assessmentDate: "2026-03-10", assessmentType: "optical_check", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: false, parentCarerInformed: true },
+  { id: "hr-a4", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-05", assessmentType: "immunisation_review", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+  { id: "hr-a5", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-20", assessmentType: "sdq_assessment", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+
+  // Jordan — some late, one missed
+  { id: "hr-j1", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-01-10", assessmentType: "initial_health_assessment", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+  { id: "hr-j2", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-02-15", assessmentType: "review_health_assessment", outcome: "completed_late", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+  { id: "hr-j3", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-03-20", assessmentType: "mental_health_review", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+  { id: "hr-j4", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-10", assessmentType: "dental_check", outcome: "missed", childConsented: false, actionPlanCreated: false, gpNotified: false, documentedInCareFile: false, followUpScheduled: true, parentCarerInformed: false },
+  { id: "hr-j5", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-05-01", assessmentType: "specialist_referral", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+
+  // Morgan — good compliance
+  { id: "hr-m1", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-01-25", assessmentType: "initial_health_assessment", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+  { id: "hr-m2", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-03-05", assessmentType: "dental_check", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
+  { id: "hr-m3", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-15", assessmentType: "optical_check", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: false, parentCarerInformed: true },
+  { id: "hr-m4", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-05-10", assessmentType: "sdq_assessment", outcome: "completed_on_time", childConsented: true, actionPlanCreated: true, gpNotified: true, documentedInCareFile: true, followUpScheduled: true, parentCarerInformed: true },
 ];
 const health_DEMO_POLICY: HealthPolicy = {
   id: "pol-oak",
@@ -10605,8 +12983,11 @@ const health_DEMO_POLICY: HealthPolicy = {
 };
 const health_DEMO_TRAINING: StaffHealthTraining[] = [
   { id: "ht-sarah", staffId: "staff-sarah", staffName: "Sarah Johnson", healthAssessmentProcess: true, mentalHealthAwareness: true, medicationAdministration: true, consentAndCapacity: true, firstAidCertified: true, healthPromotionSkills: true },
-
+  { id: "ht-tom", staffId: "staff-tom", staffName: "Tom Richards", healthAssessmentProcess: true, mentalHealthAwareness: true, medicationAdministration: true, consentAndCapacity: true, firstAidCertified: true, healthPromotionSkills: false },
+  { id: "ht-lisa", staffId: "staff-lisa", staffName: "Lisa Williams", healthAssessmentProcess: true, mentalHealthAwareness: true, medicationAdministration: true, consentAndCapacity: true, firstAidCertified: true, healthPromotionSkills: true },
+  { id: "ht-darren", staffId: "staff-darren", staffName: "Darren Laville", healthAssessmentProcess: true, mentalHealthAwareness: true, medicationAdministration: true, consentAndCapacity: true, firstAidCertified: true, healthPromotionSkills: true },
 ];
+
 async function get_health(req: NextRequest): Promise<Response> {
 
   const result = generateHealthIntelligence(
@@ -10659,17 +13040,51 @@ async function get_health(req: NextRequest): Promise<Response> {
 // ─── home-atmosphere-ethos ─────────────────────────────────────────────
 const home_atmosphere_ethos_DEMO_OBSERVATIONS: AtmosphereObservation[] = [
   { id: "obs-01", observerRole: "reg44_visitor", observationDate: "2026-01-05", indicator: "warmth", rating: "excellent", area: "communal_lounge", narrative: "Children relaxed and chatting with staff in the lounge.", childrenPresent: true, timeOfDay: "afternoon" },
+  { id: "obs-02", observerRole: "reg44_visitor", observationDate: "2026-01-05", indicator: "homeliness", rating: "good", area: "kitchen_dining", narrative: "Kitchen felt welcoming, children's artwork displayed.", childrenPresent: true, timeOfDay: "afternoon" },
+  { id: "obs-03", observerRole: "reg44_visitor", observationDate: "2026-01-05", indicator: "calm", rating: "excellent", area: "communal_lounge", narrative: "Quiet, calm atmosphere with low background music.", childrenPresent: true, timeOfDay: "evening" },
+  { id: "obs-04", observerRole: "social_worker", observationDate: "2026-01-10", indicator: "safety", rating: "good", area: "entrance_hallway", narrative: "Secure entry, children aware of procedures.", childrenPresent: false, timeOfDay: "morning" },
+  { id: "obs-05", observerRole: "social_worker", observationDate: "2026-01-10", indicator: "respect", rating: "excellent", area: "communal_lounge", narrative: "Staff addressed children by name, tone consistently warm.", childrenPresent: true, timeOfDay: "morning" },
+  { id: "obs-06", observerRole: "manager", observationDate: "2026-01-12", indicator: "fun", rating: "good", area: "garden_outdoor", narrative: "Children playing football with staff after school.", childrenPresent: true, timeOfDay: "afternoon" },
+  { id: "obs-07", observerRole: "manager", observationDate: "2026-01-12", indicator: "inclusion", rating: "excellent", area: "kitchen_dining", narrative: "All children participated in meal prep regardless of ability.", childrenPresent: true, timeOfDay: "evening" },
+  { id: "obs-08", observerRole: "independent_visitor", observationDate: "2026-01-15", indicator: "privacy", rating: "good", area: "bedrooms", narrative: "Children have locks on bedroom doors, knock-before-entering policy observed.", childrenPresent: true, timeOfDay: "afternoon" },
+  { id: "obs-09", observerRole: "child", observationDate: "2026-01-18", indicator: "predictability", rating: "good", area: null, narrative: "Routines feel consistent and I know what to expect.", childrenPresent: true, timeOfDay: "morning" },
+  { id: "obs-10", observerRole: "staff", observationDate: "2026-01-20", indicator: "nurture", rating: "excellent", area: "communal_lounge", narrative: "Staff read bedtime stories to younger children.", childrenPresent: true, timeOfDay: "evening" },
+  { id: "obs-11", observerRole: "manager", observationDate: "2026-01-22", indicator: "warmth", rating: "good", area: "kitchen_dining", narrative: "Staff and children baking together.", childrenPresent: true, timeOfDay: "afternoon" },
+  { id: "obs-12", observerRole: "ofsted_inspector", observationDate: "2026-01-25", indicator: "respect", rating: "good", area: "communal_lounge", narrative: "Mutual respect evident between children and staff.", childrenPresent: true, timeOfDay: "morning" },
+  { id: "obs-13", observerRole: "reg44_visitor", observationDate: "2026-01-28", indicator: "nurture", rating: "good", area: "bedrooms", narrative: "Staff supported a child with bedtime routine patiently.", childrenPresent: true, timeOfDay: "night" },
+  { id: "obs-14", observerRole: "staff", observationDate: "2026-01-30", indicator: "calm", rating: "good", area: "study_quiet_area", narrative: "Quiet study hour was peaceful and productive.", childrenPresent: true, timeOfDay: "evening" },
+  { id: "obs-15", observerRole: "manager", observationDate: "2026-01-15", indicator: "fun", rating: "excellent", area: "sensory_room", narrative: "Children laughing during sensory play session.", childrenPresent: true, timeOfDay: "afternoon" },
 ];
 const home_atmosphere_ethos_DEMO_FEEDBACK: ChildAtmosphereFeedback[] = [
   { id: "fb-01", childId: "child-alex", childName: "Alex", date: "2026-01-08", overallSentiment: "very_positive", feelsAtHome: true, feelsListenedTo: true, feelsSafe: true, hasPrivacy: true, enjoysLivingHere: true, canBeThemselves: true, suggestionsForImprovement: null },
+  { id: "fb-02", childId: "child-alex", childName: "Alex", date: "2026-01-22", overallSentiment: "positive", feelsAtHome: true, feelsListenedTo: true, feelsSafe: true, hasPrivacy: true, enjoysLivingHere: true, canBeThemselves: true, suggestionsForImprovement: "More games nights" },
+  { id: "fb-03", childId: "child-jordan", childName: "Jordan", date: "2026-01-08", overallSentiment: "positive", feelsAtHome: true, feelsListenedTo: true, feelsSafe: true, hasPrivacy: true, enjoysLivingHere: true, canBeThemselves: true, suggestionsForImprovement: null },
+  { id: "fb-04", childId: "child-jordan", childName: "Jordan", date: "2026-01-22", overallSentiment: "positive", feelsAtHome: true, feelsListenedTo: false, feelsSafe: true, hasPrivacy: true, enjoysLivingHere: true, canBeThemselves: true, suggestionsForImprovement: "Sometimes I don't feel heard in house meetings" },
+  { id: "fb-05", childId: "child-morgan", childName: "Morgan", date: "2026-01-08", overallSentiment: "neutral", feelsAtHome: false, feelsListenedTo: true, feelsSafe: true, hasPrivacy: false, enjoysLivingHere: false, canBeThemselves: true, suggestionsForImprovement: "I need more time alone" },
+  { id: "fb-06", childId: "child-morgan", childName: "Morgan", date: "2026-01-22", overallSentiment: "positive", feelsAtHome: true, feelsListenedTo: true, feelsSafe: true, hasPrivacy: true, enjoysLivingHere: true, canBeThemselves: true, suggestionsForImprovement: null },
 ];
 const home_atmosphere_ethos_DEMO_AUDITS: EnvironmentAudit[] = [
   { id: "ea-01", auditDate: "2026-01-05", auditor: "Sarah Johnson", area: "communal_lounge", clean: true, personalised: true, welcoming: true, ageAppropriate: true, sensoryConsidered: true, childContributed: true, repairsNeeded: false, repairsActioned: null },
+  { id: "ea-02", auditDate: "2026-01-05", auditor: "Sarah Johnson", area: "kitchen_dining", clean: true, personalised: true, welcoming: true, ageAppropriate: true, sensoryConsidered: true, childContributed: true, repairsNeeded: true, repairsActioned: true },
+  { id: "ea-03", auditDate: "2026-01-05", auditor: "Tom Richards", area: "bedrooms", clean: true, personalised: true, welcoming: true, ageAppropriate: true, sensoryConsidered: true, childContributed: true, repairsNeeded: false, repairsActioned: null },
+  { id: "ea-04", auditDate: "2026-01-05", auditor: "Tom Richards", area: "garden_outdoor", clean: true, personalised: false, welcoming: true, ageAppropriate: true, sensoryConsidered: true, childContributed: false, repairsNeeded: true, repairsActioned: false },
+  { id: "ea-05", auditDate: "2026-01-05", auditor: "Lisa Williams", area: "bathrooms", clean: true, personalised: false, welcoming: false, ageAppropriate: true, sensoryConsidered: false, childContributed: false, repairsNeeded: true, repairsActioned: true },
+  { id: "ea-06", auditDate: "2026-01-05", auditor: "Lisa Williams", area: "entrance_hallway", clean: true, personalised: true, welcoming: true, ageAppropriate: true, sensoryConsidered: false, childContributed: true, repairsNeeded: false, repairsActioned: null },
+  { id: "ea-07", auditDate: "2026-01-05", auditor: "Sarah Johnson", area: "study_quiet_area", clean: true, personalised: true, welcoming: true, ageAppropriate: true, sensoryConsidered: true, childContributed: true, repairsNeeded: false, repairsActioned: null },
+  { id: "ea-08", auditDate: "2026-01-05", auditor: "Tom Richards", area: "sensory_room", clean: true, personalised: true, welcoming: true, ageAppropriate: true, sensoryConsidered: true, childContributed: true, repairsNeeded: false, repairsActioned: null },
 ];
 const home_atmosphere_ethos_DEMO_STAFF: StaffCultureRecord[] = [
   { id: "sc-01", staffId: "staff-sarah", staffName: "Sarah Johnson", date: "2026-01-05", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: null, positiveReinforcementGiven: true, reflectivePractice: true },
-
+  { id: "sc-02", staffId: "staff-sarah", staffName: "Sarah Johnson", date: "2026-01-15", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: true, positiveReinforcementGiven: true, reflectivePractice: true },
+  { id: "sc-03", staffId: "staff-sarah", staffName: "Sarah Johnson", date: "2026-01-25", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: null, positiveReinforcementGiven: true, reflectivePractice: true },
+  { id: "sc-04", staffId: "staff-tom", staffName: "Tom Richards", date: "2026-01-05", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: true, positiveReinforcementGiven: true, reflectivePractice: true },
+  { id: "sc-05", staffId: "staff-tom", staffName: "Tom Richards", date: "2026-01-15", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: null, positiveReinforcementGiven: true, reflectivePractice: false },
+  { id: "sc-06", staffId: "staff-tom", staffName: "Tom Richards", date: "2026-01-25", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: true, positiveReinforcementGiven: true, reflectivePractice: true },
+  { id: "sc-07", staffId: "staff-lisa", staffName: "Lisa Williams", date: "2026-01-05", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: null, positiveReinforcementGiven: true, reflectivePractice: true },
+  { id: "sc-08", staffId: "staff-lisa", staffName: "Lisa Williams", date: "2026-01-15", therapeuticApproachUsed: true, childCentredLanguage: true, warmInteractionObserved: true, boundariesMaintained: true, deEscalationUsed: false, positiveReinforcementGiven: true, reflectivePractice: true },
+  { id: "sc-09", staffId: "staff-lisa", staffName: "Lisa Williams", date: "2026-01-25", therapeuticApproachUsed: false, childCentredLanguage: true, warmInteractionObserved: false, boundariesMaintained: true, deEscalationUsed: null, positiveReinforcementGiven: true, reflectivePractice: true },
 ];
+
 async function get_home_atmosphere_ethos(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -10748,8 +13163,31 @@ async function post_home_atmosphere_ethos(request: NextRequest): Promise<Respons
 // ─── home-intelligence ─────────────────────────────────────────────────
 const home_intelligence_DEMO_MODULE_SCORES: ModuleIntelligenceScore[] = [
   // ── Child Experiences Domain ──
+  { moduleId: "children-outcomes", moduleName: "Children Outcomes", domain: "child_experiences", overallScore: 82, rating: "outstanding" },
+  { moduleId: "therapeutic", moduleName: "Therapeutic", domain: "child_experiences", overallScore: 78, rating: "good" },
+  { moduleId: "pocket-money", moduleName: "Pocket Money", domain: "child_experiences", overallScore: 71, rating: "good" },
+  { moduleId: "education", moduleName: "Education", domain: "child_experiences", overallScore: 85, rating: "outstanding" },
 
+  // ── Safety & Protection Domain ──
+  { moduleId: "safeguarding-oversight", moduleName: "Safeguarding Oversight", domain: "safety_protection", overallScore: 88, rating: "outstanding" },
+  { moduleId: "child-exploitation-prevention", moduleName: "Child Exploitation Prevention", domain: "safety_protection", overallScore: 76, rating: "good" },
+  { moduleId: "escalation-intelligence", moduleName: "Escalation Intelligence", domain: "safety_protection", overallScore: 73, rating: "good" },
+  { moduleId: "contextual-safeguarding", moduleName: "Contextual Safeguarding", domain: "safety_protection", overallScore: 81, rating: "outstanding" },
+  { moduleId: "night-monitoring", moduleName: "Night Monitoring", domain: "safety_protection", overallScore: 79, rating: "good" },
+
+  // ── Leadership & Management Domain ──
+  { moduleId: "regulatory", moduleName: "Regulatory", domain: "leadership_management", overallScore: 87, rating: "outstanding" },
+  { moduleId: "regulatory-self-assessment", moduleName: "Regulatory Self-Assessment", domain: "leadership_management", overallScore: 75, rating: "good" },
+  { moduleId: "quality-ecology", moduleName: "Quality Ecology", domain: "leadership_management", overallScore: 80, rating: "outstanding" },
+  { moduleId: "lessons-learned", moduleName: "Lessons Learned", domain: "leadership_management", overallScore: 74, rating: "good" },
+
+  // ── Workforce & Operations Domain ──
+  { moduleId: "shift-intelligence", moduleName: "Shift Intelligence", domain: "workforce_operations", overallScore: 77, rating: "good" },
+  { moduleId: "filing-cabinet", moduleName: "Filing Cabinet", domain: "workforce_operations", overallScore: 83, rating: "outstanding" },
+  { moduleId: "hr-files", moduleName: "HR Files", domain: "workforce_operations", overallScore: 72, rating: "good" },
+  { moduleId: "multi-agency", moduleName: "Multi-Agency", domain: "workforce_operations", overallScore: 79, rating: "good" },
 ];
+
 async function get_home_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateHomeIntelligenceSummary({
@@ -11952,6 +14390,17 @@ async function post_homework_study_support(req: NextRequest): Promise<Response> 
 // ─── house-meetings ────────────────────────────────────────────────────
 const house_meetings_DEMO_RECORDS: HouseMeetingRecord[] = [
   { id: "hm-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "house_meeting", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "hm-002", homeId: "home-oak", date: "2026-05-07", childId: "child-jordan", childName: "Jordan", category: "childrens_council", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "hm-003", homeId: "home-oak", date: "2026-04-30", childId: "child-morgan", childName: "Morgan", category: "menu_planning", outcome: "child_led", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "hm-004", homeId: "home-oak", date: "2026-04-23", childId: "child-alex", childName: "Alex", category: "activity_planning", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: false, documentationComplete: true, timelyRecording: true },
+  { id: "hm-005", homeId: "home-oak", date: "2026-04-16", childId: "child-jordan", childName: "Jordan", category: "rules_review", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "hm-006", homeId: "home-oak", date: "2026-04-09", childId: "child-morgan", childName: "Morgan", category: "agenda_setting", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: false },
+  { id: "hm-007", homeId: "home-oak", date: "2026-04-02", childId: "child-alex", childName: "Alex", category: "action_review", outcome: "fully_completed", childContributedToAgenda: false, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "hm-008", homeId: "home-oak", date: "2026-03-26", childId: "child-jordan", childName: "Jordan", category: "special_topic", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "hm-009", homeId: "home-oak", date: "2026-03-19", childId: "child-morgan", childName: "Morgan", category: "house_meeting", outcome: "partially_completed", childContributedToAgenda: true, minutesRecorded: false, childAttended: true, actionsReviewed: true, documentationComplete: false, timelyRecording: true },
+  { id: "hm-010", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "childrens_council", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "hm-011", homeId: "home-oak", date: "2026-03-05", childId: "child-jordan", childName: "Jordan", category: "menu_planning", outcome: "child_led", childContributedToAgenda: true, minutesRecorded: true, childAttended: false, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "hm-012", homeId: "home-oak", date: "2026-02-26", childId: "child-morgan", childName: "Morgan", category: "activity_planning", outcome: "fully_completed", childContributedToAgenda: true, minutesRecorded: true, childAttended: true, actionsReviewed: true, documentationComplete: true, timelyRecording: true },
 ];
 const house_meetings_DEMO_POLICY: HouseMeetingPolicy = {
   houseMeetingPolicy: true,
@@ -11964,8 +14413,11 @@ const house_meetings_DEMO_POLICY: HouseMeetingPolicy = {
 };
 const house_meetings_DEMO_STAFF: StaffHouseMeetingTraining[] = [
   { staffId: "staff-sarah", meetingFacilitation: true, childParticipation: true, minutesTaking: true, actionTracking: true, conflictResolution: true, inclusivePractice: true },
-
+  { staffId: "staff-tom", meetingFacilitation: true, childParticipation: true, minutesTaking: true, actionTracking: true, conflictResolution: false, inclusivePractice: true },
+  { staffId: "staff-lisa", meetingFacilitation: true, childParticipation: true, minutesTaking: true, actionTracking: true, conflictResolution: true, inclusivePractice: true },
+  { staffId: "staff-darren", meetingFacilitation: true, childParticipation: true, minutesTaking: true, actionTracking: true, conflictResolution: true, inclusivePractice: true },
 ];
+
 async function get_house_meetings(req: NextRequest): Promise<Response> {
 
   const result = generateHouseMeetingsIntelligence({
@@ -11988,6 +14440,13 @@ async function get_house_meetings(req: NextRequest): Promise<Response> {
 // ─── hygiene-personal-care ─────────────────────────────────────────────
 const hygiene_personal_care_DEMO_SESSIONS: HygieneSession[] = [
   { id: "hs-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-10", hygieneArea: "oral_care", competencyLevel: "independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "hs-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-17", hygieneArea: "bathing_showering", competencyLevel: "independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "hs-3", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-24", hygieneArea: "hand_washing", competencyLevel: "mostly_independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "hs-4", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-12", hygieneArea: "hair_care", competencyLevel: "independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "hs-5", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-19", hygieneArea: "skincare", competencyLevel: "mostly_independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "hs-6", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-14", hygieneArea: "nail_care", competencyLevel: "independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "hs-7", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-21", hygieneArea: "clothing_laundry", competencyLevel: "independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "hs-8", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-28", hygieneArea: "menstrual_hygiene", competencyLevel: "mostly_independent", childParticipated: true, dignityMaintained: true, progressNoted: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
 ];
 const hygiene_personal_care_DEMO_POLICY: HygienePolicy = {
   id: "hp-1",
@@ -12001,8 +14460,11 @@ const hygiene_personal_care_DEMO_POLICY: HygienePolicy = {
 };
 const hygiene_personal_care_DEMO_STAFF_TRAINING: StaffHygieneTraining[] = [
   { id: "sht-1", staffId: "staff-sarah", staffName: "Sarah Johnson", personalCareSkills: true, dignityAndPrivacy: true, infectionControl: true, ageAppropriateSupport: true, culturalAwareness: true, safeguardingInPersonalCare: true },
-
+  { id: "sht-2", staffId: "staff-tom", staffName: "Tom Richards", personalCareSkills: true, dignityAndPrivacy: true, infectionControl: true, ageAppropriateSupport: true, culturalAwareness: true, safeguardingInPersonalCare: true },
+  { id: "sht-3", staffId: "staff-lisa", staffName: "Lisa Williams", personalCareSkills: true, dignityAndPrivacy: true, infectionControl: true, ageAppropriateSupport: true, culturalAwareness: true, safeguardingInPersonalCare: true },
+  { id: "sht-4", staffId: "staff-darren", staffName: "Darren Laville", personalCareSkills: true, dignityAndPrivacy: true, infectionControl: true, ageAppropriateSupport: true, culturalAwareness: true, safeguardingInPersonalCare: true },
 ];
+
 async function get_hygiene_personal_care(req: NextRequest): Promise<Response> {
 
   const result = generateHygienePersonalCareIntelligence(
@@ -12075,6 +14537,100 @@ async function post_hygiene_personal_care(req: NextRequest): Promise<Response> {
 // ─── incident-pattern-analysis ─────────────────────────────────────────
 const incident_pattern_analysis_DEMO_INCIDENTS: IncidentRecord[] = [
   // Alex: 1 minor incident — verbal aggression, good response, child debriefed
+  {
+    id: "inc-alex-001",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-10",
+    time: "16:00",
+    category: "verbal_aggression",
+    severity: "minor",
+    description: "Verbal outburst during homework time — raised voice and refused to engage. Settled within 10 minutes with staff support.",
+    staffPresent: ["Sarah Johnson"],
+    responseQuality: "appropriate",
+    deEscalationAttempted: true,
+    deEscalationOutcome: "successful",
+    restraintUsed: false,
+    restraintDurationMinutes: null,
+    injuryOccurred: false,
+    injuryDetails: null,
+    notificationStatus: "timely_and_complete",
+    postIncidentActions: ["debrief_completed", "support_plan_updated"],
+    childDebriefed: true,
+    lessonsIdentified: true,
+    managersInformed: true,
+  },
+  // Jordan: 3 incidents — 2 physical aggression moderate, 1 self-harm major
+  {
+    id: "inc-jordan-001",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-05",
+    time: "14:30",
+    category: "physical_aggression",
+    severity: "moderate",
+    description: "Physical altercation with peer during communal activity. Push and shove escalated before staff intervened.",
+    staffPresent: ["Tom Richards", "Lisa Williams"],
+    responseQuality: "appropriate",
+    deEscalationAttempted: true,
+    deEscalationOutcome: "partially_successful",
+    restraintUsed: false,
+    restraintDurationMinutes: null,
+    injuryOccurred: false,
+    injuryDetails: null,
+    notificationStatus: "timely_and_complete",
+    postIncidentActions: ["debrief_completed", "support_plan_updated"],
+    childDebriefed: true,
+    lessonsIdentified: true,
+    managersInformed: true,
+  },
+  {
+    id: "inc-jordan-002",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-08",
+    time: "20:00",
+    category: "physical_aggression",
+    severity: "moderate",
+    description: "Aggressive behaviour towards staff during bedtime routine. Threw a cup and shouted before retreating to room.",
+    staffPresent: ["Lisa Williams"],
+    responseQuality: "appropriate",
+    deEscalationAttempted: true,
+    deEscalationOutcome: "successful",
+    restraintUsed: false,
+    restraintDurationMinutes: null,
+    injuryOccurred: false,
+    injuryDetails: null,
+    notificationStatus: "timely_and_complete",
+    postIncidentActions: ["debrief_completed"],
+    childDebriefed: true,
+    lessonsIdentified: true,
+    managersInformed: true,
+  },
+  {
+    id: "inc-jordan-003",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-12",
+    time: "09:30",
+    category: "self_harm",
+    severity: "major",
+    description: "Self-harm episode following a distressing phone call with family member. Scratched forearms. Staff provided immediate first aid and emotional support.",
+    staffPresent: ["Sarah Johnson", "Tom Richards"],
+    responseQuality: "exemplary",
+    deEscalationAttempted: true,
+    deEscalationOutcome: "successful",
+    restraintUsed: true,
+    restraintDurationMinutes: 3,
+    injuryOccurred: true,
+    injuryDetails: "Superficial scratches to both forearms — first aid applied, GP informed",
+    notificationStatus: "timely_and_complete",
+    postIncidentActions: ["debrief_completed", "support_plan_updated", "medical_attention"],
+    childDebriefed: true,
+    lessonsIdentified: true,
+    managersInformed: true,
+  },
+  // Morgan: 0 incidents (Morgan has no incident records)
 ];
 const incident_pattern_analysis_DEMO_TRENDS: IncidentTrend[] = [
   {
@@ -12101,6 +14657,61 @@ const incident_pattern_analysis_DEMO_STAFF_RESPONSES: StaffResponse[] = [
     reportCompletedTimely: true,
     debriedParticipated: true,
   },
+  {
+    id: "sr-002",
+    incidentId: "inc-jordan-001",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    responseTimeMins: 2,
+    appropriateForce: true,
+    bodyWornCameraUsed: false,
+    reportCompletedTimely: true,
+    debriedParticipated: true,
+  },
+  {
+    id: "sr-003",
+    incidentId: "inc-jordan-001",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    responseTimeMins: 2,
+    appropriateForce: true,
+    bodyWornCameraUsed: false,
+    reportCompletedTimely: true,
+    debriedParticipated: true,
+  },
+  {
+    id: "sr-004",
+    incidentId: "inc-jordan-002",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    responseTimeMins: 3,
+    appropriateForce: true,
+    bodyWornCameraUsed: false,
+    reportCompletedTimely: true,
+    debriedParticipated: true,
+  },
+  {
+    id: "sr-005",
+    incidentId: "inc-jordan-003",
+    staffId: "staff-sarah",
+    staffName: "Sarah Johnson",
+    responseTimeMins: 1,
+    appropriateForce: true,
+    bodyWornCameraUsed: true,
+    reportCompletedTimely: true,
+    debriedParticipated: true,
+  },
+  {
+    id: "sr-006",
+    incidentId: "inc-jordan-003",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    responseTimeMins: 2,
+    appropriateForce: true,
+    bodyWornCameraUsed: true,
+    reportCompletedTimely: true,
+    debriedParticipated: true,
+  },
 ];
 const incident_pattern_analysis_DEMO_PATTERNS: PatternIndicator[] = [
   {
@@ -12110,6 +14721,15 @@ const incident_pattern_analysis_DEMO_PATTERNS: PatternIndicator[] = [
     frequency: "weekly",
     peakTime: "evening",
     environmentalTrigger: "Bedtime transitions and unstructured evening time",
+    seasonalPattern: false,
+  },
+  {
+    id: "pat-002",
+    homeId: "oak-house",
+    category: "self_harm",
+    frequency: "occasional",
+    peakTime: "morning",
+    environmentalTrigger: "Following family contact or distressing phone calls",
     seasonalPattern: false,
   },
 ];
@@ -12210,6 +14830,17 @@ async function post_incident_pattern_analysis(req: NextRequest): Promise<Respons
 // ─── incidents ─────────────────────────────────────────────────────────
 const incidents_DEMO_RECORDS: IncidentRecord[] = [
   { id: "inc-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "physical_incident", outcome: "de_escalated", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "inc-002", homeId: "home-oak", date: "2026-05-07", childId: "child-jordan", childName: "Jordan", category: "verbal_incident", outcome: "resolved_safely", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "inc-003", homeId: "home-oak", date: "2026-04-30", childId: "child-morgan", childName: "Morgan", category: "self_harm", outcome: "external_referral", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: false, documentationComplete: true, timelyRecording: true },
+  { id: "inc-004", homeId: "home-oak", date: "2026-04-23", childId: "child-alex", childName: "Alex", category: "absconding", outcome: "resolved_safely", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "inc-005", homeId: "home-oak", date: "2026-04-16", childId: "child-jordan", childName: "Jordan", category: "substance_misuse", outcome: "external_referral", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: false, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "inc-006", homeId: "home-oak", date: "2026-04-09", childId: "child-morgan", childName: "Morgan", category: "criminal_behaviour", outcome: "not_applicable", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: false },
+  { id: "inc-007", homeId: "home-oak", date: "2026-04-02", childId: "child-alex", childName: "Alex", category: "bullying", outcome: "de_escalated", deEscalationAttempted: true, childViewRecorded: false, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "inc-008", homeId: "home-oak", date: "2026-03-26", childId: "child-jordan", childName: "Jordan", category: "property_damage", outcome: "resolved_safely", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "inc-009", homeId: "home-oak", date: "2026-03-19", childId: "child-morgan", childName: "Morgan", category: "physical_incident", outcome: "restraint_used", deEscalationAttempted: false, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: false, timelyRecording: true },
+  { id: "inc-010", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "verbal_incident", outcome: "de_escalated", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "inc-011", homeId: "home-oak", date: "2026-03-05", childId: "child-jordan", childName: "Jordan", category: "self_harm", outcome: "external_referral", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "inc-012", homeId: "home-oak", date: "2026-02-26", childId: "child-morgan", childName: "Morgan", category: "absconding", outcome: "resolved_safely", deEscalationAttempted: true, childViewRecorded: true, debriefConducted: true, lessonsIdentified: true, documentationComplete: true, timelyRecording: true },
 ];
 const incidents_DEMO_POLICY: IncidentPolicy = {
   incidentManagementPolicy: true,
@@ -12222,8 +14853,11 @@ const incidents_DEMO_POLICY: IncidentPolicy = {
 };
 const incidents_DEMO_STAFF: StaffIncidentTraining[] = [
   { staffId: "staff-sarah", deEscalationSkills: true, incidentRecording: true, restraintCertification: true, postIncidentSupport: true, childProtectionAwareness: true, conflictResolution: true },
-
+  { staffId: "staff-tom", deEscalationSkills: true, incidentRecording: true, restraintCertification: true, postIncidentSupport: true, childProtectionAwareness: true, conflictResolution: false },
+  { staffId: "staff-lisa", deEscalationSkills: true, incidentRecording: true, restraintCertification: true, postIncidentSupport: true, childProtectionAwareness: true, conflictResolution: true },
+  { staffId: "staff-darren", deEscalationSkills: true, incidentRecording: true, restraintCertification: true, postIncidentSupport: true, childProtectionAwareness: true, conflictResolution: true },
 ];
+
 async function get_incidents(req: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(req.url);
@@ -12370,26 +15004,58 @@ async function post_incidents(req: NextRequest): Promise<Response> {
 // ─── independence-life-skills ──────────────────────────────────────────
 const independence_life_skills_ALEX_ASSESSMENTS: SkillAssessment[] = [
   { id: "sa-a1", childId: "child-alex", childName: "Alex", domain: "cooking_nutrition", competenceLevel: "mostly_independent", assessedDate: "2026-04-01", assessedBy: "Sarah Johnson", previousLevel: "needs_some_support", targetLevel: "independent", notes: null },
+  { id: "sa-a2", childId: "child-alex", childName: "Alex", domain: "budgeting_finance", competenceLevel: "needs_some_support", assessedDate: "2026-04-01", assessedBy: "Sarah Johnson", previousLevel: "needs_significant_support", targetLevel: "mostly_independent", notes: null },
+  { id: "sa-a3", childId: "child-alex", childName: "Alex", domain: "personal_hygiene", competenceLevel: "independent", assessedDate: "2026-04-01", assessedBy: "Sarah Johnson", previousLevel: "mostly_independent", targetLevel: "independent", notes: null },
+  { id: "sa-a4", childId: "child-alex", childName: "Alex", domain: "travel_transport", competenceLevel: "mostly_independent", assessedDate: "2026-04-01", assessedBy: "Sarah Johnson", previousLevel: "needs_some_support", targetLevel: "independent", notes: null },
+  { id: "sa-a5", childId: "child-alex", childName: "Alex", domain: "digital_literacy", competenceLevel: "independent", assessedDate: "2026-04-01", assessedBy: "Sarah Johnson", previousLevel: "mostly_independent", targetLevel: "independent", notes: null },
 ];
 const independence_life_skills_JORDAN_ASSESSMENTS: SkillAssessment[] = [
   { id: "sa-j1", childId: "child-jordan", childName: "Jordan", domain: "cooking_nutrition", competenceLevel: "needs_significant_support", assessedDate: "2026-04-01", assessedBy: "Tom Richards", previousLevel: "needs_significant_support", targetLevel: "needs_some_support", notes: null },
+  { id: "sa-j2", childId: "child-jordan", childName: "Jordan", domain: "personal_hygiene", competenceLevel: "needs_some_support", assessedDate: "2026-04-01", assessedBy: "Tom Richards", previousLevel: "needs_significant_support", targetLevel: "mostly_independent", notes: null },
+  { id: "sa-j3", childId: "child-jordan", childName: "Jordan", domain: "digital_literacy", competenceLevel: "mostly_independent", assessedDate: "2026-04-01", assessedBy: "Tom Richards", previousLevel: null, targetLevel: "independent", notes: "Naturally skilled" },
 ];
 const independence_life_skills_MORGAN_ASSESSMENTS: SkillAssessment[] = [
   { id: "sa-m1", childId: "child-morgan", childName: "Morgan", domain: "cooking_nutrition", competenceLevel: "independent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", previousLevel: "mostly_independent", targetLevel: "independent", notes: null },
+  { id: "sa-m2", childId: "child-morgan", childName: "Morgan", domain: "budgeting_finance", competenceLevel: "mostly_independent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", previousLevel: "needs_some_support", targetLevel: "independent", notes: null },
+  { id: "sa-m3", childId: "child-morgan", childName: "Morgan", domain: "laundry_clothing", competenceLevel: "independent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", previousLevel: "mostly_independent", targetLevel: "independent", notes: null },
+  { id: "sa-m4", childId: "child-morgan", childName: "Morgan", domain: "travel_transport", competenceLevel: "independent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", previousLevel: "needs_some_support", targetLevel: "independent", notes: null },
+  { id: "sa-m5", childId: "child-morgan", childName: "Morgan", domain: "household_tasks", competenceLevel: "mostly_independent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", previousLevel: "needs_some_support", targetLevel: "independent", notes: null },
+  { id: "sa-m6", childId: "child-morgan", childName: "Morgan", domain: "health_management", competenceLevel: "mostly_independent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", previousLevel: "needs_some_support", targetLevel: "independent", notes: null },
 ];
 const independence_life_skills_DEMO_ASSESSMENTS: SkillAssessment[] = [
-  ...ALEX_ASSESSMENTS,
+  ...independence_life_skills_ALEX_ASSESSMENTS,
+  ...independence_life_skills_JORDAN_ASSESSMENTS,
+  ...independence_life_skills_MORGAN_ASSESSMENTS,
 ];
 const independence_life_skills_DEMO_GOALS: IndependenceGoal[] = [
   { id: "ig-a1", childId: "child-alex", childName: "Alex", domain: "cooking_nutrition", goalDescription: "Cook a full meal independently", status: "on_track", targetDate: "2026-07-01", reviewDate: "2026-05-01", childInvolved: true, ageAppropriate: true },
+  { id: "ig-a2", childId: "child-alex", childName: "Alex", domain: "budgeting_finance", goalDescription: "Manage weekly pocket money budget", status: "on_track", targetDate: "2026-06-01", reviewDate: "2026-05-01", childInvolved: true, ageAppropriate: true },
+  { id: "ig-a3", childId: "child-alex", childName: "Alex", domain: "travel_transport", goalDescription: "Travel to school independently by bus", status: "achieved", targetDate: "2026-04-01", reviewDate: "2026-04-15", childInvolved: true, ageAppropriate: true },
+  { id: "ig-j1", childId: "child-jordan", childName: "Jordan", domain: "cooking_nutrition", goalDescription: "Prepare breakfast independently", status: "behind", targetDate: "2026-04-01", reviewDate: null, childInvolved: false, ageAppropriate: true },
+  { id: "ig-j2", childId: "child-jordan", childName: "Jordan", domain: "personal_hygiene", goalDescription: "Maintain daily hygiene routine", status: "on_track", targetDate: "2026-06-01", reviewDate: "2026-05-01", childInvolved: true, ageAppropriate: true },
+  { id: "ig-m1", childId: "child-morgan", childName: "Morgan", domain: "budgeting_finance", goalDescription: "Open and manage a bank account", status: "achieved", targetDate: "2026-03-01", reviewDate: "2026-03-15", childInvolved: true, ageAppropriate: true },
+  { id: "ig-m2", childId: "child-morgan", childName: "Morgan", domain: "household_tasks", goalDescription: "Complete a full weekly clean of bedroom", status: "achieved", targetDate: "2026-04-01", reviewDate: "2026-04-10", childInvolved: true, ageAppropriate: true },
+  { id: "ig-m3", childId: "child-morgan", childName: "Morgan", domain: "health_management", goalDescription: "Book and attend GP appointment independently", status: "on_track", targetDate: "2026-06-01", reviewDate: "2026-05-01", childInvolved: true, ageAppropriate: true },
 ];
 const independence_life_skills_DEMO_SESSIONS: PracticalSession[] = [
   { id: "ps-a1", childId: "child-alex", childName: "Alex", domain: "cooking_nutrition", teachingMethod: "practical_activity", date: "2026-03-10", durationMinutes: 60, childEngaged: true, progressMade: true, staffMember: "Sarah Johnson", communityBased: false },
+  { id: "ps-a2", childId: "child-alex", childName: "Alex", domain: "cooking_nutrition", teachingMethod: "practical_activity", date: "2026-03-24", durationMinutes: 60, childEngaged: true, progressMade: true, staffMember: "Sarah Johnson", communityBased: false },
+  { id: "ps-a3", childId: "child-alex", childName: "Alex", domain: "budgeting_finance", teachingMethod: "one_to_one", date: "2026-03-15", durationMinutes: 45, childEngaged: true, progressMade: true, staffMember: "Sarah Johnson", communityBased: false },
+  { id: "ps-a4", childId: "child-alex", childName: "Alex", domain: "travel_transport", teachingMethod: "community_based", date: "2026-03-20", durationMinutes: 90, childEngaged: true, progressMade: true, staffMember: "Sarah Johnson", communityBased: true },
+  { id: "ps-j1", childId: "child-jordan", childName: "Jordan", domain: "cooking_nutrition", teachingMethod: "practical_activity", date: "2026-03-12", durationMinutes: 45, childEngaged: false, progressMade: false, staffMember: "Tom Richards", communityBased: false },
+  { id: "ps-j2", childId: "child-jordan", childName: "Jordan", domain: "personal_hygiene", teachingMethod: "one_to_one", date: "2026-03-18", durationMinutes: 30, childEngaged: true, progressMade: true, staffMember: "Tom Richards", communityBased: false },
+  { id: "ps-m1", childId: "child-morgan", childName: "Morgan", domain: "cooking_nutrition", teachingMethod: "practical_activity", date: "2026-03-05", durationMinutes: 90, childEngaged: true, progressMade: true, staffMember: "Lisa Williams", communityBased: false },
+  { id: "ps-m2", childId: "child-morgan", childName: "Morgan", domain: "budgeting_finance", teachingMethod: "community_based", date: "2026-03-10", durationMinutes: 60, childEngaged: true, progressMade: true, staffMember: "Lisa Williams", communityBased: true },
+  { id: "ps-m3", childId: "child-morgan", childName: "Morgan", domain: "laundry_clothing", teachingMethod: "practical_activity", date: "2026-03-15", durationMinutes: 45, childEngaged: true, progressMade: true, staffMember: "Lisa Williams", communityBased: false },
+  { id: "ps-m4", childId: "child-morgan", childName: "Morgan", domain: "travel_transport", teachingMethod: "community_based", date: "2026-03-22", durationMinutes: 120, childEngaged: true, progressMade: true, staffMember: "Lisa Williams", communityBased: true },
+  { id: "ps-m5", childId: "child-morgan", childName: "Morgan", domain: "health_management", teachingMethod: "one_to_one", date: "2026-04-01", durationMinutes: 45, childEngaged: true, progressMade: true, staffMember: "Lisa Williams", communityBased: false },
 ];
 const independence_life_skills_DEMO_PATHWAYS: PathwayPlanProgress[] = [
   { id: "pp-a", childId: "child-alex", childName: "Alex", hasPathwayPlan: true, lastReviewDate: "2026-04-15", independenceSectionComplete: true, accommodationPlanned: false, educationEmploymentPlanned: true, financialLiteracyIncluded: true, healthPassportComplete: false, socialNetworksIdentified: true, childContributed: true },
-
+  { id: "pp-j", childId: "child-jordan", childName: "Jordan", hasPathwayPlan: false, lastReviewDate: null, independenceSectionComplete: false, accommodationPlanned: false, educationEmploymentPlanned: false, financialLiteracyIncluded: false, healthPassportComplete: false, socialNetworksIdentified: false, childContributed: false },
+  { id: "pp-m", childId: "child-morgan", childName: "Morgan", hasPathwayPlan: true, lastReviewDate: "2026-04-20", independenceSectionComplete: true, accommodationPlanned: true, educationEmploymentPlanned: true, financialLiteracyIncluded: true, healthPassportComplete: true, socialNetworksIdentified: true, childContributed: true },
 ];
+
 async function get_independence_life_skills(req: NextRequest): Promise<Response> {
 
   const result = generateIndependenceLifeSkillsIntelligence(
@@ -12480,6 +15146,17 @@ async function post_independence_life_skills(req: NextRequest): Promise<Response
 // ─── independence ──────────────────────────────────────────────────────
 const independence_DEMO_RECORDS: IndependenceRecord[] = [
   { id: "rec-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-02-10", category: "cooking_nutrition", outcome: "progressing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-2", childId: "child-alex", childName: "Alex", assessmentDate: "2026-03-05", category: "money_management", outcome: "developing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-3", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-12", category: "personal_hygiene", outcome: "mastered", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-4", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-02-18", category: "household_tasks", outcome: "progressing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-5", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-03-22", category: "travel_skills", outcome: "progressing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: false, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: false },
+  { id: "rec-6", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-30", category: "health_management", outcome: "mastered", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-7", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-05-05", category: "social_skills", outcome: "developing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: false, documentationComplete: false, pathwayPlanAligned: true },
+  { id: "rec-8", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-01-20", category: "education_employment", outcome: "progressing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-9", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-03-15", category: "cooking_nutrition", outcome: "mastered", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-10", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-10", category: "money_management", outcome: "progressing", individualPlanInPlace: true, ageAppropriate: false, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-11", childId: "child-alex", childName: "Alex", assessmentDate: "2026-05-01", category: "social_skills", outcome: "progressing", individualPlanInPlace: true, ageAppropriate: true, childEngaged: true, progressRecorded: true, documentationComplete: true, pathwayPlanAligned: true },
+  { id: "rec-12", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-05-10", category: "household_tasks", outcome: "developing", individualPlanInPlace: false, ageAppropriate: true, childEngaged: false, progressRecorded: true, documentationComplete: false, pathwayPlanAligned: false },
 ];
 const independence_DEMO_POLICY: IndependencePolicy = {
   id: "pol-1",
@@ -12493,8 +15170,11 @@ const independence_DEMO_POLICY: IndependencePolicy = {
 };
 const independence_DEMO_STAFF: StaffIndependenceTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", independencePlanning: true, lifeSkillsTeaching: true, pathwayKnowledge: true, motivationalSkills: true, communityResources: true, transitionSupport: true },
-
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", independencePlanning: true, lifeSkillsTeaching: true, pathwayKnowledge: true, motivationalSkills: false, communityResources: true, transitionSupport: false },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", independencePlanning: true, lifeSkillsTeaching: true, pathwayKnowledge: false, motivationalSkills: true, communityResources: false, transitionSupport: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", independencePlanning: true, lifeSkillsTeaching: true, pathwayKnowledge: true, motivationalSkills: true, communityResources: true, transitionSupport: true },
 ];
+
 async function get_independence(req: NextRequest): Promise<Response> {
 
   const result = generateIndependenceIntelligence(
@@ -12521,6 +15201,13 @@ async function get_independence(req: NextRequest): Promise<Response> {
 // ─── independent-living-skills ─────────────────────────────────────────
 const independent_living_skills_DEMO_SESSIONS: SkillsSession[] = [
   { id: "ss-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-01", skillType: "cooking_meal_prep", competencyLevel: "independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ss-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-08", skillType: "budgeting_money", competencyLevel: "mostly_independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ss-3", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-15", skillType: "laundry_clothing_care", competencyLevel: "independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ss-4", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-01", skillType: "cleaning_tidying", competencyLevel: "independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ss-5", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-08", skillType: "personal_hygiene", competencyLevel: "mostly_independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ss-6", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-15", skillType: "shopping_errands", competencyLevel: "independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ss-7", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-01", skillType: "travel_navigation", competencyLevel: "independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "ss-8", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-08", skillType: "home_maintenance", competencyLevel: "mostly_independent", childEngaged: true, progressMade: true, confidenceBuilt: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
 ];
 const independent_living_skills_DEMO_POLICY: LivingSkillsPolicy = {
   id: "lp-1",
@@ -12534,8 +15221,11 @@ const independent_living_skills_DEMO_POLICY: LivingSkillsPolicy = {
 };
 const independent_living_skills_DEMO_TRAINING: StaffLivingSkillsTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", independencePromotion: true, practicalSkillsTeaching: true, riskEnablement: true, pathwayPlanning: true, communityAccess: true, motivationalApproaches: true },
-
+  { id: "st-2", staffId: "staff-tom", staffName: "Tom Richards", independencePromotion: true, practicalSkillsTeaching: true, riskEnablement: true, pathwayPlanning: true, communityAccess: true, motivationalApproaches: true },
+  { id: "st-3", staffId: "staff-lisa", staffName: "Lisa Williams", independencePromotion: true, practicalSkillsTeaching: true, riskEnablement: true, pathwayPlanning: true, communityAccess: true, motivationalApproaches: true },
+  { id: "st-4", staffId: "staff-darren", staffName: "Darren Laville", independencePromotion: true, practicalSkillsTeaching: true, riskEnablement: true, pathwayPlanning: true, communityAccess: true, motivationalApproaches: true },
 ];
+
 async function get_independent_living_skills(req: NextRequest): Promise<Response> {
 
   const result = generateIndependentLivingSkillsIntelligence(
@@ -12582,9 +15272,17 @@ async function post_independent_living_skills(req: NextRequest): Promise<Respons
 // ─── independent-visitor-advocacy ──────────────────────────────────────
 const independent_visitor_advocacy_DEMO_VISITS: IndependentVisit[] = [
   { id: "iv-1", childId: "child-alex", childName: "Alex", visitDate: "2026-02-05", visitorName: "Margaret Clarke", visitOutcome: "very_positive", durationMinutes: 90, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },
+  { id: "iv-2", childId: "child-alex", childName: "Alex", visitDate: "2026-03-12", visitorName: "Margaret Clarke", visitOutcome: "positive", durationMinutes: 75, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },
+  { id: "iv-3", childId: "child-alex", childName: "Alex", visitDate: "2026-04-16", visitorName: "Margaret Clarke", visitOutcome: "very_positive", durationMinutes: 120, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },
+  { id: "iv-4", childId: "child-jordan", childName: "Jordan", visitDate: "2026-02-15", visitorName: "David Thompson", visitOutcome: "positive", durationMinutes: 60, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },
+  { id: "iv-5", childId: "child-jordan", childName: "Jordan", visitDate: "2026-03-22", visitorName: "David Thompson", visitOutcome: "very_positive", durationMinutes: 90, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },
+  { id: "iv-6", childId: "child-morgan", childName: "Morgan", visitDate: "2026-03-05", visitorName: "Janet Wilson", visitOutcome: "positive", durationMinutes: 60, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },
+  { id: "iv-7", childId: "child-morgan", childName: "Morgan", visitDate: "2026-04-10", visitorName: "Janet Wilson", visitOutcome: "positive", durationMinutes: 75, childEngaged: true, childSatisfied: true, recordedInCasefile: true, privateTimeProvided: true },
 ];
 const independent_visitor_advocacy_DEMO_REFERRALS: AdvocacyReferral[] = [
   { id: "ar-1", childId: "child-alex", childName: "Alex", referralDate: "2026-01-20", advocacyType: "childrens_rights_officer", referralOutcome: "successful", childInformedOfRights: true, childConsentObtained: true, timelyResponse: true, childSatisfied: true },
+  { id: "ar-2", childId: "child-jordan", childName: "Jordan", referralDate: "2026-02-10", advocacyType: "formal_advocate", referralOutcome: "successful", childInformedOfRights: true, childConsentObtained: true, timelyResponse: true, childSatisfied: true },
+  { id: "ar-3", childId: "child-morgan", childName: "Morgan", referralDate: "2026-03-01", advocacyType: "complaints_advocacy", referralOutcome: "successful", childInformedOfRights: true, childConsentObtained: true, timelyResponse: true, childSatisfied: true },
 ];
 const independent_visitor_advocacy_DEMO_POLICY: AdvocacyPolicy = {
   id: "ap-1",
@@ -12598,8 +15296,11 @@ const independent_visitor_advocacy_DEMO_POLICY: AdvocacyPolicy = {
 };
 const independent_visitor_advocacy_DEMO_TRAINING: StaffAdvocacyTraining[] = [
   { id: "at-1", staffId: "staff-sarah", staffName: "Sarah Johnson", advocacyRights: true, independentVisitorRole: true, complaintsProcess: true, signposting: true, childParticipation: true, confidentiality: true },
-
+  { id: "at-2", staffId: "staff-tom", staffName: "Tom Richards", advocacyRights: true, independentVisitorRole: true, complaintsProcess: true, signposting: true, childParticipation: true, confidentiality: true },
+  { id: "at-3", staffId: "staff-lisa", staffName: "Lisa Williams", advocacyRights: true, independentVisitorRole: true, complaintsProcess: true, signposting: true, childParticipation: true, confidentiality: true },
+  { id: "at-4", staffId: "staff-darren", staffName: "Darren Laville", advocacyRights: true, independentVisitorRole: true, complaintsProcess: true, signposting: true, childParticipation: true, confidentiality: true },
 ];
+
 async function get_independent_visitor_advocacy(req: NextRequest): Promise<Response> {
 
   const result = generateIndependentVisitorAdvocacyIntelligence(
@@ -12685,6 +15386,22 @@ async function post_independent_visitor_advocacy(req: NextRequest): Promise<Resp
 // ─── inspection ────────────────────────────────────────────────────────
 const inspection_demoRecords: InspectionRecord[] = [
   // Alex — strong evidence and preparation
+  { id: "insp-1", homeId: "oak-house", date: "2026-02-05", childId: "child-alex", childName: "Alex", category: "overall_effectiveness", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-2", homeId: "oak-house", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "quality_of_care", outcome: "outstanding", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-3", homeId: "oak-house", date: "2026-04-08", childId: "child-alex", childName: "Alex", category: "safety_of_children", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: false },
+  { id: "insp-4", homeId: "oak-house", date: "2026-05-01", childId: "child-alex", childName: "Alex", category: "leadership_management", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: false, documentationComplete: true, timelyRecording: true },
+
+  // Jordan — some gaps in process
+  { id: "insp-5", homeId: "oak-house", date: "2026-02-20", childId: "child-jordan", childName: "Jordan", category: "outcomes_for_children", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-6", homeId: "oak-house", date: "2026-03-18", childId: "child-jordan", childName: "Jordan", category: "education_achievement", outcome: "requires_improvement", evidenceDocumented: true, actionPlanCreated: false, staffPrepared: true, childViewIncluded: true, documentationComplete: false, timelyRecording: true },
+  { id: "insp-7", homeId: "oak-house", date: "2026-04-22", childId: "child-jordan", childName: "Jordan", category: "health_wellbeing", outcome: "good", evidenceDocumented: false, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-8", homeId: "oak-house", date: "2026-05-10", childId: "child-jordan", childName: "Jordan", category: "transitions_planning", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — newer, fewer records
+  { id: "insp-9", homeId: "oak-house", date: "2026-03-25", childId: "child-morgan", childName: "Morgan", category: "overall_effectiveness", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-10", homeId: "oak-house", date: "2026-04-15", childId: "child-morgan", childName: "Morgan", category: "quality_of_care", outcome: "good", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: false, childViewIncluded: true, documentationComplete: true, timelyRecording: false },
+  { id: "insp-11", homeId: "oak-house", date: "2026-05-02", childId: "child-morgan", childName: "Morgan", category: "safety_of_children", outcome: "good", evidenceDocumented: true, actionPlanCreated: false, staffPrepared: true, childViewIncluded: true, documentationComplete: true, timelyRecording: true },
+  { id: "insp-12", homeId: "oak-house", date: "2026-05-15", childId: "child-morgan", childName: "Morgan", category: "leadership_management", outcome: "outstanding", evidenceDocumented: true, actionPlanCreated: true, staffPrepared: true, childViewIncluded: true, documentationComplete: false, timelyRecording: true },
 ];
 const inspection_demoPolicy: InspectionPolicy = {
   inspectionReadinessPolicy: true,
@@ -12697,8 +15414,11 @@ const inspection_demoPolicy: InspectionPolicy = {
 };
 const inspection_demoStaff: StaffInspectionTraining[] = [
   { staffId: "staff-sarah", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: true, selfAssessment: true, actionPlanDevelopment: true, qualityAssurance: true },
-
+  { staffId: "staff-tom", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: true, selfAssessment: false, actionPlanDevelopment: false, qualityAssurance: true },
+  { staffId: "staff-lisa", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: false, selfAssessment: true, actionPlanDevelopment: true, qualityAssurance: false },
+  { staffId: "staff-darren", inspectionReadiness: true, evidencePresentation: true, regulatoryKnowledge: true, selfAssessment: true, actionPlanDevelopment: true, qualityAssurance: true },
 ];
+
 async function get_inspection(req: NextRequest): Promise<Response> {
 
   const result = generateInspectionIntelligence(
@@ -12735,6 +15455,51 @@ const internet_safety_monitoring_DEMO_INCIDENTS: OnlineSafetyIncident[] = [
     recordedTimely: true,
     lessonsApplied: true,
   },
+  {
+    id: "inc-002",
+    childId: "child-alex",
+    childName: "Alex",
+    incidentDate: "2026-04-10",
+    riskCategory: "inappropriate_content",
+    severity: "low",
+    identifiedBy: "filter",
+    actionTaken: true,
+    childSupported: true,
+    parentNotified: false,
+    referralMade: false,
+    recordedTimely: true,
+    lessonsApplied: true,
+  },
+  {
+    id: "inc-003",
+    childId: "child-jordan",
+    childName: "Jordan",
+    incidentDate: "2026-02-20",
+    riskCategory: "grooming",
+    severity: "high",
+    identifiedBy: "staff",
+    actionTaken: true,
+    childSupported: true,
+    parentNotified: true,
+    referralMade: true,
+    recordedTimely: true,
+    lessonsApplied: true,
+  },
+  {
+    id: "inc-004",
+    childId: "child-jordan",
+    childName: "Jordan",
+    incidentDate: "2026-04-05",
+    riskCategory: "sexting",
+    severity: "high",
+    identifiedBy: "external_report",
+    actionTaken: true,
+    childSupported: true,
+    parentNotified: true,
+    referralMade: true,
+    recordedTimely: true,
+    lessonsApplied: false,
+  },
 ];
 const internet_safety_monitoring_DEMO_POLICY: InternetSafetyPolicy = {
   id: "policy-001",
@@ -12758,8 +15523,41 @@ const internet_safety_monitoring_DEMO_TRAINING: StaffInternetTraining[] = [
     reportingProcedures: true,
     ageAppropriateAccess: true,
   },
-
+  {
+    id: "train-002",
+    staffId: "staff-002",
+    staffName: "Tom Davies",
+    onlineSafety: true,
+    groomingAwareness: true,
+    cyberbullying: true,
+    socialMediaRisks: true,
+    reportingProcedures: true,
+    ageAppropriateAccess: false,
+  },
+  {
+    id: "train-003",
+    staffId: "staff-003",
+    staffName: "Lisa Williams",
+    onlineSafety: true,
+    groomingAwareness: true,
+    cyberbullying: false,
+    socialMediaRisks: true,
+    reportingProcedures: true,
+    ageAppropriateAccess: true,
+  },
+  {
+    id: "train-004",
+    staffId: "staff-004",
+    staffName: "Darren Laville",
+    onlineSafety: true,
+    groomingAwareness: true,
+    cyberbullying: true,
+    socialMediaRisks: true,
+    reportingProcedures: true,
+    ageAppropriateAccess: true,
+  },
 ];
+
 async function get_internet_safety_monitoring(req: NextRequest): Promise<Response> {
 
   const result = generateInternetSafetyMonitoringIntelligence(
@@ -12821,6 +15619,13 @@ async function post_internet_safety_monitoring(req: NextRequest): Promise<Respon
 // ─── key-worker-relationship-quality ───────────────────────────────────
 const key_worker_relationship_quality_DEMO_SESSIONS: KeyWorkerSession[] = [
   { id: "kws-1", childId: "child-alex", childName: "Alex", keyWorkerId: "staff-sarah", keyWorkerName: "Sarah Johnson", sessionDate: "2026-04-01", sessionType: "one_to_one", engagementLevel: "very_engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
+  { id: "kws-2", childId: "child-alex", childName: "Alex", keyWorkerId: "staff-sarah", keyWorkerName: "Sarah Johnson", sessionDate: "2026-04-08", sessionType: "goal_setting", engagementLevel: "engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
+  { id: "kws-3", childId: "child-alex", childName: "Alex", keyWorkerId: "staff-sarah", keyWorkerName: "Sarah Johnson", sessionDate: "2026-04-15", sessionType: "emotional_support", engagementLevel: "very_engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
+  { id: "kws-4", childId: "child-jordan", childName: "Jordan", keyWorkerId: "staff-tom", keyWorkerName: "Tom Richards", sessionDate: "2026-04-01", sessionType: "one_to_one", engagementLevel: "very_engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
+  { id: "kws-5", childId: "child-jordan", childName: "Jordan", keyWorkerId: "staff-tom", keyWorkerName: "Tom Richards", sessionDate: "2026-04-08", sessionType: "care_planning", engagementLevel: "engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
+  { id: "kws-6", childId: "child-jordan", childName: "Jordan", keyWorkerId: "staff-tom", keyWorkerName: "Tom Richards", sessionDate: "2026-04-15", sessionType: "advocacy", engagementLevel: "very_engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
+  { id: "kws-7", childId: "child-morgan", childName: "Morgan", keyWorkerId: "staff-lisa", keyWorkerName: "Lisa Williams", sessionDate: "2026-04-01", sessionType: "one_to_one", engagementLevel: "very_engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
+  { id: "kws-8", childId: "child-morgan", childName: "Morgan", keyWorkerId: "staff-lisa", keyWorkerName: "Lisa Williams", sessionDate: "2026-04-08", sessionType: "review_preparation", engagementLevel: "engaged", childVoiceCaptured: true, goalsReviewed: true, actionsPlanCompleted: true, relationshipStrengthened: true, documentedInCasefile: true, followUpScheduled: true },
 ];
 const key_worker_relationship_quality_DEMO_POLICY: KeyWorkerPolicy = {
   id: "kwp-1",
@@ -12834,8 +15639,11 @@ const key_worker_relationship_quality_DEMO_POLICY: KeyWorkerPolicy = {
 };
 const key_worker_relationship_quality_DEMO_TRAINING: StaffKeyWorkerTraining[] = [
   { id: "kwt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", relationshipBuilding: true, childVoice: true, carePlanningSkills: true, therapeuticApproaches: true, advocacySkills: true, documentationSkills: true },
-
+  { id: "kwt-2", staffId: "staff-tom", staffName: "Tom Richards", relationshipBuilding: true, childVoice: true, carePlanningSkills: true, therapeuticApproaches: true, advocacySkills: true, documentationSkills: true },
+  { id: "kwt-3", staffId: "staff-lisa", staffName: "Lisa Williams", relationshipBuilding: true, childVoice: true, carePlanningSkills: true, therapeuticApproaches: true, advocacySkills: true, documentationSkills: true },
+  { id: "kwt-4", staffId: "staff-darren", staffName: "Darren Laville", relationshipBuilding: true, childVoice: true, carePlanningSkills: true, therapeuticApproaches: true, advocacySkills: true, documentationSkills: true },
 ];
+
 async function get_key_worker_relationship_quality(req: NextRequest): Promise<Response> {
 
   const result = generateKeyWorkerRelationshipQualityIntelligence(
@@ -12882,6 +15690,13 @@ async function post_key_worker_relationship_quality(req: NextRequest): Promise<R
 // ─── key-worker-relationship ───────────────────────────────────────────
 const key_worker_relationship_DEMO_SESSIONS: KeyWorkerSession[] = [
   { id: "kws-1", childId: "child-alex", childName: "Alex", keyWorkerId: "staff-sarah", keyWorkerName: "Sarah Johnson", sessionDate: "2026-04-01", sessionType: "one_to_one", relationshipStrength: "very_strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
+  { id: "kws-2", childId: "child-alex", childName: "Alex", keyWorkerId: "staff-sarah", keyWorkerName: "Sarah Johnson", sessionDate: "2026-04-08", sessionType: "goal_review", relationshipStrength: "very_strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
+  { id: "kws-3", childId: "child-alex", childName: "Alex", keyWorkerId: "staff-sarah", keyWorkerName: "Sarah Johnson", sessionDate: "2026-04-15", sessionType: "life_story_work", relationshipStrength: "strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
+  { id: "kws-4", childId: "child-jordan", childName: "Jordan", keyWorkerId: "staff-tom", keyWorkerName: "Tom Richards", sessionDate: "2026-04-01", sessionType: "activity_based", relationshipStrength: "very_strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
+  { id: "kws-5", childId: "child-jordan", childName: "Jordan", keyWorkerId: "staff-tom", keyWorkerName: "Tom Richards", sessionDate: "2026-04-08", sessionType: "advocacy", relationshipStrength: "strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
+  { id: "kws-6", childId: "child-jordan", childName: "Jordan", keyWorkerId: "staff-tom", keyWorkerName: "Tom Richards", sessionDate: "2026-04-15", sessionType: "crisis_support", relationshipStrength: "very_strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
+  { id: "kws-7", childId: "child-morgan", childName: "Morgan", keyWorkerId: "staff-lisa", keyWorkerName: "Lisa Williams", sessionDate: "2026-04-01", sessionType: "transition_planning", relationshipStrength: "strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
+  { id: "kws-8", childId: "child-morgan", childName: "Morgan", keyWorkerId: "staff-lisa", keyWorkerName: "Lisa Williams", sessionDate: "2026-04-08", sessionType: "wellbeing_check", relationshipStrength: "very_strong", childEngaged: true, goalsDiscussed: true, progressRecorded: true, documentedInPlan: true, supervisorReviewed: true, feedbackGiven: true },
 ];
 const key_worker_relationship_DEMO_POLICY: KeyWorkerPolicy = {
   id: "kwp-1",
@@ -12895,8 +15710,11 @@ const key_worker_relationship_DEMO_POLICY: KeyWorkerPolicy = {
 };
 const key_worker_relationship_DEMO_TRAINING: StaffKeyWorkerTraining[] = [
   { id: "kwt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", relationshipBuilding: true, childAdvocacy: true, goalSettingSkills: true, lifeStoryWork: true, transitionSupport: true, reflectivePractice: true },
-
+  { id: "kwt-2", staffId: "staff-tom", staffName: "Tom Richards", relationshipBuilding: true, childAdvocacy: true, goalSettingSkills: true, lifeStoryWork: true, transitionSupport: true, reflectivePractice: true },
+  { id: "kwt-3", staffId: "staff-lisa", staffName: "Lisa Williams", relationshipBuilding: true, childAdvocacy: true, goalSettingSkills: true, lifeStoryWork: true, transitionSupport: true, reflectivePractice: true },
+  { id: "kwt-4", staffId: "staff-darren", staffName: "Darren Laville", relationshipBuilding: true, childAdvocacy: true, goalSettingSkills: true, lifeStoryWork: true, transitionSupport: true, reflectivePractice: true },
 ];
+
 async function get_key_worker_relationship(req: NextRequest): Promise<Response> {
 
   const result = generateKeyWorkerRelationshipIntelligence(
@@ -13819,6 +16637,22 @@ async function post_key_working_effectiveness(request: NextRequest): Promise<Res
 // ─── key-working ───────────────────────────────────────────────────────
 const key_working_demoRecords: KeyWorkingRecord[] = [
   // Alex — well-engaged, diverse sessions
+  { id: "kw-1", homeId: "home-oak", date: "2026-02-05", childId: "child-alex", childName: "Alex", category: "formal_keywork", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "kw-2", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "informal_check_in", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "kw-3", homeId: "home-oak", date: "2026-04-08", childId: "child-alex", childName: "Alex", category: "direct_work", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: true, timelyRecording: false },
+  { id: "kw-4", homeId: "home-oak", date: "2026-05-01", childId: "child-alex", childName: "Alex", category: "life_story_work", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: false, documentationComplete: true, timelyRecording: true },
+
+  // Jordan — some gaps in engagement
+  { id: "kw-5", homeId: "home-oak", date: "2026-02-20", childId: "child-jordan", childName: "Jordan", category: "goal_review", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "kw-6", homeId: "home-oak", date: "2026-03-18", childId: "child-jordan", childName: "Jordan", category: "crisis_support", outcome: "partially_completed", childEngaged: true, childViewRecorded: false, goalsAddressed: true, moodImproved: true, documentationComplete: false, timelyRecording: true },
+  { id: "kw-7", homeId: "home-oak", date: "2026-04-22", childId: "child-jordan", childName: "Jordan", category: "preparation_session", outcome: "completed", childEngaged: false, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "kw-8", homeId: "home-oak", date: "2026-05-10", childId: "child-jordan", childName: "Jordan", category: "celebration_session", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — newer, fewer records
+  { id: "kw-9", homeId: "home-oak", date: "2026-03-25", childId: "child-morgan", childName: "Morgan", category: "formal_keywork", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "kw-10", homeId: "home-oak", date: "2026-04-15", childId: "child-morgan", childName: "Morgan", category: "informal_check_in", outcome: "child_declined", childEngaged: false, childViewRecorded: false, goalsAddressed: false, moodImproved: false, documentationComplete: true, timelyRecording: false },
+  { id: "kw-11", homeId: "home-oak", date: "2026-05-02", childId: "child-morgan", childName: "Morgan", category: "direct_work", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "kw-12", homeId: "home-oak", date: "2026-05-15", childId: "child-morgan", childName: "Morgan", category: "goal_review", outcome: "completed", childEngaged: true, childViewRecorded: true, goalsAddressed: true, moodImproved: true, documentationComplete: false, timelyRecording: true },
 ];
 const key_working_demoPolicy: KeyWorkingPolicy = {
   keyWorkingPolicy: true,
@@ -13831,8 +16665,11 @@ const key_working_demoPolicy: KeyWorkingPolicy = {
 };
 const key_working_demoStaff: StaffKeyWorkingTraining[] = [
   { staffId: "staff-sarah", relationshipBuilding: true, therapeuticApproaches: true, childVoiceCapture: true, carePlanKnowledge: true, recordKeeping: true, crisisSupport: true },
-
+  { staffId: "staff-tom", relationshipBuilding: true, therapeuticApproaches: true, childVoiceCapture: true, carePlanKnowledge: false, recordKeeping: false, crisisSupport: true },
+  { staffId: "staff-lisa", relationshipBuilding: true, therapeuticApproaches: true, childVoiceCapture: false, carePlanKnowledge: true, recordKeeping: true, crisisSupport: false },
+  { staffId: "staff-darren", relationshipBuilding: true, therapeuticApproaches: true, childVoiceCapture: true, carePlanKnowledge: true, recordKeeping: true, crisisSupport: true },
 ];
+
 async function get_key_working(req: NextRequest): Promise<Response> {
 
   const result = generateKeyWorkingIntelligence({
@@ -14009,6 +16846,47 @@ async function post_lac_review(request: NextRequest): Promise<Response> {
 // ─── language-communication-support ────────────────────────────────────
 const language_communication_support_DEMO_PROFILES: ChildCommunicationProfile[] = [
   // Alex — no communication needs
+  {
+    id: "cp-1",
+    childId: "child-alex",
+    childName: "Alex",
+    communicationNeed: "none",
+    communicationPlanExists: false,
+    planReviewStatus: "not_applicable",
+    preferredCommunicationMethod: "Verbal",
+    interpreterRequired: false,
+    interpreterAvailable: false,
+    augmentativeDeviceNeeded: false,
+    augmentativeDeviceProvided: false,
+  },
+  // Jordan — English as additional language, interpreter required and available, plan current
+  {
+    id: "cp-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    communicationNeed: "english_additional_language",
+    communicationPlanExists: true,
+    planReviewStatus: "current",
+    preferredCommunicationMethod: "Verbal with interpreter support",
+    interpreterRequired: true,
+    interpreterAvailable: true,
+    augmentativeDeviceNeeded: false,
+    augmentativeDeviceProvided: false,
+  },
+  // Morgan — Autism spectrum, augmentative device needed and provided, plan current
+  {
+    id: "cp-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    communicationNeed: "autism_spectrum",
+    communicationPlanExists: true,
+    planReviewStatus: "current",
+    preferredCommunicationMethod: "AAC device with visual supports",
+    interpreterRequired: false,
+    interpreterAvailable: false,
+    augmentativeDeviceNeeded: true,
+    augmentativeDeviceProvided: true,
+  },
 ];
 const language_communication_support_DEMO_SESSIONS: CommunicationSupportSession[] = [
   {
@@ -14023,12 +16901,58 @@ const language_communication_support_DEMO_SESSIONS: CommunicationSupportSession[
     facilitatedBy: "Sarah Johnson",
     duration: 60,
   },
+  {
+    id: "cs-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-01",
+    supportType: "easy_read",
+    quality: "good",
+    childEngaged: true,
+    childProgressNoted: true,
+    facilitatedBy: "Lisa Williams",
+    duration: 45,
+  },
+  {
+    id: "cs-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-04-15",
+    supportType: "augmentative_device",
+    quality: "good",
+    childEngaged: true,
+    childProgressNoted: true,
+    facilitatedBy: "Tom Richards",
+    duration: 45,
+  },
+  {
+    id: "cs-4",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-05",
+    supportType: "social_stories",
+    quality: "excellent",
+    childEngaged: true,
+    childProgressNoted: false,
+    facilitatedBy: "Sarah Johnson",
+    duration: 30,
+  },
 ];
 const language_communication_support_DEMO_AUDITS: CommunicationAudit[] = [
   {
     id: "ca-1",
     auditDate: "2026-03-15",
     auditedBy: "Darren Laville",
+    easyReadMaterialsAvailable: true,
+    visualAidsPresent: true,
+    signageAccessible: true,
+    staffCommunicationAwareness: true,
+    childViewsSoughtAccessibly: true,
+  },
+  {
+    id: "ca-2",
+    auditDate: "2026-05-10",
+    auditedBy: "Sarah Johnson",
     easyReadMaterialsAvailable: true,
     visualAidsPresent: true,
     signageAccessible: true,
@@ -14048,8 +16972,41 @@ const language_communication_support_DEMO_TRAINING: StaffCommunicationTraining[]
     autismCommunication: true,
     interpreterWorkingTrained: true,
   },
-
+  {
+    id: "ct-2",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    communicationNeedsAwareness: true,
+    signLanguageBasics: true,
+    augmentativeDeviceTrained: true,
+    easyReadTrained: true,
+    autismCommunication: true,
+    interpreterWorkingTrained: false,
+  },
+  {
+    id: "ct-3",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    communicationNeedsAwareness: true,
+    signLanguageBasics: false,
+    augmentativeDeviceTrained: false,
+    easyReadTrained: true,
+    autismCommunication: true,
+    interpreterWorkingTrained: true,
+  },
+  {
+    id: "ct-4",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    communicationNeedsAwareness: true,
+    signLanguageBasics: true,
+    augmentativeDeviceTrained: true,
+    easyReadTrained: true,
+    autismCommunication: true,
+    interpreterWorkingTrained: true,
+  },
 ];
+
 async function get_language_communication_support(req: NextRequest): Promise<Response> {
 
   const result = generateLanguageCommunicationSupportIntelligence(
@@ -14135,6 +17092,17 @@ async function post_language_communication_support(req: NextRequest): Promise<Re
 // ─── leaving-care-intelligence ─────────────────────────────────────────
 const leaving_care_intelligence_DEMO_RECORDS: LeavingCareRecord[] = [
   { id: "lc-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "pathway_plan_review", outcome: "fully_prepared", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "lc-002", homeId: "home-oak-house", date: "2025-03-15", childId: "child-alex", childName: "Alex", category: "independence_assessment", outcome: "good_progress", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "lc-003", homeId: "home-oak-house", date: "2025-04-20", childId: "child-alex", childName: "Alex", category: "accommodation_planning", outcome: "good_progress", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: false, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "lc-004", homeId: "home-oak-house", date: "2025-05-25", childId: "child-alex", childName: "Alex", category: "financial_capability", outcome: "some_progress", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: false, documentationComplete: true, timelyRecording: false },
+  { id: "lc-005", homeId: "home-oak-house", date: "2025-02-18", childId: "child-jordan", childName: "Jordan", category: "personal_advisor_session", outcome: "fully_prepared", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "lc-006", homeId: "home-oak-house", date: "2025-03-22", childId: "child-jordan", childName: "Jordan", category: "education_employment_support", outcome: "good_progress", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "lc-007", homeId: "home-oak-house", date: "2025-05-10", childId: "child-jordan", childName: "Jordan", category: "health_transition", outcome: "good_progress", pathwayPlanReviewed: true, youngPersonConsulted: false, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "lc-008", homeId: "home-oak-house", date: "2025-06-15", childId: "child-jordan", childName: "Jordan", category: "support_network_review", outcome: "fully_prepared", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: false, timelyRecording: true },
+  { id: "lc-009", homeId: "home-oak-house", date: "2025-03-01", childId: "child-morgan", childName: "Morgan", category: "pathway_plan_review", outcome: "fully_prepared", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "lc-010", homeId: "home-oak-house", date: "2025-04-28", childId: "child-morgan", childName: "Morgan", category: "independence_assessment", outcome: "good_progress", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
+  { id: "lc-011", homeId: "home-oak-house", date: "2025-06-01", childId: "child-morgan", childName: "Morgan", category: "accommodation_planning", outcome: "some_progress", pathwayPlanReviewed: false, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: false, documentationComplete: true, timelyRecording: true },
+  { id: "lc-012", homeId: "home-oak-house", date: "2025-07-10", childId: "child-morgan", childName: "Morgan", category: "financial_capability", outcome: "good_progress", pathwayPlanReviewed: true, youngPersonConsulted: true, independenceSkillsAssessed: true, transitionPlanInPlace: true, documentationComplete: true, timelyRecording: true },
 ];
 const leaving_care_intelligence_DEMO_POLICY: LeavingCarePolicy = {
   pathwayPlanningPolicy: true, independenceSkillsFramework: true, accommodationSupportPolicy: true,
@@ -14142,8 +17110,11 @@ const leaving_care_intelligence_DEMO_POLICY: LeavingCarePolicy = {
 };
 const leaving_care_intelligence_DEMO_STAFF: StaffLeavingCareTraining[] = [
   { staffId: "staff-sarah", pathwayPlanningKnowledge: true, independenceSkillsTeaching: true, transitionSupportSkills: true, benefitsAdviceKnowledge: true, accommodationSupportSkills: true, emotionalSupportSkills: true },
-
+  { staffId: "staff-tom", pathwayPlanningKnowledge: true, independenceSkillsTeaching: true, transitionSupportSkills: true, benefitsAdviceKnowledge: false, accommodationSupportSkills: true, emotionalSupportSkills: true },
+  { staffId: "staff-lisa", pathwayPlanningKnowledge: true, independenceSkillsTeaching: true, transitionSupportSkills: false, benefitsAdviceKnowledge: true, accommodationSupportSkills: false, emotionalSupportSkills: true },
+  { staffId: "staff-darren", pathwayPlanningKnowledge: true, independenceSkillsTeaching: true, transitionSupportSkills: true, benefitsAdviceKnowledge: true, accommodationSupportSkills: true, emotionalSupportSkills: true },
 ];
+
 async function get_leaving_care_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateLeavingCareIntelligence({
@@ -14171,6 +17142,32 @@ const leaving_care_DEMO_CHILDREN: LeavingCareChild[] = [
     keyWorkerId: "staff-sarah",
     keyWorkerName: "Sarah Johnson",
   },
+  {
+    id: "child-jordan",
+    name: "Jordan",
+    dateOfBirth: "2013-07-22",
+    age: 13,
+    placementStartDate: "2025-11-01",
+    currentPlacement: true,
+    isEligibleChild: false,
+    isRelevantChild: false,
+    hasPathwayPlan: false,
+    keyWorkerId: "staff-tom",
+    keyWorkerName: "Tom Richards",
+  },
+  {
+    id: "child-morgan",
+    name: "Morgan",
+    dateOfBirth: "2010-12-01",
+    age: 15,
+    placementStartDate: "2026-01-10",
+    currentPlacement: true,
+    isEligibleChild: true,
+    isRelevantChild: false,
+    hasPathwayPlan: true,
+    keyWorkerId: "staff-lisa",
+    keyWorkerName: "Lisa Williams",
+  },
 ];
 const leaving_care_DEMO_PATHWAY_PLANS: PathwayPlan[] = [
   {
@@ -14193,6 +17190,25 @@ const leaving_care_DEMO_PATHWAY_PLANS: PathwayPlan[] = [
 ];
 const leaving_care_DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
   // Morgan — comprehensive, most developed as oldest
+  { id: "sk-m01", childId: "child-morgan", skill: "cooking", currentLevel: "competent", previousLevel: "developing", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m02", childId: "child-morgan", skill: "budgeting", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "competent" },
+  { id: "sk-m03", childId: "child-morgan", skill: "cleaning", currentLevel: "competent", previousLevel: "developing", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m04", childId: "child-morgan", skill: "laundry", currentLevel: "independent", previousLevel: "competent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m05", childId: "child-morgan", skill: "shopping", currentLevel: "competent", previousLevel: "developing", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m06", childId: "child-morgan", skill: "personal_hygiene", currentLevel: "independent", previousLevel: "competent", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "independent" },
+  { id: "sk-m07", childId: "child-morgan", skill: "using_public_transport", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "competent" },
+  { id: "sk-m08", childId: "child-morgan", skill: "managing_appointments", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "competent" },
+  { id: "sk-m09", childId: "child-morgan", skill: "basic_first_aid", currentLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "competent" },
+  { id: "sk-m10", childId: "child-morgan", skill: "understanding_tenancy", currentLevel: "emerging", assessedDate: "2026-04-01", assessedBy: "Lisa Williams", targetLevel: "developing" },
+  // Alex — basic age-appropriate skills
+  { id: "sk-a01", childId: "child-alex", skill: "cooking", currentLevel: "emerging", assessedDate: "2026-03-15", assessedBy: "Sarah Johnson", targetLevel: "developing" },
+  { id: "sk-a02", childId: "child-alex", skill: "cleaning", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-03-15", assessedBy: "Sarah Johnson", targetLevel: "competent" },
+  { id: "sk-a03", childId: "child-alex", skill: "personal_hygiene", currentLevel: "competent", assessedDate: "2026-03-15", assessedBy: "Sarah Johnson", targetLevel: "independent" },
+  { id: "sk-a04", childId: "child-alex", skill: "laundry", currentLevel: "emerging", assessedDate: "2026-03-15", assessedBy: "Sarah Johnson", targetLevel: "developing" },
+  // Jordan — youngest, introductory
+  { id: "sk-j01", childId: "child-jordan", skill: "cooking", currentLevel: "emerging", assessedDate: "2026-03-20", assessedBy: "Tom Richards", targetLevel: "developing" },
+  { id: "sk-j02", childId: "child-jordan", skill: "personal_hygiene", currentLevel: "developing", previousLevel: "emerging", assessedDate: "2026-03-20", assessedBy: "Tom Richards", targetLevel: "competent" },
+  { id: "sk-j03", childId: "child-jordan", skill: "cleaning", currentLevel: "emerging", assessedDate: "2026-03-20", assessedBy: "Tom Richards", targetLevel: "developing" },
 ];
 const leaving_care_DEMO_ACCOMMODATION_PLANS: AccommodationPlan[] = [
   {
@@ -14211,8 +17227,11 @@ const leaving_care_DEMO_ACCOMMODATION_PLANS: AccommodationPlan[] = [
 ];
 const leaving_care_DEMO_SUPPORT: SupportArrangement[] = [
   { id: "sup-m01", childId: "child-morgan", supportType: "personal_adviser", status: "active", providerName: "Jane Carter", startDate: "2026-01-20", frequency: "fortnightly", lastContactDate: "2026-05-10" },
-
+  { id: "sup-m02", childId: "child-morgan", supportType: "mentor", status: "active", providerName: "David Park — Volunteer Mentor", startDate: "2026-02-01", frequency: "weekly", lastContactDate: "2026-05-12" },
+  { id: "sup-m03", childId: "child-morgan", supportType: "education_support", status: "active", providerName: "Northfield College SENCO", startDate: "2026-01-10", frequency: "monthly" },
+  { id: "sup-m04", childId: "child-morgan", supportType: "social_worker", status: "active", providerName: "David Williams SW", startDate: "2025-06-01", frequency: "monthly", lastContactDate: "2026-05-01" },
 ];
+
 async function get_leaving_care(req: NextRequest): Promise<Response> {
 
   const result = generateLeavingCareIntelligence(
@@ -14329,6 +17348,17 @@ async function post_leaving_care(req: NextRequest): Promise<Response> {
 // ─── lessons-learned-intelligence ──────────────────────────────────────
 const lessons_learned_intelligence_DEMO_RECORDS: LessonsLearnedRecord[] = [
   { id: "ll-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "incident_debrief", outcome: "fully_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "complaint_learning", outcome: "fully_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "safeguarding_review", outcome: "partially_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: false, documentationComplete: true, timelyRecording: true },
+  { id: "ll-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "practice_improvement", outcome: "fully_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "policy_update", outcome: "fully_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "training_outcome", outcome: "action_planned", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: false, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "near_miss_analysis", outcome: "fully_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: false },
+  { id: "ll-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "external_inspection_learning", outcome: "fully_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "incident_debrief", outcome: "fully_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "complaint_learning", outcome: "partially_embedded", rootCauseIdentified: true, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "safeguarding_review", outcome: "fully_embedded", rootCauseIdentified: false, lessonsDocumented: true, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: true, timelyRecording: true },
+  { id: "ll-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "practice_improvement", outcome: "action_planned", rootCauseIdentified: true, lessonsDocumented: false, staffBriefingCompleted: true, improvementMeasurable: true, documentationComplete: false, timelyRecording: true },
 ];
 const lessons_learned_intelligence_DEMO_POLICY: LessonsLearnedPolicy = {
   lessonsLearnedPolicy: true, postIncidentReviewPolicy: true, complaintLearningPolicy: true,
@@ -14336,8 +17366,11 @@ const lessons_learned_intelligence_DEMO_POLICY: LessonsLearnedPolicy = {
 };
 const lessons_learned_intelligence_DEMO_STAFF: StaffLessonsLearnedTraining[] = [
   { staffId: "staff-sarah", reflectivePracticeSkills: true, rootCauseAnalysisKnowledge: true, documentationSkills: true, improvementPlanningSkills: true, debriefFacilitationSkills: true, knowledgeSharingAbility: true },
-
+  { staffId: "staff-tom", reflectivePracticeSkills: true, rootCauseAnalysisKnowledge: true, documentationSkills: true, improvementPlanningSkills: true, debriefFacilitationSkills: true, knowledgeSharingAbility: false },
+  { staffId: "staff-lisa", reflectivePracticeSkills: true, rootCauseAnalysisKnowledge: true, documentationSkills: true, improvementPlanningSkills: true, debriefFacilitationSkills: false, knowledgeSharingAbility: true },
+  { staffId: "staff-darren", reflectivePracticeSkills: true, rootCauseAnalysisKnowledge: true, documentationSkills: true, improvementPlanningSkills: true, debriefFacilitationSkills: true, knowledgeSharingAbility: true },
 ];
+
 async function get_lessons_learned_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateLessonsLearnedIntelligence({
@@ -14639,9 +17672,23 @@ async function post_lessons_learned(req: NextRequest): Promise<Response> {
 // ─── life-story-work ───────────────────────────────────────────────────
 const life_story_work_DEMO_SESSIONS: LifeStorySession[] = [
   { id: "ls-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-01-15", sessionType: "life_story_book", facilitator: "Sarah Johnson", durationMinutes: 45, engagementLevel: "highly_engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+  { id: "ls-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-02-10", sessionType: "therapeutic_narrative", facilitator: "Sarah Johnson", durationMinutes: 60, engagementLevel: "engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+  { id: "ls-3", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-12", sessionType: "photo_work", facilitator: "Sarah Johnson", durationMinutes: 30, engagementLevel: "highly_engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+  { id: "ls-4", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-08", sessionType: "timeline_work", facilitator: "Lisa Williams", durationMinutes: 50, engagementLevel: "engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+  { id: "ls-5", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-02-05", sessionType: "memory_box", facilitator: "Tom Richards", durationMinutes: 40, engagementLevel: "engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+  { id: "ls-6", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-03-15", sessionType: "family_tree", facilitator: "Tom Richards", durationMinutes: 55, engagementLevel: "highly_engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+  { id: "ls-7", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-20", sessionType: "identity_exploration", facilitator: "Tom Richards", durationMinutes: 45, engagementLevel: "engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+  { id: "ls-8", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-01-25", sessionType: "life_story_book", facilitator: "Lisa Williams", durationMinutes: 50, engagementLevel: "highly_engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
+  { id: "ls-9", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-03-05", sessionType: "digital_story", facilitator: "Lisa Williams", durationMinutes: 60, engagementLevel: "engaged", therapeuticApproachUsed: true, childLedPace: true, recordedInCasefile: true, followUpPlanned: true },
 ];
 const life_story_work_DEMO_RECORDS: MemoryRecord[] = [
   { id: "mr-1", childId: "child-alex", childName: "Alex", itemType: "photograph", dateAdded: "2026-01-20", securelyStored: true, childAccessible: true, qualityChecked: true },
+  { id: "mr-2", childId: "child-alex", childName: "Alex", itemType: "letter", dateAdded: "2026-02-15", securelyStored: true, childAccessible: true, qualityChecked: true },
+  { id: "mr-3", childId: "child-alex", childName: "Alex", itemType: "certificate", dateAdded: "2026-03-10", securelyStored: true, childAccessible: true, qualityChecked: true },
+  { id: "mr-4", childId: "child-jordan", childName: "Jordan", itemType: "keepsake", dateAdded: "2026-02-10", securelyStored: true, childAccessible: true, qualityChecked: true },
+  { id: "mr-5", childId: "child-jordan", childName: "Jordan", itemType: "artwork", dateAdded: "2026-03-20", securelyStored: true, childAccessible: true, qualityChecked: true },
+  { id: "mr-6", childId: "child-morgan", childName: "Morgan", itemType: "digital_media", dateAdded: "2026-01-30", securelyStored: true, childAccessible: true, qualityChecked: true },
+  { id: "mr-7", childId: "child-morgan", childName: "Morgan", itemType: "photograph", dateAdded: "2026-03-08", securelyStored: true, childAccessible: true, qualityChecked: true },
 ];
 const life_story_work_DEMO_POLICY: LifeStoryPolicy = {
   id: "lsp-1",
@@ -14655,8 +17702,11 @@ const life_story_work_DEMO_POLICY: LifeStoryPolicy = {
 };
 const life_story_work_DEMO_TRAINING: StaffLifeStoryTraining[] = [
   { id: "lst-1", staffId: "staff-sarah", staffName: "Sarah Johnson", lifeStoryWork: true, therapeuticNarrative: true, traumaInformed: true, culturalSensitivity: true, childLedApproach: true, memoryKeeping: true },
-
+  { id: "lst-2", staffId: "staff-tom", staffName: "Tom Richards", lifeStoryWork: true, therapeuticNarrative: true, traumaInformed: true, culturalSensitivity: true, childLedApproach: true, memoryKeeping: true },
+  { id: "lst-3", staffId: "staff-lisa", staffName: "Lisa Williams", lifeStoryWork: true, therapeuticNarrative: true, traumaInformed: true, culturalSensitivity: true, childLedApproach: true, memoryKeeping: true },
+  { id: "lst-4", staffId: "staff-darren", staffName: "Darren Laville", lifeStoryWork: true, therapeuticNarrative: true, traumaInformed: true, culturalSensitivity: true, childLedApproach: true, memoryKeeping: true },
 ];
+
 async function get_life_story_work(req: NextRequest): Promise<Response> {
 
   const result = generateLifeStoryWorkIntelligence(
@@ -14737,6 +17787,22 @@ async function post_life_story_work(req: NextRequest): Promise<Response> {
 // ─── life-story ────────────────────────────────────────────────────────
 const life_story_demoRecords: LifeStoryRecord[] = [
   // Alex — regular, high-quality life story work
+  { id: "ls-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-10", sessionType: "life_story_book", completed: true, childLedContent: true, childEngagement: "high", addedToLifeStoryBook: true, memoryBoxUpdated: true, photographsTaken: false, identityNeedsAddressed: true, culturalActivityIncluded: true, familyConnectionExplored: true },
+  { id: "ls-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-24", sessionType: "memory_box", completed: true, childLedContent: true, childEngagement: "high", addedToLifeStoryBook: false, memoryBoxUpdated: true, photographsTaken: true, identityNeedsAddressed: true, culturalActivityIncluded: false, familyConnectionExplored: false },
+  { id: "ls-3", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-07", sessionType: "photograph_session", completed: true, childLedContent: true, childEngagement: "moderate", addedToLifeStoryBook: true, memoryBoxUpdated: true, photographsTaken: true, identityNeedsAddressed: false, culturalActivityIncluded: false, familyConnectionExplored: true },
+  { id: "ls-4", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-21", sessionType: "family_tree", completed: true, childLedContent: true, childEngagement: "high", addedToLifeStoryBook: true, memoryBoxUpdated: false, photographsTaken: false, identityNeedsAddressed: true, culturalActivityIncluded: true, familyConnectionExplored: true },
+  { id: "ls-5", childId: "child-alex", childName: "Alex", sessionDate: "2026-05-05", sessionType: "cultural_activity", completed: true, childLedContent: true, childEngagement: "high", addedToLifeStoryBook: true, memoryBoxUpdated: true, photographsTaken: true, identityNeedsAddressed: true, culturalActivityIncluded: true, familyConnectionExplored: false },
+
+  // Jordan — good engagement but some gaps
+  { id: "ls-6", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-03-15", sessionType: "life_story_book", completed: true, childLedContent: true, childEngagement: "moderate", addedToLifeStoryBook: true, memoryBoxUpdated: false, photographsTaken: false, identityNeedsAddressed: true, culturalActivityIncluded: false, familyConnectionExplored: true },
+  { id: "ls-7", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-01", sessionType: "identity_discussion", completed: true, childLedContent: false, childEngagement: "moderate", addedToLifeStoryBook: false, memoryBoxUpdated: false, photographsTaken: false, identityNeedsAddressed: true, culturalActivityIncluded: false, familyConnectionExplored: false },
+  { id: "ls-8", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-15", sessionType: "creative_expression", completed: false, childLedContent: false, childEngagement: "refused", addedToLifeStoryBook: false, memoryBoxUpdated: false, photographsTaken: false, identityNeedsAddressed: false, culturalActivityIncluded: false, familyConnectionExplored: false },
+  { id: "ls-9", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-05-01", sessionType: "letter_writing", completed: true, childLedContent: true, childEngagement: "high", addedToLifeStoryBook: true, memoryBoxUpdated: true, photographsTaken: false, identityNeedsAddressed: false, culturalActivityIncluded: false, familyConnectionExplored: true },
+
+  // Morgan — newer to home, fewer sessions
+  { id: "ls-10", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-10", sessionType: "life_story_book", completed: true, childLedContent: false, childEngagement: "low", addedToLifeStoryBook: true, memoryBoxUpdated: false, photographsTaken: false, identityNeedsAddressed: true, culturalActivityIncluded: true, familyConnectionExplored: false },
+  { id: "ls-11", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-28", sessionType: "timeline_work", completed: true, childLedContent: true, childEngagement: "moderate", addedToLifeStoryBook: true, memoryBoxUpdated: true, photographsTaken: false, identityNeedsAddressed: true, culturalActivityIncluded: false, familyConnectionExplored: true },
+  { id: "ls-12", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-05-12", sessionType: "photograph_session", completed: true, childLedContent: true, childEngagement: "moderate", addedToLifeStoryBook: false, memoryBoxUpdated: true, photographsTaken: true, identityNeedsAddressed: false, culturalActivityIncluded: false, familyConnectionExplored: false },
 ];
 const life_story_demoPolicy: LifeStoryPolicy = {
   id: "pol-ls-1",
@@ -14750,8 +17816,11 @@ const life_story_demoPolicy: LifeStoryPolicy = {
 };
 const life_story_demoStaff: StaffLifeStoryTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", lifeStoryWork: true, identitySupport: true, culturalCompetency: true, therapeuticApproach: true, memoryKeeping: true, familyWorkSkills: true },
-
+  { id: "t-2", staffId: "staff-tom", staffName: "Tom Richards", lifeStoryWork: true, identitySupport: true, culturalCompetency: true, therapeuticApproach: false, memoryKeeping: true, familyWorkSkills: true },
+  { id: "t-3", staffId: "staff-lisa", staffName: "Lisa Williams", lifeStoryWork: true, identitySupport: true, culturalCompetency: true, therapeuticApproach: true, memoryKeeping: true, familyWorkSkills: false },
+  { id: "t-4", staffId: "staff-darren", staffName: "Darren Laville", lifeStoryWork: true, identitySupport: true, culturalCompetency: false, therapeuticApproach: true, memoryKeeping: true, familyWorkSkills: true },
 ];
+
 async function get_life_story(req: NextRequest): Promise<Response> {
 
   const result = generateLifeStoryIntelligence(
@@ -14774,14 +17843,28 @@ async function get_life_story(req: NextRequest): Promise<Response> {
 // ─── location-assessment ───────────────────────────────────────────────
 const location_assessment_DEMO_RECORDS: LocationAssessmentRecord[] = [
   { id: "la-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-03-01", category: "transport_links", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-2", childId: "child-alex", childName: "Alex", assessmentDate: "2026-03-15", category: "education_access", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-3", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", category: "health_services", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: false, mitigationsDocumented: false, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-4", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-15", category: "community_safety", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-5", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-03-05", category: "recreational_facilities", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-6", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-03-20", category: "cultural_diversity", thoroughAssessment: true, childViewIncorporated: false, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-7", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-10", category: "environmental_quality", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-8", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-20", category: "emergency_services", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: false, mitigationsDocumented: false, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-9", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-03-10", category: "transport_links", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-10", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-03-25", category: "health_services", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: false },
+  { id: "la-11", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-05", category: "community_safety", thoroughAssessment: true, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: true, regulatoryAligned: true },
+  { id: "la-12", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-18", category: "education_access", thoroughAssessment: false, childViewIncorporated: true, riskIdentified: true, mitigationsDocumented: true, documentationComplete: false, regulatoryAligned: true },
 ];
 const location_assessment_DEMO_POLICY: LocationPolicy = {
   id: "lp-1", locationAssessmentPolicy: true, communityRiskFramework: true, transportAccessPlan: true, serviceProximityGuidelines: true, environmentalSafetyProtocol: true, annualReviewSchedule: true, stakeholderConsultation: true,
 };
 const location_assessment_DEMO_STAFF: StaffLocationTraining[] = [
   { id: "lt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", riskAssessmentSkills: true, communityMapping: true, safeguardingAwareness: true, regulatoryKnowledge: true, childConsultation: true, reportWriting: true },
-
+  { id: "lt-2", staffId: "staff-tom", staffName: "Tom Richards", riskAssessmentSkills: true, communityMapping: true, safeguardingAwareness: true, regulatoryKnowledge: false, childConsultation: false, reportWriting: true },
+  { id: "lt-3", staffId: "staff-lisa", staffName: "Lisa Williams", riskAssessmentSkills: true, communityMapping: false, safeguardingAwareness: true, regulatoryKnowledge: true, childConsultation: true, reportWriting: false },
+  { id: "lt-4", staffId: "staff-darren", staffName: "Darren Laville", riskAssessmentSkills: true, communityMapping: true, safeguardingAwareness: true, regulatoryKnowledge: true, childConsultation: true, reportWriting: true },
 ];
+
 async function get_location_assessment(req: NextRequest): Promise<Response> {
 
   const result = generateLocationAssessmentIntelligence(
@@ -14834,6 +17917,123 @@ const management_oversight_DEMO_RECORDS: OversightRecord[] = [
     staffFeedbackGiven: true,
     documentedProperly: true,
   },
+  {
+    id: "mo-002",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-05",
+    category: "practice_observation",
+    completedThoroughly: true,
+    actionPlanCreated: true,
+    followUpCompleted: true,
+    childImpactAssessed: true,
+    staffFeedbackGiven: true,
+    documentedProperly: true,
+  },
+  {
+    id: "mo-003",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-02",
+    category: "reg44_monitoring",
+    completedThoroughly: true,
+    actionPlanCreated: true,
+    followUpCompleted: true,
+    childImpactAssessed: true,
+    staffFeedbackGiven: false,
+    documentedProperly: true,
+  },
+  {
+    id: "mo-004",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-08",
+    category: "reg45_monitoring",
+    completedThoroughly: true,
+    actionPlanCreated: true,
+    followUpCompleted: true,
+    childImpactAssessed: true,
+    staffFeedbackGiven: true,
+    documentedProperly: true,
+  },
+  {
+    id: "mo-005",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-03",
+    category: "incident_review",
+    completedThoroughly: true,
+    actionPlanCreated: true,
+    followUpCompleted: false,
+    childImpactAssessed: true,
+    staffFeedbackGiven: true,
+    documentedProperly: true,
+  },
+  {
+    id: "mo-006",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-10",
+    category: "staff_supervision_audit",
+    completedThoroughly: true,
+    actionPlanCreated: true,
+    followUpCompleted: true,
+    childImpactAssessed: false,
+    staffFeedbackGiven: true,
+    documentedProperly: true,
+  },
+  {
+    id: "mo-007",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-12",
+    category: "quality_assurance_check",
+    completedThoroughly: true,
+    actionPlanCreated: true,
+    followUpCompleted: true,
+    childImpactAssessed: true,
+    staffFeedbackGiven: true,
+    documentedProperly: true,
+  },
+  {
+    id: "mo-008",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-14",
+    category: "outcomes_tracking",
+    completedThoroughly: true,
+    actionPlanCreated: false,
+    followUpCompleted: true,
+    childImpactAssessed: true,
+    staffFeedbackGiven: true,
+    documentedProperly: true,
+  },
+  {
+    id: "mo-009",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-15",
+    category: "case_file_audit",
+    completedThoroughly: true,
+    actionPlanCreated: true,
+    followUpCompleted: true,
+    childImpactAssessed: true,
+    staffFeedbackGiven: true,
+    documentedProperly: false,
+  },
+  {
+    id: "mo-010",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-18",
+    category: "reg44_monitoring",
+    completedThoroughly: true,
+    actionPlanCreated: true,
+    followUpCompleted: true,
+    childImpactAssessed: true,
+    staffFeedbackGiven: true,
+    documentedProperly: true,
+  },
 ];
 const management_oversight_DEMO_POLICY: OversightPolicy = {
   id: "policy-oak",
@@ -14850,6 +18050,39 @@ const management_oversight_DEMO_STAFF: StaffOversightTraining[] = [
     id: "sot-001",
     staffId: "staff-sarah",
     staffName: "Sarah",
+    auditSkills: true,
+    qualityAssuranceKnowledge: true,
+    regulatoryAwareness: true,
+    leadershipCapability: true,
+    dataAnalysis: true,
+    reflectivePractice: true,
+  },
+  {
+    id: "sot-002",
+    staffId: "staff-tom",
+    staffName: "Tom",
+    auditSkills: true,
+    qualityAssuranceKnowledge: true,
+    regulatoryAwareness: true,
+    leadershipCapability: false,
+    dataAnalysis: true,
+    reflectivePractice: true,
+  },
+  {
+    id: "sot-003",
+    staffId: "staff-lisa",
+    staffName: "Lisa",
+    auditSkills: true,
+    qualityAssuranceKnowledge: true,
+    regulatoryAwareness: true,
+    leadershipCapability: true,
+    dataAnalysis: false,
+    reflectivePractice: true,
+  },
+  {
+    id: "sot-004",
+    staffId: "staff-darren",
+    staffName: "Darren",
     auditSkills: true,
     qualityAssuranceKnowledge: true,
     regulatoryAwareness: true,
@@ -14895,6 +18128,14 @@ async function get_management_oversight(req: NextRequest): Promise<Response> {
 // ─── medication-adherence-monitoring ───────────────────────────────────
 const medication_adherence_monitoring_DEMO_RECORDS: MedicationRecord[] = [
   { id: "mr-1", childId: "child-alex", childName: "Alex", administrationDate: "2026-05-12", medicationType: "prescribed_regular", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-09-01" },
+  { id: "mr-2", childId: "child-alex", childName: "Alex", administrationDate: "2026-05-13", medicationType: "controlled", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-09-01" },
+  { id: "mr-3", childId: "child-alex", childName: "Alex", administrationDate: "2026-05-14", medicationType: "prescribed_regular", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-09-01" },
+  { id: "mr-4", childId: "child-jordan", childName: "Jordan", administrationDate: "2026-05-12", medicationType: "inhaler", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-10-01" },
+  { id: "mr-5", childId: "child-jordan", childName: "Jordan", administrationDate: "2026-05-13", medicationType: "inhaler", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-10-01" },
+  { id: "mr-6", childId: "child-jordan", childName: "Jordan", administrationDate: "2026-05-14", medicationType: "prescribed_prn", administrationOutcome: "refused", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: false, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-10-01" },
+  { id: "mr-7", childId: "child-morgan", childName: "Morgan", administrationDate: "2026-05-12", medicationType: "topical", administrationOutcome: "administered_correctly", twoStaffWitnessed: false, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-08-15" },
+  { id: "mr-8", childId: "child-morgan", childName: "Morgan", administrationDate: "2026-05-13", medicationType: "supplement", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: true, storageCorrect: true, reviewDue: "2026-08-15" },
+  { id: "mr-9", childId: "child-morgan", childName: "Morgan", administrationDate: "2026-05-14", medicationType: "over_counter", administrationOutcome: "administered_correctly", twoStaffWitnessed: true, consentObtained: true, sideEffectsMonitored: true, documentedImmediately: false, storageCorrect: true, reviewDue: "2026-08-15" },
 ];
 const medication_adherence_monitoring_DEMO_POLICY: MedicationPolicy = {
   id: "pol-1",
@@ -14908,8 +18149,11 @@ const medication_adherence_monitoring_DEMO_POLICY: MedicationPolicy = {
 };
 const medication_adherence_monitoring_DEMO_TRAINING: StaffMedicationTraining[] = [
   { id: "smt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", medicationAdministration: true, controlledDrugs: true, errorReporting: true, consentPractice: true, sideEffectRecognition: true, storageCompliance: true },
-
+  { id: "smt-2", staffId: "staff-tom", staffName: "Tom Richards", medicationAdministration: true, controlledDrugs: true, errorReporting: true, consentPractice: true, sideEffectRecognition: true, storageCompliance: true },
+  { id: "smt-3", staffId: "staff-lisa", staffName: "Lisa Williams", medicationAdministration: true, controlledDrugs: true, errorReporting: true, consentPractice: true, sideEffectRecognition: true, storageCompliance: true },
+  { id: "smt-4", staffId: "staff-darren", staffName: "Darren Laville", medicationAdministration: true, controlledDrugs: true, errorReporting: true, consentPractice: true, sideEffectRecognition: true, storageCompliance: true },
 ];
+
 async function get_medication_adherence_monitoring(req: NextRequest): Promise<Response> {
 
   const result = generateMedicationAdherenceMonitoringIntelligence(
@@ -15146,6 +18390,41 @@ async function post_medication_error_prevention(request: NextRequest): Promise<R
 // ─── medication-management ─────────────────────────────────────────────
 const medication_management_DEMO_RECORDS: MedicationRecord[] = [
   // Alex — Methylphenidate (regular ADHD) morning doses
+  { id: "rec-001", childId: "child-alex", childName: "Alex", medicationName: "Methylphenidate 10mg", medicationType: "regular", prescribedDose: "10mg", administeredDate: "2026-05-01", administeredTime: "08:00", administeredBy: "Sarah Johnson", status: "given" },
+  { id: "rec-002", childId: "child-alex", childName: "Alex", medicationName: "Methylphenidate 10mg", medicationType: "regular", prescribedDose: "10mg", administeredDate: "2026-05-02", administeredTime: "08:15", administeredBy: "Tom Richards", status: "given" },
+  { id: "rec-003", childId: "child-alex", childName: "Alex", medicationName: "Methylphenidate 10mg", medicationType: "regular", prescribedDose: "10mg", administeredDate: "2026-05-03", administeredTime: "08:00", administeredBy: "Lisa Williams", status: "given" },
+  { id: "rec-004", childId: "child-alex", childName: "Alex", medicationName: "Methylphenidate 10mg", medicationType: "regular", prescribedDose: "10mg", administeredDate: "2026-05-04", administeredTime: "09:30", administeredBy: "Tom Richards", status: "late", notes: "Slept in — given 90 mins late" },
+  { id: "rec-005", childId: "child-alex", childName: "Alex", medicationName: "Methylphenidate 10mg", medicationType: "regular", prescribedDose: "10mg", administeredDate: "2026-05-05", administeredTime: "08:00", administeredBy: "Sarah Johnson", status: "refused", notes: "Alex refused — upset after phone call" },
+  { id: "rec-006", childId: "child-alex", childName: "Alex", medicationName: "Methylphenidate 10mg", medicationType: "regular", prescribedDose: "10mg", administeredDate: "2026-05-06", administeredTime: "08:00", administeredBy: "Lisa Williams", status: "given" },
+  { id: "rec-007", childId: "child-alex", childName: "Alex", medicationName: "Methylphenidate 10mg", medicationType: "regular", prescribedDose: "10mg", administeredDate: "2026-05-07", administeredTime: "08:10", administeredBy: "Tom Richards", status: "given" },
+  { id: "rec-008", childId: "child-alex", childName: "Alex", medicationName: "Methylphenidate 10mg", medicationType: "regular", prescribedDose: "10mg", administeredDate: "2026-05-08", administeredTime: "08:00", administeredBy: "Sarah Johnson", status: "given" },
+
+  // Alex — Lorazepam (PRN anxiety)
+  { id: "rec-009", childId: "child-alex", childName: "Alex", medicationName: "Lorazepam 0.5mg", medicationType: "prn", prescribedDose: "0.5mg", administeredDate: "2026-05-05", administeredTime: "14:30", administeredBy: "Sarah Johnson", witnessedBy: "Tom Richards", status: "given", notes: "Acute anxiety episode after phone call from mum" },
+  { id: "rec-010", childId: "child-alex", childName: "Alex", medicationName: "Lorazepam 0.5mg", medicationType: "prn", prescribedDose: "0.5mg", administeredDate: "2026-05-12", administeredTime: "20:00", administeredBy: "Lisa Williams", witnessedBy: "Tom Richards", status: "given", notes: "Anxiety before bedtime" },
+
+  // Jordan — Sertraline (regular antidepressant)
+  { id: "rec-011", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-01", administeredTime: "08:30", administeredBy: "Sarah Johnson", status: "given" },
+  { id: "rec-012", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-02", administeredTime: "08:30", administeredBy: "Tom Richards", status: "given" },
+  { id: "rec-013", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-03", administeredTime: "08:45", administeredBy: "Lisa Williams", status: "given" },
+  { id: "rec-014", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-04", administeredTime: "08:30", administeredBy: "Tom Richards", status: "given" },
+  { id: "rec-015", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-05", administeredTime: "08:30", administeredBy: "Sarah Johnson", status: "given" },
+  { id: "rec-016", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-06", administeredTime: "08:30", administeredBy: "Lisa Williams", status: "omitted", notes: "Run out of stock — pharmacy delayed" },
+  { id: "rec-017", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-07", administeredTime: "08:30", administeredBy: "Tom Richards", status: "given" },
+  { id: "rec-018", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-08", administeredTime: "08:30", administeredBy: "Sarah Johnson", status: "given" },
+
+  // Morgan — Melatonin (controlled) evening doses
+  { id: "rec-019", childId: "child-morgan", childName: "Morgan", medicationName: "Melatonin 3mg", medicationType: "controlled", prescribedDose: "3mg", administeredDate: "2026-05-01", administeredTime: "21:00", administeredBy: "Tom Richards", witnessedBy: "Lisa Williams", status: "given" },
+  { id: "rec-020", childId: "child-morgan", childName: "Morgan", medicationName: "Melatonin 3mg", medicationType: "controlled", prescribedDose: "3mg", administeredDate: "2026-05-02", administeredTime: "21:00", administeredBy: "Sarah Johnson", witnessedBy: "Tom Richards", status: "given" },
+  { id: "rec-021", childId: "child-morgan", childName: "Morgan", medicationName: "Melatonin 3mg", medicationType: "controlled", prescribedDose: "3mg", administeredDate: "2026-05-03", administeredTime: "21:15", administeredBy: "Lisa Williams", witnessedBy: "Tom Richards", status: "given" },
+  { id: "rec-022", childId: "child-morgan", childName: "Morgan", medicationName: "Melatonin 3mg", medicationType: "controlled", prescribedDose: "3mg", administeredDate: "2026-05-04", administeredTime: "21:00", administeredBy: "Tom Richards", witnessedBy: "Sarah Johnson", status: "self_administered" },
+  { id: "rec-023", childId: "child-morgan", childName: "Morgan", medicationName: "Melatonin 3mg", medicationType: "controlled", prescribedDose: "3mg", administeredDate: "2026-05-05", administeredTime: "21:00", administeredBy: "Sarah Johnson", witnessedBy: "Lisa Williams", status: "given" },
+  { id: "rec-024", childId: "child-morgan", childName: "Morgan", medicationName: "Melatonin 3mg", medicationType: "controlled", prescribedDose: "3mg", administeredDate: "2026-05-06", administeredTime: "21:00", administeredBy: "Lisa Williams", witnessedBy: "Tom Richards", status: "self_administered" },
+  { id: "rec-025", childId: "child-morgan", childName: "Morgan", medicationName: "Melatonin 3mg", medicationType: "controlled", prescribedDose: "3mg", administeredDate: "2026-05-07", administeredTime: "21:00", administeredBy: "Tom Richards", witnessedBy: "Sarah Johnson", status: "given" },
+  { id: "rec-026", childId: "child-morgan", childName: "Morgan", medicationName: "Melatonin 3mg", medicationType: "controlled", prescribedDose: "3mg", administeredDate: "2026-05-08", administeredTime: "21:00", administeredBy: "Sarah Johnson", witnessedBy: "Tom Richards", status: "given" },
+
+  // Error record — wrong time for Jordan
+  { id: "rec-027", childId: "child-jordan", childName: "Jordan", medicationName: "Sertraline 50mg", medicationType: "regular", prescribedDose: "50mg", administeredDate: "2026-05-10", administeredTime: "14:00", administeredBy: "Tom Richards", status: "error", notes: "Given at wrong time" },
 ];
 const medication_management_DEMO_ERRORS: MedicationError[] = [
   {
@@ -15156,9 +18435,33 @@ const medication_management_DEMO_ERRORS: MedicationError[] = [
     notifiedParties: ["GP", "Darren Laville"],
     rootCauseIdentified: "Staff distracted by incident with another child",
   },
+  {
+    id: "err-002", childId: "child-alex", childName: "Alex",
+    errorDate: "2026-05-07", errorType: "documentation_error", severity: "moderate",
+    description: "MAR chart not signed for Methylphenidate administration — dose was given but not recorded until end of shift",
+    reportedBy: "Lisa Williams", actionTaken: "MAR chart retrospectively completed, staff supervision arranged",
+    notifiedParties: ["Darren Laville"],
+    rootCauseIdentified: "Staff new to home, unfamiliar with MAR chart process",
+  },
+  {
+    id: "err-003", childId: "child-jordan", childName: "Jordan",
+    errorDate: "2026-05-06", errorType: "missed", severity: "significant",
+    description: "Sertraline omitted due to stock running out — pharmacy delivery was not chased",
+    reportedBy: "Sarah Johnson", actionTaken: "Emergency supply obtained from pharmacy, stock management reviewed",
+    notifiedParties: ["GP", "Social Worker", "Darren Laville"],
+  },
 ];
 const medication_management_DEMO_STOCK_CHECKS: StockCheck[] = [
   { id: "sc-001", medicationName: "Methylphenidate 10mg", childId: "child-alex", childName: "Alex", checkDate: "2026-05-01", checkedBy: "Sarah Johnson", expectedCount: 30, actualCount: 30, discrepancy: false },
+  { id: "sc-002", medicationName: "Sertraline 50mg", childId: "child-jordan", childName: "Jordan", checkDate: "2026-05-01", checkedBy: "Sarah Johnson", expectedCount: 28, actualCount: 28, discrepancy: false },
+  { id: "sc-003", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", checkDate: "2026-05-01", checkedBy: "Lisa Williams", expectedCount: 30, actualCount: 30, discrepancy: false },
+  { id: "sc-004", medicationName: "Methylphenidate 10mg", childId: "child-alex", childName: "Alex", checkDate: "2026-05-08", checkedBy: "Tom Richards", expectedCount: 23, actualCount: 23, discrepancy: false },
+  { id: "sc-005", medicationName: "Sertraline 50mg", childId: "child-jordan", childName: "Jordan", checkDate: "2026-05-08", checkedBy: "Tom Richards", expectedCount: 21, actualCount: 20, discrepancy: true, actionTaken: "Recounted and confirmed one tablet unaccounted for — incident form completed" },
+  { id: "sc-006", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", checkDate: "2026-05-08", checkedBy: "Lisa Williams", expectedCount: 23, actualCount: 23, discrepancy: false },
+  { id: "sc-007", medicationName: "Methylphenidate 10mg", childId: "child-alex", childName: "Alex", checkDate: "2026-05-15", checkedBy: "Sarah Johnson", expectedCount: 16, actualCount: 16, discrepancy: false },
+  { id: "sc-008", medicationName: "Sertraline 50mg", childId: "child-jordan", childName: "Jordan", checkDate: "2026-05-15", checkedBy: "Sarah Johnson", expectedCount: 13, actualCount: 13, discrepancy: false },
+  { id: "sc-009", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", checkDate: "2026-05-15", checkedBy: "Lisa Williams", expectedCount: 16, actualCount: 16, discrepancy: false },
+  { id: "sc-010", medicationName: "Lorazepam 0.5mg", childId: "child-alex", childName: "Alex", checkDate: "2026-05-08", checkedBy: "Sarah Johnson", expectedCount: 8, actualCount: 8, discrepancy: false },
 ];
 const medication_management_DEMO_SELF_ADMIN: SelfAdminAssessment[] = [
   {
@@ -15170,11 +18473,36 @@ const medication_management_DEMO_SELF_ADMIN: SelfAdminAssessment[] = [
     areasForDevelopment: ["Remembering timing without prompts", "Recognising side effects"],
     reviewDate: "2026-05-01",
   },
+  {
+    id: "sa-002", childId: "child-morgan", childName: "Morgan",
+    assessmentDate: "2026-05-01",
+    currentLevel: "level_2_supervised", targetLevel: "level_3_independent_checked",
+    assessedBy: "Darren Laville",
+    competencies: ["Understands medication purpose", "Can identify own medication", "Knows correct dose", "Can open packaging safely"],
+    areasForDevelopment: ["Remembering timing without prompts"],
+    reviewDate: "2026-06-01",
+  },
+  {
+    id: "sa-003", childId: "child-morgan", childName: "Morgan",
+    assessmentDate: "2026-05-15",
+    currentLevel: "level_3_independent_checked", targetLevel: "level_3_independent_checked",
+    assessedBy: "Darren Laville",
+    competencies: ["Understands medication purpose", "Can identify own medication", "Knows correct dose", "Can open packaging safely", "Remembers timing independently"],
+    areasForDevelopment: [],
+    reviewDate: "2026-06-15",
+  },
 ];
 const medication_management_DEMO_CD_RECORDS: ControlledDrugRecord[] = [
   { id: "cd-001", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-01", administeredBy: "Tom Richards", witnessedBy: "Lisa Williams", balanceBefore: 30, balanceAfter: 29, balanceCorrect: true },
-
+  { id: "cd-002", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-02", administeredBy: "Sarah Johnson", witnessedBy: "Tom Richards", balanceBefore: 29, balanceAfter: 28, balanceCorrect: true },
+  { id: "cd-003", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-03", administeredBy: "Lisa Williams", witnessedBy: "Tom Richards", balanceBefore: 28, balanceAfter: 27, balanceCorrect: true },
+  { id: "cd-004", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-04", administeredBy: "Tom Richards", witnessedBy: "Sarah Johnson", balanceBefore: 27, balanceAfter: 26, balanceCorrect: true },
+  { id: "cd-005", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-05", administeredBy: "Sarah Johnson", witnessedBy: "Lisa Williams", balanceBefore: 26, balanceAfter: 25, balanceCorrect: true },
+  { id: "cd-006", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-06", administeredBy: "Lisa Williams", witnessedBy: "Tom Richards", balanceBefore: 25, balanceAfter: 24, balanceCorrect: true },
+  { id: "cd-007", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-07", administeredBy: "Tom Richards", witnessedBy: "Sarah Johnson", balanceBefore: 24, balanceAfter: 23, balanceCorrect: true },
+  { id: "cd-008", medicationName: "Melatonin 3mg", childId: "child-morgan", childName: "Morgan", date: "2026-05-08", administeredBy: "Sarah Johnson", witnessedBy: "Tom Richards", balanceBefore: 23, balanceAfter: 22, balanceCorrect: true },
 ];
+
 async function get_medication_management(req: NextRequest): Promise<Response> {
 
   const result = generateMedicationManagementIntelligence(
@@ -15248,6 +18576,22 @@ async function post_medication_management(req: NextRequest): Promise<Response> {
 // ─── medication ────────────────────────────────────────────────────────
 const medication_demoRecords: MedicationRecord[] = [
   // Alex — regular meds + PRN + consent review + competency assessment
+  { id: "med-1", homeId: "oak-house", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "regular_administration", outcome: "administered_correctly", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+  { id: "med-2", homeId: "oak-house", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "prn_administration", outcome: "administered_correctly", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+  { id: "med-3", homeId: "oak-house", date: "2026-03-22", childId: "child-alex", childName: "Alex", category: "consent_review", outcome: "review_completed", administeredCorrectly: true, signedByTwoStaff: false, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+  { id: "med-4", homeId: "oak-house", date: "2026-04-15", childId: "child-alex", childName: "Alex", category: "competency_assessment", outcome: "review_completed", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: false },
+
+  // Jordan — controlled drugs + medication error + medication review
+  { id: "med-5", homeId: "oak-house", date: "2026-02-18", childId: "child-jordan", childName: "Jordan", category: "controlled_drug", outcome: "administered_correctly", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+  { id: "med-6", homeId: "oak-house", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "controlled_drug", outcome: "administered_correctly", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+  { id: "med-7", homeId: "oak-house", date: "2026-04-02", childId: "child-jordan", childName: "Jordan", category: "medication_error", outcome: "error_identified", administeredCorrectly: false, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+  { id: "med-8", homeId: "oak-house", date: "2026-04-25", childId: "child-jordan", childName: "Jordan", category: "medication_review", outcome: "review_completed", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — medication storage + regular + PRN + dose refused
+  { id: "med-9", homeId: "oak-house", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "medication_storage", outcome: "not_applicable", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+  { id: "med-10", homeId: "oak-house", date: "2026-04-08", childId: "child-morgan", childName: "Morgan", category: "regular_administration", outcome: "administered_correctly", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
+  { id: "med-11", homeId: "oak-house", date: "2026-04-28", childId: "child-morgan", childName: "Morgan", category: "prn_administration", outcome: "dose_refused", administeredCorrectly: false, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: false },
+  { id: "med-12", homeId: "oak-house", date: "2026-05-10", childId: "child-morgan", childName: "Morgan", category: "regular_administration", outcome: "administered_correctly", administeredCorrectly: true, signedByTwoStaff: true, consentOnFile: true, errorReported: true, documentationComplete: true, timelyRecording: true },
 ];
 const medication_demoPolicy: MedicationPolicy = {
   medicationPolicy: true,
@@ -15260,8 +18604,11 @@ const medication_demoPolicy: MedicationPolicy = {
 };
 const medication_demoStaff: StaffMedicationTraining[] = [
   { staffId: "staff-sarah", medicationAdministration: true, controlledDrugHandling: true, errorReporting: true, consentProcess: true, storageChecks: true, medicationReview: true },
-
+  { staffId: "staff-tom", medicationAdministration: true, controlledDrugHandling: true, errorReporting: true, consentProcess: true, storageChecks: true, medicationReview: false },
+  { staffId: "staff-lisa", medicationAdministration: true, controlledDrugHandling: true, errorReporting: true, consentProcess: false, storageChecks: true, medicationReview: true },
+  { staffId: "staff-darren", medicationAdministration: true, controlledDrugHandling: true, errorReporting: true, consentProcess: true, storageChecks: true, medicationReview: true },
 ];
+
 async function get_medication(req: NextRequest): Promise<Response> {
 
   const result = generateMedicationIntelligence(
@@ -15540,24 +18887,44 @@ async function post_mental_health_wellbeing(req: NextRequest): Promise<Response>
 
 // ─── menu-planning-nutrition ───────────────────────────────────────────
 const menu_planning_nutrition_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-const CHILD_NAMES: Record<string, string> = {
+const menu_planning_nutrition_CHILD_NAMES: Record<string, string> = {
   "child-alex": "Alex",
   "child-jordan": "Jordan",
   "child-morgan": "Morgan",
 };
 const menu_planning_nutrition_DEMO_MENUS: WeeklyMenu[] = [
   { id: "menu-w1", weekCommencing: "2026-03-04", mealsPlanned: 21, mealsServed: 20, nutritionalBalance: "excellent", culturalAccommodation: "fully_met", childrenConsulted: true, menuVariety: "highly_varied", specialDietaryMet: true },
+  { id: "menu-w2", weekCommencing: "2026-03-11", mealsPlanned: 21, mealsServed: 21, nutritionalBalance: "good", culturalAccommodation: "fully_met", childrenConsulted: true, menuVariety: "varied", specialDietaryMet: true },
+  { id: "menu-w3", weekCommencing: "2026-03-18", mealsPlanned: 21, mealsServed: 19, nutritionalBalance: "good", culturalAccommodation: "fully_met", childrenConsulted: true, menuVariety: "highly_varied", specialDietaryMet: true },
+  { id: "menu-w4", weekCommencing: "2026-03-25", mealsPlanned: 21, mealsServed: 21, nutritionalBalance: "excellent", culturalAccommodation: "fully_met", childrenConsulted: true, menuVariety: "varied", specialDietaryMet: true },
 ];
 const menu_planning_nutrition_DEMO_FEEDBACK: MealFeedback[] = [
   { id: "fb-a1", menuId: "menu-w1", childId: "child-alex", childName: "Alex", mealType: "breakfast", enjoymentRating: 4, portionSatisfactory: true, comments: "Good cereal and toast options" },
+  { id: "fb-a2", menuId: "menu-w1", childId: "child-alex", childName: "Alex", mealType: "lunch", enjoymentRating: 5, portionSatisfactory: true, comments: "Loved the pasta bake" },
+  { id: "fb-a3", menuId: "menu-w2", childId: "child-alex", childName: "Alex", mealType: "dinner", enjoymentRating: 4, portionSatisfactory: true, comments: null },
+  { id: "fb-a4", menuId: "menu-w2", childId: "child-alex", childName: "Alex", mealType: "snack", enjoymentRating: 3, portionSatisfactory: true, comments: "Fruit bowl was nice" },
+  { id: "fb-j1", menuId: "menu-w1", childId: "child-jordan", childName: "Jordan", mealType: "breakfast", enjoymentRating: 4, portionSatisfactory: true, comments: "Nice toast with eggs" },
+  { id: "fb-j2", menuId: "menu-w1", childId: "child-jordan", childName: "Jordan", mealType: "lunch", enjoymentRating: 4, portionSatisfactory: true, comments: null },
+  { id: "fb-j3", menuId: "menu-w2", childId: "child-jordan", childName: "Jordan", mealType: "dinner", enjoymentRating: 5, portionSatisfactory: true, comments: "Best dinner this week" },
+  { id: "fb-j4", menuId: "menu-w2", childId: "child-jordan", childName: "Jordan", mealType: "supper", enjoymentRating: 3, portionSatisfactory: true, comments: "Supper was OK" },
+  { id: "fb-m1", menuId: "menu-w3", childId: "child-morgan", childName: "Morgan", mealType: "breakfast", enjoymentRating: 4, portionSatisfactory: true, comments: "Good start to the day" },
+  { id: "fb-m2", menuId: "menu-w3", childId: "child-morgan", childName: "Morgan", mealType: "lunch", enjoymentRating: 5, portionSatisfactory: true, comments: "Excellent chicken curry" },
+  { id: "fb-m3", menuId: "menu-w4", childId: "child-morgan", childName: "Morgan", mealType: "dinner", enjoymentRating: 4, portionSatisfactory: true, comments: null },
+  { id: "fb-m4", menuId: "menu-w4", childId: "child-morgan", childName: "Morgan", mealType: "snack", enjoymentRating: 4, portionSatisfactory: true, comments: "Fresh fruit was lovely" },
 ];
 const menu_planning_nutrition_DEMO_PARTICIPATION: ChildParticipationRecord[] = [
   { id: "part-a1", childId: "child-alex", childName: "Alex", date: "2026-03-08", participationType: "cooking_activity", staffSupported: "Sarah Johnson", childEnjoyed: true },
+  { id: "part-a2", childId: "child-alex", childName: "Alex", date: "2026-03-15", participationType: "menu_planning", staffSupported: "Darren Laville", childEnjoyed: true },
+  { id: "part-j1", childId: "child-jordan", childName: "Jordan", date: "2026-03-10", participationType: "food_shopping", staffSupported: "Tom Richards", childEnjoyed: true },
+  { id: "part-j2", childId: "child-jordan", childName: "Jordan", date: "2026-03-17", participationType: "cooking_activity", staffSupported: "Lisa Williams", childEnjoyed: true },
+  { id: "part-m1", childId: "child-morgan", childName: "Morgan", date: "2026-03-12", participationType: "cooking_activity", staffSupported: "Sarah Johnson", childEnjoyed: true },
+  { id: "part-m2", childId: "child-morgan", childName: "Morgan", date: "2026-03-20", participationType: "growing_food", staffSupported: "Darren Laville", childEnjoyed: true },
 ];
 const menu_planning_nutrition_DEMO_AUDITS: NutritionAudit[] = [
   { id: "audit-1", auditDate: "2026-02-15", auditor: "Darren Laville", fiveADayEvidence: true, sugarLimitsFollowed: true, freshFoodUsed: true, portionGuidanceFollowed: true, overallCompliant: true },
-
+  { id: "audit-2", auditDate: "2026-04-15", auditor: "Sarah Johnson", fiveADayEvidence: true, sugarLimitsFollowed: true, freshFoodUsed: true, portionGuidanceFollowed: true, overallCompliant: true },
 ];
+
 async function get_menu_planning_nutrition(req: NextRequest): Promise<Response> {
 
   const result = generateMenuPlanningNutritionIntelligence(
@@ -15566,7 +18933,7 @@ async function get_menu_planning_nutrition(req: NextRequest): Promise<Response> 
     menu_planning_nutrition_DEMO_PARTICIPATION,
     menu_planning_nutrition_DEMO_AUDITS,
     menu_planning_nutrition_CHILD_IDS,
-    CHILD_NAMES,
+    menu_planning_nutrition_CHILD_NAMES,
     "oak-house",
     "2026-01-01",
     "2026-05-18",
@@ -15885,6 +19252,17 @@ async function post_missing_absent_episodes(req: NextRequest): Promise<Response>
 // ─── missing-from-care-intelligence ────────────────────────────────────
 const missing_from_care_intelligence_DEMO_RECORDS: MissingFromCareIntelligenceRecord[] = [
   { id: "mfci-001", homeId: "home-oak", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "missing_episode_response", outcome: "child_found_safe", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-002", homeId: "home-oak", date: "2025-03-15", childId: "child-alex", childName: "Alex", category: "return_home_interview", outcome: "child_returned_voluntarily", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-003", homeId: "home-oak", date: "2025-04-02", childId: "child-alex", childName: "Alex", category: "risk_assessment_review", outcome: "concerns_identified", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-004", homeId: "home-oak", date: "2025-05-01", childId: "child-alex", childName: "Alex", category: "safety_planning", outcome: "not_applicable", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-005", homeId: "home-oak", date: "2025-02-20", childId: "child-jordan", childName: "Jordan", category: "police_notification", outcome: "child_found_safe", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-006", homeId: "home-oak", date: "2025-03-18", childId: "child-jordan", childName: "Jordan", category: "multi_agency_response", outcome: "child_returned_voluntarily", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: false, documentationComplete: true, timelyRecording: false },
+  { id: "mfci-007", homeId: "home-oak", date: "2025-04-10", childId: "child-jordan", childName: "Jordan", category: "missing_prevention", outcome: "ongoing_risk", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-008", homeId: "home-oak", date: "2025-05-05", childId: "child-jordan", childName: "Jordan", category: "pattern_analysis", outcome: "not_applicable", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-009", homeId: "home-oak", date: "2025-03-22", childId: "child-morgan", childName: "Morgan", category: "missing_episode_response", outcome: "concerns_identified", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-010", homeId: "home-oak", date: "2025-04-15", childId: "child-morgan", childName: "Morgan", category: "return_home_interview", outcome: "child_found_safe", immediateResponseFollowed: true, policeNotifiedAppropriately: false, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "mfci-011", homeId: "home-oak", date: "2025-05-02", childId: "child-morgan", childName: "Morgan", category: "risk_assessment_review", outcome: "ongoing_risk", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: false, safetyPlanUpdated: true, documentationComplete: false, timelyRecording: true },
+  { id: "mfci-012", homeId: "home-oak", date: "2025-06-14", childId: "child-morgan", childName: "Morgan", category: "safety_planning", outcome: "not_applicable", immediateResponseFollowed: true, policeNotifiedAppropriately: true, returnInterviewCompleted: true, safetyPlanUpdated: true, documentationComplete: true, timelyRecording: true },
 ];
 const missing_from_care_intelligence_DEMO_POLICY: MissingFromCareIntelligencePolicy = {
   missingChildrenPolicy: true, returnHomeInterviewPolicy: true, policeNotificationProtocol: true,
@@ -15892,8 +19270,11 @@ const missing_from_care_intelligence_DEMO_POLICY: MissingFromCareIntelligencePol
 };
 const missing_from_care_intelligence_DEMO_STAFF: StaffMissingFromCareIntelligenceTraining[] = [
   { staffId: "staff-sarah", missingResponseProcedures: true, returnInterviewSkills: true, riskAssessmentSkills: true, policeNotificationKnowledge: true, preventionStrategies: true, deEscalationSkills: true },
-
+  { staffId: "staff-tom", missingResponseProcedures: true, returnInterviewSkills: true, riskAssessmentSkills: true, policeNotificationKnowledge: true, preventionStrategies: true, deEscalationSkills: false },
+  { staffId: "staff-lisa", missingResponseProcedures: true, returnInterviewSkills: true, riskAssessmentSkills: true, policeNotificationKnowledge: true, preventionStrategies: false, deEscalationSkills: true },
+  { staffId: "staff-darren", missingResponseProcedures: true, returnInterviewSkills: true, riskAssessmentSkills: true, policeNotificationKnowledge: true, preventionStrategies: true, deEscalationSkills: true },
 ];
+
 async function get_missing_from_care_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateMissingFromCareIntelligenceResult({
@@ -15973,6 +19354,13 @@ async function get_missing_from_care(req: NextRequest): Promise<Response> {
 // ─── morning-routine-preparation ───────────────────────────────────────
 const morning_routine_preparation_DEMO_RECORDS: MorningRecord[] = [
   { id: "mr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", routineElement: "wake_up", completionStatus: "completed_independently", onTimeForSchool: true, breakfastEaten: true, staffSupported: true, moodPositive: true, documentedInLog: true, parentCarerInformed: true },
+  { id: "mr-2", childId: "child-alex", childName: "Alex", recordDate: "2026-04-02", routineElement: "breakfast", completionStatus: "completed_independently", onTimeForSchool: true, breakfastEaten: true, staffSupported: true, moodPositive: true, documentedInLog: true, parentCarerInformed: true },
+  { id: "mr-3", childId: "child-alex", childName: "Alex", recordDate: "2026-04-03", routineElement: "uniform_preparation", completionStatus: "completed_with_support", onTimeForSchool: true, breakfastEaten: true, staffSupported: true, moodPositive: true, documentedInLog: true, parentCarerInformed: false },
+  { id: "mr-4", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-01", routineElement: "personal_hygiene", completionStatus: "completed_independently", onTimeForSchool: true, breakfastEaten: true, staffSupported: true, moodPositive: true, documentedInLog: true, parentCarerInformed: true },
+  { id: "mr-5", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-02", routineElement: "bag_packed", completionStatus: "completed_with_support", onTimeForSchool: true, breakfastEaten: true, staffSupported: true, moodPositive: true, documentedInLog: true, parentCarerInformed: true },
+  { id: "mr-6", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-03", routineElement: "emotional_check_in", completionStatus: "completed_independently", onTimeForSchool: false, breakfastEaten: true, staffSupported: true, moodPositive: false, documentedInLog: true, parentCarerInformed: true },
+  { id: "mr-7", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-01", routineElement: "transport_ready", completionStatus: "completed_independently", onTimeForSchool: true, breakfastEaten: true, staffSupported: true, moodPositive: true, documentedInLog: true, parentCarerInformed: true },
+  { id: "mr-8", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-02", routineElement: "medication", completionStatus: "completed_independently", onTimeForSchool: true, breakfastEaten: true, staffSupported: true, moodPositive: true, documentedInLog: true, parentCarerInformed: true },
 ];
 const morning_routine_preparation_DEMO_POLICY: MorningPolicy = {
   id: "mp-1",
@@ -15986,8 +19374,11 @@ const morning_routine_preparation_DEMO_POLICY: MorningPolicy = {
 };
 const morning_routine_preparation_DEMO_TRAINING: StaffMorningTraining[] = [
   { id: "mt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", morningRoutineManagement: true, breakfastNutrition: true, emotionalRegulation: true, timeManagement: true, schoolLiaison: true, handoverPractice: true },
-
+  { id: "mt-2", staffId: "staff-tom", staffName: "Tom Richards", morningRoutineManagement: true, breakfastNutrition: true, emotionalRegulation: true, timeManagement: true, schoolLiaison: true, handoverPractice: true },
+  { id: "mt-3", staffId: "staff-lisa", staffName: "Lisa Williams", morningRoutineManagement: true, breakfastNutrition: true, emotionalRegulation: true, timeManagement: true, schoolLiaison: true, handoverPractice: true },
+  { id: "mt-4", staffId: "staff-darren", staffName: "Darren Laville", morningRoutineManagement: true, breakfastNutrition: true, emotionalRegulation: true, timeManagement: true, schoolLiaison: true, handoverPractice: true },
 ];
+
 async function get_morning_routine_preparation(req: NextRequest): Promise<Response> {
 
   const result = generateMorningRoutinePreparationIntelligence(
@@ -16408,15 +19799,18 @@ function multi_agency_effectiveness_generateDemoData(): {
 }
 const multi_agency_effectiveness_VALID_AGENCY_TYPES = new Set([
   "social_worker", "CAMHS", "education", "health_visitor", "police",
+  "YOT", "LADO", "IRO", "therapist", "substance_misuse", "housing", "other",
 ]);
 const multi_agency_effectiveness_VALID_MEETING_TYPES = new Set([
   "strategy", "CIN", "LAC_review", "PEP", "health_review",
+  "professionals", "discharge_planning", "risk_management", "other",
 ]);
 const multi_agency_effectiveness_VALID_OUTCOMES = new Set([
   "all_actions_agreed", "partial_agreement", "deferred", "escalated",
 ]);
 const multi_agency_effectiveness_VALID_QUALITIES = new Set([
   "timely_complete", "timely_incomplete", "delayed_complete",
+  "delayed_incomplete", "not_shared",
 ]);
 function multi_agency_effectiveness_validateMeeting(m: unknown, idx: number): string | null {
   if (!m || typeof m !== "object") return `meetings[${idx}]: must be an object`;
@@ -16424,9 +19818,9 @@ function multi_agency_effectiveness_validateMeeting(m: unknown, idx: number): st
   if (typeof obj.id !== "string") return `meetings[${idx}].id: required string`;
   if (typeof obj.childId !== "string") return `meetings[${idx}].childId: required string`;
   if (typeof obj.date !== "string") return `meetings[${idx}].date: required string`;
-  if (!VALID_MEETING_TYPES.has(obj.meetingType as string))
+  if (!multi_agency_effectiveness_VALID_MEETING_TYPES.has(obj.meetingType as string))
     return `meetings[${idx}].meetingType: invalid value`;
-  if (!VALID_OUTCOMES.has(obj.outcome as string))
+  if (!multi_agency_effectiveness_VALID_OUTCOMES.has(obj.outcome as string))
     return `meetings[${idx}].outcome: invalid value`;
   return null;
 }
@@ -16435,11 +19829,11 @@ function multi_agency_effectiveness_validateSharing(r: unknown, idx: number): st
   const obj = r as Record<string, unknown>;
   if (typeof obj.id !== "string") return `sharing[${idx}].id: required string`;
   if (typeof obj.childId !== "string") return `sharing[${idx}].childId: required string`;
-  if (!VALID_AGENCY_TYPES.has(obj.fromAgency as string))
+  if (!multi_agency_effectiveness_VALID_AGENCY_TYPES.has(obj.fromAgency as string))
     return `sharing[${idx}].fromAgency: invalid value`;
-  if (!VALID_AGENCY_TYPES.has(obj.toAgency as string))
+  if (!multi_agency_effectiveness_VALID_AGENCY_TYPES.has(obj.toAgency as string))
     return `sharing[${idx}].toAgency: invalid value`;
-  if (!VALID_QUALITIES.has(obj.quality as string))
+  if (!multi_agency_effectiveness_VALID_QUALITIES.has(obj.quality as string))
     return `sharing[${idx}].quality: invalid value`;
   return null;
 }
@@ -16447,7 +19841,7 @@ function multi_agency_effectiveness_validateRelationship(r: unknown, idx: number
   if (!r || typeof r !== "object") return `relationships[${idx}]: must be an object`;
   const obj = r as Record<string, unknown>;
   if (typeof obj.id !== "string") return `relationships[${idx}].id: required string`;
-  if (!VALID_AGENCY_TYPES.has(obj.agencyType as string))
+  if (!multi_agency_effectiveness_VALID_AGENCY_TYPES.has(obj.agencyType as string))
     return `relationships[${idx}].agencyType: invalid value`;
   if (!["strong", "adequate", "developing", "poor"].includes(obj.relationship as string))
     return `relationships[${idx}].relationship: invalid value`;
@@ -16460,7 +19854,7 @@ function multi_agency_effectiveness_validateEscalation(e: unknown, idx: number):
   const obj = e as Record<string, unknown>;
   if (typeof obj.id !== "string") return `escalations[${idx}].id: required string`;
   if (typeof obj.childId !== "string") return `escalations[${idx}].childId: required string`;
-  if (!VALID_AGENCY_TYPES.has(obj.escalatedTo as string))
+  if (!multi_agency_effectiveness_VALID_AGENCY_TYPES.has(obj.escalatedTo as string))
     return `escalations[${idx}].escalatedTo: invalid value`;
   if (typeof obj.responseReceived !== "boolean")
     return `escalations[${idx}].responseReceived: required boolean`;
@@ -16615,6 +20009,22 @@ async function post_multi_agency_effectiveness(request: NextRequest): Promise<Re
 // ─── multi-agency-intelligence ─────────────────────────────────────────
 const multi_agency_intelligence_DEMO_RECORDS: MultiAgencyRecord[] = [
   // Alex — 4 records across different categories
+  { id: "ma-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "strategy_meeting", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: true },
+  { id: "ma-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "lac_review", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: true },
+  { id: "ma-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "information_sharing", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: false },
+  { id: "ma-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "joint_assessment", outcome: "partially_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: false, documentationComplete: true, timelyRecording: true },
+
+  // Jordan — 4 records
+  { id: "ma-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "care_team_meeting", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: true },
+  { id: "ma-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "professional_consultation", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: true },
+  { id: "ma-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "referral_coordination", outcome: "partially_engaged", agencyAttendanceConfirmed: false, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: false },
+  { id: "ma-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "multi_agency_training", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — 4 records
+  { id: "ma-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "strategy_meeting", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: true },
+  { id: "ma-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "lac_review", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: true, timelyRecording: true },
+  { id: "ma-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "care_team_meeting", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: false, informationSharedAppropriately: true, childViewRepresented: true, documentationComplete: false, timelyRecording: true },
+  { id: "ma-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "information_sharing", outcome: "fully_engaged", agencyAttendanceConfirmed: true, actionPointsRecorded: true, informationSharedAppropriately: false, childViewRepresented: true, documentationComplete: true, timelyRecording: true },
 ];
 const multi_agency_intelligence_DEMO_POLICY: MultiAgencyPolicy = {
   multiAgencyWorkingPolicy: true,
@@ -16627,8 +20037,11 @@ const multi_agency_intelligence_DEMO_POLICY: MultiAgencyPolicy = {
 };
 const multi_agency_intelligence_DEMO_STAFF: StaffMultiAgencyTraining[] = [
   { staffId: "staff-sarah", multiAgencyWorkingKnowledge: true, informationSharingSkills: true, meetingFacilitationSkills: true, referralProcessKnowledge: true, jointAssessmentSkills: true, professionalBoundaries: true },
-
+  { staffId: "staff-tom", multiAgencyWorkingKnowledge: true, informationSharingSkills: true, meetingFacilitationSkills: true, referralProcessKnowledge: true, jointAssessmentSkills: false, professionalBoundaries: true },
+  { staffId: "staff-lisa", multiAgencyWorkingKnowledge: true, informationSharingSkills: true, meetingFacilitationSkills: false, referralProcessKnowledge: true, jointAssessmentSkills: true, professionalBoundaries: true },
+  { staffId: "staff-darren", multiAgencyWorkingKnowledge: true, informationSharingSkills: true, meetingFacilitationSkills: true, referralProcessKnowledge: true, jointAssessmentSkills: true, professionalBoundaries: true },
 ];
+
 async function get_multi_agency_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateMultiAgencyIntelligence({
@@ -16664,6 +20077,50 @@ const multi_agency_partnership_DEMO_RELATIONSHIPS: AgencyRelationship[] = [
     informationSharingAgreementInPlace: true,
     feedbackReceived: "very_positive",
   },
+  {
+    id: "rel-002",
+    agencyType: "camhs",
+    agencyName: "Meadowfield CAMHS",
+    namedContact: "Dr Anika Patel",
+    engagementQuality: "good",
+    lastContactDate: "2026-05-14",
+    contactFrequency: "weekly",
+    informationSharingAgreementInPlace: true,
+    feedbackReceived: "positive",
+  },
+  {
+    id: "rel-003",
+    agencyType: "education",
+    agencyName: "Riverside Academy",
+    namedContact: "Mr James Carter (Designated Teacher)",
+    engagementQuality: "good",
+    lastContactDate: "2026-05-15",
+    contactFrequency: "weekly",
+    informationSharingAgreementInPlace: true,
+    feedbackReceived: "positive",
+  },
+  {
+    id: "rel-004",
+    agencyType: "police",
+    agencyName: "Meadowfield Police — Child Protection Unit",
+    namedContact: "DS Karen Owens",
+    engagementQuality: "good",
+    lastContactDate: "2026-05-12",
+    contactFrequency: "monthly",
+    informationSharingAgreementInPlace: true,
+    feedbackReceived: "positive",
+  },
+  {
+    id: "rel-005",
+    agencyType: "advocacy",
+    agencyName: "NYAS (National Youth Advocacy Service)",
+    namedContact: "Tom Richards (Advocate)",
+    engagementQuality: "excellent",
+    lastContactDate: "2026-05-13",
+    contactFrequency: "fortnightly",
+    informationSharingAgreementInPlace: true,
+    feedbackReceived: "very_positive",
+  },
 ];
 const multi_agency_partnership_DEMO_MEETINGS: MultiAgencyMeeting[] = [
   {
@@ -16679,6 +20136,45 @@ const multi_agency_partnership_DEMO_MEETINGS: MultiAgencyMeeting[] = [
     actionsCompleted: 5,
     childParticipated: true,
   },
+  {
+    id: "mtg-002",
+    childId: "child-jordan",
+    meetingType: "professionals",
+    meetingDate: "2026-05-08",
+    agenciesInvited: ["social_work", "education", "camhs"],
+    agenciesAttended: ["social_work", "education"],
+    homeRepresentativeAttended: true,
+    minutesCirculated: true,
+    actionsIdentified: 4,
+    actionsCompleted: 3,
+    childParticipated: false,
+  },
+  {
+    id: "mtg-003",
+    childId: "child-alex",
+    meetingType: "strategy",
+    meetingDate: "2026-05-05",
+    agenciesInvited: ["social_work", "police", "camhs"],
+    agenciesAttended: ["social_work", "police", "camhs"],
+    homeRepresentativeAttended: true,
+    minutesCirculated: true,
+    actionsIdentified: 5,
+    actionsCompleted: 5,
+    childParticipated: false,
+  },
+  {
+    id: "mtg-004",
+    childId: "child-morgan",
+    meetingType: "education_review",
+    meetingDate: "2026-05-02",
+    agenciesInvited: ["education", "social_work", "camhs"],
+    agenciesAttended: ["education", "social_work", "camhs"],
+    homeRepresentativeAttended: true,
+    minutesCirculated: true,
+    actionsIdentified: 3,
+    actionsCompleted: 3,
+    childParticipated: true,
+  },
 ];
 const multi_agency_partnership_DEMO_REFERRALS: AgencyReferral[] = [
   {
@@ -16688,6 +20184,16 @@ const multi_agency_partnership_DEMO_REFERRALS: AgencyReferral[] = [
     referralDate: "2026-04-20",
     outcome: "accepted",
     responseTimeDays: 5,
+    appropriateReferral: true,
+    followUpCompleted: true,
+  },
+  {
+    id: "ref-002",
+    childId: "child-jordan",
+    referredTo: "education",
+    referralDate: "2026-04-25",
+    outcome: "completed",
+    responseTimeDays: 7,
     appropriateReferral: true,
     followUpCompleted: true,
   },
@@ -16703,8 +20209,48 @@ const multi_agency_partnership_DEMO_INFO_SHARING: InformationSharingRecord[] = [
     timeliness: true,
     relevantToChildPlan: true,
   },
-
+  {
+    id: "info-002",
+    childId: "child-alex",
+    sharedWith: "camhs",
+    shareDate: "2026-05-12",
+    quality: "timely_comprehensive",
+    consentObtained: true,
+    timeliness: true,
+    relevantToChildPlan: true,
+  },
+  {
+    id: "info-003",
+    childId: "child-jordan",
+    sharedWith: "education",
+    shareDate: "2026-05-10",
+    quality: "timely_partial",
+    consentObtained: true,
+    timeliness: true,
+    relevantToChildPlan: true,
+  },
+  {
+    id: "info-004",
+    childId: "child-morgan",
+    sharedWith: "social_work",
+    shareDate: "2026-05-08",
+    quality: "timely_comprehensive",
+    consentObtained: true,
+    timeliness: true,
+    relevantToChildPlan: true,
+  },
+  {
+    id: "info-005",
+    childId: "child-morgan",
+    sharedWith: "police",
+    shareDate: "2026-05-06",
+    quality: "timely_comprehensive",
+    consentObtained: true,
+    timeliness: true,
+    relevantToChildPlan: true,
+  },
 ];
+
 async function get_multi_agency_partnership(req: NextRequest): Promise<Response> {
 
   const result = generateMultiAgencyPartnershipIntelligence(
@@ -16808,8 +20354,84 @@ const multi_agency_DEMO_PROFILES: ChildMultiAgencyProfile[] = [
     childHasAdvocate: true,
     childViewsRoutinelyShared: true,
   },
-
+  {
+    childId: "child-jordan",
+    childName: "Jordan",
+    homeId: "home-oak",
+    placingAuthority: "Boroughton MBC",
+    professionals: [
+      { id: "pj1", childId: "child-jordan", agencyType: "placing_authority", agencyName: "Boroughton MBC", professionalName: "Marcus Williams", role: "Social Worker", communicationStatus: "delayed", lastContactDate: "2026-04-28T10:00:00Z", lastContactMethod: "Email", responseTimeDays: 8, keyContact: true, escalationNeeded: false },
+      { id: "pj2", childId: "child-jordan", agencyType: "iro", agencyName: "Boroughton MBC", professionalName: "Tanya Rogers", role: "IRO", communicationStatus: "active", lastContactDate: "2026-03-25T10:00:00Z", lastContactMethod: "LAC Review", responseTimeDays: 2, keyContact: true, escalationNeeded: false },
+      { id: "pj3", childId: "child-jordan", agencyType: "education", agencyName: "Oakville Academy", professionalName: "Mr Blake", role: "Head of Year", communicationStatus: "active", lastContactDate: "2026-05-15T10:00:00Z", lastContactMethod: "Phone", responseTimeDays: 1, keyContact: true, escalationNeeded: false },
+      { id: "pj4", childId: "child-jordan", agencyType: "youth_offending", agencyName: "Boroughton YOT", professionalName: "Kieran Phillips", role: "YOT Worker", communicationStatus: "responsive", lastContactDate: "2026-05-01T10:00:00Z", lastContactMethod: "Visit", responseTimeDays: 3, keyContact: true, escalationNeeded: false },
+      { id: "pj5", childId: "child-jordan", agencyType: "camhs", agencyName: "Anyshire CAMHS", professionalName: "Waiting list", role: "TBC", communicationStatus: "unresponsive", lastContactDate: "2026-03-15T10:00:00Z", lastContactMethod: "Referral chaser", responseTimeDays: 21, keyContact: false, escalationNeeded: true },
+    ],
+    meetings: [
+      { id: "mj1", childId: "child-jordan", meetingType: "lac_review", date: "2026-03-25T10:00:00Z", attendedByHome: true, homeRepresentative: "Darren Laville (RM)", childAttended: true, childViewsSubmitted: true, agenciesPresent: ["placing_authority", "iro", "education", "youth_offending"], agenciesAbsent: ["camhs"], actionsForHome: 4, actionsCompleted: 3, minutesReceived: true, outcome: "CAMHS referral escalated, placement stable" },
+      { id: "mj2", childId: "child-jordan", meetingType: "professionals_meeting", date: "2026-04-20T10:00:00Z", attendedByHome: true, homeRepresentative: "Staff RM-02", childAttended: false, childViewsSubmitted: true, agenciesPresent: ["placing_authority", "youth_offending"], agenciesAbsent: ["education"], actionsForHome: 2, actionsCompleted: 2, minutesReceived: true, outcome: "Risk management plan reviewed" },
+    ],
+    referrals: [
+      { id: "rj1", childId: "child-jordan", agencyType: "camhs", referredTo: "Anyshire CAMHS", referralDate: "2026-01-10", status: "waiting_list", waitingDays: 127, urgency: "urgent", escalated: true, escalationDate: "2026-04-01" },
+      { id: "rj2", childId: "child-jordan", agencyType: "therapist", referredTo: "Right to Thrive Therapy", referralDate: "2026-04-25", status: "accepted", waitingDays: 0, urgency: "routine", escalated: false, outcome: "First session scheduled June" },
+    ],
+    lastSWVisitDate: "2026-04-28T10:00:00Z",
+    swVisitFrequencyWeeks: 4,
+    lastSWPhoneContact: "2026-05-08T10:00:00Z",
+    childHasAdvocate: false,
+    childViewsRoutinelyShared: true,
+  },
+  {
+    childId: "child-morgan",
+    childName: "Morgan",
+    homeId: "home-oak",
+    placingAuthority: "Anyshire County Council",
+    professionals: [
+      { id: "pm1", childId: "child-morgan", agencyType: "placing_authority", agencyName: "Anyshire CC", professionalName: "Jane Smith", role: "Social Worker", communicationStatus: "active", lastContactDate: "2026-05-12T10:00:00Z", lastContactMethod: "Visit", responseTimeDays: 1, keyContact: true, escalationNeeded: false },
+      { id: "pm2", childId: "child-morgan", agencyType: "iro", agencyName: "Anyshire CC", professionalName: "Sarah Green", role: "IRO", communicationStatus: "active", lastContactDate: "2026-05-01T10:00:00Z", lastContactMethod: "LAC Review", responseTimeDays: 2, keyContact: true, escalationNeeded: false },
+      { id: "pm3", childId: "child-morgan", agencyType: "education", agencyName: "Oakville Primary", professionalName: "Ms Taylor", role: "SENCO", communicationStatus: "active", lastContactDate: "2026-05-16T10:00:00Z", lastContactMethod: "Email", responseTimeDays: 1, keyContact: true, escalationNeeded: false },
+      { id: "pm4", childId: "child-morgan", agencyType: "health_gp", agencyName: "Oakville Surgery", professionalName: "Dr Patel", role: "GP", communicationStatus: "responsive", lastContactDate: "2026-04-10T10:00:00Z", lastContactMethod: "Appointment", responseTimeDays: 4, keyContact: false, escalationNeeded: false },
+    ],
+    meetings: [
+      { id: "mm1", childId: "child-morgan", meetingType: "lac_review", date: "2026-05-01T10:00:00Z", attendedByHome: true, homeRepresentative: "Darren Laville (RM)", childAttended: true, childViewsSubmitted: true, agenciesPresent: ["placing_authority", "iro", "education"], agenciesAbsent: [], actionsForHome: 2, actionsCompleted: 2, minutesReceived: true, outcome: "Excellent progress in all areas" },
+      { id: "mm2", childId: "child-morgan", meetingType: "pep_meeting", date: "2026-04-10T10:00:00Z", attendedByHome: true, homeRepresentative: "Staff RM-01", childAttended: false, childViewsSubmitted: true, agenciesPresent: ["education", "placing_authority"], agenciesAbsent: [], actionsForHome: 1, actionsCompleted: 1, minutesReceived: true, outcome: "Pupil Premium plan updated" },
+    ],
+    referrals: [],
+    lastSWVisitDate: "2026-05-12T10:00:00Z",
+    swVisitFrequencyWeeks: 6,
+    lastSWPhoneContact: "2026-05-15T10:00:00Z",
+    childHasAdvocate: true,
+    childViewsRoutinelyShared: true,
+  },
+  {
+    childId: "child-sam",
+    childName: "Sam",
+    homeId: "home-oak",
+    placingAuthority: "Crestfield Borough Council",
+    professionals: [
+      { id: "ps1", childId: "child-sam", agencyType: "placing_authority", agencyName: "Crestfield BC", professionalName: "Linda Okafor", role: "Social Worker", communicationStatus: "active", lastContactDate: "2026-05-14T10:00:00Z", lastContactMethod: "Visit", responseTimeDays: 2, keyContact: true, escalationNeeded: false },
+      { id: "ps2", childId: "child-sam", agencyType: "iro", agencyName: "Crestfield BC", professionalName: "David Nkomo", role: "IRO", communicationStatus: "active", lastContactDate: "2026-04-28T10:00:00Z", lastContactMethod: "LAC Review", responseTimeDays: 3, keyContact: true, escalationNeeded: false },
+      { id: "ps3", childId: "child-sam", agencyType: "education", agencyName: "Oakville Academy", professionalName: "Mrs Jones", role: "Designated Teacher", communicationStatus: "active", lastContactDate: "2026-05-16T10:00:00Z", lastContactMethod: "Email", responseTimeDays: 1, keyContact: true, escalationNeeded: false },
+      { id: "ps4", childId: "child-sam", agencyType: "camhs", agencyName: "Right to Thrive Therapy", professionalName: "Dr Collins", role: "Trauma Therapist", communicationStatus: "active", lastContactDate: "2026-05-10T10:00:00Z", lastContactMethod: "Session update", responseTimeDays: 2, keyContact: true, escalationNeeded: false },
+      { id: "ps5", childId: "child-sam", agencyType: "police", agencyName: "Local policing team", professionalName: "PC Martin", role: "Neighbourhood Officer", communicationStatus: "responsive", lastContactDate: "2026-04-15T10:00:00Z", lastContactMethod: "Phone", responseTimeDays: 3, keyContact: false, escalationNeeded: false },
+      { id: "ps6", childId: "child-sam", agencyType: "advocacy", agencyName: "Voices for Children", professionalName: "Rebecca Ellis", role: "Independent Advocate", communicationStatus: "active", lastContactDate: "2026-05-05T10:00:00Z", lastContactMethod: "Visit to Sam", responseTimeDays: 1, keyContact: true, escalationNeeded: false },
+    ],
+    meetings: [
+      { id: "ms1", childId: "child-sam", meetingType: "lac_review", date: "2026-04-28T10:00:00Z", attendedByHome: true, homeRepresentative: "Darren Laville (RM)", childAttended: true, childViewsSubmitted: true, agenciesPresent: ["placing_authority", "iro", "education", "camhs", "advocacy"], agenciesAbsent: ["police"], actionsForHome: 3, actionsCompleted: 2, minutesReceived: true, outcome: "Therapy progressing, placement stable, independence skills focus" },
+      { id: "ms2", childId: "child-sam", meetingType: "professionals_meeting", date: "2026-03-15T10:00:00Z", attendedByHome: true, homeRepresentative: "Staff RM-02", childAttended: false, childViewsSubmitted: true, agenciesPresent: ["placing_authority", "camhs", "police"], agenciesAbsent: [], actionsForHome: 2, actionsCompleted: 2, minutesReceived: true, outcome: "Safety plan reviewed — risk reducing" },
+      { id: "ms3", childId: "child-sam", meetingType: "transition_planning", date: "2026-05-08T10:00:00Z", attendedByHome: true, homeRepresentative: "Darren Laville (RM)", childAttended: true, childViewsSubmitted: true, agenciesPresent: ["placing_authority", "housing", "education"], agenciesAbsent: [], actionsForHome: 4, actionsCompleted: 2, minutesReceived: true, outcome: "Pathway plan updated, housing referral agreed" },
+    ],
+    referrals: [
+      { id: "rs1", childId: "child-sam", agencyType: "housing", referredTo: "Crestfield Housing Options", referralDate: "2026-05-08", status: "made", waitingDays: 9, urgency: "routine", escalated: false },
+      { id: "rs2", childId: "child-sam", agencyType: "camhs", referredTo: "Right to Thrive Therapy", referralDate: "2025-11-01", status: "active", waitingDays: 0, urgency: "urgent", escalated: false, outcome: "Sessions ongoing" },
+    ],
+    lastSWVisitDate: "2026-05-14T10:00:00Z",
+    swVisitFrequencyWeeks: 2,
+    lastSWPhoneContact: "2026-05-16T10:00:00Z",
+    childHasAdvocate: true,
+    childViewsRoutinelyShared: true,
+  },
 ];
+
 async function get_multi_agency(req: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(req.url);
@@ -16872,6 +20494,104 @@ async function post_multi_agency(req: NextRequest): Promise<Response> {
 // ─── night-care ────────────────────────────────────────────────────────
 const night_care_DEMO_RECORDS: NightCareRecord[] = [
   // Alex — 4 records across categories
+  {
+    id: "nc-alex-1", homeId: "oak-house", date: "2026-05-10",
+    childId: "child-alex", childName: "Alex",
+    category: "night_check", outcome: "settled_night",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-alex-2", homeId: "oak-house", date: "2026-05-10",
+    childId: "child-alex", childName: "Alex",
+    category: "sleep_monitoring", outcome: "settled_night",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-alex-3", homeId: "oak-house", date: "2026-05-11",
+    childId: "child-alex", childName: "Alex",
+    category: "bedtime_routine", outcome: "settled_night",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-alex-4", homeId: "oak-house", date: "2026-05-12",
+    childId: "child-alex", childName: "Alex",
+    category: "night_medication", outcome: "settled_night",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  // Jordan — 4 records including a disturbance response
+  {
+    id: "nc-jordan-1", homeId: "oak-house", date: "2026-05-10",
+    childId: "child-jordan", childName: "Jordan",
+    category: "night_check", outcome: "settled_night",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-jordan-2", homeId: "oak-house", date: "2026-05-10",
+    childId: "child-jordan", childName: "Jordan",
+    category: "disturbance_response", outcome: "minor_disturbance",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-jordan-3", homeId: "oak-house", date: "2026-05-11",
+    childId: "child-jordan", childName: "Jordan",
+    category: "waking_night_support", outcome: "support_provided",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-jordan-4", homeId: "oak-house", date: "2026-05-12",
+    childId: "child-jordan", childName: "Jordan",
+    category: "night_incident", outcome: "minor_disturbance",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  // Morgan — 4 records including handover
+  {
+    id: "nc-morgan-1", homeId: "oak-house", date: "2026-05-10",
+    childId: "child-morgan", childName: "Morgan",
+    category: "night_check", outcome: "settled_night",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-morgan-2", homeId: "oak-house", date: "2026-05-10",
+    childId: "child-morgan", childName: "Morgan",
+    category: "night_handover", outcome: "not_applicable",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-morgan-3", homeId: "oak-house", date: "2026-05-11",
+    childId: "child-morgan", childName: "Morgan",
+    category: "sleep_monitoring", outcome: "settled_night",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
+  {
+    id: "nc-morgan-4", homeId: "oak-house", date: "2026-05-12",
+    childId: "child-morgan", childName: "Morgan",
+    category: "bedtime_routine", outcome: "settled_night",
+    nightCheckCompleted: true, sleepPatternRecorded: true,
+    incidentHandledAppropriately: true, childComfortChecked: true,
+    documentationComplete: true, timelyRecording: true,
+  },
 ];
 const night_care_DEMO_POLICY: NightCarePolicy = {
   nightCarePolicy: true,
@@ -16884,8 +20604,11 @@ const night_care_DEMO_POLICY: NightCarePolicy = {
 };
 const night_care_DEMO_TRAINING: NightCareStaffTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", nightCareCompetency: true, sleepMonitoringSkills: true, nightIncidentResponse: true, nightMedicationHandling: true, childComfortTechniques: true, nightHandoverProcedure: true },
-
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", nightCareCompetency: true, sleepMonitoringSkills: true, nightIncidentResponse: true, nightMedicationHandling: true, childComfortTechniques: true, nightHandoverProcedure: true },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", nightCareCompetency: true, sleepMonitoringSkills: true, nightIncidentResponse: true, nightMedicationHandling: true, childComfortTechniques: true, nightHandoverProcedure: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", nightCareCompetency: true, sleepMonitoringSkills: true, nightIncidentResponse: true, nightMedicationHandling: true, childComfortTechniques: true, nightHandoverProcedure: true },
 ];
+
 async function get_night_care(req: NextRequest): Promise<Response> {
 
   const result = generateNightCareIntelligence(
@@ -16970,6 +20693,22 @@ async function post_night_care(req: NextRequest): Promise<Response> {
 // ─── night-monitoring-intelligence ─────────────────────────────────────
 const night_monitoring_intelligence_DEMO_RECORDS: NightMonitoringRecord[] = [
   // Alex — waking night checks, sleep obs, welfare checks
+  { id: "nm-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "waking_night_check", outcome: "all_settled", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "nm-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "sleep_observation", outcome: "all_settled", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "nm-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "welfare_check", outcome: "all_settled", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "nm-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "environmental_check", outcome: "all_settled", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+
+  // Jordan — night incidents, medication, disturbance
+  { id: "nm-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "night_incident_response", outcome: "minor_disturbance", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "nm-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "medication_round", outcome: "all_settled", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "nm-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "disturbance_management", outcome: "significant_incident", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: false },
+  { id: "nm-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "waking_night_check", outcome: "all_settled", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — handover, welfare, environmental
+  { id: "nm-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "handover_briefing", outcome: "all_settled", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "nm-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "welfare_check", outcome: "all_settled", checkCompletedOnTime: true, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "nm-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "environmental_check", outcome: "all_settled", checkCompletedOnTime: false, observationsRecorded: true, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "nm-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "sleep_observation", outcome: "minor_disturbance", checkCompletedOnTime: true, observationsRecorded: false, incidentEscalated: true, childWelfareConfirmed: true, documentationComplete: false, timelyRecording: true },
 ];
 const night_monitoring_intelligence_DEMO_POLICY: NightMonitoringPolicy = {
   nightMonitoringPolicy: true,
@@ -16982,8 +20721,11 @@ const night_monitoring_intelligence_DEMO_POLICY: NightMonitoringPolicy = {
 };
 const night_monitoring_intelligence_DEMO_STAFF: StaffNightMonitoringTraining[] = [
   { staffId: "staff-sarah", nightCareCompetency: true, nightIncidentManagement: true, sleepMonitoringSkills: true, nightMedicationHandling: true, childWelfareAssessment: true, nightHandoverProcedure: true },
-
+  { staffId: "staff-tom", nightCareCompetency: true, nightIncidentManagement: true, sleepMonitoringSkills: true, nightMedicationHandling: true, childWelfareAssessment: true, nightHandoverProcedure: false },
+  { staffId: "staff-lisa", nightCareCompetency: true, nightIncidentManagement: true, sleepMonitoringSkills: true, nightMedicationHandling: true, childWelfareAssessment: false, nightHandoverProcedure: true },
+  { staffId: "staff-darren", nightCareCompetency: true, nightIncidentManagement: true, sleepMonitoringSkills: true, nightMedicationHandling: true, childWelfareAssessment: true, nightHandoverProcedure: true },
 ];
+
 async function get_night_monitoring_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateNightMonitoringIntelligence({
@@ -17010,6 +20752,8 @@ async function get_night_monitoring_intelligence(req: NextRequest): Promise<Resp
 // ─── night-monitoring ──────────────────────────────────────────────────
 const night_monitoring_CHECK_PLANS: NightCheckPlan[] = [
   { childId: "child-alex", childName: "Alex Turner", frequency: "30_min", riskLevel: "standard" },
+  { childId: "child-jordan", childName: "Jordan Clarke", frequency: "30_min", riskLevel: "enhanced", specialInstructions: "New admission — monitor settling", knownSleepIssues: ["Night terrors history"] },
+  { childId: "child-sam", childName: "Sam Patel", frequency: "60_min", riskLevel: "standard" },
 ];
 function night_monitoring_generateNightChecks(date: string, children: string[]): NightCheck[] {
   const checks: NightCheck[] = [];
@@ -17017,12 +20761,12 @@ function night_monitoring_generateNightChecks(date: string, children: string[]):
   for (let hour = 22; hour < 31; hour++) {
     const h = hour >= 24 ? hour - 24 : hour;
     for (const childId of children) {
-      const freq = CHECK_PLANS.find(p => p.childId === childId)?.frequency;
+      const freq = night_monitoring_CHECK_PLANS.find(p => p.childId === childId)?.frequency;
       if (freq === "60_min" && hour % 2 !== 0) continue;
       checks.push({
         id: `chk-${date}-${childId}-${h}`,
         childId,
-        childName: CHECK_PLANS.find(p => p.childId === childId)?.childName ?? childId,
+        childName: night_monitoring_CHECK_PLANS.find(p => p.childId === childId)?.childName ?? childId,
         timestamp: `${date}T${String(h).padStart(2, "0")}:${hour % 2 === 0 ? "00" : "30"}:00Z`,
         status: Math.random() > 0.9 ? "awake_settled" : "asleep",
         observation: "Sleeping peacefully",
@@ -17046,7 +20790,7 @@ const night_monitoring_DEMO_SHIFTS: NightShift[] = Array.from({ length: 14 }, (_
     staffOnDuty: ["staff-wn-01"],
     staffCount: 1,
     requiredStaffCount: 1,
-    checks: generateNightChecks(dateStr, ["child-alex", "child-jordan", "child-sam"]),
+    checks: night_monitoring_generateNightChecks(dateStr, ["child-alex", "child-jordan", "child-sam"]),
     incidents: hasIncident ? [{
       id: `inc-${dateStr}`,
       childId: "child-jordan",
@@ -17453,6 +21197,17 @@ async function post_night_supervision_quality(req: NextRequest): Promise<Respons
 // ─── notifiable-events-intelligence ────────────────────────────────────
 const notifiable_events_intelligence_DEMO_RECORDS: NotifiableEventsRecord[] = [
   { id: "ne-001", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "serious_injury", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-002", homeId: "home-oak", date: "2026-02-05", childId: "child-alex", childName: "Alex", category: "child_protection_referral", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-003", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "safeguarding_concern", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "significant_incident", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "missing_from_care", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "police_involvement", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "allegation_against_staff", outcome: "late_notification", notificationTimely: false, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: false },
+  { id: "ne-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "serious_injury", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "child_protection_referral", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "safeguarding_concern", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "missing_from_care", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: true, documentationComplete: false, followUpActioned: true, regulatoryBodyNotified: true, timelyRecording: true },
+  { id: "ne-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "child_death", outcome: "notified_within_timeframe", notificationTimely: true, correctRecipientsNotified: false, documentationComplete: true, followUpActioned: true, regulatoryBodyNotified: false, timelyRecording: true },
 ];
 const notifiable_events_intelligence_DEMO_POLICY: NotifiableEventsPolicy = {
   notifiableEventsPolicy: true, notificationTimeframePolicy: true, ofstedNotificationProcedure: true,
@@ -17460,8 +21215,11 @@ const notifiable_events_intelligence_DEMO_POLICY: NotifiableEventsPolicy = {
 };
 const notifiable_events_intelligence_DEMO_STAFF: StaffNotifiableEventsTraining[] = [
   { staffId: "staff-sarah", notifiableEventsKnowledge: true, ofstedNotificationProcess: true, localAuthorityReporting: true, internalEscalationProcedure: true, documentationRequirements: true, postIncidentReviewSkills: true },
-
+  { staffId: "staff-tom", notifiableEventsKnowledge: true, ofstedNotificationProcess: true, localAuthorityReporting: true, internalEscalationProcedure: true, documentationRequirements: true, postIncidentReviewSkills: false },
+  { staffId: "staff-lisa", notifiableEventsKnowledge: true, ofstedNotificationProcess: true, localAuthorityReporting: true, internalEscalationProcedure: true, documentationRequirements: false, postIncidentReviewSkills: true },
+  { staffId: "staff-darren", notifiableEventsKnowledge: true, ofstedNotificationProcess: true, localAuthorityReporting: true, internalEscalationProcedure: true, documentationRequirements: true, postIncidentReviewSkills: true },
 ];
+
 async function get_notifiable_events_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateNotifiableEventsIntelligence({
@@ -17665,6 +21423,126 @@ function notification_timeliness_n(overrides: Partial<NotificationRecord> = {}):
 }
 const notification_timeliness_DEMO_EVENTS: NotifiableEvent[] = [
   // Event 1: Alex — serious injury, all on time
+  {
+    id: "evt-alex-001",
+    homeId: "oak-house",
+    category: "schedule_5",
+    type: "serious_injury",
+    title: "Alex sustained broken arm during outdoor activity",
+    description: "Alex fell from the climbing frame during supervised outdoor activities. Staff administered first aid and called an ambulance. Parent notified immediately.",
+    childId: "child-alex",
+    childName: "Alex",
+    occurredAt: "2026-05-10T10:00:00Z",
+    discoveredAt: "2026-05-10T10:00:00Z",
+    severity: 3,
+    loggedBy: "Darren Laville",
+    loggedAt: "2026-05-10T10:30:00Z",
+    notifications: [
+      notification_timeliness_n({ recipient: "ofsted", sentAt: "2026-05-10T12:00:00Z", acknowledgedAt: "2026-05-10T14:00:00Z", reference: "OF-2026-1234" }),
+      notification_timeliness_n({ recipient: "local_authority", sentAt: "2026-05-10T12:30:00Z", method: "email", contentSummary: "Email to LA safeguarding team re: serious injury." }),
+      notification_timeliness_n({ recipient: "parent_carer", sentAt: "2026-05-10T10:30:00Z", method: "phone", acknowledgedAt: "2026-05-10T10:35:00Z", contentSummary: "Phone call to parent — informed of injury and hospital attendance." }),
+      notification_timeliness_n({ recipient: "placing_authority", sentAt: "2026-05-10T13:00:00Z", method: "email", contentSummary: "Email to placing authority social worker." }),
+    ],
+    followUpRequired: true,
+    followUpCompletedAt: "2026-05-11T09:00:00Z",
+    outcome: "Alex discharged same day with cast. Returned to home. Risk assessment for climbing frame updated.",
+  },
+  // Event 2: Jordan — absconding, Ofsted late, police not notified
+  {
+    id: "evt-jordan-001",
+    homeId: "oak-house",
+    category: "schedule_5",
+    type: "absconding",
+    title: "Jordan left the home without permission at night",
+    description: "Jordan climbed out of bedroom window at approximately 22:00. Night staff discovered absence during check at 22:30. Police contacted by phone. Jordan returned voluntarily at 01:00.",
+    childId: "child-jordan",
+    childName: "Jordan",
+    occurredAt: "2026-05-12T22:00:00Z",
+    discoveredAt: "2026-05-12T22:30:00Z",
+    severity: 4,
+    loggedBy: "Sarah Johnson",
+    loggedAt: "2026-05-12T23:00:00Z",
+    notifications: [
+      notification_timeliness_n({ recipient: "ofsted", sentAt: "2026-05-14T10:00:00Z", status: "submitted_late", contentSummary: "Late notification to Ofsted re: absconding episode." }),
+      notification_timeliness_n({ recipient: "local_authority", sentAt: "2026-05-13T08:00:00Z", method: "email", contentSummary: "Email to LA regarding missing episode." }),
+      notification_timeliness_n({ recipient: "parent_carer", sentAt: "2026-05-12T23:00:00Z", method: "phone", acknowledgedAt: "2026-05-12T23:05:00Z", contentSummary: "Phone call to parent — informed of absence and return." }),
+      // Police NOT notified via formal notification — gap
+    ],
+    followUpRequired: true,
+    followUpCompletedAt: "2026-05-13T14:00:00Z",
+    outcome: "Return home interview completed. Window locks reviewed. Safety plan updated.",
+  },
+  // Event 3: Morgan — allegation against staff, all on time
+  {
+    id: "evt-morgan-001",
+    homeId: "oak-house",
+    category: "schedule_5",
+    type: "allegation_against_staff",
+    title: "Morgan disclosed allegation against night staff member",
+    description: "During key work session Morgan disclosed that a night staff member had used inappropriate language. LADO referral made immediately.",
+    childId: "child-morgan",
+    childName: "Morgan",
+    occurredAt: "2026-05-14T08:00:00Z",
+    discoveredAt: "2026-05-14T08:00:00Z",
+    severity: 4,
+    loggedBy: "Darren Laville",
+    loggedAt: "2026-05-14T08:15:00Z",
+    notifications: [
+      notification_timeliness_n({ recipient: "ofsted", sentAt: "2026-05-14T09:00:00Z", acknowledgedAt: "2026-05-14T11:00:00Z", contentSummary: "Ofsted notification of allegation against staff." }),
+      notification_timeliness_n({ recipient: "local_authority", sentAt: "2026-05-14T09:30:00Z", method: "email", contentSummary: "Email to LA LADO team." }),
+      notification_timeliness_n({ recipient: "lado", sentAt: "2026-05-14T08:30:00Z", method: "phone", acknowledgedAt: "2026-05-14T09:00:00Z", contentSummary: "Phone referral to LADO." }),
+    ],
+    followUpRequired: true,
+    followUpCompletedAt: "2026-05-15T14:00:00Z",
+    outcome: "LADO investigation initiated. Staff member suspended pending outcome. Support plan for Morgan implemented.",
+  },
+  // Event 4: Jordan — child protection (Schedule 6), all on time
+  {
+    id: "evt-jordan-002",
+    homeId: "oak-house",
+    category: "schedule_6",
+    type: "child_protection",
+    title: "Jordan disclosed historical abuse during therapy session",
+    description: "Jordan disclosed historical physical abuse during a scheduled therapeutic session. Therapist alerted registered manager immediately.",
+    childId: "child-jordan",
+    childName: "Jordan",
+    occurredAt: "2026-05-16T11:00:00Z",
+    discoveredAt: "2026-05-16T11:00:00Z",
+    severity: 5,
+    loggedBy: "Darren Laville",
+    loggedAt: "2026-05-16T11:15:00Z",
+    notifications: [
+      notification_timeliness_n({ recipient: "ofsted", sentAt: "2026-05-16T12:00:00Z", contentSummary: "Notification to Ofsted re: child protection disclosure." }),
+      notification_timeliness_n({ recipient: "local_authority", sentAt: "2026-05-16T12:00:00Z", method: "phone", acknowledgedAt: "2026-05-16T12:15:00Z", contentSummary: "Phone call to LA MASH team." }),
+      notification_timeliness_n({ recipient: "parent_carer", sentAt: "2026-05-16T13:00:00Z", method: "phone", contentSummary: "Parent informed — discussion with social worker present." }),
+      notification_timeliness_n({ recipient: "placing_authority", sentAt: "2026-05-16T13:30:00Z", method: "email", contentSummary: "Email to placing authority." }),
+    ],
+    followUpRequired: true,
+    followUpCompletedAt: "2026-05-17T10:00:00Z",
+    outcome: "Strategy meeting convened. Increased therapeutic support arranged for Jordan.",
+  },
+  // Event 5: Alex — police involvement, Ofsted pending
+  {
+    id: "evt-alex-002",
+    homeId: "oak-house",
+    category: "schedule_5",
+    type: "police_involvement",
+    title: "Police called after Alex found with suspected stolen goods",
+    description: "Staff found suspected stolen electronics in Alex's room. Police contacted. Alex cooperative during search.",
+    childId: "child-alex",
+    childName: "Alex",
+    occurredAt: "2026-05-17T16:00:00Z",
+    discoveredAt: "2026-05-17T16:00:00Z",
+    severity: 3,
+    loggedBy: "Darren Laville",
+    loggedAt: "2026-05-17T16:30:00Z",
+    notifications: [
+      // Ofsted NOT yet notified — still within 24h deadline
+      notification_timeliness_n({ recipient: "local_authority", sentAt: "2026-05-17T17:00:00Z", method: "email", contentSummary: "Email to LA re: police involvement." }),
+      notification_timeliness_n({ recipient: "placing_authority", sentAt: "2026-05-17T17:30:00Z", method: "email", contentSummary: "Email to placing authority re: police involvement." }),
+    ],
+    followUpRequired: false,
+  },
 ];
 const notification_timeliness_DEMO_POLICY: NotificationPolicy = {
   homeId: "oak-house",
@@ -17700,8 +21578,8 @@ const notification_timeliness_DEMO_AUDITS: NotificationAudit[] = [
     actionPlanInPlace: true,
     nextAuditDue: "2026-09-15",
   },
-
 ];
+
 async function get_notification_timeliness(req: NextRequest): Promise<Response> {
 
   const result = generateNotificationTimelinessIntelligence(
@@ -17791,20 +21669,42 @@ async function post_notification_timeliness(req: NextRequest): Promise<Response>
 // ─── nutrition-healthy-living ──────────────────────────────────────────
 const nutrition_healthy_living_DEMO_PROFILES: ChildDietaryProfile[] = [
   { id: "prof-alex", childId: "child-alex", childName: "Alex", dietaryRequirements: ["none"], allergies: [], preferences: ["pasta", "pizza"], lastReviewedDate: "2026-04-01", reviewedBy: "Sarah Johnson", weightHealthy: true, dietaryPlanInPlace: true },
+  { id: "prof-jordan", childId: "child-jordan", childName: "Jordan", dietaryRequirements: ["gluten_free"], allergies: ["gluten"], preferences: ["rice dishes"], lastReviewedDate: "2026-04-01", reviewedBy: "Tom Richards", weightHealthy: true, dietaryPlanInPlace: true },
+  { id: "prof-morgan", childId: "child-morgan", childName: "Morgan", dietaryRequirements: ["halal"], allergies: [], preferences: ["chicken", "lamb"], lastReviewedDate: "2026-04-01", reviewedBy: "Lisa Williams", weightHealthy: true, dietaryPlanInPlace: true },
 ];
 const nutrition_healthy_living_DEMO_MEALS: MealRecord[] = [
   { id: "m-a01", childId: "child-alex", date: "2026-03-15", mealType: "breakfast", quality: "good", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: false, childEnjoyed: true, portionAppropriate: true },
+  { id: "m-a02", childId: "child-alex", date: "2026-03-15", mealType: "lunch", quality: "excellent", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: true, childEnjoyed: true, portionAppropriate: true },
+  { id: "m-a03", childId: "child-alex", date: "2026-03-15", mealType: "dinner", quality: "good", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: false, childEnjoyed: true, portionAppropriate: true },
+  { id: "m-j01", childId: "child-jordan", date: "2026-03-15", mealType: "breakfast", quality: "good", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: false, childEnjoyed: true, portionAppropriate: true },
+  { id: "m-j02", childId: "child-jordan", date: "2026-03-15", mealType: "lunch", quality: "good", dietaryRequirementsMet: true, freshFruitVegIncluded: false, childInvolvedInPreparation: false, childEnjoyed: true, portionAppropriate: true },
+  { id: "m-j03", childId: "child-jordan", date: "2026-03-15", mealType: "dinner", quality: "excellent", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: true, childEnjoyed: true, portionAppropriate: true },
+  { id: "m-m01", childId: "child-morgan", date: "2026-03-15", mealType: "breakfast", quality: "good", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: false, childEnjoyed: true, portionAppropriate: true },
+  { id: "m-m02", childId: "child-morgan", date: "2026-03-15", mealType: "lunch", quality: "good", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: true, childEnjoyed: true, portionAppropriate: true },
+  { id: "m-m03", childId: "child-morgan", date: "2026-03-15", mealType: "dinner", quality: "excellent", dietaryRequirementsMet: true, freshFruitVegIncluded: true, childInvolvedInPreparation: true, childEnjoyed: false, portionAppropriate: true },
 ];
 const nutrition_healthy_living_DEMO_ACTIVITIES: PhysicalActivity[] = [
   { id: "act-a01", childId: "child-alex", date: "2026-03-10", activityType: "sports", intensity: "vigorous", durationMinutes: 90, childEnjoyment: true, staffSupervised: true },
+  { id: "act-a02", childId: "child-alex", date: "2026-03-12", activityType: "swimming", intensity: "moderate", durationMinutes: 60, childEnjoyment: true, staffSupervised: true },
+  { id: "act-a03", childId: "child-alex", date: "2026-03-14", activityType: "cycling", intensity: "moderate", durationMinutes: 45, childEnjoyment: true, staffSupervised: true },
+  { id: "act-j01", childId: "child-jordan", date: "2026-03-10", activityType: "walking", intensity: "light", durationMinutes: 30, childEnjoyment: true, staffSupervised: true },
+  { id: "act-j02", childId: "child-jordan", date: "2026-03-13", activityType: "outdoor_play", intensity: "moderate", durationMinutes: 60, childEnjoyment: true, staffSupervised: true },
+  { id: "act-j03", childId: "child-jordan", date: "2026-03-15", activityType: "dance", intensity: "moderate", durationMinutes: 45, childEnjoyment: true, staffSupervised: true },
+  { id: "act-m01", childId: "child-morgan", date: "2026-03-11", activityType: "gym", intensity: "vigorous", durationMinutes: 60, childEnjoyment: true, staffSupervised: true },
+  { id: "act-m02", childId: "child-morgan", date: "2026-03-13", activityType: "yoga", intensity: "light", durationMinutes: 45, childEnjoyment: true, staffSupervised: false },
+  { id: "act-m03", childId: "child-morgan", date: "2026-03-14", activityType: "team_games", intensity: "moderate", durationMinutes: 60, childEnjoyment: false, staffSupervised: true },
 ];
 const nutrition_healthy_living_DEMO_HEALTH: HealthPromotion[] = [
   { id: "hp-alex", childId: "child-alex", hydrationStatus: "well_hydrated", sleepQualityGood: true, dentalCheckUpToDate: true, opticalCheckUpToDate: true, annualHealthAssessmentComplete: true, cookingSkillsDeveloping: true, nutritionEducationProvided: true, mentalWellbeingSupported: true, substanceMisuseEducation: true, sexualHealthEducation: true, assessedDate: "2026-04-01" },
+  { id: "hp-jordan", childId: "child-jordan", hydrationStatus: "adequate", sleepQualityGood: true, dentalCheckUpToDate: true, opticalCheckUpToDate: false, annualHealthAssessmentComplete: true, cookingSkillsDeveloping: false, nutritionEducationProvided: true, mentalWellbeingSupported: true, substanceMisuseEducation: true, sexualHealthEducation: false, assessedDate: "2026-04-01" },
+  { id: "hp-morgan", childId: "child-morgan", hydrationStatus: "well_hydrated", sleepQualityGood: false, dentalCheckUpToDate: true, opticalCheckUpToDate: true, annualHealthAssessmentComplete: true, cookingSkillsDeveloping: true, nutritionEducationProvided: true, mentalWellbeingSupported: true, substanceMisuseEducation: true, sexualHealthEducation: true, assessedDate: "2026-04-01" },
 ];
 const nutrition_healthy_living_DEMO_MENUS: MenuPlan[] = [
   { id: "menu-w1", weekStartDate: "2026-03-04", mealsPlanned: 21, balancedMeals: 19, childrenConsulted: true, culturalDiversityReflected: true, budgetAppropriate: true, seasonalIngredientsUsed: true, specialDietsCatered: true },
-
+  { id: "menu-w2", weekStartDate: "2026-03-11", mealsPlanned: 21, balancedMeals: 20, childrenConsulted: true, culturalDiversityReflected: true, budgetAppropriate: true, seasonalIngredientsUsed: true, specialDietsCatered: true },
+  { id: "menu-w3", weekStartDate: "2026-03-18", mealsPlanned: 21, balancedMeals: 18, childrenConsulted: true, culturalDiversityReflected: false, budgetAppropriate: true, seasonalIngredientsUsed: false, specialDietsCatered: true },
 ];
+
 async function get_nutrition_healthy_living(req: NextRequest): Promise<Response> {
 
   const result = generateNutritionHealthyLivingIntelligence(
@@ -18307,9 +22207,237 @@ const nutrition_DEMO_CHILDREN: NutritionChild[] = [
     dislikes: ["Mushrooms", "Olives"],
     cookingSkillLevel: 3,
   },
+  {
+    id: "child-jordan",
+    name: "Jordan",
+    dateOfBirth: "2013-07-22",
+    currentPlacement: true,
+    dietaryRequirements: [],
+    allergies: ["nut_allergy"],
+    preferences: ["Pasta", "Pizza", "Jacket potatoes"],
+    dislikes: ["Spicy food", "Curry"],
+    cookingSkillLevel: 2,
+  },
+  {
+    id: "child-morgan",
+    name: "Morgan",
+    dateOfBirth: "2010-12-01",
+    currentPlacement: true,
+    dietaryRequirements: ["halal"],
+    allergies: [],
+    preferences: ["Biryani", "Curry", "Kebabs", "Naan bread"],
+    dislikes: [],
+    cookingSkillLevel: 4,
+  },
 ];
 const nutrition_DEMO_MEALS: MealRecord[] = [
   // ── January ─────────────────────────────────────────────────────────────
+  {
+    id: "meal-001",
+    date: "2026-01-15",
+    mealType: "dinner",
+    description: "Jerk chicken with rice and peas, coleslaw and plantain",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "positive_conversation", "family_style_serving", "no_rushing"],
+    notes: "Alex helped prepare the marinade — cultural celebration meal linked to life story work",
+  },
+  {
+    id: "meal-002",
+    date: "2026-01-16",
+    mealType: "lunch",
+    description: "Halal chicken biryani with raita and naan bread",
+    foodGroupsCovered: ["protein", "carbohydrates", "dairy_alternatives"],
+    freshFruitVegIncluded: false,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "positive_conversation", "cultural_celebration_meal"],
+    notes: "Morgan chose the recipe and helped cook — proud of the result",
+  },
+  {
+    id: "meal-003",
+    date: "2026-01-17",
+    mealType: "breakfast",
+    description: "Full English breakfast with halal sausages and toast",
+    foodGroupsCovered: ["protein", "carbohydrates", "fats_oils"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-morgan"],
+    qualityFactors: ["no_rushing", "positive_conversation"],
+  },
+  {
+    id: "meal-004",
+    date: "2026-01-20",
+    mealType: "dinner",
+    description: "Shepherd's pie with seasonal vegetables",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "family_style_serving", "positive_conversation", "no_rushing", "children_helped_set_table"],
+  },
+  // ── February ────────────────────────────────────────────────────────────
+  {
+    id: "meal-005",
+    date: "2026-02-05",
+    mealType: "dinner",
+    description: "Pasta bolognese with garlic bread and salad",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "children_helped_cook", "positive_conversation", "family_style_serving", "no_rushing"],
+    notes: "Jordan helped make the bolognese — first time using the hob",
+  },
+  {
+    id: "meal-006",
+    date: "2026-02-06",
+    mealType: "lunch",
+    description: "Homemade pizza with mixed salad — children chose toppings",
+    foodGroupsCovered: ["carbohydrates", "dairy_alternatives", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["children_helped_cook", "children_chose_menu", "positive_conversation", "no_rushing"],
+    notes: "All three children made their own pizzas — halal toppings for Morgan, nut-free for Jordan",
+  },
+  {
+    id: "meal-007",
+    date: "2026-02-14",
+    mealType: "dinner",
+    description: "Chicken stir-fry with noodles and vegetables",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "positive_conversation", "no_rushing"],
+  },
+  // ── March ───────────────────────────────────────────────────────────────
+  {
+    id: "meal-008",
+    date: "2026-03-01",
+    mealType: "dinner",
+    description: "Lamb curry with naan bread, rice and mango chutney",
+    foodGroupsCovered: ["protein", "carbohydrates", "fats_oils", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "positive_conversation", "cultural_celebration_meal", "family_style_serving", "no_rushing"],
+    notes: "Morgan cooked the curry — staff and children all ate together. Jordan had a milder version",
+  },
+  {
+    id: "meal-009",
+    date: "2026-03-10",
+    mealType: "dinner",
+    description: "Fish and chips with mushy peas and tartare sauce",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "no_rushing"],
+  },
+  {
+    id: "meal-010",
+    date: "2026-03-15",
+    mealType: "dinner",
+    description: "Roast chicken with roast potatoes, carrots, broccoli and gravy",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables", "fats_oils"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "family_style_serving", "positive_conversation", "no_rushing", "children_helped_set_table"],
+    notes: "Sunday roast — all children helped lay the table. Good family-style atmosphere",
+  },
+  {
+    id: "meal-011",
+    date: "2026-03-20",
+    mealType: "lunch",
+    description: "Chicken wraps with salad, hummus and sweet potato wedges",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["children_chose_menu", "positive_conversation", "no_rushing"],
+  },
+  // ── April ───────────────────────────────────────────────────────────────
+  {
+    id: "meal-012",
+    date: "2026-04-01",
+    mealType: "dinner",
+    description: "Eid celebration meal — halal lamb biryani with raita, pakoras and mango lassi",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables", "dairy_alternatives"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "cultural_celebration_meal", "family_style_serving", "positive_conversation", "no_rushing", "children_helped_set_table", "children_helped_cook"],
+    notes: "Morgan led the cooking for Eid — whole home celebrated together. Alex and Jordan helped with decoration and table setting",
+  },
+  {
+    id: "meal-013",
+    date: "2026-04-10",
+    mealType: "breakfast",
+    description: "Pancakes with fresh berries and maple syrup",
+    foodGroupsCovered: ["carbohydrates", "fruit_vegetables", "fats_oils"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["children_helped_cook", "positive_conversation", "no_rushing"],
+    notes: "Alex made pancakes for everyone — growing in confidence",
+  },
+  {
+    id: "meal-014",
+    date: "2026-04-15",
+    mealType: "dinner",
+    description: "Spaghetti carbonara with garlic bread",
+    foodGroupsCovered: ["carbohydrates", "protein", "dairy_alternatives"],
+    freshFruitVegIncluded: false,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan"],
+    qualityFactors: ["positive_conversation", "no_rushing"],
+  },
+  // ── May ─────────────────────────────────────────────────────────────────
+  {
+    id: "meal-015",
+    date: "2026-05-05",
+    mealType: "dinner",
+    description: "Full Sunday roast — Morgan cooked independently (chicken, roast potatoes, Yorkshire puddings, vegetables, gravy)",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables", "fats_oils"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "family_style_serving", "positive_conversation", "no_rushing", "children_helped_cook", "children_helped_set_table"],
+    notes: "Morgan cooked the entire roast independently — outstanding achievement for independence. Staff and all children ate together",
+  },
+  {
+    id: "meal-016",
+    date: "2026-05-10",
+    mealType: "lunch",
+    description: "Caribbean patties with rice and coleslaw",
+    foodGroupsCovered: ["protein", "carbohydrates", "fruit_vegetables"],
+    freshFruitVegIncluded: true,
+    dietaryRequirementsMet: true,
+    allergensSafelyManaged: true,
+    childrenPresent: ["child-alex", "child-jordan", "child-morgan"],
+    qualityFactors: ["staff_ate_with_children", "cultural_celebration_meal", "positive_conversation", "no_rushing"],
+    notes: "Alex's request — Caribbean food for the weekend. All children enjoyed it",
+  },
 ];
 const nutrition_DEMO_MENU_PLANS: MenuPlan[] = [
   {
@@ -18324,9 +22452,82 @@ const nutrition_DEMO_MENU_PLANS: MenuPlan[] = [
     freshCookingDays: 6,
     totalDays: 7,
   },
+  {
+    id: "mp-002",
+    weekCommencing: "2026-02-03",
+    createdBy: "Lisa Williams",
+    childrenContributed: true,
+    contributingChildIds: ["child-alex", "child-jordan", "child-morgan"],
+    mealsPlanned: 21,
+    dietaryVariety: 15,
+    culturalMealsIncluded: 2,
+    freshCookingDays: 7,
+    totalDays: 7,
+  },
+  {
+    id: "mp-003",
+    weekCommencing: "2026-03-03",
+    createdBy: "Sarah Johnson",
+    childrenContributed: true,
+    contributingChildIds: ["child-jordan"],
+    mealsPlanned: 21,
+    dietaryVariety: 12,
+    culturalMealsIncluded: 2,
+    freshCookingDays: 5,
+    totalDays: 7,
+  },
+  {
+    id: "mp-004",
+    weekCommencing: "2026-03-31",
+    createdBy: "Tom Richards",
+    childrenContributed: true,
+    contributingChildIds: ["child-alex", "child-jordan", "child-morgan"],
+    mealsPlanned: 21,
+    dietaryVariety: 16,
+    culturalMealsIncluded: 4,
+    freshCookingDays: 7,
+    totalDays: 7,
+  },
+  {
+    id: "mp-005",
+    weekCommencing: "2026-04-14",
+    createdBy: "Lisa Williams",
+    childrenContributed: true,
+    contributingChildIds: ["child-alex"],
+    mealsPlanned: 21,
+    dietaryVariety: 13,
+    culturalMealsIncluded: 1,
+    freshCookingDays: 6,
+    totalDays: 7,
+  },
+  {
+    id: "mp-006",
+    weekCommencing: "2026-05-05",
+    createdBy: "Sarah Johnson",
+    childrenContributed: true,
+    contributingChildIds: ["child-alex", "child-jordan", "child-morgan"],
+    mealsPlanned: 21,
+    dietaryVariety: 15,
+    culturalMealsIncluded: 3,
+    freshCookingDays: 7,
+    totalDays: 7,
+  },
 ];
 const nutrition_DEMO_FOOD_SAFETY: FoodSafetyRecord[] = [
   { id: "fs-001", date: "2026-01-15", checkType: "fridge_temperature", compliant: true },
+  { id: "fs-002", date: "2026-01-15", checkType: "freezer_temperature", compliant: true },
+  { id: "fs-003", date: "2026-01-20", checkType: "food_hygiene_audit", compliant: true },
+  { id: "fs-004", date: "2026-02-01", checkType: "allergen_labelling", compliant: true },
+  { id: "fs-005", date: "2026-02-10", checkType: "fridge_temperature", compliant: false, correctionNeeded: "Fridge at 7°C — adjusted to 4°C", correctedDate: "2026-02-10" },
+  { id: "fs-006", date: "2026-02-15", checkType: "use_by_date_check", compliant: true },
+  { id: "fs-007", date: "2026-03-01", checkType: "cleaning_schedule", compliant: true },
+  { id: "fs-008", date: "2026-03-10", checkType: "hand_hygiene", compliant: true },
+  { id: "fs-009", date: "2026-03-20", checkType: "fridge_temperature", compliant: true },
+  { id: "fs-010", date: "2026-04-01", checkType: "allergen_labelling", compliant: true },
+  { id: "fs-011", date: "2026-04-15", checkType: "food_hygiene_audit", compliant: true },
+  { id: "fs-012", date: "2026-05-01", checkType: "fridge_temperature", compliant: true },
+  { id: "fs-013", date: "2026-05-10", checkType: "hand_hygiene", compliant: true },
+  { id: "fs-014", date: "2026-05-15", checkType: "use_by_date_check", compliant: true },
 ];
 const nutrition_DEMO_COOKING_SESSIONS: CookingSession[] = [
   {
@@ -18340,8 +22541,118 @@ const nutrition_DEMO_COOKING_SESSIONS: CookingSession[] = [
     childInitiated: true,
     linkedToIndependencePlan: true,
   },
-
+  {
+    id: "cs-002",
+    date: "2026-02-05",
+    childId: "child-jordan",
+    description: "Made cheese toasties and tomato soup from scratch",
+    skillsPractised: ["using grill safely", "heating soup", "basic knife skills"],
+    supportLevel: "full_support",
+    childEngaged: true,
+    childInitiated: false,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-003",
+    date: "2026-02-10",
+    childId: "child-morgan",
+    description: "Cooked biryani from scratch for the whole home — independently",
+    skillsPractised: ["rice preparation", "spice blending", "timing multiple elements", "batch cooking"],
+    supportLevel: "independent",
+    childEngaged: true,
+    childInitiated: true,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-004",
+    date: "2026-03-05",
+    childId: "child-alex",
+    description: "Baked banana bread — measured all ingredients independently",
+    skillsPractised: ["measuring", "mixing", "using oven", "testing readiness"],
+    supportLevel: "some_support",
+    childEngaged: true,
+    childInitiated: false,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-005",
+    date: "2026-03-15",
+    childId: "child-morgan",
+    description: "Made fresh pasta from scratch with tomato and basil sauce",
+    skillsPractised: ["pasta making", "dough handling", "sauce preparation", "timing"],
+    supportLevel: "independent",
+    childEngaged: true,
+    childInitiated: true,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-006",
+    date: "2026-03-25",
+    childId: "child-jordan",
+    description: "Made omelettes with cheese and vegetables for lunch",
+    skillsPractised: ["cracking eggs", "using frying pan", "flipping", "food prep"],
+    supportLevel: "some_support",
+    childEngaged: true,
+    childInitiated: true,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-007",
+    date: "2026-04-01",
+    childId: "child-morgan",
+    description: "Eid celebration meal — halal lamb biryani with pakoras for the whole home",
+    skillsPractised: ["full meal preparation", "batch cooking", "presentation", "cultural cooking"],
+    supportLevel: "independent",
+    childEngaged: true,
+    childInitiated: true,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-008",
+    date: "2026-04-10",
+    childId: "child-alex",
+    description: "Made pancakes for the whole home — growing confidence in the kitchen",
+    skillsPractised: ["batter making", "using frying pan", "flipping", "serving"],
+    supportLevel: "some_support",
+    childEngaged: true,
+    childInitiated: true,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-009",
+    date: "2026-04-20",
+    childId: "child-jordan",
+    description: "Made sandwiches and fruit salad for packed lunch independently",
+    skillsPractised: ["knife skills", "food preparation", "presentation"],
+    supportLevel: "some_support",
+    childEngaged: true,
+    childInitiated: false,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-010",
+    date: "2026-05-05",
+    childId: "child-morgan",
+    description: "Cooked a full Sunday roast independently — chicken, roast potatoes, Yorkshire puddings, vegetables, gravy",
+    skillsPractised: ["roasting", "timing multiple dishes", "gravy making", "full meal management"],
+    supportLevel: "independent",
+    childEngaged: true,
+    childInitiated: true,
+    linkedToIndependencePlan: true,
+  },
+  {
+    id: "cs-011",
+    date: "2026-05-12",
+    childId: "child-alex",
+    description: "Made Caribbean patties with coleslaw — followed family recipe",
+    skillsPractised: ["pastry making", "filling preparation", "oven use", "cultural cooking"],
+    supportLevel: "some_support",
+    childEngaged: true,
+    childInitiated: true,
+    linkedToIndependencePlan: true,
+  },
 ];
+
 async function get_nutrition(req: NextRequest): Promise<Response> {
 
   const result = generateNutritionIntelligence(
@@ -18434,6 +22745,62 @@ const ofsted_readiness_DEMO_AREA_SCORES: AreaScore[] = [
     lastAssessedDate: "2026-04-15",
     assessedBy: "Sarah Johnson",
   },
+  {
+    id: "as-oak-02",
+    area: "education",
+    score: 75,
+    rating: "good",
+    lastAssessedDate: "2026-04-12",
+    assessedBy: "Tom Richards",
+  },
+  {
+    id: "as-oak-03",
+    area: "health",
+    score: 78,
+    rating: "good",
+    lastAssessedDate: "2026-04-12",
+    assessedBy: "Tom Richards",
+  },
+  {
+    id: "as-oak-04",
+    area: "behaviour",
+    score: 85,
+    rating: "outstanding",
+    lastAssessedDate: "2026-04-10",
+    assessedBy: "Lisa Williams",
+  },
+  {
+    id: "as-oak-05",
+    area: "care_planning",
+    score: 70,
+    rating: "good",
+    lastAssessedDate: "2026-04-08",
+    assessedBy: "Sarah Johnson",
+  },
+  {
+    id: "as-oak-06",
+    area: "staff_training",
+    score: 88,
+    rating: "outstanding",
+    lastAssessedDate: "2026-04-05",
+    assessedBy: "Sarah Johnson",
+  },
+  {
+    id: "as-oak-07",
+    area: "leadership",
+    score: 72,
+    rating: "good",
+    lastAssessedDate: "2026-04-05",
+    assessedBy: "Sarah Johnson",
+  },
+  {
+    id: "as-oak-08",
+    area: "participation",
+    score: 80,
+    rating: "outstanding",
+    lastAssessedDate: "2026-04-18",
+    assessedBy: "Lisa Williams",
+  },
 ];
 const ofsted_readiness_DEMO_EVIDENCE: SCCIFEvidenceItem[] = [
   {
@@ -18444,6 +22811,132 @@ const ofsted_readiness_DEMO_EVIDENCE: SCCIFEvidenceItem[] = [
     description: "Care plans show clear progress tracking for all young people",
     lastUpdated: "2026-04-10",
     linkedDocuments: 5,
+  },
+  {
+    id: "ev-oak-02",
+    requirement: "children_are_safe",
+    judgmentArea: "help_and_protection",
+    evidenceStrength: "strong",
+    description: "Robust safeguarding procedures with staff training at 100%",
+    lastUpdated: "2026-04-15",
+    linkedDocuments: 6,
+  },
+  {
+    id: "ev-oak-03",
+    requirement: "staff_are_skilled",
+    judgmentArea: "leadership_and_management",
+    evidenceStrength: "strong",
+    description: "Comprehensive training programme with 88% training completion",
+    lastUpdated: "2026-04-05",
+    linkedDocuments: 4,
+  },
+  {
+    id: "ev-oak-04",
+    requirement: "leaders_are_ambitious",
+    judgmentArea: "leadership_and_management",
+    evidenceStrength: "adequate",
+    description: "Development plans in place but some targets not yet met",
+    lastUpdated: "2026-04-05",
+    linkedDocuments: 3,
+  },
+  {
+    id: "ev-oak-05",
+    requirement: "matching_is_effective",
+    judgmentArea: "overall_experiences",
+    evidenceStrength: "strong",
+    description: "Matching assessments completed for all current placements",
+    lastUpdated: "2026-04-08",
+    linkedDocuments: 4,
+  },
+  {
+    id: "ev-oak-06",
+    requirement: "care_is_individualised",
+    judgmentArea: "overall_experiences",
+    evidenceStrength: "strong",
+    description: "Person-centred care plans reviewed monthly with children's input",
+    lastUpdated: "2026-04-10",
+    linkedDocuments: 5,
+  },
+  {
+    id: "ev-oak-07",
+    requirement: "records_are_thorough",
+    judgmentArea: "leadership_and_management",
+    evidenceStrength: "adequate",
+    description: "Record-keeping mostly consistent but some daily logs lack detail",
+    lastUpdated: "2026-04-06",
+    linkedDocuments: 3,
+  },
+  {
+    id: "ev-oak-08",
+    requirement: "partnership_working",
+    judgmentArea: "help_and_protection",
+    evidenceStrength: "strong",
+    description: "Active engagement with social workers, CAMHS, and schools",
+    lastUpdated: "2026-04-12",
+    linkedDocuments: 4,
+  },
+  {
+    id: "ev-oak-09",
+    requirement: "children_participate",
+    judgmentArea: "overall_experiences",
+    evidenceStrength: "strong",
+    description: "Regular house meetings and participation in care plan reviews",
+    lastUpdated: "2026-04-18",
+    linkedDocuments: 4,
+  },
+  {
+    id: "ev-oak-10",
+    requirement: "complaints_are_resolved",
+    judgmentArea: "help_and_protection",
+    evidenceStrength: "adequate",
+    description: "Complaints process in place; one response slightly late",
+    lastUpdated: "2026-04-06",
+    linkedDocuments: 3,
+  },
+  {
+    id: "ev-oak-11",
+    requirement: "health_needs_met",
+    judgmentArea: "overall_experiences",
+    evidenceStrength: "strong",
+    description: "All children registered with GP and dentist, health plans current",
+    lastUpdated: "2026-04-12",
+    linkedDocuments: 5,
+  },
+  {
+    id: "ev-oak-12",
+    requirement: "education_supported",
+    judgmentArea: "overall_experiences",
+    evidenceStrength: "adequate",
+    description: "PEPs in place and attendance improving, one PEP review overdue",
+    lastUpdated: "2026-04-12",
+    linkedDocuments: 3,
+  },
+  {
+    id: "ev-oak-13",
+    requirement: "independence_promoted",
+    judgmentArea: "overall_experiences",
+    evidenceStrength: "strong",
+    description: "Independence skills programme tailored to each young person",
+    lastUpdated: "2026-04-10",
+    linkedDocuments: 4,
+  },
+  {
+    id: "ev-oak-14",
+    requirement: "contact_is_purposeful",
+    judgmentArea: "overall_experiences",
+    evidenceStrength: "strong",
+    description: "Contact arrangements well-managed with purposeful family engagement",
+    lastUpdated: "2026-04-08",
+    linkedDocuments: 3,
+  },
+  {
+    id: "ev-oak-15",
+    requirement: "behaviour_is_understood",
+    judgmentArea: "help_and_protection",
+    evidenceStrength: "adequate",
+    description: "Behaviour support plans in place but inconsistently applied by some staff",
+    lastUpdated: "2026-04-10",
+    linkedDocuments: 3,
   },
 ];
 const ofsted_readiness_DEMO_INSPECTION_HISTORY: InspectionHistory[] = [
@@ -18471,8 +22964,56 @@ const ofsted_readiness_DEMO_ACTION_ITEMS: ActionPlanItem[] = [
     priority: "critical",
     assignedTo: "Sarah Johnson",
   },
-
+  {
+    id: "act-oak-02",
+    source: "ofsted_recommendation",
+    description: "Improve daily log detail and consistency across all staff",
+    status: "in_progress",
+    targetDate: "2026-06-01",
+    priority: "high",
+    assignedTo: "Tom Richards",
+  },
+  {
+    id: "act-oak-03",
+    source: "ofsted_recommendation",
+    description: "Develop more structured independence skills tracking",
+    status: "completed",
+    targetDate: "2025-09-01",
+    completedDate: "2025-08-15",
+    priority: "medium",
+    assignedTo: "Lisa Williams",
+  },
+  {
+    id: "act-oak-04",
+    source: "internal_audit",
+    description: "Update contextual safeguarding assessment for local area",
+    status: "in_progress",
+    targetDate: "2026-06-01",
+    priority: "medium",
+    assignedTo: "Lisa Williams",
+  },
+  {
+    id: "act-oak-05",
+    source: "reg44",
+    description: "Address Reg 44 recommendation on medication administration timing",
+    status: "completed",
+    targetDate: "2026-03-01",
+    completedDate: "2026-02-25",
+    priority: "high",
+    assignedTo: "Sarah Johnson",
+  },
+  {
+    id: "act-oak-06",
+    source: "internal_audit",
+    description: "Refresh PEP review tracking process",
+    status: "completed",
+    targetDate: "2026-04-15",
+    completedDate: "2026-04-10",
+    priority: "medium",
+    assignedTo: "Tom Richards",
+  },
 ];
+
 async function get_ofsted_readiness(req: NextRequest): Promise<Response> {
 
   const result = generateOfstedReadinessIntelligence(
@@ -18559,6 +23100,8 @@ async function post_ofsted_readiness(req: NextRequest): Promise<Response> {
 // ─── online-safety ─────────────────────────────────────────────────────
 const online_safety_DEMO_CHILDREN: OnlineSafetyChild[] = [
   { id: "child-alex", name: "Alex", dateOfBirth: "2012-03-15", currentPlacement: true },
+  { id: "child-jordan", name: "Jordan", dateOfBirth: "2013-07-22", currentPlacement: true },
+  { id: "child-morgan", name: "Morgan", dateOfBirth: "2010-12-01", currentPlacement: true },
 ];
 const online_safety_DEMO_ASSESSMENTS: OnlineRiskAssessment[] = [
   {
@@ -18577,6 +23120,41 @@ const online_safety_DEMO_ASSESSMENTS: OnlineRiskAssessment[] = [
     deviceAgreementSigned: true,
     socialMediaAccounts: ["TikTok", "Instagram"],
     screenTimeAgreementHours: 3,
+  },
+  {
+    id: "ora-jordan",
+    childId: "child-jordan",
+    assessmentDate: "2026-02-05",
+    reviewDueDate: "2026-08-05",
+    assessedBy: "Tom Richards",
+    overallRiskLevel: "low",
+    risksIdentified: [
+      { category: "exposure_harmful_content", level: "low", mitigations: ["Content filtering active", "Regular check-ins about online activity", "Knows reporting pathways"] },
+      { category: "cyberbullying", level: "medium", mitigations: ["Privacy settings maximised", "LGBTQ+ online safety discussed in key-work", "Monitoring for identity-based harassment"] },
+    ],
+    devicesAccessed: ["personal_phone", "home_tablet"],
+    safetyMeasuresInPlace: ["content_filtering", "monitoring_software", "app_restrictions", "parental_controls"],
+    deviceAgreementSigned: true,
+    socialMediaAccounts: ["YouTube"],
+    screenTimeAgreementHours: 2,
+  },
+  {
+    id: "ora-morgan",
+    childId: "child-morgan",
+    assessmentDate: "2026-01-25",
+    reviewDueDate: "2026-07-25",
+    assessedBy: "Lisa Williams",
+    overallRiskLevel: "high",
+    risksIdentified: [
+      { category: "grooming", level: "high", mitigations: ["Enhanced monitoring via Bark", "Weekly phone review with consent", "CEOP reporting pathway taught", "Regular key-work on healthy online relationships", "Social worker informed of risk level"] },
+      { category: "sexting", level: "medium", mitigations: ["1:1 education on image sharing law", "Phone reviewed with consent", "Privacy settings locked", "Trusted adult discussion ongoing"] },
+      { category: "data_sharing", level: "medium", mitigations: ["Location sharing disabled", "Privacy settings reviewed monthly", "Social media account privacy maximised"] },
+    ],
+    devicesAccessed: ["personal_phone", "home_laptop", "personal_tablet"],
+    safetyMeasuresInPlace: ["content_filtering", "monitoring_software", "time_restrictions", "privacy_settings_reviewed", "app_restrictions"],
+    deviceAgreementSigned: true,
+    socialMediaAccounts: ["TikTok", "Instagram", "Snapchat", "WhatsApp"],
+    screenTimeAgreementHours: 2.5,
   },
 ];
 const online_safety_DEMO_INCIDENTS: OnlineIncident[] = [
@@ -18598,15 +23176,75 @@ const online_safety_DEMO_INCIDENTS: OnlineIncident[] = [
     resolved: true,
     resolvedDate: "2026-03-12",
   },
+  {
+    id: "oi-002",
+    childId: "child-morgan",
+    date: "2026-02-15",
+    incidentType: "contact_from_unknown_adult",
+    severity: 4 as const,
+    description: "Bark monitoring flagged suspicious DMs to Morgan from unknown adult male on Instagram. Messages showed grooming pattern — flattery, requests for photos, attempts to move conversation to Snapchat",
+    reportedTo: ["registered_manager", "social_worker", "CEOP"],
+    ceopReferral: true,
+    policeInvolved: true,
+    socialWorkerNotified: true,
+    parentNotified: false,
+    deviceSeized: true,
+    safeguardingActionTaken: [
+      "Phone seized immediately with Morgan's understanding",
+      "CEOP report submitted within 1 hour",
+      "Police notified — crime reference obtained",
+      "Social worker informed same day",
+      "1:1 support session with Morgan — discussed what happened and reassured not her fault",
+      "Risk assessment updated to reflect grooming attempt",
+      "Account blocked and reported to Instagram",
+      "Enhanced monitoring put in place across all platforms",
+    ],
+    outcome: "CEOP investigation opened; perpetrator account removed by Instagram; Morgan well-supported throughout",
+    resolved: true,
+    resolvedDate: "2026-03-01",
+  },
+  {
+    id: "oi-003",
+    childId: "child-jordan",
+    date: "2026-04-05",
+    incidentType: "cyberbullying_victim",
+    severity: 2 as const,
+    description: "Jordan received transphobic comments on YouTube video they had commented on. Comments referenced their identity directly",
+    reportedTo: ["key_worker", "registered_manager"],
+    ceopReferral: false,
+    policeInvolved: false,
+    socialWorkerNotified: true,
+    parentNotified: false,
+    deviceSeized: false,
+    safeguardingActionTaken: [
+      "Comments reported to YouTube and removed within 24 hours",
+      "Emotional support session with Jordan — felt upset but resilient",
+      "Privacy settings further tightened — commenting disabled on public content",
+      "Discussed blocking, reporting, and not engaging with trolls",
+      "Linked to LGBTQ+ online safety resources",
+    ],
+    outcome: "Jordan felt supported; comments removed; privacy settings improved",
+    resolved: true,
+    resolvedDate: "2026-04-08",
+  },
 ];
 const online_safety_DEMO_EDUCATION: OnlineEducationSession[] = [
   { id: "edu-001", date: "2026-01-20", topic: "recognising_grooming", childIds: ["child-alex", "child-jordan", "child-morgan"], deliveredBy: "Sarah Johnson", method: "group_session", childrenEngaged: true, followUpNeeded: false, notes: "All children engaged well; Morgan asked good questions about warning signs" },
+  { id: "edu-002", date: "2026-02-10", topic: "image_sharing_law", childIds: ["child-morgan"], deliveredBy: "Lisa Williams", method: "one_to_one", childrenEngaged: true, followUpNeeded: true, notes: "Focused session following risk assessment — Morgan now understands legal implications" },
+  { id: "edu-003", date: "2026-02-25", topic: "cyberbullying_awareness", childIds: ["child-alex", "child-jordan", "child-morgan"], deliveredBy: "Tom Richards", method: "group_session", childrenEngaged: true, followUpNeeded: false },
+  { id: "edu-004", date: "2026-03-15", topic: "privacy_settings", childIds: ["child-alex", "child-jordan", "child-morgan"], deliveredBy: "Sarah Johnson", method: "group_session", childrenEngaged: true, followUpNeeded: false, notes: "Hands-on session — each child reviewed their own settings with staff" },
+  { id: "edu-005", date: "2026-03-25", topic: "screen_time_balance", childIds: ["child-alex"], deliveredBy: "Sarah Johnson", method: "one_to_one", childrenEngaged: true, followUpNeeded: false, notes: "Following gaming incident — Alex reflected on impact of excessive gaming" },
+  { id: "edu-006", date: "2026-04-10", topic: "social_media_safety", childIds: ["child-jordan", "child-morgan"], deliveredBy: "Lisa Williams", method: "group_session", childrenEngaged: true, followUpNeeded: false },
+  { id: "edu-007", date: "2026-04-20", topic: "reporting_concerns", childIds: ["child-alex", "child-jordan", "child-morgan"], deliveredBy: "Darren Laville", method: "group_session", childrenEngaged: true, followUpNeeded: false, notes: "Covered CEOP button, Childline, telling a trusted adult. All children can demonstrate" },
+  { id: "edu-008", date: "2026-05-05", topic: "digital_footprint", childIds: ["child-morgan"], deliveredBy: "Lisa Williams", method: "one_to_one", childrenEngaged: true, followUpNeeded: true, notes: "Morgan increasingly aware of permanence of online actions — good progress" },
 ];
 const online_safety_DEMO_TRAINING: StaffOnlineTraining[] = [
   { staffId: "staff-sarah", staffName: "Sarah Johnson", trainingName: "Online Safety in Children's Homes", completionDate: "2025-09-15", expiryDate: "2026-09-15", provider: "NSPCC", certificateHeld: true },
+  { staffId: "staff-tom", staffName: "Tom Richards", trainingName: "Online Safety in Children's Homes", completionDate: "2025-10-01", expiryDate: "2026-10-01", provider: "NSPCC", certificateHeld: true },
+  { staffId: "staff-lisa", staffName: "Lisa Williams", trainingName: "Online Safety in Children's Homes", completionDate: "2025-11-15", expiryDate: "2026-11-15", provider: "NSPCC", certificateHeld: true },
+  { staffId: "staff-darren", staffName: "Darren Laville", trainingName: "Online Safety for Managers — CEOP Ambassador", completionDate: "2025-08-01", expiryDate: "2026-08-01", provider: "Internet Watch Foundation / CEOP", certificateHeld: true },
 ];
 const online_safety_STAFF_IDS = ["staff-sarah", "staff-tom", "staff-lisa", "staff-darren"];
-
 const online_safety_DEMO_POLICY: OnlineSafetyPolicy = {
   lastReviewDate: "2026-01-15",
   nextReviewDue: "2027-01-15",
@@ -18901,17 +23539,56 @@ async function post_outcomes_measurement(req: NextRequest): Promise<Response> {
 // ─── outdoor-activity-enrichment ───────────────────────────────────────
 const outdoor_activity_enrichment_DEMO_ACTIVITIES: ActivityRecord[] = [
   // Alex — high participation, adventure-focused
+  { id: "act-a1", childId: "child-alex", childName: "Alex", category: "outdoor_adventure", date: "2026-01-20", description: "Forest trail hike with map reading", duration: 180, location: "Delamere Forest", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "excellent", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: true, peersInvolved: true },
+  { id: "act-a2", childId: "child-alex", childName: "Alex", category: "sports", date: "2026-02-05", description: "Climbing wall session at local centre", duration: 90, location: "Oakwood Climbing Centre", staffLed: false, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: false, peersInvolved: true },
+  { id: "act-a3", childId: "child-alex", childName: "Alex", category: "outdoor_adventure", date: "2026-02-15", description: "Kayaking on the canal", duration: 120, location: "Bridgewater Canal", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "excellent", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: true, peersInvolved: true },
+  { id: "act-a4", childId: "child-alex", childName: "Alex", category: "nature_environment", date: "2026-03-10", description: "Bird watching and nature journaling", duration: 90, location: "Mere Sands Wood", staffLed: true, childChose: false, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "willing", outdoors: true, communityBased: true, newExperience: true, peersInvolved: false },
+  { id: "act-a5", childId: "child-alex", childName: "Alex", category: "sports", date: "2026-03-22", description: "Saturday football league match", duration: 90, location: "Community Playing Fields", staffLed: false, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: false, peersInvolved: true },
+  { id: "act-a6", childId: "child-alex", childName: "Alex", category: "life_skill_practice", date: "2026-04-05", description: "Cooking a meal for the house", duration: 60, location: "Chamberlain House Kitchen", staffLed: true, childChose: true, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "willing", outdoors: false, communityBased: false, newExperience: false, peersInvolved: true },
+  { id: "act-a7", childId: "child-alex", childName: "Alex", category: "educational_trip", date: "2026-04-18", description: "Science museum trip", duration: 240, location: "Museum of Science & Industry", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: true, peersInvolved: true },
+
+  // Jordan — more reluctant, some refusals
+  { id: "act-j1", childId: "child-jordan", childName: "Jordan", category: "sports", date: "2026-01-25", description: "Swimming at the leisure centre", duration: 60, location: "Oakwood Leisure Centre", staffLed: true, childChose: false, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "reluctant", outdoors: false, communityBased: true, newExperience: false, peersInvolved: false },
+  { id: "act-j2", childId: "child-jordan", childName: "Jordan", category: "social_event", date: "2026-02-14", description: "Youth club games night", duration: 120, location: "Community Youth Centre", staffLed: false, childChose: false, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "willing", outdoors: false, communityBased: true, newExperience: false, peersInvolved: true },
+  { id: "act-j3", childId: "child-jordan", childName: "Jordan", category: "outdoor_adventure", date: "2026-03-01", description: "Nature walk in the park", duration: 45, location: "Town Park", staffLed: true, childChose: false, riskBenefitAssessed: true, riskBenefitOutcome: "adequate", childEngagement: "reluctant", outdoors: true, communityBased: true, newExperience: false, peersInvolved: false },
+  { id: "act-j4", childId: "child-jordan", childName: "Jordan", category: "creative_arts", date: "2026-03-20", description: "Pottery workshop", duration: 90, location: "Community Arts Centre", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: true, peersInvolved: true },
+  { id: "act-j5", childId: "child-jordan", childName: "Jordan", category: "sports", date: "2026-04-10", description: "Football in the garden", duration: 30, location: "Chamberlain House Garden", staffLed: false, childChose: false, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "refused", outdoors: true, communityBased: false, newExperience: false, peersInvolved: true },
+
+  // Morgan — creative/cultural focus
+  { id: "act-m1", childId: "child-morgan", childName: "Morgan", category: "creative_arts", date: "2026-01-18", description: "Drama club rehearsal and performance", duration: 150, location: "Town Theatre", staffLed: false, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "excellent", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: false, peersInvolved: true },
+  { id: "act-m2", childId: "child-morgan", childName: "Morgan", category: "cultural_visit", date: "2026-02-08", description: "Art gallery visit and sketch workshop", duration: 180, location: "Tate Liverpool", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: false, communityBased: true, newExperience: true, peersInvolved: true },
+  { id: "act-m3", childId: "child-morgan", childName: "Morgan", category: "community_service", date: "2026-02-22", description: "Volunteering at the food bank", duration: 120, location: "Town Food Bank", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "willing", outdoors: false, communityBased: true, newExperience: true, peersInvolved: false },
+  { id: "act-m4", childId: "child-morgan", childName: "Morgan", category: "therapeutic_activity", date: "2026-03-12", description: "Art therapy session", duration: 60, location: "Chamberlain House Therapy Room", staffLed: true, childChose: false, riskBenefitAssessed: false, riskBenefitOutcome: null, childEngagement: "willing", outdoors: false, communityBased: false, newExperience: false, peersInvolved: false },
+  { id: "act-m5", childId: "child-morgan", childName: "Morgan", category: "nature_environment", date: "2026-04-05", description: "Community garden planting day", duration: 90, location: "Oakwood Community Garden", staffLed: false, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: true, peersInvolved: true },
+  { id: "act-m6", childId: "child-morgan", childName: "Morgan", category: "creative_arts", date: "2026-04-20", description: "Photography walk along the canal", duration: 120, location: "Canal Towpath", staffLed: true, childChose: true, riskBenefitAssessed: true, riskBenefitOutcome: "good", childEngagement: "enthusiastic", outdoors: true, communityBased: true, newExperience: false, peersInvolved: true },
 ];
 const outdoor_activity_enrichment_DEMO_PLANS: EnrichmentPlan[] = [
   { id: "plan-a1", childId: "child-alex", childName: "Alex", planDate: "2026-01-10", reviewDate: "2026-04-10", interestsIdentified: ["hiking", "climbing", "kayaking", "football"], activitiesPlanned: 10, activitiesCompleted: 7, childContributed: true, diverseRange: true, barrierIdentified: null, barrierAddressed: null },
+  { id: "plan-j1", childId: "child-jordan", childName: "Jordan", planDate: "2026-01-10", reviewDate: "2026-04-10", interestsIdentified: ["gaming", "pottery", "art"], activitiesPlanned: 8, activitiesCompleted: 4, childContributed: true, diverseRange: false, barrierIdentified: "Anxiety about new settings", barrierAddressed: true },
+  { id: "plan-m1", childId: "child-morgan", childName: "Morgan", planDate: "2026-01-10", reviewDate: "2026-04-10", interestsIdentified: ["drama", "art", "photography", "gardening", "volunteering"], activitiesPlanned: 10, activitiesCompleted: 6, childContributed: true, diverseRange: true, barrierIdentified: "Transport to evening events", barrierAddressed: false },
 ];
 const outdoor_activity_enrichment_DEMO_RISK_ASSESSMENTS: RiskBenefitAssessment[] = [
   { id: "ra-a1", activityId: "act-a1", assessedBy: "Sarah Johnson", assessDate: "2026-01-19", hazardsIdentified: 4, controlMeasures: 6, benefitsArticulated: true, childViewSought: true, dynamicAssessment: true, outcome: "excellent" },
+  { id: "ra-a2", activityId: "act-a2", assessedBy: "Tom Richards", assessDate: "2026-02-04", hazardsIdentified: 3, controlMeasures: 4, benefitsArticulated: true, childViewSought: true, dynamicAssessment: false, outcome: "good" },
+  { id: "ra-a3", activityId: "act-a3", assessedBy: "Sarah Johnson", assessDate: "2026-02-14", hazardsIdentified: 5, controlMeasures: 7, benefitsArticulated: true, childViewSought: true, dynamicAssessment: true, outcome: "excellent" },
+  { id: "ra-a4", activityId: "act-a4", assessedBy: "Lisa Williams", assessDate: "2026-03-09", hazardsIdentified: 2, controlMeasures: 3, benefitsArticulated: true, childViewSought: false, dynamicAssessment: true, outcome: "good" },
+  { id: "ra-a5", activityId: "act-a5", assessedBy: "Tom Richards", assessDate: "2026-03-21", hazardsIdentified: 2, controlMeasures: 3, benefitsArticulated: false, childViewSought: false, dynamicAssessment: false, outcome: "good" },
+  { id: "ra-a7", activityId: "act-a7", assessedBy: "Sarah Johnson", assessDate: "2026-04-17", hazardsIdentified: 3, controlMeasures: 5, benefitsArticulated: true, childViewSought: true, dynamicAssessment: true, outcome: "good" },
+  { id: "ra-j1", activityId: "act-j1", assessedBy: "Tom Richards", assessDate: "2026-01-24", hazardsIdentified: 2, controlMeasures: 3, benefitsArticulated: true, childViewSought: false, dynamicAssessment: false, outcome: "good" },
+  { id: "ra-j3", activityId: "act-j3", assessedBy: "Lisa Williams", assessDate: "2026-02-28", hazardsIdentified: 1, controlMeasures: 2, benefitsArticulated: false, childViewSought: false, dynamicAssessment: false, outcome: "adequate" },
+  { id: "ra-j4", activityId: "act-j4", assessedBy: "Tom Richards", assessDate: "2026-03-19", hazardsIdentified: 2, controlMeasures: 3, benefitsArticulated: true, childViewSought: true, dynamicAssessment: false, outcome: "good" },
+  { id: "ra-m1", activityId: "act-m1", assessedBy: "Lisa Williams", assessDate: "2026-01-17", hazardsIdentified: 2, controlMeasures: 4, benefitsArticulated: true, childViewSought: true, dynamicAssessment: true, outcome: "excellent" },
+  { id: "ra-m2", activityId: "act-m2", assessedBy: "Sarah Johnson", assessDate: "2026-02-07", hazardsIdentified: 3, controlMeasures: 5, benefitsArticulated: true, childViewSought: true, dynamicAssessment: true, outcome: "good" },
+  { id: "ra-m3", activityId: "act-m3", assessedBy: "Lisa Williams", assessDate: "2026-02-21", hazardsIdentified: 2, controlMeasures: 3, benefitsArticulated: true, childViewSought: false, dynamicAssessment: false, outcome: "good" },
+  { id: "ra-m5", activityId: "act-m5", assessedBy: "Tom Richards", assessDate: "2026-04-04", hazardsIdentified: 2, controlMeasures: 3, benefitsArticulated: true, childViewSought: true, dynamicAssessment: true, outcome: "good" },
+  { id: "ra-m6", activityId: "act-m6", assessedBy: "Sarah Johnson", assessDate: "2026-04-19", hazardsIdentified: 2, controlMeasures: 3, benefitsArticulated: true, childViewSought: true, dynamicAssessment: true, outcome: "good" },
 ];
 const outdoor_activity_enrichment_DEMO_STAFF: StaffActivityTraining[] = [
   { id: "st-1", staffId: "s-sarah", staffName: "Sarah Johnson", firstAidCurrent: true, outdoorQualifications: ["Mountain Leader", "Forest School L3"], activityLeaderTrained: true, riskAssessmentTrained: true, safeguardingCurrent: true },
-
+  { id: "st-2", staffId: "s-tom", staffName: "Tom Richards", firstAidCurrent: true, outdoorQualifications: ["Climbing Wall Instructor"], activityLeaderTrained: true, riskAssessmentTrained: false, safeguardingCurrent: true },
+  { id: "st-3", staffId: "s-lisa", staffName: "Lisa Williams", firstAidCurrent: false, outdoorQualifications: [], activityLeaderTrained: false, riskAssessmentTrained: true, safeguardingCurrent: true },
 ];
+
 async function get_outdoor_activity_enrichment(req: NextRequest): Promise<Response> {
 
   const result = generateOutdoorActivityEnrichmentIntelligence(
@@ -18997,17 +23674,47 @@ async function post_outdoor_activity_enrichment(req: NextRequest): Promise<Respo
 // ─── parental-contact-management ───────────────────────────────────────
 const parental_contact_management_DEMO_PLANS: ParentalContactPlan[] = [
   // Alex — mother: supervised face-to-face monthly, medium risk, court order
+  { id: "pcp-1", childId: "child-alex", childName: "Alex", parentId: "parent-alex-mother", parentName: "Claire Thompson", contactType: "face_to_face_supervised", frequency: "Monthly", riskLevel: "medium", courtOrderInPlace: true, contactSupervisor: "Sarah Johnson", planReviewDate: "2026-06-01", planCurrent: true, childViewConsidered: true },
+  // Alex — father: telephone fortnightly, low risk
+  { id: "pcp-2", childId: "child-alex", childName: "Alex", parentId: "parent-alex-father", parentName: "David Thompson", contactType: "telephone", frequency: "Fortnightly", riskLevel: "low", courtOrderInPlace: false, contactSupervisor: "Tom Richards", planReviewDate: "2026-06-01", planCurrent: true, childViewConsidered: true },
+  // Jordan — mother: supervised face-to-face fortnightly, high risk, court order
+  { id: "pcp-3", childId: "child-jordan", childName: "Jordan", parentId: "parent-jordan-mother", parentName: "Michelle Carter", contactType: "face_to_face_supervised", frequency: "Fortnightly", riskLevel: "high", courtOrderInPlace: true, contactSupervisor: "Lisa Williams", planReviewDate: "2026-06-15", planCurrent: true, childViewConsidered: true },
+  // Jordan — father: no contact order
+  { id: "pcp-4", childId: "child-jordan", childName: "Jordan", parentId: "parent-jordan-father", parentName: "Gary Carter", contactType: "no_contact_order", frequency: "None", riskLevel: "very_high", courtOrderInPlace: true, contactSupervisor: "", planReviewDate: "2026-09-01", planCurrent: true, childViewConsidered: true },
+  // Morgan — mother: unsupervised face-to-face weekly, low risk
+  { id: "pcp-5", childId: "child-morgan", childName: "Morgan", parentId: "parent-morgan-mother", parentName: "Sarah Davies", contactType: "face_to_face_unsupervised", frequency: "Weekly", riskLevel: "low", courtOrderInPlace: false, contactSupervisor: "", planReviewDate: "2026-06-01", planCurrent: true, childViewConsidered: true },
+  // Morgan — father: video call monthly, low risk
+  { id: "pcp-6", childId: "child-morgan", childName: "Morgan", parentId: "parent-morgan-father", parentName: "James Davies", contactType: "video_call", frequency: "Monthly", riskLevel: "low", courtOrderInPlace: false, contactSupervisor: "", planReviewDate: "2026-06-01", planCurrent: true, childViewConsidered: true },
 ];
 const parental_contact_management_DEMO_SESSIONS: ParentalContactSession[] = [
   // Alex — supervised visit with mother (positive)
+  { id: "pcs-1", childId: "child-alex", childName: "Alex", parentId: "parent-alex-mother", parentName: "Claire Thompson", date: "2026-04-15", contactType: "face_to_face_supervised", duration: 60, outcome: "positive", supervisedBy: "Sarah Johnson", childPrepared: true, childDebriefed: true, parentCooperative: true, safeguardingConcernRaised: false, incidentDuringContact: false },
+  // Alex — phone call with father (positive)
+  { id: "pcs-2", childId: "child-alex", childName: "Alex", parentId: "parent-alex-father", parentName: "David Thompson", date: "2026-04-20", contactType: "telephone", duration: 30, outcome: "positive", supervisedBy: "Tom Richards", childPrepared: true, childDebriefed: true, parentCooperative: true, safeguardingConcernRaised: false, incidentDuringContact: false },
+  // Jordan — supervised visit with mother (mixed)
+  { id: "pcs-3", childId: "child-jordan", childName: "Jordan", parentId: "parent-jordan-mother", parentName: "Michelle Carter", date: "2026-04-10", contactType: "face_to_face_supervised", duration: 45, outcome: "mixed", supervisedBy: "Lisa Williams", childPrepared: true, childDebriefed: true, parentCooperative: false, safeguardingConcernRaised: false, incidentDuringContact: false },
+  // Jordan — supervised visit with mother (negative — cancelled by parent)
+  { id: "pcs-4", childId: "child-jordan", childName: "Jordan", parentId: "parent-jordan-mother", parentName: "Michelle Carter", date: "2026-04-24", contactType: "face_to_face_supervised", duration: 0, outcome: "cancelled_by_parent", supervisedBy: "Lisa Williams", childPrepared: true, childDebriefed: true, parentCooperative: false, safeguardingConcernRaised: false, incidentDuringContact: false },
+  // Morgan — unsupervised visit with mother (positive)
+  { id: "pcs-5", childId: "child-morgan", childName: "Morgan", parentId: "parent-morgan-mother", parentName: "Sarah Davies", date: "2026-05-01", contactType: "face_to_face_unsupervised", duration: 120, outcome: "positive", supervisedBy: "", childPrepared: true, childDebriefed: true, parentCooperative: true, safeguardingConcernRaised: false, incidentDuringContact: false },
+  // Morgan — video call with father (positive)
+  { id: "pcs-6", childId: "child-morgan", childName: "Morgan", parentId: "parent-morgan-father", parentName: "James Davies", date: "2026-05-05", contactType: "video_call", duration: 30, outcome: "positive", supervisedBy: "", childPrepared: true, childDebriefed: false, parentCooperative: true, safeguardingConcernRaised: false, incidentDuringContact: false },
 ];
 const parental_contact_management_DEMO_ASSESSMENTS: ContactRiskAssessment[] = [
   // Alex — mother (medium risk)
+  { id: "cra-1", childId: "child-alex", childName: "Alex", parentId: "parent-alex-mother", parentName: "Claire Thompson", assessmentDate: "2026-03-01", assessedBy: "Darren Laville", riskLevel: "medium", riskFactorsIdentified: ["History of emotional volatility", "Previous boundary issues"], safeguardingMeasures: ["Supervised contact only", "Staff to monitor emotional state"], reviewDate: "2026-06-01", reviewCurrent: true },
+  // Jordan — mother (high risk)
+  { id: "cra-2", childId: "child-jordan", childName: "Jordan", parentId: "parent-jordan-mother", parentName: "Michelle Carter", assessmentDate: "2026-02-15", assessedBy: "Darren Laville", riskLevel: "high", riskFactorsIdentified: ["Substance misuse history", "Domestic abuse history", "Unpredictable behaviour"], safeguardingMeasures: ["Supervised contact at all times", "Two staff present", "Contact in designated room"], reviewDate: "2026-05-15", reviewCurrent: true },
+  // Jordan — father (very high risk)
+  { id: "cra-3", childId: "child-jordan", childName: "Jordan", parentId: "parent-jordan-father", parentName: "Gary Carter", assessmentDate: "2026-01-10", assessedBy: "Darren Laville", riskLevel: "very_high", riskFactorsIdentified: ["Convicted of offence against child", "Court-ordered no contact"], safeguardingMeasures: ["No contact order enforced", "Alert system in place", "Staff briefed on appearance"], reviewDate: "2026-07-10", reviewCurrent: true },
 ];
 const parental_contact_management_DEMO_TRAINING: StaffContactTraining[] = [
   { id: "sct-1", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisedContactTrained: true, riskAssessmentTrained: true, childPrepDebriefTrained: true, safeguardingInContact: true, managingParentalConflict: true, courtOrderAwareness: true },
-
+  { id: "sct-2", staffId: "staff-tom", staffName: "Tom Richards", supervisedContactTrained: true, riskAssessmentTrained: true, childPrepDebriefTrained: true, safeguardingInContact: true, managingParentalConflict: false, courtOrderAwareness: false },
+  { id: "sct-3", staffId: "staff-lisa", staffName: "Lisa Williams", supervisedContactTrained: true, riskAssessmentTrained: true, childPrepDebriefTrained: true, safeguardingInContact: true, managingParentalConflict: true, courtOrderAwareness: true },
+  { id: "sct-4", staffId: "staff-darren", staffName: "Darren Laville", supervisedContactTrained: true, riskAssessmentTrained: true, childPrepDebriefTrained: true, safeguardingInContact: true, managingParentalConflict: true, courtOrderAwareness: true },
 ];
+
 async function get_parental_contact_management(req: NextRequest): Promise<Response> {
 
   const result = generateParentalContactManagementIntelligence(
@@ -19096,38 +23803,221 @@ const parental_engagement_PERIOD_START = "2026-05-01";
 const parental_engagement_PERIOD_END = "2026-05-31";
 const parental_engagement_REFERENCE_DATE = "2026-05-18";
 const parental_engagement_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-
 const parental_engagement_DEMO_CONTACTS: ContactRecord[] = [
   // Alex (14) + Michelle (mum, engaged) — 4 contacts
+  {
+    id: "c-001", homeId: parental_engagement_HOME_ID, childId: "child-alex", childName: "Alex",
+    parentId: "parent-michelle", parentName: "Michelle", relationship: "mother",
+    contactDate: "2026-05-03", contactType: "face_to_face", duration: 60,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 5, childMoodAfter: 8,
+    parentEngagement: 9, staffObservations: "Michelle and Alex played cards. Warm interaction throughout.",
+    issuesRaised: [], positiveInteractions: ["Card game", "Shared snacks"], followUpNeeded: false,
+  },
+  {
+    id: "c-002", homeId: parental_engagement_HOME_ID, childId: "child-alex", childName: "Alex",
+    parentId: "parent-michelle", parentName: "Michelle", relationship: "mother",
+    contactDate: "2026-05-10", contactType: "phone", duration: 25,
+    location: "Phone (Chamberlain House office)", outcome: "positive", childMoodBefore: 6, childMoodAfter: 7,
+    parentEngagement: 8, staffObservations: "Good-natured call. Discussed school project.",
+    issuesRaised: [], positiveInteractions: ["School discussion"], followUpNeeded: false,
+  },
+  {
+    id: "c-003", homeId: parental_engagement_HOME_ID, childId: "child-alex", childName: "Alex",
+    parentId: "parent-michelle", parentName: "Michelle", relationship: "mother",
+    contactDate: "2026-05-17", contactType: "supervised", duration: 90,
+    supervisedBy: "Lisa Williams (Senior RSW)", location: "Community centre",
+    outcome: "positive", childMoodBefore: 6, childMoodAfter: 9, parentEngagement: 9,
+    staffObservations: "Excellent supervised session. Michelle brought art supplies.",
+    issuesRaised: [], positiveInteractions: ["Art activity", "Walk in park"], followUpNeeded: false,
+  },
+  {
+    id: "c-004", homeId: parental_engagement_HOME_ID, childId: "child-alex", childName: "Alex",
+    parentId: "parent-michelle", parentName: "Michelle", relationship: "mother",
+    contactDate: "2026-05-24", contactType: "video_call", duration: 30,
+    location: "Video call (Chamberlain House)", outcome: "positive", childMoodBefore: 7, childMoodAfter: 8,
+    parentEngagement: 8, staffObservations: "Alex showed Michelle his room tidy-up.",
+    issuesRaised: [], positiveInteractions: ["Room tour", "Planned next visit"],
+    followUpNeeded: true, followUpCompleted: true,
+  },
+
+  // Jordan (13) + Steve (dad, inconsistent) — 3 contacts
+  {
+    id: "c-005", homeId: parental_engagement_HOME_ID, childId: "child-jordan", childName: "Jordan",
+    parentId: "parent-steve", parentName: "Steve", relationship: "father",
+    contactDate: "2026-05-04", contactType: "face_to_face", duration: 45,
+    location: "Chamberlain House garden", outcome: "neutral", childMoodBefore: 5, childMoodAfter: 5,
+    parentEngagement: 4, staffObservations: "Steve seemed distracted, checked phone frequently.",
+    issuesRaised: ["Steve late by 20 mins"], positiveInteractions: ["Kicked football briefly"],
+    followUpNeeded: true, followUpCompleted: false,
+  },
+  {
+    id: "c-006", homeId: parental_engagement_HOME_ID, childId: "child-jordan", childName: "Jordan",
+    parentId: "parent-steve", parentName: "Steve", relationship: "father",
+    contactDate: "2026-05-11", contactType: "phone", duration: 10,
+    location: "Phone (Chamberlain House)", outcome: "parent_no_show", childMoodBefore: 6, childMoodAfter: 4,
+    parentEngagement: 0, staffObservations: "Steve did not answer. Jordan visibly upset.",
+    issuesRaised: ["Parent no-show", "Jordan became withdrawn"],
+    positiveInteractions: [], followUpNeeded: true, followUpCompleted: true,
+  },
+  {
+    id: "c-007", homeId: parental_engagement_HOME_ID, childId: "child-jordan", childName: "Jordan",
+    parentId: "parent-steve", parentName: "Steve", relationship: "father",
+    contactDate: "2026-05-18", contactType: "face_to_face", duration: 60,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 4, childMoodAfter: 7,
+    parentEngagement: 7, staffObservations: "Better session. Steve more present, played PS5 with Jordan.",
+    issuesRaised: [], positiveInteractions: ["Gaming together", "Steve apologised for missing call"],
+    followUpNeeded: false,
+  },
+
+  // Morgan (15) + Karen (mum, highly engaged) — 4 contacts
+  {
+    id: "c-008", homeId: parental_engagement_HOME_ID, childId: "child-morgan", childName: "Morgan",
+    parentId: "parent-karen", parentName: "Karen", relationship: "mother",
+    contactDate: "2026-05-02", contactType: "face_to_face", duration: 90,
+    location: "Chamberlain House lounge", outcome: "positive", childMoodBefore: 7, childMoodAfter: 9,
+    parentEngagement: 10, staffObservations: "Karen brought home-cooked meal. Morgan thrilled.",
+    issuesRaised: [], positiveInteractions: ["Shared meal", "Discussed college plans"],
+    followUpNeeded: false,
+  },
+  {
+    id: "c-009", homeId: parental_engagement_HOME_ID, childId: "child-morgan", childName: "Morgan",
+    parentId: "parent-karen", parentName: "Karen", relationship: "mother",
+    contactDate: "2026-05-09", contactType: "community_outing", duration: 180,
+    location: "Local shopping centre", outcome: "positive", childMoodBefore: 8, childMoodAfter: 9,
+    parentEngagement: 10, staffObservations: "Positive outing. Karen bought Morgan new clothes for college.",
+    issuesRaised: [], positiveInteractions: ["Shopping trip", "Coffee and cake"],
+    followUpNeeded: false,
+  },
+  {
+    id: "c-010", homeId: parental_engagement_HOME_ID, childId: "child-morgan", childName: "Morgan",
+    parentId: "parent-karen", parentName: "Karen", relationship: "mother",
+    contactDate: "2026-05-16", contactType: "phone", duration: 40,
+    location: "Phone (Morgan's room)", outcome: "positive", childMoodBefore: 7, childMoodAfter: 8,
+    parentEngagement: 9, staffObservations: "Long phone call. Morgan discussed friendship worries.",
+    issuesRaised: [], positiveInteractions: ["Emotional support from Karen"],
+    followUpNeeded: true, followUpCompleted: true,
+  },
+  {
+    id: "c-011", homeId: parental_engagement_HOME_ID, childId: "child-morgan", childName: "Morgan",
+    parentId: "parent-karen", parentName: "Karen", relationship: "mother",
+    contactDate: "2026-05-23", contactType: "face_to_face", duration: 120,
+    location: "Chamberlain House and garden", outcome: "positive", childMoodBefore: 6, childMoodAfter: 9,
+    parentEngagement: 10, staffObservations: "Karen helped Morgan with revision. Very engaged.",
+    issuesRaised: [], positiveInteractions: ["Revision help", "Garden walk", "Plan for half-term"],
+    followUpNeeded: false,
+  },
+
+  // Morgan + Dave (dad, disengaged) — 1 contact
+  {
+    id: "c-012", homeId: parental_engagement_HOME_ID, childId: "child-morgan", childName: "Morgan",
+    parentId: "parent-dave", parentName: "Dave", relationship: "father",
+    contactDate: "2026-05-08", contactType: "phone", duration: 5,
+    location: "Phone (Chamberlain House)", outcome: "parent_no_show", childMoodBefore: 5, childMoodAfter: 3,
+    parentEngagement: 0, staffObservations: "Dave did not answer scheduled call. Morgan said 'typical'.",
+    issuesRaised: ["Father consistently unavailable"], positiveInteractions: [],
+    followUpNeeded: true, followUpCompleted: false,
+  },
 ];
 const parental_engagement_DEMO_SUPPORTS: ParentalSupportRecord[] = [
   {
-    id: "s-001", homeId: HOME_ID, parentId: "parent-michelle", parentName: "Michelle",
+    id: "s-001", homeId: parental_engagement_HOME_ID, parentId: "parent-michelle", parentName: "Michelle",
     childId: "child-alex", childName: "Alex", supportType: "transport",
     description: "Weekly taxi provided for face-to-face visits",
     startDate: "2026-01-15", ongoing: true, effectiveness: "effective", referralMade: false,
   },
+  {
+    id: "s-002", homeId: parental_engagement_HOME_ID, parentId: "parent-michelle", parentName: "Michelle",
+    childId: "child-alex", childName: "Alex", supportType: "parenting_support",
+    description: "Parenting skills course referral",
+    startDate: "2026-02-01", endDate: "2026-04-30", ongoing: false, effectiveness: "effective",
+    referralMade: true, referralTo: "Local Authority Parenting Team",
+  },
+  {
+    id: "s-003", homeId: parental_engagement_HOME_ID, parentId: "parent-steve", parentName: "Steve",
+    childId: "child-jordan", childName: "Jordan", supportType: "mediation",
+    description: "Family mediation sessions offered",
+    startDate: "2026-03-01", ongoing: true, effectiveness: "partially_effective",
+    referralMade: true, referralTo: "Family Mediation Service",
+  },
+  {
+    id: "s-004", homeId: parental_engagement_HOME_ID, parentId: "parent-steve", parentName: "Steve",
+    childId: "child-jordan", childName: "Jordan", supportType: "practical",
+    description: "Flexible contact scheduling to accommodate work",
+    startDate: "2026-04-01", ongoing: true, effectiveness: "too_early_to_tell",
+    referralMade: false,
+  },
+  {
+    id: "s-005", homeId: parental_engagement_HOME_ID, parentId: "parent-karen", parentName: "Karen",
+    childId: "child-morgan", childName: "Morgan", supportType: "venue",
+    description: "Use of community room for extended visits",
+    startDate: "2026-01-10", ongoing: true, effectiveness: "effective",
+    referralMade: false,
+  },
+  {
+    id: "s-006", homeId: parental_engagement_HOME_ID, parentId: "parent-dave", parentName: "Dave",
+    childId: "child-morgan", childName: "Morgan", supportType: "therapeutic",
+    description: "Therapeutic re-engagement programme offered",
+    startDate: "2026-04-15", ongoing: true, effectiveness: "ineffective",
+    referralMade: true, referralTo: "Family Reconnect Service",
+  },
 ];
 const parental_engagement_DEMO_PLANS: FamilyPlanRecord[] = [
   {
-    id: "fp-001", homeId: HOME_ID, childId: "child-alex", childName: "Alex",
+    id: "fp-001", homeId: parental_engagement_HOME_ID, childId: "child-alex", childName: "Alex",
     planDate: "2026-03-01", reviewDate: "2026-05-01", nextReviewDate: "2026-08-01",
     goalsSet: 4, goalsAchieved: 3, goalsPartiallyAchieved: 1,
     familyInvolved: true, childInvolved: true, professionalInvolved: true,
     barriers: ["Transport from Michelle's area"],
     strengthsIdentified: ["Strong mother-child bond", "Michelle attends all sessions"],
   },
+  {
+    id: "fp-002", homeId: parental_engagement_HOME_ID, childId: "child-jordan", childName: "Jordan",
+    planDate: "2026-02-15", reviewDate: "2026-04-15", nextReviewDate: "2026-07-15",
+    goalsSet: 5, goalsAchieved: 1, goalsPartiallyAchieved: 2,
+    familyInvolved: true, childInvolved: true, professionalInvolved: true,
+    barriers: ["Steve's inconsistent availability", "Jordan's ambivalence about contact"],
+    strengthsIdentified: ["Jordan does want a relationship with dad"],
+  },
+  {
+    id: "fp-003", homeId: parental_engagement_HOME_ID, childId: "child-morgan", childName: "Morgan",
+    planDate: "2026-03-15", reviewDate: "2026-05-15", nextReviewDate: "2026-08-15",
+    goalsSet: 6, goalsAchieved: 5, goalsPartiallyAchieved: 1,
+    familyInvolved: true, childInvolved: true, professionalInvolved: true,
+    barriers: ["Dave's non-engagement"],
+    strengthsIdentified: ["Karen extremely engaged", "Morgan articulate about needs", "Strong sibling bond"],
+  },
 ];
 const parental_engagement_DEMO_FEEDBACK: ParentalFeedbackRecord[] = [
   {
-    id: "fb-001", homeId: HOME_ID, parentId: "parent-michelle", parentName: "Michelle",
+    id: "fb-001", homeId: parental_engagement_HOME_ID, parentId: "parent-michelle", parentName: "Michelle",
     childId: "child-alex", date: "2026-05-05", satisfactionScore: 9, communicationScore: 8,
     involvementScore: 9, comments: "Staff are brilliant. I always feel welcome.",
     areasForImprovement: [],
     positiveAspects: ["Welcoming environment", "Regular updates from key worker"],
   },
-
+  {
+    id: "fb-002", homeId: parental_engagement_HOME_ID, parentId: "parent-steve", parentName: "Steve",
+    childId: "child-jordan", date: "2026-05-06", satisfactionScore: 5, communicationScore: 4,
+    involvementScore: 3, comments: "I feel like I'm always being judged. Hard to engage when you feel watched.",
+    areasForImprovement: ["Less formal contact environment", "More flexible scheduling"],
+    positiveAspects: ["Jordan seems happy and safe"],
+  },
+  {
+    id: "fb-003", homeId: parental_engagement_HOME_ID, parentId: "parent-karen", parentName: "Karen",
+    childId: "child-morgan", date: "2026-05-08", satisfactionScore: 10, communicationScore: 9,
+    involvementScore: 10, comments: "Could not be happier. The team treat Morgan like family.",
+    areasForImprovement: [],
+    positiveAspects: ["Exceptional communication", "Genuinely care about Morgan", "Always included in decisions"],
+  },
+  {
+    id: "fb-004", homeId: parental_engagement_HOME_ID, parentId: "parent-dave", parentName: "Dave",
+    childId: "child-morgan", date: "2026-05-12", satisfactionScore: 3, communicationScore: 3,
+    involvementScore: 2, comments: "Don't really know what's going on. Nobody tells me anything.",
+    areasForImprovement: ["More communication", "Include me in meetings", "Give me more notice of events"],
+    positiveAspects: [],
+  },
 ];
+
 async function get_parental_engagement(req: NextRequest): Promise<Response> {
 
   const result = generateParentalEngagementIntelligence(
@@ -19240,6 +24130,17 @@ async function post_parental_engagement(req: NextRequest): Promise<Response> {
 // ─── participation ─────────────────────────────────────────────────────
 const participation_DEMO_RECORDS: ParticipationRecord[] = [
   { id: "par-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "care_plan_voice", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-002", homeId: "home-oak", date: "2026-05-07", childId: "child-jordan", childName: "Jordan", category: "advocacy_access", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-003", homeId: "home-oak", date: "2026-04-30", childId: "child-morgan", childName: "Morgan", category: "complaints_awareness", outcome: "views_recorded", childViewRecorded: true, viewsActedUpon: false, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-004", homeId: "home-oak", date: "2026-04-23", childId: "child-alex", childName: "Alex", category: "house_meeting_input", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-005", homeId: "home-oak", date: "2026-04-16", childId: "child-jordan", childName: "Jordan", category: "review_participation", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-006", homeId: "home-oak", date: "2026-04-09", childId: "child-morgan", childName: "Morgan", category: "daily_decisions", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: false, documentationComplete: true, timelyRecording: false },
+  { id: "par-007", homeId: "home-oak", date: "2026-04-02", childId: "child-alex", childName: "Alex", category: "feedback_mechanism", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: false, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-008", homeId: "home-oak", date: "2026-03-26", childId: "child-jordan", childName: "Jordan", category: "rights_education", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-009", homeId: "home-oak", date: "2026-03-19", childId: "child-morgan", childName: "Morgan", category: "care_plan_voice", outcome: "views_partially_acted", childViewRecorded: true, viewsActedUpon: false, advocacyOffered: true, feedbackProvided: true, documentationComplete: false, timelyRecording: true },
+  { id: "par-010", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "advocacy_access", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-011", homeId: "home-oak", date: "2026-03-05", childId: "child-jordan", childName: "Jordan", category: "complaints_awareness", outcome: "child_declined", childViewRecorded: false, viewsActedUpon: false, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
+  { id: "par-012", homeId: "home-oak", date: "2026-02-26", childId: "child-morgan", childName: "Morgan", category: "house_meeting_input", outcome: "views_acted_upon", childViewRecorded: true, viewsActedUpon: true, advocacyOffered: true, feedbackProvided: true, documentationComplete: true, timelyRecording: true },
 ];
 const participation_DEMO_POLICY: ParticipationPolicy = {
   participationPolicy: true,
@@ -19252,8 +24153,11 @@ const participation_DEMO_POLICY: ParticipationPolicy = {
 };
 const participation_DEMO_STAFF: StaffParticipationTraining[] = [
   { staffId: "staff-sarah", childVoiceCapture: true, advocacyKnowledge: true, participationFacilitation: true, complaintsAwareness: true, rightsBasedPractice: true, feedbackResponsiveness: true },
-
+  { staffId: "staff-tom", childVoiceCapture: true, advocacyKnowledge: true, participationFacilitation: true, complaintsAwareness: true, rightsBasedPractice: false, feedbackResponsiveness: true },
+  { staffId: "staff-lisa", childVoiceCapture: true, advocacyKnowledge: true, participationFacilitation: true, complaintsAwareness: true, rightsBasedPractice: true, feedbackResponsiveness: true },
+  { staffId: "staff-darren", childVoiceCapture: true, advocacyKnowledge: true, participationFacilitation: true, complaintsAwareness: true, rightsBasedPractice: true, feedbackResponsiveness: true },
 ];
+
 async function get_participation(req: NextRequest): Promise<Response> {
 
   const result = generateParticipationIntelligence({
@@ -19276,6 +24180,17 @@ async function get_participation(req: NextRequest): Promise<Response> {
 // ─── peer-dynamics-intelligence ────────────────────────────────────────
 const peer_dynamics_intelligence_DEMO_RECORDS: PeerDynamicsIntelligenceRecord[] = [
   { id: "pd-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "peer_conflict_resolution", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "friendship_building", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "group_activity_engagement", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "social_skills_development", outcome: "improving_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "bullying_response", outcome: "mixed_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "peer_mediation", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "positive_peer_influence", outcome: "improving_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: false, documentationComplete: true, timelyRecording: false },
+  { id: "pd-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "peer_conflict_resolution", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "group_living_assessment", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "friendship_building", outcome: "improving_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "social_skills_development", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: false, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: true, timelyRecording: true },
+  { id: "pd-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "group_activity_engagement", outcome: "positive_dynamics", childViewCaptured: true, restorativeApproachUsed: true, positiveOutcomeAchieved: true, safetyConsideredFirst: true, documentationComplete: false, timelyRecording: true },
 ];
 const peer_dynamics_intelligence_DEMO_POLICY: PeerDynamicsIntelligencePolicy = {
   peerRelationshipPolicy: true, antiBullyingPolicy: true, restorativePracticePolicy: true,
@@ -19283,8 +24198,11 @@ const peer_dynamics_intelligence_DEMO_POLICY: PeerDynamicsIntelligencePolicy = {
 };
 const peer_dynamics_intelligence_DEMO_STAFF: StaffPeerDynamicsTraining[] = [
   { staffId: "staff-sarah", peerDynamicsAwareness: true, conflictResolutionSkills: true, restorativePracticeSkills: true, groupFacilitationSkills: true, bullyingPreventionKnowledge: true, socialSkillsTeaching: true },
-
+  { staffId: "staff-tom", peerDynamicsAwareness: true, conflictResolutionSkills: true, restorativePracticeSkills: true, groupFacilitationSkills: true, bullyingPreventionKnowledge: true, socialSkillsTeaching: false },
+  { staffId: "staff-lisa", peerDynamicsAwareness: true, conflictResolutionSkills: true, restorativePracticeSkills: true, groupFacilitationSkills: true, bullyingPreventionKnowledge: false, socialSkillsTeaching: true },
+  { staffId: "staff-darren", peerDynamicsAwareness: true, conflictResolutionSkills: true, restorativePracticeSkills: true, groupFacilitationSkills: true, bullyingPreventionKnowledge: true, socialSkillsTeaching: true },
 ];
+
 async function get_peer_dynamics_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generatePeerDynamicsIntelligenceResult({
@@ -19305,9 +24223,113 @@ const peer_dynamics_DEMO_CHILDREN: ChildProfile[] = [
     knownTriggers: ["feeling_controlled", "perceived_disrespect"],
     currentPlacement: true,
   },
+  {
+    id: "child-jordan", name: "Jordan", age: 13,
+    admissionDate: "2025-11-01",
+    riskFactors: ["self_harm", "emotional_dysregulation"],
+    vulnerabilities: ["anxiety", "low_self_esteem", "rejection_sensitivity"],
+    strengths: ["creative", "empathetic", "musical"],
+    knownTriggers: ["rejection", "loud_noise", "confrontation"],
+    currentPlacement: true,
+  },
+  {
+    id: "child-morgan", name: "Morgan", age: 15,
+    admissionDate: "2026-01-10",
+    riskFactors: ["online_exploitation"],
+    vulnerabilities: ["trauma_history", "trust_difficulties"],
+    strengths: ["academic", "music", "caring_towards_younger_peers"],
+    knownTriggers: ["mentions_of_family", "feeling_unsafe"],
+    currentPlacement: true,
+  },
 ];
 const peer_dynamics_DEMO_INTERACTIONS: PeerInteraction[] = [
   // Positive dynamics — Alex & Jordan
+  {
+    id: "int-001", date: "2026-05-02",
+    childAId: "child-alex", childBId: "child-jordan",
+    interactionType: "positive_social", severity: 1,
+    context: "Playing football in garden after school. Alex included Jordan in the game and offered encouragement.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
+  {
+    id: "int-002", date: "2026-05-05",
+    childAId: "child-alex", childBId: "child-jordan",
+    interactionType: "cooperative_activity", severity: 1,
+    context: "Both chose to play video games together during free time. Taking turns and laughing.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
+  // Conflict — Alex & Jordan
+  {
+    id: "int-003", date: "2026-05-08",
+    childAId: "child-alex", childBId: "child-jordan",
+    interactionType: "conflict", severity: 2,
+    initiatedBy: "child-alex",
+    context: "Alex became frustrated when Jordan changed the TV channel. Raised voice and called Jordan selfish.",
+    staffResponse: "Staff intervened — PACE approach. Both calmed within 10 minutes. Restorative conversation facilitated.",
+    deEscalationUsed: true, followUpRequired: true, followUpCompleted: true,
+  },
+  {
+    id: "int-004", date: "2026-05-14",
+    childAId: "child-alex", childBId: "child-jordan",
+    interactionType: "verbal_aggression", severity: 3,
+    initiatedBy: "child-alex",
+    context: "Alex made hurtful comments about Jordan's family during an argument about bathroom time. Jordan became tearful.",
+    staffResponse: "Immediate separation. Key worker session with Alex re impact of words. Jordan supported by waking staff.",
+    deEscalationUsed: true, followUpRequired: true, followUpCompleted: true,
+  },
+  // Positive — Alex & Morgan
+  {
+    id: "int-005", date: "2026-05-03",
+    childAId: "child-alex", childBId: "child-morgan",
+    interactionType: "cooperative_activity", severity: 1,
+    context: "Cooking dinner together — Alex showed Morgan how to make pasta sauce from scratch.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
+  {
+    id: "int-006", date: "2026-05-10",
+    childAId: "child-alex", childBId: "child-morgan",
+    interactionType: "positive_social", severity: 1,
+    context: "Both sitting in lounge doing homework. Alex asked Morgan for help with English essay.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
+  {
+    id: "int-007", date: "2026-05-16",
+    childAId: "child-alex", childBId: "child-morgan",
+    interactionType: "mutual_support", severity: 1,
+    context: "Morgan was upset after a video call with sibling. Alex made them a hot chocolate and sat with them quietly.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
+  // Positive — Jordan & Morgan
+  {
+    id: "int-008", date: "2026-05-04",
+    childAId: "child-jordan", childBId: "child-morgan",
+    interactionType: "mutual_support", severity: 1,
+    context: "Morgan reassured Jordan before a contact visit. Jordan thanked Morgan afterwards.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
+  {
+    id: "int-009", date: "2026-05-09",
+    childAId: "child-jordan", childBId: "child-morgan",
+    interactionType: "cooperative_activity", severity: 1,
+    context: "Both worked on an art project for house meeting display. Shared materials and ideas.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
+  {
+    id: "int-010", date: "2026-05-13",
+    childAId: "child-jordan", childBId: "child-morgan",
+    interactionType: "positive_social", severity: 1,
+    context: "Walking to corner shop together with staff. Chatting and relaxed.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
+  // Minor tension — Jordan & Morgan
+  {
+    id: "int-011", date: "2026-05-17",
+    childAId: "child-jordan", childBId: "child-morgan",
+    interactionType: "conflict", severity: 1,
+    initiatedBy: "child-jordan",
+    context: "Jordan snapped at Morgan about noise while trying to sleep. Apologised next morning unprompted.",
+    deEscalationUsed: false, followUpRequired: false,
+  },
 ];
 const peer_dynamics_DEMO_MATCHING: MatchingAssessment[] = [
   {
@@ -19322,6 +24344,27 @@ const peer_dynamics_DEMO_MATCHING: MatchingAssessment[] = [
     conditions: ["Enhanced supervision during unstructured time", "Regular group dynamics monitoring"],
     reviewDate: "2026-04-01",
   },
+  {
+    id: "match-002", childId: "child-jordan",
+    assessmentDate: "2025-11-01", assessedBy: "Darren Laville (RM)",
+    compatibilityFactors: [
+      { factor: "emotional_needs_imbalance", impact: "negative", notes: "Jordan's anxiety may be triggered by Alex's impulsivity" },
+      { factor: "shared_interests", impact: "positive", notes: "Both enjoy gaming and outdoor activities" },
+    ],
+    overallSuitability: "suitable",
+    reviewDate: "2026-05-01",
+  },
+  {
+    id: "match-003", childId: "child-morgan",
+    assessmentDate: "2026-01-10", assessedBy: "Darren Laville (RM)",
+    compatibilityFactors: [
+      { factor: "trauma_trigger_proximity", impact: "neutral", notes: "Different trauma profiles — low risk of cross-triggering" },
+      { factor: "mentoring_dynamic", impact: "positive", notes: "Morgan's maturity could be stabilising influence" },
+      { factor: "positive_peer_influence", impact: "positive", notes: "All three share music and creative interests" },
+    ],
+    overallSuitability: "suitable",
+    reviewDate: "2026-07-10",
+  },
 ];
 const peer_dynamics_DEMO_GROUP_ASSESSMENTS: GroupAssessment[] = [
   {
@@ -19334,8 +24377,28 @@ const peer_dynamics_DEMO_GROUP_ASSESSMENTS: GroupAssessment[] = [
     keyConcerns: ["Alex's volume can trigger Jordan", "Need more structured group activities"],
     actionsTaken: ["Introduced Friday film night", "Alex's key worker addressing voice regulation"],
   },
-
+  {
+    id: "grp-002",
+    assessmentDate: "2026-05-01",
+    assessedBy: "Darren Laville",
+    groupDynamicsNotes: "Positive trajectory. All three engaging in shared cooking and garden activities. Alex showing protective qualities towards both peers. One notable conflict between Alex and Jordan resolved restoratively.",
+    stabilityRating: 4,
+    keyStrengths: ["Cooking together weekly", "Morgan acting as positive mediator", "Alex's protective instincts channelled positively"],
+    keyConcerns: ["Alex's verbal impulsivity when frustrated"],
+    actionsTaken: ["Restorative practice training for all staff"],
+  },
+  {
+    id: "grp-003",
+    assessmentDate: "2026-05-15",
+    assessedBy: "Sarah Johnson",
+    groupDynamicsNotes: "Group dynamics remain largely positive. Alex and Jordan's relationship needs monitoring — two verbal conflicts this fortnight but de-escalated well. Morgan is a stabilising presence. Jordan and Morgan's bond is genuinely supportive.",
+    stabilityRating: 4,
+    keyStrengths: ["Jordan-Morgan mutual support", "Group meals remain cooperative", "Alex showed empathy towards Morgan after sibling contact"],
+    keyConcerns: ["Alex-Jordan conflict pattern needs monitoring", "Alex's verbal aggression when stressed"],
+    actionsTaken: ["Planned restorative session for Alex and Jordan", "Key work focus on Alex's emotional vocabulary"],
+  },
 ];
+
 async function get_peer_dynamics(req: NextRequest): Promise<Response> {
 
   const result = generatePeerDynamicsIntelligence(
@@ -19420,6 +24483,33 @@ async function post_peer_dynamics(req: NextRequest): Promise<Response> {
 // ─── peer-mentoring-effectiveness ──────────────────────────────────────
 const peer_mentoring_effectiveness_DEMO_PAIRINGS: PeerPairing[] = [
   // Morgan (15, mentor) paired with Jordan (13, mentee) — active, consented, risk assessed
+  {
+    id: "pp-1",
+    mentorId: "child-morgan",
+    mentorName: "Morgan",
+    menteeId: "child-jordan",
+    menteeName: "Jordan",
+    startDate: "2026-02-01",
+    status: "active",
+    consentObtained: true,
+    riskAssessed: true,
+    matchCriteria: ["age_appropriate", "shared_interests", "personality_compatibility"],
+    staffSupervisor: "Sarah Johnson",
+  },
+  // Alex (14, welcome buddy) for new admission scenario — completed
+  {
+    id: "pp-2",
+    mentorId: "child-alex",
+    mentorName: "Alex",
+    menteeId: "child-riley",
+    menteeName: "Riley",
+    startDate: "2026-03-15",
+    status: "completed",
+    consentObtained: true,
+    riskAssessed: true,
+    matchCriteria: ["welcome_buddy", "similar_age"],
+    staffSupervisor: "Tom Richards",
+  },
 ];
 const peer_mentoring_effectiveness_DEMO_SESSIONS: MentoringSession[] = [
   {
@@ -19435,6 +24525,45 @@ const peer_mentoring_effectiveness_DEMO_SESSIONS: MentoringSession[] = [
     progressMade: true,
     staffObservation: "Positive interaction, appropriate boundaries maintained",
   },
+  {
+    id: "ms-2",
+    pairingId: "pp-1",
+    date: "2026-03-01",
+    duration: 40,
+    facilitatedBy: "Sarah Johnson",
+    outcome: "positive",
+    mentorFeedback: "Jordan is more confident now",
+    menteeFeedback: "Morgan helped me with settling in",
+    goalsDiscussed: true,
+    progressMade: true,
+    staffObservation: "Clear progress in mentee confidence",
+  },
+  {
+    id: "ms-3",
+    pairingId: "pp-1",
+    date: "2026-04-10",
+    duration: 30,
+    facilitatedBy: "Lisa Williams",
+    outcome: "mixed",
+    mentorFeedback: "Jordan was quiet today",
+    menteeFeedback: "Was not in the mood",
+    goalsDiscussed: true,
+    progressMade: false,
+    staffObservation: "Mentee appeared low in mood, follow up needed",
+  },
+  {
+    id: "ms-4",
+    pairingId: "pp-2",
+    date: "2026-03-20",
+    duration: 60,
+    facilitatedBy: "Tom Richards",
+    outcome: "positive",
+    mentorFeedback: "Showed Riley around, introduced to everyone",
+    menteeFeedback: "Alex made me feel welcome",
+    goalsDiscussed: false,
+    progressMade: true,
+    staffObservation: "Excellent welcome buddy session, Riley settled well",
+  },
 ];
 const peer_mentoring_effectiveness_DEMO_REVIEWS: RelationshipReview[] = [
   {
@@ -19449,11 +24578,26 @@ const peer_mentoring_effectiveness_DEMO_REVIEWS: RelationshipReview[] = [
     mentorBenefiting: true,
     menteeBenefiting: true,
   },
+  {
+    id: "rr-2",
+    pairingId: "pp-2",
+    reviewDate: "2026-04-01",
+    reviewedBy: "Darren Laville",
+    relationshipHealthy: true,
+    boundariesRespected: true,
+    safeguardingConcern: "none",
+    actionTaken: "",
+    mentorBenefiting: true,
+    menteeBenefiting: true,
+  },
 ];
 const peer_mentoring_effectiveness_DEMO_TRAINING: StaffMentoringTraining[] = [
   { id: "smt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", peerMentoringTrained: true, safeguardingInPeerRelationships: true, conflictResolution: true, boundarySetting: true, supportingYoungMentors: true },
-
+  { id: "smt-2", staffId: "staff-tom", staffName: "Tom Richards", peerMentoringTrained: true, safeguardingInPeerRelationships: true, conflictResolution: true, boundarySetting: true, supportingYoungMentors: false },
+  { id: "smt-3", staffId: "staff-lisa", staffName: "Lisa Williams", peerMentoringTrained: true, safeguardingInPeerRelationships: true, conflictResolution: false, boundarySetting: true, supportingYoungMentors: true },
+  { id: "smt-4", staffId: "staff-darren", staffName: "Darren Laville", peerMentoringTrained: true, safeguardingInPeerRelationships: true, conflictResolution: true, boundarySetting: true, supportingYoungMentors: true },
 ];
+
 async function get_peer_mentoring_effectiveness(req: NextRequest): Promise<Response> {
 
   const result = generatePeerMentoringEffectivenessIntelligence(
@@ -19795,6 +24939,13 @@ async function post_peer_relationship_dynamics(req: NextRequest): Promise<Respon
 // ─── peer-relationship-quality ─────────────────────────────────────────
 const peer_relationship_quality_DEMO_INTERACTIONS: PeerInteraction[] = [
   { id: "pi-1", childId: "child-alex", childName: "Alex", interactionDate: "2026-03-01", interactionType: "shared_activity", relationshipQuality: "thriving", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "pi-2", childId: "child-alex", childName: "Alex", interactionDate: "2026-03-10", interactionType: "team_sport", relationshipQuality: "positive", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "pi-3", childId: "child-alex", childName: "Alex", interactionDate: "2026-04-05", interactionType: "creative_collaboration", relationshipQuality: "thriving", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "pi-4", childId: "child-jordan", childName: "Jordan", interactionDate: "2026-03-05", interactionType: "conflict_resolution", relationshipQuality: "positive", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "pi-5", childId: "child-jordan", childName: "Jordan", interactionDate: "2026-03-20", interactionType: "cooperative_play", relationshipQuality: "thriving", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "pi-6", childId: "child-jordan", childName: "Jordan", interactionDate: "2026-04-15", interactionType: "peer_mentoring", relationshipQuality: "positive", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "pi-7", childId: "child-morgan", childName: "Morgan", interactionDate: "2026-03-12", interactionType: "group_project", relationshipQuality: "thriving", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
+  { id: "pi-8", childId: "child-morgan", childName: "Morgan", interactionDate: "2026-04-20", interactionType: "social_event", relationshipQuality: "positive", positiveEngagement: true, conflictResolvedConstructively: true, socialSkillsDemonstrated: true, documentedInPlan: true, staffFacilitated: true, feedbackGiven: true },
 ];
 const peer_relationship_quality_DEMO_POLICY: PeerRelationshipPolicy = {
   id: "prp-1",
@@ -19808,8 +24959,11 @@ const peer_relationship_quality_DEMO_POLICY: PeerRelationshipPolicy = {
 };
 const peer_relationship_quality_DEMO_TRAINING: StaffPeerSupportTraining[] = [
   { id: "pst-1", staffId: "staff-sarah", staffName: "Sarah Johnson", relationshipBuilding: true, conflictMediation: true, antibullyingAwareness: true, socialSkillsFacilitation: true, therapeuticGroupWork: true, restorativePractice: true },
-
+  { id: "pst-2", staffId: "staff-tom", staffName: "Tom Richards", relationshipBuilding: true, conflictMediation: true, antibullyingAwareness: true, socialSkillsFacilitation: true, therapeuticGroupWork: true, restorativePractice: true },
+  { id: "pst-3", staffId: "staff-lisa", staffName: "Lisa Williams", relationshipBuilding: true, conflictMediation: true, antibullyingAwareness: true, socialSkillsFacilitation: true, therapeuticGroupWork: true, restorativePractice: true },
+  { id: "pst-4", staffId: "staff-darren", staffName: "Darren Laville", relationshipBuilding: true, conflictMediation: true, antibullyingAwareness: true, socialSkillsFacilitation: true, therapeuticGroupWork: true, restorativePractice: true },
 ];
+
 async function get_peer_relationship_quality(req: NextRequest): Promise<Response> {
 
   const result = generatePeerRelationshipQualityIntelligence(
@@ -19856,6 +25010,13 @@ async function post_peer_relationship_quality(req: NextRequest): Promise<Respons
 // ─── personal-hygiene-self-care ────────────────────────────────────────
 const personal_hygiene_self_care_DEMO_RECORDS: HygieneRecord[] = [
   { id: "hr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", hygieneArea: "bathing_showering", supportLevel: "independent", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
+  { id: "hr-2", childId: "child-alex", childName: "Alex", recordDate: "2026-04-02", hygieneArea: "dental_care", supportLevel: "prompted", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
+  { id: "hr-3", childId: "child-alex", childName: "Alex", recordDate: "2026-04-03", hygieneArea: "hair_care", supportLevel: "independent", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
+  { id: "hr-4", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-01", hygieneArea: "bathing_showering", supportLevel: "prompted", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
+  { id: "hr-5", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-02", hygieneArea: "skincare", supportLevel: "independent", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
+  { id: "hr-6", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-03", hygieneArea: "dental_care", supportLevel: "independent", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
+  { id: "hr-7", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-01", hygieneArea: "bathing_showering", supportLevel: "independent", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
+  { id: "hr-8", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-02", hygieneArea: "nail_care", supportLevel: "independent", dignityMaintained: true, childChoiceRespected: true, appropriateProducts: true, privacyEnsured: true, staffSupportSensitive: true, documentedInPlan: true },
 ];
 const personal_hygiene_self_care_DEMO_POLICY: HygienePolicy = {
   id: "hp-1",
@@ -19869,8 +25030,11 @@ const personal_hygiene_self_care_DEMO_POLICY: HygienePolicy = {
 };
 const personal_hygiene_self_care_DEMO_TRAINING: StaffHygieneTraining[] = [
   { id: "ht-1", staffId: "staff-sarah", staffName: "Sarah Johnson", personalCareSupport: true, dignityInPractice: true, culturalAwareness: true, menstrualHealthAwareness: true, infectionControl: true, sensitiveConversations: true },
-
+  { id: "ht-2", staffId: "staff-tom", staffName: "Tom Richards", personalCareSupport: true, dignityInPractice: true, culturalAwareness: true, menstrualHealthAwareness: true, infectionControl: true, sensitiveConversations: true },
+  { id: "ht-3", staffId: "staff-lisa", staffName: "Lisa Williams", personalCareSupport: true, dignityInPractice: true, culturalAwareness: true, menstrualHealthAwareness: true, infectionControl: true, sensitiveConversations: true },
+  { id: "ht-4", staffId: "staff-darren", staffName: "Darren Laville", personalCareSupport: true, dignityInPractice: true, culturalAwareness: true, menstrualHealthAwareness: true, infectionControl: true, sensitiveConversations: true },
 ];
+
 async function get_personal_hygiene_self_care(req: NextRequest): Promise<Response> {
 
   const result = generatePersonalHygieneSelfCareIntelligence(
@@ -19917,17 +25081,27 @@ async function post_personal_hygiene_self_care(req: NextRequest): Promise<Respon
 // ─── pet-therapy-animal-interaction ────────────────────────────────────
 const pet_therapy_animal_interaction_DEMO_SESSIONS: AnimalSession[] = [
   { id: "as-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-01", animalType: "dog", sessionType: "structured_therapy", facilitatedBy: "Sarah Johnson", therapeuticBenefit: "significant", childEngaged: true, riskAssessmentCompleted: true, supervisedThroughout: true, hygieneProtocolFollowed: true },
+  { id: "as-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-15", animalType: "dog", sessionType: "informal_interaction", facilitatedBy: "Tom Richards", therapeuticBenefit: "moderate", childEngaged: true, riskAssessmentCompleted: true, supervisedThroughout: true, hygieneProtocolFollowed: true },
+  { id: "as-3", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-03-05", animalType: "horse", sessionType: "equine_therapy", facilitatedBy: "Lisa Williams", therapeuticBenefit: "significant", childEngaged: true, riskAssessmentCompleted: true, supervisedThroughout: true, hygieneProtocolFollowed: true },
+  { id: "as-4", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-02", animalType: "horse", sessionType: "equine_therapy", facilitatedBy: "Lisa Williams", therapeuticBenefit: "significant", childEngaged: true, riskAssessmentCompleted: true, supervisedThroughout: true, hygieneProtocolFollowed: true },
+  { id: "as-5", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-03-10", animalType: "rabbit", sessionType: "care_responsibility", facilitatedBy: "Sarah Johnson", therapeuticBenefit: "moderate", childEngaged: true, riskAssessmentCompleted: true, supervisedThroughout: true, hygieneProtocolFollowed: true },
+  { id: "as-6", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-10", animalType: "dog", sessionType: "structured_therapy", facilitatedBy: "Darren Laville", therapeuticBenefit: "moderate", childEngaged: true, riskAssessmentCompleted: true, supervisedThroughout: true, hygieneProtocolFollowed: true },
 ];
 const pet_therapy_animal_interaction_DEMO_WELFARE: AnimalWelfareCheck[] = [
   { id: "aw-1", animalType: "dog", animalName: "Buddy", checkDate: "2026-04-01", checkedBy: "Tom Richards", welfareStatus: "excellent", veterinaryUpToDate: true, vaccinationsCurrentt: true, livingConditionsAdequate: true, dietAppropriate: true, exerciseProvided: true },
+  { id: "aw-2", animalType: "rabbit", animalName: "Flopsy", checkDate: "2026-04-01", checkedBy: "Sarah Johnson", welfareStatus: "good", veterinaryUpToDate: true, vaccinationsCurrentt: true, livingConditionsAdequate: true, dietAppropriate: true, exerciseProvided: true },
 ];
 const pet_therapy_animal_interaction_DEMO_RISK: AnimalRiskAssessment[] = [
   { id: "ar-1", assessmentDate: "2026-01-15", assessedBy: "Darren Laville", allergyScreeningCompleted: true, zoonoticRiskAssessed: true, biteRiskAssessed: true, hygieneProtocolInPlace: true, insuranceCurrent: true, emergencyPlanInPlace: true },
+  { id: "ar-2", assessmentDate: "2026-04-01", assessedBy: "Sarah Johnson", allergyScreeningCompleted: true, zoonoticRiskAssessed: true, biteRiskAssessed: true, hygieneProtocolInPlace: true, insuranceCurrent: true, emergencyPlanInPlace: true },
 ];
 const pet_therapy_animal_interaction_DEMO_TRAINING: StaffAnimalTraining[] = [
   { id: "at-1", staffId: "staff-sarah", staffName: "Sarah Johnson", animalHandling: true, therapeuticAnimalUse: true, animalWelfare: true, riskAssessment: true, hygieneProtocols: true, allergyAwareness: true },
-
+  { id: "at-2", staffId: "staff-tom", staffName: "Tom Richards", animalHandling: true, therapeuticAnimalUse: true, animalWelfare: true, riskAssessment: true, hygieneProtocols: true, allergyAwareness: true },
+  { id: "at-3", staffId: "staff-lisa", staffName: "Lisa Williams", animalHandling: true, therapeuticAnimalUse: true, animalWelfare: true, riskAssessment: true, hygieneProtocols: true, allergyAwareness: true },
+  { id: "at-4", staffId: "staff-darren", staffName: "Darren Laville", animalHandling: true, therapeuticAnimalUse: true, animalWelfare: true, riskAssessment: true, hygieneProtocols: true, allergyAwareness: true },
 ];
+
 async function get_pet_therapy_animal_interaction(req: NextRequest): Promise<Response> {
 
   const result = generatePetTherapyAnimalInteractionIntelligence(
@@ -20114,6 +25288,15 @@ async function post_physical_health_monitoring(request: NextRequest): Promise<Re
 // ─── physical-health-wellbeing ─────────────────────────────────────────
 const physical_health_wellbeing_DEMO_RECORDS: HealthRecord[] = [
   { id: "hr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-02-10", healthArea: "medical_appointment", healthOutcome: "excellent", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+  { id: "hr-2", childId: "child-alex", childName: "Alex", recordDate: "2026-03-15", healthArea: "dental_check", healthOutcome: "good", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+  { id: "hr-3", childId: "child-jordan", childName: "Jordan", recordDate: "2026-01-20", healthArea: "optician_visit", healthOutcome: "good", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+  { id: "hr-4", childId: "child-jordan", childName: "Jordan", recordDate: "2026-02-28", healthArea: "immunisation", healthOutcome: "excellent", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: false },
+  { id: "hr-5", childId: "child-morgan", childName: "Morgan", recordDate: "2026-03-05", healthArea: "health_assessment", healthOutcome: "good", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+  { id: "hr-6", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-12", healthArea: "physical_activity", healthOutcome: "excellent", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+  { id: "hr-7", childId: "child-alex", childName: "Alex", recordDate: "2026-04-20", healthArea: "nutrition_review", healthOutcome: "good", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+  { id: "hr-8", childId: "child-jordan", childName: "Jordan", recordDate: "2026-05-01", healthArea: "mental_health_review", healthOutcome: "good", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+  { id: "hr-9", childId: "child-morgan", childName: "Morgan", recordDate: "2026-05-10", healthArea: "medical_appointment", healthOutcome: "excellent", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
+  { id: "hr-10", childId: "child-alex", childName: "Alex", recordDate: "2026-05-15", healthArea: "immunisation", healthOutcome: "good", appointmentAttended: true, healthPlanUpdated: true, consentObtained: true, staffAccompanied: true, documentedInRecord: true, followUpScheduled: true },
 ];
 const physical_health_wellbeing_DEMO_POLICY: HealthPolicy = {
   id: "hp-1",
@@ -20127,8 +25310,11 @@ const physical_health_wellbeing_DEMO_POLICY: HealthPolicy = {
 };
 const physical_health_wellbeing_DEMO_TRAINING: StaffHealthTraining[] = [
   { id: "sht-1", staffId: "staff-sarah", staffName: "Sarah Johnson", healthAwareness: true, mentalHealthFirstAid: true, consentAndCapacity: true, medicationManagement: true, appointmentSupport: true, healthDocumentation: true },
-
+  { id: "sht-2", staffId: "staff-tom", staffName: "Tom Richards", healthAwareness: true, mentalHealthFirstAid: true, consentAndCapacity: true, medicationManagement: true, appointmentSupport: true, healthDocumentation: true },
+  { id: "sht-3", staffId: "staff-lisa", staffName: "Lisa Williams", healthAwareness: true, mentalHealthFirstAid: true, consentAndCapacity: true, medicationManagement: true, appointmentSupport: true, healthDocumentation: true },
+  { id: "sht-4", staffId: "staff-darren", staffName: "Darren Laville", healthAwareness: true, mentalHealthFirstAid: true, consentAndCapacity: true, medicationManagement: true, appointmentSupport: true, healthDocumentation: true },
 ];
+
 async function get_physical_health_wellbeing(req: NextRequest): Promise<Response> {
 
   const result = generatePhysicalHealthWellbeingIntelligence(
@@ -20583,6 +25769,17 @@ async function post_placement_stability_continuity(request: NextRequest): Promis
 // ─── placement-stability-intelligence ──────────────────────────────────
 const placement_stability_intelligence_DEMO_RECORDS: PlacementStabilityRecord[] = [
   { id: "ps-001", homeId: "home-oak", date: "2025-01-15", childId: "child-alex", childName: "Alex", category: "placement_review", outcome: "placement_sustained", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-002", homeId: "home-oak", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "stability_meeting", outcome: "placement_improved", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-003", homeId: "home-oak", date: "2025-03-05", childId: "child-alex", childName: "Alex", category: "matching_assessment", outcome: "placement_sustained", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-004", homeId: "home-oak", date: "2025-04-01", childId: "child-alex", childName: "Alex", category: "transition_planning", outcome: "placement_sustained", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-005", homeId: "home-oak", date: "2025-01-20", childId: "child-jordan", childName: "Jordan", category: "placement_support", outcome: "placement_improved", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-006", homeId: "home-oak", date: "2025-02-15", childId: "child-jordan", childName: "Jordan", category: "permanence_planning", outcome: "early_intervention", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-007", homeId: "home-oak", date: "2025-03-10", childId: "child-jordan", childName: "Jordan", category: "disruption_meeting", outcome: "placement_sustained", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: false, documentationComplete: true, timelyRecording: false },
+  { id: "ps-008", homeId: "home-oak", date: "2025-04-10", childId: "child-jordan", childName: "Jordan", category: "unplanned_ending_review", outcome: "placement_at_risk", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-009", homeId: "home-oak", date: "2025-02-01", childId: "child-morgan", childName: "Morgan", category: "placement_review", outcome: "placement_sustained", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-010", homeId: "home-oak", date: "2025-03-15", childId: "child-morgan", childName: "Morgan", category: "stability_meeting", outcome: "placement_improved", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-011", homeId: "home-oak", date: "2025-04-10", childId: "child-morgan", childName: "Morgan", category: "matching_assessment", outcome: "early_intervention", matchingNeedsAssessed: true, stabilityPlanInPlace: false, childViewIncorporated: true, riskFactorsIdentified: true, documentationComplete: true, timelyRecording: true },
+  { id: "ps-012", homeId: "home-oak", date: "2025-05-01", childId: "child-morgan", childName: "Morgan", category: "placement_support", outcome: "placement_sustained", matchingNeedsAssessed: true, stabilityPlanInPlace: true, childViewIncorporated: false, riskFactorsIdentified: true, documentationComplete: false, timelyRecording: true },
 ];
 const placement_stability_intelligence_DEMO_POLICY: PlacementStabilityPolicy = {
   placementStabilityPolicy: true, matchingProcedure: true, disruptionManagementPolicy: true,
@@ -20590,8 +25787,11 @@ const placement_stability_intelligence_DEMO_POLICY: PlacementStabilityPolicy = {
 };
 const placement_stability_intelligence_DEMO_STAFF: StaffPlacementStabilityTraining[] = [
   { staffId: "staff-sarah", matchingAssessmentSkills: true, stabilityPlanningKnowledge: true, disruptionPreventionSkills: true, transitionSupportSkills: true, childParticipationSkills: true, permanencePlanningKnowledge: true },
-
+  { staffId: "staff-tom", matchingAssessmentSkills: true, stabilityPlanningKnowledge: true, disruptionPreventionSkills: true, transitionSupportSkills: true, childParticipationSkills: true, permanencePlanningKnowledge: false },
+  { staffId: "staff-lisa", matchingAssessmentSkills: true, stabilityPlanningKnowledge: true, disruptionPreventionSkills: true, transitionSupportSkills: true, childParticipationSkills: false, permanencePlanningKnowledge: true },
+  { staffId: "staff-darren", matchingAssessmentSkills: true, stabilityPlanningKnowledge: true, disruptionPreventionSkills: true, transitionSupportSkills: true, childParticipationSkills: true, permanencePlanningKnowledge: true },
 ];
+
 async function get_placement_stability_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generatePlacementStabilityIntelligenceReport({
@@ -21007,6 +26207,20 @@ const pocket_money_financial_education_PERIOD_START = "2026-01-01";
 const pocket_money_financial_education_PERIOD_END = "2026-05-19";
 const pocket_money_financial_education_DEMO_TRANSACTIONS: MoneyTransaction[] = [
   // Alex -- pocket money, savings, educational, charitable
+  { id: "txn-001", childId: "child-alex", childName: "Alex", transactionDate: "2026-03-01T10:00:00Z", transactionType: "pocket_money", amount: 15, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: true },
+  { id: "txn-002", childId: "child-alex", childName: "Alex", transactionDate: "2026-03-08T10:00:00Z", transactionType: "savings", amount: 10, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: true },
+  { id: "txn-003", childId: "child-alex", childName: "Alex", transactionDate: "2026-03-15T14:00:00Z", transactionType: "educational_purchase", amount: 8.99, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: false },
+
+  // Jordan -- pocket money, birthday gift, personal choice
+  { id: "txn-004", childId: "child-jordan", childName: "Jordan", transactionDate: "2026-03-01T10:00:00Z", transactionType: "pocket_money", amount: 12, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: true },
+  { id: "txn-005", childId: "child-jordan", childName: "Jordan", transactionDate: "2026-03-10T11:00:00Z", transactionType: "birthday_gift", amount: 25, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: true },
+  { id: "txn-006", childId: "child-jordan", childName: "Jordan", transactionDate: "2026-03-20T15:00:00Z", transactionType: "personal_choice", amount: 6.5, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: false },
+
+  // Morgan -- pocket money, clothing allowance, activity fund, charitable
+  { id: "txn-007", childId: "child-morgan", childName: "Morgan", transactionDate: "2026-03-01T10:00:00Z", transactionType: "pocket_money", amount: 20, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: true },
+  { id: "txn-008", childId: "child-morgan", childName: "Morgan", transactionDate: "2026-03-05T10:00:00Z", transactionType: "clothing_allowance", amount: 40, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: false },
+  { id: "txn-009", childId: "child-morgan", childName: "Morgan", transactionDate: "2026-03-12T14:00:00Z", transactionType: "activity_fund", amount: 15, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: true },
+  { id: "txn-010", childId: "child-morgan", childName: "Morgan", transactionDate: "2026-04-01T11:00:00Z", transactionType: "charitable_giving", amount: 5, childInvolved: true, receiptKept: true, documentedProperly: true, supervisedAppropriately: true, childUnderstood: true, savingsEncouraged: true },
 ];
 const pocket_money_financial_education_DEMO_POLICY: FinancialPolicy = {
   id: "policy-001",
@@ -21020,8 +26234,11 @@ const pocket_money_financial_education_DEMO_POLICY: FinancialPolicy = {
 };
 const pocket_money_financial_education_DEMO_TRAINING: StaffFinancialTraining[] = [
   { id: "train-001", staffId: "staff-rm-01", staffName: "Sarah Jones", financialLiteracy: true, moneyManagement: true, safeguardingFinances: true, budgetingSkills: true, bankingAwareness: true, fraudPrevention: true },
-
+  { id: "train-002", staffId: "staff-rm-02", staffName: "Mark Williams", financialLiteracy: true, moneyManagement: true, safeguardingFinances: true, budgetingSkills: true, bankingAwareness: true, fraudPrevention: false },
+  { id: "train-003", staffId: "staff-rm-03", staffName: "Emma Brown", financialLiteracy: true, moneyManagement: true, safeguardingFinances: true, budgetingSkills: false, bankingAwareness: true, fraudPrevention: true },
+  { id: "train-004", staffId: "staff-rm-04", staffName: "David Taylor", financialLiteracy: true, moneyManagement: true, safeguardingFinances: true, budgetingSkills: true, bankingAwareness: false, fraudPrevention: false },
 ];
+
 async function get_pocket_money_financial_education(req: NextRequest): Promise<Response> {
 
   const intelligence = generatePocketMoneyFinancialEducationIntelligence(
@@ -21061,6 +26278,13 @@ async function post_pocket_money_financial_education(req: NextRequest): Promise<
 // ─── pocket-money-financial-literacy ───────────────────────────────────
 const pocket_money_financial_literacy_DEMO_SESSIONS: FinancialSession[] = [
   { id: "fs-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-01", skillType: "budgeting", competencyLevel: "independent", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "fs-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-08", skillType: "saving", competencyLevel: "confident", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "fs-3", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-15", skillType: "comparison_shopping", competencyLevel: "independent", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "fs-4", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-01", skillType: "spending_decisions", competencyLevel: "confident", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "fs-5", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-08", skillType: "banking_basics", competencyLevel: "independent", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "fs-6", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-15", skillType: "earning_income", competencyLevel: "confident", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "fs-7", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-01", skillType: "charity_giving", competencyLevel: "independent", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
+  { id: "fs-8", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-08", skillType: "financial_planning", competencyLevel: "confident", childEngaged: true, practicalApplication: true, progressDemonstrated: true, documentedInPlan: true, staffSupported: true, feedbackGiven: true },
 ];
 const pocket_money_financial_literacy_DEMO_POLICY: FinancialLiteracyPolicy = {
   id: "fp-1",
@@ -21074,8 +26298,11 @@ const pocket_money_financial_literacy_DEMO_POLICY: FinancialLiteracyPolicy = {
 };
 const pocket_money_financial_literacy_DEMO_TRAINING: StaffFinancialLiteracyTraining[] = [
   { id: "ft-1", staffId: "staff-sarah", staffName: "Sarah Johnson", financialEducationSkills: true, budgetingSupport: true, ageAppropriateTeaching: true, safeguardingFinancialAbuse: true, independencePromotionSkills: true, recordKeeping: true },
-
+  { id: "ft-2", staffId: "staff-tom", staffName: "Tom Richards", financialEducationSkills: true, budgetingSupport: true, ageAppropriateTeaching: true, safeguardingFinancialAbuse: true, independencePromotionSkills: true, recordKeeping: true },
+  { id: "ft-3", staffId: "staff-lisa", staffName: "Lisa Williams", financialEducationSkills: true, budgetingSupport: true, ageAppropriateTeaching: true, safeguardingFinancialAbuse: true, independencePromotionSkills: true, recordKeeping: true },
+  { id: "ft-4", staffId: "staff-darren", staffName: "Darren Laville", financialEducationSkills: true, budgetingSupport: true, ageAppropriateTeaching: true, safeguardingFinancialAbuse: true, independencePromotionSkills: true, recordKeeping: true },
 ];
+
 async function get_pocket_money_financial_literacy(req: NextRequest): Promise<Response> {
 
   const result = generatePocketMoneyFinancialLiteracyIntelligence(
@@ -21122,6 +26349,17 @@ async function post_pocket_money_financial_literacy(req: NextRequest): Promise<R
 // ─── pocket-money-intelligence ─────────────────────────────────────────
 const pocket_money_intelligence_DEMO_RECORDS: PocketMoneyRecord[] = [
   { id: "pm-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "weekly_allowance", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "birthday_money", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "savings_deposit", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: false },
+  { id: "pm-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "educational_purchase", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "clothing_allowance", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "activity_funding", outcome: "partially_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "personal_spending", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: false },
+  { id: "pm-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "financial_literacy_session", outcome: "properly_recorded", receiptObtained: false, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "weekly_allowance", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "savings_deposit", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "educational_purchase", outcome: "late_recording", receiptObtained: true, childConsentRecorded: false, balanceUpdated: true, supervisorApproved: true, documentationComplete: true, timelyRecording: true },
+  { id: "pm-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "clothing_allowance", outcome: "properly_recorded", receiptObtained: true, childConsentRecorded: true, balanceUpdated: false, supervisorApproved: true, documentationComplete: false, timelyRecording: true },
 ];
 const pocket_money_intelligence_DEMO_POLICY: PocketMoneyPolicy = {
   pocketMoneyPolicy: true, savingsAccountPolicy: true, spendingApprovalProcess: true,
@@ -21129,8 +26367,11 @@ const pocket_money_intelligence_DEMO_POLICY: PocketMoneyPolicy = {
 };
 const pocket_money_intelligence_DEMO_STAFF: StaffPocketMoneyTraining[] = [
   { staffId: "staff-sarah", financialManagementKnowledge: true, recordKeepingSkills: true, childConsentPractice: true, savingsGuidanceSkills: true, financialLiteracyDelivery: true, budgetingSupport: true },
-
+  { staffId: "staff-tom", financialManagementKnowledge: true, recordKeepingSkills: true, childConsentPractice: true, savingsGuidanceSkills: true, financialLiteracyDelivery: true, budgetingSupport: false },
+  { staffId: "staff-lisa", financialManagementKnowledge: true, recordKeepingSkills: true, childConsentPractice: true, savingsGuidanceSkills: false, financialLiteracyDelivery: true, budgetingSupport: true },
+  { staffId: "staff-darren", financialManagementKnowledge: true, recordKeepingSkills: true, childConsentPractice: true, savingsGuidanceSkills: true, financialLiteracyDelivery: true, budgetingSupport: true },
 ];
+
 async function get_pocket_money_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generatePocketMoneyIntelligence({
@@ -21193,8 +26434,8 @@ const pocket_money_DEMO_PROFILES: ChildFinancialProfile[] = [
     savingsTargetMonthly: 20,
     prepaidCardIssued: true,
     transactions: [
-      ...weeklyPocketMoney("alex", 15, 8),
-      ...monthlySavings("alex", 20, 4),
+      ...pocket_money_weeklyPocketMoney("alex", 15, 8),
+      ...pocket_money_monthlySavings("alex", 20, 4),
       { id: "cl-alex-1", date: new Date(Date.now() - 20 * 86400000).toISOString(), type: "clothing_allowance", amount: 45, description: "New trainers", method: "prepaid_card", receiptRecorded: true, authorisedBy: "staff-sw-01", childSignature: true },
       { id: "cl-alex-2", date: new Date(Date.now() - 50 * 86400000).toISOString(), type: "clothing_allowance", amount: 30, description: "School shirt", method: "prepaid_card", receiptRecorded: true, authorisedBy: "staff-sw-01" },
       { id: "bd-alex", date: "2026-01-15T10:00:00Z", type: "birthday_money", amount: 50, description: "Birthday money", method: "cash", receiptRecorded: true, authorisedBy: "staff-rm-01", childSignature: true },
@@ -21209,8 +26450,85 @@ const pocket_money_DEMO_PROFILES: ChildFinancialProfile[] = [
     financialPlanInPlace: true,
     childInvolvedInBudget: true,
   },
-
+  {
+    childId: "child-jordan",
+    childName: "Jordan Mitchell",
+    homeId: "home-oak",
+    dateOfBirth: "2010-08-22T00:00:00Z",
+    weeklyPocketMoneyRate: 18,
+    monthlyClothingAllowance: 60,
+    birthdayAllowance: 50,
+    festivalAllowance: 30,
+    savingsAccountExists: true,
+    savingsAccountBalance: 520,
+    savingsTargetMonthly: 25,
+    prepaidCardIssued: true,
+    transactions: [
+      ...pocket_money_weeklyPocketMoney("jordan", 18, 6),
+      ...pocket_money_monthlySavings("jordan", 25, 3),
+      { id: "cl-j1", date: new Date(Date.now() - 15 * 86400000).toISOString(), type: "clothing_allowance", amount: 55, description: "Jacket", method: "prepaid_card", receiptRecorded: true, authorisedBy: "staff-sw-02", childSignature: true },
+      { id: "act-j1", date: new Date(Date.now() - 10 * 86400000).toISOString(), type: "activity_money", amount: 12, description: "Cinema trip", method: "cash", receiptRecorded: true, authorisedBy: "staff-sw-01" },
+      { id: "bd-j", date: "2025-08-22T10:00:00Z", type: "birthday_money", amount: 50, description: "Birthday money", method: "cash", receiptRecorded: true, authorisedBy: "staff-rm-01", childSignature: true },
+    ],
+    literacySessions: [
+      { id: "ls-j1", date: new Date(Date.now() - 14 * 86400000).toISOString(), topic: "bills_and_utilities", duration: 30, facilitatedBy: "staff-sw-01" },
+      { id: "ls-j2", date: new Date(Date.now() - 45 * 86400000).toISOString(), topic: "debt_awareness", duration: 25, facilitatedBy: "staff-rm-01" },
+      { id: "ls-j3", date: new Date(Date.now() - 75 * 86400000).toISOString(), topic: "employment_income", duration: 30, facilitatedBy: "staff-sw-01" },
+      { id: "ls-j4", date: new Date(Date.now() - 100 * 86400000).toISOString(), topic: "budgeting", duration: 30, facilitatedBy: "staff-rm-01" },
+    ],
+    financialPlanInPlace: true,
+    childInvolvedInBudget: true,
+  },
+  {
+    childId: "child-sam",
+    childName: "Sam Okafor",
+    homeId: "home-oak",
+    dateOfBirth: "2015-03-10T00:00:00Z",
+    weeklyPocketMoneyRate: 10,
+    monthlyClothingAllowance: 40,
+    birthdayAllowance: 40,
+    festivalAllowance: 25,
+    savingsAccountExists: true,
+    savingsAccountBalance: 180,
+    savingsTargetMonthly: 15,
+    prepaidCardIssued: false,
+    transactions: [
+      ...pocket_money_weeklyPocketMoney("sam", 10, 8),
+      ...pocket_money_monthlySavings("sam", 15, 4),
+      { id: "cl-s1", date: new Date(Date.now() - 25 * 86400000).toISOString(), type: "clothing_allowance", amount: 35, description: "School shoes", method: "cash", receiptRecorded: true, authorisedBy: "staff-sw-01" },
+      { id: "bd-s", date: "2026-03-10T10:00:00Z", type: "birthday_money", amount: 40, description: "Birthday money", method: "cash", receiptRecorded: true, authorisedBy: "staff-rm-01", childSignature: true },
+    ],
+    literacySessions: [
+      { id: "ls-s1", date: new Date(Date.now() - 10 * 86400000).toISOString(), topic: "saving", duration: 20, facilitatedBy: "staff-sw-01" },
+      { id: "ls-s2", date: new Date(Date.now() - 40 * 86400000).toISOString(), topic: "budgeting", duration: 20, facilitatedBy: "staff-sw-01" },
+      { id: "ls-s3", date: new Date(Date.now() - 70 * 86400000).toISOString(), topic: "comparison_shopping", duration: 20, facilitatedBy: "staff-rm-01" },
+    ],
+    financialPlanInPlace: false,
+    childInvolvedInBudget: true,
+  },
+  {
+    childId: "child-casey",
+    childName: "Casey Brown",
+    homeId: "home-oak",
+    dateOfBirth: "2011-11-05T00:00:00Z",
+    weeklyPocketMoneyRate: 15,
+    monthlyClothingAllowance: 50,
+    birthdayAllowance: 50,
+    festivalAllowance: 30,
+    savingsAccountExists: false,
+    savingsTargetMonthly: 0,
+    prepaidCardIssued: false,
+    transactions: [
+      ...pocket_money_weeklyPocketMoney("casey", 15, 3), // only 3 weeks — shortfall
+    ],
+    literacySessions: [
+      { id: "ls-c1", date: new Date(Date.now() - 30 * 86400000).toISOString(), topic: "budgeting", duration: 25, facilitatedBy: "staff-sw-01" },
+    ],
+    financialPlanInPlace: false,
+    childInvolvedInBudget: false,
+  },
 ];
+
 async function get_pocket_money(request: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(request.url);
@@ -21538,17 +26856,35 @@ async function post_positive_behaviour(request: NextRequest): Promise<Response> 
 // ─── positive-reinforcement-rewards ────────────────────────────────────
 const positive_reinforcement_rewards_DEMO_PRAISE: PraiseRecord[] = [
   { id: "pr-1", childId: "child-alex", childName: "Alex", praiseDate: "2026-04-01", praiseType: "verbal", givenBy: "Sarah Johnson", reason: "Helped Jordan with homework without being asked", childResponse: "positive", specificAndDescriptive: true, linkedToValues: true },
+  { id: "pr-2", childId: "child-alex", childName: "Alex", praiseDate: "2026-04-05", praiseType: "written", givenBy: "Tom Richards", reason: "Completed all chores independently this week", childResponse: "very_positive", specificAndDescriptive: true, linkedToValues: true },
+  { id: "pr-3", childId: "child-alex", childName: "Alex", praiseDate: "2026-04-12", praiseType: "certificate", givenBy: "Darren Laville", reason: "Star of the Week for consistent effort in education", childResponse: "very_positive", specificAndDescriptive: true, linkedToValues: true },
+  { id: "pr-4", childId: "child-jordan", childName: "Jordan", praiseDate: "2026-04-02", praiseType: "verbal", givenBy: "Lisa Williams", reason: "Used calm breathing when feeling frustrated", childResponse: "positive", specificAndDescriptive: true, linkedToValues: true },
+  { id: "pr-5", childId: "child-jordan", childName: "Jordan", praiseDate: "2026-04-08", praiseType: "reward_token", givenBy: "Sarah Johnson", reason: "Earned 5 tokens for respectful communication all week", childResponse: "very_positive", specificAndDescriptive: true, linkedToValues: true },
+  { id: "pr-6", childId: "child-jordan", childName: "Jordan", praiseDate: "2026-04-15", praiseType: "public_recognition", givenBy: "Darren Laville", reason: "Recognised in house meeting for being a great friend", childResponse: "positive", specificAndDescriptive: true, linkedToValues: true },
+  { id: "pr-7", childId: "child-morgan", childName: "Morgan", praiseDate: "2026-04-03", praiseType: "verbal", givenBy: "Tom Richards", reason: "Cooked dinner for everyone and tidied up", childResponse: "positive", specificAndDescriptive: true, linkedToValues: true },
+  { id: "pr-8", childId: "child-morgan", childName: "Morgan", praiseDate: "2026-04-10", praiseType: "activity_reward", givenBy: "Lisa Williams", reason: "Earned cinema trip for meeting weekly targets", childResponse: "very_positive", specificAndDescriptive: true, linkedToValues: true },
+  { id: "pr-9", childId: "child-morgan", childName: "Morgan", praiseDate: "2026-04-18", praiseType: "special_privilege", givenBy: "Sarah Johnson", reason: "Extended bedtime for consistent positive behaviour", childResponse: "very_positive", specificAndDescriptive: true, linkedToValues: true },
 ];
 const positive_reinforcement_rewards_DEMO_REWARDS: RewardRecord[] = [
   { id: "rw-1", childId: "child-alex", childName: "Alex", rewardDate: "2026-04-05", rewardCategory: "weekly_target", description: "Chose pizza night for meeting all weekly targets", childChosenReward: true, fairAndConsistent: true, linkedToBehaviourPlan: true, childResponse: "very_positive" },
+  { id: "rw-2", childId: "child-alex", childName: "Alex", rewardDate: "2026-04-12", rewardCategory: "achievement", description: "New book voucher for school attendance achievement", childChosenReward: true, fairAndConsistent: true, linkedToBehaviourPlan: true, childResponse: "very_positive" },
+  { id: "rw-3", childId: "child-jordan", childName: "Jordan", rewardDate: "2026-04-08", rewardCategory: "effort", description: "Extra screen time for effort in managing emotions", childChosenReward: true, fairAndConsistent: true, linkedToBehaviourPlan: true, childResponse: "positive" },
+  { id: "rw-4", childId: "child-jordan", childName: "Jordan", rewardDate: "2026-04-15", rewardCategory: "kindness", description: "Chose team bowling trip for being kind to peers", childChosenReward: true, fairAndConsistent: true, linkedToBehaviourPlan: true, childResponse: "very_positive" },
+  { id: "rw-5", childId: "child-morgan", childName: "Morgan", rewardDate: "2026-04-10", rewardCategory: "responsibility", description: "Cinema trip for consistent room tidying", childChosenReward: true, fairAndConsistent: true, linkedToBehaviourPlan: true, childResponse: "very_positive" },
+  { id: "rw-6", childId: "child-morgan", childName: "Morgan", rewardDate: "2026-04-18", rewardCategory: "progress", description: "New art supplies for sustained progress in key working sessions", childChosenReward: true, fairAndConsistent: true, linkedToBehaviourPlan: true, childResponse: "very_positive" },
 ];
 const positive_reinforcement_rewards_DEMO_OUTCOMES: BehaviourOutcome[] = [
   { id: "bo-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-15", behaviourTrend: "improved", positiveIncidentsCount: 12, negativeIncidentsCount: 1, restraintCount: 0, deEscalationSuccessful: true, childReportedFeeling: "positive" },
+  { id: "bo-2", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-15", behaviourTrend: "significantly_improved", positiveIncidentsCount: 15, negativeIncidentsCount: 2, restraintCount: 0, deEscalationSuccessful: true, childReportedFeeling: "very_positive" },
+  { id: "bo-3", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-15", behaviourTrend: "improved", positiveIncidentsCount: 10, negativeIncidentsCount: 0, restraintCount: 0, deEscalationSuccessful: true, childReportedFeeling: "positive" },
 ];
 const positive_reinforcement_rewards_DEMO_TRAINING: StaffReinforcementTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", positiveBehaviourSupport: true, therapeuticCareApproach: true, deEscalationTechniques: true, rewardSystemDesign: true, traumaInformedPraise: true, consistencyInApproach: true },
-
+  { id: "st-2", staffId: "staff-tom", staffName: "Tom Richards", positiveBehaviourSupport: true, therapeuticCareApproach: true, deEscalationTechniques: true, rewardSystemDesign: true, traumaInformedPraise: true, consistencyInApproach: true },
+  { id: "st-3", staffId: "staff-lisa", staffName: "Lisa Williams", positiveBehaviourSupport: true, therapeuticCareApproach: true, deEscalationTechniques: true, rewardSystemDesign: true, traumaInformedPraise: true, consistencyInApproach: true },
+  { id: "st-4", staffId: "staff-darren", staffName: "Darren Laville", positiveBehaviourSupport: true, therapeuticCareApproach: true, deEscalationTechniques: true, rewardSystemDesign: true, traumaInformedPraise: true, consistencyInApproach: true },
 ];
+
 async function get_positive_reinforcement_rewards(req: NextRequest): Promise<Response> {
 
   const result = generatePositiveReinforcementRewardsIntelligence(
@@ -21925,6 +27261,24 @@ async function post_post_incident_learning(request: NextRequest): Promise<Respon
 // ─── premises-intelligence ─────────────────────────────────────────────
 const premises_intelligence_DEMO_RECORDS: PremisesIntelligenceRecord[] = [
   // Sarah — fire safety, health & safety, bedroom standards
+  { id: "pr-001", homeId: "home-oak", date: "2026-01-15", staffId: "staff-sarah", staffName: "Sarah", category: "fire_safety_check", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "pr-002", homeId: "home-oak", date: "2026-02-10", staffId: "staff-sarah", staffName: "Sarah", category: "health_safety_inspection", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "pr-003", homeId: "home-oak", date: "2026-03-05", staffId: "staff-sarah", staffName: "Sarah", category: "bedroom_standard", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+
+  // Tom — maintenance, communal areas, garden
+  { id: "pr-004", homeId: "home-oak", date: "2026-01-20", staffId: "staff-tom", staffName: "Tom", category: "maintenance_repair", outcome: "minor_issues", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "pr-005", homeId: "home-oak", date: "2026-02-15", staffId: "staff-tom", staffName: "Tom", category: "communal_area_check", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "pr-006", homeId: "home-oak", date: "2026-03-10", staffId: "staff-tom", staffName: "Tom", category: "garden_outdoor_area", outcome: "minor_issues", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: false },
+
+  // Lisa — security, accessibility, fire safety
+  { id: "pr-007", homeId: "home-oak", date: "2026-02-01", staffId: "staff-lisa", staffName: "Lisa", category: "security_assessment", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "pr-008", homeId: "home-oak", date: "2026-03-15", staffId: "staff-lisa", staffName: "Lisa", category: "accessibility_review", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "pr-009", homeId: "home-oak", date: "2026-04-10", staffId: "staff-lisa", staffName: "Lisa", category: "fire_safety_check", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+
+  // Darren — health & safety, bedroom, communal
+  { id: "pr-010", homeId: "home-oak", date: "2026-04-01", staffId: "staff-darren", staffName: "Darren", category: "health_safety_inspection", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "pr-011", homeId: "home-oak", date: "2026-04-10", staffId: "staff-darren", staffName: "Darren", category: "bedroom_standard", outcome: "minor_issues", hazardIdentified: false, riskMitigated: true, maintenanceCompleted: true, childFriendlyAssessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "pr-012", homeId: "home-oak", date: "2026-05-01", staffId: "staff-darren", staffName: "Darren", category: "communal_area_check", outcome: "fully_compliant", hazardIdentified: true, riskMitigated: true, maintenanceCompleted: false, childFriendlyAssessed: true, documentationComplete: false, timelyRecording: true },
 ];
 const premises_intelligence_DEMO_POLICY: PremisesIntelligencePolicy = {
   healthSafetyPolicy: true,
@@ -21937,8 +27291,11 @@ const premises_intelligence_DEMO_POLICY: PremisesIntelligencePolicy = {
 };
 const premises_intelligence_DEMO_STAFF: StaffPremisesTraining[] = [
   { staffId: "staff-sarah", healthSafetyKnowledge: true, fireSafetyTraining: true, maintenanceSkills: true, riskAssessmentSkills: true, firstAidTraining: true, accessibilityAwareness: true },
-
+  { staffId: "staff-tom", healthSafetyKnowledge: true, fireSafetyTraining: true, maintenanceSkills: true, riskAssessmentSkills: true, firstAidTraining: true, accessibilityAwareness: false },
+  { staffId: "staff-lisa", healthSafetyKnowledge: true, fireSafetyTraining: true, maintenanceSkills: true, riskAssessmentSkills: true, firstAidTraining: false, accessibilityAwareness: true },
+  { staffId: "staff-darren", healthSafetyKnowledge: true, fireSafetyTraining: true, maintenanceSkills: true, riskAssessmentSkills: true, firstAidTraining: true, accessibilityAwareness: true },
 ];
+
 async function get_premises_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generatePremisesIntelligenceReport({
@@ -22077,6 +27434,66 @@ const privacy_dignity_assessment_DEMO_AUDITS: PrivacyAudit[] = [
     personalSpaceRespected: true,
     findingsNotes: "All bedrooms personalised with own décor, locks on drawers provided",
   },
+  {
+    id: "aud-2",
+    auditDate: "2026-03-15",
+    auditedBy: "Darren Laville",
+    domain: "bathroom",
+    complianceStatus: "fully_compliant",
+    auditOutcome: "passed",
+    knockingPolicyObserved: true,
+    lockableStorageProvided: true,
+    personalSpaceRespected: true,
+    findingsNotes: "Bathroom locks functional, dignity maintained during personal care",
+  },
+  {
+    id: "aud-3",
+    auditDate: "2026-04-10",
+    auditedBy: "Sarah Johnson",
+    domain: "communication",
+    complianceStatus: "fully_compliant",
+    auditOutcome: "passed",
+    knockingPolicyObserved: true,
+    lockableStorageProvided: true,
+    personalSpaceRespected: true,
+    findingsNotes: "Private phone call area available, children can receive mail unopened",
+  },
+  {
+    id: "aud-4",
+    auditDate: "2026-04-10",
+    auditedBy: "Sarah Johnson",
+    domain: "personal_belongings",
+    complianceStatus: "fully_compliant",
+    auditOutcome: "passed",
+    knockingPolicyObserved: true,
+    lockableStorageProvided: true,
+    personalSpaceRespected: true,
+    findingsNotes: "Personal belongings inventories up to date, secure storage available",
+  },
+  {
+    id: "aud-5",
+    auditDate: "2026-05-01",
+    auditedBy: "Darren Laville",
+    domain: "digital_privacy",
+    complianceStatus: "mostly_compliant",
+    auditOutcome: "minor_findings",
+    knockingPolicyObserved: true,
+    lockableStorageProvided: true,
+    personalSpaceRespected: true,
+    findingsNotes: "Digital device policy clear, minor update needed to social media monitoring guidance",
+  },
+  {
+    id: "aud-6",
+    auditDate: "2026-05-01",
+    auditedBy: "Darren Laville",
+    domain: "bodily_autonomy",
+    complianceStatus: "fully_compliant",
+    auditOutcome: "passed",
+    knockingPolicyObserved: true,
+    lockableStorageProvided: true,
+    personalSpaceRespected: true,
+    findingsNotes: "Children consulted on personal care routines, body autonomy well respected",
+  },
 ];
 const privacy_dignity_assessment_DEMO_FEEDBACK: ChildPrivacyFeedback[] = [
   {
@@ -22092,9 +27509,60 @@ const privacy_dignity_assessment_DEMO_FEEDBACK: ChildPrivacyFeedback[] = [
     belongingsSafe: true,
     comments: "Staff always knock and wait before entering",
   },
+  {
+    id: "fb-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    feedbackDate: "2026-04-20",
+    domain: "bedroom",
+    rating: "positive",
+    feelsPrivacyRespected: true,
+    feelsBedroomIsOwn: true,
+    canMakePrivateCalls: true,
+    belongingsSafe: true,
+    comments: "My room feels like my own space",
+  },
+  {
+    id: "fb-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    feedbackDate: "2026-04-20",
+    domain: "communication",
+    rating: "very_positive",
+    feelsPrivacyRespected: true,
+    feelsBedroomIsOwn: true,
+    canMakePrivateCalls: true,
+    belongingsSafe: true,
+    comments: "I can call my friends whenever I want in private",
+  },
+  {
+    id: "fb-4",
+    childId: "child-alex",
+    childName: "Alex",
+    feedbackDate: "2026-05-10",
+    domain: "personal_belongings",
+    rating: "positive",
+    feelsPrivacyRespected: true,
+    feelsBedroomIsOwn: true,
+    canMakePrivateCalls: true,
+    belongingsSafe: true,
+    comments: "I have a lockable drawer for my things",
+  },
+  {
+    id: "fb-5",
+    childId: "child-jordan",
+    childName: "Jordan",
+    feedbackDate: "2026-05-10",
+    domain: "digital_privacy",
+    rating: "positive",
+    feelsPrivacyRespected: true,
+    feelsBedroomIsOwn: true,
+    canMakePrivateCalls: true,
+    belongingsSafe: true,
+    comments: "I know the WiFi rules and they feel fair",
+  },
 ];
 const privacy_dignity_assessment_DEMO_INCIDENTS: PrivacyIncident[] = [];
-
 const privacy_dignity_assessment_DEMO_TRAINING: StaffPrivacyTraining[] = [
   {
     id: "tr-1",
@@ -22107,8 +27575,41 @@ const privacy_dignity_assessment_DEMO_TRAINING: StaffPrivacyTraining[] = [
     bodyAutonomyTrained: true,
     digitalPrivacyTrained: true,
   },
-
+  {
+    id: "tr-2",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    privacyRightsAwareness: true,
+    knockingPolicyTrained: true,
+    confidentialityTrained: true,
+    dataProtectionTrained: true,
+    bodyAutonomyTrained: true,
+    digitalPrivacyTrained: false,
+  },
+  {
+    id: "tr-3",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    privacyRightsAwareness: true,
+    knockingPolicyTrained: true,
+    confidentialityTrained: true,
+    dataProtectionTrained: true,
+    bodyAutonomyTrained: true,
+    digitalPrivacyTrained: true,
+  },
+  {
+    id: "tr-4",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    privacyRightsAwareness: true,
+    knockingPolicyTrained: true,
+    confidentialityTrained: true,
+    dataProtectionTrained: true,
+    bodyAutonomyTrained: true,
+    digitalPrivacyTrained: true,
+  },
 ];
+
 async function get_privacy_dignity_assessment(req: NextRequest): Promise<Response> {
 
   const result = generatePrivacyDignityIntelligence(
@@ -22202,6 +27703,22 @@ async function post_privacy_dignity_assessment(req: NextRequest): Promise<Respon
 // ─── privacy ───────────────────────────────────────────────────────────
 const privacy_demoRecords: PrivacyRecord[] = [
   // Alex — strong privacy practices
+  { id: "prv-1", homeId: "oak-house", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "personal_space", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: true, consentObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "prv-2", homeId: "oak-house", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "confidentiality", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: true, consentObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "prv-3", homeId: "oak-house", date: "2026-03-22", childId: "child-alex", childName: "Alex", category: "dignity_care", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: true, consentObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "prv-4", homeId: "oak-house", date: "2026-04-15", childId: "child-alex", childName: "Alex", category: "data_protection", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: true, consentObtained: false, documentationComplete: true, timelyRecording: true },
+
+  // Jordan — mixed results, some minor breaches
+  { id: "prv-5", homeId: "oak-house", date: "2026-02-18", childId: "child-jordan", childName: "Jordan", category: "communication_privacy", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: true, consentObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "prv-6", homeId: "oak-house", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "medical_privacy", outcome: "minor_breach", personalSpaceRespected: true, confidentialityMaintained: false, dignityPreserved: true, consentObtained: true, documentationComplete: true, timelyRecording: false },
+  { id: "prv-7", homeId: "oak-house", date: "2026-04-02", childId: "child-jordan", childName: "Jordan", category: "family_contact_privacy", outcome: "fully_respected", personalSpaceRespected: false, confidentialityMaintained: true, dignityPreserved: true, consentObtained: true, documentationComplete: false, timelyRecording: true },
+  { id: "prv-8", homeId: "oak-house", date: "2026-04-25", childId: "child-jordan", childName: "Jordan", category: "digital_privacy", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: false, consentObtained: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — newer, fewer records
+  { id: "prv-9", homeId: "oak-house", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "personal_space", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: true, consentObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "prv-10", homeId: "oak-house", date: "2026-04-08", childId: "child-morgan", childName: "Morgan", category: "confidentiality", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: true, consentObtained: false, documentationComplete: true, timelyRecording: false },
+  { id: "prv-11", homeId: "oak-house", date: "2026-04-28", childId: "child-morgan", childName: "Morgan", category: "dignity_care", outcome: "fully_respected", personalSpaceRespected: true, confidentialityMaintained: true, dignityPreserved: true, consentObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "prv-12", homeId: "oak-house", date: "2026-05-10", childId: "child-morgan", childName: "Morgan", category: "data_protection", outcome: "minor_breach", personalSpaceRespected: false, confidentialityMaintained: true, dignityPreserved: true, consentObtained: true, documentationComplete: false, timelyRecording: true },
 ];
 const privacy_demoPolicy: PrivacyPolicy = {
   privacyPolicy: true,
@@ -22214,8 +27731,11 @@ const privacy_demoPolicy: PrivacyPolicy = {
 };
 const privacy_demoStaff: StaffPrivacyTraining[] = [
   { staffId: "staff-sarah", dataProtectionTraining: true, confidentialityAwareness: true, dignityInCareTraining: true, consentPractice: true, digitalPrivacySkills: true, informationSharingKnowledge: true },
-
+  { staffId: "staff-tom", dataProtectionTraining: true, confidentialityAwareness: true, dignityInCareTraining: true, consentPractice: false, digitalPrivacySkills: false, informationSharingKnowledge: true },
+  { staffId: "staff-lisa", dataProtectionTraining: true, confidentialityAwareness: true, dignityInCareTraining: false, consentPractice: true, digitalPrivacySkills: true, informationSharingKnowledge: false },
+  { staffId: "staff-darren", dataProtectionTraining: true, confidentialityAwareness: true, dignityInCareTraining: true, consentPractice: true, digitalPrivacySkills: true, informationSharingKnowledge: true },
 ];
+
 async function get_privacy(req: NextRequest): Promise<Response> {
 
   const result = generatePrivacyIntelligence({
@@ -22931,6 +28451,17 @@ async function post_quality_assurance(request: NextRequest): Promise<Response> {
 // ─── quality-ecology-intelligence ──────────────────────────────────────
 const quality_ecology_intelligence_DEMO_RECORDS: QualityEcologyRecord[] = [
   { id: "qe-001", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "lifecycle_management", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-002", homeId: "home-oak", date: "2026-02-05", childId: "child-alex", childName: "Alex", category: "record_locking", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-003", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "audit_trail", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "qa_sampling", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "compliance_monitoring", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "escalation_management", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "amendment_tracking", outcome: "partially_compliant", qualityCheckPassed: false, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: false },
+  { id: "qe-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "quality_review", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "lifecycle_management", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "record_locking", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
+  { id: "qe-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "audit_trail", outcome: "partially_compliant", qualityCheckPassed: true, auditTrailComplete: true, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: false, timelyRecording: true },
+  { id: "qe-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "qa_sampling", outcome: "fully_compliant", qualityCheckPassed: true, auditTrailComplete: false, lifecycleCorrect: true, recordIntegrityVerified: true, documentationComplete: true, timelyRecording: true },
 ];
 const quality_ecology_intelligence_DEMO_POLICY: QualityEcologyPolicy = {
   qualityAssurancePolicy: true, recordLockingPolicy: true, auditTrailPolicy: true,
@@ -22938,8 +28469,11 @@ const quality_ecology_intelligence_DEMO_POLICY: QualityEcologyPolicy = {
 };
 const quality_ecology_intelligence_DEMO_STAFF: StaffQualityEcologyTraining[] = [
   { staffId: "staff-sarah", qualityAssuranceKnowledge: true, recordLockingSkills: true, auditTrailSkills: true, lifecycleManagementSkills: true, qaSamplingSkills: true, amendmentProcedureKnowledge: true },
-
+  { staffId: "staff-tom", qualityAssuranceKnowledge: true, recordLockingSkills: true, auditTrailSkills: true, lifecycleManagementSkills: true, qaSamplingSkills: true, amendmentProcedureKnowledge: false },
+  { staffId: "staff-lisa", qualityAssuranceKnowledge: true, recordLockingSkills: true, auditTrailSkills: true, lifecycleManagementSkills: true, qaSamplingSkills: false, amendmentProcedureKnowledge: true },
+  { staffId: "staff-darren", qualityAssuranceKnowledge: true, recordLockingSkills: true, auditTrailSkills: true, lifecycleManagementSkills: true, qaSamplingSkills: true, amendmentProcedureKnowledge: true },
 ];
+
 async function get_quality_ecology_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateQualityEcologyIntelligence({
@@ -22950,19 +28484,43 @@ async function get_quality_ecology_intelligence(req: NextRequest): Promise<Respo
 }
 
 // ─── quality-ecology ───────────────────────────────────────────────────
-  let quality_ecology_query = (sb.from("scheduled_occurrences") as SB).select("*");
-  const quality_ecology_compliance = calculateCompliance(occurrences ?? []);
+async function quality_ecology_handleLiveData(sb: any, homeId: string | null) {
+  let query = (sb.from("scheduled_occurrences") as SB).select("*");
 
-  const quality_ecology_byStatus: Record<string, number> = {};
+  if (homeId) {
+    query = query.eq("home_id", homeId);
+  }
+
+  const { data: occurrences, error } = await query;
+  if (error) throw error;
+
+  const compliance = calculateCompliance(occurrences ?? []);
+
+  // Group by status
+  const byStatus: Record<string, number> = {};
   for (const occ of occurrences ?? []) {
     byStatus[occ.status] = (byStatus[occ.status] ?? 0) + 1;
   }
-  const quality_ecology_pendingApproval = (occurrences ?? []).filter(
+
+  // Pending approval items
+  const pendingApproval = (occurrences ?? []).filter(
     (o: any) => o.status === "submitted" || o.status === "checked" || o.status === "resubmitted",
-);
-  const quality_ecology_overdueItems = (occurrences ?? []).filter(
+  );
+
+  // Overdue items
+  const overdueItems = (occurrences ?? []).filter(
     (o: any) => o.status === "overdue" || o.status === "escalated",
-);
+  );
+
+  return NextResponse.json({
+    compliance,
+    statusBreakdown: byStatus,
+    pendingApprovalCount: pendingApproval.length,
+    overdueCount: overdueItems.length,
+    pendingApproval: pendingApproval.slice(0, 20),
+    overdueItems: overdueItems.slice(0, 20),
+  });
+}
 function quality_ecology_getDemoData(homeId: string | null) {
   const now = new Date().toISOString();
   const today = now.slice(0, 10);
@@ -23162,7 +28720,7 @@ async function get_quality_ecology(req: NextRequest): Promise<Response> {
     const sb = createServerClient();
 
     if (sb && isSupabaseEnabled()) {
-      return await handleLiveData(sb, homeId);
+      return await quality_ecology_handleLiveData(sb, homeId);
     }
 
     return NextResponse.json(quality_ecology_getDemoData(homeId));
@@ -23177,6 +28735,22 @@ async function get_quality_ecology(req: NextRequest): Promise<Response> {
 // ─── quality-of-care ───────────────────────────────────────────────────
 const quality_of_care_demoRecords: QualityReviewRecord[] = [
   // Alex — strong quality reviews across domains
+  { id: "qr-1", childId: "child-alex", childName: "Alex", reviewDate: "2026-02-15", domain: "safety_welfare", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-2", childId: "child-alex", childName: "Alex", reviewDate: "2026-03-10", domain: "education_learning", outcome: "exceeds_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: false },
+  { id: "qr-3", childId: "child-alex", childName: "Alex", reviewDate: "2026-03-25", domain: "health_wellbeing", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: false, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-4", childId: "child-alex", childName: "Alex", reviewDate: "2026-04-15", domain: "positive_relationships", outcome: "exceeds_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-5", childId: "child-alex", childName: "Alex", reviewDate: "2026-05-01", domain: "outcomes_progress", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: false, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+
+  // Jordan — mixed results
+  { id: "qr-6", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-02-20", domain: "safety_welfare", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-7", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-03-15", domain: "protection_children", outcome: "partially_meets", evidenceDocumented: true, childViewCaptured: false, actionPlanCreated: true, followUpCompleted: false, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-8", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-04-10", domain: "leadership_management", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: false, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: false },
+  { id: "qr-9", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-05-05", domain: "child_voice", outcome: "meets_standard", evidenceDocumented: false, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: false, improvementIdentified: true },
+
+  // Morgan — newer, fewer reviews
+  { id: "qr-10", childId: "child-morgan", childName: "Morgan", reviewDate: "2026-03-20", domain: "health_wellbeing", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-11", childId: "child-morgan", childName: "Morgan", reviewDate: "2026-04-18", domain: "education_learning", outcome: "meets_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: false, regulatoryAligned: true, improvementIdentified: true },
+  { id: "qr-12", childId: "child-morgan", childName: "Morgan", reviewDate: "2026-05-10", domain: "positive_relationships", outcome: "exceeds_standard", evidenceDocumented: true, childViewCaptured: true, actionPlanCreated: true, followUpCompleted: true, regulatoryAligned: true, improvementIdentified: false },
 ];
 const quality_of_care_demoPolicy: QualityPolicy = {
   id: "pol-qoc-1",
@@ -23190,8 +28764,11 @@ const quality_of_care_demoPolicy: QualityPolicy = {
 };
 const quality_of_care_demoStaff: StaffQualityTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: true, dataAnalysis: true, childParticipation: true },
-
+  { id: "t-2", staffId: "staff-tom", staffName: "Tom Richards", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: false, dataAnalysis: false, childParticipation: true },
+  { id: "t-3", staffId: "staff-lisa", staffName: "Lisa Williams", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: true, dataAnalysis: true, childParticipation: false },
+  { id: "t-4", staffId: "staff-darren", staffName: "Darren Laville", qualityAssuranceSkills: true, outcomesMonitoring: true, regulatoryKnowledge: true, reflectivePractice: true, dataAnalysis: true, childParticipation: true },
 ];
+
 async function get_quality_of_care(req: NextRequest): Promise<Response> {
 
   const result = generateQualityOfCareIntelligence(
@@ -24077,7 +29654,6 @@ async function post_reflective_practice(request: NextRequest): Promise<Response>
 
 // ─── reg44-compliance ──────────────────────────────────────────────────
 const reg44_compliance_CHILD_IDS = ["child-morgan", "child-alex", "child-jayden"];
-
 const reg44_compliance_DEMO_VISITS: Reg44Visit[] = [
   {
     id: "v-jan",
@@ -24098,17 +29674,145 @@ const reg44_compliance_DEMO_VISITS: Reg44Visit[] = [
     reportSubmittedOnTime: true,
     sharedWithOfsted: true,
   },
+  {
+    id: "v-feb",
+    homeId: "oak-house",
+    visitDate: "2025-02-18",
+    visitor: "Sandra Mitchell",
+    visitorIndependent: true,
+    childrenSpokenTo: 3,
+    totalChildren: 3,
+    staffSpokenTo: 3,
+    recordsReviewed: true,
+    environmentInspected: true,
+    focusAreas: ["behaviour", "education", "staffing"],
+    overallRating: "good",
+    positiveFindings: ["Behaviour management is consistent and child-centred", "PEP reviews timely"],
+    concerns: [],
+    reportSubmittedDate: "2025-02-22",
+    reportSubmittedOnTime: true,
+    sharedWithOfsted: true,
+  },
+  {
+    id: "v-mar",
+    homeId: "oak-house",
+    visitDate: "2025-03-15",
+    visitor: "Sandra Mitchell",
+    visitorIndependent: true,
+    childrenSpokenTo: 2,
+    totalChildren: 3,
+    staffSpokenTo: 2,
+    recordsReviewed: true,
+    environmentInspected: true,
+    focusAreas: ["health", "environment", "records"],
+    overallRating: "outstanding",
+    positiveFindings: ["Health appointments all up to date", "Environment well-maintained and homely", "Records accurate and current"],
+    concerns: [],
+    reportSubmittedDate: "2025-03-20",
+    reportSubmittedOnTime: true,
+    sharedWithOfsted: true,
+  },
+  {
+    id: "v-apr",
+    homeId: "oak-house",
+    visitDate: "2025-04-22",
+    visitor: "Sandra Mitchell",
+    visitorIndependent: true,
+    childrenSpokenTo: 3,
+    totalChildren: 3,
+    staffSpokenTo: 2,
+    recordsReviewed: true,
+    environmentInspected: true,
+    focusAreas: ["complaints", "children_views", "safeguarding"],
+    overallRating: "good",
+    positiveFindings: ["Complaints procedure understood by children", "Children feel safe"],
+    concerns: ["One child expressed frustration about Wi-Fi access"],
+    reportSubmittedDate: "2025-04-28",
+    reportSubmittedOnTime: true,
+    sharedWithOfsted: true,
+  },
+  {
+    id: "v-may",
+    homeId: "oak-house",
+    visitDate: "2025-05-19",
+    visitor: "Sandra Mitchell",
+    visitorIndependent: true,
+    childrenSpokenTo: 3,
+    totalChildren: 3,
+    staffSpokenTo: 3,
+    recordsReviewed: true,
+    environmentInspected: true,
+    focusAreas: ["overall_quality", "staffing", "education"],
+    overallRating: "outstanding",
+    positiveFindings: ["Outstanding practice observed in therapeutic keywork", "Staff morale high"],
+    concerns: [],
+    reportSubmittedDate: "2025-05-24",
+    reportSubmittedOnTime: true,
+    sharedWithOfsted: true,
+  },
+  {
+    id: "v-jun",
+    homeId: "oak-house",
+    visitDate: "2025-06-16",
+    visitor: "Sandra Mitchell",
+    visitorIndependent: true,
+    childrenSpokenTo: 3,
+    totalChildren: 3,
+    staffSpokenTo: 2,
+    recordsReviewed: true,
+    environmentInspected: true,
+    focusAreas: ["behaviour", "health", "children_views"],
+    overallRating: "good",
+    positiveFindings: ["Children report feeling listened to", "Health needs well managed"],
+    concerns: ["Garden furniture needs repair"],
+    reportSubmittedDate: "2025-06-20",
+    reportSubmittedOnTime: true,
+    sharedWithOfsted: true,
+  },
 ];
 const reg44_compliance_DEMO_RECOMMENDATIONS: Reg44Recommendation[] = [
   { id: "rec-1", homeId: "oak-house", visitId: "v-jan", description: "Complete fire drill records for all shifts", priority: "high", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-02-10", completedDate: "2025-02-05", evidenceOfCompletion: "Fire drill log updated and verified", impactAssessed: true },
+  { id: "rec-2", homeId: "oak-house", visitId: "v-jan", description: "Update emergency contact list for all children", priority: "medium", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-02-15", completedDate: "2025-02-10", evidenceOfCompletion: "Contact lists updated on file", impactAssessed: true },
+  { id: "rec-3", homeId: "oak-house", visitId: "v-feb", description: "Ensure agency staff receive induction pack before first shift", priority: "high", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-03-10", completedDate: "2025-03-08", evidenceOfCompletion: "Induction checklist signed by 2 agency workers", impactAssessed: true },
+  { id: "rec-4", homeId: "oak-house", visitId: "v-feb", description: "Review and update behaviour support plans for all children", priority: "medium", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-03-15", completedDate: "2025-03-14", evidenceOfCompletion: "Plans reviewed and updated on Cara", impactAssessed: true },
+  { id: "rec-5", homeId: "oak-house", visitId: "v-mar", description: "Create sensory profile for Jayden", priority: "medium", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-04-10", completedDate: "2025-04-08", evidenceOfCompletion: "Sensory profile completed with OT input", impactAssessed: true },
+  { id: "rec-6", homeId: "oak-house", visitId: "v-mar", description: "Install additional bathroom grab rail", priority: "low", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-04-30", completedDate: "2025-04-15", evidenceOfCompletion: "Grab rail installed, photo on file", impactAssessed: false },
+  { id: "rec-7", homeId: "oak-house", visitId: "v-apr", description: "Review Wi-Fi access policy with children's council", priority: "medium", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-05-15", completedDate: "2025-05-12", evidenceOfCompletion: "Children's council meeting minutes — new Wi-Fi policy agreed", impactAssessed: true },
+  { id: "rec-8", homeId: "oak-house", visitId: "v-apr", description: "Refresh safeguarding training for night staff", priority: "immediate", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-05-01", completedDate: "2025-04-28", evidenceOfCompletion: "Training certificates on file for all night staff", impactAssessed: true },
+  { id: "rec-9", homeId: "oak-house", visitId: "v-may", description: "Document therapeutic keywork outcomes in care plans", priority: "medium", status: "completed", assignedTo: "Darren Laville", targetDate: "2025-06-15", completedDate: "2025-06-10", evidenceOfCompletion: "Care plans updated with keywork outcome sections", impactAssessed: true },
+  { id: "rec-10", homeId: "oak-house", visitId: "v-may", description: "Establish peer mentoring programme between children", priority: "low", status: "in_progress", assignedTo: "Darren Laville", targetDate: "2025-07-31", impactAssessed: false },
+  { id: "rec-11", homeId: "oak-house", visitId: "v-jun", description: "Repair garden furniture and create outdoor activity zone", priority: "medium", status: "open", assignedTo: "Darren Laville", targetDate: "2025-07-15", impactAssessed: false },
+  { id: "rec-12", homeId: "oak-house", visitId: "v-jun", description: "Review health pathway documentation for new admission", priority: "high", status: "in_progress", assignedTo: "Darren Laville", targetDate: "2025-07-10", impactAssessed: false },
 ];
 const reg44_compliance_DEMO_PARTICIPATION: ChildParticipation[] = [
   { id: "cp-1", homeId: "oak-house", visitId: "v-jan", childId: "child-morgan", childName: "Morgan", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-2", homeId: "oak-house", visitId: "v-jan", childId: "child-alex", childName: "Alex", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-3", homeId: "oak-house", visitId: "v-jan", childId: "child-jayden", childName: "Jayden", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-4", homeId: "oak-house", visitId: "v-feb", childId: "child-morgan", childName: "Morgan", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-5", homeId: "oak-house", visitId: "v-feb", childId: "child-alex", childName: "Alex", spokenTo: true, viewsCaptured: true, feedbackPositive: false, issuesRaised: ["Wants more activities at weekends"], issuesActioned: true },
+  { id: "cp-6", homeId: "oak-house", visitId: "v-feb", childId: "child-jayden", childName: "Jayden", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-7", homeId: "oak-house", visitId: "v-mar", childId: "child-morgan", childName: "Morgan", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-8", homeId: "oak-house", visitId: "v-mar", childId: "child-alex", childName: "Alex", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-9", homeId: "oak-house", visitId: "v-mar", childId: "child-jayden", childName: "Jayden", spokenTo: false, viewsCaptured: false, feedbackPositive: false, issuesRaised: [], issuesActioned: false },
+  { id: "cp-10", homeId: "oak-house", visitId: "v-apr", childId: "child-morgan", childName: "Morgan", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-11", homeId: "oak-house", visitId: "v-apr", childId: "child-alex", childName: "Alex", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-12", homeId: "oak-house", visitId: "v-apr", childId: "child-jayden", childName: "Jayden", spokenTo: true, viewsCaptured: true, feedbackPositive: false, issuesRaised: ["Wi-Fi too slow for gaming"], issuesActioned: true },
+  { id: "cp-13", homeId: "oak-house", visitId: "v-may", childId: "child-morgan", childName: "Morgan", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-14", homeId: "oak-house", visitId: "v-may", childId: "child-alex", childName: "Alex", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-15", homeId: "oak-house", visitId: "v-may", childId: "child-jayden", childName: "Jayden", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-16", homeId: "oak-house", visitId: "v-jun", childId: "child-morgan", childName: "Morgan", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-17", homeId: "oak-house", visitId: "v-jun", childId: "child-alex", childName: "Alex", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
+  { id: "cp-18", homeId: "oak-house", visitId: "v-jun", childId: "child-jayden", childName: "Jayden", spokenTo: true, viewsCaptured: true, feedbackPositive: true, issuesRaised: [], issuesActioned: false },
 ];
 const reg44_compliance_DEMO_RESPONSES: ManagementResponse[] = [
   { id: "mr-1", homeId: "oak-house", visitId: "v-jan", responseDate: "2025-01-28", respondedOnTime: true, acceptedRecommendations: 2, rejectedRecommendations: 0, rejectionReasons: [], actionPlanCreated: true, sharedWithRI: true },
-
+  { id: "mr-2", homeId: "oak-house", visitId: "v-feb", responseDate: "2025-02-25", respondedOnTime: true, acceptedRecommendations: 2, rejectedRecommendations: 0, rejectionReasons: [], actionPlanCreated: true, sharedWithRI: true },
+  { id: "mr-3", homeId: "oak-house", visitId: "v-mar", responseDate: "2025-03-25", respondedOnTime: true, acceptedRecommendations: 2, rejectedRecommendations: 0, rejectionReasons: [], actionPlanCreated: true, sharedWithRI: true },
+  { id: "mr-4", homeId: "oak-house", visitId: "v-apr", responseDate: "2025-05-02", respondedOnTime: true, acceptedRecommendations: 2, rejectedRecommendations: 0, rejectionReasons: [], actionPlanCreated: true, sharedWithRI: true },
+  { id: "mr-5", homeId: "oak-house", visitId: "v-may", responseDate: "2025-05-28", respondedOnTime: true, acceptedRecommendations: 2, rejectedRecommendations: 0, rejectionReasons: [], actionPlanCreated: true, sharedWithRI: true },
+  { id: "mr-6", homeId: "oak-house", visitId: "v-jun", responseDate: "2025-06-23", respondedOnTime: true, acceptedRecommendations: 2, rejectedRecommendations: 0, rejectionReasons: [], actionPlanCreated: true, sharedWithRI: true },
 ];
+
 async function get_reg44_compliance(req: NextRequest): Promise<Response> {
 
   const result = generateReg44ComplianceIntelligence(
@@ -24213,6 +29917,22 @@ async function post_reg44_compliance(req: NextRequest): Promise<Response> {
 // ─── reg44-visits ──────────────────────────────────────────────────────
 const reg44_visits_DEMO_RECORDS: Reg44VisitRecord[] = [
   // Alex — thorough visit coverage across multiple categories
+  { id: "rv-1", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "scheduled_visit", outcome: "satisfactory", childrenInterviewed: true, staffInterviewed: true, recordsReviewed: true, premisesInspected: true, documentationComplete: true, timelyRecording: true },
+  { id: "rv-2", homeId: "home-oak", date: "2026-02-14", childId: "child-alex", childName: "Alex", category: "unannounced_visit", outcome: "satisfactory", childrenInterviewed: true, staffInterviewed: true, recordsReviewed: true, premisesInspected: true, documentationComplete: true, timelyRecording: true },
+  { id: "rv-3", homeId: "home-oak", date: "2026-03-18", childId: "child-alex", childName: "Alex", category: "child_interview", outcome: "satisfactory", childrenInterviewed: true, staffInterviewed: false, recordsReviewed: true, premisesInspected: false, documentationComplete: true, timelyRecording: true },
+  { id: "rv-4", homeId: "home-oak", date: "2026-04-22", childId: "child-alex", childName: "Alex", category: "records_review", outcome: "minor_concern", childrenInterviewed: true, staffInterviewed: true, recordsReviewed: true, premisesInspected: true, documentationComplete: true, timelyRecording: false },
+
+  // Jordan — mostly good, some gaps
+  { id: "rv-5", homeId: "home-oak", date: "2026-01-25", childId: "child-jordan", childName: "Jordan", category: "scheduled_visit", outcome: "satisfactory", childrenInterviewed: true, staffInterviewed: true, recordsReviewed: true, premisesInspected: true, documentationComplete: true, timelyRecording: true },
+  { id: "rv-6", homeId: "home-oak", date: "2026-02-28", childId: "child-jordan", childName: "Jordan", category: "staff_interview", outcome: "satisfactory", childrenInterviewed: false, staffInterviewed: true, recordsReviewed: false, premisesInspected: false, documentationComplete: true, timelyRecording: true },
+  { id: "rv-7", homeId: "home-oak", date: "2026-03-30", childId: "child-jordan", childName: "Jordan", category: "premises_inspection", outcome: "minor_concern", childrenInterviewed: true, staffInterviewed: false, recordsReviewed: false, premisesInspected: true, documentationComplete: false, timelyRecording: true },
+  { id: "rv-8", homeId: "home-oak", date: "2026-05-05", childId: "child-jordan", childName: "Jordan", category: "follow_up_visit", outcome: "satisfactory", childrenInterviewed: true, staffInterviewed: true, recordsReviewed: true, premisesInspected: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — emergency placement, some areas incomplete
+  { id: "rv-9", homeId: "home-oak", date: "2026-02-10", childId: "child-morgan", childName: "Morgan", category: "scheduled_visit", outcome: "satisfactory", childrenInterviewed: true, staffInterviewed: true, recordsReviewed: true, premisesInspected: true, documentationComplete: true, timelyRecording: true },
+  { id: "rv-10", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "action_review", outcome: "action_required", childrenInterviewed: false, staffInterviewed: true, recordsReviewed: true, premisesInspected: false, documentationComplete: true, timelyRecording: false },
+  { id: "rv-11", homeId: "home-oak", date: "2026-04-18", childId: "child-morgan", childName: "Morgan", category: "child_interview", outcome: "satisfactory", childrenInterviewed: true, staffInterviewed: false, recordsReviewed: false, premisesInspected: false, documentationComplete: true, timelyRecording: true },
+  { id: "rv-12", homeId: "home-oak", date: "2026-05-12", childId: "child-morgan", childName: "Morgan", category: "unannounced_visit", outcome: "satisfactory", childrenInterviewed: true, staffInterviewed: true, recordsReviewed: true, premisesInspected: true, documentationComplete: false, timelyRecording: true },
 ];
 const reg44_visits_DEMO_POLICY: Reg44VisitPolicy = {
   reg44VisitPolicy: true,
@@ -24225,8 +29945,11 @@ const reg44_visits_DEMO_POLICY: Reg44VisitPolicy = {
 };
 const reg44_visits_DEMO_STAFF: StaffReg44VisitTraining[] = [
   { staffId: "staff-sarah", reg44Requirements: true, childInterviewSkills: true, reportWriting: true, actionTracking: true, regulatoryKnowledge: true, escalationProcedure: true },
-
+  { staffId: "staff-tom", reg44Requirements: true, childInterviewSkills: true, reportWriting: true, actionTracking: false, regulatoryKnowledge: true, escalationProcedure: false },
+  { staffId: "staff-lisa", reg44Requirements: true, childInterviewSkills: true, reportWriting: true, actionTracking: true, regulatoryKnowledge: false, escalationProcedure: true },
+  { staffId: "staff-darren", reg44Requirements: true, childInterviewSkills: true, reportWriting: true, actionTracking: true, regulatoryKnowledge: true, escalationProcedure: true },
 ];
+
 async function get_reg44_visits(req: NextRequest): Promise<Response> {
 
   const result = generateReg44VisitIntelligence({
@@ -24253,6 +29976,17 @@ async function get_reg44_visits(req: NextRequest): Promise<Response> {
 // ─── regulatory-intelligence ───────────────────────────────────────────
 const regulatory_intelligence_DEMO_RECORDS: RegulatoryRecord[] = [
   { id: "reg-001", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "reg44_visit", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-002", homeId: "home-oak", date: "2026-02-05", childId: "child-alex", childName: "Alex", category: "reg45_report", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-003", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "ofsted_notification", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "schedule4_matter", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "statutory_notification", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "action_point_tracking", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "regulatory_inspection", outcome: "partially_compliant", reportAccurate: false, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: false },
+  { id: "reg-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "compliance_audit", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "reg44_visit", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "ofsted_notification", outcome: "fully_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
+  { id: "reg-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "statutory_notification", outcome: "partially_compliant", reportAccurate: true, deadlineMet: true, evidenceAttached: false, actionPointsAddressed: true, documentationComplete: false, timelyRecording: true },
+  { id: "reg-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "schedule4_matter", outcome: "fully_compliant", reportAccurate: true, deadlineMet: false, evidenceAttached: true, actionPointsAddressed: true, documentationComplete: true, timelyRecording: true },
 ];
 const regulatory_intelligence_DEMO_POLICY: RegulatoryPolicy = {
   reg44VisitPolicy: true, reg45ReportingPolicy: true, ofstedNotificationPolicy: true,
@@ -24260,8 +29994,11 @@ const regulatory_intelligence_DEMO_POLICY: RegulatoryPolicy = {
 };
 const regulatory_intelligence_DEMO_STAFF: StaffRegulatoryTraining[] = [
   { staffId: "staff-sarah", regulatoryKnowledge: true, reportWritingSkills: true, notificationProcedureKnowledge: true, actionPointManagementSkills: true, complianceAuditSkills: true, inspectionPreparationSkills: true },
-
+  { staffId: "staff-tom", regulatoryKnowledge: true, reportWritingSkills: true, notificationProcedureKnowledge: true, actionPointManagementSkills: true, complianceAuditSkills: true, inspectionPreparationSkills: false },
+  { staffId: "staff-lisa", regulatoryKnowledge: true, reportWritingSkills: true, notificationProcedureKnowledge: true, actionPointManagementSkills: true, complianceAuditSkills: false, inspectionPreparationSkills: true },
+  { staffId: "staff-darren", regulatoryKnowledge: true, reportWritingSkills: true, notificationProcedureKnowledge: true, actionPointManagementSkills: true, complianceAuditSkills: true, inspectionPreparationSkills: true },
 ];
+
 async function get_regulatory_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateRegulatoryIntelligence({
@@ -24274,6 +30011,17 @@ async function get_regulatory_intelligence(req: NextRequest): Promise<Response> 
 // ─── regulatory-self-assessment-intelligence ───────────────────────────
 const regulatory_self_assessment_intelligence_DEMO_RECORDS: RegSelfAssessmentRecord[] = [
   { id: "rsa-001", homeId: "home-oak", date: "2026-01-10", childId: "child-alex", childName: "Alex", category: "regulation_area_review", outcome: "outstanding_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-002", homeId: "home-oak", date: "2026-02-05", childId: "child-alex", childName: "Alex", category: "evidence_gathering", outcome: "good_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-003", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "action_plan_tracking", outcome: "outstanding_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "improvement_monitoring", outcome: "good_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "external_feedback_integration", outcome: "outstanding_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "compliance_gap_analysis", outcome: "good_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "self_assessment_report", outcome: "partial_evidence", evidenceRobust: false, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: false },
+  { id: "rsa-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "inspection_preparation", outcome: "outstanding_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "regulation_area_review", outcome: "good_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "evidence_gathering", outcome: "outstanding_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
+  { id: "rsa-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "action_plan_tracking", outcome: "good_evidence", evidenceRobust: true, selfAssessmentAccurate: true, actionPlanAligned: true, improvementEvidenced: false, documentationComplete: false, timelyRecording: true },
+  { id: "rsa-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "compliance_gap_analysis", outcome: "partial_evidence", evidenceRobust: true, selfAssessmentAccurate: false, actionPlanAligned: true, improvementEvidenced: true, documentationComplete: true, timelyRecording: true },
 ];
 const regulatory_self_assessment_intelligence_DEMO_POLICY: RegSelfAssessmentPolicy = {
   selfAssessmentPolicy: true, evidenceGatheringPolicy: true, actionPlanPolicy: true,
@@ -24281,8 +30029,11 @@ const regulatory_self_assessment_intelligence_DEMO_POLICY: RegSelfAssessmentPoli
 };
 const regulatory_self_assessment_intelligence_DEMO_STAFF: StaffRegSelfAssessmentTraining[] = [
   { staffId: "staff-sarah", selfAssessmentKnowledge: true, evidenceGatheringSkills: true, actionPlanningSkills: true, regulatoryFrameworkKnowledge: true, inspectionPreparationSkills: true, qualityImprovementSkills: true },
-
+  { staffId: "staff-tom", selfAssessmentKnowledge: true, evidenceGatheringSkills: true, actionPlanningSkills: true, regulatoryFrameworkKnowledge: true, inspectionPreparationSkills: true, qualityImprovementSkills: false },
+  { staffId: "staff-lisa", selfAssessmentKnowledge: true, evidenceGatheringSkills: true, actionPlanningSkills: true, regulatoryFrameworkKnowledge: true, inspectionPreparationSkills: false, qualityImprovementSkills: true },
+  { staffId: "staff-darren", selfAssessmentKnowledge: true, evidenceGatheringSkills: true, actionPlanningSkills: true, regulatoryFrameworkKnowledge: true, inspectionPreparationSkills: true, qualityImprovementSkills: true },
 ];
+
 async function get_regulatory_self_assessment_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateRegSelfAssessmentIntelligence({
@@ -24310,6 +30061,164 @@ const regulatory_self_assessment_DEMO_ENTRIES: SelfAssessmentEntry[] = [
     gapsIdentified: [],
     actionsPlan: [],
   },
+  {
+    id: "sa-oak-02",
+    homeId: "oak-house",
+    regulationArea: "children_views",
+    assessmentDate: "2026-04-01T10:00:00Z",
+    assessedBy: "Sarah Johnson",
+    complianceLevel: "fully_compliant",
+    evidenceSources: ["child_feedback", "meeting_minutes", "staff_feedback"],
+    evidenceNotes: "Children's voices captured through regular house meetings and key-work sessions.",
+    strengthsIdentified: ["Active house meetings with clear record of children's input"],
+    gapsIdentified: [],
+    actionsPlan: [],
+  },
+  {
+    id: "sa-oak-03",
+    homeId: "oak-house",
+    regulationArea: "education",
+    assessmentDate: "2026-04-02T09:00:00Z",
+    assessedBy: "Tom Richards",
+    complianceLevel: "mostly_compliant",
+    evidenceSources: ["audit_report", "external_review"],
+    evidenceNotes: "PEPs are mostly current but one child's PEP is overdue for review.",
+    strengthsIdentified: ["School attendance has improved across the home"],
+    gapsIdentified: ["One PEP overdue for review"],
+    actionsPlan: ["Chase virtual school head for PEP review date"],
+  },
+  {
+    id: "sa-oak-04",
+    homeId: "oak-house",
+    regulationArea: "health",
+    assessmentDate: "2026-04-02T09:00:00Z",
+    assessedBy: "Tom Richards",
+    complianceLevel: "mostly_compliant",
+    evidenceSources: ["procedure", "incident_data", "training_record"],
+    evidenceNotes: "Health plans in place. Medication administration mostly consistent.",
+    strengthsIdentified: ["All children registered with GP and dentist"],
+    gapsIdentified: ["Two late medication administrations in past month"],
+    actionsPlan: ["Implement medication double-check at shift handover"],
+  },
+  {
+    id: "sa-oak-05",
+    homeId: "oak-house",
+    regulationArea: "positive_relationships",
+    assessmentDate: "2026-04-03T11:00:00Z",
+    assessedBy: "Sarah Johnson",
+    complianceLevel: "fully_compliant",
+    evidenceSources: ["child_feedback", "staff_feedback", "external_review"],
+    evidenceNotes: "Strong relationship between staff and young people evidenced by feedback.",
+    strengthsIdentified: ["Children describe positive relationships with key workers"],
+    gapsIdentified: [],
+    actionsPlan: [],
+  },
+  {
+    id: "sa-oak-06",
+    homeId: "oak-house",
+    regulationArea: "protection",
+    assessmentDate: "2026-04-03T11:00:00Z",
+    assessedBy: "Sarah Johnson",
+    complianceLevel: "mostly_compliant",
+    evidenceSources: ["policy", "training_record", "incident_data", "audit_report"],
+    evidenceNotes: "Safeguarding procedures robust. One near-miss identified and managed.",
+    strengthsIdentified: ["Staff safeguarding training at 100%"],
+    gapsIdentified: ["Contextual safeguarding mapping needs refreshing"],
+    actionsPlan: ["Update contextual safeguarding assessment for local area"],
+  },
+  {
+    id: "sa-oak-07",
+    homeId: "oak-house",
+    regulationArea: "behaviour_management",
+    assessmentDate: "2026-04-04T10:00:00Z",
+    assessedBy: "Lisa Williams",
+    complianceLevel: "partially_compliant",
+    evidenceSources: ["incident_data", "staff_feedback"],
+    evidenceNotes: "Some inconsistency in application of behaviour support plans.",
+    strengthsIdentified: ["Reduced restraint incidents compared to last quarter"],
+    gapsIdentified: [
+      "Behaviour support plans not consistently followed by all staff",
+      "Debriefing after incidents not always documented",
+    ],
+    actionsPlan: [
+      "Deliver refresher training on behaviour support plans to all staff",
+      "Implement mandatory post-incident debrief documentation",
+    ],
+  },
+  {
+    id: "sa-oak-08",
+    homeId: "oak-house",
+    regulationArea: "leadership",
+    assessmentDate: "2026-04-04T10:00:00Z",
+    assessedBy: "Sarah Johnson",
+    complianceLevel: "fully_compliant",
+    evidenceSources: ["audit_report", "meeting_minutes", "staff_feedback", "external_review"],
+    evidenceNotes: "RM provides strong leadership. Regular supervision and team meetings in place.",
+    strengthsIdentified: [
+      "Clear management structure with regular supervision",
+      "Staff feel supported by management team",
+    ],
+    gapsIdentified: [],
+    actionsPlan: [],
+  },
+  {
+    id: "sa-oak-09",
+    homeId: "oak-house",
+    regulationArea: "staffing",
+    assessmentDate: "2026-04-05T09:00:00Z",
+    assessedBy: "Sarah Johnson",
+    complianceLevel: "mostly_compliant",
+    evidenceSources: ["training_record", "audit_report", "staff_feedback"],
+    evidenceNotes: "Staffing levels adequate. One vacancy being recruited. Agency usage low.",
+    strengthsIdentified: ["Low agency staff usage", "Good staff retention"],
+    gapsIdentified: ["One senior RSW vacancy unfilled for 6 weeks"],
+    actionsPlan: ["Expedite recruitment for senior RSW role"],
+  },
+  {
+    id: "sa-oak-10",
+    homeId: "oak-house",
+    regulationArea: "premises",
+    assessmentDate: "2026-04-05T09:00:00Z",
+    assessedBy: "Tom Richards",
+    complianceLevel: "fully_compliant",
+    evidenceSources: ["audit_report", "inspection_report"],
+    evidenceNotes: "Premises well-maintained. Recent fire safety inspection passed.",
+    strengthsIdentified: ["Fire safety inspection passed with no actions"],
+    gapsIdentified: [],
+    actionsPlan: [],
+  },
+  {
+    id: "sa-oak-11",
+    homeId: "oak-house",
+    regulationArea: "complaints",
+    assessmentDate: "2026-04-06T10:00:00Z",
+    assessedBy: "Tom Richards",
+    complianceLevel: "mostly_compliant",
+    evidenceSources: ["procedure", "child_feedback", "audit_report"],
+    evidenceNotes: "Complaints handled well overall. One complaint response slightly late.",
+    strengthsIdentified: ["Children know how to complain and feel heard"],
+    gapsIdentified: ["One complaint response exceeded target timescale by 2 days"],
+    actionsPlan: ["Review complaint response tracking to prevent overruns"],
+  },
+  {
+    id: "sa-oak-12",
+    homeId: "oak-house",
+    regulationArea: "records",
+    assessmentDate: "2026-04-06T10:00:00Z",
+    assessedBy: "Lisa Williams",
+    complianceLevel: "partially_compliant",
+    evidenceSources: ["audit_report"],
+    evidenceNotes: "Some records incomplete. Daily logs sometimes lack detail.",
+    strengthsIdentified: [],
+    gapsIdentified: [
+      "Daily logs inconsistent in quality across staff members",
+      "Two children's files missing updated placement plans",
+    ],
+    actionsPlan: [
+      "Run record-keeping workshop for all staff",
+      "Complete missing placement plan updates within 2 weeks",
+    ],
+  },
 ];
 const regulatory_self_assessment_DEMO_ACTIONS: ImprovementAction[] = [
   {
@@ -24323,6 +30232,94 @@ const regulatory_self_assessment_DEMO_ACTIONS: ImprovementAction[] = [
     status: "completed",
     completedDate: "2026-05-10",
   },
+  {
+    id: "act-oak-02",
+    homeId: "oak-house",
+    regulationArea: "health",
+    action: "Implement medication double-check at shift handover",
+    responsible: "Sarah Johnson",
+    priority: "high",
+    dueDate: "2026-05-01",
+    status: "completed",
+    completedDate: "2026-04-28",
+  },
+  {
+    id: "act-oak-03",
+    homeId: "oak-house",
+    regulationArea: "protection",
+    action: "Update contextual safeguarding assessment for local area",
+    responsible: "Lisa Williams",
+    priority: "medium",
+    dueDate: "2026-06-01",
+    status: "in_progress",
+    completedDate: "",
+  },
+  {
+    id: "act-oak-04",
+    homeId: "oak-house",
+    regulationArea: "behaviour_management",
+    action: "Deliver refresher training on behaviour support plans to all staff",
+    responsible: "Sarah Johnson",
+    priority: "critical",
+    dueDate: "2026-05-20",
+    status: "in_progress",
+    completedDate: "",
+  },
+  {
+    id: "act-oak-05",
+    homeId: "oak-house",
+    regulationArea: "behaviour_management",
+    action: "Implement mandatory post-incident debrief documentation",
+    responsible: "Tom Richards",
+    priority: "high",
+    dueDate: "2026-04-30",
+    status: "overdue",
+    completedDate: "",
+  },
+  {
+    id: "act-oak-06",
+    homeId: "oak-house",
+    regulationArea: "staffing",
+    action: "Expedite recruitment for senior RSW role",
+    responsible: "Sarah Johnson",
+    priority: "high",
+    dueDate: "2026-06-15",
+    status: "in_progress",
+    completedDate: "",
+  },
+  {
+    id: "act-oak-07",
+    homeId: "oak-house",
+    regulationArea: "complaints",
+    action: "Review complaint response tracking to prevent overruns",
+    responsible: "Tom Richards",
+    priority: "medium",
+    dueDate: "2026-05-10",
+    status: "completed",
+    completedDate: "2026-05-08",
+  },
+  {
+    id: "act-oak-08",
+    homeId: "oak-house",
+    regulationArea: "records",
+    action: "Run record-keeping workshop for all staff",
+    responsible: "Sarah Johnson",
+    priority: "high",
+    dueDate: "2026-05-25",
+    status: "not_started",
+    completedDate: "",
+  },
+  {
+    id: "act-oak-09",
+    homeId: "oak-house",
+    regulationArea: "records",
+    action: "Complete missing placement plan updates within 2 weeks",
+    responsible: "Tom Richards",
+    priority: "critical",
+    dueDate: "2026-05-01",
+    status: "overdue",
+    completedDate: "",
+  },
 ];
 const regulatory_self_assessment_DEMO_FEEDBACK: ExternalFeedback[] = [
   {
@@ -24335,8 +30332,78 @@ const regulatory_self_assessment_DEMO_FEEDBACK: ExternalFeedback[] = [
     actionRequired: false,
     addressed: false,
   },
-
+  {
+    id: "fb-oak-02",
+    homeId: "oak-house",
+    source: "reg44",
+    date: "2026-04-15",
+    regulationArea: "records",
+    feedback: "Daily logs reviewed — some lack sufficient detail for accountability purposes.",
+    actionRequired: true,
+    addressed: false,
+  },
+  {
+    id: "fb-oak-03",
+    homeId: "oak-house",
+    source: "ofsted",
+    date: "2026-03-20",
+    regulationArea: "behaviour_management",
+    feedback: "Ensure all staff consistently follow behaviour support plans.",
+    actionRequired: true,
+    addressed: false,
+  },
+  {
+    id: "fb-oak-04",
+    homeId: "oak-house",
+    source: "local_authority",
+    date: "2026-04-10",
+    regulationArea: "education",
+    feedback: "Virtual school head pleased with improved attendance figures.",
+    actionRequired: false,
+    addressed: false,
+  },
+  {
+    id: "fb-oak-05",
+    homeId: "oak-house",
+    source: "parent",
+    date: "2026-04-08",
+    regulationArea: "positive_relationships",
+    feedback: "Parent commended key worker for excellent communication about their child.",
+    actionRequired: false,
+    addressed: false,
+  },
+  {
+    id: "fb-oak-06",
+    homeId: "oak-house",
+    source: "child",
+    date: "2026-04-12",
+    regulationArea: "children_views",
+    feedback: "Alex said house meetings are useful and staff listen to what young people say.",
+    actionRequired: false,
+    addressed: false,
+  },
+  {
+    id: "fb-oak-07",
+    homeId: "oak-house",
+    source: "irp",
+    date: "2026-04-05",
+    regulationArea: "staffing",
+    feedback: "Panel noted the ongoing vacancy and its potential impact on continuity of care.",
+    actionRequired: true,
+    addressed: true,
+  },
+  {
+    id: "fb-oak-08",
+    homeId: "oak-house",
+    source: "staff",
+    date: "2026-04-14",
+    regulationArea: "leadership",
+    feedback: "Staff survey indicates high satisfaction with management support and supervision.",
+    actionRequired: false,
+    addressed: false,
+  },
 ];
+
 async function get_regulatory_self_assessment(req: NextRequest): Promise<Response> {
 
   const homeId = "oak-house";
@@ -24429,24 +30496,53 @@ async function post_regulatory_self_assessment(req: NextRequest): Promise<Respon
 }
 
 // ─── regulatory ────────────────────────────────────────────────────────
-  const regulatory_reports: Reg44Report[] = reportsRes.data ?? [];
-  const reviews: Reg45Review[] = reviewsRes.data ?? [];
-  const regulatory_notifications: StatutoryNotification[] = notificationsRes.data ?? [];
+async function regulatory_handleLiveData(sb: any, homeId: string, view: string, year: number) {
+  const [reportsRes, reviewsRes, notificationsRes] = await Promise.all([
+    (sb.from("reg44_reports") as SB).select("*").eq("home_id", homeId),
+    (sb.from("reg45_reviews") as SB).select("*").eq("home_id", homeId),
+    (sb.from("statutory_notifications") as SB).select("*").eq("home_id", homeId),
+  ]);
 
-  const regulatory_now = new Date().toISOString();
-    const regulatory_compliance = evaluateRegulatoryCompliance(reports, reviews, notifications, homeId, now);
-    const regulatory_actionSummary = summarizeActionPoints(reports, now);
-  const regulatory_compliance_dup1 = evaluateRegulatoryCompliance(reports, reviews, notifications, homeId, now);
-  const regulatory_actionSummary_dup1 = summarizeActionPoints(reports, now);
+  if (reportsRes.error) throw reportsRes.error;
+  if (reviewsRes.error) throw reviewsRes.error;
+  if (notificationsRes.error) throw notificationsRes.error;
+
+  const reports: Reg44Report[] = reportsRes.data ?? [];
+  const reviews: Reg45Review[] = reviewsRes.data ?? [];
+  const notifications: StatutoryNotification[] = notificationsRes.data ?? [];
+
+  const now = new Date().toISOString();
+
+  if (view === "compliance") {
+    const compliance = evaluateRegulatoryCompliance(reports, reviews, notifications, homeId, now);
+    return NextResponse.json({ compliance });
+  }
+
+  if (view === "actions") {
+    const actionSummary = summarizeActionPoints(reports, now);
+    return NextResponse.json({ actionSummary });
+  }
+
+  // Overview
+  const compliance = evaluateRegulatoryCompliance(reports, reviews, notifications, homeId, now);
+  const actionSummary = summarizeActionPoints(reports, now);
+
+  return NextResponse.json({
+    compliance,
+    actionSummary,
+    recentReports: reports.slice(0, 6),
+    recentNotifications: notifications.slice(0, 10),
+  });
+}
 function regulatory_getDemoData(homeId: string, view: string, year: number) {
   const now = new Date().toISOString();
 
   const demoReports: Reg44Report[] = [
-    makeDemoReg44("2026-05", "2026-05-10T10:00:00Z", "published", false, "good"),
-    makeDemoReg44("2026-04", "2026-04-08T10:00:00Z", "published", false, "good"),
-    makeDemoReg44("2026-03", "2026-03-12T10:00:00Z", "published", true, "good"),
-    makeDemoReg44("2026-02", "2026-02-11T10:00:00Z", "published", false, "requires_improvement"),
-    makeDemoReg44("2026-01", "2026-01-14T10:00:00Z", "published", false, "good"),
+    regulatory_makeDemoReg44("2026-05", "2026-05-10T10:00:00Z", "published", false, "good"),
+    regulatory_makeDemoReg44("2026-04", "2026-04-08T10:00:00Z", "published", false, "good"),
+    regulatory_makeDemoReg44("2026-03", "2026-03-12T10:00:00Z", "published", true, "good"),
+    regulatory_makeDemoReg44("2026-02", "2026-02-11T10:00:00Z", "published", false, "requires_improvement"),
+    regulatory_makeDemoReg44("2026-01", "2026-01-14T10:00:00Z", "published", false, "good"),
   ];
 
   const demoReviews: Reg45Review[] = [
@@ -24568,15 +30664,49 @@ function regulatory_makeDemoReg44(
   announced: boolean,
   judgement: "outstanding" | "good" | "requires_improvement" | "inadequate",
 ): Reg44Report {
-  const regulatory_dueDate = new Date(new Date(visitDate).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-  const regulatory_submittedAt = new Date(new Date(visitDate).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
-  const regulatory_sections: Reg44SectionEntry[] = [
-    { section: "children_views", findings: "Children report feeling safe and well cared for.", rating: "strength", evidenceNotes: "Individual conversations with all 4 children." },
-];
-  const regulatory_actionPoints: ActionPoint[] = month === "2026-02" ? [
-    { id: `ap-${month}-1`, description: "Update fire evacuation plan to reflect new staff.", priority: "high", assignedTo: "user-rm-1", dueDate: "2026-03-15T00:00:00Z", status: "completed", completedAt: "2026-03-10T10:00:00Z" },
+  const dueDate = new Date(new Date(visitDate).getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const submittedAt = new Date(new Date(visitDate).getTime() + 3 * 24 * 60 * 60 * 1000).toISOString();
 
-] : [];
+  const sections: Reg44SectionEntry[] = [
+    { section: "children_views", findings: "Children report feeling safe and well cared for.", rating: "strength", evidenceNotes: "Individual conversations with all 4 children." },
+    { section: "practice_standards", findings: "Good standards of practice observed.", rating: "adequate", evidenceNotes: "Reviewed daily records and observed interactions." },
+    { section: "staffing", findings: "Adequate staffing. One vacancy being recruited.", rating: "adequate", evidenceNotes: "Rota review and staff interviews." },
+    { section: "safeguarding", findings: "Robust safeguarding practice.", rating: "strength", evidenceNotes: "Reviewed referrals and chronologies." },
+    { section: "environment", findings: "Home is clean, well-maintained and homely.", rating: "adequate", evidenceNotes: "Full premises check completed." },
+    { section: "health", findings: "Health needs being met. All appointments attended.", rating: "adequate", evidenceNotes: "Health tracker and appointment records." },
+    { section: "education", findings: "All children in education. Good progress.", rating: "strength", evidenceNotes: "PEP reviews and school reports." },
+    { section: "records", findings: "Records are comprehensive and up to date.", rating: "adequate", evidenceNotes: "Sampled daily logs, care plans, risk assessments." },
+    { section: "complaints", findings: "No complaints in period.", rating: "adequate", evidenceNotes: "Complaints log reviewed." },
+    { section: "previous_actions", findings: "All previous actions progressed or completed.", rating: "adequate", evidenceNotes: "Action tracker reviewed." },
+    { section: "overall_judgement", findings: `The home continues to provide ${judgement} care.`, rating: judgement === "good" ? "adequate" : "concern", evidenceNotes: "Overall assessment." },
+  ];
+
+  const actionPoints: ActionPoint[] = month === "2026-02" ? [
+    { id: `ap-${month}-1`, description: "Update fire evacuation plan to reflect new staff.", priority: "high", assignedTo: "user-rm-1", dueDate: "2026-03-15T00:00:00Z", status: "completed", completedAt: "2026-03-10T10:00:00Z" },
+    { id: `ap-${month}-2`, description: "Ensure all staff complete online safety refresher.", priority: "medium", assignedTo: "user-tl-1", dueDate: "2026-04-01T00:00:00Z", status: "completed", completedAt: "2026-03-28T10:00:00Z" },
+  ] : [
+    { id: `ap-${month}-1`, description: "Continue to monitor new staff member's induction.", priority: "low", assignedTo: "user-tl-1", dueDate: "2026-06-30T00:00:00Z", status: "open" },
+  ];
+
+  return {
+    id: `reg44-home-oak-${month}`,
+    homeId: "home-oak",
+    visitDate,
+    visitorId: "visitor-001",
+    visitorName: "Margaret Wilson",
+    status,
+    reportMonth: month,
+    dueDate,
+    submittedAt: status !== "overdue" ? submittedAt : undefined,
+    sections,
+    actionPoints,
+    overallJudgement: judgement,
+    childrenSpokenTo: 3,
+    staffSpokenTo: 4,
+    announced,
+  };
+}
+
 async function get_regulatory(req: NextRequest): Promise<Response> {
 
   try {
@@ -24588,7 +30718,7 @@ async function get_regulatory(req: NextRequest): Promise<Response> {
     const sb = createServerClient();
 
     if (sb && isSupabaseEnabled()) {
-      return await handleLiveData(sb, homeId, view, year);
+      return await regulatory_handleLiveData(sb, homeId, view, year);
     }
 
     return NextResponse.json(regulatory_getDemoData(homeId, view, year));
@@ -25641,7 +31771,7 @@ async function get_restraint(req: NextRequest): Promise<Response> {
 
 // ─── return-home-interview-quality ─────────────────────────────────────
 const return_home_interview_quality_CHILD_IDS = ["jordan", "alex"];
-const CHILD_NAMES: Record<string, string> = {
+const return_home_interview_quality_CHILD_NAMES: Record<string, string> = {
   jordan: "Jordan",
   alex: "Alex",
 };
@@ -25813,7 +31943,7 @@ async function get_return_home_interview_quality(req: NextRequest): Promise<Resp
     const { episodes, interviews, meetings, measures } = return_home_interview_quality_getDemoData();
     const result = generateReturnHomeInterviewQualityIntelligence(
       episodes, interviews, meetings, measures,
-      return_home_interview_quality_CHILD_IDS, CHILD_NAMES,
+      return_home_interview_quality_CHILD_IDS, return_home_interview_quality_CHILD_NAMES,
       "oak-house", "2025-01-01", "2025-06-30",
     );
     return NextResponse.json(result);
@@ -26202,20 +32332,183 @@ const routine_consistency_DEMO_CHILDREN: RoutineChild[] = [
     adaptations: ["anxiety_support", "education_need"],
     routinePreferences: ["Music while getting ready", "Toast not cereal for breakfast", "Gaming after homework only"],
   },
+  {
+    id: "child-jordan",
+    name: "Jordan",
+    dateOfBirth: "2013-07-22",
+    currentPlacement: true,
+    agreedBedtime: "20:30",
+    agreedWakeTime: "07:15",
+    schoolStartTime: "08:45",
+    adaptations: ["sensory_need"],
+    routinePreferences: ["Quiet time before bed", "Dimmed lights in morning", "Phone charging downstairs at night"],
+  },
+  {
+    id: "child-morgan",
+    name: "Morgan",
+    dateOfBirth: "2010-12-01",
+    currentPlacement: true,
+    agreedBedtime: "21:30",
+    agreedWakeTime: "07:00",
+    schoolStartTime: "08:30",
+    adaptations: ["cultural_religious", "sleep_difficulty"],
+    routinePreferences: ["Prayer time before bed", "Later wake on Fridays after Isha", "Own alarm clock"],
+  },
 ];
 function routine_consistency_rec(
   overrides: Partial<RoutineRecord> & { id: string; date: string; childId: string; phase: RoutineRecord["phase"] },
 ): RoutineRecord {
+  return {
+    quality: "good",
+    staffOnDuty: ["staff-sarah"],
+    startedOnTime: true,
+    completedOnTime: true,
+    childCooperated: true,
+    childMood: "positive",
+    adaptationsUsed: [],
+    disruptions: [],
+    ...overrides,
+  };
+}
 const routine_consistency_DEMO_RECORDS: RoutineRecord[] = [
   // ── Week 1: January 13-17 ──────────────────────────────────────────────
+  // Monday - Excellent start to term
+  routine_consistency_rec({ id: "rr-001", date: "2026-01-13", childId: "child-alex", phase: "morning", quality: "excellent", adaptationsUsed: ["anxiety_support"], notes: "Music on as Alex gets ready — settled and calm" }),
+  routine_consistency_rec({ id: "rr-002", date: "2026-01-13", childId: "child-alex", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-003", date: "2026-01-13", childId: "child-alex", phase: "after_school", quality: "good", adaptationsUsed: ["education_need"], notes: "Homework completed with staff support before gaming" }),
+  routine_consistency_rec({ id: "rr-004", date: "2026-01-13", childId: "child-alex", phase: "evening", quality: "excellent", staffOnDuty: ["staff-lisa"] }),
+  routine_consistency_rec({ id: "rr-005", date: "2026-01-13", childId: "child-alex", phase: "bedtime", quality: "good", staffOnDuty: ["staff-lisa"] }),
+
+  routine_consistency_rec({ id: "rr-006", date: "2026-01-13", childId: "child-jordan", phase: "morning", quality: "good", adaptationsUsed: ["sensory_need"], notes: "Lights dimmed, quiet start — Jordan calm" }),
+  routine_consistency_rec({ id: "rr-007", date: "2026-01-13", childId: "child-jordan", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-008", date: "2026-01-13", childId: "child-jordan", phase: "after_school", quality: "good" }),
+  routine_consistency_rec({ id: "rr-009", date: "2026-01-13", childId: "child-jordan", phase: "evening", quality: "excellent", staffOnDuty: ["staff-lisa"] }),
+  routine_consistency_rec({ id: "rr-010", date: "2026-01-13", childId: "child-jordan", phase: "bedtime", quality: "excellent", adaptationsUsed: ["sensory_need"], staffOnDuty: ["staff-lisa"], notes: "Reading lamp, quiet wind-down — asleep by 20:40" }),
+
+  routine_consistency_rec({ id: "rr-011", date: "2026-01-13", childId: "child-morgan", phase: "morning", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-012", date: "2026-01-13", childId: "child-morgan", phase: "school_run", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-013", date: "2026-01-13", childId: "child-morgan", phase: "after_school", quality: "good" }),
+  routine_consistency_rec({ id: "rr-014", date: "2026-01-13", childId: "child-morgan", phase: "evening", quality: "excellent", adaptationsUsed: ["cultural_religious"], staffOnDuty: ["staff-lisa"], notes: "Prayer time respected before dinner" }),
+  routine_consistency_rec({ id: "rr-015", date: "2026-01-13", childId: "child-morgan", phase: "bedtime", quality: "excellent", adaptationsUsed: ["cultural_religious", "sleep_difficulty"], staffOnDuty: ["staff-lisa"], notes: "Isha prayer, then melatonin, settled by 21:45" }),
+
+  // Wednesday - Mixed day for Alex (contact upset)
+  routine_consistency_rec({ id: "rr-016", date: "2026-01-15", childId: "child-alex", phase: "morning", quality: "good", adaptationsUsed: ["anxiety_support"] }),
+  routine_consistency_rec({ id: "rr-017", date: "2026-01-15", childId: "child-alex", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-018", date: "2026-01-15", childId: "child-alex", phase: "after_school", quality: "mixed", childMood: "anxious", disruptions: ["external_event"], notes: "Phone contact with mum — Alex upset, refused homework" }),
+  routine_consistency_rec({ id: "rr-019", date: "2026-01-15", childId: "child-alex", phase: "evening", quality: "good", notes: "Staff used PACE — Alex regulated by dinner time" }),
+  routine_consistency_rec({ id: "rr-020", date: "2026-01-15", childId: "child-alex", phase: "bedtime", quality: "good" }),
+
+  routine_consistency_rec({ id: "rr-021", date: "2026-01-15", childId: "child-jordan", phase: "morning", quality: "good", adaptationsUsed: ["sensory_need"] }),
+  routine_consistency_rec({ id: "rr-022", date: "2026-01-15", childId: "child-jordan", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-023", date: "2026-01-15", childId: "child-jordan", phase: "evening", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-024", date: "2026-01-15", childId: "child-jordan", phase: "bedtime", quality: "excellent", adaptationsUsed: ["sensory_need"] }),
+
+  routine_consistency_rec({ id: "rr-025", date: "2026-01-15", childId: "child-morgan", phase: "morning", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-026", date: "2026-01-15", childId: "child-morgan", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-027", date: "2026-01-15", childId: "child-morgan", phase: "evening", quality: "excellent", adaptationsUsed: ["cultural_religious"] }),
+  routine_consistency_rec({ id: "rr-028", date: "2026-01-15", childId: "child-morgan", phase: "bedtime", quality: "good", adaptationsUsed: ["sleep_difficulty"] }),
+
+  // Saturday - Weekend
+  routine_consistency_rec({ id: "rr-029", date: "2026-01-18", childId: "child-alex", phase: "weekend_morning", quality: "excellent", notes: "Lie-in until 8:30, then cooked own breakfast" }),
+  routine_consistency_rec({ id: "rr-030", date: "2026-01-18", childId: "child-alex", phase: "weekend_afternoon", quality: "excellent", notes: "Football with friends, then gaming" }),
+  routine_consistency_rec({ id: "rr-031", date: "2026-01-18", childId: "child-alex", phase: "weekend_evening", quality: "good" }),
+  routine_consistency_rec({ id: "rr-032", date: "2026-01-18", childId: "child-jordan", phase: "weekend_morning", quality: "good", adaptationsUsed: ["sensory_need"] }),
+  routine_consistency_rec({ id: "rr-033", date: "2026-01-18", childId: "child-jordan", phase: "weekend_afternoon", quality: "good" }),
+  routine_consistency_rec({ id: "rr-034", date: "2026-01-18", childId: "child-morgan", phase: "weekend_morning", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-035", date: "2026-01-18", childId: "child-morgan", phase: "weekend_afternoon", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-036", date: "2026-01-18", childId: "child-morgan", phase: "weekend_evening", quality: "excellent", adaptationsUsed: ["cultural_religious"] }),
+
+  // ── Week 5: February 10-14 ─────────────────────────────────────────────
+  routine_consistency_rec({ id: "rr-037", date: "2026-02-10", childId: "child-alex", phase: "morning", quality: "good", adaptationsUsed: ["anxiety_support"] }),
+  routine_consistency_rec({ id: "rr-038", date: "2026-02-10", childId: "child-alex", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-039", date: "2026-02-10", childId: "child-alex", phase: "evening", quality: "good" }),
+  routine_consistency_rec({ id: "rr-040", date: "2026-02-10", childId: "child-alex", phase: "bedtime", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-041", date: "2026-02-10", childId: "child-jordan", phase: "morning", quality: "good", adaptationsUsed: ["sensory_need"] }),
+  routine_consistency_rec({ id: "rr-042", date: "2026-02-10", childId: "child-jordan", phase: "evening", quality: "good" }),
+  routine_consistency_rec({ id: "rr-043", date: "2026-02-10", childId: "child-jordan", phase: "bedtime", quality: "good" }),
+  routine_consistency_rec({ id: "rr-044", date: "2026-02-10", childId: "child-morgan", phase: "morning", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-045", date: "2026-02-10", childId: "child-morgan", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-046", date: "2026-02-10", childId: "child-morgan", phase: "evening", quality: "excellent", adaptationsUsed: ["cultural_religious"] }),
+  routine_consistency_rec({ id: "rr-047", date: "2026-02-10", childId: "child-morgan", phase: "bedtime", quality: "good", adaptationsUsed: ["sleep_difficulty"] }),
+
+  // ── Week 9: March 10 — Agency staff day (disrupted for Jordan) ─────────
+  routine_consistency_rec({ id: "rr-048", date: "2026-03-10", childId: "child-alex", phase: "morning", quality: "good" }),
+  routine_consistency_rec({ id: "rr-049", date: "2026-03-10", childId: "child-alex", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-050", date: "2026-03-10", childId: "child-alex", phase: "evening", quality: "good" }),
+  routine_consistency_rec({ id: "rr-051", date: "2026-03-10", childId: "child-alex", phase: "bedtime", quality: "good" }),
+  routine_consistency_rec({ id: "rr-052", date: "2026-03-10", childId: "child-jordan", phase: "morning", quality: "mixed", childMood: "anxious", disruptions: ["staff_change"], childCooperated: false, notes: "Jordan anxious — unfamiliar agency staff on morning shift" }),
+  routine_consistency_rec({ id: "rr-053", date: "2026-03-10", childId: "child-jordan", phase: "evening", quality: "mixed", childMood: "anxious", disruptions: ["staff_change"] }),
+  routine_consistency_rec({ id: "rr-054", date: "2026-03-10", childId: "child-jordan", phase: "bedtime", quality: "poor", completedOnTime: false, childMood: "distressed", disruptions: ["staff_change"], notes: "Jordan very unsettled — wanted Lisa, not sleeping until 22:15" }),
+  routine_consistency_rec({ id: "rr-055", date: "2026-03-10", childId: "child-morgan", phase: "morning", quality: "good" }),
+  routine_consistency_rec({ id: "rr-056", date: "2026-03-10", childId: "child-morgan", phase: "evening", quality: "good", adaptationsUsed: ["cultural_religious"] }),
+  routine_consistency_rec({ id: "rr-057", date: "2026-03-10", childId: "child-morgan", phase: "bedtime", quality: "excellent", adaptationsUsed: ["sleep_difficulty"] }),
+
+  // ── Week 13: April 7 — Good routine week ───────────────────────────────
+  routine_consistency_rec({ id: "rr-058", date: "2026-04-07", childId: "child-alex", phase: "morning", quality: "excellent", adaptationsUsed: ["anxiety_support"] }),
+  routine_consistency_rec({ id: "rr-059", date: "2026-04-07", childId: "child-alex", phase: "school_run", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-060", date: "2026-04-07", childId: "child-alex", phase: "after_school", quality: "good", adaptationsUsed: ["education_need"] }),
+  routine_consistency_rec({ id: "rr-061", date: "2026-04-07", childId: "child-alex", phase: "evening", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-062", date: "2026-04-07", childId: "child-alex", phase: "bedtime", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-063", date: "2026-04-07", childId: "child-jordan", phase: "morning", quality: "good", adaptationsUsed: ["sensory_need"] }),
+  routine_consistency_rec({ id: "rr-064", date: "2026-04-07", childId: "child-jordan", phase: "school_run", quality: "good" }),
+  routine_consistency_rec({ id: "rr-065", date: "2026-04-07", childId: "child-jordan", phase: "evening", quality: "good" }),
+  routine_consistency_rec({ id: "rr-066", date: "2026-04-07", childId: "child-jordan", phase: "bedtime", quality: "excellent", adaptationsUsed: ["sensory_need"] }),
+  routine_consistency_rec({ id: "rr-067", date: "2026-04-07", childId: "child-morgan", phase: "morning", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-068", date: "2026-04-07", childId: "child-morgan", phase: "school_run", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-069", date: "2026-04-07", childId: "child-morgan", phase: "after_school", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-070", date: "2026-04-07", childId: "child-morgan", phase: "evening", quality: "excellent", adaptationsUsed: ["cultural_religious"] }),
+  routine_consistency_rec({ id: "rr-071", date: "2026-04-07", childId: "child-morgan", phase: "bedtime", quality: "excellent", adaptationsUsed: ["cultural_religious", "sleep_difficulty"] }),
+
+  // ── Week 17: May 5 — Bank holiday Monday ───────────────────────────────
+  routine_consistency_rec({ id: "rr-072", date: "2026-05-04", childId: "child-alex", phase: "weekend_morning", quality: "good" }),
+  routine_consistency_rec({ id: "rr-073", date: "2026-05-04", childId: "child-alex", phase: "weekend_afternoon", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-074", date: "2026-05-04", childId: "child-jordan", phase: "weekend_morning", quality: "good" }),
+  routine_consistency_rec({ id: "rr-075", date: "2026-05-04", childId: "child-jordan", phase: "weekend_afternoon", quality: "good" }),
+  routine_consistency_rec({ id: "rr-076", date: "2026-05-04", childId: "child-morgan", phase: "weekend_morning", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-077", date: "2026-05-04", childId: "child-morgan", phase: "weekend_afternoon", quality: "excellent" }),
+  routine_consistency_rec({ id: "rr-078", date: "2026-05-04", childId: "child-morgan", phase: "weekend_evening", quality: "excellent", adaptationsUsed: ["cultural_religious"] }),
+
+  // ── Alex refused morning — March 5 ─────────────────────────────────────
+  routine_consistency_rec({ id: "rr-079", date: "2026-03-05", childId: "child-alex", phase: "morning", quality: "mixed", startedOnTime: false, childMood: "anxious", disruptions: ["child_refusal"], notes: "Alex refused to get up — anxiety about school test" }),
+  routine_consistency_rec({ id: "rr-080", date: "2026-03-05", childId: "child-alex", phase: "school_run", quality: "mixed", startedOnTime: false }),
+  routine_consistency_rec({ id: "rr-081", date: "2026-03-05", childId: "child-alex", phase: "evening", quality: "good" }),
+  routine_consistency_rec({ id: "rr-082", date: "2026-03-05", childId: "child-alex", phase: "bedtime", quality: "good" }),
 ];
 const routine_consistency_DEMO_SHIFTS: StaffShiftRecord[] = [
   // Jan 13
+  { id: "ds-001", date: "2026-01-13", staffId: "staff-sarah", staffName: "Sarah Johnson", shiftType: "morning", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  { id: "ds-002", date: "2026-01-13", staffId: "staff-lisa", staffName: "Lisa Williams", shiftType: "evening", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  // Jan 15
+  { id: "ds-003", date: "2026-01-15", staffId: "staff-sarah", staffName: "Sarah Johnson", shiftType: "morning", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  { id: "ds-004", date: "2026-01-15", staffId: "staff-tom", staffName: "Tom Richards", shiftType: "evening", isRegularStaff: true, handoverCompleted: true, handoverQuality: "adequate" },
+  // Jan 18 (weekend)
+  { id: "ds-005", date: "2026-01-18", staffId: "staff-sarah", staffName: "Sarah Johnson", shiftType: "long_day", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  // Feb 10
+  { id: "ds-006", date: "2026-02-10", staffId: "staff-sarah", staffName: "Sarah Johnson", shiftType: "morning", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  { id: "ds-007", date: "2026-02-10", staffId: "staff-tom", staffName: "Tom Richards", shiftType: "evening", isRegularStaff: true, handoverCompleted: true, handoverQuality: "adequate" },
+  // Mar 5
+  { id: "ds-008", date: "2026-03-05", staffId: "staff-lisa", staffName: "Lisa Williams", shiftType: "morning", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  { id: "ds-009", date: "2026-03-05", staffId: "staff-tom", staffName: "Tom Richards", shiftType: "evening", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  // Mar 10 — Agency cover day
+  { id: "ds-010", date: "2026-03-10", staffId: "staff-agency1", staffName: "Agency Worker", shiftType: "long_day", isRegularStaff: false, handoverCompleted: true, handoverQuality: "brief" },
+  // Apr 7
+  { id: "ds-011", date: "2026-04-07", staffId: "staff-sarah", staffName: "Sarah Johnson", shiftType: "morning", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  { id: "ds-012", date: "2026-04-07", staffId: "staff-lisa", staffName: "Lisa Williams", shiftType: "evening", isRegularStaff: true, handoverCompleted: true, handoverQuality: "thorough" },
+  // May 4 (weekend)
+  { id: "ds-013", date: "2026-05-04", staffId: "staff-tom", staffName: "Tom Richards", shiftType: "long_day", isRegularStaff: true, handoverCompleted: true, handoverQuality: "adequate" },
 ];
 const routine_consistency_DEMO_PREFERENCES: RoutinePreferenceRecord[] = [
   { id: "rp-001", childId: "child-alex", date: "2026-01-10", preference: "Music while getting ready in the morning", implemented: true, implementedDate: "2026-01-12", childFeedback: "happy" },
-
+  { id: "rp-002", childId: "child-alex", date: "2026-01-10", preference: "Toast not cereal for breakfast", implemented: true, implementedDate: "2026-01-11", childFeedback: "happy" },
+  { id: "rp-003", childId: "child-alex", date: "2026-03-01", preference: "Gaming time after homework only — Alex agreed", implemented: true, implementedDate: "2026-03-02", childFeedback: "neutral" },
+  { id: "rp-004", childId: "child-jordan", date: "2026-01-15", preference: "Quiet wind-down before bed with reading lamp only", implemented: true, implementedDate: "2026-01-16", childFeedback: "happy" },
+  { id: "rp-005", childId: "child-jordan", date: "2026-01-15", preference: "Dimmed lights in morning — sensory sensitivity", implemented: true, implementedDate: "2026-01-16", childFeedback: "happy" },
+  { id: "rp-006", childId: "child-jordan", date: "2026-02-01", preference: "Phone charging downstairs overnight", implemented: true, implementedDate: "2026-02-02", childFeedback: "happy" },
+  { id: "rp-007", childId: "child-morgan", date: "2026-01-20", preference: "Prayer time before bed — 10 minutes of quiet", implemented: true, implementedDate: "2026-01-20", childFeedback: "happy" },
+  { id: "rp-008", childId: "child-morgan", date: "2026-02-01", preference: "Later bedtime on Fridays for Isha prayer", implemented: true, implementedDate: "2026-02-05", childFeedback: "happy" },
+  { id: "rp-009", childId: "child-morgan", date: "2026-03-10", preference: "Own alarm clock to wake independently", implemented: true, implementedDate: "2026-03-12", childFeedback: "happy" },
 ];
+
 async function get_routine_consistency(req: NextRequest): Promise<Response> {
 
   const result = generateRoutineConsistencyIntelligence(
@@ -26593,6 +32886,17 @@ async function post_safeguarding_effectiveness(req: NextRequest): Promise<Respon
 // ─── safeguarding-oversight-intelligence ───────────────────────────────
 const safeguarding_oversight_intelligence_DEMO_RECORDS: SafeguardingOversightRecord[] = [
   { id: "so-001", homeId: "home-oak", date: "2025-01-15", childId: "child-alex", childName: "Alex", category: "safeguarding_referral", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-002", homeId: "home-oak", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "concern_assessment", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-003", homeId: "home-oak", date: "2025-03-05", childId: "child-alex", childName: "Alex", category: "multi_agency_strategy", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-004", homeId: "home-oak", date: "2025-04-01", childId: "child-alex", childName: "Alex", category: "dbs_compliance_check", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-005", homeId: "home-oak", date: "2025-01-20", childId: "child-jordan", childName: "Jordan", category: "safeguarding_training", outcome: "partially_effective", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-006", homeId: "home-oak", date: "2025-02-15", childId: "child-jordan", childName: "Jordan", category: "threshold_decision", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-007", homeId: "home-oak", date: "2025-03-10", childId: "child-jordan", childName: "Jordan", category: "section47_investigation", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: false, documentationComplete: true, timelyRecording: false },
+  { id: "so-008", homeId: "home-oak", date: "2025-04-10", childId: "child-jordan", childName: "Jordan", category: "safeguarding_audit", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-009", homeId: "home-oak", date: "2025-02-01", childId: "child-morgan", childName: "Morgan", category: "safeguarding_referral", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-010", homeId: "home-oak", date: "2025-03-15", childId: "child-morgan", childName: "Morgan", category: "concern_assessment", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-011", homeId: "home-oak", date: "2025-04-10", childId: "child-morgan", childName: "Morgan", category: "multi_agency_strategy", outcome: "effective_safeguarding", riskAssessmentCompleted: true, safeguardingLeadInformed: false, multiAgencyEngaged: true, childViewCaptured: true, documentationComplete: true, timelyRecording: true },
+  { id: "so-012", homeId: "home-oak", date: "2025-05-01", childId: "child-morgan", childName: "Morgan", category: "threshold_decision", outcome: "partially_effective", riskAssessmentCompleted: true, safeguardingLeadInformed: true, multiAgencyEngaged: false, childViewCaptured: true, documentationComplete: false, timelyRecording: true },
 ];
 const safeguarding_oversight_intelligence_DEMO_POLICY: SafeguardingOversightPolicy = {
   safeguardingPolicy: true, saferRecruitmentPolicy: true, whistleblowingPolicy: true,
@@ -26600,8 +32904,11 @@ const safeguarding_oversight_intelligence_DEMO_POLICY: SafeguardingOversightPoli
 };
 const safeguarding_oversight_intelligence_DEMO_STAFF: StaffSafeguardingOversightTraining[] = [
   { staffId: "staff-sarah", safeguardingAwareness: true, recognisingSigns: true, referralProcedures: true, recordKeepingSkills: true, multiAgencyWorking: true, onlineSafetyKnowledge: true },
-
+  { staffId: "staff-tom", safeguardingAwareness: true, recognisingSigns: true, referralProcedures: true, recordKeepingSkills: true, multiAgencyWorking: true, onlineSafetyKnowledge: false },
+  { staffId: "staff-lisa", safeguardingAwareness: true, recognisingSigns: true, referralProcedures: true, recordKeepingSkills: true, multiAgencyWorking: false, onlineSafetyKnowledge: true },
+  { staffId: "staff-darren", safeguardingAwareness: true, recognisingSigns: true, referralProcedures: true, recordKeepingSkills: true, multiAgencyWorking: true, onlineSafetyKnowledge: true },
 ];
+
 async function get_safeguarding_oversight_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateSafeguardingOversightIntelligenceResult({
@@ -26614,17 +32921,23 @@ async function get_safeguarding_oversight_intelligence(req: NextRequest): Promis
 // ─── safeguarding-oversight ────────────────────────────────────────────
 const safeguarding_oversight_DEMO_STAFF: StaffSafeguardingRecord[] = [
   { id: "ss-dl", staffId: "staff-darren", staffName: "Darren Laville", role: "Registered Manager", dbsStatus: "enhanced_current", dbsDate: "2025-01-15", trainingLevel: "level_3_current", lastTrainingDate: "2025-09-01", designatedSafeguardingLead: true, deputyDSL: false, saferRecruitmentTrained: true, preventTrained: true },
+  { id: "ss-sj", staffId: "staff-sarah", staffName: "Sarah Johnson", role: "Senior RSW", dbsStatus: "enhanced_current", dbsDate: "2025-03-10", trainingLevel: "level_3_current", lastTrainingDate: "2025-10-01", designatedSafeguardingLead: false, deputyDSL: true, saferRecruitmentTrained: true, preventTrained: true },
+  { id: "ss-tr", staffId: "staff-tom", staffName: "Tom Richards", role: "RSW", dbsStatus: "enhanced_current", dbsDate: "2025-06-20", trainingLevel: "level_2_current", lastTrainingDate: "2026-01-15", designatedSafeguardingLead: false, deputyDSL: false, saferRecruitmentTrained: false, preventTrained: true },
+  { id: "ss-lw", staffId: "staff-lisa", staffName: "Lisa Williams", role: "Senior RSW", dbsStatus: "enhanced_current", dbsDate: "2025-04-01", trainingLevel: "level_2_current", lastTrainingDate: "2025-11-01", designatedSafeguardingLead: false, deputyDSL: false, saferRecruitmentTrained: true, preventTrained: true },
 ];
 const safeguarding_oversight_DEMO_REFERRALS: SafeguardingReferral[] = [
   { id: "sr-1", childId: "child-jordan", childName: "Jordan", referralType: "mash", outcome: "action_taken", dateReferred: "2026-02-20", dateOutcome: "2026-03-05", referredBy: "Darren Laville", concernCategory: "peer_on_peer", concernPriority: "high", timelyReferral: true, managementInformed: true, parentNotified: true, childInformed: true, recordedAppropriately: true },
+  { id: "sr-2", childId: "child-jordan", childName: "Jordan", referralType: "camhs", outcome: "referred_on", dateReferred: "2026-03-10", dateOutcome: "2026-03-15", referredBy: "Sarah Johnson", concernCategory: "self_harm", concernPriority: "high", timelyReferral: true, managementInformed: true, parentNotified: false, childInformed: true, recordedAppropriately: true },
 ];
 const safeguarding_oversight_DEMO_AUDITS: SafeguardingAudit[] = [
   { id: "sa-1", homeId: "oak-house", auditDate: "2026-02-01", auditor: "Darren Laville", policiesUpToDate: true, riskAssessmentsCurrentForAllChildren: true, bodyMapProtocolFollowed: true, whistleblowingPolicyAccessible: true, childrenKnowHowToComplain: true, safeguardingDisplayed: true, visitorsSignedIn: true, mobilePhonePolicy: true, photographyPolicy: true, overallCompliant: true },
+  { id: "sa-2", homeId: "oak-house", auditDate: "2026-04-15", auditor: "Darren Laville", policiesUpToDate: true, riskAssessmentsCurrentForAllChildren: true, bodyMapProtocolFollowed: true, whistleblowingPolicyAccessible: true, childrenKnowHowToComplain: true, safeguardingDisplayed: true, visitorsSignedIn: true, mobilePhonePolicy: true, photographyPolicy: true, overallCompliant: true },
 ];
 const safeguarding_oversight_DEMO_DSL_REVIEWS: DSLOversight[] = [
   { id: "do-1", dslName: "Darren Laville", reviewDate: "2026-03-01", openCasesReviewed: 2, openCasesTotal: 2, supervisionOfConcerns: true, multiAgencyAttendance: true, trainingDelivered: true, policyReviewCompleted: true, incidentDebriefsConducted: true, staffSupportProvided: true },
-
+  { id: "do-2", dslName: "Darren Laville", reviewDate: "2026-04-01", openCasesReviewed: 1, openCasesTotal: 1, supervisionOfConcerns: true, multiAgencyAttendance: true, trainingDelivered: false, policyReviewCompleted: false, incidentDebriefsConducted: true, staffSupportProvided: true },
 ];
+
 async function get_safeguarding_oversight(req: NextRequest): Promise<Response> {
 
   const result = generateSafeguardingOversightIntelligence(
@@ -26720,6 +33033,13 @@ async function post_safeguarding_oversight(req: NextRequest): Promise<Response> 
 // ─── safeguarding-referral-quality ─────────────────────────────────────
 const safeguarding_referral_quality_DEMO_REFERRALS: SafeguardingReferral[] = [
   { id: "sr-1", childId: "child-alex", childName: "Alex", referralDate: "2026-02-10", referralType: "section_47", referralOutcome: "appropriate_action", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
+  { id: "sr-2", childId: "child-alex", childName: "Alex", referralDate: "2026-03-05", referralType: "multi_agency", referralOutcome: "investigation_opened", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
+  { id: "sr-3", childId: "child-alex", childName: "Alex", referralDate: "2026-04-12", referralType: "early_help", referralOutcome: "appropriate_action", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
+  { id: "sr-4", childId: "child-jordan", childName: "Jordan", referralDate: "2026-01-20", referralType: "section_17", referralOutcome: "appropriate_action", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
+  { id: "sr-5", childId: "child-jordan", childName: "Jordan", referralDate: "2026-03-15", referralType: "lado", referralOutcome: "investigation_opened", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
+  { id: "sr-6", childId: "child-jordan", childName: "Jordan", referralDate: "2026-04-20", referralType: "internal_concern", referralOutcome: "appropriate_action", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
+  { id: "sr-7", childId: "child-morgan", childName: "Morgan", referralDate: "2026-02-28", referralType: "police_referral", referralOutcome: "appropriate_action", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
+  { id: "sr-8", childId: "child-morgan", childName: "Morgan", referralDate: "2026-04-05", referralType: "external_disclosure", referralOutcome: "appropriate_action", timelyResponse: true, multiAgencyEngaged: true, childInformed: true, documentedInRecord: true, managementOversight: true, lessonsLearned: true },
 ];
 const safeguarding_referral_quality_DEMO_POLICY: SafeguardingPolicy = {
   id: "sp-1",
@@ -26733,8 +33053,11 @@ const safeguarding_referral_quality_DEMO_POLICY: SafeguardingPolicy = {
 };
 const safeguarding_referral_quality_DEMO_TRAINING: StaffSafeguardingTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", safeguardingLevel3: true, referralProcesses: true, multiAgencyWorking: true, recognisingAbuse: true, recordKeeping: true, whistleblowing: true },
-
+  { id: "st-2", staffId: "staff-tom", staffName: "Tom Richards", safeguardingLevel3: true, referralProcesses: true, multiAgencyWorking: true, recognisingAbuse: true, recordKeeping: true, whistleblowing: true },
+  { id: "st-3", staffId: "staff-lisa", staffName: "Lisa Williams", safeguardingLevel3: true, referralProcesses: true, multiAgencyWorking: true, recognisingAbuse: true, recordKeeping: true, whistleblowing: true },
+  { id: "st-4", staffId: "staff-darren", staffName: "Darren Laville", safeguardingLevel3: true, referralProcesses: true, multiAgencyWorking: true, recognisingAbuse: true, recordKeeping: true, whistleblowing: true },
 ];
+
 async function get_safeguarding_referral_quality(req: NextRequest): Promise<Response> {
 
   const result = generateSafeguardingReferralQualityIntelligence(
@@ -26781,6 +33104,17 @@ async function post_safeguarding_referral_quality(req: NextRequest): Promise<Res
 // ─── safeguarding ──────────────────────────────────────────────────────
 const safeguarding_DEMO_RECORDS: SafeguardingRecord[] = [
   { id: "sg-001", homeId: "home-oak", date: "2026-05-14", childId: "child-alex", childName: "Alex", category: "concern_raised", outcome: "action_taken", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "sg-002", homeId: "home-oak", date: "2026-05-07", childId: "child-jordan", childName: "Jordan", category: "referral_made", outcome: "referral_accepted", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "sg-003", homeId: "home-oak", date: "2026-04-30", childId: "child-morgan", childName: "Morgan", category: "strategy_meeting", outcome: "action_taken", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: false, documentationComplete: true, timelyRecording: true },
+  { id: "sg-004", homeId: "home-oak", date: "2026-04-23", childId: "child-alex", childName: "Alex", category: "risk_assessment", outcome: "ongoing_monitoring", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "sg-005", homeId: "home-oak", date: "2026-04-16", childId: "child-jordan", childName: "Jordan", category: "chronology_update", outcome: "action_taken", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: false, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "sg-006", homeId: "home-oak", date: "2026-04-09", childId: "child-morgan", childName: "Morgan", category: "multi_agency_contact", outcome: "action_taken", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: false },
+  { id: "sg-007", homeId: "home-oak", date: "2026-04-02", childId: "child-alex", childName: "Alex", category: "child_protection_review", outcome: "action_taken", timelyResponse: true, childViewCaptured: false, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "sg-008", homeId: "home-oak", date: "2026-03-26", childId: "child-jordan", childName: "Jordan", category: "preventive_action", outcome: "no_further_action", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "sg-009", homeId: "home-oak", date: "2026-03-19", childId: "child-morgan", childName: "Morgan", category: "concern_raised", outcome: "action_taken", timelyResponse: false, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: false, timelyRecording: true },
+  { id: "sg-010", homeId: "home-oak", date: "2026-03-12", childId: "child-alex", childName: "Alex", category: "referral_made", outcome: "referral_accepted", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "sg-011", homeId: "home-oak", date: "2026-03-05", childId: "child-jordan", childName: "Jordan", category: "strategy_meeting", outcome: "action_taken", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
+  { id: "sg-012", homeId: "home-oak", date: "2026-02-26", childId: "child-morgan", childName: "Morgan", category: "risk_assessment", outcome: "ongoing_monitoring", timelyResponse: true, childViewCaptured: true, multiAgencyEngaged: true, riskAssessmentUpdated: true, documentationComplete: true, timelyRecording: true },
 ];
 const safeguarding_DEMO_POLICY: SafeguardingPolicy = {
   safeguardingPolicy: true,
@@ -26793,8 +33127,11 @@ const safeguarding_DEMO_POLICY: SafeguardingPolicy = {
 };
 const safeguarding_DEMO_STAFF: StaffSafeguardingTraining[] = [
   { staffId: "staff-sarah", safeguardingLevel3: true, childProtectionAwareness: true, preventDutyTraining: true, onlineSafetyTraining: true, concernRecordingSkills: true, multiAgencyWorkingKnowledge: true },
-
+  { staffId: "staff-tom", safeguardingLevel3: true, childProtectionAwareness: true, preventDutyTraining: true, onlineSafetyTraining: true, concernRecordingSkills: true, multiAgencyWorkingKnowledge: false },
+  { staffId: "staff-lisa", safeguardingLevel3: true, childProtectionAwareness: true, preventDutyTraining: true, onlineSafetyTraining: true, concernRecordingSkills: true, multiAgencyWorkingKnowledge: true },
+  { staffId: "staff-darren", safeguardingLevel3: true, childProtectionAwareness: true, preventDutyTraining: true, onlineSafetyTraining: true, concernRecordingSkills: true, multiAgencyWorkingKnowledge: true },
 ];
+
 async function get_safeguarding(req: NextRequest): Promise<Response> {
 
   const result = generateSafeguardingIntelligence({
@@ -26817,6 +33154,24 @@ async function get_safeguarding(req: NextRequest): Promise<Response> {
 // ─── safer-recruitment ─────────────────────────────────────────────────
 const safer_recruitment_DEMO_RECORDS: SaferRecruitmentRecord[] = [
   // Sarah Johnson — DBS, reference, interview, identity
+  { id: "sr-001", homeId: "home-oak", date: "2026-01-15", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "dbs_check", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sr-002", homeId: "home-oak", date: "2026-02-10", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "reference_verification", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sr-003", homeId: "home-oak", date: "2026-03-05", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "interview_assessment", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+
+  // Tom Richards — qualification, right to work, employment history
+  { id: "sr-004", homeId: "home-oak", date: "2026-01-20", staffId: "staff-tom", staffName: "Tom Richards", category: "qualification_check", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sr-005", homeId: "home-oak", date: "2026-02-15", staffId: "staff-tom", staffName: "Tom Richards", category: "right_to_work_check", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sr-006", homeId: "home-oak", date: "2026-03-10", staffId: "staff-tom", staffName: "Tom Richards", category: "employment_history_review", outcome: "minor_gap", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: false },
+
+  // Lisa Williams — identity, risk assessment, DBS
+  { id: "sr-007", homeId: "home-oak", date: "2026-02-01", staffId: "staff-lisa", staffName: "Lisa Williams", category: "identity_verification", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sr-008", homeId: "home-oak", date: "2026-03-15", staffId: "staff-lisa", staffName: "Lisa Williams", category: "risk_assessment", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sr-009", homeId: "home-oak", date: "2026-04-10", staffId: "staff-lisa", staffName: "Lisa Williams", category: "dbs_check", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+
+  // Darren Laville — reference, interview, qualification
+  { id: "sr-010", homeId: "home-oak", date: "2026-02-20", staffId: "staff-darren", staffName: "Darren Laville", category: "reference_verification", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sr-011", homeId: "home-oak", date: "2026-03-20", staffId: "staff-darren", staffName: "Darren Laville", category: "interview_assessment", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: true, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sr-012", homeId: "home-oak", date: "2026-04-15", staffId: "staff-darren", staffName: "Darren Laville", category: "qualification_check", outcome: "fully_compliant", dbsCheckCompleted: true, referencesVerified: true, interviewConducted: false, identityConfirmed: true, documentationComplete: true, timelyRecording: true },
 ];
 const safer_recruitment_DEMO_POLICY: SaferRecruitmentPolicy = {
   saferRecruitmentPolicy: true,
@@ -26829,8 +33184,11 @@ const safer_recruitment_DEMO_POLICY: SaferRecruitmentPolicy = {
 };
 const safer_recruitment_DEMO_STAFF: StaffSaferRecruitmentTraining[] = [
   { staffId: "staff-sarah", safeguardingRecruitment: true, dbsProcessKnowledge: true, interviewTechniques: true, referenceVerification: true, disqualificationAwareness: true, whistleblowingAwareness: true },
-
+  { staffId: "staff-tom", safeguardingRecruitment: true, dbsProcessKnowledge: true, interviewTechniques: true, referenceVerification: true, disqualificationAwareness: true, whistleblowingAwareness: false },
+  { staffId: "staff-lisa", safeguardingRecruitment: true, dbsProcessKnowledge: true, interviewTechniques: true, referenceVerification: true, disqualificationAwareness: false, whistleblowingAwareness: true },
+  { staffId: "staff-darren", safeguardingRecruitment: true, dbsProcessKnowledge: true, interviewTechniques: true, referenceVerification: true, disqualificationAwareness: true, whistleblowingAwareness: true },
 ];
+
 async function get_safer_recruitment(req: NextRequest): Promise<Response> {
 
   const result = generateSaferRecruitmentIntelligence({
@@ -27092,6 +33450,23 @@ const secure_accommodation_DEMO_REVIEWS: WelfareReview[] = [
     alternativesConsidered: true,
     nextReviewDue: "2026-03-15",
   },
+  {
+    id: "rev-morgan-02",
+    childId: "child-morgan",
+    orderId: "ord-morgan-01",
+    reviewDate: "2026-03-15",
+    status: "completed_on_time",
+    reviewedBy: "Darren Laville",
+    participants: ["child", "parent", "social_worker", "iro", "advocate", "legal_representative"],
+    childViewsRecorded: true,
+    childAttended: true,
+    progressOutcome: "positive_progress",
+    recommendationsMade: 3,
+    recommendationsActioned: 3,
+    continueSecureRecommended: false,
+    alternativesConsidered: true,
+    nextReviewDue: "2026-04-15",
+  },
 ];
 const secure_accommodation_DEMO_WELFARE: ChildWelfare[] = [
   {
@@ -27126,8 +33501,8 @@ const secure_accommodation_DEMO_DISCHARGE: DischargeAssessment[] = [
     riskManagementPlanUpdated: true,
     childViewsOnDischarge: true,
   },
-
 ];
+
 async function get_secure_accommodation(req: NextRequest): Promise<Response> {
 
   const result = generateSecureAccommodationIntelligence(
@@ -27243,6 +33618,36 @@ const self_harm_prevention_protocol_DEMO_PROFILES: ChildRiskProfile[] = [
     emergencyContactsRecorded: true,
     professionalSupportInPlace: true,
   },
+  {
+    id: "rp-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    riskLevel: "medium",
+    assessmentDate: "2026-03-15",
+    assessedBy: "Darren Laville",
+    reviewDate: "2026-04-15",
+    reviewCurrent: true,
+    safetyPlanStatus: "current",
+    triggersIdentified: ["peer conflict", "homesickness", "sleep disruption"],
+    copingStrategiesDocumented: ["talk to keyworker", "journaling", "physical activity"],
+    emergencyContactsRecorded: true,
+    professionalSupportInPlace: true,
+  },
+  {
+    id: "rp-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    riskLevel: "low",
+    assessmentDate: "2026-04-10",
+    assessedBy: "Darren Laville",
+    reviewDate: "2026-05-10",
+    reviewCurrent: true,
+    safetyPlanStatus: "current",
+    triggersIdentified: ["transitions", "loud environments"],
+    copingStrategiesDocumented: ["music", "drawing", "sensory toolkit"],
+    emergencyContactsRecorded: true,
+    professionalSupportInPlace: true,
+  },
 ];
 const self_harm_prevention_protocol_DEMO_INCIDENTS: SelfHarmIncident[] = [
   {
@@ -27274,11 +33679,36 @@ const self_harm_prevention_protocol_DEMO_CHECKS: EnvironmentalSafetyCheck[] = [
     windowRestrictorsChecked: true,
     overallCompliant: true,
   },
+  {
+    id: "esc-2",
+    checkDate: "2026-04-15",
+    checkedBy: "Tom Richards",
+    ligaturePointsAssessed: true,
+    sharpObjectsSecured: true,
+    medicationSecured: true,
+    bathroomProductsSecured: true,
+    windowRestrictorsChecked: true,
+    overallCompliant: true,
+  },
+  {
+    id: "esc-3",
+    checkDate: "2026-05-01",
+    checkedBy: "Lisa Williams",
+    ligaturePointsAssessed: true,
+    sharpObjectsSecured: true,
+    medicationSecured: true,
+    bathroomProductsSecured: true,
+    windowRestrictorsChecked: true,
+    overallCompliant: true,
+  },
 ];
 const self_harm_prevention_protocol_DEMO_TRAINING: StaffSelfHarmTraining[] = [
   { id: "sht-1", staffId: "staff-sarah", staffName: "Sarah Johnson", selfHarmAwareness: true, riskAssessmentTrained: true, safetyPlanningTrained: true, crisisInterventionTrained: true, postventionTrained: true, mentalHealthFirstAid: true },
-
+  { id: "sht-2", staffId: "staff-tom", staffName: "Tom Richards", selfHarmAwareness: true, riskAssessmentTrained: true, safetyPlanningTrained: true, crisisInterventionTrained: true, postventionTrained: true, mentalHealthFirstAid: true },
+  { id: "sht-3", staffId: "staff-lisa", staffName: "Lisa Williams", selfHarmAwareness: true, riskAssessmentTrained: true, safetyPlanningTrained: true, crisisInterventionTrained: true, postventionTrained: true, mentalHealthFirstAid: true },
+  { id: "sht-4", staffId: "staff-darren", staffName: "Darren Laville", selfHarmAwareness: true, riskAssessmentTrained: true, safetyPlanningTrained: true, crisisInterventionTrained: true, postventionTrained: true, mentalHealthFirstAid: true },
 ];
+
 async function get_self_harm_prevention_protocol(req: NextRequest): Promise<Response> {
 
   const result = generateSelfHarmPreventionProtocolIntelligence(
@@ -27377,6 +33807,104 @@ const sensory_environment_quality_DEMO_ASSESSMENTS: SensoryAssessment[] = [
     environmentAdapted: true,
     reviewScheduled: true,
   },
+  {
+    id: "sa-02",
+    childId: "child-alex",
+    childName: "Alex",
+    assessmentDate: "2026-02-10",
+    sensoryArea: "noise_management",
+    effectivenessLevel: "effective",
+    childFeedbackPositive: true,
+    occupationalTherapistInvolved: true,
+    documentedInPlan: true,
+    staffImplemented: true,
+    environmentAdapted: true,
+    reviewScheduled: true,
+  },
+  {
+    id: "sa-03",
+    childId: "child-alex",
+    childName: "Alex",
+    assessmentDate: "2026-03-20",
+    sensoryArea: "proprioceptive_input",
+    effectivenessLevel: "effective",
+    childFeedbackPositive: true,
+    occupationalTherapistInvolved: true,
+    documentedInPlan: true,
+    staffImplemented: true,
+    environmentAdapted: true,
+    reviewScheduled: true,
+  },
+  {
+    id: "sa-04",
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2026-01-20",
+    sensoryArea: "calm_space",
+    effectivenessLevel: "highly_effective",
+    childFeedbackPositive: true,
+    occupationalTherapistInvolved: true,
+    documentedInPlan: true,
+    staffImplemented: true,
+    environmentAdapted: true,
+    reviewScheduled: true,
+  },
+  {
+    id: "sa-05",
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2026-03-05",
+    sensoryArea: "sensory_diet",
+    effectivenessLevel: "effective",
+    childFeedbackPositive: true,
+    occupationalTherapistInvolved: false,
+    documentedInPlan: true,
+    staffImplemented: true,
+    environmentAdapted: true,
+    reviewScheduled: true,
+  },
+  {
+    id: "sa-06",
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2026-04-15",
+    sensoryArea: "vestibular_activity",
+    effectivenessLevel: "effective",
+    childFeedbackPositive: true,
+    occupationalTherapistInvolved: true,
+    documentedInPlan: true,
+    staffImplemented: true,
+    environmentAdapted: true,
+    reviewScheduled: false,
+  },
+  {
+    id: "sa-07",
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2026-02-01",
+    sensoryArea: "tactile_provision",
+    effectivenessLevel: "highly_effective",
+    childFeedbackPositive: true,
+    occupationalTherapistInvolved: true,
+    documentedInPlan: true,
+    staffImplemented: true,
+    environmentAdapted: true,
+    reviewScheduled: true,
+  },
+  {
+    id: "sa-08",
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2026-04-20",
+    sensoryArea: "visual_supports",
+    effectivenessLevel: "effective",
+    childFeedbackPositive: true,
+    occupationalTherapistInvolved: true,
+    documentedInPlan: true,
+    staffImplemented: true,
+    environmentAdapted: true,
+    reviewScheduled: true,
+  },
 ];
 const sensory_environment_quality_DEMO_POLICY: SensoryPolicy = {
   id: "sp-01",
@@ -27400,8 +33928,41 @@ const sensory_environment_quality_DEMO_TRAINING: StaffSensoryTraining[] = [
     occupationalTherapySupport: true,
     documentationSkills: true,
   },
-
+  {
+    id: "st-02",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    sensoryProcessing: true,
+    autismAwareness: true,
+    calmSpaceManagement: true,
+    sensoryDietImplementation: true,
+    occupationalTherapySupport: true,
+    documentationSkills: true,
+  },
+  {
+    id: "st-03",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    sensoryProcessing: true,
+    autismAwareness: true,
+    calmSpaceManagement: true,
+    sensoryDietImplementation: true,
+    occupationalTherapySupport: true,
+    documentationSkills: true,
+  },
+  {
+    id: "st-04",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    sensoryProcessing: true,
+    autismAwareness: true,
+    calmSpaceManagement: true,
+    sensoryDietImplementation: true,
+    occupationalTherapySupport: true,
+    documentationSkills: true,
+  },
 ];
+
 async function get_sensory_environment_quality(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -27524,7 +34085,7 @@ async function post_sensory_environment_quality(request: NextRequest): Promise<R
 
 // ─── sensory-environment ───────────────────────────────────────────────
 const sensory_environment_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-const CHILD_NAMES = ["Alex", "Jordan", "Morgan"];
+const sensory_environment_CHILD_NAMES = ["Alex", "Jordan", "Morgan"];
 const sensory_environment_DEMO_PROFILES: ChildSensoryProfile[] = [
   {
     id: "sp-01",
@@ -27538,6 +34099,31 @@ const sensory_environment_DEMO_PROFILES: ChildSensoryProfile[] = [
     calmingStrategies: ["Weighted blanket", "Noise-cancelling headphones", "Deep breathing exercises", "Quiet room access"],
     sensoryDiet: ["Morning sensory circuit", "Afternoon proprioceptive break", "Evening wind-down routine"],
     reviewDate: "2026-05-15",
+  },
+  {
+    id: "sp-02",
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2025-12-01",
+    assessedBy: "Lisa Williams",
+    sensoryNeeds: ["tactile_sensitivity"],
+    preferences: ["Soft cotton clothing only", "Smooth textures on furniture", "No tags on clothing"],
+    triggers: ["Unexpected touch", "Rough fabric textures", "Sticky or wet textures"],
+    calmingStrategies: ["Fidget toys", "Tactile comfort items", "Personal space reminders to peers"],
+    sensoryDiet: ["Fidget breaks during study", "Tactile play in sensory room"],
+    reviewDate: "2026-06-01",
+  },
+  {
+    id: "sp-03",
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2025-10-20",
+    assessedBy: "Tom Richards",
+    sensoryNeeds: ["light_sensitivity", "visual_stimulation"],
+    preferences: ["Adjustable lighting", "Natural daylight when possible", "Coloured LED options in bedroom"],
+    triggers: ["Harsh fluorescent lighting", "Flickering lights", "Bright screens in dark rooms"],
+    calmingStrategies: ["Blue-light filtering glasses", "Adjustable desk lamp", "Nature projection lamp"],
+    reviewDate: "2026-04-20",
   },
 ];
 const sensory_environment_DEMO_ASSESSMENTS: SpaceAssessment[] = [
@@ -27554,6 +34140,97 @@ const sensory_environment_DEMO_ASSESSMENTS: SpaceAssessment[] = [
     sensoryConsiderations: ["Blackout curtains fitted", "Noise-reducing carpet"],
     improvementsNeeded: [],
   },
+  {
+    id: "sa-02",
+    spaceType: "living_room",
+    assessmentDate: "2025-12-10",
+    assessedBy: "Sarah Johnson",
+    noiseLevel: "moderate",
+    lightingQuality: "adjustable",
+    temperature: "comfortable",
+    personalisationLevel: "moderate",
+    childFriendly: true,
+    sensoryConsiderations: ["Soft furnishings to reduce echo"],
+    improvementsNeeded: ["Install additional soft furnishings to reduce noise further"],
+  },
+  {
+    id: "sa-03",
+    spaceType: "kitchen",
+    assessmentDate: "2025-12-10",
+    assessedBy: "Darren Laville",
+    noiseLevel: "high",
+    lightingQuality: "fixed",
+    temperature: "variable",
+    personalisationLevel: "basic",
+    childFriendly: true,
+    sensoryConsiderations: ["Extractor fan noise can be triggering"],
+    improvementsNeeded: ["Fit quieter extractor fan", "Add adjustable lighting"],
+  },
+  {
+    id: "sa-04",
+    spaceType: "quiet_room",
+    assessmentDate: "2025-12-10",
+    assessedBy: "Lisa Williams",
+    noiseLevel: "low",
+    lightingQuality: "adjustable",
+    temperature: "comfortable",
+    personalisationLevel: "highly_personalised",
+    childFriendly: true,
+    sensoryConsiderations: ["Sound-proofing installed", "Dimmable lights", "Soft textures throughout"],
+    improvementsNeeded: [],
+  },
+  {
+    id: "sa-05",
+    spaceType: "sensory_room",
+    assessmentDate: "2025-12-10",
+    assessedBy: "Tom Richards",
+    noiseLevel: "low",
+    lightingQuality: "adjustable",
+    temperature: "comfortable",
+    personalisationLevel: "highly_personalised",
+    childFriendly: true,
+    sensoryConsiderations: ["Bubble tube", "Fibre optics", "Weighted blankets", "Tactile wall panels"],
+    improvementsNeeded: [],
+  },
+  {
+    id: "sa-06",
+    spaceType: "garden",
+    assessmentDate: "2025-12-10",
+    assessedBy: "Darren Laville",
+    noiseLevel: "moderate",
+    lightingQuality: "natural",
+    temperature: "variable",
+    personalisationLevel: "moderate",
+    childFriendly: true,
+    sensoryConsiderations: ["Outdoor sensory path", "Trampoline for vestibular input"],
+    improvementsNeeded: ["Add sheltered sensory area for adverse weather"],
+  },
+  {
+    id: "sa-07",
+    spaceType: "study_space",
+    assessmentDate: "2025-12-10",
+    assessedBy: "Sarah Johnson",
+    noiseLevel: "low",
+    lightingQuality: "adjustable",
+    temperature: "comfortable",
+    personalisationLevel: "moderate",
+    childFriendly: true,
+    sensoryConsiderations: ["Individual study booths with adjustable lighting"],
+    improvementsNeeded: [],
+  },
+  {
+    id: "sa-08",
+    spaceType: "bathroom",
+    assessmentDate: "2025-12-10",
+    assessedBy: "Sarah Johnson",
+    noiseLevel: "low",
+    lightingQuality: "fixed",
+    temperature: "comfortable",
+    personalisationLevel: "basic",
+    childFriendly: true,
+    sensoryConsiderations: ["Non-slip surfaces"],
+    improvementsNeeded: ["Install adjustable lighting to replace harsh fixed lighting"],
+  },
 ];
 const sensory_environment_DEMO_ADAPTATIONS: EnvironmentalAdaptation[] = [
   {
@@ -27569,11 +34246,142 @@ const sensory_environment_DEMO_ADAPTATIONS: EnvironmentalAdaptation[] = [
     effectiveness: "effective",
     childFeedback: "Really helps when it gets noisy",
   },
+  {
+    id: "ea-02",
+    childId: "child-alex",
+    childName: "Alex",
+    spaceType: "quiet_room",
+    adaptationType: "safe_space_creation",
+    description: "Dedicated calm corner with weighted blanket and soft lighting",
+    implementedDate: "2025-11-25",
+    reviewDate: "2026-05-25",
+    status: "active",
+    effectiveness: "effective",
+    childFeedback: "My favourite place when I need to chill out",
+  },
+  {
+    id: "ea-03",
+    childId: "child-jordan",
+    childName: "Jordan",
+    spaceType: "bedroom",
+    adaptationType: "texture_choice",
+    description: "All bedding replaced with smooth cotton, no tags, soft-touch surfaces",
+    implementedDate: "2025-12-05",
+    reviewDate: "2026-06-05",
+    status: "active",
+    effectiveness: "effective",
+    childFeedback: "Much better now",
+  },
+  {
+    id: "ea-04",
+    childId: "child-jordan",
+    childName: "Jordan",
+    spaceType: "living_room",
+    adaptationType: "equipment_provision",
+    description: "Fidget toy basket available in communal area",
+    implementedDate: "2025-12-10",
+    reviewDate: "2026-06-10",
+    status: "active",
+    effectiveness: "partially_effective",
+    childFeedback: "I like the fidget spinner but the others are boring",
+  },
+  {
+    id: "ea-05",
+    childId: "child-morgan",
+    childName: "Morgan",
+    spaceType: "bedroom",
+    adaptationType: "lighting_adjustment",
+    description: "Dimmable LED strip lights with colour options installed",
+    implementedDate: "2025-10-25",
+    reviewDate: "2026-04-25",
+    status: "active",
+    effectiveness: "effective",
+    childFeedback: "Love the blue light setting",
+  },
+  {
+    id: "ea-06",
+    childId: "child-morgan",
+    childName: "Morgan",
+    spaceType: "study_space",
+    adaptationType: "lighting_adjustment",
+    description: "Blue-light filter fitted on study screen and adjustable desk lamp provided",
+    implementedDate: "2025-10-30",
+    reviewDate: "2026-04-30",
+    status: "active",
+    effectiveness: "effective",
+    childFeedback: "No more headaches when doing homework",
+  },
+  {
+    id: "ea-07",
+    spaceType: "kitchen",
+    adaptationType: "noise_reduction",
+    description: "Plan to replace extractor fan with quieter model",
+    implementedDate: "2026-01-15",
+    reviewDate: "2026-07-15",
+    status: "planned",
+    effectiveness: "not_yet_assessed",
+  },
+  {
+    id: "ea-08",
+    spaceType: "living_room",
+    adaptationType: "visual_timetable",
+    description: "Daily visual timetable displayed in living room for all children",
+    implementedDate: "2025-09-01",
+    reviewDate: "2026-03-01",
+    status: "active",
+    effectiveness: "effective",
+  },
+  {
+    id: "ea-09",
+    childId: "child-alex",
+    childName: "Alex",
+    spaceType: "sensory_room",
+    adaptationType: "equipment_provision",
+    description: "Weighted lap pad for sensory room use",
+    implementedDate: "2025-12-15",
+    reviewDate: "2026-06-15",
+    status: "active",
+    effectiveness: "effective",
+    childFeedback: "I take it in when I need to calm down",
+  },
+  {
+    id: "ea-10",
+    childId: "child-morgan",
+    childName: "Morgan",
+    spaceType: "bathroom",
+    adaptationType: "lighting_adjustment",
+    description: "Motion-activated gentle night light for bathroom visits",
+    implementedDate: "2025-11-10",
+    reviewDate: "2026-02-10",
+    status: "needs_review",
+    effectiveness: "partially_effective",
+    childFeedback: "It helps but sometimes the motion sensor is too sensitive",
+  },
 ];
 const sensory_environment_DEMO_USAGE: TherapeuticSpaceUsage[] = [
   { id: "tu-01", spaceType: "sensory_room", date: "2026-01-03", childId: "child-alex", childName: "Alex", durationMinutes: 30, purpose: "Calming after school", staffSupported: true, childResponse: "positive" },
-
+  { id: "tu-02", spaceType: "quiet_room", date: "2026-01-05", childId: "child-alex", childName: "Alex", durationMinutes: 20, purpose: "Self-regulation", staffSupported: false, childResponse: "positive" },
+  { id: "tu-03", spaceType: "sensory_room", date: "2026-01-10", childId: "child-alex", childName: "Alex", durationMinutes: 45, purpose: "Anxiety management", staffSupported: true, childResponse: "positive" },
+  { id: "tu-04", spaceType: "quiet_room", date: "2026-01-14", childId: "child-alex", childName: "Alex", durationMinutes: 15, purpose: "Break from group activity", staffSupported: false, childResponse: "positive" },
+  { id: "tu-05", spaceType: "sensory_room", date: "2026-01-18", childId: "child-alex", childName: "Alex", durationMinutes: 30, purpose: "Sensory diet session", staffSupported: true, childResponse: "positive" },
+  { id: "tu-06", spaceType: "garden", date: "2026-01-20", childId: "child-alex", childName: "Alex", durationMinutes: 40, purpose: "Outdoor sensory path and trampoline", staffSupported: true, childResponse: "positive" },
+  { id: "tu-07", spaceType: "sensory_room", date: "2026-01-25", childId: "child-alex", childName: "Alex", durationMinutes: 25, purpose: "Wind-down before bed", staffSupported: true, childResponse: "positive" },
+  { id: "tu-08", spaceType: "quiet_room", date: "2026-01-28", childId: "child-alex", childName: "Alex", durationMinutes: 20, purpose: "Self-regulation after conflict", staffSupported: true, childResponse: "neutral" },
+  { id: "tu-09", spaceType: "sensory_room", date: "2026-01-04", childId: "child-jordan", childName: "Jordan", durationMinutes: 20, purpose: "Tactile exploration", staffSupported: true, childResponse: "positive" },
+  { id: "tu-10", spaceType: "activity_room", date: "2026-01-08", childId: "child-jordan", childName: "Jordan", durationMinutes: 35, purpose: "Proprioceptive play", staffSupported: true, childResponse: "positive" },
+  { id: "tu-11", spaceType: "sensory_room", date: "2026-01-12", childId: "child-jordan", childName: "Jordan", durationMinutes: 25, purpose: "Calming session", staffSupported: false, childResponse: "neutral" },
+  { id: "tu-12", spaceType: "garden", date: "2026-01-16", childId: "child-jordan", childName: "Jordan", durationMinutes: 30, purpose: "Outdoor play", staffSupported: true, childResponse: "positive" },
+  { id: "tu-13", spaceType: "sensory_room", date: "2026-01-22", childId: "child-jordan", childName: "Jordan", durationMinutes: 20, purpose: "Pre-bedtime calming", staffSupported: true, childResponse: "positive" },
+  { id: "tu-14", spaceType: "activity_room", date: "2026-01-27", childId: "child-jordan", childName: "Jordan", durationMinutes: 40, purpose: "Movement and gross motor activity", staffSupported: true, childResponse: "positive" },
+  { id: "tu-15", spaceType: "quiet_room", date: "2026-01-02", childId: "child-morgan", childName: "Morgan", durationMinutes: 25, purpose: "Reading in gentle lighting", staffSupported: false, childResponse: "positive" },
+  { id: "tu-16", spaceType: "sensory_room", date: "2026-01-07", childId: "child-morgan", childName: "Morgan", durationMinutes: 30, purpose: "Light therapy session", staffSupported: true, childResponse: "positive" },
+  { id: "tu-17", spaceType: "quiet_room", date: "2026-01-11", childId: "child-morgan", childName: "Morgan", durationMinutes: 15, purpose: "Headache recovery", staffSupported: false, childResponse: "neutral" },
+  { id: "tu-18", spaceType: "sensory_room", date: "2026-01-15", childId: "child-morgan", childName: "Morgan", durationMinutes: 35, purpose: "Fibre optic and bubble tube relaxation", staffSupported: true, childResponse: "positive" },
+  { id: "tu-19", spaceType: "garden", date: "2026-01-19", childId: "child-morgan", childName: "Morgan", durationMinutes: 45, purpose: "Natural light exposure and outdoor activity", staffSupported: true, childResponse: "positive" },
+  { id: "tu-20", spaceType: "sensory_room", date: "2026-01-24", childId: "child-morgan", childName: "Morgan", durationMinutes: 20, purpose: "Evening wind-down", staffSupported: true, childResponse: "positive" },
+  { id: "tu-21", spaceType: "quiet_room", date: "2026-01-30", childId: "child-morgan", childName: "Morgan", durationMinutes: 20, purpose: "Self-regulation", staffSupported: false, childResponse: "positive" },
 ];
+
 async function get_sensory_environment(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -27586,7 +34394,7 @@ async function get_sensory_environment(req: NextRequest): Promise<Response> {
     sensory_environment_DEMO_ADAPTATIONS,
     sensory_environment_DEMO_USAGE,
     sensory_environment_CHILD_IDS,
-    CHILD_NAMES,
+    sensory_environment_CHILD_NAMES,
     "oak-house",
     periodStart,
     periodEnd,
@@ -27670,7 +34478,7 @@ async function post_sensory_environment(request: NextRequest): Promise<Response>
 
 // ─── sensory-processing-support ────────────────────────────────────────
 const sensory_processing_support_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-const CHILD_NAMES_dup1 = ["Alex", "Jordan", "Morgan"];
+const sensory_processing_support_CHILD_NAMES = ["Alex", "Jordan", "Morgan"];
 const sensory_processing_support_DEMO_ASSESSMENTS: SensoryAssessment[] = [
   {
     id: "sa-01",
@@ -27679,6 +34487,66 @@ const sensory_processing_support_DEMO_ASSESSMENTS: SensoryAssessment[] = [
     assessmentDate: "2026-01-15",
     assessedBy: "Sarah Johnson",
     sensoryNeeds: ["hyper_auditory", "hypo_proprioceptive"],
+    sensoryPlanInPlace: true,
+    occupationalTherapyReferred: true,
+    environmentAdapted: true,
+    parentCarerInformed: true,
+  },
+  {
+    id: "sa-02",
+    childId: "child-alex",
+    childName: "Alex",
+    assessmentDate: "2026-04-10",
+    assessedBy: "Sarah Johnson",
+    sensoryNeeds: ["hyper_auditory", "hypo_proprioceptive"],
+    sensoryPlanInPlace: true,
+    occupationalTherapyReferred: true,
+    environmentAdapted: true,
+    parentCarerInformed: true,
+  },
+  {
+    id: "sa-03",
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2026-02-01",
+    assessedBy: "Tom Richards",
+    sensoryNeeds: ["hyper_tactile", "hyper_visual"],
+    sensoryPlanInPlace: true,
+    occupationalTherapyReferred: true,
+    environmentAdapted: true,
+    parentCarerInformed: true,
+  },
+  {
+    id: "sa-04",
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2026-05-05",
+    assessedBy: "Lisa Williams",
+    sensoryNeeds: ["hyper_tactile", "hyper_visual", "hypo_vestibular"],
+    sensoryPlanInPlace: true,
+    occupationalTherapyReferred: true,
+    environmentAdapted: true,
+    parentCarerInformed: true,
+  },
+  {
+    id: "sa-05",
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2026-02-15",
+    assessedBy: "Lisa Williams",
+    sensoryNeeds: ["mixed", "hypo_vestibular"],
+    sensoryPlanInPlace: true,
+    occupationalTherapyReferred: true,
+    environmentAdapted: true,
+    parentCarerInformed: true,
+  },
+  {
+    id: "sa-06",
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2026-04-20",
+    assessedBy: "Darren Laville",
+    sensoryNeeds: ["mixed", "hypo_vestibular", "hyper_auditory"],
     sensoryPlanInPlace: true,
     occupationalTherapyReferred: true,
     environmentAdapted: true,
@@ -27694,6 +34562,127 @@ const sensory_processing_support_DEMO_INTERVENTIONS: SensoryIntervention[] = [
     interventionType: "sensory_diet",
     facilitatedBy: "Sarah Johnson",
     effectiveness: "highly_effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-02",
+    childId: "child-alex",
+    childName: "Alex",
+    interventionDate: "2026-02-05",
+    interventionType: "calming_strategy",
+    facilitatedBy: "Darren Laville",
+    effectiveness: "effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-03",
+    childId: "child-alex",
+    childName: "Alex",
+    interventionDate: "2026-03-01",
+    interventionType: "environmental_modification",
+    facilitatedBy: "Tom Richards",
+    effectiveness: "effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-04",
+    childId: "child-alex",
+    childName: "Alex",
+    interventionDate: "2026-04-15",
+    interventionType: "equipment_provision",
+    facilitatedBy: "Sarah Johnson",
+    effectiveness: "highly_effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-05",
+    childId: "child-jordan",
+    childName: "Jordan",
+    interventionDate: "2026-02-10",
+    interventionType: "therapeutic_activity",
+    facilitatedBy: "Lisa Williams",
+    effectiveness: "effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-06",
+    childId: "child-jordan",
+    childName: "Jordan",
+    interventionDate: "2026-03-05",
+    interventionType: "equipment_provision",
+    facilitatedBy: "Sarah Johnson",
+    effectiveness: "effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-07",
+    childId: "child-jordan",
+    childName: "Jordan",
+    interventionDate: "2026-03-20",
+    interventionType: "sensory_diet",
+    facilitatedBy: "Darren Laville",
+    effectiveness: "highly_effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-08",
+    childId: "child-jordan",
+    childName: "Jordan",
+    interventionDate: "2026-04-25",
+    interventionType: "calming_strategy",
+    facilitatedBy: "Tom Richards",
+    effectiveness: "effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-09",
+    childId: "child-morgan",
+    childName: "Morgan",
+    interventionDate: "2026-02-20",
+    interventionType: "alerting_strategy",
+    facilitatedBy: "Tom Richards",
+    effectiveness: "effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-10",
+    childId: "child-morgan",
+    childName: "Morgan",
+    interventionDate: "2026-03-10",
+    interventionType: "therapeutic_activity",
+    facilitatedBy: "Lisa Williams",
+    effectiveness: "effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-11",
+    childId: "child-morgan",
+    childName: "Morgan",
+    interventionDate: "2026-04-01",
+    interventionType: "sensory_diet",
+    facilitatedBy: "Sarah Johnson",
+    effectiveness: "highly_effective",
+    childResponse: "positive",
+    sensoryPlanFollowed: true,
+  },
+  {
+    id: "si-12",
+    childId: "child-morgan",
+    childName: "Morgan",
+    interventionDate: "2026-05-10",
+    interventionType: "environmental_modification",
+    facilitatedBy: "Darren Laville",
+    effectiveness: "effective",
     childResponse: "positive",
     sensoryPlanFollowed: true,
   },
@@ -27722,8 +34711,41 @@ const sensory_processing_support_DEMO_TRAINING: StaffSensoryTraining[] = [
     calmingStrategies: true,
     equipmentUse: true,
   },
-
+  {
+    id: "st-02",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    sensoryAwareness: true,
+    sensoryAssessment: true,
+    environmentalAdaptation: true,
+    interventionDelivery: true,
+    calmingStrategies: true,
+    equipmentUse: true,
+  },
+  {
+    id: "st-03",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    sensoryAwareness: true,
+    sensoryAssessment: true,
+    environmentalAdaptation: true,
+    interventionDelivery: true,
+    calmingStrategies: true,
+    equipmentUse: true,
+  },
+  {
+    id: "st-04",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    sensoryAwareness: true,
+    sensoryAssessment: true,
+    environmentalAdaptation: true,
+    interventionDelivery: true,
+    calmingStrategies: true,
+    equipmentUse: true,
+  },
 ];
+
 async function get_sensory_processing_support(req: NextRequest): Promise<Response> {
 
   const periodStart = "2026-01-01";
@@ -27736,7 +34758,7 @@ async function get_sensory_processing_support(req: NextRequest): Promise<Respons
     sensory_processing_support_DEMO_POLICIES,
     sensory_processing_support_DEMO_TRAINING,
     sensory_processing_support_CHILD_IDS,
-    CHILD_NAMES,
+    sensory_processing_support_CHILD_NAMES,
     "oak-house",
     periodStart,
     periodEnd,
@@ -28149,9 +35171,55 @@ const shift_intelligence_DEMO_STAFF: StaffProfile[] = [
     canWorkAlone: true,
     maxConsecutiveDays: 5,
   },
+  {
+    id: "staff-mike",
+    name: "Mike Chen",
+    role: "residential_child_worker",
+    contractedHoursPerWeek: 37.5,
+    isAgency: false,
+    keyWorkerFor: ["child-jordan"],
+    qualifications: ["Level 3 Diploma", "First Aid"],
+    canWorkAlone: false,
+    maxConsecutiveDays: 5,
+  },
+  {
+    id: "staff-lisa",
+    name: "Lisa Williams",
+    role: "senior_rcw",
+    contractedHoursPerWeek: 37.5,
+    isAgency: false,
+    keyWorkerFor: ["child-morgan"],
+    qualifications: ["Level 3 Diploma", "PACE trained"],
+    canWorkAlone: true,
+    maxConsecutiveDays: 5,
+  },
+  {
+    id: "staff-tom",
+    name: "Tom Watson",
+    role: "residential_child_worker",
+    contractedHoursPerWeek: 37.5,
+    isAgency: false,
+    keyWorkerFor: [],
+    qualifications: ["Level 3 Diploma"],
+    canWorkAlone: false,
+    maxConsecutiveDays: 5,
+  },
+  {
+    id: "staff-agency-1",
+    name: "Agency Worker (J. Patel)",
+    role: "agency",
+    contractedHoursPerWeek: 0,
+    isAgency: true,
+    keyWorkerFor: [],
+    qualifications: ["Level 3 Diploma"],
+    canWorkAlone: false,
+    maxConsecutiveDays: 7,
+  },
 ];
 const shift_intelligence_DEMO_CHILDREN = [
   { id: "child-alex", name: "Alex" },
+  { id: "child-jordan", name: "Jordan" },
+  { id: "child-morgan", name: "Morgan" },
 ];
 const shift_intelligence_DEMO_REQUIREMENTS: HomeShiftRequirements = {
   homeId: "oak-house",
@@ -28363,17 +35431,29 @@ async function post_shift_intelligence(req: NextRequest): Promise<Response> {
 // ─── sibling-contact-management ────────────────────────────────────────
 const sibling_contact_management_DEMO_CONTACTS: SiblingContact[] = [
   { id: "sc-1", childId: "child-alex", childName: "Alex", siblingId: "sib-alex-1", siblingName: "Sam", contactDate: "2026-02-10", contactType: "face_to_face", contactOutcome: "very_positive", durationMinutes: 120, facilitatedBy: "Sarah Johnson", childSatisfied: true, recordedInCasefile: true },
+  { id: "sc-2", childId: "child-alex", childName: "Alex", siblingId: "sib-alex-1", siblingName: "Sam", contactDate: "2026-03-15", contactType: "video_call", contactOutcome: "positive", durationMinutes: 45, facilitatedBy: "Tom Richards", childSatisfied: true, recordedInCasefile: true },
+  { id: "sc-3", childId: "child-alex", childName: "Alex", siblingId: "sib-alex-1", siblingName: "Sam", contactDate: "2026-04-12", contactType: "shared_activity", contactOutcome: "very_positive", durationMinutes: 180, facilitatedBy: "Sarah Johnson", childSatisfied: true, recordedInCasefile: true },
+  { id: "sc-4", childId: "child-jordan", childName: "Jordan", siblingId: "sib-jordan-1", siblingName: "Casey", contactDate: "2026-02-20", contactType: "face_to_face", contactOutcome: "positive", durationMinutes: 90, facilitatedBy: "Lisa Williams", childSatisfied: true, recordedInCasefile: true },
+  { id: "sc-5", childId: "child-jordan", childName: "Jordan", siblingId: "sib-jordan-1", siblingName: "Casey", contactDate: "2026-03-25", contactType: "phone_call", contactOutcome: "positive", durationMinutes: 30, facilitatedBy: "Darren Laville", childSatisfied: true, recordedInCasefile: true },
+  { id: "sc-6", childId: "child-jordan", childName: "Jordan", siblingId: "sib-jordan-2", siblingName: "Riley", contactDate: "2026-04-05", contactType: "face_to_face", contactOutcome: "very_positive", durationMinutes: 120, facilitatedBy: "Lisa Williams", childSatisfied: true, recordedInCasefile: true },
+  { id: "sc-7", childId: "child-morgan", childName: "Morgan", siblingId: "sib-morgan-1", siblingName: "Taylor", contactDate: "2026-02-15", contactType: "video_call", contactOutcome: "positive", durationMinutes: 40, facilitatedBy: "Tom Richards", childSatisfied: true, recordedInCasefile: true },
+  { id: "sc-8", childId: "child-morgan", childName: "Morgan", siblingId: "sib-morgan-1", siblingName: "Taylor", contactDate: "2026-04-20", contactType: "overnight_stay", contactOutcome: "very_positive", durationMinutes: 1440, facilitatedBy: "Darren Laville", childSatisfied: true, recordedInCasefile: true },
 ];
 const sibling_contact_management_DEMO_ASSESSMENTS: SiblingAssessment[] = [
   { id: "sa-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-01-15", assessedBy: "Sarah Johnson", siblingRelationshipMapped: true, contactPlanInPlace: true, childViewsSought: true, siblingViewsSought: true, reviewScheduled: true, socialWorkerConsulted: true },
+  { id: "sa-2", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-01-20", assessedBy: "Lisa Williams", siblingRelationshipMapped: true, contactPlanInPlace: true, childViewsSought: true, siblingViewsSought: true, reviewScheduled: true, socialWorkerConsulted: true },
+  { id: "sa-3", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-01-25", assessedBy: "Darren Laville", siblingRelationshipMapped: true, contactPlanInPlace: true, childViewsSought: true, siblingViewsSought: true, reviewScheduled: true, socialWorkerConsulted: true },
 ];
 const sibling_contact_management_DEMO_BARRIERS: ContactBarrier[] = [
   { id: "cb-1", childId: "child-morgan", childName: "Morgan", siblingName: "Taylor", barrierType: "distance", barrierStatus: "resolved", identifiedDate: "2026-01-10", actionTaken: true, escalatedIfNeeded: true },
 ];
 const sibling_contact_management_DEMO_TRAINING: StaffSiblingTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", siblingRelationships: true, contactFacilitation: true, childViewsAdvocacy: true, safeguardingInContact: true, recordKeeping: true, barrierResolution: true },
-
+  { id: "st-2", staffId: "staff-tom", staffName: "Tom Richards", siblingRelationships: true, contactFacilitation: true, childViewsAdvocacy: true, safeguardingInContact: true, recordKeeping: true, barrierResolution: true },
+  { id: "st-3", staffId: "staff-lisa", staffName: "Lisa Williams", siblingRelationships: true, contactFacilitation: true, childViewsAdvocacy: true, safeguardingInContact: true, recordKeeping: true, barrierResolution: true },
+  { id: "st-4", staffId: "staff-darren", staffName: "Darren Laville", siblingRelationships: true, contactFacilitation: true, childViewsAdvocacy: true, safeguardingInContact: true, recordKeeping: true, barrierResolution: true },
 ];
+
 async function get_sibling_contact_management(req: NextRequest): Promise<Response> {
 
   const result = generateSiblingContactManagementIntelligence(
@@ -28459,17 +35539,31 @@ async function post_sibling_contact_management(req: NextRequest): Promise<Respon
 // ─── sibling-contact-quality ───────────────────────────────────────────
 const sibling_contact_quality_DEMO_RELATIONSHIPS: SiblingRelationship[] = [
   // Alex has one sibling (Sam) in a different home
+  { id: "sr-1", childId: "child-alex", childName: "Alex", siblingId: "sib-sam", siblingName: "Sam", siblingPlacement: "different_home", contactPlanExists: true, plannedFrequency: "Fortnightly", frequencyCompliance: "meets_plan", lastContactDate: "2026-05-10", relationshipQuality: "strong" },
+  // Jordan has one sibling (Casey) in birth family
+  { id: "sr-2", childId: "child-jordan", childName: "Jordan", siblingId: "sib-casey", siblingName: "Casey", siblingPlacement: "birth_family", contactPlanExists: true, plannedFrequency: "Monthly", frequencyCompliance: "meets_plan", lastContactDate: "2026-04-28", relationshipQuality: "developing" },
+  // Morgan has one sibling (Riley) in same home
+  { id: "sr-3", childId: "child-morgan", childName: "Morgan", siblingId: "sib-riley", siblingName: "Riley", siblingPlacement: "same_home", contactPlanExists: true, plannedFrequency: "Daily (same home)", frequencyCompliance: "exceeds_plan", lastContactDate: "2026-05-18", relationshipQuality: "strong" },
 ];
 const sibling_contact_quality_DEMO_SESSIONS: SiblingContactSession[] = [
   { id: "sc-1", childId: "child-alex", childName: "Alex", siblingId: "sib-sam", siblingName: "Sam", date: "2026-04-12", contactType: "face_to_face", duration: 90, qualityRating: "excellent", outcome: "positive", childViewSought: true, childEnjoyedContact: true, siblingViewSought: true, facilitatedBy: "Sarah Johnson", barriers: ["none"], followUpActions: [] },
+  { id: "sc-2", childId: "child-alex", childName: "Alex", siblingId: "sib-sam", siblingName: "Sam", date: "2026-04-26", contactType: "shared_activity", duration: 120, qualityRating: "excellent", outcome: "positive", childViewSought: true, childEnjoyedContact: true, siblingViewSought: true, facilitatedBy: "Tom Richards", barriers: ["none"], followUpActions: [] },
+  { id: "sc-3", childId: "child-alex", childName: "Alex", siblingId: "sib-sam", siblingName: "Sam", date: "2026-05-10", contactType: "face_to_face", duration: 90, qualityRating: "good", outcome: "positive", childViewSought: true, childEnjoyedContact: true, siblingViewSought: true, facilitatedBy: "Sarah Johnson", barriers: ["none"], followUpActions: [] },
+  { id: "sc-4", childId: "child-jordan", childName: "Jordan", siblingId: "sib-casey", siblingName: "Casey", date: "2026-03-30", contactType: "supervised", duration: 60, qualityRating: "good", outcome: "positive", childViewSought: true, childEnjoyedContact: true, siblingViewSought: true, facilitatedBy: "Lisa Williams", barriers: ["none"], followUpActions: [] },
+  { id: "sc-5", childId: "child-jordan", childName: "Jordan", siblingId: "sib-casey", siblingName: "Casey", date: "2026-04-28", contactType: "supervised", duration: 60, qualityRating: "good", outcome: "mixed", childViewSought: true, childEnjoyedContact: null, siblingViewSought: true, facilitatedBy: "Lisa Williams", barriers: ["scheduling_difficulty"], followUpActions: ["Discuss scheduling with LA"] },
 ];
 const sibling_contact_quality_DEMO_REVIEWS: SiblingContactReview[] = [
   { id: "scr-1", childId: "child-alex", childName: "Alex", reviewDate: "2026-04-01", reviewedBy: "Darren Laville", allSiblingsConsidered: true, contactPlanUpdated: true, childViewsIncluded: true, barriersAddressed: true, outcomeSatisfactory: true },
+  { id: "scr-2", childId: "child-jordan", childName: "Jordan", reviewDate: "2026-04-15", reviewedBy: "Darren Laville", allSiblingsConsidered: true, contactPlanUpdated: true, childViewsIncluded: true, barriersAddressed: true, outcomeSatisfactory: true },
+  { id: "scr-3", childId: "child-morgan", childName: "Morgan", reviewDate: "2026-04-15", reviewedBy: "Darren Laville", allSiblingsConsidered: true, contactPlanUpdated: true, childViewsIncluded: true, barriersAddressed: true, outcomeSatisfactory: true },
 ];
 const sibling_contact_quality_DEMO_TRAINING: StaffSiblingTraining[] = [
   { id: "sst-1", staffId: "staff-sarah", staffName: "Sarah Johnson", siblingRelationshipAwareness: true, facilitatingContactSkills: true, managingDifficultContact: true, childViewsTraining: true, legalFrameworkKnowledge: true },
-
+  { id: "sst-2", staffId: "staff-tom", staffName: "Tom Richards", siblingRelationshipAwareness: true, facilitatingContactSkills: true, managingDifficultContact: true, childViewsTraining: true, legalFrameworkKnowledge: false },
+  { id: "sst-3", staffId: "staff-lisa", staffName: "Lisa Williams", siblingRelationshipAwareness: true, facilitatingContactSkills: true, managingDifficultContact: true, childViewsTraining: true, legalFrameworkKnowledge: true },
+  { id: "sst-4", staffId: "staff-darren", staffName: "Darren Laville", siblingRelationshipAwareness: true, facilitatingContactSkills: true, managingDifficultContact: true, childViewsTraining: true, legalFrameworkKnowledge: true },
 ];
+
 async function get_sibling_contact_quality(req: NextRequest): Promise<Response> {
 
   const result = generateSiblingContactQualityIntelligence(
@@ -28817,6 +35911,13 @@ async function post_sleep_hygiene_quality(req: NextRequest): Promise<Response> {
 // ─── sleep-routine-quality ─────────────────────────────────────────────
 const sleep_routine_quality_DEMO_RECORDS: SleepRecord[] = [
   { id: "sr-1", childId: "child-alex", childName: "Alex", recordDate: "2026-04-01", sleepQuality: "good", hoursSlept: 9, routineAdherence: "fully_followed", nightIssue: "none", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
+  { id: "sr-2", childId: "child-alex", childName: "Alex", recordDate: "2026-04-02", sleepQuality: "excellent", hoursSlept: 9.5, routineAdherence: "fully_followed", nightIssue: "none", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
+  { id: "sr-3", childId: "child-alex", childName: "Alex", recordDate: "2026-04-03", sleepQuality: "good", hoursSlept: 8.5, routineAdherence: "mostly_followed", nightIssue: "none", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
+  { id: "sr-4", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-01", sleepQuality: "good", hoursSlept: 8, routineAdherence: "fully_followed", nightIssue: "none", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
+  { id: "sr-5", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-02", sleepQuality: "excellent", hoursSlept: 9, routineAdherence: "fully_followed", nightIssue: "none", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
+  { id: "sr-6", childId: "child-jordan", childName: "Jordan", recordDate: "2026-04-03", sleepQuality: "good", hoursSlept: 8.5, routineAdherence: "mostly_followed", nightIssue: "difficulty_settling", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
+  { id: "sr-7", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-01", sleepQuality: "excellent", hoursSlept: 9, routineAdherence: "fully_followed", nightIssue: "none", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
+  { id: "sr-8", childId: "child-morgan", childName: "Morgan", recordDate: "2026-04-02", sleepQuality: "good", hoursSlept: 8, routineAdherence: "fully_followed", nightIssue: "none", windDownCompleted: true, screenFreeBeforeBed: true, environmentComfortable: true, childSatisfied: true, staffNightCheckCompleted: true, recordedTimely: true },
 ];
 const sleep_routine_quality_DEMO_POLICY: SleepPolicy = {
   id: "sp-1",
@@ -28830,8 +35931,11 @@ const sleep_routine_quality_DEMO_POLICY: SleepPolicy = {
 };
 const sleep_routine_quality_DEMO_TRAINING: StaffSleepTraining[] = [
   { id: "st-1", staffId: "staff-sarah", staffName: "Sarah Johnson", sleepHygiene: true, bedtimeRoutines: true, nightSupport: true, sleepDisorders: true, screenTimeManagement: true, environmentalFactors: true },
-
+  { id: "st-2", staffId: "staff-tom", staffName: "Tom Richards", sleepHygiene: true, bedtimeRoutines: true, nightSupport: true, sleepDisorders: true, screenTimeManagement: true, environmentalFactors: true },
+  { id: "st-3", staffId: "staff-lisa", staffName: "Lisa Williams", sleepHygiene: true, bedtimeRoutines: true, nightSupport: true, sleepDisorders: true, screenTimeManagement: true, environmentalFactors: true },
+  { id: "st-4", staffId: "staff-darren", staffName: "Darren Laville", sleepHygiene: true, bedtimeRoutines: true, nightSupport: true, sleepDisorders: true, screenTimeManagement: true, environmentalFactors: true },
 ];
+
 async function get_sleep_routine_quality(req: NextRequest): Promise<Response> {
 
   const result = generateSleepRoutineQualityIntelligence(
@@ -29431,14 +36535,24 @@ async function post_social_media_digital_footprint(req: NextRequest): Promise<Re
 // ─── social-media-online-safety ────────────────────────────────────────
 const social_media_online_safety_DEMO_SESSIONS: OnlineSafetySession[] = [
   { id: "os-1", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-01", topic: "cyberbullying_awareness", comprehensionLevel: "excellent", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
+  { id: "os-2", childId: "child-alex", childName: "Alex", sessionDate: "2026-03-15", topic: "privacy_settings", comprehensionLevel: "good", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
+  { id: "os-3", childId: "child-alex", childName: "Alex", sessionDate: "2026-04-10", topic: "digital_footprint", comprehensionLevel: "excellent", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
+  { id: "os-4", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-03-05", topic: "online_grooming_awareness", comprehensionLevel: "excellent", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
+  { id: "os-5", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-03-20", topic: "safe_social_media_use", comprehensionLevel: "good", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
+  { id: "os-6", childId: "child-jordan", childName: "Jordan", sessionDate: "2026-04-15", topic: "screen_time_management", comprehensionLevel: "excellent", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
+  { id: "os-7", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-03-12", topic: "content_filtering", comprehensionLevel: "good", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
+  { id: "os-8", childId: "child-morgan", childName: "Morgan", sessionDate: "2026-04-20", topic: "reporting_mechanisms", comprehensionLevel: "excellent", childEngaged: true, practicalDemonstration: true, safetyPlanUpdated: true, documentedInPlan: true, staffDelivered: true, feedbackGiven: true },
 ];
 const social_media_online_safety_DEMO_POLICY: OnlineSafetyPolicy = {
   id: "osp-1", esafetyStrategy: true, socialMediaGuidance: true, screenTimeFramework: true, incidentReportingProtocol: true, contentFilteringPolicy: true, parentalEngagementPlan: true, regularReview: true,
 };
 const social_media_online_safety_DEMO_TRAINING: StaffOnlineSafetyTraining[] = [
   { id: "ost-1", staffId: "staff-sarah", staffName: "Sarah Johnson", esafetyKnowledge: true, socialMediaAwareness: true, onlineGroomingRecognition: true, incidentResponse: true, ageAppropriateGuidance: true, digitalToolsCompetency: true },
-
+  { id: "ost-2", staffId: "staff-tom", staffName: "Tom Richards", esafetyKnowledge: true, socialMediaAwareness: true, onlineGroomingRecognition: true, incidentResponse: true, ageAppropriateGuidance: true, digitalToolsCompetency: true },
+  { id: "ost-3", staffId: "staff-lisa", staffName: "Lisa Williams", esafetyKnowledge: true, socialMediaAwareness: true, onlineGroomingRecognition: true, incidentResponse: true, ageAppropriateGuidance: true, digitalToolsCompetency: true },
+  { id: "ost-4", staffId: "staff-darren", staffName: "Darren Laville", esafetyKnowledge: true, socialMediaAwareness: true, onlineGroomingRecognition: true, incidentResponse: true, ageAppropriateGuidance: true, digitalToolsCompetency: true },
 ];
+
 async function get_social_media_online_safety(req: NextRequest): Promise<Response> {
 
   const result = generateSocialMediaOnlineSafetyIntelligence(social_media_online_safety_DEMO_SESSIONS, social_media_online_safety_DEMO_POLICY, social_media_online_safety_DEMO_TRAINING, "oak-house", "2026-01-01", "2026-05-20");
@@ -30237,6 +37351,17 @@ async function post_staff_resilience(req: NextRequest): Promise<Response> {
 // ─── staff-supervision-effectiveness-intelligence ──────────────────────
 const staff_supervision_effectiveness_intelligence_DEMO_RECORDS: StaffSupervisionEffectivenessRecord[] = [
   { id: "sse-001", homeId: "home-oak", date: "2025-01-20", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "formal_supervision", outcome: "highly_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sse-002", homeId: "home-oak", date: "2025-02-18", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "reflective_practice", outcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sse-003", homeId: "home-oak", date: "2025-03-15", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "safeguarding_supervision", outcome: "highly_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sse-004", homeId: "home-oak", date: "2025-04-10", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "case_discussion", outcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sse-005", homeId: "home-oak", date: "2025-01-25", staffId: "staff-tom", staffName: "Tom Richards", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "formal_supervision", outcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sse-006", homeId: "home-oak", date: "2025-02-22", staffId: "staff-tom", staffName: "Tom Richards", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "clinical_supervision", outcome: "partially_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: false, documentationComplete: true, timelyRecording: true },
+  { id: "sse-007", homeId: "home-oak", date: "2025-03-20", staffId: "staff-tom", staffName: "Tom Richards", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "performance_review", outcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: false },
+  { id: "sse-008", homeId: "home-oak", date: "2025-04-15", staffId: "staff-tom", staffName: "Tom Richards", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "peer_supervision", outcome: "effective", safeguardingDiscussed: true, wellbeingChecked: false, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sse-009", homeId: "home-oak", date: "2025-02-05", staffId: "staff-lisa", staffName: "Lisa Williams", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "formal_supervision", outcome: "highly_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sse-010", homeId: "home-oak", date: "2025-03-08", staffId: "staff-lisa", staffName: "Lisa Williams", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "management_oversight", outcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sse-011", homeId: "home-oak", date: "2025-04-02", staffId: "staff-lisa", staffName: "Lisa Williams", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "reflective_practice", outcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentationComplete: false, timelyRecording: true },
+  { id: "sse-012", homeId: "home-oak", date: "2025-05-10", staffId: "staff-lisa", staffName: "Lisa Williams", supervisorId: "staff-darren", supervisorName: "Darren Laville", category: "safeguarding_supervision", outcome: "highly_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: false, previousActionsReviewed: true, documentationComplete: true, timelyRecording: true },
 ];
 const staff_supervision_effectiveness_intelligence_DEMO_POLICY: StaffSupervisionEffectivenessPolicy = {
   supervisionFramework: true, frequencyStandards: true, safeguardingRequirement: true, reflectivePracticePolicy: true,
@@ -30244,8 +37369,11 @@ const staff_supervision_effectiveness_intelligence_DEMO_POLICY: StaffSupervision
 };
 const staff_supervision_effectiveness_intelligence_DEMO_TRAINING: StaffSupervisionEffectivenessTraining[] = [
   { staffId: "staff-darren", supervisionFacilitationSkills: true, reflectivePracticeKnowledge: true, safeguardingSupervisionSkills: true, performanceManagementSkills: true, mentoringCoachingSkills: true, documentationStandards: true },
-
+  { staffId: "staff-senior-1", supervisionFacilitationSkills: true, reflectivePracticeKnowledge: true, safeguardingSupervisionSkills: true, performanceManagementSkills: true, mentoringCoachingSkills: true, documentationStandards: false },
+  { staffId: "staff-senior-2", supervisionFacilitationSkills: true, reflectivePracticeKnowledge: true, safeguardingSupervisionSkills: true, performanceManagementSkills: true, mentoringCoachingSkills: false, documentationStandards: true },
+  { staffId: "staff-senior-3", supervisionFacilitationSkills: true, reflectivePracticeKnowledge: true, safeguardingSupervisionSkills: true, performanceManagementSkills: false, mentoringCoachingSkills: true, documentationStandards: true },
 ];
+
 async function get_staff_supervision_effectiveness_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateStaffSupervisionEffectivenessIntelligence({
@@ -30258,6 +37386,15 @@ async function get_staff_supervision_effectiveness_intelligence(req: NextRequest
 // ─── staff-supervision-effectiveness ───────────────────────────────────
 const staff_supervision_effectiveness_DEMO_SESSIONS: SupervisionSession[] = [
   { id: "ss-1", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-01", supervisionType: "formal_one_to_one", supervisionOutcome: "very_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-2", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-08", supervisionType: "reflective_practice", supervisionOutcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-3", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-15", supervisionType: "case_discussion", supervisionOutcome: "very_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-4", staffId: "staff-tom", staffName: "Tom Richards", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-01", supervisionType: "formal_one_to_one", supervisionOutcome: "very_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-5", staffId: "staff-tom", staffName: "Tom Richards", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-08", supervisionType: "group_supervision", supervisionOutcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-6", staffId: "staff-tom", staffName: "Tom Richards", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-15", supervisionType: "clinical_supervision", supervisionOutcome: "very_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-7", staffId: "staff-lisa", staffName: "Lisa Williams", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-01", supervisionType: "formal_one_to_one", supervisionOutcome: "very_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-8", staffId: "staff-lisa", staffName: "Lisa Williams", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-08", supervisionType: "management_supervision", supervisionOutcome: "effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-9", staffId: "staff-lisa", staffName: "Lisa Williams", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-15", supervisionType: "ad_hoc_support", supervisionOutcome: "very_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
+  { id: "ss-10", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisorId: "staff-darren", supervisorName: "Darren Laville", sessionDate: "2026-04-22", supervisionType: "peer_supervision", supervisionOutcome: "very_effective", safeguardingDiscussed: true, wellbeingChecked: true, actionPointsSet: true, previousActionsReviewed: true, documentedInRecord: true, staffSatisfied: true },
 ];
 const staff_supervision_effectiveness_DEMO_POLICY: SupervisionPolicy = {
   id: "sp-1",
@@ -30271,8 +37408,11 @@ const staff_supervision_effectiveness_DEMO_POLICY: SupervisionPolicy = {
 };
 const staff_supervision_effectiveness_DEMO_TRAINING: SupervisorTraining[] = [
   { id: "st-1", staffId: "staff-darren", staffName: "Darren Laville", supervisionSkills: true, reflectivePractice: true, safeguardingOversight: true, performanceManagement: true, wellbeingSupport: true, documentationSkills: true },
-
+  { id: "st-2", staffId: "staff-sarah", staffName: "Sarah Johnson", supervisionSkills: true, reflectivePractice: true, safeguardingOversight: true, performanceManagement: true, wellbeingSupport: true, documentationSkills: true },
+  { id: "st-3", staffId: "staff-tom", staffName: "Tom Richards", supervisionSkills: true, reflectivePractice: true, safeguardingOversight: true, performanceManagement: true, wellbeingSupport: true, documentationSkills: true },
+  { id: "st-4", staffId: "staff-lisa", staffName: "Lisa Williams", supervisionSkills: true, reflectivePractice: true, safeguardingOversight: true, performanceManagement: true, wellbeingSupport: true, documentationSkills: true },
 ];
+
 async function get_staff_supervision_effectiveness(req: NextRequest): Promise<Response> {
 
   const result = generateStaffSupervisionEffectivenessIntelligence(
@@ -30449,9 +37589,20 @@ async function post_staff_training(request: NextRequest): Promise<Response> {
 // ─── staff-wellbeing-resilience ────────────────────────────────────────
 const staff_wellbeing_resilience_ALL_WELLBEING_TYPES: WellbeingType[] = [
   "supervision_session",
+  "wellbeing_check",
+  "stress_assessment",
+  "resilience_review",
+  "team_debrief",
+  "reflective_practice",
+  "employee_assistance",
+  "peer_support",
 ];
 const staff_wellbeing_resilience_ALL_WELLBEING_SCORES: WellbeingScore[] = [
   "excellent",
+  "good",
+  "moderate",
+  "poor",
+  "critical",
 ];
 function staff_wellbeing_resilience_generateDemoData(): {
   assessments: WellbeingAssessment[];
@@ -30719,6 +37870,24 @@ async function post_staff_wellbeing_resilience(req: NextRequest): Promise<Respon
 // ─── staff-wellbeing ───────────────────────────────────────────────────
 const staff_wellbeing_demoRecords: StaffWellbeingRecord[] = [
   // Sarah Johnson — well-supported, strong supervision
+  { id: "sw-1", homeId: "oak-house", date: "2026-02-10", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "supervision_support", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-2", homeId: "oak-house", date: "2026-03-14", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "emotional_wellbeing", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-3", homeId: "oak-house", date: "2026-04-18", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "work_life_balance", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: false, documentationComplete: true, timelyRecording: true },
+
+  // Tom Richards — some gaps in support access
+  { id: "sw-4", homeId: "oak-house", date: "2026-02-20", staffId: "staff-tom", staffName: "Tom Richards", category: "workload_management", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: false, supportAccessed: false, documentationComplete: true, timelyRecording: true },
+  { id: "sw-5", homeId: "oak-house", date: "2026-03-22", staffId: "staff-tom", staffName: "Tom Richards", category: "resilience_support", outcome: "struggling", supervisionReceived: true, wellbeingChecked: false, debriefOffered: true, supportAccessed: true, documentationComplete: false, timelyRecording: true },
+  { id: "sw-6", homeId: "oak-house", date: "2026-05-01", staffId: "staff-tom", staffName: "Tom Richards", category: "team_cohesion", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: false },
+
+  // Lisa Williams — newer, fewer records, good engagement
+  { id: "sw-7", homeId: "oak-house", date: "2026-03-05", staffId: "staff-lisa", staffName: "Lisa Williams", category: "professional_development", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-8", homeId: "oak-house", date: "2026-04-10", staffId: "staff-lisa", staffName: "Lisa Williams", category: "recognition_reward", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: false, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-9", homeId: "oak-house", date: "2026-05-12", staffId: "staff-lisa", staffName: "Lisa Williams", category: "emotional_wellbeing", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: false },
+
+  // Darren Laville — RM, strong across the board
+  { id: "sw-10", homeId: "oak-house", date: "2026-02-15", staffId: "staff-darren", staffName: "Darren Laville", category: "supervision_support", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-11", homeId: "oak-house", date: "2026-03-28", staffId: "staff-darren", staffName: "Darren Laville", category: "workload_management", outcome: "managing", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
+  { id: "sw-12", homeId: "oak-house", date: "2026-05-08", staffId: "staff-darren", staffName: "Darren Laville", category: "team_cohesion", outcome: "thriving", supervisionReceived: true, wellbeingChecked: true, debriefOffered: true, supportAccessed: true, documentationComplete: true, timelyRecording: true },
 ];
 const staff_wellbeing_demoPolicy: StaffWellbeingPolicy = {
   staffWellbeingPolicy: true,
@@ -30731,8 +37900,11 @@ const staff_wellbeing_demoPolicy: StaffWellbeingPolicy = {
 };
 const staff_wellbeing_demoStaff: StaffWellbeingTraining[] = [
   { staffId: "staff-sarah", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: true, stressManagement: true, teamBuilding: true, conflictMediation: true },
-
+  { staffId: "staff-tom", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: true, stressManagement: false, teamBuilding: false, conflictMediation: true },
+  { staffId: "staff-lisa", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: false, stressManagement: true, teamBuilding: true, conflictMediation: false },
+  { staffId: "staff-darren", supervisionDelivery: true, wellbeingAssessment: true, debriefingSkills: true, stressManagement: true, teamBuilding: true, conflictMediation: true },
 ];
+
 async function get_staff_wellbeing(req: NextRequest): Promise<Response> {
 
   const result = generateStaffWellbeingIntelligence(
@@ -30966,6 +38138,34 @@ const substance_misuse_awareness_DEMO_PROFILES: ChildSubstanceProfile[] = [
     harmReductionPlanInPlace: false,
     professionalReferralMade: false,
   },
+  {
+    id: "sp-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    riskLevel: "low",
+    screeningDate: "2026-03-15",
+    screenedBy: "Darren Laville",
+    screeningOutcome: "monitoring",
+    substancesOfConcern: ["vaping"],
+    reviewDate: "2026-04-15",
+    reviewCurrent: true,
+    harmReductionPlanInPlace: true,
+    professionalReferralMade: false,
+  },
+  {
+    id: "sp-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    riskLevel: "no_concerns",
+    screeningDate: "2026-04-10",
+    screenedBy: "Darren Laville",
+    screeningOutcome: "no_concerns",
+    substancesOfConcern: ["none"],
+    reviewDate: "2026-05-10",
+    reviewCurrent: true,
+    harmReductionPlanInPlace: false,
+    professionalReferralMade: false,
+  },
 ];
 const substance_misuse_awareness_DEMO_SESSIONS: AwarenessSession[] = [
   {
@@ -30978,9 +38178,38 @@ const substance_misuse_awareness_DEMO_SESSIONS: AwarenessSession[] = [
     childEngagement: "high",
     resourcesProvided: true,
   },
+  {
+    id: "as-2",
+    date: "2026-03-25",
+    sessionType: "individual_awareness",
+    facilitatedBy: "Tom Richards",
+    childrenAttended: ["child-jordan"],
+    topicsCovered: ["vaping risks", "nicotine addiction", "healthier coping"],
+    childEngagement: "high",
+    resourcesProvided: true,
+  },
+  {
+    id: "as-3",
+    date: "2026-04-08",
+    sessionType: "external_speaker",
+    facilitatedBy: "Lisa Williams",
+    childrenAttended: ["child-alex", "child-jordan", "child-morgan"],
+    topicsCovered: ["county lines", "exploitation", "staying safe"],
+    childEngagement: "high",
+    resourcesProvided: true,
+  },
+  {
+    id: "as-4",
+    date: "2026-04-22",
+    sessionType: "harm_reduction",
+    facilitatedBy: "Darren Laville",
+    childrenAttended: ["child-jordan"],
+    topicsCovered: ["vaping harm reduction", "support options", "goal setting"],
+    childEngagement: "medium",
+    resourcesProvided: true,
+  },
 ];
 const substance_misuse_awareness_DEMO_INTERVENTIONS: SubstanceIntervention[] = [];
-
 const substance_misuse_awareness_DEMO_TRAINING: StaffSubstanceTraining[] = [
   {
     id: "st-1",
@@ -30993,8 +38222,41 @@ const substance_misuse_awareness_DEMO_TRAINING: StaffSubstanceTraining[] = [
     referralPathwayKnowledge: true,
     emergencyResponseTrained: true,
   },
-
+  {
+    id: "st-2",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    substanceAwareness: true,
+    riskScreeningTrained: true,
+    harmReductionTrained: true,
+    motivationalInterviewing: false,
+    referralPathwayKnowledge: true,
+    emergencyResponseTrained: true,
+  },
+  {
+    id: "st-3",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    substanceAwareness: true,
+    riskScreeningTrained: true,
+    harmReductionTrained: true,
+    motivationalInterviewing: true,
+    referralPathwayKnowledge: true,
+    emergencyResponseTrained: true,
+  },
+  {
+    id: "st-4",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    substanceAwareness: true,
+    riskScreeningTrained: true,
+    harmReductionTrained: true,
+    motivationalInterviewing: true,
+    referralPathwayKnowledge: true,
+    emergencyResponseTrained: true,
+  },
 ];
+
 async function get_substance_misuse_awareness(req: NextRequest): Promise<Response> {
 
   const result = generateSubstanceMisuseAwarenessIntelligence(
@@ -31749,17 +39011,32 @@ async function get_supervision(req: NextRequest): Promise<Response> {
 // ─── therapeutic-care ──────────────────────────────────────────────────
 const therapeutic_care_DEMO_SESSIONS: TherapySession[] = [
   { id: "s-alex-01", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-03-01", durationMinutes: 50, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: true },
+  { id: "s-alex-02", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-03-08", durationMinutes: 50, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: false },
+  { id: "s-alex-03", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-03-15", durationMinutes: 50, outcome: "good_progress", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: false },
+  { id: "s-alex-04", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-03-22", durationMinutes: 50, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: false },
+  { id: "s-alex-05", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-03-29", durationMinutes: 50, outcome: "maintaining", childEngaged: true, childConsented: true, goalsAddressed: false, keyWorkerBriefed: true, riskAssessmentUpdated: false },
+  { id: "s-alex-06", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-04-05", durationMinutes: 50, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: false },
+  { id: "s-alex-07", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-04-12", durationMinutes: 50, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: false, riskAssessmentUpdated: false },
+  { id: "s-alex-08", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", therapistRole: "clinical_psychologist", sessionDate: "2026-04-19", durationMinutes: 50, outcome: "good_progress", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: false },
+  // Morgan: completed play therapy sessions
+  { id: "s-morgan-01", childId: "child-morgan", childName: "Morgan", therapyType: "play_therapy", provider: "in_house", therapistRole: "play_therapist", sessionDate: "2026-02-01", durationMinutes: 45, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: true },
+  { id: "s-morgan-02", childId: "child-morgan", childName: "Morgan", therapyType: "play_therapy", provider: "in_house", therapistRole: "play_therapist", sessionDate: "2026-02-08", durationMinutes: 45, outcome: "good_progress", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: false },
+  { id: "s-morgan-03", childId: "child-morgan", childName: "Morgan", therapyType: "play_therapy", provider: "in_house", therapistRole: "play_therapist", sessionDate: "2026-02-15", durationMinutes: 45, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: false },
+  { id: "s-morgan-04", childId: "child-morgan", childName: "Morgan", therapyType: "play_therapy", provider: "in_house", therapistRole: "play_therapist", sessionDate: "2026-02-22", durationMinutes: 45, outcome: "positive", childEngaged: true, childConsented: true, goalsAddressed: true, keyWorkerBriefed: true, riskAssessmentUpdated: false },
 ];
 const therapeutic_care_DEMO_REFERRALS: TherapyReferral[] = [
   { id: "ref-alex", childId: "child-alex", childName: "Alex", therapyType: "cbt", provider: "camhs", referralDate: "2026-01-15", status: "active", waitTimeDays: 14, assessmentDate: "2026-01-22", startDate: "2026-02-01", reasonForReferral: "Anxiety and low mood following placement move" },
+  { id: "ref-jordan", childId: "child-jordan", childName: "Jordan", therapyType: "emdr", provider: "private", referralDate: "2026-02-01", status: "waitlisted", waitTimeDays: 42, reasonForReferral: "Complex trauma — EMDR recommended by CAMHS assessment" },
+  { id: "ref-morgan", childId: "child-morgan", childName: "Morgan", therapyType: "play_therapy", provider: "in_house", referralDate: "2026-01-10", status: "completed", waitTimeDays: 7, assessmentDate: "2026-01-12", startDate: "2026-01-17", reasonForReferral: "Difficulty expressing emotions — age-appropriate play therapy recommended" },
 ];
 const therapeutic_care_DEMO_PLANS: TherapyPlan[] = [
   { id: "plan-alex", childId: "child-alex", childName: "Alex", therapyType: "cbt", goals: ["Reduce anxiety symptoms", "Develop coping strategies", "Improve sleep hygiene"], goalsAchieved: 2, planReviewDate: "2026-06-01", planIsCoProduced: true, childViewsIncluded: true, lastUpdated: "2026-04-01", updatedBy: "Dr Sarah Mitchell" },
+  { id: "plan-morgan", childId: "child-morgan", childName: "Morgan", therapyType: "play_therapy", goals: ["Process feelings about family changes", "Build self-esteem through creative expression"], goalsAchieved: 2, planReviewDate: "2026-06-01", planIsCoProduced: true, childViewsIncluded: true, lastUpdated: "2026-03-15", updatedBy: "Emma Thompson (Play Therapist)" },
 ];
 const therapeutic_care_DEMO_ENVIRONMENTS: TherapeuticEnvironment[] = [
   { id: "env-oak-house", quietSpaceAvailable: true, sensoryRoomAvailable: true, outdoorTherapeuticSpace: false, staffTrainedInTherapeuticApproaches: true, therapyRoomPrivate: true, childCanRequestTherapy: true },
-
 ];
+
 async function get_therapeutic_care(req: NextRequest): Promise<Response> {
 
   const result = generateTherapeuticCareIntelligence(
@@ -31848,6 +39125,89 @@ async function post_therapeutic_care(req: NextRequest): Promise<Response> {
 // ─── therapeutic-crisis-intervention ───────────────────────────────────
 const therapeutic_crisis_intervention_DEMO_INCIDENTS: CrisisIncident[] = [
   // Alex — 1 low-level crisis, verbal de-escalation, successful, debriefed
+  {
+    id: "inc-alex-1",
+    childId: "child-alex",
+    childName: "Alex",
+    incidentDate: "2026-04-10",
+    interventionType: "verbal_de_escalation",
+    severity: "low",
+    deescalationAttempted: true,
+    deescalationOutcome: "successful",
+    physicalInterventionUsed: false,
+    physicalInterventionJustified: false,
+    physicalInterventionDuration: null,
+    childDebrief: true,
+    staffDebrief: true,
+    bodyMapCompleted: false,
+    parentNotified: true,
+    regulatorNotified: false,
+    lessonsLearned: true,
+    recordedTimely: true,
+  },
+  // Jordan — crisis 1: medium verbal de-escalation, partially successful
+  {
+    id: "inc-jordan-1",
+    childId: "child-jordan",
+    childName: "Jordan",
+    incidentDate: "2026-03-22",
+    interventionType: "verbal_de_escalation",
+    severity: "medium",
+    deescalationAttempted: true,
+    deescalationOutcome: "partially_successful",
+    physicalInterventionUsed: false,
+    physicalInterventionJustified: false,
+    physicalInterventionDuration: null,
+    childDebrief: true,
+    staffDebrief: true,
+    bodyMapCompleted: false,
+    parentNotified: true,
+    regulatorNotified: false,
+    lessonsLearned: true,
+    recordedTimely: true,
+  },
+  // Jordan — crisis 2: medium with guided physical, de-escalation attempted first
+  {
+    id: "inc-jordan-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    incidentDate: "2026-04-28",
+    interventionType: "guided_physical",
+    severity: "medium",
+    deescalationAttempted: true,
+    deescalationOutcome: "physical_intervention_required",
+    physicalInterventionUsed: true,
+    physicalInterventionJustified: true,
+    physicalInterventionDuration: 8,
+    childDebrief: true,
+    staffDebrief: true,
+    bodyMapCompleted: true,
+    parentNotified: true,
+    regulatorNotified: true,
+    lessonsLearned: true,
+    recordedTimely: true,
+  },
+  // Morgan — 1 low-level crisis, distraction technique, successful
+  {
+    id: "inc-morgan-1",
+    childId: "child-morgan",
+    childName: "Morgan",
+    incidentDate: "2026-05-05",
+    interventionType: "distraction",
+    severity: "low",
+    deescalationAttempted: true,
+    deescalationOutcome: "successful",
+    physicalInterventionUsed: false,
+    physicalInterventionJustified: false,
+    physicalInterventionDuration: null,
+    childDebrief: true,
+    staffDebrief: true,
+    bodyMapCompleted: false,
+    parentNotified: true,
+    regulatorNotified: false,
+    lessonsLearned: true,
+    recordedTimely: true,
+  },
 ];
 const therapeutic_crisis_intervention_DEMO_POLICY: CrisisPolicy = {
   id: "policy-oak-house",
@@ -31861,8 +39221,11 @@ const therapeutic_crisis_intervention_DEMO_POLICY: CrisisPolicy = {
 };
 const therapeutic_crisis_intervention_DEMO_TRAINING: StaffCrisisTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", therapeuticApproach: true, deescalation: true, physicalIntervention: true, postIncidentSupport: true, recordKeeping: true, bodyMapping: true },
-
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", therapeuticApproach: true, deescalation: true, physicalIntervention: true, postIncidentSupport: true, recordKeeping: true, bodyMapping: true },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", therapeuticApproach: true, deescalation: true, physicalIntervention: true, postIncidentSupport: true, recordKeeping: true, bodyMapping: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", therapeuticApproach: true, deescalation: true, physicalIntervention: true, postIncidentSupport: true, recordKeeping: true, bodyMapping: true },
 ];
+
 async function get_therapeutic_crisis_intervention(req: NextRequest): Promise<Response> {
 
   const result = generateTherapeuticCrisisInterventionIntelligence(
@@ -31940,6 +39303,22 @@ async function post_therapeutic_crisis_intervention(req: NextRequest): Promise<R
 // ─── therapeutic-intelligence ──────────────────────────────────────────
 const therapeutic_intelligence_DEMO_RECORDS: TherapeuticRecord[] = [
   // Alex — individual therapy, trauma-informed care, wellbeing assessment
+  { id: "th-001", homeId: "home-oak", date: "2026-01-15", childId: "child-alex", childName: "Alex", category: "individual_therapy", outcome: "positive_progress", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "th-002", homeId: "home-oak", date: "2026-02-10", childId: "child-alex", childName: "Alex", category: "trauma_informed_care", outcome: "positive_progress", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "th-003", homeId: "home-oak", date: "2026-03-05", childId: "child-alex", childName: "Alex", category: "wellbeing_assessment", outcome: "maintaining", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "th-004", homeId: "home-oak", date: "2026-04-01", childId: "child-alex", childName: "Alex", category: "emotional_regulation", outcome: "positive_progress", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+
+  // Jordan — group therapy, crisis intervention, mental health review
+  { id: "th-005", homeId: "home-oak", date: "2026-01-20", childId: "child-jordan", childName: "Jordan", category: "group_therapy", outcome: "some_improvement", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "th-006", homeId: "home-oak", date: "2026-02-15", childId: "child-jordan", childName: "Jordan", category: "crisis_intervention", outcome: "maintaining", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "th-007", homeId: "home-oak", date: "2026-03-10", childId: "child-jordan", childName: "Jordan", category: "mental_health_review", outcome: "positive_progress", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: false },
+  { id: "th-008", homeId: "home-oak", date: "2026-04-10", childId: "child-jordan", childName: "Jordan", category: "therapeutic_activity", outcome: "some_improvement", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+
+  // Morgan — emotional regulation, therapeutic activity, wellbeing
+  { id: "th-009", homeId: "home-oak", date: "2026-02-01", childId: "child-morgan", childName: "Morgan", category: "emotional_regulation", outcome: "positive_progress", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "th-010", homeId: "home-oak", date: "2026-03-15", childId: "child-morgan", childName: "Morgan", category: "therapeutic_activity", outcome: "maintaining", therapeuticGoalAligned: true, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "th-011", homeId: "home-oak", date: "2026-04-10", childId: "child-morgan", childName: "Morgan", category: "wellbeing_assessment", outcome: "positive_progress", therapeuticGoalAligned: false, voiceOfChildIncluded: true, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: true, timelyRecording: true },
+  { id: "th-012", homeId: "home-oak", date: "2026-05-01", childId: "child-morgan", childName: "Morgan", category: "individual_therapy", outcome: "some_improvement", therapeuticGoalAligned: true, voiceOfChildIncluded: false, evidenceBasedApproach: true, wellbeingImpactRecorded: true, documentationComplete: false, timelyRecording: true },
 ];
 const therapeutic_intelligence_DEMO_POLICY: TherapeuticPolicy = {
   therapeuticCareModel: true,
@@ -31952,8 +39331,11 @@ const therapeutic_intelligence_DEMO_POLICY: TherapeuticPolicy = {
 };
 const therapeutic_intelligence_DEMO_STAFF: StaffTherapeuticTraining[] = [
   { staffId: "staff-sarah", therapeuticCareKnowledge: true, traumaInformedPractice: true, emotionalRegulationSkills: true, mentalHealthAwareness: true, crisisDeEscalation: true, therapeuticRelationshipBuilding: true },
-
+  { staffId: "staff-tom", therapeuticCareKnowledge: true, traumaInformedPractice: true, emotionalRegulationSkills: true, mentalHealthAwareness: true, crisisDeEscalation: true, therapeuticRelationshipBuilding: false },
+  { staffId: "staff-lisa", therapeuticCareKnowledge: true, traumaInformedPractice: true, emotionalRegulationSkills: true, mentalHealthAwareness: true, crisisDeEscalation: false, therapeuticRelationshipBuilding: true },
+  { staffId: "staff-darren", therapeuticCareKnowledge: true, traumaInformedPractice: true, emotionalRegulationSkills: true, mentalHealthAwareness: true, crisisDeEscalation: true, therapeuticRelationshipBuilding: true },
 ];
+
 async function get_therapeutic_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateTherapeuticIntelligence({
@@ -31980,6 +39362,120 @@ async function get_therapeutic_intelligence(req: NextRequest): Promise<Response>
 // ─── therapeutic-intervention-quality ──────────────────────────────────
 const therapeutic_intervention_quality_DEMO_SESSIONS: TherapySession[] = [
   // Alex — 3 sessions
+  {
+    id: "ses-alex-1",
+    childId: "child-alex",
+    childName: "Alex",
+    sessionDate: "2026-03-10",
+    therapyType: "cbt",
+    progressLevel: "good_progress",
+    childEngaged: true,
+    goalsReviewed: true,
+    therapeuticRelationshipStrong: true,
+    documentedInPlan: true,
+    staffSupported: true,
+    feedbackGiven: true,
+  },
+  {
+    id: "ses-alex-2",
+    childId: "child-alex",
+    childName: "Alex",
+    sessionDate: "2026-03-24",
+    therapyType: "cbt",
+    progressLevel: "significant_progress",
+    childEngaged: true,
+    goalsReviewed: true,
+    therapeuticRelationshipStrong: true,
+    documentedInPlan: true,
+    staffSupported: true,
+    feedbackGiven: true,
+  },
+  {
+    id: "ses-alex-3",
+    childId: "child-alex",
+    childName: "Alex",
+    sessionDate: "2026-04-14",
+    therapyType: "art_therapy",
+    progressLevel: "good_progress",
+    childEngaged: true,
+    goalsReviewed: true,
+    therapeuticRelationshipStrong: true,
+    documentedInPlan: true,
+    staffSupported: true,
+    feedbackGiven: true,
+  },
+  // Jordan — 3 sessions
+  {
+    id: "ses-jordan-1",
+    childId: "child-jordan",
+    childName: "Jordan",
+    sessionDate: "2026-03-15",
+    therapyType: "play_therapy",
+    progressLevel: "good_progress",
+    childEngaged: true,
+    goalsReviewed: true,
+    therapeuticRelationshipStrong: true,
+    documentedInPlan: true,
+    staffSupported: true,
+    feedbackGiven: true,
+  },
+  {
+    id: "ses-jordan-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    sessionDate: "2026-04-05",
+    therapyType: "emdr",
+    progressLevel: "significant_progress",
+    childEngaged: true,
+    goalsReviewed: true,
+    therapeuticRelationshipStrong: true,
+    documentedInPlan: true,
+    staffSupported: true,
+    feedbackGiven: true,
+  },
+  {
+    id: "ses-jordan-3",
+    childId: "child-jordan",
+    childName: "Jordan",
+    sessionDate: "2026-04-28",
+    therapyType: "family_therapy",
+    progressLevel: "good_progress",
+    childEngaged: true,
+    goalsReviewed: true,
+    therapeuticRelationshipStrong: true,
+    documentedInPlan: true,
+    staffSupported: true,
+    feedbackGiven: true,
+  },
+  // Morgan — 2 sessions
+  {
+    id: "ses-morgan-1",
+    childId: "child-morgan",
+    childName: "Morgan",
+    sessionDate: "2026-03-20",
+    therapyType: "dialectical_behaviour",
+    progressLevel: "significant_progress",
+    childEngaged: true,
+    goalsReviewed: true,
+    therapeuticRelationshipStrong: true,
+    documentedInPlan: true,
+    staffSupported: true,
+    feedbackGiven: true,
+  },
+  {
+    id: "ses-morgan-2",
+    childId: "child-morgan",
+    childName: "Morgan",
+    sessionDate: "2026-04-18",
+    therapyType: "psychodynamic",
+    progressLevel: "good_progress",
+    childEngaged: true,
+    goalsReviewed: true,
+    therapeuticRelationshipStrong: true,
+    documentedInPlan: true,
+    staffSupported: true,
+    feedbackGiven: true,
+  },
 ];
 const therapeutic_intervention_quality_DEMO_POLICY: TherapeuticPolicy = {
   id: "policy-oak-house",
@@ -31993,8 +39489,11 @@ const therapeutic_intervention_quality_DEMO_POLICY: TherapeuticPolicy = {
 };
 const therapeutic_intervention_quality_DEMO_TRAINING: StaffTherapeuticTraining[] = [
   { id: "tr-1", staffId: "staff-sarah", staffName: "Sarah Johnson", therapeuticAwareness: true, traumaInformedPractice: true, attachmentTheory: true, therapeuticCommunication: true, boundaryManagement: true, reflectivePractice: true },
-
+  { id: "tr-2", staffId: "staff-tom", staffName: "Tom Richards", therapeuticAwareness: true, traumaInformedPractice: true, attachmentTheory: true, therapeuticCommunication: true, boundaryManagement: true, reflectivePractice: true },
+  { id: "tr-3", staffId: "staff-lisa", staffName: "Lisa Williams", therapeuticAwareness: true, traumaInformedPractice: true, attachmentTheory: true, therapeuticCommunication: true, boundaryManagement: true, reflectivePractice: true },
+  { id: "tr-4", staffId: "staff-darren", staffName: "Darren Laville", therapeuticAwareness: true, traumaInformedPractice: true, attachmentTheory: true, therapeuticCommunication: true, boundaryManagement: true, reflectivePractice: true },
 ];
+
 async function get_therapeutic_intervention_quality(req: NextRequest): Promise<Response> {
 
   const result = generateTherapeuticInterventionQualityIntelligence(
@@ -32174,8 +39673,270 @@ const therapeutic_DEMO_PROFILES: ChildTherapeuticProfile[] = [
     lastTherapeuticReview: "2026-05-01",
     nextTherapeuticReview: "2026-06-01",
   },
-
+  {
+    childId: "child-jordan",
+    childName: "Jordan",
+    primaryModel: "pace",
+    secondaryModels: ["art_therapy"],
+    emotionalRegulationLevel: "established",
+    mentalHealthStatus: "stable",
+    wellbeingScores: [
+      { domain: "emotional_regulation", score: 80, trend: "stable", lastAssessed: "2026-05-10", targetScore: 85 },
+      { domain: "attachment_security", score: 78, trend: "improving", lastAssessed: "2026-05-10", targetScore: 85 },
+      { domain: "self_esteem", score: 75, trend: "improving", lastAssessed: "2026-05-10", targetScore: 80 },
+      { domain: "peer_relationships", score: 82, trend: "stable", lastAssessed: "2026-05-10", targetScore: 85 },
+      { domain: "trauma_recovery", score: 72, trend: "improving", lastAssessed: "2026-05-10", targetScore: 80 },
+      { domain: "anxiety_management", score: 76, trend: "stable", lastAssessed: "2026-05-10", targetScore: 80 },
+      { domain: "resilience", score: 84, trend: "stable", lastAssessed: "2026-05-10", targetScore: 85 },
+      { domain: "identity", score: 78, trend: "improving", lastAssessed: "2026-05-10", targetScore: 85 },
+    ],
+    interventions: [
+      {
+        id: "int-jordan-01",
+        type: "creative_therapy",
+        provider: "Maria Chen (Art Therapist)",
+        startDate: "2025-09-01",
+        frequency: "weekly",
+        sessionsAttended: 32,
+        sessionsMissed: 3,
+        effectiveness: 85,
+        childFeedback: 90,
+        active: true,
+      },
+      {
+        id: "int-jordan-02",
+        type: "emotional_coaching",
+        provider: "Chamberlain House Staff",
+        startDate: "2025-06-01",
+        frequency: "weekly",
+        sessionsAttended: 40,
+        sessionsMissed: 2,
+        effectiveness: 80,
+        active: true,
+      },
+    ],
+    camhsReferral: {
+      status: "discharged",
+      referralDate: "2024-09-01",
+      acceptedDate: "2024-10-15",
+      firstAppointment: "2024-11-01",
+      lastAppointment: "2026-03-15",
+      tier: 2,
+      clinician: "Dr James Wright",
+    },
+    crisisEvents: [],
+    sdqScore: 12,
+    sdqDate: "2026-04-15",
+    safetyPlanInPlace: false,
+    therapeuticGoals: [
+      "Continue art therapy for emotional expression",
+      "Strengthen identity work around heritage",
+      "Build independence in emotional regulation",
+    ],
+    protectiveFactors: ["Strong sense of identity", "Good school attendance", "Boxing achievement", "Multiple positive relationships"],
+    riskFactors: ["Previous placement breakdown", "Low confidence in academic ability"],
+    keyRelationships: ["Key worker: Marcus", "Art therapist: Maria", "Boxing coach: Trevor"],
+    lastTherapeuticReview: "2026-05-05",
+    nextTherapeuticReview: "2026-06-05",
+  },
+  {
+    childId: "child-morgan",
+    childName: "Morgan",
+    primaryModel: "pace",
+    secondaryModels: ["dyadic_developmental_psychotherapy", "narrative_therapy"],
+    emotionalRegulationLevel: "developing",
+    mentalHealthStatus: "monitoring",
+    wellbeingScores: [
+      { domain: "emotional_regulation", score: 62, trend: "stable", lastAssessed: "2026-05-10", targetScore: 75 },
+      { domain: "attachment_security", score: 55, trend: "improving", lastAssessed: "2026-05-10", targetScore: 70 },
+      { domain: "self_esteem", score: 58, trend: "stable", lastAssessed: "2026-05-10", targetScore: 70 },
+      { domain: "peer_relationships", score: 65, trend: "improving", lastAssessed: "2026-05-10", targetScore: 75 },
+      { domain: "trauma_recovery", score: 50, trend: "stable", lastAssessed: "2026-05-10", targetScore: 65 },
+      { domain: "anxiety_management", score: 55, trend: "improving", lastAssessed: "2026-05-10", targetScore: 70 },
+      { domain: "resilience", score: 60, trend: "stable", lastAssessed: "2026-05-10", targetScore: 75 },
+      { domain: "identity", score: 72, trend: "improving", lastAssessed: "2026-05-10", targetScore: 80 },
+    ],
+    interventions: [
+      {
+        id: "int-morgan-01",
+        type: "individual_therapy",
+        provider: "Dr Sarah Mitchell",
+        startDate: "2026-02-01",
+        frequency: "weekly",
+        sessionsAttended: 14,
+        sessionsMissed: 1,
+        effectiveness: 72,
+        childFeedback: 65,
+        active: true,
+      },
+      {
+        id: "int-morgan-02",
+        type: "life_story_work",
+        provider: "Key Worker (Lisa)",
+        startDate: "2026-03-01",
+        frequency: "fortnightly",
+        sessionsAttended: 5,
+        sessionsMissed: 0,
+        effectiveness: 76,
+        childFeedback: 70,
+        active: true,
+      },
+    ],
+    camhsReferral: {
+      status: "active_treatment",
+      referralDate: "2025-12-01",
+      acceptedDate: "2026-01-15",
+      firstAppointment: "2026-02-01",
+      lastAppointment: "2026-05-10",
+      nextAppointment: "2026-05-24",
+      tier: 3,
+      clinician: "Dr Emily Carter",
+      diagnosis: ["Anxiety disorder", "Reactive attachment"],
+    },
+    crisisEvents: [
+      {
+        id: "crisis-morgan-01",
+        date: "2026-05-08T22:00:00Z",
+        trigger: "Nightmare — flashback to previous placement",
+        severity: "moderate",
+        interventionUsed: "DDP — empathic containment, grounding techniques",
+        deEscalationTime: 35,
+        outcome: "Settled with weighted blanket and audiobook. Discussed in therapy next session.",
+        followUpCompleted: true,
+      },
+    ],
+    sdqScore: 22,
+    sdqDate: "2026-04-01",
+    safetyPlanInPlace: true,
+    safetyPlanReviewDate: "2026-06-15",
+    therapeuticGoals: [
+      "Process trauma from previous placement through narrative therapy",
+      "Develop night-time anxiety coping strategies",
+      "Build sense of belonging at Chamberlain House",
+      "Strengthen cultural identity connection",
+    ],
+    protectiveFactors: ["Engaged with therapy", "Growing trust in key worker", "Cultural activities", "Creative writing"],
+    riskFactors: ["Complex trauma history", "Night-time anxiety", "Previous placement abuse", "Low baseline attachment security"],
+    keyRelationships: ["Key worker: Lisa", "CAMHS: Dr Carter", "Therapist: Dr Mitchell", "Cultural mentor: Aunty Grace"],
+    lastTherapeuticReview: "2026-05-01",
+    nextTherapeuticReview: "2026-06-01",
+  },
+  {
+    childId: "child-sam",
+    childName: "Sam",
+    primaryModel: "pace",
+    secondaryModels: ["dialectical_behaviour_therapy", "sensory_integration"],
+    emotionalRegulationLevel: "emerging",
+    mentalHealthStatus: "improving",
+    wellbeingScores: [
+      { domain: "emotional_regulation", score: 55, trend: "improving", lastAssessed: "2026-05-10", targetScore: 70 },
+      { domain: "attachment_security", score: 50, trend: "improving", lastAssessed: "2026-05-10", targetScore: 65 },
+      { domain: "self_esteem", score: 52, trend: "stable", lastAssessed: "2026-05-10", targetScore: 65 },
+      { domain: "peer_relationships", score: 48, trend: "improving", lastAssessed: "2026-05-10", targetScore: 65 },
+      { domain: "trauma_recovery", score: 45, trend: "improving", lastAssessed: "2026-05-10", targetScore: 60 },
+      { domain: "anxiety_management", score: 50, trend: "stable", lastAssessed: "2026-05-10", targetScore: 65 },
+      { domain: "resilience", score: 55, trend: "improving", lastAssessed: "2026-05-10", targetScore: 70 },
+      { domain: "identity", score: 58, trend: "stable", lastAssessed: "2026-05-10", targetScore: 70 },
+    ],
+    interventions: [
+      {
+        id: "int-sam-01",
+        type: "individual_therapy",
+        provider: "Dr Sarah Mitchell",
+        startDate: "2025-10-01",
+        frequency: "twice_weekly",
+        sessionsAttended: 55,
+        sessionsMissed: 8,
+        effectiveness: 70,
+        childFeedback: 60,
+        active: true,
+      },
+      {
+        id: "int-sam-02",
+        type: "sensory_regulation",
+        provider: "Chamberlain House Staff",
+        startDate: "2025-11-01",
+        frequency: "daily",
+        sessionsAttended: 140,
+        sessionsMissed: 15,
+        effectiveness: 75,
+        active: true,
+      },
+      {
+        id: "int-sam-03",
+        type: "outdoor_therapy",
+        provider: "Wilderness Works CIC",
+        startDate: "2026-03-01",
+        frequency: "weekly",
+        sessionsAttended: 10,
+        sessionsMissed: 1,
+        effectiveness: 82,
+        childFeedback: 85,
+        active: true,
+      },
+    ],
+    camhsReferral: {
+      status: "active_treatment",
+      referralDate: "2025-08-01",
+      acceptedDate: "2025-09-15",
+      firstAppointment: "2025-10-01",
+      lastAppointment: "2026-05-14",
+      nextAppointment: "2026-05-28",
+      tier: 3,
+      clinician: "Dr Emily Carter",
+      diagnosis: ["Complex PTSD", "ADHD", "Attachment disorder"],
+    },
+    crisisEvents: [
+      {
+        id: "crisis-sam-01",
+        date: "2026-05-15T19:30:00Z",
+        trigger: "Overwhelm after difficult school day and missed snack routine",
+        severity: "moderate",
+        interventionUsed: "Sensory regulation — weighted blanket, reduced stimulation, PACE approach",
+        deEscalationTime: 40,
+        outcome: "Used sensory room, calmed with key worker present. Identified need for transition routine from school.",
+        followUpCompleted: true,
+      },
+      {
+        id: "crisis-sam-02",
+        date: "2026-05-10T20:00:00Z",
+        trigger: "Refused bedtime — escalated when boundary set",
+        severity: "low",
+        interventionUsed: "DBT distress tolerance — TIPP technique",
+        deEscalationTime: 20,
+        outcome: "Used cold water on face (TIPP), regulated within 20 mins. Chose to go to bed with audiobook.",
+        followUpCompleted: true,
+      },
+      {
+        id: "crisis-sam-03",
+        date: "2026-04-28T17:00:00Z",
+        trigger: "Peer conflict with Alex over game console",
+        severity: "moderate",
+        interventionUsed: "Separation, individual PACE conversation, repair work",
+        deEscalationTime: 30,
+        outcome: "Both children regulated separately, then facilitated repair conversation next day.",
+        followUpCompleted: true,
+      },
+    ],
+    sdqScore: 26,
+    sdqDate: "2026-04-01",
+    safetyPlanInPlace: true,
+    safetyPlanReviewDate: "2026-05-28",
+    therapeuticGoals: [
+      "Develop self-regulation strategies using DBT skills",
+      "Build tolerance for unexpected change",
+      "Strengthen secure base with key worker",
+      "Use outdoor therapy for confidence and achievement",
+      "Process trauma at child-led pace",
+    ],
+    protectiveFactors: ["Responds well to outdoor therapy", "Key worker relationship growing", "Good sense of humour", "Creative problem solver"],
+    riskFactors: ["Complex trauma", "ADHD impacts regulation", "Multiple previous placements", "School transition difficulties"],
+    keyRelationships: ["Key worker: Tom", "CAMHS: Dr Carter", "Therapist: Dr Mitchell", "Wilderness Works: Jake"],
+    lastTherapeuticReview: "2026-05-01",
+    nextTherapeuticReview: "2026-06-01",
+  },
 ];
+
 async function get_therapeutic(req: NextRequest): Promise<Response> {
 
   const { searchParams } = new URL(req.url);
@@ -32236,6 +39997,24 @@ async function post_therapeutic(req: NextRequest): Promise<Response> {
 // ─── training ──────────────────────────────────────────────────────────
 const training_demoRecords: TrainingRecord[] = [
   // Sarah — excellent training record
+  { id: "tr-1", homeId: "oak-house", date: "2026-02-05", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "safeguarding", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: true, certificateObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "tr-2", homeId: "oak-house", date: "2026-02-20", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "first_aid", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: true, certificateObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "tr-3", homeId: "oak-house", date: "2026-03-10", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "restraint_techniques", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: true, certificateObtained: true, documentationComplete: true, timelyRecording: false },
+
+  // Tom — some gaps
+  { id: "tr-4", homeId: "oak-house", date: "2026-02-15", staffId: "staff-tom", staffName: "Tom Richards", category: "medication_management", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: false, certificateObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "tr-5", homeId: "oak-house", date: "2026-03-05", staffId: "staff-tom", staffName: "Tom Richards", category: "fire_safety", outcome: "completed", completedOnTime: true, assessmentPassed: false, practicalComponentDone: true, certificateObtained: true, documentationComplete: false, timelyRecording: true },
+  { id: "tr-6", homeId: "oak-house", date: "2026-04-01", staffId: "staff-tom", staffName: "Tom Richards", category: "health_and_safety", outcome: "in_progress", completedOnTime: false, assessmentPassed: false, practicalComponentDone: false, certificateObtained: false, documentationComplete: true, timelyRecording: true },
+
+  // Lisa — mixed results
+  { id: "tr-7", homeId: "oak-house", date: "2026-02-28", staffId: "staff-lisa", staffName: "Lisa Williams", category: "equality_diversity", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: true, certificateObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "tr-8", homeId: "oak-house", date: "2026-03-15", staffId: "staff-lisa", staffName: "Lisa Williams", category: "therapeutic_care", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: true, certificateObtained: false, documentationComplete: true, timelyRecording: false },
+  { id: "tr-9", homeId: "oak-house", date: "2026-04-10", staffId: "staff-lisa", staffName: "Lisa Williams", category: "safeguarding", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: false, certificateObtained: true, documentationComplete: false, timelyRecording: true },
+
+  // Darren — strong overall
+  { id: "tr-10", homeId: "oak-house", date: "2026-01-20", staffId: "staff-darren", staffName: "Darren Laville", category: "safeguarding", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: true, certificateObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "tr-11", homeId: "oak-house", date: "2026-03-01", staffId: "staff-darren", staffName: "Darren Laville", category: "restraint_techniques", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: true, certificateObtained: true, documentationComplete: true, timelyRecording: true },
+  { id: "tr-12", homeId: "oak-house", date: "2026-04-15", staffId: "staff-darren", staffName: "Darren Laville", category: "medication_management", outcome: "completed", completedOnTime: true, assessmentPassed: true, practicalComponentDone: true, certificateObtained: true, documentationComplete: true, timelyRecording: true },
 ];
 const training_demoPolicy: TrainingPolicy = {
   mandatoryTrainingPolicy: true,
@@ -32248,8 +40027,11 @@ const training_demoPolicy: TrainingPolicy = {
 };
 const training_demoStaff: StaffTrainingCompetency[] = [
   { staffId: "staff-sarah", trainingNeedsAssessment: true, deliverySkills: true, complianceMonitoring: true, recordManagement: true, qualityAssurance: true, budgetManagement: true },
-
+  { staffId: "staff-tom", trainingNeedsAssessment: true, deliverySkills: true, complianceMonitoring: true, recordManagement: false, qualityAssurance: false, budgetManagement: true },
+  { staffId: "staff-lisa", trainingNeedsAssessment: true, deliverySkills: true, complianceMonitoring: false, recordManagement: true, qualityAssurance: true, budgetManagement: false },
+  { staffId: "staff-darren", trainingNeedsAssessment: true, deliverySkills: true, complianceMonitoring: true, recordManagement: true, qualityAssurance: true, budgetManagement: true },
 ];
+
 async function get_training(req: NextRequest): Promise<Response> {
 
   const result = generateTrainingIntelligence(
@@ -32272,6 +40054,13 @@ async function get_training(req: NextRequest): Promise<Response> {
 // ─── transition-leaving-care-readiness ─────────────────────────────────
 const transition_leaving_care_readiness_DEMO_ASSESSMENTS: TransitionAssessment[] = [
   { id: "ta-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", readinessArea: "independent_living_skills", progressLevel: "on_track", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
+  { id: "ta-2", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-08", readinessArea: "financial_literacy", progressLevel: "exceeding", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
+  { id: "ta-3", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-15", readinessArea: "education_employment", progressLevel: "on_track", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
+  { id: "ta-4", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-01", readinessArea: "health_management", progressLevel: "on_track", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
+  { id: "ta-5", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-08", readinessArea: "housing_planning", progressLevel: "exceeding", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
+  { id: "ta-6", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-15", readinessArea: "social_networks", progressLevel: "on_track", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
+  { id: "ta-7", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-01", readinessArea: "emotional_resilience", progressLevel: "on_track", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
+  { id: "ta-8", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-08", readinessArea: "identity_belonging", progressLevel: "exceeding", pathwayPlanLinked: true, personalAdvisorInvolved: true, childVoiceCaptured: true, goalsSet: true, documentedInPlan: true, reviewScheduled: true },
 ];
 const transition_leaving_care_readiness_DEMO_POLICY: TransitionPolicy = {
   id: "tp-1",
@@ -32285,8 +40074,11 @@ const transition_leaving_care_readiness_DEMO_POLICY: TransitionPolicy = {
 };
 const transition_leaving_care_readiness_DEMO_TRAINING: StaffTransitionTraining[] = [
   { id: "tt-1", staffId: "staff-sarah", staffName: "Sarah Johnson", leavingCareAct: true, pathwayPlanning: true, independencePractical: true, financialCapability: true, emotionalResilience: true, housingOptions: true },
-
+  { id: "tt-2", staffId: "staff-tom", staffName: "Tom Richards", leavingCareAct: true, pathwayPlanning: true, independencePractical: true, financialCapability: true, emotionalResilience: true, housingOptions: true },
+  { id: "tt-3", staffId: "staff-lisa", staffName: "Lisa Williams", leavingCareAct: true, pathwayPlanning: true, independencePractical: true, financialCapability: true, emotionalResilience: true, housingOptions: true },
+  { id: "tt-4", staffId: "staff-darren", staffName: "Darren Laville", leavingCareAct: true, pathwayPlanning: true, independencePractical: true, financialCapability: true, emotionalResilience: true, housingOptions: true },
 ];
+
 async function get_transition_leaving_care_readiness(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionLeavingCareReadinessIntelligence(
@@ -32346,12 +40138,68 @@ const transition_pathway_planning_DEMO_PLANS: PathwayPlan[] = [
     financialPlanInPlace: true,
     healthPassportCompleted: true,
   },
+  {
+    id: "pp-2",
+    childId: "child-jordan",
+    childName: "Jordan",
+    planDate: "2026-02-01",
+    transitionType: "semi_independence",
+    pathwayStatus: "at_risk",
+    personalAdviserAssigned: true,
+    planReviewedRegularly: false,
+    childViewsIncluded: true,
+    accommodationIdentified: false,
+    financialPlanInPlace: false,
+    healthPassportCompleted: false,
+  },
+  {
+    id: "pp-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    planDate: "2026-03-10",
+    transitionType: "foster_care",
+    pathwayStatus: "in_progress",
+    personalAdviserAssigned: true,
+    planReviewedRegularly: true,
+    childViewsIncluded: true,
+    accommodationIdentified: true,
+    financialPlanInPlace: true,
+    healthPassportCompleted: true,
+  },
 ];
 const transition_pathway_planning_DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
   // Alex — strong across the board
+  { id: "isa-1", childId: "child-alex", childName: "Alex", assessmentDate: "2026-02-10", assessedBy: "Sarah Johnson", skillArea: "budgeting", currentLevel: "competent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-2", childId: "child-alex", childName: "Alex", assessmentDate: "2026-02-10", assessedBy: "Sarah Johnson", skillArea: "cooking", currentLevel: "independent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-3", childId: "child-alex", childName: "Alex", assessmentDate: "2026-02-10", assessedBy: "Sarah Johnson", skillArea: "cleaning", currentLevel: "competent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-4", childId: "child-alex", childName: "Alex", assessmentDate: "2026-02-10", assessedBy: "Sarah Johnson", skillArea: "laundry", currentLevel: "independent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-5", childId: "child-alex", childName: "Alex", assessmentDate: "2026-03-15", assessedBy: "Tom Richards", skillArea: "travel", currentLevel: "competent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-6", childId: "child-alex", childName: "Alex", assessmentDate: "2026-03-15", assessedBy: "Tom Richards", skillArea: "health_management", currentLevel: "developing", supportInPlace: true, progressRecorded: true },
+  { id: "isa-7", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", assessedBy: "Lisa Williams", skillArea: "employment_readiness", currentLevel: "competent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-8", childId: "child-alex", childName: "Alex", assessmentDate: "2026-04-01", assessedBy: "Lisa Williams", skillArea: "emotional_resilience", currentLevel: "developing", supportInPlace: true, progressRecorded: true },
+  // Jordan — developing, less support
+  { id: "isa-9", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-03-01", assessedBy: "Darren Laville", skillArea: "budgeting", currentLevel: "developing", supportInPlace: true, progressRecorded: true },
+  { id: "isa-10", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-03-01", assessedBy: "Darren Laville", skillArea: "cooking", currentLevel: "not_started", supportInPlace: false, progressRecorded: false },
+  { id: "isa-11", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-03-15", assessedBy: "Sarah Johnson", skillArea: "cleaning", currentLevel: "developing", supportInPlace: true, progressRecorded: true },
+  { id: "isa-12", childId: "child-jordan", childName: "Jordan", assessmentDate: "2026-04-10", assessedBy: "Tom Richards", skillArea: "social_skills", currentLevel: "competent", supportInPlace: true, progressRecorded: true },
+  // Morgan — good progress
+  { id: "isa-13", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-03-20", assessedBy: "Lisa Williams", skillArea: "budgeting", currentLevel: "competent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-14", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-03-20", assessedBy: "Lisa Williams", skillArea: "cooking", currentLevel: "competent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-15", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-05", assessedBy: "Darren Laville", skillArea: "shopping", currentLevel: "independent", supportInPlace: true, progressRecorded: true },
+  { id: "isa-16", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-05", assessedBy: "Darren Laville", skillArea: "tenancy_management", currentLevel: "developing", supportInPlace: true, progressRecorded: true },
+  { id: "isa-17", childId: "child-morgan", childName: "Morgan", assessmentDate: "2026-04-20", assessedBy: "Sarah Johnson", skillArea: "education_continuation", currentLevel: "competent", supportInPlace: true, progressRecorded: true },
 ];
 const transition_pathway_planning_DEMO_MEETINGS: TransitionMeeting[] = [
   // Alex — well attended meetings
+  { id: "tm-1", childId: "child-alex", childName: "Alex", meetingDate: "2026-01-20", attendees: ["Sarah Johnson", "Alex", "SW Jane Cooper", "Darren Laville"], minutesRecorded: true, actionsAgreed: true, childAttended: true, socialWorkerPresent: true, nextMeetingScheduled: true },
+  { id: "tm-2", childId: "child-alex", childName: "Alex", meetingDate: "2026-03-18", attendees: ["Tom Richards", "Alex", "SW Jane Cooper", "Personal Adviser Mark Thompson"], minutesRecorded: true, actionsAgreed: true, childAttended: true, socialWorkerPresent: true, nextMeetingScheduled: true },
+  { id: "tm-3", childId: "child-alex", childName: "Alex", meetingDate: "2026-05-10", attendees: ["Lisa Williams", "Alex", "SW Jane Cooper"], minutesRecorded: true, actionsAgreed: true, childAttended: true, socialWorkerPresent: true, nextMeetingScheduled: true },
+  // Jordan — missed meeting, incomplete records
+  { id: "tm-4", childId: "child-jordan", childName: "Jordan", meetingDate: "2026-02-15", attendees: ["Darren Laville", "Jordan", "SW Ahmed Patel"], minutesRecorded: true, actionsAgreed: true, childAttended: true, socialWorkerPresent: true, nextMeetingScheduled: true },
+  { id: "tm-5", childId: "child-jordan", childName: "Jordan", meetingDate: "2026-04-12", attendees: ["Sarah Johnson", "SW Ahmed Patel"], minutesRecorded: true, actionsAgreed: false, childAttended: false, socialWorkerPresent: true, nextMeetingScheduled: false },
+  // Morgan — good participation
+  { id: "tm-6", childId: "child-morgan", childName: "Morgan", meetingDate: "2026-03-25", attendees: ["Lisa Williams", "Morgan", "SW Claire Davis", "Tom Richards"], minutesRecorded: true, actionsAgreed: true, childAttended: true, socialWorkerPresent: true, nextMeetingScheduled: true },
+  { id: "tm-7", childId: "child-morgan", childName: "Morgan", meetingDate: "2026-05-05", attendees: ["Darren Laville", "Morgan", "SW Claire Davis"], minutesRecorded: true, actionsAgreed: true, childAttended: true, socialWorkerPresent: true, nextMeetingScheduled: true },
 ];
 const transition_pathway_planning_DEMO_TRAINING: StaffTransitionTraining[] = [
   {
@@ -32365,8 +40213,41 @@ const transition_pathway_planning_DEMO_TRAINING: StaffTransitionTraining[] = [
     financialCapability: true,
     emotionalSupport: true,
   },
-
+  {
+    id: "stt-2",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    leavingCarePolicy: true,
+    pathwayPlanning: true,
+    independenceSkills: true,
+    housingOptions: true,
+    financialCapability: false,
+    emotionalSupport: true,
+  },
+  {
+    id: "stt-3",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    leavingCarePolicy: true,
+    pathwayPlanning: true,
+    independenceSkills: true,
+    housingOptions: false,
+    financialCapability: true,
+    emotionalSupport: true,
+  },
+  {
+    id: "stt-4",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    leavingCarePolicy: true,
+    pathwayPlanning: true,
+    independenceSkills: true,
+    housingOptions: true,
+    financialCapability: true,
+    emotionalSupport: true,
+  },
 ];
+
 async function get_transition_pathway_planning(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionPathwayPlanningIntelligence(
@@ -32452,6 +40333,74 @@ async function post_transition_pathway_planning(req: NextRequest): Promise<Respo
 // ─── transition-planning ───────────────────────────────────────────────
 const transition_planning_DEMO_PLANS: TransitionPlan[] = [
   // Alex (14) — Independence skills building
+  {
+    id: "tp-alex-001",
+    childId: "child-alex",
+    childName: "Alex",
+    transitionType: "independence",
+    targetDate: "2027-03-15",
+    planCreatedDate: "2026-01-15",
+    lastReviewDate: "2026-04-10",
+    nextReviewDate: "2026-07-10",
+    status: "active",
+    keyWorker: "Sarah Johnson",
+    socialWorkerInvolved: true,
+    childVoiceRecorded: true,
+    familyInvolved: true,
+    multiAgencyInvolved: true,
+    goals: [
+      { id: "g-a1", description: "Learn to prepare 3 different meals independently", category: "cooking", targetDate: "2026-09-01", status: "achieved", evidence: "Completed cooking sessions with staff — can make pasta, stir-fry and jacket potatoes" },
+      { id: "g-a2", description: "Open and manage a savings account", category: "budgeting", targetDate: "2026-12-01", status: "in_progress" },
+      { id: "g-a3", description: "Travel independently to school and back", category: "travel", targetDate: "2026-06-01", status: "achieved", evidence: "Now travels independently on bus route 42 daily" },
+      { id: "g-a4", description: "Manage own laundry routine weekly", category: "laundry", targetDate: "2026-08-01", status: "in_progress" },
+    ],
+  },
+  // Jordan (13) — Education transition (moving schools)
+  {
+    id: "tp-jordan-001",
+    childId: "child-jordan",
+    childName: "Jordan",
+    transitionType: "education_transition",
+    targetDate: "2026-09-01",
+    planCreatedDate: "2026-02-01",
+    lastReviewDate: "2026-04-15",
+    nextReviewDate: "2026-07-15",
+    status: "active",
+    keyWorker: "Tom Richards",
+    socialWorkerInvolved: true,
+    childVoiceRecorded: true,
+    familyInvolved: true,
+    multiAgencyInvolved: true,
+    goals: [
+      { id: "g-j1", description: "Complete Year 8 mock exams before transfer", category: "communication", targetDate: "2026-06-15", status: "achieved", evidence: "All mocks completed — results above predicted grades" },
+      { id: "g-j2", description: "Visit new school and meet form tutor", category: "social_skills", targetDate: "2026-07-01", status: "achieved", evidence: "Attended taster day on 14 March — very positive" },
+      { id: "g-j3", description: "Build confidence using public transport to new school", category: "travel", targetDate: "2026-08-15", status: "in_progress" },
+    ],
+  },
+  // Morgan (15) — Approaching leaving care at 16
+  {
+    id: "tp-morgan-001",
+    childId: "child-morgan",
+    childName: "Morgan",
+    transitionType: "leaving_care",
+    targetDate: "2026-12-01",
+    planCreatedDate: "2026-01-10",
+    lastReviewDate: "2026-03-20",
+    nextReviewDate: "2026-06-20",
+    status: "active",
+    keyWorker: "Lisa Williams",
+    socialWorkerInvolved: true,
+    childVoiceRecorded: true,
+    familyInvolved: false,
+    multiAgencyInvolved: true,
+    goals: [
+      { id: "g-m1", description: "Understand tenancy agreements and tenant rights", category: "tenancy", targetDate: "2026-08-01", status: "in_progress" },
+      { id: "g-m2", description: "Create and maintain a weekly budget", category: "budgeting", targetDate: "2026-07-01", status: "in_progress" },
+      { id: "g-m3", description: "Attend 2-week work experience placement", category: "employment", targetDate: "2026-10-01", status: "not_started" },
+      { id: "g-m4", description: "Register with GP and dentist independently", category: "appointments", targetDate: "2026-06-01", status: "achieved", evidence: "Registered with Oakfield Surgery and High Street Dental" },
+      { id: "g-m5", description: "Manage personal hygiene routine independently", category: "hygiene", targetDate: "2026-04-01", status: "achieved", evidence: "Consistently managing own routine — no prompting needed" },
+    ],
+  },
 ];
 const transition_planning_DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
   {
@@ -32475,6 +40424,48 @@ const transition_planning_DEMO_ASSESSMENTS: IndependenceSkillAssessment[] = [
       { category: "digital_literacy", confidence: "competent", notes: "Safe and confident online" },
     ],
   },
+  {
+    id: "assess-jordan-001",
+    childId: "child-jordan",
+    childName: "Jordan",
+    assessmentDate: "2026-04-05",
+    assessedBy: "Tom Richards",
+    skills: [
+      { category: "cooking", confidence: "emerging", notes: "Can make toast and cereal — learning to use hob" },
+      { category: "budgeting", confidence: "not_started", notes: "Not yet introduced" },
+      { category: "hygiene", confidence: "competent", notes: "Independent routine" },
+      { category: "laundry", confidence: "emerging", notes: "Learning to sort clothes — needs supervision" },
+      { category: "travel", confidence: "developing", notes: "Confident locally — building for new school route" },
+      { category: "appointments", confidence: "developing", notes: "Understands importance — needs support to attend" },
+      { category: "communication", confidence: "competent", notes: "Excellent verbal communication" },
+      { category: "employment", confidence: "not_started", notes: "Age-appropriate" },
+      { category: "tenancy", confidence: "not_started", notes: "Age-appropriate" },
+      { category: "emotional_regulation", confidence: "developing", notes: "Progressing well with therapeutic support" },
+      { category: "social_skills", confidence: "developing", notes: "Growing confidence — anxious in new groups" },
+      { category: "digital_literacy", confidence: "competent", notes: "Good online safety awareness" },
+    ],
+  },
+  {
+    id: "assess-morgan-001",
+    childId: "child-morgan",
+    childName: "Morgan",
+    assessmentDate: "2026-04-10",
+    assessedBy: "Lisa Williams",
+    skills: [
+      { category: "cooking", confidence: "competent", notes: "Can plan and prepare meals for self and others" },
+      { category: "budgeting", confidence: "emerging", notes: "Understands concepts — struggles with long-term planning" },
+      { category: "hygiene", confidence: "independent", notes: "Fully independent — no support needed" },
+      { category: "laundry", confidence: "developing", notes: "Manages own laundry with occasional reminders" },
+      { category: "travel", confidence: "competent", notes: "Confident on public transport across the borough" },
+      { category: "appointments", confidence: "developing", notes: "Can attend independently — learning to book" },
+      { category: "communication", confidence: "competent", notes: "Confident communicator — can self-advocate" },
+      { category: "employment", confidence: "not_started", notes: "Work experience placement being arranged" },
+      { category: "tenancy", confidence: "not_started", notes: "Starting tenancy skills programme this month" },
+      { category: "emotional_regulation", confidence: "developing", notes: "Generally good — anxious about leaving care" },
+      { category: "social_skills", confidence: "competent", notes: "Good friendships — active in community groups" },
+      { category: "digital_literacy", confidence: "independent", notes: "Very tech-savvy — helps peers with digital tasks" },
+    ],
+  },
 ];
 const transition_planning_DEMO_STABILITY: PlacementStabilityRecord[] = [
   {
@@ -32485,8 +40476,25 @@ const transition_planning_DEMO_STABILITY: PlacementStabilityRecord[] = [
     disruptionRisks: ["peer conflict at previous home"],
     stabilityFactors: ["strong key worker relationship", "settled in school", "positive peer group at Chamberlain House"],
   },
-
+  {
+    childId: "child-jordan",
+    childName: "Jordan",
+    placementStartDate: "2025-11-01",
+    previousPlacements: 0,
+    disruptionRisks: [],
+    stabilityFactors: ["first placement", "good family contact", "engaged in education", "therapeutic support in place"],
+  },
+  {
+    childId: "child-morgan",
+    childName: "Morgan",
+    placementStartDate: "2026-01-10",
+    previousPlacements: 3,
+    plannedEndDate: "2026-12-01",
+    disruptionRisks: ["anxiety about leaving care", "limited family support network", "financial literacy concerns"],
+    stabilityFactors: ["strong relationship with key worker Lisa Williams"],
+  },
 ];
+
 async function get_transition_planning(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionPlanningIntelligence(
@@ -32593,6 +40601,29 @@ const transition_readiness_DEMO_PLANS: TransitionPlan[] = [
     memoryBoxPrepared: true,
     goodbyesCelebrated: true,
   },
+  {
+    id: "tp-alex",
+    childId: "child-alex",
+    childName: "Alex",
+    transitionType: "foster_care",
+    status: "planned",
+    plannedDate: "2026-06-01",
+    receivingPlacementIdentified: true,
+    visitToNewPlacementCompleted: true,
+    introductoryVisitsCount: 2,
+    childInvolvedInPlanning: true,
+    childViewsRecorded: true,
+    childFeelingAboutMove: "mixed",
+    parentCarerInvolved: true,
+    socialWorkerInvolved: true,
+    riskAssessmentUpdated: true,
+    healthInfoTransferred: true,
+    educationInfoTransferred: true,
+    personalBelongingsArranged: true,
+    lifeStoryWorkUpToDate: true,
+    memoryBoxPrepared: false,
+    goodbyesCelebrated: false,
+  },
 ];
 const transition_readiness_DEMO_HANDOVERS: HandoverRecord[] = [
   {
@@ -32603,6 +40634,26 @@ const transition_readiness_DEMO_HANDOVERS: HandoverRecord[] = [
     sendingKeyWorker: "Sarah Johnson",
     receivingKeyWorker: "Jane Mitchell",
     quality: "comprehensive",
+    allDocumentsTransferred: true,
+    carePlanShared: true,
+    riskAssessmentShared: true,
+    healthPassportShared: true,
+    educationRecordsShared: true,
+    personalHistoryShared: true,
+    allergiesHighlighted: true,
+    medicationInfoTransferred: true,
+    keyRelationshipsDocumented: true,
+    childPreferencesShared: true,
+    triggersAndStrategiesShared: true,
+  },
+  {
+    id: "ho-alex",
+    childId: "child-alex",
+    transitionId: "tp-alex",
+    handoverDate: "2026-06-01",
+    sendingKeyWorker: "Tom Richards",
+    receivingKeyWorker: "Mike Dawson",
+    quality: "adequate",
     allDocumentsTransferred: true,
     carePlanShared: true,
     riskAssessmentShared: true,
@@ -32633,6 +40684,22 @@ const transition_readiness_DEMO_ASSESSMENTS: ReadinessAssessment[] = [
     professionalNetworkBriefed: true,
     familyNetworkBriefed: true,
   },
+  {
+    id: "ra-alex",
+    childId: "child-alex",
+    transitionId: "tp-alex",
+    assessedDate: "2026-05-10",
+    assessedBy: "Tom Richards",
+    overallReadiness: "mostly_ready",
+    emotionalReadiness: "mostly_ready",
+    practicalReadiness: "mostly_ready",
+    socialReadiness: "fully_ready",
+    educationalReadiness: "fully_ready",
+    supportPlanStatus: "in_place",
+    contingencyPlanInPlace: true,
+    professionalNetworkBriefed: true,
+    familyNetworkBriefed: true,
+  },
 ];
 const transition_readiness_DEMO_SUPPORTS: PostTransitionSupport[] = [
   {
@@ -32649,8 +40716,8 @@ const transition_readiness_DEMO_SUPPORTS: PostTransitionSupport[] = [
     issuesIdentified: 1,
     issuesResolved: 1,
   },
-
 ];
+
 async function get_transition_readiness(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionReadinessIntelligence(
@@ -32741,6 +40808,22 @@ async function post_transition_readiness(req: NextRequest): Promise<Response> {
 // ─── transitions ───────────────────────────────────────────────────────
 const transitions_demoRecords: TransitionRecord[] = [
   // Alex — thorough transition process across multiple categories
+  { id: "tr-1", childId: "child-alex", childName: "Alex", transitionDate: "2026-01-15", category: "admission_transition", transitionPlanInPlace: true, childPrepared: true, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: true, timelyProcess: true },
+  { id: "tr-2", childId: "child-alex", childName: "Alex", transitionDate: "2026-01-20", category: "placement_move", transitionPlanInPlace: true, childPrepared: true, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: true, timelyProcess: true },
+  { id: "tr-3", childId: "child-alex", childName: "Alex", transitionDate: "2026-02-10", category: "step_down", transitionPlanInPlace: true, childPrepared: true, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: true, timelyProcess: true },
+  { id: "tr-4", childId: "child-alex", childName: "Alex", transitionDate: "2026-03-01", category: "family_reunification", transitionPlanInPlace: true, childPrepared: true, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: true, timelyProcess: true },
+
+  // Jordan — mostly good but some gaps in process
+  { id: "tr-5", childId: "child-jordan", childName: "Jordan", transitionDate: "2026-02-20", category: "admission_transition", transitionPlanInPlace: true, childPrepared: true, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: true, timelyProcess: true },
+  { id: "tr-6", childId: "child-jordan", childName: "Jordan", transitionDate: "2026-03-05", category: "discharge_planning", transitionPlanInPlace: true, childPrepared: true, receivingServiceBriefed: true, handoverComplete: false, documentationComplete: true, timelyProcess: true },
+  { id: "tr-7", childId: "child-jordan", childName: "Jordan", transitionDate: "2026-03-15", category: "step_up", transitionPlanInPlace: true, childPrepared: false, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: true, timelyProcess: false },
+  { id: "tr-8", childId: "child-jordan", childName: "Jordan", transitionDate: "2026-04-01", category: "independent_living", transitionPlanInPlace: false, childPrepared: true, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: false, timelyProcess: true },
+
+  // Morgan — emergency placement, some areas incomplete
+  { id: "tr-9", childId: "child-morgan", childName: "Morgan", transitionDate: "2026-03-10", category: "emergency_move", transitionPlanInPlace: true, childPrepared: true, receivingServiceBriefed: true, handoverComplete: false, documentationComplete: true, timelyProcess: true },
+  { id: "tr-10", childId: "child-morgan", childName: "Morgan", transitionDate: "2026-03-20", category: "placement_move", transitionPlanInPlace: true, childPrepared: true, receivingServiceBriefed: false, handoverComplete: false, documentationComplete: true, timelyProcess: false },
+  { id: "tr-11", childId: "child-morgan", childName: "Morgan", transitionDate: "2026-04-05", category: "admission_transition", transitionPlanInPlace: true, childPrepared: false, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: true, timelyProcess: true },
+  { id: "tr-12", childId: "child-morgan", childName: "Morgan", transitionDate: "2026-04-15", category: "discharge_planning", transitionPlanInPlace: false, childPrepared: true, receivingServiceBriefed: true, handoverComplete: true, documentationComplete: false, timelyProcess: true },
 ];
 const transitions_demoPolicy: TransitionPolicy = {
   id: "pol-trans-1",
@@ -32754,8 +40837,11 @@ const transitions_demoPolicy: TransitionPolicy = {
 };
 const transitions_demoStaff: StaffTransitionTraining[] = [
   { id: "t-1", staffId: "staff-sarah", staffName: "Sarah Johnson", transitionPlanning: true, childPreparation: true, handoverSkills: true, familyEngagement: true, multiAgencyWorking: true, emotionalSupport: true },
-
+  { id: "t-2", staffId: "staff-tom", staffName: "Tom Richards", transitionPlanning: true, childPreparation: true, handoverSkills: true, familyEngagement: false, multiAgencyWorking: true, emotionalSupport: false },
+  { id: "t-3", staffId: "staff-lisa", staffName: "Lisa Williams", transitionPlanning: true, childPreparation: true, handoverSkills: true, familyEngagement: true, multiAgencyWorking: false, emotionalSupport: true },
+  { id: "t-4", staffId: "staff-darren", staffName: "Darren Laville", transitionPlanning: true, childPreparation: true, handoverSkills: true, familyEngagement: true, multiAgencyWorking: true, emotionalSupport: true },
 ];
+
 async function get_transitions(req: NextRequest): Promise<Response> {
 
   const result = generateTransitionsIntelligence(
@@ -33363,7 +41449,6 @@ const trauma_informed_REF_DATE = "2026-05-18T12:00:00Z";
 const trauma_informed_PERIOD_START = "2026-01-01T00:00:00Z";
 const trauma_informed_PERIOD_END = "2026-05-18T00:00:00Z";
 const trauma_informed_CHILD_IDS = ["child-alex", "child-jordan", "child-morgan"];
-
 const trauma_informed_DEMO_TRAINING: TraumaTrainingRecord[] = [
   {
     id: "tr-01",
@@ -33374,6 +41459,76 @@ const trauma_informed_DEMO_TRAINING: TraumaTrainingRecord[] = [
     expiryDate: "2026-09-15",
     level: "specialist",
     provider: "Trauma Recovery Institute",
+  },
+  {
+    id: "tr-02",
+    staffId: "staff-sarah",
+    staffName: "Sarah Johnson",
+    trainingType: "PACE Model Practitioner",
+    completedDate: "2025-06-20",
+    expiryDate: "2026-06-20",
+    level: "specialist",
+    provider: "DDP Network",
+  },
+  {
+    id: "tr-03",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    trainingType: "Trauma-Informed Care Level 3",
+    completedDate: "2025-11-10",
+    expiryDate: "2026-11-10",
+    level: "responsive",
+    provider: "National Trauma Training",
+  },
+  {
+    id: "tr-04",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    trainingType: "Therapeutic Crisis Intervention",
+    completedDate: "2026-01-05",
+    expiryDate: "2027-01-05",
+    level: "responsive",
+    provider: "Cornell University (UK Licence)",
+  },
+  {
+    id: "tr-05",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    trainingType: "Trauma-Informed Care Level 3",
+    completedDate: "2025-10-01",
+    expiryDate: "2026-10-01",
+    level: "responsive",
+    provider: "National Trauma Training",
+  },
+  {
+    id: "tr-06",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    trainingType: "Sensory Integration Awareness",
+    completedDate: "2026-02-15",
+    expiryDate: "2027-02-15",
+    level: "informed",
+    provider: "Sensory Integration Education",
+  },
+  {
+    id: "tr-07",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    trainingType: "Trauma-Informed Care Level 2",
+    completedDate: "2026-03-01",
+    expiryDate: "2027-03-01",
+    level: "informed",
+    provider: "National Trauma Training",
+  },
+  {
+    id: "tr-08",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    trainingType: "ACE-Aware Approaches",
+    completedDate: "2026-01-20",
+    expiryDate: "2027-01-20",
+    level: "informed",
+    provider: "ACEs Hub Wales (adapted)",
   },
 ];
 const trauma_informed_DEMO_INTERVENTIONS: TherapeuticInterventionRecord[] = [
@@ -33389,6 +41544,188 @@ const trauma_informed_DEMO_INTERVENTIONS: TherapeuticInterventionRecord[] = [
     childResponse: "positive",
     durationMinutes: 45,
   },
+  {
+    id: "int-02",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-03",
+    interventionType: "co_regulation_activity",
+    deliveredBy: "Tom Richards",
+    traumaPrinciplesApplied: ["safety", "collaboration"],
+    practiceIndicators: ["co_regulation", "sensory_awareness"],
+    childResponse: "positive",
+    durationMinutes: 30,
+  },
+  {
+    id: "int-03",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-06",
+    interventionType: "life_story_work",
+    deliveredBy: "Sarah Johnson",
+    traumaPrinciplesApplied: ["trustworthiness", "empowerment", "cultural_sensitivity"],
+    practiceIndicators: ["life_story_work", "safe_spaces"],
+    childResponse: "neutral",
+    durationMinutes: 60,
+  },
+  {
+    id: "int-04",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-10",
+    interventionType: "psychoeducation_session",
+    deliveredBy: "Lisa Williams",
+    traumaPrinciplesApplied: ["empowerment", "choice"],
+    practiceIndicators: ["psychoeducation", "strengths_based_language"],
+    childResponse: "positive",
+    durationMinutes: 40,
+  },
+  {
+    id: "int-05",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-01",
+    interventionType: "sensory_regulation",
+    deliveredBy: "Tom Richards",
+    traumaPrinciplesApplied: ["safety", "choice"],
+    practiceIndicators: ["sensory_awareness", "safe_spaces", "emotional_regulation_support"],
+    childResponse: "positive",
+    durationMinutes: 25,
+  },
+  {
+    id: "int-06",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-04",
+    interventionType: "relationship_repair",
+    deliveredBy: "Sarah Johnson",
+    traumaPrinciplesApplied: ["trustworthiness", "collaboration", "empowerment"],
+    practiceIndicators: ["relationship_repair", "co_regulation"],
+    childResponse: "positive",
+    durationMinutes: 35,
+  },
+  {
+    id: "int-07",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-07",
+    interventionType: "therapeutic_parenting_session",
+    deliveredBy: "Lisa Williams",
+    traumaPrinciplesApplied: ["safety", "trustworthiness"],
+    practiceIndicators: ["therapeutic_parenting", "predictable_routines"],
+    childResponse: "neutral",
+    durationMinutes: 45,
+  },
+  {
+    id: "int-08",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-12",
+    interventionType: "co_regulation_activity",
+    deliveredBy: "Tom Richards",
+    traumaPrinciplesApplied: ["collaboration", "safety"],
+    practiceIndicators: ["co_regulation", "emotional_regulation_support"],
+    childResponse: "positive",
+    durationMinutes: 30,
+  },
+  {
+    id: "int-09",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-02",
+    interventionType: "therapeutic_parenting_session",
+    deliveredBy: "Sarah Johnson",
+    traumaPrinciplesApplied: ["safety", "empowerment", "cultural_sensitivity"],
+    practiceIndicators: ["therapeutic_parenting", "strengths_based_language"],
+    childResponse: "positive",
+    durationMinutes: 50,
+  },
+  {
+    id: "int-10",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-05",
+    interventionType: "psychoeducation_session",
+    deliveredBy: "Lisa Williams",
+    traumaPrinciplesApplied: ["empowerment", "choice", "trustworthiness"],
+    practiceIndicators: ["psychoeducation", "emotional_regulation_support"],
+    childResponse: "positive",
+    durationMinutes: 40,
+  },
+  {
+    id: "int-11",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-08",
+    interventionType: "life_story_work",
+    deliveredBy: "Sarah Johnson",
+    traumaPrinciplesApplied: ["trustworthiness", "cultural_sensitivity"],
+    practiceIndicators: ["life_story_work", "safe_spaces"],
+    childResponse: "neutral",
+    durationMinutes: 55,
+  },
+  {
+    id: "int-12",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-11",
+    interventionType: "sensory_regulation",
+    deliveredBy: "Tom Richards",
+    traumaPrinciplesApplied: ["safety", "choice"],
+    practiceIndicators: ["sensory_awareness", "predictable_routines"],
+    childResponse: "positive",
+    durationMinutes: 25,
+  },
+  {
+    id: "int-13",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-05-14",
+    interventionType: "relationship_repair",
+    deliveredBy: "Lisa Williams",
+    traumaPrinciplesApplied: ["collaboration", "trustworthiness"],
+    practiceIndicators: ["relationship_repair", "co_regulation"],
+    childResponse: "distressed",
+    durationMinutes: 30,
+    notes: "Morgan became distressed recalling peer conflict; session ended early with co-regulation support",
+  },
+  {
+    id: "int-14",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-15",
+    interventionType: "sensory_regulation",
+    deliveredBy: "Tom Richards",
+    traumaPrinciplesApplied: ["safety", "choice"],
+    practiceIndicators: ["sensory_awareness", "predictable_routines"],
+    childResponse: "positive",
+    durationMinutes: 20,
+  },
+  {
+    id: "int-15",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-05-16",
+    interventionType: "life_story_work",
+    deliveredBy: "Sarah Johnson",
+    traumaPrinciplesApplied: ["trustworthiness", "cultural_sensitivity", "empowerment"],
+    practiceIndicators: ["life_story_work", "strengths_based_language"],
+    childResponse: "positive",
+    durationMinutes: 50,
+  },
+  {
+    id: "int-16",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-05-17",
+    interventionType: "relationship_repair",
+    deliveredBy: "Lisa Williams",
+    traumaPrinciplesApplied: ["collaboration", "trustworthiness", "empowerment"],
+    practiceIndicators: ["relationship_repair", "strengths_based_language"],
+    childResponse: "refused",
+    notes: "Alex declined to engage; revisit next session with alternative approach",
+    durationMinutes: 10,
+  },
 ];
 const trauma_informed_DEMO_ADAPTATIONS: EnvironmentalAdaptation[] = [
   {
@@ -33399,6 +41736,54 @@ const trauma_informed_DEMO_ADAPTATIONS: EnvironmentalAdaptation[] = [
     implementedDate: "2025-09-01",
     reviewDate: "2026-09-01",
     status: "active",
+  },
+  {
+    id: "env-02",
+    area: "Communal Areas",
+    adaptation: "Visual routine boards and consistent daily schedule displays",
+    traumaPrinciple: "trustworthiness",
+    implementedDate: "2025-10-15",
+    reviewDate: "2026-04-15",
+    status: "needs_review",
+  },
+  {
+    id: "env-03",
+    area: "Bedrooms",
+    adaptation: "Personalised safe space boxes with self-selected comfort items",
+    traumaPrinciple: "choice",
+    implementedDate: "2026-01-10",
+    reviewDate: "2026-07-10",
+    status: "active",
+    childSpecific: "child-alex",
+  },
+  {
+    id: "env-04",
+    area: "Garden",
+    adaptation: "Outdoor therapeutic space with seating areas for 1:1 conversations",
+    traumaPrinciple: "collaboration",
+    implementedDate: "2026-02-01",
+    reviewDate: "2026-08-01",
+    status: "active",
+  },
+  {
+    id: "env-05",
+    area: "Kitchen",
+    adaptation: "Cooking together programme supporting empowerment and life skills",
+    traumaPrinciple: "empowerment",
+    implementedDate: "2026-03-01",
+    reviewDate: "2026-09-01",
+    status: "active",
+    childSpecific: "child-morgan",
+  },
+  {
+    id: "env-06",
+    area: "Quiet Room",
+    adaptation: "Cultural identity display and resources reflecting diverse heritage",
+    traumaPrinciple: "cultural_sensitivity",
+    implementedDate: "2026-04-01",
+    reviewDate: "2026-10-01",
+    status: "active",
+    childSpecific: "child-jordan",
   },
 ];
 const trauma_informed_DEMO_CONSULTATIONS: ConsultationRecord[] = [
@@ -33418,6 +41803,38 @@ const trauma_informed_DEMO_CONSULTATIONS: ConsultationRecord[] = [
     ],
     actionsCompleted: true,
   },
+  {
+    id: "cons-02",
+    date: "2026-03-20",
+    consultantName: "Dr Emma Clarke",
+    consultationType: "clinical_psychologist",
+    childrenDiscussed: ["child-morgan", "child-alex"],
+    recommendations: [
+      "Morgan showing progress with PACE-based approaches",
+      "Consider sensory assessment for Alex",
+    ],
+    actionsAgreed: [
+      "Continue PACE approaches with Morgan",
+      "Refer Alex for occupational therapy sensory assessment",
+    ],
+    actionsCompleted: true,
+  },
+  {
+    id: "cons-03",
+    date: "2026-04-25",
+    consultantName: "Dr Aisha Patel",
+    consultationType: "CAMHS",
+    childrenDiscussed: ["child-jordan", "child-morgan"],
+    recommendations: [
+      "Jordan may benefit from EMDR referral",
+      "Maintain current therapeutic approaches for Morgan",
+    ],
+    actionsAgreed: [
+      "Discuss EMDR referral with Jordan's social worker",
+      "Continue current plan for Morgan with 6-week review",
+    ],
+    actionsCompleted: false,
+  },
 ];
 const trauma_informed_DEMO_SCREENINGS: TraumaScreening[] = [
   {
@@ -33433,8 +41850,34 @@ const trauma_informed_DEMO_SCREENINGS: TraumaScreening[] = [
     referralMade: true,
     nextReviewDate: "2026-07-15",
   },
-
+  {
+    id: "scr-02",
+    childId: "child-jordan",
+    childName: "Jordan",
+    screeningDate: "2026-02-01",
+    screenedBy: "Sarah Johnson",
+    traumaHistoryDocumented: true,
+    triggersIdentified: ["arguments between peers", "feeling excluded"],
+    copingStrategiesIdentified: ["talking to key worker", "physical activity", "journaling"],
+    therapeuticNeedsAssessed: true,
+    referralMade: true,
+    nextReviewDate: "2026-08-01",
+  },
+  {
+    id: "scr-03",
+    childId: "child-morgan",
+    childName: "Morgan",
+    screeningDate: "2026-02-15",
+    screenedBy: "Lisa Williams",
+    traumaHistoryDocumented: true,
+    triggersIdentified: ["discussions about family", "feeling controlled", "mealtimes"],
+    copingStrategiesIdentified: ["cooking", "time alone in room", "walking in garden"],
+    therapeuticNeedsAssessed: true,
+    referralMade: false,
+    nextReviewDate: "2026-08-15",
+  },
 ];
+
 async function get_trauma_informed(req: NextRequest): Promise<Response> {
 
   try {
@@ -33831,6 +42274,21 @@ async function post_visitor_engagement_monitoring(req: NextRequest): Promise<Res
 // ─── visitor-management-quality ────────────────────────────────────────
 const visitor_management_quality_DEMO_VISITS: VisitorRecord[] = [
   // Alex — family member visit (excellent)
+  { id: "vr-001", childId: "child-alex", childName: "Alex", visitDate: "2026-02-10", visitorType: "family_member", visitQuality: "excellent", childConsulted: true, safeguardingChecked: true, privacyMaintained: true, documentedInLog: true, staffSupervised: true, feedbackRecorded: true },
+  // Alex — social worker visit (good)
+  { id: "vr-002", childId: "child-alex", childName: "Alex", visitDate: "2026-03-05", visitorType: "social_worker", visitQuality: "good", childConsulted: true, safeguardingChecked: true, privacyMaintained: true, documentedInLog: true, staffSupervised: true, feedbackRecorded: true },
+  // Alex — therapist visit (excellent)
+  { id: "vr-003", childId: "child-alex", childName: "Alex", visitDate: "2026-04-12", visitorType: "therapist", visitQuality: "excellent", childConsulted: true, safeguardingChecked: true, privacyMaintained: true, documentedInLog: true, staffSupervised: true, feedbackRecorded: true },
+  // Jordan — independent visitor (good)
+  { id: "vr-004", childId: "child-jordan", childName: "Jordan", visitDate: "2026-02-20", visitorType: "independent_visitor", visitQuality: "good", childConsulted: true, safeguardingChecked: true, privacyMaintained: true, documentedInLog: true, staffSupervised: true, feedbackRecorded: true },
+  // Jordan — advocate visit (excellent)
+  { id: "vr-005", childId: "child-jordan", childName: "Jordan", visitDate: "2026-03-15", visitorType: "advocate", visitQuality: "excellent", childConsulted: true, safeguardingChecked: true, privacyMaintained: true, documentedInLog: true, staffSupervised: true, feedbackRecorded: true },
+  // Jordan — friend visit (good)
+  { id: "vr-006", childId: "child-jordan", childName: "Jordan", visitDate: "2026-04-20", visitorType: "friend", visitQuality: "good", childConsulted: true, safeguardingChecked: true, privacyMaintained: true, documentedInLog: true, staffSupervised: true, feedbackRecorded: true },
+  // Morgan — professional visitor (excellent)
+  { id: "vr-007", childId: "child-morgan", childName: "Morgan", visitDate: "2026-03-01", visitorType: "professional_visitor", visitQuality: "excellent", childConsulted: true, safeguardingChecked: true, privacyMaintained: true, documentedInLog: true, staffSupervised: true, feedbackRecorded: true },
+  // Morgan — inspector visit (good)
+  { id: "vr-008", childId: "child-morgan", childName: "Morgan", visitDate: "2026-04-08", visitorType: "inspector", visitQuality: "good", childConsulted: true, safeguardingChecked: true, privacyMaintained: true, documentedInLog: true, staffSupervised: true, feedbackRecorded: true },
 ];
 const visitor_management_quality_DEMO_POLICY: VisitorPolicy = {
   id: "pol-oak",
@@ -33844,8 +42302,11 @@ const visitor_management_quality_DEMO_POLICY: VisitorPolicy = {
 };
 const visitor_management_quality_DEMO_TRAINING: StaffVisitorTraining[] = [
   { id: "tr-sarah", staffId: "staff-sarah", staffName: "Sarah Johnson", visitorManagement: true, safeguardingChecks: true, childConsentPractice: true, privacyProtocol: true, conflictResolution: true, recordKeeping: true },
-
+  { id: "tr-tom", staffId: "staff-tom", staffName: "Tom Richards", visitorManagement: true, safeguardingChecks: true, childConsentPractice: true, privacyProtocol: true, conflictResolution: true, recordKeeping: true },
+  { id: "tr-lisa", staffId: "staff-lisa", staffName: "Lisa Williams", visitorManagement: true, safeguardingChecks: true, childConsentPractice: true, privacyProtocol: true, conflictResolution: true, recordKeeping: true },
+  { id: "tr-darren", staffId: "staff-darren", staffName: "Darren Laville", visitorManagement: true, safeguardingChecks: true, childConsentPractice: true, privacyProtocol: true, conflictResolution: true, recordKeeping: true },
 ];
+
 async function get_visitor_management_quality(req: NextRequest): Promise<Response> {
 
   const result = generateVisitorManagementQualityIntelligence(
@@ -34211,17 +42672,36 @@ async function post_visitor_management_safety(req: NextRequest): Promise<Respons
 // ─── visitor-partnership-quality ───────────────────────────────────────
 const visitor_partnership_quality_DEMO_VISITS: VisitRecord[] = [
   // Alex — regular SW and therapy visits
+  { id: "vr-1", visitorType: "social_worker", visitorName: "Claire Davies", visitPurpose: "statutory_visit", date: "2026-02-10", childId: "child-alex", childName: "Alex", outcome: "positive", reportProvided: true, recommendationsCount: 0, childSeen: true, childSpokenToAlone: true, duration: 45, followUpDate: null },
+  { id: "vr-2", visitorType: "therapist", visitorName: "Dr Rachel Green", visitPurpose: "therapy_session", date: "2026-02-20", childId: "child-alex", childName: "Alex", outcome: "positive", reportProvided: true, recommendationsCount: 0, childSeen: true, childSpokenToAlone: true, duration: 50, followUpDate: null },
+  { id: "vr-3", visitorType: "social_worker", visitorName: "Claire Davies", visitPurpose: "statutory_visit", date: "2026-04-14", childId: "child-alex", childName: "Alex", outcome: "constructive", reportProvided: true, recommendationsCount: 1, childSeen: true, childSpokenToAlone: true, duration: 40, followUpDate: "2026-05-14" },
+  // Jordan — SW visits + CAMHS
+  { id: "vr-4", visitorType: "social_worker", visitorName: "Mark Thompson", visitPurpose: "statutory_visit", date: "2026-01-25", childId: "child-jordan", childName: "Jordan", outcome: "positive", reportProvided: true, recommendationsCount: 0, childSeen: true, childSpokenToAlone: true, duration: 50, followUpDate: null },
+  { id: "vr-5", visitorType: "health_professional", visitorName: "CAMHS Team", visitPurpose: "health_appointment", date: "2026-03-05", childId: "child-jordan", childName: "Jordan", outcome: "constructive", reportProvided: true, recommendationsCount: 1, childSeen: true, childSpokenToAlone: false, duration: 60, followUpDate: "2026-04-05" },
+  { id: "vr-6", visitorType: "social_worker", visitorName: "Mark Thompson", visitPurpose: "review_meeting", date: "2026-04-20", childId: "child-jordan", childName: "Jordan", outcome: "positive", reportProvided: true, recommendationsCount: 0, childSeen: true, childSpokenToAlone: true, duration: 55, followUpDate: null },
+  // Morgan — IRO review + education
+  { id: "vr-7", visitorType: "iro", visitorName: "Susan Clarke", visitPurpose: "review_meeting", date: "2026-02-28", childId: "child-morgan", childName: "Morgan", outcome: "positive", reportProvided: true, recommendationsCount: 2, childSeen: true, childSpokenToAlone: true, duration: 90, followUpDate: "2026-05-28" },
+  { id: "vr-8", visitorType: "education_professional", visitorName: "PEP Coordinator", visitPurpose: "education_support", date: "2026-03-20", childId: "child-morgan", childName: "Morgan", outcome: "positive", reportProvided: true, recommendationsCount: 0, childSeen: true, childSpokenToAlone: null, duration: 45, followUpDate: null },
+  // General home visits
+  { id: "vr-9", visitorType: "advocate", visitorName: "Children's Rights Alliance", visitPurpose: "general_support", date: "2026-03-10", childId: null, childName: null, outcome: "positive", reportProvided: false, recommendationsCount: 0, childSeen: true, childSpokenToAlone: true, duration: 60, followUpDate: null },
 ];
 const visitor_partnership_quality_DEMO_PARTNERSHIPS: PartnershipAssessment[] = [
   { id: "pa-1", partnerAgency: "CAMHS", partnerType: "health_professional", assessmentDate: "2026-03-01", partnershipRating: "good", informationSharingEffective: true, jointPlanningEvident: true, responsiveToRequests: true, attendsReviewMeetings: true, childFocused: true, challengeAccepted: true },
+  { id: "pa-2", partnerAgency: "Oakwood Academy", partnerType: "education_professional", assessmentDate: "2026-03-01", partnershipRating: "excellent", informationSharingEffective: true, jointPlanningEvident: true, responsiveToRequests: true, attendsReviewMeetings: true, childFocused: true, challengeAccepted: true },
+  { id: "pa-3", partnerAgency: "Local Authority SW Team", partnerType: "social_worker", assessmentDate: "2026-03-01", partnershipRating: "good", informationSharingEffective: true, jointPlanningEvident: false, responsiveToRequests: true, attendsReviewMeetings: true, childFocused: true, challengeAccepted: false },
 ];
 const visitor_partnership_quality_DEMO_REG44S: Reg44Visit[] = [
   { id: "r44-1", visitDate: "2026-02-15", visitorName: "Helen Morris (Independent)", childrenInterviewed: 3, totalChildren: 3, staffInterviewed: 2, reportTimely: true, issuesRaised: 1, issuesResolved: 1, previousRecommendationsReviewed: true, overallPositive: true },
+  { id: "r44-2", visitDate: "2026-03-15", visitorName: "Helen Morris (Independent)", childrenInterviewed: 2, totalChildren: 3, staffInterviewed: 2, reportTimely: true, issuesRaised: 0, issuesResolved: 0, previousRecommendationsReviewed: true, overallPositive: true },
+  { id: "r44-3", visitDate: "2026-04-15", visitorName: "Helen Morris (Independent)", childrenInterviewed: 3, totalChildren: 3, staffInterviewed: 3, reportTimely: true, issuesRaised: 2, issuesResolved: 1, previousRecommendationsReviewed: true, overallPositive: true },
 ];
 const visitor_partnership_quality_DEMO_ACTIONS: VisitorAction[] = [
   { id: "va-1", visitId: "vr-3", visitorType: "social_worker", description: "Update Alex's care plan with new education targets", assignedTo: "Darren Laville", dueDate: "2026-05-14", status: "completed", completedDate: "2026-05-10" },
-
+  { id: "va-2", visitId: "vr-7", visitorType: "iro", description: "Review Morgan's pathway plan timeline", assignedTo: "Darren Laville", dueDate: "2026-03-28", status: "completed", completedDate: "2026-03-25" },
+  { id: "va-3", visitId: "vr-7", visitorType: "iro", description: "Arrange college visit for Morgan", assignedTo: "Sarah Johnson", dueDate: "2026-04-30", status: "completed", completedDate: "2026-04-28" },
+  { id: "va-4", visitId: "r44-3", visitorType: "reg44_visitor", description: "Update fire evacuation plan signage", assignedTo: "Tom Richards", dueDate: "2026-05-15", status: "in_progress", completedDate: null },
 ];
+
 async function get_visitor_partnership_quality(req: NextRequest): Promise<Response> {
 
   const result = generateVisitorPartnershipQualityIntelligence(
@@ -34312,6 +42792,17 @@ async function post_visitor_partnership_quality(req: NextRequest): Promise<Respo
 // ─── voice-of-child-intelligence ───────────────────────────────────────
 const voice_of_child_intelligence_DEMO_RECORDS: VoiceOfChildRecord[] = [
   { id: "voc-001", homeId: "home-oak-house", date: "2025-02-10", childId: "child-alex", childName: "Alex", category: "wishes_feelings_capture", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+  { id: "voc-002", homeId: "home-oak-house", date: "2025-03-05", childId: "child-alex", childName: "Alex", category: "care_plan_voice", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+  { id: "voc-003", homeId: "home-oak-house", date: "2025-04-12", childId: "child-alex", childName: "Alex", category: "lac_review_participation", outcome: "voice_acknowledged", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: false, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+  { id: "voc-004", homeId: "home-oak-house", date: "2025-05-20", childId: "child-alex", childName: "Alex", category: "house_meeting_voice", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: false },
+  { id: "voc-005", homeId: "home-oak-house", date: "2025-02-18", childId: "child-jordan", childName: "Jordan", category: "wishes_feelings_capture", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+  { id: "voc-006", homeId: "home-oak-house", date: "2025-03-22", childId: "child-jordan", childName: "Jordan", category: "key_decision_participation", outcome: "voice_acknowledged", wishesFeelingsRecorded: true, childDirectlyConsulted: false, voiceInfluencedOutcome: false, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+  { id: "voc-007", homeId: "home-oak-house", date: "2025-05-10", childId: "child-jordan", childName: "Jordan", category: "advocacy_access", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+  { id: "voc-008", homeId: "home-oak-house", date: "2025-06-15", childId: "child-jordan", childName: "Jordan", category: "complaint_voice", outcome: "voice_partially_captured", wishesFeelingsRecorded: false, childDirectlyConsulted: true, voiceInfluencedOutcome: false, ageAppropriateMethod: true, documentationComplete: false, timelyRecording: true },
+  { id: "voc-009", homeId: "home-oak-house", date: "2025-03-01", childId: "child-morgan", childName: "Morgan", category: "daily_life_choice", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+  { id: "voc-010", homeId: "home-oak-house", date: "2025-04-28", childId: "child-morgan", childName: "Morgan", category: "care_plan_voice", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
+  { id: "voc-011", homeId: "home-oak-house", date: "2025-06-01", childId: "child-morgan", childName: "Morgan", category: "lac_review_participation", outcome: "voice_acknowledged", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: false, ageAppropriateMethod: false, documentationComplete: true, timelyRecording: true },
+  { id: "voc-012", homeId: "home-oak-house", date: "2025-07-10", childId: "child-morgan", childName: "Morgan", category: "key_decision_participation", outcome: "voice_influenced_decision", wishesFeelingsRecorded: true, childDirectlyConsulted: true, voiceInfluencedOutcome: true, ageAppropriateMethod: true, documentationComplete: true, timelyRecording: true },
 ];
 const voice_of_child_intelligence_DEMO_POLICY: VoiceOfChildPolicy = {
   wishesFeelingsPolicy: true,
@@ -34324,8 +42815,11 @@ const voice_of_child_intelligence_DEMO_POLICY: VoiceOfChildPolicy = {
 };
 const voice_of_child_intelligence_DEMO_STAFF: StaffVoiceOfChildTraining[] = [
   { staffId: "staff-sarah", wishesFeelingsCapture: true, activeListeningSkills: true, ageAppropriateEngagement: true, advocacyAwareness: true, participationFacilitation: true, nonVerbalCommunication: true },
-
+  { staffId: "staff-tom", wishesFeelingsCapture: true, activeListeningSkills: true, ageAppropriateEngagement: true, advocacyAwareness: true, participationFacilitation: false, nonVerbalCommunication: true },
+  { staffId: "staff-lisa", wishesFeelingsCapture: true, activeListeningSkills: true, ageAppropriateEngagement: true, advocacyAwareness: false, participationFacilitation: true, nonVerbalCommunication: false },
+  { staffId: "staff-darren", wishesFeelingsCapture: true, activeListeningSkills: true, ageAppropriateEngagement: true, advocacyAwareness: true, participationFacilitation: true, nonVerbalCommunication: true },
 ];
+
 async function get_voice_of_child_intelligence(req: NextRequest): Promise<Response> {
 
   const result = generateVoiceOfChildIntelligenceReport({
@@ -34352,9 +42846,35 @@ async function get_voice_of_child_intelligence(req: NextRequest): Promise<Respon
 // ─── voice-of-child ────────────────────────────────────────────────────
 const voice_of_child_DEMO_CHILDREN: ChildVoiceProfile[] = [
   { childId: "child-alex", childName: "Alex" },
+  { childId: "child-jordan", childName: "Jordan" },
+  { childId: "child-morgan", childName: "Morgan" },
 ];
 const voice_of_child_DEMO_VOICE_ENTRIES: VoiceEntry[] = [
   // ── Alex ────────────────────────────────────────────────────────────────
+  { id: "ve-001", childId: "child-alex", date: "2026-05-02", domain: "daily_log", voiceRecorded: true, method: "direct_verbal", influence: "partially_influenced", summary: "Alex said he wants to stay up later on weekend nights — agreed 10:30pm Fri/Sat", recordedBy: "Sarah Johnson" },
+  { id: "ve-002", childId: "child-alex", date: "2026-05-05", domain: "key_work_session", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Alex expressed strong interest in boxing — arranged trial at local club", actionTaken: "Trial session booked 12th May, Sarah to transport", recordedBy: "Sarah Johnson" },
+  { id: "ve-003", childId: "child-alex", date: "2026-05-08", domain: "contact_session", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Alex asked if he can see Mum at the park instead of the contact centre — feels more natural", actionTaken: "Request submitted to placing authority for venue change", recordedBy: "Sarah Johnson" },
+  { id: "ve-004", childId: "child-alex", date: "2026-05-10", domain: "house_meeting", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Alex suggested a BBQ for bank holiday — all agreed enthusiastically", recordedBy: "Darren Laville" },
+  { id: "ve-005", childId: "child-alex", date: "2026-05-12", domain: "daily_log", voiceRecorded: true, method: "direct_verbal", influence: "partially_influenced", summary: "Alex complained about being woken up too early on a school day — discussed alarm routine", recordedBy: "Tom Richards" },
+  { id: "ve-006", childId: "child-alex", date: "2026-05-15", domain: "incident_report", voiceRecorded: true, method: "direct_verbal", influence: "acknowledged_not_acted", summary: "During debrief Alex said he felt the approach was 'too heavy'. Acknowledged and documented. De-escalation review planned.", recordedBy: "Darren Laville" },
+  { id: "ve-007", childId: "child-alex", date: "2026-05-17", domain: "risk_assessment", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Alex said he knows Kai is bad news but finds it hard to say no. Wants help building confidence.", actionTaken: "Exploitation awareness sessions increased to weekly", recordedBy: "Sarah Johnson" },
+
+  // ── Jordan ──────────────────────────────────────────────────────────────
+  { id: "ve-008", childId: "child-jordan", date: "2026-05-01", domain: "daily_log", voiceRecorded: true, method: "written_by_child", influence: "directly_influenced", summary: "Jordan wrote in her journal that she needs quiet time after school — 30 min in room before activities", recordedBy: "Lisa Williams" },
+  { id: "ve-009", childId: "child-jordan", date: "2026-05-04", domain: "key_work_session", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Jordan asked for watercolour paints and a new sketchbook for her room. Said art helps her feel calm.", actionTaken: "Art supplies purchased same day", recordedBy: "Tom Richards" },
+  { id: "ve-010", childId: "child-jordan", date: "2026-05-07", domain: "house_meeting", voiceRecorded: true, method: "written_by_child", influence: "directly_influenced", summary: "Jordan put forward a suggestion box idea so children can raise ideas anonymously — adopted", recordedBy: "Darren Laville" },
+  { id: "ve-011", childId: "child-jordan", date: "2026-05-09", domain: "contact_session", voiceRecorded: true, method: "direct_verbal", influence: "partially_influenced", summary: "Jordan said she loves seeing Nan but gets anxious beforehand. Asked if Lisa can always take her.", recordedBy: "Lisa Williams" },
+  { id: "ve-012", childId: "child-jordan", date: "2026-05-12", domain: "health_appointment", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Jordan told GP she wants to try a lower dose of medication — GP agreed to taper plan", recordedBy: "Lisa Williams" },
+  { id: "ve-013", childId: "child-jordan", date: "2026-05-14", domain: "education_review", voiceRecorded: true, method: "written_by_child", influence: "directly_influenced", summary: "Jordan wrote a letter to PEP meeting saying she wants to take GCSE art — school agreed", recordedBy: "Tom Richards" },
+  { id: "ve-014", childId: "child-jordan", date: "2026-05-16", domain: "behaviour_support", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Jordan said she finds breathing techniques more helpful than talking when dysregulated — updated BSP", recordedBy: "Lisa Williams" },
+
+  // ── Morgan ──────────────────────────────────────────────────────────────
+  { id: "ve-015", childId: "child-morgan", date: "2026-05-02", domain: "daily_log", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Morgan asked to be referred to as 'they/them' — all staff informed and pronouns updated", recordedBy: "Lisa Williams" },
+  { id: "ve-016", childId: "child-morgan", date: "2026-05-06", domain: "key_work_session", voiceRecorded: true, method: "digital_tool", influence: "directly_influenced", summary: "Morgan used mood tracker app to show emotional patterns — identified family contact as trigger", recordedBy: "Lisa Williams" },
+  { id: "ve-017", childId: "child-morgan", date: "2026-05-10", domain: "contact_session", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Morgan asked for longer video calls with Kian (brother) — extended from 20 to 30 mins", actionTaken: "Placing authority agreed to extended duration", recordedBy: "Lisa Williams" },
+  { id: "ve-018", childId: "child-morgan", date: "2026-05-10", domain: "daily_log", voiceRecorded: true, method: "staff_observed", influence: "partially_influenced", summary: "Morgan appeared distressed after receiving letter from Mum — offered space and support", recordedBy: "Lisa Williams" },
+  { id: "ve-019", childId: "child-morgan", date: "2026-05-13", domain: "house_meeting", voiceRecorded: true, method: "direct_verbal", influence: "directly_influenced", summary: "Morgan asked if they could learn guitar — music lessons arranged", actionTaken: "Weekly guitar lesson with local tutor starting 20th May", recordedBy: "Darren Laville" },
+  { id: "ve-020", childId: "child-morgan", date: "2026-05-16", domain: "daily_log", voiceRecorded: true, method: "staff_observed", influence: "partially_influenced", summary: "Morgan visibly happier after music session — said playing helps them 'switch off'", recordedBy: "Tom Richards" },
 ];
 const voice_of_child_DEMO_ADVOCACY: AdvocacyRecord[] = [
   {
@@ -34363,11 +42883,29 @@ const voice_of_child_DEMO_ADVOCACY: AdvocacyRecord[] = [
     hasIndependentVisitor: true, independentVisitorName: "Mark Thompson", lastIVVisit: "2026-05-08",
     childAwareOfRights: true, complaintsProcessExplained: true,
   },
+  {
+    id: "adv-002", childId: "child-jordan",
+    hasAdvocate: true, advocateName: "Priya Patel", advocateOrganisation: "NYAS", lastContact: "2026-05-12",
+    hasIndependentVisitor: true, independentVisitorName: "Karen Hughes", lastIVVisit: "2026-05-05",
+    childAwareOfRights: true, complaintsProcessExplained: true,
+  },
+  {
+    id: "adv-003", childId: "child-morgan",
+    hasAdvocate: true, advocateName: "Daniel Harris", advocateOrganisation: "Coram Voice", lastContact: "2026-05-14",
+    hasIndependentVisitor: false,
+    childAwareOfRights: true, complaintsProcessExplained: true,
+  },
 ];
 const voice_of_child_DEMO_PARTICIPATION: ParticipationRecord[] = [
   { id: "part-001", childId: "child-alex", date: "2026-05-06", eventType: "lac_review", participationLevel: "full", childViewsRecorded: true, childViewsInfluencedOutcome: true, advocatePresent: true },
-
+  { id: "part-002", childId: "child-alex", date: "2026-05-10", eventType: "house_meeting", participationLevel: "full", childViewsRecorded: true, childViewsInfluencedOutcome: true, advocatePresent: false },
+  { id: "part-003", childId: "child-jordan", date: "2026-05-07", eventType: "house_meeting", participationLevel: "full", childViewsRecorded: true, childViewsInfluencedOutcome: true, advocatePresent: false },
+  { id: "part-004", childId: "child-jordan", date: "2026-05-13", eventType: "pep_review", participationLevel: "represented_by_advocate", childViewsRecorded: true, childViewsInfluencedOutcome: true, advocatePresent: true },
+  { id: "part-005", childId: "child-jordan", date: "2026-05-14", eventType: "health_review", participationLevel: "full", childViewsRecorded: true, childViewsInfluencedOutcome: true, advocatePresent: false },
+  { id: "part-006", childId: "child-morgan", date: "2026-05-07", eventType: "house_meeting", participationLevel: "full", childViewsRecorded: true, childViewsInfluencedOutcome: true, advocatePresent: false },
+  { id: "part-007", childId: "child-morgan", date: "2026-05-15", eventType: "care_plan_review", participationLevel: "represented_by_advocate", childViewsRecorded: true, childViewsInfluencedOutcome: true, advocatePresent: true },
 ];
+
 async function get_voice_of_child(req: NextRequest): Promise<Response> {
 
   const result = generateVoiceOfChildIntelligence(
@@ -35233,6 +43771,24 @@ async function post_workforce_development(request: NextRequest): Promise<Respons
 // ─── workforce ─────────────────────────────────────────────────────────
 const workforce_demoRecords: WorkforceRecord[] = [
   // Sarah Johnson — fully compliant across multiple categories
+  { id: "wf-1", homeId: "home-oak", date: "2026-02-05", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "dbs_compliance", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-2", homeId: "home-oak", date: "2026-03-12", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "qualification_level", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-3", homeId: "home-oak", date: "2026-04-08", staffId: "staff-sarah", staffName: "Sarah Johnson", category: "mandatory_training", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: false },
+
+  // Tom Richards — some gaps in compliance
+  { id: "wf-4", homeId: "home-oak", date: "2026-02-20", staffId: "staff-tom", staffName: "Tom Richards", category: "safeguarding_training", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-5", homeId: "home-oak", date: "2026-03-18", staffId: "staff-tom", staffName: "Tom Richards", category: "supervision_record", outcome: "action_needed", dbsCurrent: true, qualificationMet: true, trainingUpToDate: false, supervisionCurrent: false, documentationComplete: false, timelyRecording: true },
+  { id: "wf-6", homeId: "home-oak", date: "2026-04-22", staffId: "staff-tom", staffName: "Tom Richards", category: "restraint_training", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+
+  // Lisa Williams — newer staff member, mixed compliance
+  { id: "wf-7", homeId: "home-oak", date: "2026-03-25", staffId: "staff-lisa", staffName: "Lisa Williams", category: "first_aid_certification", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-8", homeId: "home-oak", date: "2026-04-15", staffId: "staff-lisa", staffName: "Lisa Williams", category: "medication_competency", outcome: "action_needed", dbsCurrent: true, qualificationMet: false, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: false },
+  { id: "wf-9", homeId: "home-oak", date: "2026-05-02", staffId: "staff-lisa", staffName: "Lisa Williams", category: "dbs_compliance", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+
+  // Darren Laville — management oversight records
+  { id: "wf-10", homeId: "home-oak", date: "2026-03-01", staffId: "staff-darren", staffName: "Darren Laville", category: "qualification_level", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-11", homeId: "home-oak", date: "2026-04-10", staffId: "staff-darren", staffName: "Darren Laville", category: "safeguarding_training", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: true, documentationComplete: true, timelyRecording: true },
+  { id: "wf-12", homeId: "home-oak", date: "2026-05-15", staffId: "staff-darren", staffName: "Darren Laville", category: "supervision_record", outcome: "compliant", dbsCurrent: true, qualificationMet: true, trainingUpToDate: true, supervisionCurrent: false, documentationComplete: false, timelyRecording: true },
 ];
 const workforce_demoPolicy: WorkforcePolicy = {
   saferRecruitmentPolicy: true,
@@ -35245,8 +43801,11 @@ const workforce_demoPolicy: WorkforcePolicy = {
 };
 const workforce_demoStaff: StaffWorkforceTraining[] = [
   { staffId: "staff-sarah", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: true, supervisionSkills: true, trainingCoordination: true, regulatoryCompliance: true },
-
+  { staffId: "staff-tom", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: true, supervisionSkills: false, trainingCoordination: false, regulatoryCompliance: true },
+  { staffId: "staff-lisa", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: false, supervisionSkills: true, trainingCoordination: true, regulatoryCompliance: false },
+  { staffId: "staff-darren", saferRecruitment: true, dbsProcessKnowledge: true, qualificationAssessment: true, supervisionSkills: true, trainingCoordination: true, regulatoryCompliance: true },
 ];
+
 async function get_workforce(req: NextRequest): Promise<Response> {
 
   const result = generateWorkforceIntelligence({
@@ -35282,6 +43841,34 @@ const young_person_employment_support_DEMO_PROFILES: ChildEmploymentProfile[] = 
     financialLiteracyAssessed: false,
     personalAdviserEngaged: false,
   },
+  {
+    id: "cep-jordan",
+    childId: "child-jordan",
+    childName: "Jordan",
+    age: 13,
+    careersPlanExists: false,
+    careersPlanStatus: "not_in_place",
+    careerAspirations: ["Artist"],
+    workExperienceCompleted: false,
+    cvPrepared: false,
+    interviewPracticed: false,
+    financialLiteracyAssessed: false,
+    personalAdviserEngaged: false,
+  },
+  {
+    id: "cep-morgan",
+    childId: "child-morgan",
+    childName: "Morgan",
+    age: 15,
+    careersPlanExists: true,
+    careersPlanStatus: "current",
+    careerAspirations: ["IT Technician", "Game Developer"],
+    workExperienceCompleted: true,
+    cvPrepared: true,
+    interviewPracticed: true,
+    financialLiteracyAssessed: true,
+    personalAdviserEngaged: true,
+  },
 ];
 const young_person_employment_support_DEMO_SESSIONS: EmploymentSupportSession[] = [
   {
@@ -35297,6 +43884,71 @@ const young_person_employment_support_DEMO_SESSIONS: EmploymentSupportSession[] 
     skillsDeveloped: ["CV formatting", "Personal statement writing"],
     nextSteps: "Review CV in one month",
   },
+  {
+    id: "ess-2",
+    childId: "child-alex",
+    childName: "Alex",
+    date: "2026-04-10",
+    supportType: "work_experience",
+    facilitatedBy: "Tom Richards",
+    duration: 480,
+    childEngaged: "engaged",
+    outcomeStatus: "achieved",
+    skillsDeveloped: ["Customer service", "Food hygiene awareness"],
+    nextSteps: "Discuss experience and reflect on career goals",
+  },
+  {
+    id: "ess-3",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-02-20",
+    supportType: "careers_guidance",
+    facilitatedBy: "Lisa Williams",
+    duration: 60,
+    childEngaged: "highly_engaged",
+    outcomeStatus: "achieved",
+    skillsDeveloped: ["Career research", "Labour market awareness"],
+    nextSteps: "Explore IT apprenticeship options",
+  },
+  {
+    id: "ess-4",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-03-25",
+    supportType: "interview_skills",
+    facilitatedBy: "Sarah Johnson",
+    duration: 60,
+    childEngaged: "highly_engaged",
+    outcomeStatus: "achieved",
+    skillsDeveloped: ["Interview technique", "Confidence building"],
+    nextSteps: "Mock interview with employer partner",
+  },
+  {
+    id: "ess-5",
+    childId: "child-morgan",
+    childName: "Morgan",
+    date: "2026-04-15",
+    supportType: "financial_literacy",
+    facilitatedBy: "Darren Laville",
+    duration: 45,
+    childEngaged: "engaged",
+    outcomeStatus: "achieved",
+    skillsDeveloped: ["Budgeting basics", "Bank account management"],
+    nextSteps: "Set up practice budget for next month",
+  },
+  {
+    id: "ess-6",
+    childId: "child-jordan",
+    childName: "Jordan",
+    date: "2026-04-28",
+    supportType: "careers_guidance",
+    facilitatedBy: "Lisa Williams",
+    duration: 30,
+    childEngaged: "engaged",
+    outcomeStatus: "in_progress",
+    skillsDeveloped: ["Exploring interests"],
+    nextSteps: "Research creative career paths",
+  },
 ];
 const young_person_employment_support_DEMO_PARTNERSHIPS: PartnershipRecord[] = [
   {
@@ -35307,6 +43959,24 @@ const young_person_employment_support_DEMO_PARTNERSHIPS: PartnershipRecord[] = [
     activeEngagement: true,
     opportunitiesProvided: 2,
     childrenSupported: ["child-alex", "child-morgan"],
+  },
+  {
+    id: "pr-2",
+    partnerId: "partner-college",
+    partnerName: "City College",
+    partnerType: "college",
+    activeEngagement: true,
+    opportunitiesProvided: 3,
+    childrenSupported: ["child-morgan"],
+  },
+  {
+    id: "pr-3",
+    partnerId: "partner-volunteer",
+    partnerName: "Community Hub",
+    partnerType: "volunteer_org",
+    activeEngagement: true,
+    opportunitiesProvided: 1,
+    childrenSupported: ["child-alex"],
   },
 ];
 const young_person_employment_support_DEMO_TRAINING: StaffEmploymentTraining[] = [
@@ -35321,8 +43991,41 @@ const young_person_employment_support_DEMO_TRAINING: StaffEmploymentTraining[] =
     localLabourMarket: true,
     motivationalInterviewing: true,
   },
-
+  {
+    id: "set-2",
+    staffId: "staff-tom",
+    staffName: "Tom Richards",
+    careersGuidanceTrained: true,
+    cvInterviewSupport: true,
+    financialLiteracyTrained: false,
+    apprenticeshipAwareness: true,
+    localLabourMarket: false,
+    motivationalInterviewing: false,
+  },
+  {
+    id: "set-3",
+    staffId: "staff-lisa",
+    staffName: "Lisa Williams",
+    careersGuidanceTrained: true,
+    cvInterviewSupport: true,
+    financialLiteracyTrained: true,
+    apprenticeshipAwareness: true,
+    localLabourMarket: true,
+    motivationalInterviewing: true,
+  },
+  {
+    id: "set-4",
+    staffId: "staff-darren",
+    staffName: "Darren Laville",
+    careersGuidanceTrained: true,
+    cvInterviewSupport: true,
+    financialLiteracyTrained: true,
+    apprenticeshipAwareness: true,
+    localLabourMarket: true,
+    motivationalInterviewing: true,
+  },
 ];
+
 async function get_young_person_employment_support(req: NextRequest): Promise<Response> {
 
   const result = generateYoungPersonEmploymentSupportIntelligence(
@@ -35405,7 +44108,6 @@ async function post_young_person_employment_support(req: NextRequest): Promise<R
   return NextResponse.json({ data: result });
 }
 
-}}}}
 export const LEGACY_HANDLERS: Record<string, LegacyHandler> = {
   "activities": { GET: get_activities },
   "admissions-matching": { GET: get_admissions_matching, POST: post_admissions_matching },

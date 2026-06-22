@@ -105,18 +105,18 @@ def extract_module_consts(content, safe_prefix):
             i += 1
             continue
 
-        # Match: const NAME = ...  /  function NAME(  /  type NAME =  /  const NAME: TYPE =
-        m = re.match(r'^(const|let|var)\s+([A-Z_][A-Z0-9_]*)\b', stripped)
-        if not m:
-            m = re.match(r'^(const|let|var)\s+([a-z_][a-zA-Z0-9_]*)\b', stripped)
-        if not m:
-            m = re.match(r'^function\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\(', stripped)
+        # Match: const/let/var NAME = ...  /  [async] function NAME(
+        # NOTE: `async function` MUST be matched here too — a non-exported async
+        # helper (e.g. `async function handleLiveData(sb, …)`) must be collected
+        # as a whole block.  Previously only sync `function` matched, so async
+        # helpers fell through and their bodies were shredded into module-level
+        # statements (orphaned `let query = sb.from(…)` etc.).
+        m_const = re.match(r'^(?:const|let|var)\s+([A-Za-z_][A-Za-z0-9_]*)\b', stripped)
+        m_func  = re.match(r'^(?:async\s+)?function\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(', stripped)
+        m = m_const or m_func
 
         if m:
-            if stripped.startswith('function'):
-                orig_name = m.group(1)
-            else:
-                orig_name = m.group(2)
+            orig_name = m.group(1)
 
             prefixed = f"{safe_prefix}_{orig_name}"
             name_map[orig_name] = prefixed
@@ -124,28 +124,74 @@ def extract_module_consts(content, safe_prefix):
             # Collect the whole declaration (may span multiple lines / have nested {})
             j = i
             decl_lines = []
-            has_brace = False
+            is_func = m_func is not None
 
-            # Collect until we find the end (semicolon or matching brace)
-            brace_depth = 0
-            in_decl = True
-            while j < len(lines) and in_decl:
-                dl = lines[j]
-                decl_lines.append(dl)
-                brace_depth += dl.count('{') - dl.count('}')
-                sq_depth = dl.count('[') - dl.count(']')
-                if j == i:
-                    has_brace = '{' in dl or '[' in dl
+            if is_func:
+                # Functions: a signature can span multiple lines AND contain { } / [ ]
+                # in parameter types or destructuring (e.g.
+                #   function rec(
+                #     overrides: Partial<T> & { id: string; … },
+                #   ): T { … }
+                # ).  So walk the PARAM PARENS to the end of the signature first,
+                # then track BODY BRACES.  This prevents param-type braces from
+                # being mistaken for the body's closing brace (which truncated the
+                # function and orphaned everything after it).
+                paren_depth = 0
+                seen_paren = False
+                sig_done = False
+                brace_depth = 0
+                seen_body_brace = False
+                while j < len(lines):
+                    dl = lines[j]
+                    decl_lines.append(dl)
+                    if not sig_done:
+                        paren_depth += dl.count('(') - dl.count(')')
+                        if '(' in dl:
+                            seen_paren = True
+                        if seen_paren and paren_depth <= 0:
+                            sig_done = True  # body brace may follow on this line
+                    if sig_done:
+                        brace_depth += dl.count('{') - dl.count('}')
+                        if '{' in dl:
+                            seen_body_brace = True
+                        if seen_body_brace and brace_depth <= 0:
+                            j += 1
+                            break
+                    j += 1
+                i = j
+            else:
+                # const/let/var.  Brace/bracket depths ACCUMULATE across lines
+                # (per-line reset was the bug that cut multi-line array literals
+                # short, orphaning their tail elements).
+                brace_depth = 0
+                sq_depth = 0
+                seen_open = False
+                in_decl = True
+                while j < len(lines) and in_decl:
+                    dl = lines[j]
+                    decl_lines.append(dl)
+                    brace_depth += dl.count('{') - dl.count('}')
+                    sq_depth   += dl.count('[') - dl.count(']')
+                    if '{' in dl or '[' in dl:
+                        seen_open = True
 
-                if has_brace:
-                    if brace_depth <= 0 and sq_depth <= 0 and j > i:
-                        in_decl = False
-                else:
-                    if dl.rstrip().endswith(';') or (j > i and not dl.rstrip().endswith(',')):
-                        in_decl = False
-                j += 1
-
-            i = j
+                    if seen_open:
+                        # object/array initialiser (possibly multi-line): end when
+                        # every brace AND bracket has closed.  No `j > i` guard:
+                        # a genuine multi-line literal always has an unbalanced
+                        # FIRST line (its opening `{`/`[`), so it can't terminate
+                        # early — whereas a single-line `const X = [...];` IS
+                        # balanced on line one and must end there, not swallow the
+                        # next declaration (the bug that left `const CHILD_NAMES`
+                        # unprefixed → duplicate-identifier crashes).
+                        if brace_depth <= 0 and sq_depth <= 0:
+                            in_decl = False
+                    else:
+                        # simple one-liner: end at ';' (or a non-continuation line)
+                        if dl.rstrip().endswith(';') or (j > i and not dl.rstrip().endswith(',')):
+                            in_decl = False
+                    j += 1
+                i = j
             # Replace const/let/var/function NAME with prefixed
             decl_text = "\n".join(decl_lines)
             decl_text = re.sub(
@@ -159,7 +205,19 @@ def extract_module_consts(content, safe_prefix):
 
         i += 1
 
-    return blocks, name_map
+    # Second pass: apply name_map to EVERY block so const-to-const references
+    # (e.g. `const history = [...ALEX_ATTENDANCE]`) pick up the same prefix as
+    # their declaration.  The first pass only renamed each block's own
+    # declaration name, leaving cross-references unprefixed → "X is not defined".
+    # `\b` boundaries + underscore-joined prefixes mean a block's own (already
+    # prefixed) name is never double-prefixed.
+    remapped = []
+    for block in blocks:
+        for orig, prefixed in name_map.items():
+            block = re.sub(r'\b' + re.escape(orig) + r'\b', prefixed, block)
+        remapped.append(block)
+
+    return remapped, name_map
 
 def extract_function(content, fname, safe_prefix, name_map):
     """Extract body of function named fname (GET/POST), apply name_map renames."""
