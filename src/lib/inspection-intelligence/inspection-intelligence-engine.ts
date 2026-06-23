@@ -46,10 +46,17 @@ export interface EvidenceItem {
   detail: string;
 }
 
+export interface ChildRef {
+  id: string;
+  name: string;
+}
+
 export interface GapItem {
   label: string;
   severity: "high" | "medium";
   detail: string;
+  /** The specific children behind this gap, so a manager can act on it. */
+  childRefs?: ChildRef[];
 }
 
 export interface SccifArea {
@@ -69,7 +76,7 @@ export interface InspectionReadiness {
   areasDeveloping: number;
   areasLimited: number;
   /** High-severity gaps across all areas — the leader's priority list. */
-  priorities: { area: string; label: string; detail: string }[];
+  priorities: { area: string; label: string; detail: string; childRefs?: ChildRef[] }[];
   areas: SccifArea[];
 }
 
@@ -158,6 +165,7 @@ function buildExperiencesProgress(input: InspectionReadinessInput): SccifArea {
       label: `${noRecentKeywork.length} ${noRecentKeywork.length === 1 ? "child has" : "children have"} no key-work in ${recentDays} days`,
       severity: "high",
       detail: `No recent 1:1 relational time recorded for ${noRecentKeywork.map((c) => c.name).join(", ")}.`,
+      childRefs: noRecentKeywork,
     });
   }
 
@@ -171,6 +179,7 @@ function buildExperiencesProgress(input: InspectionReadinessInput): SccifArea {
       label: `${noVoice.length} ${noVoice.length === 1 ? "child has" : "children have"} no recorded voice`,
       severity: "high",
       detail: `No wishes & feelings on record for ${noVoice.map((c) => c.name).join(", ")} — a participation gap.`,
+      childRefs: noVoice,
     });
   }
 
@@ -191,6 +200,7 @@ function buildExperiencesProgress(input: InspectionReadinessInput): SccifArea {
       label: `${noAchievement.length} ${noAchievement.length === 1 ? "child has" : "children have"} no recorded achievements`,
       severity: "medium",
       detail: `Celebrate and record progress for ${noAchievement.map((c) => c.name).join(", ")}.`,
+      childRefs: noAchievement,
     });
   }
 
@@ -240,6 +250,7 @@ function buildProtection(input: InspectionReadinessInput): SccifArea {
       label: `${incidentNoDebrief.length} ${incidentNoDebrief.length === 1 ? "child has" : "children have"} incidents but no debrief`,
       severity: "high",
       detail: `No restorative reflection recorded for ${incidentNoDebrief.map((c) => c.name).join(", ")} — a learning & repair gap.`,
+      childRefs: incidentNoDebrief,
     });
   }
 
@@ -251,6 +262,7 @@ function buildProtection(input: InspectionReadinessInput): SccifArea {
       label: `${missingNoRHI.length} missing-from-care without a return interview`,
       severity: "high",
       detail: `Statutory return home interview not recorded for ${missingNoRHI.map((c) => c.name).join(", ")}.`,
+      childRefs: missingNoRHI,
     });
   }
 
@@ -262,6 +274,7 @@ function buildProtection(input: InspectionReadinessInput): SccifArea {
       label: `${noCurrentRisk.length} ${noCurrentRisk.length === 1 ? "child has" : "children have"} no current risk assessment`,
       severity: "high",
       detail: `Safe-care planning needs a live risk assessment for ${noCurrentRisk.map((c) => c.name).join(", ")}.`,
+      childRefs: noCurrentRisk,
     });
   }
 
@@ -381,7 +394,7 @@ export function buildInspectionReadiness(input: InspectionReadinessInput): Inspe
   const areasLimited = areas.filter((a) => a.strength === "limited").length;
 
   const priorities = areas
-    .flatMap((a) => a.gaps.filter((g) => g.severity === "high").map((g) => ({ area: a.label, label: g.label, detail: g.detail })))
+    .flatMap((a) => a.gaps.filter((g) => g.severity === "high").map((g) => ({ area: a.label, label: g.label, detail: g.detail, childRefs: g.childRefs })))
     .slice(0, 8);
 
   const worst = [...areas].sort((a, b) => STRENGTH_RANK[b.strength] - STRENGTH_RANK[a.strength])[0];

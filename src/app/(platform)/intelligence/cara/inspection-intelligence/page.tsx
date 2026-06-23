@@ -1,12 +1,14 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useInspectionIntelligence } from "@/hooks/use-inspection-intelligence";
 import type {
   EvidenceStrength,
   SccifArea,
+  ChildRef,
 } from "@/lib/inspection-intelligence/inspection-intelligence-engine";
 import { cn } from "@/lib/utils";
 import {
@@ -24,6 +26,24 @@ const STRENGTH_CONFIG: Record<EvidenceStrength, { label: string; badge: string; 
   developing: { label: "Developing", badge: "bg-amber-100 text-amber-800 border-amber-200", icon: CircleDot, bar: "bg-amber-300" },
   limited: { label: "Limited evidence", badge: "bg-red-100 text-red-800 border-red-200", icon: AlertTriangle, bar: "bg-red-400" },
 };
+
+/** Clickable chips for the specific children behind a gap → their record. */
+function ChildChips({ childRefs }: { childRefs?: ChildRef[] }) {
+  if (!childRefs || childRefs.length === 0) return null;
+  return (
+    <div className="mt-1 flex flex-wrap gap-1">
+      {childRefs.map((c) => (
+        <Link
+          key={c.id}
+          href={`/young-people/${c.id}`}
+          className="rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-medium text-rose-700 ring-1 ring-rose-200 transition-colors hover:bg-white"
+        >
+          {c.name}
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 function AreaCard({ area }: { area: SccifArea }) {
   const s = STRENGTH_CONFIG[area.strength];
@@ -69,7 +89,10 @@ function AreaCard({ area }: { area: SccifArea }) {
                 {area.gaps.map((g) => (
                   <li key={g.label} className="flex items-start gap-2 text-sm">
                     <span className={cn("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", g.severity === "high" ? "bg-red-500" : "bg-amber-400")} />
-                    <span className="text-[var(--cs-text-secondary,#475569)]" title={g.detail}>{g.label}</span>
+                    <span className="min-w-0">
+                      <span className="text-[var(--cs-text-secondary,#475569)]" title={g.detail}>{g.label}</span>
+                      <ChildChips childRefs={g.childRefs} />
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -135,10 +158,11 @@ export default function InspectionIntelligencePage() {
                     {data.priorities.map((p, i) => (
                       <div key={`${p.label}-${i}`} className="flex items-start gap-2 rounded-lg border border-rose-100 bg-rose-50 px-3 py-2 text-sm">
                         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-500" />
-                        <span>
+                        <span className="min-w-0">
                           <span className="font-semibold text-rose-800">{p.label}.</span>{" "}
                           <span className="text-rose-700">{p.detail}</span>
                           <span className="ml-1 text-[11px] uppercase tracking-wide text-rose-400">{p.area}</span>
+                          <ChildChips childRefs={p.childRefs} />
                         </span>
                       </div>
                     ))}

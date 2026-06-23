@@ -114,6 +114,24 @@ describe("buildInspectionReadiness", () => {
     expect(lead.gaps.some((g) => g.label.includes("training"))).toBe(true);
   });
 
+  it("attaches the specific children behind a gap (drill-down)", () => {
+    const out = buildInspectionReadiness(
+      input({
+        children: [
+          { id: "yp_a", name: "Alex" },
+          { id: "yp_b", name: "Bea" },
+        ],
+        incidents: [{ id: "i1", child_id: "yp_a", date: RECENT, severity: "high", type: "physical", description: "x" } as never],
+      }),
+    );
+    const protection = out.areas.find((a) => a.key === "protection")!;
+    const gap = protection.gaps.find((g) => g.label.includes("no debrief"))!;
+    expect(gap.childRefs).toEqual([{ id: "yp_a", name: "Alex" }]);
+    // and it flows into the priority list with the child attached
+    const prio = out.priorities.find((p) => p.label.includes("no debrief"))!;
+    expect(prio.childRefs).toEqual([{ id: "yp_a", name: "Alex" }]);
+  });
+
   it("collects high-severity gaps into the priority list and a headline", () => {
     const out = buildInspectionReadiness(
       input({
