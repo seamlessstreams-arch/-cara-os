@@ -1523,6 +1523,9 @@ export async function invokeCaraCommand(
   let cleanedText: string;
   let confidence: string;
   let generation: { text: string; llmUsed: boolean; providerId: string; modelId: string };
+  // Deterministic-rule explanations (which rules were applied) — surfaced in the UI
+  // so a rewrite is transparent, and never presented as AI.
+  let appliedRules: string[] = [];
 
   if (ruleResult) {
     // Rules handled it — no API call needed
@@ -1533,6 +1536,7 @@ export async function invokeCaraCommand(
       modelId: "deterministic",
     };
     cleanedText = ruleResult.output;
+    appliedRules = ruleResult.suggestions ?? [];
     // Safety safeguard: high-risk commands are always surfaced as "low"
     // confidence so a human reviews them — regardless of whether the output
     // came from deterministic rules or the LLM. This preserves the regulated-
@@ -1623,7 +1627,7 @@ export async function invokeCaraCommand(
       requestId,
       outputId: supabase ? outputId : undefined,
       generatedText: cleanedText,
-      structuredOutput: {},
+      structuredOutput: appliedRules.length > 0 ? { appliedRules } : {},
       confidence,
       redactedContextSummary: redactedContextSummaryFor(args),
       contextRecordIds: contextRecordIdsFor(args),

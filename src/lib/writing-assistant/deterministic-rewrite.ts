@@ -251,13 +251,22 @@ function simplifyLanguage(text: string): DeterministicRewriteResult {
   // Safe corrections first (spelling, UK English, slang, apostrophes) — these
   // also make the text plainer — then the plain-English and structure passes.
   let t = improveWriting(text).text;
-  t = applyBank(t, PLAIN_ENGLISH).text;
-  t = applyBank(t, REDUNDANT_OPENERS.map((phrase) => ({ phrase, replacement: "" }))).text;
+  const plain = applyBank(t, PLAIN_ENGLISH);
+  t = plain.text;
+  const openers = applyBank(t, REDUNDANT_OPENERS.map((phrase) => ({ phrase, replacement: "" })));
+  t = openers.text;
+  const semicolons = (t.match(/;/g) ?? []).length;
   t = t.replace(/\s*;\s*/g, ". "); // semicolons → sentence breaks
   const split = splitLongSentences(t);
   const out = tidy(split.text);
 
   const notes: string[] = [];
+  if (plain.applied.length > 0) {
+    notes.push(`Jargon simplified to plain English (${plain.applied.length} change${plain.applied.length === 1 ? "" : "s"}).`);
+  }
+  if (openers.applied.length > 0 || semicolons > 0) {
+    notes.push("Long sentences shortened — wordy openers removed and semicolons split into separate sentences.");
+  }
   if (split.remaining > 0) {
     notes.push(
       `${split.remaining} long sentence${split.remaining === 1 ? "" : "s"} could be split further for clarity.`,
@@ -284,7 +293,14 @@ function writeToChild(
   recordType?: string,
 ): DeterministicRewriteResult {
   const review = reviewWritingToChild({ recordType: coerceRecordType(recordType), rawText: text });
-  const notes: string[] = [];
+  const notes: string[] = [
+    "Rewritten in warm, child-friendly language; jargon and blame removed, safeguarding meaning preserved, and no facts invented.",
+  ];
+  if (review.flaggedLanguage && review.flaggedLanguage.length > 0) {
+    notes.push(
+      `Reworded ${review.flaggedLanguage.length} clinical/institutional term${review.flaggedLanguage.length === 1 ? "" : "s"} a child could find cold or confusing.`,
+    );
+  }
   if (review.missingInformation && review.missingInformation.length > 0) {
     notes.push(...review.missingInformation.slice(0, 3).map((m) => `Still needed: ${m}`));
   }

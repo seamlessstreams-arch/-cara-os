@@ -45,6 +45,8 @@ interface Preview {
   text: string;
   /** The original field text at the moment of preview — for the diff view. */
   before: string;
+  /** Plain-English explanations of which deterministic rules were applied. */
+  appliedRules: string[];
   isReport: boolean;
   llmUsed: boolean;
 }
@@ -102,11 +104,13 @@ export function EntryAssist({
       childId,
     });
     if (res?.generatedText) {
+      const rawRules = (res.structuredOutput as { appliedRules?: unknown })?.appliedRules;
       setPreview({
         mode: commandId,
         label,
         text: res.generatedText.replace(/\*\*/g, ""), // strip markdown emphasis for display
         before: value.trim(),
+        appliedRules: Array.isArray(rawRules) ? (rawRules as string[]) : [],
         isReport: ANALYSIS_MODES.includes(commandId),
         llmUsed: res.llmUsed,
       });
@@ -239,6 +243,23 @@ export function EntryAssist({
               preview.text
             )}
           </div>
+
+          {preview.appliedRules.length > 0 && (
+            <div className="mt-2 rounded-lg border border-[var(--cs-border)] bg-white p-2.5">
+              <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted)]">
+                What Cara changed — and why{" "}
+                <span className="font-normal normal-case">(deterministic rules, no AI)</span>
+              </p>
+              <ul className="space-y-0.5 text-[11px] leading-snug text-[var(--cs-text-secondary,#475569)]">
+                {preview.appliedRules.map((rule, i) => (
+                  <li key={i} className="flex gap-1.5">
+                    <span className="text-[var(--cs-cara-gold,#b45309)]" aria-hidden>•</span>
+                    <span>{rule}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {!preview.isReport && (
             <div className="mt-2 flex items-center gap-2">
