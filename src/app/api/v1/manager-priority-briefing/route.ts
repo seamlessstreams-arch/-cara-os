@@ -162,20 +162,106 @@ async function fetchSignal(baseUrl: string, route: string, domain: string): Prom
   }
 }
 
+/**
+ * The newer CARA intelligence engines (relationship / outcome / inspection) have
+ * richer, differently-shaped payloads than the home-* fleet, so map them to
+ * manager signals natively rather than via the generic extractor. This surfaces
+ * the new intelligence in the same "what needs me" feed — one feed, many
+ * contributors, never a duplicate dashboard.
+ */
+async function fetchNativeSignals(baseUrl: string): Promise<EngineSignalInput[]> {
+  const out: EngineSignalInput[] = [];
+  const get = async (route: string): Promise<any | null> => {
+    try {
+      const res = await fetch(`${baseUrl}/api/v1/${route}`, { cache: "no-store" });
+      if (!res.ok) return null;
+      return (await res.json())?.data ?? null;
+    } catch {
+      return null;
+    }
+  };
+
+  // Inspection Intelligence — SCCIF evidence gaps (whole home).
+  const insp = await get("inspection-intelligence");
+  if (insp) {
+    out.push({
+      engine_key: "inspection-intelligence",
+      label: "Inspection readiness (SCCIF)",
+      domain: "leadership",
+      rating: insp.areasLimited > 0 ? "inadequate" : insp.areasDeveloping > 0 ? "requires_improvement" : "good",
+      score: null,
+      headline: typeof insp.headline === "string" ? insp.headline : null,
+      insights: (insp.priorities ?? []).map((p: any) => ({
+        text: `${p.label}${p.detail ? ` — ${p.detail}` : ""}`,
+        severity: "high",
+      })),
+      concerns: [],
+      recommendations: [],
+    });
+  }
+
+  // Outcome Intelligence — whole-home rollup.
+  const outc = await get("outcome-intelligence/home");
+  if (outc) {
+    const needs = (outc.children ?? []).filter((c: any) => c.overallStatus === "needs_focus");
+    out.push({
+      engine_key: "outcome-intelligence-home",
+      label: "Outcome intelligence (whole home)",
+      domain: "experiences",
+      rating: (outc.childrenNeedingFocus ?? 0) > 0 ? "requires_improvement" : "good",
+      score: null,
+      headline: typeof outc.headline === "string" ? outc.headline : null,
+      insights: needs.map((c: any) => ({
+        text: `${c.childName}'s outcomes need focus${c.topConcern ? ` — ${c.topConcern}` : ""}`,
+        severity: "high",
+      })),
+      concerns: [],
+      recommendations: [],
+    });
+  }
+
+  // Relationship Intelligence — whole-home overview.
+  const rel = await get("relationship-intelligence/home");
+  if (rel) {
+    const needs = (rel.children ?? []).filter((c: any) => c.relStatus === "fragile" || c.esStatus === "concern");
+    out.push({
+      engine_key: "relationship-intelligence-home",
+      label: "Relationship intelligence (whole home)",
+      domain: "experiences",
+      rating: needs.length > 0 ? "requires_improvement" : "good",
+      score: null,
+      headline: typeof rel.headline === "string" ? rel.headline : null,
+      insights: needs.map((c: any) => ({
+        text: `${c.childName} needs relational or emotional support${c.topGap ? ` — ${c.topGap}` : ""}`,
+        severity: c.relStatus === "fragile" ? "high" : "warning",
+      })),
+      concerns: [],
+      recommendations: [],
+    });
+  }
+
+  return out;
+}
+
 export async function GET(request: Request) {
   try {
     const url = new URL(request.url);
     const baseUrl = `${url.protocol}//${url.host}`;
     const today = new Date().toISOString().slice(0, 10);
 
-    const results = await Promise.allSettled(ENGINES.map(([route, domain]) => fetchSignal(baseUrl, route, domain)));
-    const signals = results
+    const [results, nativeSignals] = await Promise.all([
+      Promise.allSettled(ENGINES.map(([route, domain]) => fetchSignal(baseUrl, route, domain))),
+      fetchNativeSignals(baseUrl),
+    ]);
+    const httpSignals = results
       .map((r) => (r.status === "fulfilled" ? r.value : null))
       .filter((v): v is EngineSignalInput => v !== null);
+    const signals = [...httpSignals, ...nativeSignals];
 
+    const NATIVE_COUNT = 3;
     const result = computeManagerPriorityBriefing({
       signals,
-      engines_queried: ENGINES.length,
+      engines_queried: ENGINES.length + NATIVE_COUNT,
       engines_responded: signals.length,
       today,
     });
