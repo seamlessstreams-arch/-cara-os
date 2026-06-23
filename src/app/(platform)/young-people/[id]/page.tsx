@@ -422,6 +422,11 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
           <PrintButton title={`${displayName} ${yp.last_name}`} subtitle="Chamberlain House — Young Person Profile" targetId="yp-detail-content" />
           <SmartUploadButton variant="icon" linkedChildId={id} uploadContext={`Young person profile — ${yp.first_name} ${yp.last_name}`} />
           <CaraStudioQuickActionButton context={{ record_type: "keywork", record_id: id, child_id: id, home_id: "home_oak" }} />
+          <Link href={`/intelligence/cara/relationship-intelligence?child=${id}`}>
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-[var(--cs-cara-gold,#b45309)]" />Relationship Intelligence
+            </Button>
+          </Link>
           <Button variant="outline" size="sm" onClick={() => router.push("/young-people")}>
             <ArrowLeft className="h-3.5 w-3.5 mr-1" />All Young People
           </Button>
