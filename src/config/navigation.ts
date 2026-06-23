@@ -888,6 +888,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Pocket Money Distribution", href: "/intelligence/cara/pocket-money-distribution-equity-intelligence", icon: "Scale", module: "staff" },
       { label: "Financial Literacy", href: "/intelligence/cara/pocket-money-financial-literacy-intelligence", icon: "BookOpen", module: "staff" },
       { label: "Policy Compliance", href: "/intelligence/cara/policy-compliance-intelligence", icon: "FileText", module: "staff" },
+      { label: "Inspection Intelligence", href: "/intelligence/cara/inspection-intelligence", icon: "ClipboardCheck", module: "dashboard" },
       { label: "Practice Culture Scorecard", href: "/intelligence/cara/practice-culture-scorecard", icon: "BarChart3", module: "dashboard" },
       { label: "Framework Usage",     href: "/intelligence/cara/practice-framework-usage", icon: "BookOpen", module: "dashboard" },
       { label: "Practice Observation", href: "/intelligence/cara/practice-observation-competency-intelligence", icon: "Eye", module: "staff" },
