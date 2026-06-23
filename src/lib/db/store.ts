@@ -20,6 +20,7 @@ import type {
 } from "@/types";
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
+import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type {
   CommsChannel,
   CommsChannelMember,
@@ -712,6 +713,36 @@ const RESTRICTION_REVIEWS_SEED: RestrictionReview[] = [
   },
 ];
 
+// ── Post-Incident Reflections (seed) ─────────────────────────────────────────
+const POST_INCIDENT_REFLECTIONS_SEED: PostIncidentReflection[] = [
+  {
+    id: "pir_alex_001", incident_id: "inc_001", child_id: "yp_alex", home_id: "home_oak",
+    incident_date: daysFromNow(-8), severity: "high",
+    what_happened: "Alex damaged property after a family contact call was cancelled at short notice",
+    location: "Living room", who_involved: "Alex; staff Mirela and Tom",
+    impact_on_child: "Very distressed at the time, regretful afterwards", impact_on_others: "Another young person left the room",
+    impact_on_staff: "Mirela felt shaken", impact_on_environment: "A lamp was broken",
+    likely_triggers: "Family contact phone call cancelled with no notice",
+    contributing_factors: "Had been looking forward to the call all day", communication_factors: "Felt no one understood how much it mattered",
+    sensory_environmental_factors: "Busy, noisy living room",
+    staff_response: "Gave space, then offered a walk outside", response_helped: "yes", response_escalated: "no",
+    what_went_well: "No physical intervention was needed", what_could_be_different: "Prepare Alex earlier for the risk that contact can change",
+    child_view: "", staff_reflection: "We could have had a backup plan ready for if contact fell through", manager_reflection: "",
+    learning_points: "",
+    actions: [{ id: "act_pir1", description: "Add a contact-contingency to Alex's Staying Safe Plan", owner: "Key worker", due_date: daysFromNow(-1), status: "open" }],
+    support_needed: "Reflective supervision offered to Mirela",
+    staying_safe_plan_review: false, risk_assessment_review: false, behaviour_support_review: false, relationship_map_review: false, restrictive_practice_review: false,
+    staff_debrief_done: "yes", child_debrief_done: "no",
+    stages: freshStages(daysFromNow(-8)).map((s) =>
+      ["incident_recorded", "immediate_safety", "staff_reflection"].includes(s.key)
+        ? { ...s, status: "completed" as const, updated_at: daysFromNow(-7) }
+        : s,
+    ),
+    status: "in_progress", manager_id: null, signed_off_by: null, signed_off_at: null,
+    created_at: daysFromNow(-8), updated_at: daysFromNow(-2), created_by: "staff_mirela", updated_by: "staff_mirela",
+  },
+];
+
 // ── Mutable collections ───────────────────────────────────────────────────────
 
 const store = {
@@ -733,6 +764,8 @@ const store = {
   missingEpisodes: [] as MissingEpisode[],
   // Rights, Liberty & Restriction reviews (decision-support write path).
   restrictionReviews: [...RESTRICTION_REVIEWS_SEED] as RestrictionReview[],
+  // Post-incident reflection & learning workflow records.
+  postIncidentReflections: [...POST_INCIDENT_REFLECTIONS_SEED] as PostIncidentReflection[],
   // Canonical persisted event spine (forms-as-views write path). Empty by default —
   // the read-only projection of domain collections is unchanged until events are captured here.
   cornerstoneEvents: [] as CornerstoneEvent[],
@@ -11187,6 +11220,24 @@ export const db = {
       if (i === -1) return undefined;
       store.restrictionReviews[i] = { ...store.restrictionReviews[i], ...patch, updated_at: new Date().toISOString() };
       return store.restrictionReviews[i];
+    },
+  },
+
+  // ── Post-incident reflection & learning ───────────────────────────────
+  postIncidentReflections: {
+    findAll: (): PostIncidentReflection[] => store.postIncidentReflections,
+    findById: (id: string): PostIncidentReflection | undefined => store.postIncidentReflections.find((r) => r.id === id),
+    findByChild: (childId: string): PostIncidentReflection[] => store.postIncidentReflections.filter((r) => r.child_id === childId),
+    findByIncident: (incidentId: string): PostIncidentReflection | undefined => store.postIncidentReflections.find((r) => r.incident_id === incidentId),
+    append: (r: PostIncidentReflection): PostIncidentReflection => {
+      store.postIncidentReflections.push(r);
+      return r;
+    },
+    update: (id: string, patch: Partial<PostIncidentReflection>): PostIncidentReflection | undefined => {
+      const i = store.postIncidentReflections.findIndex((r) => r.id === id);
+      if (i === -1) return undefined;
+      store.postIncidentReflections[i] = { ...store.postIncidentReflections[i], ...patch, updated_at: new Date().toISOString() };
+      return store.postIncidentReflections[i];
     },
   },
 
