@@ -135,6 +135,10 @@ async function generateTextInner(
       ...(input.temperature != null ? { temperature: input.temperature } : {}),
     };
 
+    // Bound the call so a stalled provider degrades to the deterministic
+    // fallback (below) instead of hanging the request indefinitely.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60_000);
     try {
       const res = await fetch(url, {
         method: "POST",
@@ -144,6 +148,7 @@ async function generateTextInner(
           "anthropic-version": "2023-06-01",
         },
         body: JSON.stringify(body),
+        signal: controller.signal,
       });
       if (!res.ok) {
         const detail = await res.text();
@@ -173,14 +178,17 @@ async function generateTextInner(
         modelId: config.textModel,
       };
     } catch (err) {
-      console.warn("[cara-provider] generateText (anthropic) failed:", err);
-      const errMsg = err instanceof Error ? err.message : String(err);
+      const aborted = err instanceof Error && err.name === "AbortError";
+      console.warn("[cara-provider] generateText (anthropic) failed:", aborted ? "timed out after 60s" : err);
+      const errMsg = aborted ? "Provider timed out after 60s" : err instanceof Error ? err.message : String(err);
       return {
         text: caraProviderErrorFallback(errMsg, "anthropic", input.expectJson === true),
         llmUsed: false,
         providerId: "anthropic",
         modelId: config.textModel,
       };
+    } finally {
+      clearTimeout(timeout);
     }
   }
 
