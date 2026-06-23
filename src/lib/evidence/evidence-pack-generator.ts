@@ -68,6 +68,12 @@ export interface EvidencePackInput {
   participationEntries: any[];
   improvementObjectives: any[];
   lessonsLearned: any[];
+
+  // 23/06 Practice Intelligence Update — record-based module evidence
+  restrictionReviews: any[];
+  postIncidentReflections: any[];
+  stayingSafePlans: any[];
+  relationshipEntries: any[];
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -97,6 +103,16 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function childNameFrom(youngPeople: any[], id: string | undefined): string {
+  if (!id) return "Child";
+  const c = youngPeople.find((yp: any) => yp.id === id);
+  return c ? (c.name ?? c.first_name ?? "Child") : "Child";
+}
+
+function hasText(v: unknown): boolean {
+  return typeof v === "string" && v.trim().length > 0;
+}
+
 // ── Core Compute ───────────────────────────────────────────────────────────
 
 export function computeInspectionEvidencePack(
@@ -123,6 +139,11 @@ export function computeInspectionEvidencePack(
     buildAuditTrail(input, children),
     buildOutstandingActions(input),
     buildEvidenceOfProgress(input, children),
+    // 23/06 Practice Intelligence Update — record-based module evidence
+    buildRightsAndRestrictionEvidence(input, children),
+    buildLearningFromIncidents(input, children),
+    buildChildSafetyPlanning(input, children),
+    buildProtectiveRelationshipsEvidence(input, children),
   ];
 
   const totalItems = sections.reduce((sum, s) => sum + s.items.length, 0);
@@ -1265,6 +1286,247 @@ function buildEvidenceOfProgress(
 
 // ── Strengths & Areas for Improvement ──────────────────────────────────────
 
+// ── Section 16: Rights, Liberty & Least-Restrictive Practice ───────────────
+
+function buildRightsAndRestrictionEvidence(
+  input: EvidencePackInput,
+  _children: any[],
+): EvidenceSection {
+  const reviews = (input.restrictionReviews ?? []).filter((r: any) =>
+    isInPeriod(r.review_date ?? r.created_at, input.period_from, input.period_to),
+  );
+
+  const items: EvidenceItem[] = reviews.slice(0, 50).map((r: any) => {
+    const childVoice = hasText(r.child_wishes_feelings);
+    const leastRestrictive = hasText(r.least_restrictive_alternatives);
+    return {
+      id: `ev_restriction_${r.id}`,
+      type: "restriction_review",
+      title: `Restriction review — ${childNameFrom(input.youngPeople, r.child_id)}: ${
+        r.restriction_description?.slice(0, 60) ?? r.restriction_kind ?? "restriction"
+      }`,
+      date: (r.review_date ?? r.created_at ?? input.today).slice(0, 10),
+      summary: `${r.restriction_kind ?? "restriction"}. Child's wishes & feelings recorded: ${
+        childVoice ? "yes" : "no"
+      }. Least-restrictive alternatives considered: ${
+        leastRestrictive ? "yes" : "no"
+      }. Decision: ${r.manager_decision ?? "pending"}.`,
+      linked_record_type: "restriction_review",
+      linked_record_id: r.id,
+      child_id: r.child_id,
+      tags: ["rights", "restriction", r.restriction_kind ?? "restriction"],
+    };
+  });
+
+  // Quality, not volume: how defensible are the reviews that exist (child voice
+  // + least-restrictive reasoning + proportionality + a forward review date).
+  let score: number | undefined;
+  if (reviews.length > 0) {
+    const quality =
+      reviews.reduce((sum: number, r: any) => {
+        const parts = [
+          hasText(r.child_wishes_feelings),
+          hasText(r.least_restrictive_alternatives),
+          hasText(r.best_interests_reasoning) || hasText(r.proportionality_reasoning),
+          !!r.next_review_date,
+        ];
+        return sum + parts.filter(Boolean).length / parts.length;
+      }, 0) / reviews.length;
+    score = Math.round(quality * 100);
+  }
+
+  const withVoice = reviews.filter((r: any) => hasText(r.child_wishes_feelings)).length;
+
+  return {
+    id: "rights_and_restriction",
+    title: "Rights, Liberty & Least-Restrictive Practice",
+    description:
+      "Recorded reviews of any restriction on a child's liberty — the child's wishes, the least-restrictive alternatives considered, proportionality, and manager oversight.",
+    ofsted_reference:
+      "CHR 2015 Reg 11 & 12 — positive relationships and the protection of children; least-restrictive practice / deprivation of liberty",
+    data_sources: ["restrictionReviews"],
+    items,
+    score,
+    rating: score === undefined ? "not_assessed" : scoreToRating(score),
+    summary:
+      reviews.length === 0
+        ? "No restriction reviews recorded in this period."
+        : `${reviews.length} restriction review(s) recorded; ${withVoice} include the child's recorded wishes and feelings.`,
+  };
+}
+
+// ── Section 17: Learning from Incidents (Post-Incident Reflection) ─────────
+
+function buildLearningFromIncidents(
+  input: EvidencePackInput,
+  _children: any[],
+): EvidenceSection {
+  const reflections = (input.postIncidentReflections ?? []).filter((r: any) =>
+    isInPeriod(r.incident_date ?? r.created_at, input.period_from, input.period_to),
+  );
+
+  const stageDone = (s: any) =>
+    s?.status === "completed" || s?.status === "signed_off";
+
+  const items: EvidenceItem[] = reflections.slice(0, 50).map((r: any) => {
+    const stages = Array.isArray(r.stages) ? r.stages : [];
+    const done = stages.filter(stageDone).length;
+    const total = stages.length || 10;
+    return {
+      id: `ev_reflection_${r.id}`,
+      type: "post_incident_reflection",
+      title: `Post-incident reflection — ${childNameFrom(input.youngPeople, r.child_id)}`,
+      date: (r.incident_date ?? r.created_at ?? input.today).slice(0, 10),
+      summary: `Learning workflow ${done}/${total} stages complete. Status: ${
+        r.status ?? "open"
+      }. Linked to incident ${r.incident_id ?? "—"}.`,
+      linked_record_type: "post_incident_reflection",
+      linked_record_id: r.id,
+      child_id: r.child_id,
+      risk_level: typeof r.severity === "string" ? r.severity : undefined,
+      tags: ["learning", "reflection", r.severity ?? "incident"],
+    };
+  });
+
+  let score: number | undefined;
+  if (reflections.length > 0) {
+    const completion =
+      reflections.reduce((sum: number, r: any) => {
+        if (r.status === "signed_off" || r.status === "completed") return sum + 1;
+        const stages = Array.isArray(r.stages) ? r.stages : [];
+        const total = stages.length || 10;
+        return sum + (total ? stages.filter(stageDone).length / total : 0);
+      }, 0) / reflections.length;
+    score = Math.round(completion * 100);
+  }
+
+  return {
+    id: "learning_from_incidents",
+    title: "Learning from Incidents",
+    description:
+      "Structured post-incident reflection — what happened, the child's experience, what was learned, and what changed as a result.",
+    ofsted_reference:
+      "CHR 2015 Reg 35 — behaviour management and discipline; Reg 13 — leadership and a learning culture",
+    data_sources: ["postIncidentReflections", "incidents"],
+    items,
+    score,
+    rating: score === undefined ? "not_assessed" : scoreToRating(score),
+    summary:
+      reflections.length === 0
+        ? "No post-incident reflections recorded in this period."
+        : `${reflections.length} reflection(s) recorded; ${
+            reflections.filter((r: any) => r.status === "signed_off").length
+          } signed off by a manager.`,
+  };
+}
+
+// ── Section 18: Child-Friendly Safety Planning (Staying Safe Plans) ────────
+
+function buildChildSafetyPlanning(
+  input: EvidencePackInput,
+  children: any[],
+): EvidenceSection {
+  const plans = input.stayingSafePlans ?? [];
+
+  const items: EvidenceItem[] = plans.slice(0, 50).map((p: any) => ({
+    id: `ev_safeplan_${p.id}`,
+    type: "staying_safe_plan",
+    title: `Staying Safe Plan — ${
+      p.preferred_name || childNameFrom(input.youngPeople, p.child_id)
+    }`,
+    date: (p.approved_at ?? p.created_at ?? input.today).slice(0, 10),
+    summary: `Status: ${p.status ?? "draft"}. ${
+      p.manager_approved ? "Manager approved." : "Awaiting manager approval."
+    } Child's own contribution recorded: ${hasText(p.child_contribution) ? "yes" : "no"}.`,
+    linked_record_type: "staying_safe_plan",
+    linked_record_id: p.id,
+    child_id: p.child_id,
+    tags: ["safety_planning", "child_voice"],
+  }));
+
+  const childIdsWithActivePlan = new Set(
+    plans.filter((p: any) => p.status === "active").map((p: any) => p.child_id),
+  );
+  const coverage =
+    children.length > 0
+      ? Math.round(
+          (children.filter((c: any) => childIdsWithActivePlan.has(c.id)).length /
+            children.length) *
+            100,
+        )
+      : 0;
+  const score = children.length > 0 ? clamp(coverage, 0, 100) : undefined;
+
+  return {
+    id: "child_safety_planning",
+    title: "Child-Friendly Safety Planning",
+    description:
+      "Each child's own staying-safe plan — their early warning signs, what helps, trusted people, and what staff should and should not do — written with the child.",
+    ofsted_reference:
+      "CHR 2015 Reg 12 — the protection of children; Reg 6 — the quality and purpose of care",
+    data_sources: ["stayingSafePlans"],
+    items,
+    score,
+    rating: score === undefined ? "not_assessed" : scoreToRating(score),
+    summary: `${childIdsWithActivePlan.size}/${children.length} children have an active staying-safe plan; ${
+      plans.filter((p: any) => p.manager_approved).length
+    } of ${plans.length} plan(s) manager-approved.`,
+  };
+}
+
+// ── Section 19: Protective Relationships ───────────────────────────────────
+
+function buildProtectiveRelationshipsEvidence(
+  input: EvidencePackInput,
+  children: any[],
+): EvidenceSection {
+  const entries = input.relationshipEntries ?? [];
+
+  const items: EvidenceItem[] = children
+    .map((c: any): EvidenceItem | null => {
+      const childEntries = entries.filter((e: any) => e.child_id === c.id);
+      if (childEntries.length === 0) return null;
+      const protectiveCount = childEntries.filter(
+        (e: any) => e.rating === "protective",
+      ).length;
+      const riskCount = childEntries.filter((e: any) => e.rating === "risk").length;
+      return {
+        id: `ev_relationships_${c.id}`,
+        type: "protective_relationships",
+        title: `Relationship map — ${childNameFrom(input.youngPeople, c.id)}`,
+        date: input.today,
+        summary: `${protectiveCount} protective relationship(s), ${riskCount} flagged as a risk, across ${childEntries.length} mapped relationship(s).`,
+        linked_record_type: "young_person",
+        linked_record_id: c.id,
+        child_id: c.id,
+        tags: ["relationships", "safeguarding"],
+      };
+    })
+    .filter((x: EvidenceItem | null): x is EvidenceItem => x !== null);
+
+  const childrenWithProtective = children.filter((c: any) =>
+    entries.some((e: any) => e.child_id === c.id && e.rating === "protective"),
+  ).length;
+  const score =
+    children.length > 0
+      ? clamp(Math.round((childrenWithProtective / children.length) * 100), 0, 100)
+      : undefined;
+
+  return {
+    id: "protective_relationships",
+    title: "Protective Relationships",
+    description:
+      "Each child's network of trusted adults and positive relationships, and any relationships understood to carry risk — the relational core of safeguarding.",
+    ofsted_reference:
+      "CHR 2015 Reg 11 — positive relationships; relational safeguarding",
+    data_sources: ["relationshipEntries"],
+    items,
+    score,
+    rating: score === undefined ? "not_assessed" : scoreToRating(score),
+    summary: `${childrenWithProtective}/${children.length} children have at least one protective relationship recorded.`,
+  };
+}
+
 function identifyStrengths(sections: EvidenceSection[]): string[] {
   const strengths: string[] = [];
 
@@ -1406,6 +1668,44 @@ function collectOutstandingActions(input: EvidencePackInput): EvidenceItem[] {
         child_id: i.child_id ?? i.young_person_id,
         risk_level: "critical",
         tags: ["outstanding", "critical"],
+      });
+    });
+
+  // Overdue restriction reviews — least-restrictive practice depends on timely review
+  (input.restrictionReviews ?? [])
+    .filter((r: any) => r.next_review_date && r.next_review_date < input.today)
+    .slice(0, 10)
+    .forEach((r: any) => {
+      actions.push({
+        id: `action_restriction_${r.id}`,
+        type: "overdue_restriction_review",
+        title: `Overdue restriction review — ${childNameFrom(input.youngPeople, r.child_id)}`,
+        date: r.next_review_date?.slice(0, 10) ?? input.today,
+        summary: `A restriction on this child's liberty is past its review date. Continued restriction must be reviewed for proportionality and least-restrictive practice.`,
+        linked_record_type: "restriction_review",
+        linked_record_id: r.id,
+        child_id: r.child_id,
+        risk_level: "high",
+        tags: ["outstanding", "rights", "restriction"],
+      });
+    });
+
+  // Active staying-safe plans awaiting manager approval
+  (input.stayingSafePlans ?? [])
+    .filter((p: any) => p.status === "active" && !p.manager_approved)
+    .slice(0, 10)
+    .forEach((p: any) => {
+      actions.push({
+        id: `action_safeplan_${p.id}`,
+        type: "unapproved_safety_plan",
+        title: `Staying-safe plan awaiting approval — ${p.preferred_name || childNameFrom(input.youngPeople, p.child_id)}`,
+        date: (p.updated_at ?? p.created_at ?? input.today).slice(0, 10),
+        summary: `An active staying-safe plan has not yet been approved by a manager.`,
+        linked_record_type: "staying_safe_plan",
+        linked_record_id: p.id,
+        child_id: p.child_id,
+        risk_level: "medium",
+        tags: ["outstanding", "safety_planning"],
       });
     });
 

@@ -76,6 +76,12 @@ export async function GET() {
     participationEntries: store.participationEntries ?? [],
     improvementObjectives: store.improvementObjectives ?? [],
     lessonsLearned: store.lessonsLearned ?? [],
+
+    // 23/06 Practice Intelligence Update — record-based module evidence
+    restrictionReviews: store.restrictionReviews ?? [],
+    postIncidentReflections: store.postIncidentReflections ?? [],
+    stayingSafePlans: store.stayingSafePlans ?? [],
+    relationshipEntries: store.relationshipEntries ?? [],
   };
 
   const result = computeInspectionEvidencePack(input);
