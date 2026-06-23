@@ -9,6 +9,7 @@
 import React, { useState, use } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -119,6 +120,7 @@ function OversightPanel({ concernId, onSaved }: { concernId: string; onSaved: ()
         placeholder="Oversight comments — referrals, strategy discussions, lessons, further actions…"
         className="w-full rounded-xl border border-rose-200 bg-white px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-rose-300 placeholder:text-[var(--cs-text-muted)]"
       />
+      <EntryAssist value={note} onChange={setNote} sourceRecordType="safeguarding" className="mt-1" />
       {error && (
         <p className="text-xs text-red-600 font-medium flex items-center gap-1.5">
           <AlertCircle className="h-3.5 w-3.5 shrink-0" />{error}

@@ -18,6 +18,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import {
   Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp,
   AlertTriangle, CheckCircle2, MapPin, Users, Shield,
@@ -228,7 +229,7 @@ export default function ContextualSafeguardingPage() {
             <div><Label>Context Type</Label><Select value={form.context_type} onValueChange={(v) => setField("context_type", v)}><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(CONTEXTUAL_CONTEXT_TYPE_LABEL) as ContextualContextType[]).map((k) => (<SelectItem key={k} value={k}>{CONTEXTUAL_CONTEXT_TYPE_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
             <div><Label>Risk Level</Label><Select value={form.risk_level} onValueChange={(v) => setField("risk_level", v)}><SelectTrigger><SelectValue placeholder="Select…" /></SelectTrigger><SelectContent>{(Object.keys(CONTEXTUAL_RISK_LEVEL_LABEL) as ContextualRiskLevel[]).map((k) => (<SelectItem key={k} value={k}>{CONTEXTUAL_RISK_LEVEL_LABEL[k]}</SelectItem>))}</SelectContent></Select></div>
             <div className="col-span-2"><Label>Location / Context</Label><Input placeholder="Where or what is the context?" value={form.location_or_context} onChange={(e) => setField("location_or_context", e.target.value)} /></div>
-            <div className="col-span-2"><Label>Description</Label><Textarea rows={3} placeholder="Describe the risk…" value={form.description} onChange={(e) => setField("description", e.target.value)} /></div>
+            <div className="col-span-2"><Label>Description</Label><Textarea rows={3} placeholder="Describe the risk…" value={form.description} onChange={(e) => setField("description", e.target.value)} /><EntryAssist value={form.description} onChange={(v) => setField("description", v)} sourceRecordType="contextual_safeguarding" className="mt-1" /></div>
             <div className="col-span-2"><Label>Community Mapping</Label><Textarea rows={2} placeholder="Describe the physical/online environment…" value={form.community_mapping} onChange={(e) => setField("community_mapping", e.target.value)} /></div>
             <div><Label>Review Date</Label><Input type="date" value={form.review_date} onChange={(e) => setField("review_date", e.target.value)} /></div>
           </div>

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -751,6 +752,7 @@ Ofsted notification required: ${debrief.ofsted_notification_required ? "Yes" : "
               rows={4}
               className="text-sm"
             />
+            <EntryAssist value={rmComments} onChange={setRmComments} sourceRecordType="post_incident_debrief" className="mt-1" />
           </div>
           <DialogFooter className="gap-2">
             <Button
