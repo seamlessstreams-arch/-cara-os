@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { ManagerIntelligenceNav } from "@/components/intelligence/manager-intelligence-nav";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHomeRelationshipOverview } from "@/hooks/use-home-relationship-overview";
 import { cn } from "@/lib/utils";
@@ -54,6 +55,7 @@ export default function HomeRelationshipsPage() {
       }
     >
       <div className="space-y-6 animate-fade-in">
+        <ManagerIntelligenceNav active="relationships" />
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-[var(--cs-text-muted,#64748b)]">
             <Loader2 className="h-4 w-4 animate-spin" /> Building home overview…

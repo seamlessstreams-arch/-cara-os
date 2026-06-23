@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { ManagerIntelligenceNav } from "@/components/intelligence/manager-intelligence-nav";
 import { Card, CardContent } from "@/components/ui/card";
 import { useHomeOutcomeOverview } from "@/hooks/use-home-outcome-overview";
 import type {
@@ -102,6 +103,7 @@ export default function HomeOutcomeOverviewPage() {
       subtitle="Across this home — whose outcomes need us most, and where the patterns are"
     >
       <div className="space-y-6 animate-fade-in">
+        <ManagerIntelligenceNav active="outcomes" />
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-[var(--cs-text-muted,#64748b)]">
             <Loader2 className="h-4 w-4 animate-spin" /> Measuring outcomes across the home…

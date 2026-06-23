@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
+import { ManagerIntelligenceNav } from "@/components/intelligence/manager-intelligence-nav";
 import { Card, CardContent } from "@/components/ui/card";
 import { useInspectionIntelligence } from "@/hooks/use-inspection-intelligence";
 import type {
@@ -113,6 +114,7 @@ export default function InspectionIntelligencePage() {
       subtitle="Your evidence and gaps across Ofsted's three SCCIF judgement areas — a self-evaluation view"
     >
       <div className="space-y-6 animate-fade-in">
+        <ManagerIntelligenceNav active="inspection" />
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-[var(--cs-text-muted,#64748b)]">
             <Loader2 className="h-4 w-4 animate-spin" /> Assembling inspection evidence…
