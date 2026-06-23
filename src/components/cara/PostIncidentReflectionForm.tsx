@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { Loader2, Brain, Check, Sparkles, ListChecks } from "lucide-react";
 import { usePostIncident, useSavePostIncident } from "@/hooks/use-cara-incident";
+import { EntryAssist } from "@/components/forms/entry-assist";
 
 const inputCls = "w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2 text-sm focus:border-[var(--cs-teal)] focus:outline-none focus:ring-1 focus:ring-[var(--cs-teal)]";
 
@@ -62,10 +63,13 @@ export function PostIncidentReflectionForm({ sessionId }: { sessionId: string })
         ) : (
           <div className="mt-3 space-y-3">
             {data.templates.reflection_questions.map((q) => (
-              <label key={q.key} className="block">
-                <span className="text-xs font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">{q.label}</span>
-                <textarea rows={2} className={cn(inputCls, "mt-1")} value={fields[q.key] ?? ""} onChange={(e) => set(q.key, e.target.value)} />
-              </label>
+              <div key={q.key}>
+                <label className="block">
+                  <span className="text-xs font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">{q.label}</span>
+                  <textarea rows={2} className={cn(inputCls, "mt-1")} value={fields[q.key] ?? ""} onChange={(e) => set(q.key, e.target.value)} />
+                </label>
+                <EntryAssist value={fields[q.key] ?? ""} onChange={(v) => set(q.key, v)} sourceRecordType="post_incident_reflection" className="mt-1" />
+              </div>
             ))}
 
             <div>

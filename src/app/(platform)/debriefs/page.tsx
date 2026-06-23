@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -243,7 +244,7 @@ export default function DebriefsPage() {
                 </Select>
               </div>
             </div>
-            <div><label className="text-sm font-medium">What Happened *</label><Textarea placeholder="Describe the incident or event…" rows={3} value={debForm.what_happened} onChange={(e) => setDeb("what_happened", e.target.value)} /></div>
+            <div><label className="text-sm font-medium">What Happened *</label><Textarea placeholder="Describe the incident or event…" rows={3} value={debForm.what_happened} onChange={(e) => setDeb("what_happened", e.target.value)} /><EntryAssist value={debForm.what_happened} onChange={(v) => setDeb("what_happened", v)} sourceRecordType="debrief" className="mt-1" /></div>
             <div><label className="text-sm font-medium">What Worked Well</label><Textarea placeholder="Positive aspects of the response…" rows={2} value={debForm.what_worked_well} onChange={(e) => setDeb("what_worked_well", e.target.value)} /></div>
             <div><label className="text-sm font-medium">What Could Improve</label><Textarea placeholder="Areas for improvement…" rows={2} value={debForm.what_could_improve} onChange={(e) => setDeb("what_could_improve", e.target.value)} /></div>
             <div><label className="text-sm font-medium">Lessons Learned</label><Textarea placeholder="Key lessons (one per line)" rows={2} value={debForm.lessons_learned} onChange={(e) => setDeb("lessons_learned", e.target.value)} /></div>

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import { Plus, Search, Filter, ArrowUpDown, ChevronDown, ChevronUp, CheckCircle2, Clock, BookOpen, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF } from "@/lib/seed-data";
@@ -205,7 +206,7 @@ export default function StaffReflectionsPage() {
               <div><Label>Type</Label><Select value={rfForm.type} onValueChange={(v) => setRF("type", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(STAFF_REFLECTION_TYPE_LABEL) as [StaffReflectionType, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
               <div><Label>Mood</Label><Select value={rfForm.mood} onValueChange={(v) => setRF("mood", v)}><SelectTrigger className="mt-1"><SelectValue /></SelectTrigger><SelectContent>{(Object.entries(STAFF_REFLECTION_MOOD_LABEL) as [StaffReflectionMood, string][]).map(([k, v]) => <SelectItem key={k} value={k}>{v}</SelectItem>)}</SelectContent></Select></div>
             </div>
-            <div><Label>What Happened</Label><Textarea className="mt-1" rows={3} value={rfForm.what_happened} onChange={(e) => setRF("what_happened", e.target.value)} /></div>
+            <div><Label>What Happened</Label><Textarea className="mt-1" rows={3} value={rfForm.what_happened} onChange={(e) => setRF("what_happened", e.target.value)} /><EntryAssist value={rfForm.what_happened} onChange={(v) => setRF("what_happened", v)} sourceRecordType="staff_reflection" className="mt-1" /></div>
             <div><Label>What I Felt</Label><Textarea className="mt-1" rows={2} value={rfForm.what_i_felt} onChange={(e) => setRF("what_i_felt", e.target.value)} /></div>
             <div><Label>What I Learned</Label><Textarea className="mt-1" rows={2} value={rfForm.what_i_learned} onChange={(e) => setRF("what_i_learned", e.target.value)} /></div>
             <div><Label>What I Would Do Differently</Label><Textarea className="mt-1" rows={2} value={rfForm.what_i_would_do_differently} onChange={(e) => setRF("what_i_would_do_differently", e.target.value)} /></div>

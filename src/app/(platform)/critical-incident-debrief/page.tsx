@@ -16,6 +16,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { EntryAssist } from "@/components/forms/entry-assist";
 import {
   Plus, ChevronDown, ChevronUp, ArrowUpDown, AlertTriangle, CheckCircle2,
   Clock, Search, Shield, Brain, Users,
@@ -352,7 +353,7 @@ export default function CriticalIncidentDebriefPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>Incident Summary *</Label><Textarea placeholder="Brief description of the incident..." value={cidForm.incident_summary} onChange={(e) => setCID("incident_summary", e.target.value)} /></div>
+            <div><Label>Incident Summary *</Label><Textarea placeholder="Brief description of the incident..." value={cidForm.incident_summary} onChange={(e) => setCID("incident_summary", e.target.value)} /><EntryAssist value={cidForm.incident_summary} onChange={(v) => setCID("incident_summary", v)} sourceRecordType="critical_incident_debrief" className="mt-1" /></div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
               <Button type="submit" disabled={createRecord.isPending}>{createRecord.isPending ? "Saving…" : "Schedule"}</Button>
