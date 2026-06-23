@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { InlineOutcomePanel } from "@/components/outcome-intelligence/inline-outcome-panel";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -158,6 +159,8 @@ export default function ChildReviewPackPage() {
                 <p className="text-sm leading-relaxed text-slate-700">{pack.ai_narrative || pack.review_summary}</p>
               </div>
             </div>
+
+            {childId && <InlineOutcomePanel childId={childId} />}
 
             {/* Domain scores */}
             {pack.domain_scores.length > 0 && (
