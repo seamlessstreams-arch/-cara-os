@@ -108,6 +108,20 @@ export function DictationButton({
   // continuous "record everything" entry survives the browser's pause/timeout cut-offs.
   const wantListeningRef = useRef(false);
 
+  // The recognition handlers below are bound ONCE and live for the whole dictation
+  // (including every auto-restart after a pause). Calling the props directly would
+  // freeze them at the field value from when dictation started — so each finalised
+  // phrase would overwrite everything said before it. Keeping the latest callbacks
+  // in refs means every phrase is delivered to the CURRENT handler, which appends
+  // to the up-to-date text. This is what lets staff dictate paragraphs across pauses
+  // without losing anything.
+  const onTranscriptRef = useRef(onTranscript);
+  const onInterimRef = useRef(onInterimTranscript);
+  useEffect(() => {
+    onTranscriptRef.current = onTranscript;
+    onInterimRef.current = onInterimTranscript;
+  });
+
   // ── Support check (client-side only) ────────────────────────────────────────
   useEffect(() => {
     const supported =
@@ -158,9 +172,9 @@ export function DictationButton({
       }
 
       setInterim(interimTranscript);
-      if (interimTranscript && onInterimTranscript) onInterimTranscript(interimTranscript);
+      if (interimTranscript && onInterimRef.current) onInterimRef.current(interimTranscript);
       if (finalTranscript) {
-        onTranscript(finalTranscript);
+        onTranscriptRef.current(finalTranscript);
         setInterim("");
       }
     };

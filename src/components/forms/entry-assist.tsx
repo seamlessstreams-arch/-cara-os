@@ -116,7 +116,11 @@ export function EntryAssist({
             size="sm"
             mode="append"
             disabled={disabled}
-            onTranscript={(t) => onChange(value.trim() ? `${value.replace(/\s+$/, "")} ${t}` : t)}
+            onTranscript={(t) => {
+              const phrase = t.trim();
+              if (!phrase) return;
+              onChange(value.trim() ? `${value.replace(/\s+$/, "")} ${phrase}` : phrase);
+            }}
           />
         )}
 
