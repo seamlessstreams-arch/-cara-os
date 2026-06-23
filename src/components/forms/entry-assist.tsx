@@ -18,11 +18,12 @@
 // Controlled via value / onChange so it augments an existing textarea.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Sparkles, Loader2, Undo2, ShieldCheck, X, Check } from "lucide-react";
 import { DictationButton } from "@/components/common/dictation-button";
 import { useCaraCommand } from "@/hooks/use-cara-command";
 import type { CaraCommandId } from "@/lib/cara/cara-types";
+import { diffWords, changeCount } from "@/lib/writing-assistant/text-diff";
 import { cn } from "@/lib/utils";
 
 const REWRITES: Array<{ id: CaraCommandId; label: string }> = [
@@ -42,6 +43,8 @@ interface Preview {
   mode: CaraCommandId;
   label: string;
   text: string;
+  /** The original field text at the moment of preview — for the diff view. */
+  before: string;
   isReport: boolean;
   llmUsed: boolean;
 }
@@ -76,7 +79,15 @@ export function EntryAssist({
   const [open, setOpen] = useState(false);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [prev, setPrev] = useState<string | null>(null);
+  const [showDiff, setShowDiff] = useState(true);
   const canRewrite = value.trim().length >= MIN_LEN && !disabled && !cara.loading;
+
+  // Word-level diff for the "what changed" view (rewrite modes only).
+  const diff = useMemo(
+    () => (preview && !preview.isReport ? diffWords(preview.before, preview.text) : null),
+    [preview],
+  );
+  const changes = diff ? changeCount(diff) : 0;
 
   async function run(commandId: CaraCommandId, label: string) {
     setOpen(false);
@@ -95,6 +106,7 @@ export function EntryAssist({
         mode: commandId,
         label,
         text: res.generatedText.replace(/\*\*/g, ""), // strip markdown emphasis for display
+        before: value.trim(),
         isReport: ANALYSIS_MODES.includes(commandId),
         llmUsed: res.llmUsed,
       });
@@ -178,7 +190,7 @@ export function EntryAssist({
           className="rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface,#f8fafc)] p-3"
         >
           <div className="mb-2 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-semibold text-[var(--cs-navy)]">
                 {preview.isReport ? preview.label : `${preview.label} — preview`}
               </span>
@@ -189,6 +201,17 @@ export function EntryAssist({
                 >
                   <ShieldCheck className="h-3 w-3" /> No AI used
                 </span>
+              )}
+              {!preview.isReport && (
+                <span className="text-[10px] text-[var(--cs-text-muted)]">
+                  {changes === 0 ? "No changes" : `${changes} change${changes === 1 ? "" : "s"}`}
+                </span>
+              )}
+              {!preview.isReport && changes > 0 && (
+                <div role="group" aria-label="View mode" className="inline-flex overflow-hidden rounded-full border border-[var(--cs-border)] text-[10px] font-medium">
+                  <button type="button" onClick={() => setShowDiff(true)} aria-pressed={showDiff} className={cn("px-2 py-0.5 transition-colors", showDiff ? "bg-[var(--cs-navy,#1e293b)] text-white" : "text-[var(--cs-text-secondary)] hover:bg-white")}>Changes</button>
+                  <button type="button" onClick={() => setShowDiff(false)} aria-pressed={!showDiff} className={cn("px-2 py-0.5 transition-colors", !showDiff ? "bg-[var(--cs-navy,#1e293b)] text-white" : "text-[var(--cs-text-secondary)] hover:bg-white")}>Result</button>
+                </div>
               )}
             </div>
             <button
@@ -202,7 +225,19 @@ export function EntryAssist({
           </div>
 
           <div className="max-h-64 overflow-y-auto whitespace-pre-wrap rounded-lg border border-[var(--cs-border)] bg-white p-2.5 text-xs leading-relaxed text-[var(--cs-text-secondary,#475569)]">
-            {preview.text}
+            {!preview.isReport && showDiff && diff ? (
+              diff.map((seg, idx) =>
+                seg.type === "same" ? (
+                  <span key={idx}>{seg.text}</span>
+                ) : seg.type === "added" ? (
+                  <span key={idx} className="rounded bg-emerald-100 text-emerald-800">{seg.text}</span>
+                ) : (
+                  <span key={idx} className="rounded bg-red-100 text-red-700 line-through">{seg.text}</span>
+                ),
+              )
+            ) : (
+              preview.text
+            )}
           </div>
 
           {!preview.isReport && (
