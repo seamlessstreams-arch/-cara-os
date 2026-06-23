@@ -8,6 +8,7 @@
 
 import React, { useState, use, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { InlineOutcomePanel } from "@/components/outcome-intelligence/inline-outcome-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn, formatDate } from "@/lib/utils";
@@ -461,6 +462,9 @@ export default function CarePlanDetailPage({ params }: { params: Promise<{ id: s
           regulationRef="Care Planning, Placement and Case Review Regulations 2010"
           variant="cara"
         />
+
+        {/* How the child's outcomes are tracking — context for the plan's goals */}
+        <InlineOutcomePanel childId={plan.child_id} />
 
         {/* ── Cara Overview (when generated) ── */}
         {caraOverview && (
