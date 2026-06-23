@@ -21,6 +21,7 @@ import type {
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
+import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
 import type {
   CommsChannel,
   CommsChannelMember,
@@ -743,6 +744,32 @@ const POST_INCIDENT_REFLECTIONS_SEED: PostIncidentReflection[] = [
   },
 ];
 
+// ── Staying Safe Plans (seed) ────────────────────────────────────────────────
+const STAYING_SAFE_PLANS_SEED: StayingSafePlan[] = [
+  {
+    id: "ssp_alex", child_id: "yp_alex", home_id: "home_oak",
+    preferred_name: "Alex", communication_style: "Short sentences, give me time to answer", theme: "blue",
+    when_to_use: "Use this when you can see I'm starting to struggle, or after something has upset me.",
+    early_warning_signs: "I go quiet, stop eating, pace around, headphones on loud.",
+    green: { signs: "Chatty, joining in, asking for plans", staff_do: "Keep things normal, notice the good stuff", staff_dont: "Don't make a big deal of it" },
+    amber: { signs: "Snappy, restless, short answers", staff_do: "Offer a walk or my music, give me a choice", staff_dont: "Don't crowd me or raise your voice" },
+    red: { signs: "Shouting, throwing things, wanting to leave", staff_do: "Give me space, stay calm, let one familiar adult speak", staff_dont: "Don't grab me, don't bring lots of people over" },
+    helpful_words: "“Take your time”, “I'm here”, “You're not in trouble”",
+    unhelpful_words: "“Calm down”, “You're being silly”, “Last warning”",
+    calming_tools: "Music, a walk outside, cold water on my face, my weighted blanket",
+    trusted_people: "Mirela (my key worker); my nan on the phone; Tom on nights",
+    safe_spaces: "My room, the garden bench", sensory_needs: "Hates bright lights and loud TV when stressed",
+    contact_preferences: "Likes to call nan when really upset",
+    repair_recovery: "A quiet chat the next day, not straight after. Doing something normal together helps.",
+    what_helps_feel_safe_again: "Knowing I'm not in trouble for being upset, and that people still like me.",
+    my_choices: "I choose who talks to me first and whether we talk now or later.",
+    child_contribution: "Alex co-wrote this in key work and chose the words.", staff_contribution: "Reviewed with the team after the last debrief.",
+    manager_approved: false, manager_id: null, approved_at: null,
+    review_date: daysFromNow(40), status: "active",
+    created_at: daysFromNow(-30), updated_at: daysFromNow(-5), created_by: "staff_mirela", updated_by: "staff_mirela",
+  },
+];
+
 // ── Mutable collections ───────────────────────────────────────────────────────
 
 const store = {
@@ -766,6 +793,8 @@ const store = {
   restrictionReviews: [...RESTRICTION_REVIEWS_SEED] as RestrictionReview[],
   // Post-incident reflection & learning workflow records.
   postIncidentReflections: [...POST_INCIDENT_REFLECTIONS_SEED] as PostIncidentReflection[],
+  // Child-friendly Staying Safe Plans.
+  stayingSafePlans: [...STAYING_SAFE_PLANS_SEED] as StayingSafePlan[],
   // Canonical persisted event spine (forms-as-views write path). Empty by default —
   // the read-only projection of domain collections is unchanged until events are captured here.
   cornerstoneEvents: [] as CornerstoneEvent[],
@@ -11238,6 +11267,23 @@ export const db = {
       if (i === -1) return undefined;
       store.postIncidentReflections[i] = { ...store.postIncidentReflections[i], ...patch, updated_at: new Date().toISOString() };
       return store.postIncidentReflections[i];
+    },
+  },
+
+  // ── Staying Safe Plans ────────────────────────────────────────────────
+  stayingSafePlans: {
+    findAll: (): StayingSafePlan[] => store.stayingSafePlans,
+    findById: (id: string): StayingSafePlan | undefined => store.stayingSafePlans.find((p) => p.id === id),
+    findByChild: (childId: string): StayingSafePlan | undefined => store.stayingSafePlans.find((p) => p.child_id === childId),
+    append: (p: StayingSafePlan): StayingSafePlan => {
+      store.stayingSafePlans.push(p);
+      return p;
+    },
+    update: (id: string, patch: Partial<StayingSafePlan>): StayingSafePlan | undefined => {
+      const i = store.stayingSafePlans.findIndex((p) => p.id === id);
+      if (i === -1) return undefined;
+      store.stayingSafePlans[i] = { ...store.stayingSafePlans[i], ...patch, updated_at: new Date().toISOString() };
+      return store.stayingSafePlans[i];
     },
   },
 
