@@ -56,7 +56,7 @@ export default function ActionCentrePage() {
   const filtered = useMemo(() => (data ? (source === "all" ? data.items : data.items.filter((i) => i.source === source)) : []), [data, source]);
 
   return (
-    <PageShell title="Action Centre" subtitle="Every action and attention item from across Cara, in one place — so nothing is lost">
+    <PageShell title="Practice Action Centre" subtitle="Every action and attention flag from across Cara's practice-intelligence modules, in one place — so nothing is lost">
       <div className="space-y-6 animate-fade-in">
         {isLoading && <div className="flex items-center gap-2 text-sm text-[var(--cs-text-muted,#64748b)]"><Loader2 className="h-4 w-4 animate-spin" /> Gathering actions…</div>}
 
@@ -66,7 +66,7 @@ export default function ActionCentrePage() {
               <CardContent className="p-5">
                 <div className="flex items-center gap-2">
                   <ListChecks className="h-5 w-5 text-[var(--cs-cara-gold,#b45309)]" />
-                  <h2 className="text-base font-bold text-[var(--cs-navy,#1e293b)]">Action Centre</h2>
+                  <h2 className="text-base font-bold text-[var(--cs-navy,#1e293b)]">Practice Action Centre</h2>
                 </div>
                 <p className="mt-1 text-sm text-[var(--cs-text-secondary,#475569)]">{data.headline}</p>
                 <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -95,7 +95,7 @@ export default function ActionCentrePage() {
             )}
 
             <p className="px-1 text-xs text-[var(--cs-text-muted,#64748b)]">
-              The Action Centre reads actions and flags the modules already hold — it never duplicates them. It informs
+              The Practice Action Centre reads actions and flags the modules already hold — it never duplicates them. It informs
               practice and oversight; people decide and act.
             </p>
           </>
