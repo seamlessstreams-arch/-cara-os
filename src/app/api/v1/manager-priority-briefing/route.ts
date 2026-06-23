@@ -16,6 +16,11 @@ import {
   computeManagerPriorityBriefing,
   type EngineSignalInput,
 } from "@/lib/engines/manager-priority-briefing-engine";
+import {
+  mapInspectionToSignal,
+  mapOutcomeHomeToSignal,
+  mapRelationshipHomeToSignal,
+} from "@/lib/engines/briefing-native-mappers";
 
 export const dynamic = "force-dynamic";
 
@@ -170,7 +175,6 @@ async function fetchSignal(baseUrl: string, route: string, domain: string): Prom
  * contributors, never a duplicate dashboard.
  */
 async function fetchNativeSignals(baseUrl: string): Promise<EngineSignalInput[]> {
-  const out: EngineSignalInput[] = [];
   const get = async (route: string): Promise<any | null> => {
     try {
       const res = await fetch(`${baseUrl}/api/v1/${route}`, { cache: "no-store" });
@@ -181,66 +185,17 @@ async function fetchNativeSignals(baseUrl: string): Promise<EngineSignalInput[]>
     }
   };
 
-  // Inspection Intelligence — SCCIF evidence gaps (whole home).
-  const insp = await get("inspection-intelligence");
-  if (insp) {
-    out.push({
-      engine_key: "inspection-intelligence",
-      label: "Inspection readiness (SCCIF)",
-      domain: "leadership",
-      rating: insp.areasLimited > 0 ? "inadequate" : insp.areasDeveloping > 0 ? "requires_improvement" : "good",
-      score: null,
-      headline: typeof insp.headline === "string" ? insp.headline : null,
-      insights: (insp.priorities ?? []).map((p: any) => ({
-        text: `${p.label}${p.detail ? ` — ${p.detail}` : ""}`,
-        severity: "high",
-      })),
-      concerns: [],
-      recommendations: [],
-    });
-  }
+  const [insp, outc, rel] = await Promise.all([
+    get("inspection-intelligence"),
+    get("outcome-intelligence/home"),
+    get("relationship-intelligence/home"),
+  ]);
 
-  // Outcome Intelligence — whole-home rollup.
-  const outc = await get("outcome-intelligence/home");
-  if (outc) {
-    const needs = (outc.children ?? []).filter((c: any) => c.overallStatus === "needs_focus");
-    out.push({
-      engine_key: "outcome-intelligence-home",
-      label: "Outcome intelligence (whole home)",
-      domain: "experiences",
-      rating: (outc.childrenNeedingFocus ?? 0) > 0 ? "requires_improvement" : "good",
-      score: null,
-      headline: typeof outc.headline === "string" ? outc.headline : null,
-      insights: needs.map((c: any) => ({
-        text: `${c.childName}'s outcomes need focus${c.topConcern ? ` — ${c.topConcern}` : ""}`,
-        severity: "high",
-      })),
-      concerns: [],
-      recommendations: [],
-    });
-  }
-
-  // Relationship Intelligence — whole-home overview.
-  const rel = await get("relationship-intelligence/home");
-  if (rel) {
-    const needs = (rel.children ?? []).filter((c: any) => c.relStatus === "fragile" || c.esStatus === "concern");
-    out.push({
-      engine_key: "relationship-intelligence-home",
-      label: "Relationship intelligence (whole home)",
-      domain: "experiences",
-      rating: needs.length > 0 ? "requires_improvement" : "good",
-      score: null,
-      headline: typeof rel.headline === "string" ? rel.headline : null,
-      insights: needs.map((c: any) => ({
-        text: `${c.childName} needs relational or emotional support${c.topGap ? ` — ${c.topGap}` : ""}`,
-        severity: c.relStatus === "fragile" ? "high" : "warning",
-      })),
-      concerns: [],
-      recommendations: [],
-    });
-  }
-
-  return out;
+  return [
+    mapInspectionToSignal(insp),
+    mapOutcomeHomeToSignal(outc),
+    mapRelationshipHomeToSignal(rel),
+  ].filter((s): s is EngineSignalInput => s !== null);
 }
 
 export async function GET(request: Request) {
