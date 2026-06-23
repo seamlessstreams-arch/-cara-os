@@ -7,6 +7,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useYoungPeople } from "@/hooks/use-young-people";
 import { useRelationalTimeline } from "@/hooks/use-relational-timeline";
 import { useEmotionalSafety } from "@/hooks/use-emotional-safety";
+import { useOutcomeIntelligence } from "@/hooks/use-outcome-intelligence";
+import type { OutcomeStatus } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 import { cn } from "@/lib/utils";
 import {
   Sparkles,
@@ -20,7 +22,14 @@ import {
   ArrowRight,
   Loader2,
   Lightbulb,
+  Target,
 } from "lucide-react";
+
+const OUTCOME_STATUS: Record<OutcomeStatus, { label: string; badge: string; pill: string }> = {
+  on_track: { label: "On track", badge: "bg-emerald-100 text-emerald-800 border-emerald-200", pill: "bg-emerald-50 text-emerald-700" },
+  progressing: { label: "Progressing", badge: "bg-amber-100 text-amber-800 border-amber-200", pill: "bg-amber-50 text-amber-700" },
+  needs_focus: { label: "Needs focus", badge: "bg-red-100 text-red-800 border-red-200", pill: "bg-red-50 text-red-700" },
+};
 
 const REL_STATUS: Record<string, { label: string; badge: string }> = {
   secure: { label: "Secure", badge: "bg-emerald-100 text-emerald-800 border-emerald-200" },
@@ -34,15 +43,19 @@ const ES_STATUS: Record<string, { label: string; badge: string }> = {
 };
 const TREND_COLOR: Record<string, string> = { improving: "text-emerald-600", stable: "text-slate-500", declining: "text-red-600" };
 
-/** A simple worst-of synthesis for the headline. */
-function headline(rel: string | undefined, es: string | undefined): { tone: string; text: string } {
-  const concern = rel === "fragile" || es === "concern";
-  const watch = rel === "developing" || es === "watch";
+/** A simple worst-of synthesis for the headline across all three lenses. */
+function headline(
+  rel: string | undefined,
+  es: string | undefined,
+  outcome: OutcomeStatus | undefined,
+): { tone: string; text: string } {
+  const concern = rel === "fragile" || es === "concern" || outcome === "needs_focus";
+  const watch = rel === "developing" || es === "watch" || outcome === "progressing";
   if (concern)
-    return { tone: "concern", text: "This child needs relational and emotional support — prioritise connection, repair and a plan review." };
+    return { tone: "concern", text: "This child needs us — prioritise connection and repair, support regulation, and focus on the outcome areas falling behind." };
   if (watch)
-    return { tone: "watch", text: "Relationships and regulation are developing — keep connection consistent and capture what helps." };
-  return { tone: "secure", text: "Relationships and emotional safety look settled — protect what's working." };
+    return { tone: "watch", text: "Relationships, regulation and outcomes are developing — keep connection consistent and build the evidence of progress." };
+  return { tone: "secure", text: "Relationships, emotional safety and outcomes look settled — protect what's working." };
 }
 
 export default function RelationshipIntelligencePage() {
@@ -61,22 +74,27 @@ export default function RelationshipIntelligencePage() {
 
   const { data: rel, isLoading: relLoading } = useRelationalTimeline(childId);
   const { data: es, isLoading: esLoading } = useEmotionalSafety(childId);
-  const loading = relLoading || esLoading;
+  const { data: outcome, isLoading: outcomeLoading } = useOutcomeIntelligence(childId);
+  const loading = relLoading || esLoading || outcomeLoading;
 
   const relS = rel ? REL_STATUS[rel.stability.status] : null;
   const esS = es ? ES_STATUS[es.status] : null;
-  const head = headline(rel?.stability.status, es?.status);
+  const outcomeS = outcome ? OUTCOME_STATUS[outcome.overallStatus] : null;
+  const head = headline(rel?.stability.status, es?.status, outcome?.overallStatus);
   const TrendIcon = rel?.trend.direction === "improving" ? TrendingUp : rel?.trend.direction === "declining" ? TrendingDown : Minus;
+  const OutcomeTrendIcon =
+    outcome?.overallTrajectory === "improving" ? TrendingUp : outcome?.overallTrajectory === "declining" ? TrendingDown : Minus;
 
   const combinedInsights = [
     ...(rel?.insights ?? []).map((i) => ({ ...i, source: "Relationships" })),
     ...(es?.insights ?? []).map((i) => ({ ...i, source: "Emotional safety" })),
-  ].filter((i) => i.tone === "gap").slice(0, 4);
+    ...(outcome?.insights ?? []).map((i) => ({ ...i, source: "Outcomes" })),
+  ].filter((i) => i.tone === "gap").slice(0, 5);
 
   return (
     <PageShell
       title="Relationship Intelligence"
-      subtitle="One view of a child: who they trust, how they're regulating, and where they need us"
+      subtitle="One view of a child: who they trust, how they're regulating, whether their outcomes are improving, and where they need us"
     >
       <div className="space-y-6 animate-fade-in">
         <div className="flex flex-wrap items-center gap-3">
@@ -188,6 +206,38 @@ export default function RelationshipIntelligencePage() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Outcomes — is this child's life measurably getting better? */}
+            {outcome && outcomeS && (
+              <Card>
+                <CardContent className="p-5">
+                  <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                    <span className="flex items-center gap-2 text-sm font-bold text-[var(--cs-navy,#1e293b)]">
+                      <Target className="h-4 w-4 text-[var(--cs-cara-gold,#b45309)]" /> Outcomes
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase", outcomeS.badge)}>{outcomeS.label}</span>
+                      <span className={cn("inline-flex items-center gap-0.5 text-[11px] font-semibold", TREND_COLOR[outcome.overallTrajectory])}>
+                        <OutcomeTrendIcon className="h-3 w-3" /> {outcome.overallTrajectory}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="mb-3 flex flex-wrap gap-1.5">
+                    {outcome.domains.map((d) => {
+                      const ds = OUTCOME_STATUS[d.status];
+                      return (
+                        <span key={d.key} className={cn("rounded-full px-2 py-0.5 text-xs font-medium", ds.pill)} title={`${d.label}: ${ds.label}`}>
+                          {d.label}
+                        </span>
+                      );
+                    })}
+                  </div>
+                  <Link href={`/intelligence/cara/outcome-intelligence?child=${childId}`} className="inline-flex items-center gap-1 text-sm font-medium text-[var(--cs-cara-gold,#b45309)]">
+                    View outcomes <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Gaps to close (synthesised) */}
             {combinedInsights.length > 0 && (
