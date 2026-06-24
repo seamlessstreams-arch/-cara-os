@@ -91,9 +91,10 @@ function signal(total: number): Signal {
 }
 
 function trend(recentCount: number, priorCount: number): Trend {
-  if (priorCount === 0) return recentCount > 0 ? "increasing" : "stable";
+  // No prior baseline: a single recent engagement is not yet a trend.
+  if (priorCount === 0) return recentCount >= 2 ? "increasing" : "stable";
   if (recentCount > priorCount) return "increasing";
-  if (recentCount < Math.floor(priorCount * 0.6)) return "declining";
+  if (recentCount < priorCount * 0.75) return "declining"; // a >25% drop is a real decline
   return "stable";
 }
 

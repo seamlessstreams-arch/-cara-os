@@ -84,7 +84,8 @@ export const ELEMENT_CUES: Record<PACEElement, string[]> = {
 export const SHAMING_CUES = [
   "naughty", "bad boy", "bad girl", "should be ashamed", "attention seeking", "attention-seeking", "manipulative",
   "playing up", "playing games", "doing it on purpose", "should know better", "acting like a child", "spoilt", "spoiled",
-  "drama", "pathetic", "grow up", "stop being", "what's wrong with",
+  // NB: bare "drama" removed — it fired inside "dramatically"/"drama therapy".
+  "pathetic", "grow up", "stop being", "what's wrong with",
 ];
 
 /** Punitive / sanction-first responses — flags PUNITIVE_RESPONSE. */
@@ -101,7 +102,9 @@ export const ADULT_TRIGGER_CUES = [
 
 /** Blame-based / judgemental recording — flags BLAME_BASED_RECORDING. */
 export const BLAME_CUES = [
-  "refused to comply", "non-compliant", "non compliant", "defiant", "deliberately", "chose to", "for no reason",
+  // NB: bare "chose to" removed — autonomy language ("chose to read quietly") is
+  // often positive; the specific blaming sense is covered by the cues that remain.
+  "refused to comply", "non-compliant", "non compliant", "defiant", "deliberately", "for no reason",
   "without provocation", "unprovoked", "kicked off", "as usual", "yet again", "typical of",
 ];
 
@@ -138,7 +141,9 @@ export const BOUNDARY_CUES = [
 
 /** Exploring the need beneath behaviour — absence flags BEHAVIOUR_WITHOUT_NEED. */
 export const NEED_CUES = [
-  "underneath", "may have needed", "unmet need", "trigger", "triggered by", "because", "felt unsafe", "felt unheard",
+  // NB: bare "because" removed — any everyday causal clause ("because it was
+  // raining") wrongly read as exploring the need beneath the behaviour.
+  "underneath", "may have needed", "unmet need", "trigger", "triggered by", "felt unsafe", "felt unheard",
   "felt rejected", "reminded them of", "what they needed", "communicating", "behaviour was telling", "may be linked to",
 ];
 

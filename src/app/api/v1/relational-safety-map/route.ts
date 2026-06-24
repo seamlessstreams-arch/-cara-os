@@ -76,7 +76,11 @@ interface RelationalSafetyMapSummary {
 
 function daysBetween(dateStr: string, now: Date): number {
   const d = new Date(dateStr);
-  return Math.floor((now.getTime() - d.getTime()) / 86_400_000);
+  if (isNaN(d.getTime())) return 9999;
+  const days = Math.floor((now.getTime() - d.getTime()) / 86_400_000);
+  // A future-dated record must never count as "recent" key work / incident — it
+  // was masking real key-work gaps (and could rate a child falsely "secure").
+  return days < 0 ? 9999 : days;
 }
 
 function deriveFrequency(sessionsLast30d: number, sessionsLast90d: number): KeyWorkFrequency {

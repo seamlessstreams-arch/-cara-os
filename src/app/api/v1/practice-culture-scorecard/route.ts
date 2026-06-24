@@ -37,7 +37,10 @@ function clamp(n: number): number {
 
 const VOICE_PATTERNS = [
   /\bsaid\b/i, /\btold me\b/i, /\bexplained\b/i, /\bexpressed\b/i,
-  /\bmentioned\b/i, /\bfelt that\b/i, /\bchose to\b/i, /['"]([^'"]{5,})['"]/,
+  // Quote pattern uses DOUBLE quotes only (straight + smart). Single quotes are
+  // dominated by contractions/possessives ("home's … didn't" is not quoted speech);
+  // genuine single-quoted speech is still caught by the verb cues (said/told/…).
+  /\bmentioned\b/i, /\bfelt that\b/i, /\bchose to\b/i, /["“”]([^"“”]{5,})["“”]/,
 ];
 
 function hasVoice(text: string): boolean {
@@ -55,10 +58,33 @@ const PROBLEM_PHRASES = [
   "failed to follow", "wouldn't listen",
 ];
 
+// Whole-word, negation-aware match: stops "manipulative" firing inside
+// "manipulatives", "regulated" inside "dysregulated", and stops "no tantrum"/
+// "not manipulative" from counting against the therapeutic-language score.
+const SC_NEGATION_RE = /\b(no|not|never|without|cannot|nobody|none|denied|refused)\b|n['’]t\b/;
+function scNegated(lower: string, idx: number): boolean {
+  let p = lower.slice(Math.max(0, idx - 25), idx);
+  const s = Math.max(
+    p.lastIndexOf("."), p.lastIndexOf("!"), p.lastIndexOf("?"),
+    p.lastIndexOf(";"), p.lastIndexOf(","),
+  );
+  if (s >= 0) p = p.slice(s + 1);
+  return SC_NEGATION_RE.test(p);
+}
+function anyPhrase(lower: string, phrases: string[]): boolean {
+  for (const phrase of phrases) {
+    const re = new RegExp(`\\b${phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "g");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(lower)) !== null) {
+      if (!scNegated(lower, m.index)) return true;
+    }
+  }
+  return false;
+}
+
 function hasProblematic(text: string): boolean {
   if (!text) return false;
-  const lower = text.toLowerCase();
-  return PROBLEM_PHRASES.some((p) => lower.includes(p));
+  return anyPhrase(text.toLowerCase(), PROBLEM_PHRASES);
 }
 
 // ── Strengths language patterns (minimal subset) ──────────────────────────────
@@ -73,8 +99,7 @@ const STRENGTHS_PHRASES = [
 
 function hasStrengths(text: string): boolean {
   if (!text) return false;
-  const lower = text.toLowerCase();
-  return STRENGTHS_PHRASES.some((p) => lower.includes(p));
+  return anyPhrase(text.toLowerCase(), STRENGTHS_PHRASES);
 }
 
 // ── KB framework engagement (minimal) ────────────────────────────────────────
@@ -132,7 +157,9 @@ export async function GET() {
   const languageTotal = languageTexts.length;
   const languageFlagged = languageTexts.filter(hasProblematic).length;
   const flagRate = languageTotal > 0 ? languageFlagged / languageTotal : 0;
-  const therapeuticLanguageScore = clamp((1 - flagRate) * 100);
+  // Neutral 50 when there's no language corpus — an empty home has not earned a
+  // perfect "no criminalising language" rating (consistent with the other dims).
+  const therapeuticLanguageScore = languageTotal > 0 ? clamp((1 - flagRate) * 100) : 50;
 
   // ── Dimension 4: Strengths Documentation ─────────────────────────────────
   const strengthsTexts = languageTexts; // same corpus
