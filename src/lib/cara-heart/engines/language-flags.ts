@@ -144,18 +144,28 @@ export const BLAME_LANGUAGE_FLAGS: LanguageFlag[] = [
 ];
 
 /**
+ * Whole-word/phrase match for a literal string pattern. Using word boundaries
+ * (not a raw substring) prevents false positives like "lied" firing inside
+ * "applied", "bullied", "complied", or "manipulative" inside "manipulatives"
+ * (maths). The phrases in this bank are all real words/phrases, never prefixes.
+ */
+function stringPatternMatches(text: string, pattern: string): boolean {
+  const escaped = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}\\b`, "i").test(text);
+}
+
+/**
  * Scans text for blame-based or professionally imprecise language.
  * Returns only the flags that matched.
  */
 export function scanForBlameLanguage(text: string): FlaggedLanguageItem[] {
   if (!text) return [];
-  const lower = text.toLowerCase();
   const results: FlaggedLanguageItem[] = [];
 
   for (const flag of BLAME_LANGUAGE_FLAGS) {
     const matched =
       typeof flag.pattern === "string"
-        ? lower.includes(flag.pattern.toLowerCase())
+        ? stringPatternMatches(text, flag.pattern)
         : flag.pattern.test(text);
 
     if (matched) {

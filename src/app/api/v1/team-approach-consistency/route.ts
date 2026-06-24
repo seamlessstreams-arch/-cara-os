@@ -83,16 +83,29 @@ const BOUNDARY_PHRASES = [
 ];
 
 const PHYSICAL_PHRASES = [
+  // NB: "managed" and "supported to" removed — they are not restraint and were
+  // stealing therapeutic credit ("supported to settle", "managed calmly").
   "held", "restraint", "physical intervention", "pi", "team teach", "pbi",
-  "supported to", "mapa", "managed", "escorted", "physically",
+  "mapa", "escorted", "physically",
 ];
+
+// Whole-word-ish matching. The banks use intentional PREFIXES (e.g. "de-escalat"
+// → "de-escalated", "reassur" → "reassured"), so anchor only the LEADING word
+// boundary — except very short tokens (≤3 chars, e.g. the abbreviation "pi"/"pbi")
+// which must match as COMPLETE words, or they fire inside ordinary words ("pi" in
+// "copied", "coping", "happier") and mislabel therapeutic work as restraint.
+function phraseMatches(lower: string, phrase: string): boolean {
+  const escaped = phrase.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const anchored = phrase.length <= 3 ? `\\b${escaped}\\b` : `\\b${escaped}`;
+  return new RegExp(anchored).test(lower);
+}
 
 function classify(strategy: string): ApproachType {
   if (!strategy || strategy.trim().length < 3) return "undocumented";
   const lower = strategy.toLowerCase();
-  if (PHYSICAL_PHRASES.some((p) => lower.includes(p))) return "physical";
-  if (THERAPEUTIC_PHRASES.some((p) => lower.includes(p))) return "therapeutic";
-  if (BOUNDARY_PHRASES.some((p) => lower.includes(p))) return "boundary";
+  if (PHYSICAL_PHRASES.some((p) => phraseMatches(lower, p))) return "physical";
+  if (THERAPEUTIC_PHRASES.some((p) => phraseMatches(lower, p))) return "therapeutic";
+  if (BOUNDARY_PHRASES.some((p) => phraseMatches(lower, p))) return "boundary";
   return "undocumented";
 }
 
@@ -108,6 +121,10 @@ function dominantApproach(
 }
 
 // ── Consistency level from variance in therapeutic rate ───────────────────────
+
+// A staff member needs at least this many behaviour-log entries for their
+// therapeutic rate to be treated as a reliable signal (not a single data point).
+const MIN_ENTRIES_FOR_SIGNAL = 2;
 
 function deriveConsistency(variance: number, staffCount: number): ConsistencyLevel {
   if (staffCount < 2) return "consistent";
@@ -223,11 +240,13 @@ export async function GET() {
       });
     }
 
-    // Variance = range of therapeuticRate across staff
-    const rates = staffProfiles.map((p) => p.therapeuticRate);
-    const maxRate = Math.max(...rates);
-    const minRate = Math.min(...rates);
-    const variance = maxRate - minRate;
+    // Variance = range of therapeuticRate across staff who have enough entries to
+    // be a reliable signal. A single entry per staff is noise, not divergence.
+    const reliableRates = staffProfiles
+      .filter((p) => p.totalEntries >= MIN_ENTRIES_FOR_SIGNAL)
+      .map((p) => p.therapeuticRate);
+    const variance =
+      reliableRates.length >= 2 ? Math.max(...reliableRates) - Math.min(...reliableRates) : 0;
 
     const overallRate = totalForChild > 0 ? Math.round((therapeuticForChild / totalForChild) * 100) : 0;
     const level = deriveConsistency(variance, staffProfiles.length);
@@ -266,12 +285,19 @@ export async function GET() {
 
   // Most common divergence pattern
   const lowTherapeuticStaff = childProfiles
-    .flatMap((c) => c.staffProfiles.filter((s) => s.therapeuticRate < 30).map((s) => s.staffName));
+    .flatMap((c) =>
+      c.staffProfiles
+        .filter((s) => s.therapeuticRate < 30 && s.totalEntries >= MIN_ENTRIES_FOR_SIGNAL)
+        .map((s) => s.staffName),
+    );
   const dominanceCount: Record<string, number> = {};
   for (const name of lowTherapeuticStaff) {
     dominanceCount[name] = (dominanceCount[name] ?? 0) + 1;
   }
-  const topDivergent = Object.entries(dominanceCount).sort((a, b) => b[1] - a[1])[0]?.[0];
+  // "across multiple children" must mean ≥2 children, not a single thin record.
+  const topDivergent = Object.entries(dominanceCount)
+    .filter(([, n]) => n >= 2)
+    .sort((a, b) => b[1] - a[1])[0]?.[0];
   const mostCommonDivergencePattern = topDivergent
     ? `${topDivergent} shows low therapeutic approach rate across multiple children`
     : "No clear divergence pattern detected";

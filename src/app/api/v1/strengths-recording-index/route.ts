@@ -95,10 +95,34 @@ const CATEGORY_LABELS: Record<StrengthCategory, string> = {
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
+// A positive word preceded by a negation in the same clause is not a strength
+// ("has not improved", "struggled to cope", "didn't settle").
+const STRENGTH_NEGATION_RE = /\b(not|never|unable|struggled|struggling|failed|cannot)\b|n['’]t\b/;
+
+function strengthNegated(lower: string, matchIndex: number): boolean {
+  let preceding = lower.slice(Math.max(0, matchIndex - 25), matchIndex);
+  const stop = Math.max(
+    preceding.lastIndexOf("."), preceding.lastIndexOf("!"), preceding.lastIndexOf("?"),
+    preceding.lastIndexOf(";"), preceding.lastIndexOf(","),
+  );
+  if (stop >= 0) preceding = preceding.slice(stop + 1);
+  return STRENGTH_NEGATION_RE.test(preceding);
+}
+
 function detectStrengths(text: string): Array<{ phrase: string; category: StrengthCategory }> {
   if (!text || text.trim().length < 5) return [];
   const lower = text.toLowerCase();
-  return STRENGTH_PATTERNS.filter((p) => lower.includes(p.phrase));
+  // Whole-word match (so "regulated" doesn't fire inside "dysregulated") and skip
+  // negated occurrences (so "has not improved" isn't counted as achievement).
+  return STRENGTH_PATTERNS.filter((p) => {
+    const escaped = p.phrase.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`\\b${escaped}\\b`, "g");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(lower)) !== null) {
+      if (!strengthNegated(lower, m.index)) return true;
+    }
+    return false;
+  });
 }
 
 // ── Types ──────────────────────────────────────────────────────────────────────

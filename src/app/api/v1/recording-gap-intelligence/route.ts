@@ -175,7 +175,7 @@ export async function GET() {
   }>;
 
   const dailyLog = (store.dailyLog ?? []) as Array<{
-    child_id: string; created_at: string;
+    child_id: string; date: string;
   }>;
 
   const keyWorkSessions = (store.keyWorkingSessions ?? []) as Array<{
@@ -201,7 +201,9 @@ export async function GET() {
 
   for (const e of dailyLog) {
     const curr = latestDailyLog.get(e.child_id);
-    if (!curr || e.created_at > curr) latestDailyLog.set(e.child_id, e.created_at);
+    // Recording recency = the entry's own date, not created_at (which on seeded
+    // and back-dated entries is the write timestamp, masking real gaps).
+    if (!curr || e.date > curr) latestDailyLog.set(e.child_id, e.date);
   }
   for (const s of keyWorkSessions) {
     const curr = latestKeyWork.get(s.child_id);

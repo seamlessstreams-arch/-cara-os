@@ -120,6 +120,26 @@ describe("scanForBlameLanguage", () => {
     expect(flags[0].alternativeLanguageSuggestion).toBeTruthy();
     expect(flags[0].concern).toBeTruthy();
   });
+
+  it("does not fire 'lied' inside ordinary words (applied/bullied/complied)", () => {
+    // Regression: substring matching flagged "applied", "bullied", "complied"
+    // etc. as the child having "lied" — a false blame flag on neutral or even
+    // safeguarding-relevant text ("the child was bullied").
+    const flags = scanForBlameLanguage(
+      "The child was bullied at school. Staff applied the de-escalation plan and the child complied.",
+    );
+    expect(flags.some((f) => f.phrase === "lied")).toBe(false);
+  });
+
+  it("still flags 'lied' as a whole word", () => {
+    const flags = scanForBlameLanguage("Staff felt the child lied about the incident.");
+    expect(flags.some((f) => f.phrase === "lied")).toBe(true);
+  });
+
+  it("does not flag 'manipulative' inside 'manipulatives' (maths resources)", () => {
+    const flags = scanForBlameLanguage("The child used maths manipulatives in the lesson.");
+    expect(flags.some((f) => f.phrase === "manipulative")).toBe(false);
+  });
 });
 
 // ── Safeguarding override ─────────────────────────────────────────────────────

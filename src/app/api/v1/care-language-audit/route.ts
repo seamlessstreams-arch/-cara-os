@@ -121,10 +121,40 @@ interface CategorySummary {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+// Negation cues — a phrase preceded by one of these in the SAME clause is being
+// negated or denied, not used to describe the child, so it must not flag. Covers
+// "no challenging behaviour", "not a meltdown", "denied being manipulative", and
+// any "…n't" contraction (wasn't/isn't/didn't…) with a straight or smart apostrophe.
+const NEGATION_RE = /\b(no|not|never|without|denies|denied|cannot)\b|n['’]t\b/;
+
+function isNegated(lower: string, matchIndex: number): boolean {
+  // Only the current clause, up to ~25 chars before the phrase — so a negation in
+  // an earlier clause ("not calm; he was aggressive and manipulative") can't
+  // wrongly suppress a real hit in the next.
+  let preceding = lower.slice(Math.max(0, matchIndex - 25), matchIndex);
+  const stop = Math.max(
+    preceding.lastIndexOf("."), preceding.lastIndexOf("!"), preceding.lastIndexOf("?"),
+    preceding.lastIndexOf(";"), preceding.lastIndexOf(","),
+  );
+  if (stop >= 0) preceding = preceding.slice(stop + 1);
+  return NEGATION_RE.test(preceding);
+}
+
 function scanText(text: string): Array<Pick<LanguagePattern, "phrase" | "category" | "therapeuticAlternative" | "kbFramework">> {
   if (!text) return [];
   const lower = text.toLowerCase();
-  return PATTERNS.filter((p) => lower.includes(p.phrase.toLowerCase()));
+  // Whole-word match (not substring) so "drama" doesn't fire inside "dramatic"
+  // and "manipulative" not inside "manipulatives"; and skip negated occurrences
+  // so we never flag a staff member for recording the absence of a behaviour.
+  return PATTERNS.filter((p) => {
+    const escaped = p.phrase.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = new RegExp(`\\b${escaped}\\b`, "g");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(lower)) !== null) {
+      if (!isNegated(lower, m.index)) return true; // a real, non-negated occurrence
+    }
+    return false;
+  });
 }
 
 // ── Route ─────────────────────────────────────────────────────────────────────
