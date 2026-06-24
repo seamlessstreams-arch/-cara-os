@@ -129,7 +129,13 @@ function applyBank(
 /** Safe cosmetic tidy: collapse spaces, no space before punctuation, capitalise sentence starts. */
 function tidy(text: string): string {
   let t = text.replace(/[ \t]{2,}/g, " ").replace(/[ \t]+([.,;:!?])/g, "$1");
-  t = t.replace(/(^|[.!?]\s+)([a-z])/g, (_m, p1: string, p2: string) => p1 + p2.toUpperCase());
+  // Capitalise the first letter of the whole record.
+  t = t.replace(/^(\s*)([a-z])/, (_m, ws: string, c: string) => ws + c.toUpperCase());
+  // New-sentence capitalisation ONLY after a real word ending (≥3 lowercase letters
+  // immediately before the full stop). This avoids wrongly capitalising after
+  // abbreviations ("U.K. now", "Dr. smith", "i.e."), decimals/times ("9.30. mum")
+  // and acronyms ("GP."), all common in care records.
+  t = t.replace(/([a-z]{3}[.!?]['")\]]*\s+)([a-z])/g, (_m, lead: string, c: string) => lead + c.toUpperCase());
   return t.trim();
 }
 
@@ -177,6 +183,13 @@ function splitLongSentences(text: string): { text: string; remaining: number } {
     const trimmed = chunk.trim();
     const wordCount = trimmed.split(/\s+/).filter(Boolean).length;
     if (wordCount <= 26) return chunk;
+    // Never split a question or exclamation: terminating the first clause with a
+    // full stop would turn "Did X, and did Y?" into "Did X. Did Y?" — asserting
+    // something that was only being asked.
+    if (/[?!]$/.test(trimmed)) {
+      remaining++;
+      return chunk;
+    }
     const leadWs = chunk.slice(0, chunk.length - chunk.trimStart().length);
     const connector = /,\s+(and|but)\s+/i.exec(trimmed);
     if (connector) {
