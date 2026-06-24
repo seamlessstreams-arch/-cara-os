@@ -71,12 +71,35 @@ function isRelevant(record: CaraPracticeRecord): boolean {
   );
 }
 
+// Whole-word, negation-aware mention check: stops "hit" firing inside "white",
+// and stops "No damage"/"No assault" injecting damage/assault alternatives.
+const ACR_NEGATION_RE = /\b(no|not|never|without|denied|denies|cannot|nobody|none)\b|n['’]t\b/;
+function acrNegated(lower: string, idx: number): boolean {
+  let p = lower.slice(Math.max(0, idx - 25), idx);
+  const s = Math.max(
+    p.lastIndexOf("."), p.lastIndexOf("!"), p.lastIndexOf("?"),
+    p.lastIndexOf(";"), p.lastIndexOf(","),
+  );
+  if (s >= 0) p = p.slice(s + 1);
+  return ACR_NEGATION_RE.test(p);
+}
+function mentions(lower: string, regexes: RegExp[]): boolean {
+  for (const re of regexes) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(lower)) !== null) {
+      if (!acrNegated(lower, m.index)) return true;
+    }
+  }
+  return false;
+}
+
 /** Alternatives to police involvement (context-appropriate suggestions). */
 function buildAlternatives(record: CaraPracticeRecord): string[] {
   const alternatives: string[] = [];
   const lower = [record.description, record.staffResponse ?? ""].join(" ").toLowerCase();
 
-  if (lower.includes("property") || lower.includes("damage")) {
+  if (mentions(lower, [/\bproperty/g, /\bdamage/g])) {
     alternatives.push("Restorative conversation with the young person about the damage and repair");
     alternatives.push("Practical repair of the damage with the young person's involvement where safe");
     alternatives.push("Review whether the damage was linked to dysregulation that could be better supported");
@@ -88,7 +111,7 @@ function buildAlternatives(record: CaraPracticeRecord): string[] {
     alternatives.push("Ensure the social worker and placing authority are notified");
   }
 
-  if (lower.includes("assault") || lower.includes("fight") || lower.includes("hit")) {
+  if (mentions(lower, [/\bassault/g, /\bfight/g, /\bhit/g])) {
     alternatives.push("Ensure the safety of all involved before any further action");
     alternatives.push("Consult the manager and social worker before involving police for minor assaults");
     alternatives.push("Consider whether a peer restorative process is appropriate once all parties are safe");

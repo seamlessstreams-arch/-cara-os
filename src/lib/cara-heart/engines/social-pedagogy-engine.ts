@@ -19,6 +19,30 @@ import type {
 
 const ENGINE = "SocialPedagogyEngine";
 
+// Whole-word, negation-aware mention check: stops "again" firing inside "against"
+// (a fabricated "repeating pattern") and stops "did not refuse"/"no refusal"
+// triggering the refusal-interpretation prompt.
+const SP_NEGATION_RE = /\b(no|not|never|without|denied|denies|cannot|nobody|none)\b|n['’]t\b/;
+function spNegated(lower: string, idx: number): boolean {
+  let p = lower.slice(Math.max(0, idx - 25), idx);
+  const s = Math.max(
+    p.lastIndexOf("."), p.lastIndexOf("!"), p.lastIndexOf("?"),
+    p.lastIndexOf(";"), p.lastIndexOf(","),
+  );
+  if (s >= 0) p = p.slice(s + 1);
+  return SP_NEGATION_RE.test(p);
+}
+function mentions(lower: string, regexes: RegExp[]): boolean {
+  for (const re of regexes) {
+    re.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(lower)) !== null) {
+      if (!spNegated(lower, m.index)) return true;
+    }
+  }
+  return false;
+}
+
 // ── Head: knowledge and theory ────────────────────────────────────────────────
 
 function buildHead(record: CaraPracticeRecord): SocialPedagogyReflection["head"] {
@@ -72,7 +96,7 @@ function buildHead(record: CaraPracticeRecord): SocialPedagogyReflection["head"]
     "Is this an isolated incident, or part of a pattern? Consider time of day, day of week, seasonal triggers, staffing patterns, and proximity to family contact or transitions.",
   );
 
-  if (lower.includes("again") || lower.includes("repeated") || lower.includes("same as")) {
+  if (mentions(lower, [/\bagain\b/g, /\brepeated/g, /\bsame as\b/g])) {
     patterns.push(
       "This record may indicate a repeating pattern. Consider whether the care plan or placement plan needs to be updated to address this.",
     );
@@ -106,7 +130,7 @@ function buildHeart(record: CaraPracticeRecord): SocialPedagogyReflection["heart
     );
   }
 
-  if (lower.includes("refus")) {
+  if (mentions(lower, [/\brefus/g])) {
     whatMightTheChildFeel.push(
       "Refusal may communicate anxiety, shame, a need for control, or testing whether adults will impose or stay regulated.",
     );

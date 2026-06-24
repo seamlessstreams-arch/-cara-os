@@ -252,7 +252,10 @@ export function runCaraHeartResidentialPracticeEngine(
     deterministicPrompts.unshift(
       "IMMEDIATE SAFEGUARDING ACTION MAY BE REQUIRED. Follow the home's safeguarding procedures and emergency protocols. Reflective recording should follow once immediate safety has been addressed.",
     );
-    suggestedActions.unshift(...override.requiredAction.slice(0, 2));
+    // Surface ALL required safeguarding actions — slice(0, 2) silently dropped a
+    // distinct emergency instruction (e.g. staff-injury medical attention) when 3+
+    // immediate flags fired together.
+    suggestedActions.unshift(...override.requiredAction);
   }
 
   // ── 2. Cara Heart check ───────────────────────────────────────────────────
@@ -327,7 +330,13 @@ export function runCaraHeartResidentialPracticeEngine(
   allAudit.push(...riAudit);
 
   if (riInsight.riskOfReactiveCare === "high") {
-    deterministicPrompts.push(riInsight.staffPracticePrompts[riInsight.staffPracticePrompts.length - 1]);
+    // Select the reactive-care warning by IDENTITY, not position — a later prompt
+    // ("Behind every challenging behaviour…") is pushed after it for incident /
+    // behaviour records, so [length - 1] dropped the warning in exactly those cases.
+    const reactiveWarning = riInsight.staffPracticePrompts.find((p) =>
+      p.includes("responding reactively rather than therapeutically"),
+    );
+    if (reactiveWarning) deterministicPrompts.push(reactiveWarning);
   }
 
   // ── 9. Social pedagogy ────────────────────────────────────────────────────

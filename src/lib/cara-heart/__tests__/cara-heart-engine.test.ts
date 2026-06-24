@@ -450,3 +450,87 @@ describe("runCaraHeartResidentialPracticeEngine", () => {
     expect(output.heartCard.professionalReminder).not.toContain("recognize");
   });
 });
+
+// ── Review-sweep regression fixes (false-signal correctness) ───────────────────
+
+describe("Cara Heart false-signal regressions", () => {
+  it("does not record a rights BREACH as a right considered", () => {
+    const breach: CaraPracticeRecord = {
+      ...baseRecord,
+      id: "rec_breach",
+      description: "Staff gave the child no information about the decision and offered no privacy.",
+      staffResponse: "",
+      childVoice: "",
+    };
+    const { review } = runChildVoiceRightsEngine(breach, NOW);
+    expect(review.rightsConsidered).not.toContain("Right to privacy and dignity");
+    expect(review.rightsConsidered).not.toContain("Right to be informed about decisions");
+    expect(review.communicationNeedsConsidered).toBe(false);
+  });
+
+  it("still records a right that was genuinely honoured", () => {
+    const honoured: CaraPracticeRecord = {
+      ...baseRecord,
+      id: "rec_honoured",
+      description: "Staff explained the decision to the child and respected their privacy.",
+    };
+    const { review } = runChildVoiceRightsEngine(honoured, NOW);
+    expect(review.rightsConsidered).toContain("Right to privacy and dignity");
+    expect(review.rightsConsidered).toContain("Right to be informed about decisions");
+  });
+
+  it("escalates a low-severity record carrying an explicit safeguarding concern", () => {
+    const exploitation: CaraPracticeRecord = {
+      ...baseRecord,
+      id: "rec_exploit",
+      severity: 2,
+      immediateRisk: "low",
+      exploitationConcern: true,
+    };
+    const { heartCheck } = runCaraHeartEngine(exploitation, NOW);
+    expect(heartCheck.managerOversightNeeded).toBe(true);
+    expect(heartCheck.safeguardingEscalationNeeded).toBe(true);
+  });
+
+  it("does not inject damage/assault alternatives when the record denies them", () => {
+    const noHarm: CaraPracticeRecord = {
+      ...baseRecord,
+      id: "rec_nodmg",
+      type: "police_contact",
+      policeCalled: true,
+      description: "Police were called as a precaution. No damage was caused and no assault took place.",
+      staffResponse: "Staff remained calm.",
+      childVoice: "",
+    };
+    const { review } = runAntiCriminalisationEngine(noHarm, NOW);
+    expect(review.alternativesConsidered.some((a) => a.toLowerCase().includes("repair of the damage"))).toBe(false);
+    expect(review.alternativesConsidered.some((a) => a.toLowerCase().includes("minor assault"))).toBe(false);
+  });
+
+  it("does not fabricate a 'repeating pattern' from the word 'against'", () => {
+    const against: CaraPracticeRecord = {
+      ...baseRecord,
+      id: "rec_against",
+      description: "The child leaned against the wall and chatted happily with staff.",
+      staffResponse: "",
+      childVoice: "",
+    };
+    const { reflection } = runSocialPedagogyEngine(against, NOW);
+    expect(reflection.head.patterns.some((p) => p.includes("repeating pattern"))).toBe(false);
+  });
+
+  it("surfaces the reactive-care warning for a high-risk incident (not [length-1])", () => {
+    const reactive: CaraPracticeRecord = {
+      ...baseRecord,
+      id: "rec_reactive",
+      type: "incident",
+      description: "Child kicked off for no reason and played up. Bad behaviour all evening.",
+      staffResponse: "Staff asked the child to stop.",
+      childVoice: "",
+    };
+    const output = runCaraHeartResidentialPracticeEngine(reactive, { now: NOW });
+    expect(
+      output.deterministicPrompts.some((p) => p.includes("responding reactively rather than therapeutically")),
+    ).toBe(true);
+  });
+});

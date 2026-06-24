@@ -269,13 +269,21 @@ export function runCaraHeartEngine(
   }
 
   // ── Manager oversight ─────────────────────────────────────────────────────
+  // Explicit safeguarding concerns must drive oversight/escalation regardless of
+  // severity — otherwise an exploitation or self-harm concern at low severity read
+  // as "no escalation needed" while the SafeguardingOverrideEngine fired an override.
   const managerOversightNeeded =
     severity >= 4 ||
     record.immediateRisk === "high" ||
     record.immediateRisk === "critical" ||
     !!record.restraintUsed ||
     !!record.policeCalled ||
-    !!record.missingFromCare;
+    !!record.missingFromCare ||
+    !!record.weaponConcern ||
+    !!record.sexualHarmConcern ||
+    !!record.exploitationConcern ||
+    !!record.fireSettingConcern ||
+    !!record.selfHarmConcern;
 
   audit.push({
     ruleId: "CH_MANAGER_OVERSIGHT",

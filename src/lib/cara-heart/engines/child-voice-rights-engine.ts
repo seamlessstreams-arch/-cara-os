@@ -14,6 +14,36 @@ import type {
 
 const ENGINE = "ChildVoiceRightsEngine";
 
+// A "right considered" marker must be a real, AFFIRMED mention — not negated.
+// Otherwise a record describing a rights BREACH ("no choice", "deprived of
+// privacy", "nobody explained") was read as the right being honoured, hiding the
+// concern. Word-boundary (prefix) matching also stops "informal" reading as
+// "informed" and "uninformed"/"deprived of privacy" reading as the right present.
+const RIGHTS_NEGATION_RE =
+  /\b(no|not|never|without|denied|denies|deprived|lacked|refused|cannot|nobody|none)\b|\bno one\b|n['’]t\b/;
+
+function rightNegated(lower: string, idx: number): boolean {
+  let p = lower.slice(Math.max(0, idx - 25), idx);
+  const s = Math.max(
+    p.lastIndexOf("."), p.lastIndexOf("!"), p.lastIndexOf("?"),
+    p.lastIndexOf(";"), p.lastIndexOf(","),
+  );
+  if (s >= 0) p = p.slice(s + 1);
+  return RIGHTS_NEGATION_RE.test(p);
+}
+
+/** True if any token appears as a whole word (prefix) that is NOT negated in its clause. */
+function affirmed(lower: string, tokens: string[]): boolean {
+  for (const tok of tokens) {
+    const re = new RegExp(`\\b${tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "g");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(lower)) !== null) {
+      if (!rightNegated(lower, m.index)) return true;
+    }
+  }
+  return false;
+}
+
 function hasSubstantiveChildVoice(record: CaraPracticeRecord): boolean {
   if (!record.childVoice) return false;
   const voice = record.childVoice.trim();
@@ -96,10 +126,10 @@ export function runChildVoiceRightsEngine(
 
   const rightsConsidered: string[] = [];
   if (voicePresent) rightsConsidered.push("Right to be heard and participate in decisions about their life");
-  if (combinedLower.includes("choice") || combinedLower.includes("decided")) rightsConsidered.push("Right to choice and agency");
-  if (combinedLower.includes("privacy") || combinedLower.includes("private")) rightsConsidered.push("Right to privacy and dignity");
-  if (combinedLower.includes("advocate") || combinedLower.includes("advocacy")) rightsConsidered.push("Right to advocacy");
-  if (combinedLower.includes("inform") || combinedLower.includes("explained")) rightsConsidered.push("Right to be informed about decisions");
+  if (affirmed(combinedLower, ["choice", "chose", "decided"])) rightsConsidered.push("Right to choice and agency");
+  if (affirmed(combinedLower, ["privacy", "private", "dignity"])) rightsConsidered.push("Right to privacy and dignity");
+  if (affirmed(combinedLower, ["advocat"])) rightsConsidered.push("Right to advocacy");
+  if (affirmed(combinedLower, ["informed", "information", "explain"])) rightsConsidered.push("Right to be informed about decisions");
   if (rightsConsidered.length === 0) rightsConsidered.push("Rights considerations are not yet visible in this record");
 
   audit.push({
@@ -154,8 +184,7 @@ export function runChildVoiceRightsEngine(
       reasonVoiceNotCaptured: !voicePresent
         ? "The child's voice is not yet recorded. Add what the child said, how they presented, whether they declined to speak, or when this will be revisited."
         : undefined,
-      communicationNeedsConsidered:
-        combinedLower.includes("communication") || combinedLower.includes("send") || combinedLower.includes("aac"),
+      communicationNeedsConsidered: affirmed(combinedLower, ["communication", "communicate", "aac", "makaton"]),
       rightsConsidered,
       advocacyNeeded,
       dignityConcern,
