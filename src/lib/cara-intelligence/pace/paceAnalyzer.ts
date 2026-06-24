@@ -25,9 +25,34 @@ const ELEMENTS: PACEElement[] = ["PLAYFULNESS", "ACCEPTANCE", "CURIOSITY", "EMPA
 const ESCALATION_CUES = ["escalat", "manager", "safeguard", "social worker", "notified", "reported to", "designated", "reg 40", "regulation 40", "notifiable", "on-call", "on call"];
 
 function norm(t: string): string { return (t ?? "").toLowerCase(); }
+
+// Negation cues — a cue negated in its clause must not match, so "not playful"
+// doesn't credit playfulness and "no attempt to reconnect" doesn't credit repair.
+const PACE_NEGATION_RE = /\b(no|not|never|without|cannot|nobody|none|denied|refused)\b|n['’]t\b/;
+function paceNegated(t: string, idx: number): boolean {
+  let p = t.slice(Math.max(0, idx - 22), idx);
+  const s = Math.max(
+    p.lastIndexOf("."), p.lastIndexOf("!"), p.lastIndexOf("?"),
+    p.lastIndexOf(";"), p.lastIndexOf(","),
+  );
+  if (s >= 0) p = p.slice(s + 1);
+  return PACE_NEGATION_RE.test(p);
+}
+
+// Leading word-boundary match (so "regulated" doesn't fire inside "dysregulated"
+// and "settle" not inside "unsettled" — the semantic inversions), and skip a cue
+// that is negated in its clause. Cue prefixes (e.g. "de-escalat") still match.
 function matched(text: string, cues: string[]): string[] {
   const t = norm(text);
-  return cues.filter((c) => t.includes(c));
+  const out: string[] = [];
+  for (const c of cues) {
+    const re = new RegExp(`\\b${c.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "g");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(t)) !== null) {
+      if (!paceNegated(t, m.index)) { out.push(c); break; }
+    }
+  }
+  return out;
 }
 function has(text: string, cues: string[]): boolean { return matched(text, cues).length > 0; }
 
