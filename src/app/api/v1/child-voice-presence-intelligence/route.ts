@@ -22,27 +22,29 @@ import { getStore } from "@/lib/db/store";
 
 // ── Voice detection ───────────────────────────────────────────────────────────
 
-// Phrases that strongly indicate child voice is present in a record
+// Phrases that strongly indicate the CHILD's voice is present in a record.
+// Removed the bare /\bvoice\b/ ("raised his voice") and /according to/ ("according
+// to policy"); "expressed"/"described" are now guarded so a staff subject ("Staff
+// expressed concern") doesn't read as the child's voice. Quote pattern accepts
+// smart quotes (pasted/Word text).
 const VOICE_PATTERNS = [
   /\bsaid\b/i,
   /\btold me\b/i,
   /\btold (staff|worker|carer|me)\b/i,
   /\bexplained\b/i,
-  /\bexpressed\b/i,
   /\bmentioned\b/i,
-  /\bdescribed\b/i,
   /\bfelt that\b/i,
   /\bwanted to\b/i,
   /\bwished\b/i,
   /\bchose to\b/i,
   /\bdecided to\b/i,
   /\bagreed to\b/i,
-  /['"]([^'"]{5,})['"]/,     // any quoted speech ≥5 chars
-  /child('s)? (view|perspective|voice|opinion|words)/i,
-  /young person('s)? (view|perspective|voice|opinion|words)/i,
-  /according to/i,
+  /["“”'‘’]([^"“”'‘’]{5,})["“”'‘’]/,     // any quoted speech ≥5 chars (straight or smart quotes)
+  /child(['’]s)? (view|perspective|voice|opinion|words)/i,
+  /young person(['’]s)? (view|perspective|voice|opinion|words)/i,
   /\bfeedback from\b/i,
-  /\bvoice\b/i,
+  // "expressed"/"described" only when NOT attributed to staff/worker/I/we, etc.
+  /(?<!\b(?:staff|worker|carer|keyworker|colleague|police|manager|i|we)\s)(?:expressed|described)\b/i,
 ];
 
 function hasVoice(text: string): boolean {
@@ -50,18 +52,26 @@ function hasVoice(text: string): boolean {
   return VOICE_PATTERNS.some((p) => p.test(text));
 }
 
-// For key-working child_voice field — is it substantively populated?
+// For the key-working child_voice field — is it substantively the child's voice,
+// or just a note that they didn't engage? Patterns are NOT ^-anchored (real text
+// starts with a subject: "Alex was quiet…"), and a field mentioning non-engagement
+// is still substantive if genuine voice markers are also present.
 const EMPTY_VOICE_PATTERNS = [
-  /^n\/?a$/i,
-  /^no(t)? (voice|applicable|comment)/i,
-  /^was (quiet|silent|reluctant|non-verbal)/i,
-  /^did(n'?t| not) (want|wish|engage)/i,
+  /^n\/?a\.?$/i,
+  /\bno (voice|comment|views?|response)\b/i,
+  /\b(was|were|seemed|remained|stayed|appeared|kept) (very )?(quiet|silent|reluctant|withdrawn|unresponsive)\b/i,
+  /\bnon.?verbal\b/i,
+  /\b(did|would|could)(n'?t| not) (want|wish|engage|talk|speak|share|participate|comment)\b/i,
+  /\b(declined|refused|unwilling) to (share|comment|engage|talk|speak|participate|give)/i,
 ];
 
 function isSubstantiveVoice(text: string): boolean {
   if (!text || text.trim().length < 15) return false;
   const t = text.trim();
-  return !EMPTY_VOICE_PATTERNS.some((p) => p.test(t));
+  // A note that is only about non-engagement is not the child's voice — unless
+  // genuine voice markers are also present in the same field.
+  if (EMPTY_VOICE_PATTERNS.some((p) => p.test(t))) return hasVoice(t);
+  return true;
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
