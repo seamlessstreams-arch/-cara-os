@@ -50,10 +50,10 @@ function daysSince(dateIso: string | undefined, now: string): number {
 const REQUIRED: { get: (p: StayingSafePlan) => string; label: string }[] = [
   { get: (p) => p.when_to_use, label: "When to use the plan" },
   { get: (p) => p.early_warning_signs, label: "Early warning signs" },
-  { get: (p) => p.green.signs, label: "Green zone" },
-  { get: (p) => p.amber.signs, label: "Amber zone" },
-  { get: (p) => p.red.signs, label: "Red zone signs" },
-  { get: (p) => p.red.staff_do, label: "Red zone — what staff should do" },
+  { get: (p) => p.green?.signs ?? "", label: "Green zone" },
+  { get: (p) => p.amber?.signs ?? "", label: "Amber zone" },
+  { get: (p) => p.red?.signs ?? "", label: "Red zone signs" },
+  { get: (p) => p.red?.staff_do ?? "", label: "Red zone — what staff should do" },
   { get: (p) => p.calming_tools, label: "Calming tools" },
   { get: (p) => p.trusted_people, label: "Trusted people" },
   { get: (p) => p.repair_recovery, label: "Repair & recovery" },
@@ -66,7 +66,7 @@ export function analyseStayingSafePlan(p: StayingSafePlan, now: string): SafePla
 
   const flags: SafePlanFlag[] = [];
 
-  if (!present(p.red.staff_do)) {
+  if (!present(p.red?.staff_do ?? "")) {
     flags.push({
       key: "red-zone-incomplete",
       severity: "high",

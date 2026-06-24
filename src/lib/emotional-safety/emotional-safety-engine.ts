@@ -128,7 +128,14 @@ const REGULATION_WORDS = [
 function endedRegulated(b: BehaviourEntry): boolean {
   if (b.direction === "positive") return true;
   const o = (b.outcome ?? "").toLowerCase();
-  return REGULATION_WORDS.some((w) => o.includes(w));
+  return REGULATION_WORDS.some((w) => {
+    const idx = o.indexOf(w);
+    if (idx < 0) return false;
+    // Don't credit a NEGATED outcome ("could not calm", "wouldn't settle",
+    // "unable to calm down") — check the words immediately before the match.
+    const before = o.slice(Math.max(0, idx - 18), idx);
+    return !/\b(not|never|unable|cannot|can'?t|won'?t|couldn'?t|wouldn'?t|didn'?t|wasn'?t|weren'?t|don'?t|doesn'?t|isn'?t)\b/.test(before);
+  });
 }
 
 function rankCounts(
@@ -175,7 +182,11 @@ export function buildEmotionalSafetyAnalysis(
   for (const c of input.calmingApproaches) {
     helpCounts.set(normaliseLabel(c), (helpCounts.get(normaliseLabel(c)) ?? 0) + 1);
   }
-  for (const b of behaviour) {
+  // Only credit a strategy that actually turned an ESCALATION around — a concern
+  // entry whose outcome describes regulation. Routine positive logs (a good day,
+  // an activity that was simply enjoyed) are NOT evidence that a strategy regulates
+  // the child, so they must not inflate "what helps".
+  for (const b of concerns) {
     if (b.strategy_used?.trim() && endedRegulated(b)) {
       const label = normaliseLabel(b.strategy_used);
       helpCounts.set(label, (helpCounts.get(label) ?? 0) + 1);

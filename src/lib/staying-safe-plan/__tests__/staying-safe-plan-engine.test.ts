@@ -39,6 +39,16 @@ describe("analyseStayingSafePlan", () => {
     expect(a.needsAttention).toBe(false);
   });
 
+  it("does not throw on a partial / draft plan missing a zone object", () => {
+    // A draft plan from the in-memory store can have an absent zone — must not crash
+    // (it previously threw and took down the whole Action Centre route).
+    const partial = plan({ red: undefined as never, green: undefined as never });
+    expect(() => analyseStayingSafePlan(partial, NOW)).not.toThrow();
+    const a = analyseStayingSafePlan(partial, NOW);
+    expect(a.completenessPct).toBeLessThan(100);
+    expect(a.flags.some((f) => f.key === "red-zone-incomplete")).toBe(true);
+  });
+
   it("flags an empty red-zone response as high", () => {
     const a = analyseStayingSafePlan(plan({ red: { signs: "Shouting", staff_do: "", staff_dont: "Don't grab" } }), NOW);
     expect(a.flags.find((f) => f.key === "red-zone-incomplete")?.severity).toBe("high");

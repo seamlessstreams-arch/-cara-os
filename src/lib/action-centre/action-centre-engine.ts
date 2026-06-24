@@ -90,6 +90,10 @@ export function buildActionCentre(input: ActionCentreInput): ActionCentre {
     }
   }
 
+  // Some module alerts annotate the child label, e.g. 'Alex ("Loud noise")'.
+  // Keep the bare name in `child` so rows group and sort by child correctly.
+  const bareName = (s: string) => s.replace(/\s*\([^)]*\)\s*$/, "").trim() || s;
+
   // Attention items projected from each module's intelligence.
   let n = 0;
   for (const at of input.attention) {
@@ -98,7 +102,7 @@ export function buildActionCentre(input: ActionCentreInput): ActionCentre {
       items.push({
         id: `att_${n++}`,
         source: at.source,
-        child,
+        child: child ? bareName(child) : null,
         description: at.label,
         detail: at.why,
         owner: null,
