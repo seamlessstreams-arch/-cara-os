@@ -62,6 +62,14 @@ export function useCaraHeartCheck(
     }
   }, []);
 
+  // Key the debounce off a serialization of the WHOLE record. The request POSTs
+  // the entire record, but a hand-curated dep list silently omitted ~19 of its
+  // fields (childVoice, weaponConcern, repairRecorded, managerConsulted, …) — so a
+  // form wiring any of those to an editable input would show stale analysis until
+  // some *other* tracked field changed. recordKey re-fires on ANY field change and
+  // is content-stable (no re-fire when an unmemoised record keeps the same values).
+  const recordKey = record ? JSON.stringify(record) : null;
+
   useEffect(() => {
     if (
       !record ||
@@ -81,20 +89,7 @@ export function useCaraHeartCheck(
       if (timerRef.current) clearTimeout(timerRef.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    record?.childId,
-    record?.type,
-    record?.description,
-    record?.staffResponse,
-    record?.immediateRisk,
-    record?.severity,
-    record?.policeCalled,
-    record?.restraintUsed,
-    record?.missingFromCare,
-    record?.selfHarmConcern,
-    record?.exploitationConcern,
-    runCheck,
-  ]);
+  }, [recordKey, runCheck]);
 
   return { data, isLoading, error };
 }
