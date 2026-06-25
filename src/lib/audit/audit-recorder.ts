@@ -171,6 +171,19 @@ export function extractRequestAuditContext(req: {
   };
 }
 
+/**
+ * One-liner for routes: pull request context from headers and record the change,
+ * fire-and-forget. This is the intended adoption surface — a write path adds a
+ * single call after its update and the before→after is captured + persisted.
+ */
+export function auditFromRequest(
+  req: { headers: { get(name: string): string | null } },
+  input: Omit<RecordAuditInput, "ip" | "userAgent" | "sessionId">,
+): void {
+  const ctx = extractRequestAuditContext(req);
+  void recordEntityAudit({ ...input, ip: ctx.ip, userAgent: ctx.userAgent, sessionId: ctx.sessionId });
+}
+
 /** Convert field changes to the CornerstoneEvent changeHistory entry shape. */
 export function toChangeHistory(
   changes: FieldChanges,

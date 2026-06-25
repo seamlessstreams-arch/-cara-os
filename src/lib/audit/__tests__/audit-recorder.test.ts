@@ -5,6 +5,7 @@ import {
   getRecordAuditTrail,
   __resetRecordAuditTrail,
   extractRequestAuditContext,
+  auditFromRequest,
   toChangeHistory,
 } from "../audit-recorder";
 
@@ -107,6 +108,32 @@ describe("extractRequestAuditContext", () => {
   it("returns nulls when headers are absent", () => {
     const ctx = extractRequestAuditContext({ headers: { get: () => null } });
     expect(ctx).toEqual({ ip: null, userAgent: null, sessionId: null });
+  });
+});
+
+describe("auditFromRequest", () => {
+  it("extracts request context and records the change (fire-and-forget)", () => {
+    const headers = new Map([
+      ["x-forwarded-for", "198.51.100.5"],
+      ["user-agent", "TestAgent"],
+    ]);
+    auditFromRequest(
+      { headers: { get: (n) => headers.get(n) ?? null } },
+      {
+        entityType: "supervision",
+        entityId: "sup_1",
+        homeId: "home_1",
+        action: "update",
+        before: { notes: "draft" },
+        after: { notes: "final" },
+        performedBy: "manager_1",
+      },
+    );
+    const [entry] = getRecordAuditTrail({ entityType: "supervision" });
+    expect(entry.ipAddress).toBe("198.51.100.5");
+    expect(entry.userAgent).toBe("TestAgent");
+    expect(entry.performedBy).toBe("manager_1");
+    expect(entry.changes.notes).toEqual({ old: "draft", new: "final" });
   });
 });
 

@@ -3,7 +3,7 @@ import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { requireOnShift } from "@/lib/permissions/require-on-shift";
-import { recordEntityAudit, extractRequestAuditContext } from "@/lib/audit/audit-recorder";
+import { auditFromRequest } from "@/lib/audit/audit-recorder";
 
 export const dynamic = "force-dynamic";
 
@@ -49,8 +49,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // Record the change: field-level before→after, in-memory always + durable
   // cs_audit_log when Supabase is on. Fire-and-forget — audit never blocks the write.
-  const auditCtx = extractRequestAuditContext(req);
-  void recordEntityAudit({
+  auditFromRequest(req, {
     entityType: "incident",
     entityId: id,
     homeId: (incident as { home_id?: string }).home_id ?? null,
@@ -58,9 +57,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     before: incident as unknown as Record<string, unknown>,
     after: updated as unknown as Record<string, unknown>,
     performedBy: auth.userId,
-    ip: auditCtx.ip,
-    userAgent: auditCtx.userAgent,
-    sessionId: auditCtx.sessionId,
   });
 
   return NextResponse.json({ data: updated });
