@@ -31,7 +31,7 @@ function enrich(m: CommsMessage, user: CommsUser): CommsMessageEnriched {
 
 // GET /api/v1/comms/messages?channel_id=  → messages in a channel (access-checked).
 export async function GET(req: NextRequest) {
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   const channelId = req.nextUrl.searchParams.get("channel_id");
   if (!channelId) return NextResponse.json({ error: "channel_id is required" }, { status: 400 });
   const channel = db.commsChannels.findById(channelId);
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/v1/comms/messages  → send a message (access-checked, audited, write-through).
 export async function POST(req: NextRequest) {
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   let body: Record<string, unknown>;
   try {
     body = await req.json();

@@ -20,7 +20,7 @@ export const dynamic = "force-dynamic";
 // every conversion is attributed and audited. Frozen (held) messages are blocked.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   const msg = db.commsMessages.findById(id);
   if (!msg || msg.is_deleted) return NextResponse.json({ error: "Message not found" }, { status: 404 });
   if (msg.investigation_hold) {

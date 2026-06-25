@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json() as Partial<LiversAnalysis> & { user_role?: string };
-  const role = resolveLiversRole(req, body.user_role);
+  const role = await resolveLiversRole(req, body.user_role);
 
   if (!canPerformLiversAction(role, "analysis:create")) {
     return NextResponse.json({ error: "Forbidden for your role" }, { status: 403 });

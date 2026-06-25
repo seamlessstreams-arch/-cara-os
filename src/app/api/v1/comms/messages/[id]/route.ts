@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 // PATCH /api/v1/comms/messages/[id]  → edit own message (keeps edit history).
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   const msg = db.commsMessages.findById(id);
   if (!msg || msg.is_deleted) return NextResponse.json({ error: "Message not found" }, { status: 404 });
   if (msg.author_id !== user.id) return NextResponse.json({ error: "You can only edit your own messages" }, { status: 403 });
@@ -37,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 // DELETE /api/v1/comms/messages/[id]  → SOFT delete (author or manager). Never hard-deleted.
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   const msg = db.commsMessages.findById(id);
   if (!msg) return NextResponse.json({ error: "Message not found" }, { status: 404 });
   if (msg.author_id !== user.id && !isManagerRole(user.role)) {

@@ -61,7 +61,32 @@ const ROLE_ALLOW: Record<LiversWorkflowRole, LiversAction[]> = {
   unknown: [],
 };
 
-export function resolveLiversRole(req: NextRequest, bodyRole?: string): LiversWorkflowRole {
+/**
+ * Resolve the caller's LIVERS workflow role.
+ *
+ * Activated mode (Supabase configured): the role comes from the validated session
+ * — the client-supplied body.user_role and X-User-Role header are ignored, and a
+ * missing session yields "unknown" (no privileges). Never defaults to manager.
+ *
+ * Demo mode: the body/header convention, unchanged (defaults to registered_manager).
+ */
+export async function resolveLiversRole(req: NextRequest, bodyRole?: string): Promise<LiversWorkflowRole> {
+  const { isSupabaseEnabled } = await import("@/lib/supabase/server");
+
+  if (isSupabaseEnabled()) {
+    const { resolveStaffSession } = await import("@/lib/supabase/auth");
+    let session: Awaited<ReturnType<typeof resolveStaffSession>> | null = null;
+    try {
+      session = await resolveStaffSession(req);
+    } catch {
+      session = null;
+    }
+    if (!session) return "unknown";
+    const raw = session.role.toLowerCase();
+    return raw in ROLE_ALLOW ? (raw as LiversWorkflowRole) : "unknown";
+  }
+
+  // Demo mode: body/header convention.
   const headerRole = req.headers.get("x-user-role")?.trim();
   const raw = (bodyRole ?? headerRole ?? "registered_manager").toLowerCase();
   if (raw in ROLE_ALLOW) return raw as LiversWorkflowRole;
