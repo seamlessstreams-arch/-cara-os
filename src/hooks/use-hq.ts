@@ -20,6 +20,10 @@ import type {
   HqOverview,
   HqUsageSummary,
 } from "@/lib/engines/platform-hq-engine";
+import type {
+  GatewayAuditSummary,
+  AiGatewayAuditEntry,
+} from "@/lib/cara/ai-gateway/audit-summary";
 
 const HQ_HEADERS = {
   "content-type": "application/json",
@@ -78,6 +82,18 @@ export function useHqAiUsage() {
   return useQuery({
     queryKey: ["hq-ai-usage"],
     queryFn: () => hqFetch<HqAiUsageData>("/api/v1/hq/ai-usage"),
+  });
+}
+
+export interface HqAiGatewayData {
+  summary: GatewayAuditSummary;
+  recent: AiGatewayAuditEntry[];
+}
+
+export function useHqAiGateway() {
+  return useQuery({
+    queryKey: ["hq-ai-gateway"],
+    queryFn: () => hqFetch<HqAiGatewayData>("/api/v1/hq/ai-gateway"),
   });
 }
 
