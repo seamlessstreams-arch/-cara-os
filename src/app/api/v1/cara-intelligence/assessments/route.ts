@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { CaraAssessment, CaraAssessmentType, CaraRiskLevel, CaraConfidenceLevel, CaraAssessmentStatus } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const childId = searchParams.get("child_id");
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const denied = assertChildHomeAccess(identity, childId);
+  if (denied) return denied;
   const homeId = searchParams.get("home_id") ?? "home_oak";
 
   let results: CaraAssessment[];
@@ -22,6 +28,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   const body = await req.json() as Partial<CaraAssessment>;
 
   const required = ["child_id", "assessment_type", "ai_generated_text"] as const;

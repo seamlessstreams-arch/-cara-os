@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { VoiceRecord } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const childId = searchParams.get("child_id");
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const denied = assertChildHomeAccess(identity, childId);
+  if (denied) return denied;
   const theme = searchParams.get("theme");
 
   if (!childId) {
@@ -27,7 +33,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   const body = await req.json() as Partial<VoiceRecord>;
+  const denied = assertChildHomeAccess(identity, (body as { child_id?: string }).child_id);
+  if (denied) return denied;
 
   const required = ["child_id", "recorded_at", "theme", "capture_method", "recorded_by"] as const;
   for (const field of required) {

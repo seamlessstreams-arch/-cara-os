@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { CaraRecommendation, CaraRecommendationType, CaraRecommendationStatus } from "@/types/extended";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const childId = searchParams.get("child_id");
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const denied = assertChildHomeAccess(identity, childId);
+  if (denied) return denied;
   const homeId  = searchParams.get("home_id") ?? "home_oak";
   const status  = searchParams.get("status");
 
@@ -21,6 +27,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   let body: Partial<CaraRecommendation>;
   try { body = await req.json(); }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }

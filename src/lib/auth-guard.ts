@@ -200,3 +200,21 @@ export function assertHomeAccess(
   }
   return null;
 }
+
+/**
+ * Tenant-isolation check keyed on a child: the caller may only act on a child who
+ * belongs to their own home. Resolves the child's home from the store. No-op in
+ * demo mode (identity.homeId null) or when childId is absent (whole-home views).
+ *
+ * Per-route usage (after resolving identity + childId):
+ *   const denied = assertChildHomeAccess(identity, childId);
+ *   if (denied) return denied;
+ */
+export function assertChildHomeAccess(
+  identity: RequestIdentity,
+  childId: string | null | undefined
+): NextResponse | null {
+  if (identity.homeId == null || !childId) return null;
+  const child = db.youngPeople?.findById?.(childId) as { home_id?: string } | undefined;
+  return assertHomeAccess(identity, child?.home_id);
+}

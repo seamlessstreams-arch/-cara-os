@@ -1,17 +1,23 @@
 // CARA — GET /api/v1/safeguarding-overview
 // The home's open safeguarding picture, computed deterministically from the
 // live store (incidents, missing, risk, LADO, notifiable events).
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
 import { computeSafeguardingOverview } from "@/lib/engines/safeguarding-overview-engine";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   const store = getStore() as any;
   const today = new Date().toISOString().slice(0, 10);
   // Optional child scope: ?childId=X narrows every section to one child.
   const childId = new URL(req.url).searchParams.get("childId");
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const denied = assertChildHomeAccess(identity, childId);
+  if (denied) return denied;
   const forChild = (cid: any) => !childId || String(cid) === childId;
   const ladoForChild = (ids: any[]) => !childId || (Array.isArray(ids) && ids.map(String).includes(childId));
 

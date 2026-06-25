@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { db } from "@/lib/db/store";
 
 export const dynamic = "force-dynamic";
@@ -11,12 +12,20 @@ export const dynamic = "force-dynamic";
 // endpoint, so it is served explicitly here.
 export async function GET(req: NextRequest) {
   const childId = req.nextUrl.searchParams.get("child_id");
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const denied = assertChildHomeAccess(identity, childId);
+  if (denied) return denied;
   const data = childId ? db.chronology.findByChild(childId) : db.chronology.findAll();
   return NextResponse.json({ data });
 }
 
 // POST /api/v1/chronology-entries → create a chronology entry
 export async function POST(req: NextRequest) {
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   let body: Record<string, unknown>;
   try {
     body = await req.json();

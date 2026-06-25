@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 
 export async function GET(req: NextRequest) {
   const homeId  = req.nextUrl.searchParams.get("home_id") ?? "home_oak";
   const childId = req.nextUrl.searchParams.get("child_id");
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const denied = assertChildHomeAccess(identity, childId);
+  if (denied) return denied;
 
   if (childId) {
     const plan = intelligenceDb.carePlans.findByChild(childId);

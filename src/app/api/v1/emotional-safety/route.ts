@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
 import { getYPName } from "@/lib/seed-data";
 import { buildEmotionalSafetyAnalysis } from "@/lib/emotional-safety/emotional-safety-engine";
@@ -17,6 +18,11 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const childId = searchParams.get("child_id") ?? searchParams.get("childId");
+
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity;
+    const denied = assertChildHomeAccess(identity, childId);
+    if (denied) return denied;
 
     if (!childId) {
       return NextResponse.json({ error: "child_id is required" }, { status: 400 });
