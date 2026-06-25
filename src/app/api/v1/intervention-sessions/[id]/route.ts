@@ -19,7 +19,7 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await req.json() as Partial<InterventionSession> & { user_role?: string };
-  const role = resolveLiversRole(req, body.user_role);
+  const role = await resolveLiversRole(req, body.user_role);
   const { user_role: _userRole, ...patchData } = body;
 
   if (!canPerformLiversAction(role, "session:patch")) {

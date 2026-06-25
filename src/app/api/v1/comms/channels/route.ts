@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 // GET /api/v1/comms/channels → channels the acting user may view, with unread counts.
 export async function GET(req: NextRequest) {
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   const channels = db.commsChannels.findForHome(user.home_id);
   const visible = channels.filter((c) => canViewChannel(user, c).allowed);
 
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/v1/comms/channels → create a channel (managers only).
 export async function POST(req: NextRequest) {
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   if (!isManagerRole(user.role)) {
     auditComms("access_denied", user, "channel:create", { reason: "managers_only" });
     return NextResponse.json({ error: "Only managers can create channels" }, { status: 403 });

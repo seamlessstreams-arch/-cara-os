@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 // Marks a message read; if acknowledge=true also records acknowledgement.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   const msg = db.commsMessages.findById(id);
   if (!msg) return NextResponse.json({ error: "Message not found" }, { status: 404 });
 

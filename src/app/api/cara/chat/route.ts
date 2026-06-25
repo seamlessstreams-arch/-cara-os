@@ -50,7 +50,21 @@ const VALID_ROLES: UserRole[] = [
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function extractUserRole(req: NextRequest): UserRole {
+// Activated mode (Supabase): role from the validated session, not the X-User-Role
+// header; no session / unrecognised role → the lowest role. Demo mode: header.
+async function extractUserRole(req: NextRequest): Promise<UserRole> {
+  const { isSupabaseEnabled } = await import("@/lib/supabase/server");
+  if (isSupabaseEnabled()) {
+    const { resolveStaffSession } = await import("@/lib/supabase/auth");
+    let session: Awaited<ReturnType<typeof resolveStaffSession>> | null = null;
+    try {
+      session = await resolveStaffSession(req);
+    } catch {
+      session = null;
+    }
+    if (session && VALID_ROLES.includes(session.role as UserRole)) return session.role as UserRole;
+    return "support_worker";
+  }
   const headerRole = req.headers.get("x-user-role");
   if (headerRole && VALID_ROLES.includes(headerRole as UserRole)) {
     return headerRole as UserRole;
@@ -171,7 +185,7 @@ export async function POST(req: NextRequest) {
 
   // ── Load system profile and build prompt ──────────────────────────────
   const profile = getActiveSystemProfile();
-  const userRole = extractUserRole(req);
+  const userRole = await extractUserRole(req);
   const roleRules = profile.role_rules[userRole] ?? profile.role_rules["support_worker"];
 
   // Build the system prompt from profile components

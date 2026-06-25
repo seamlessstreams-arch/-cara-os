@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 // + retention flags change. Every change is audited.
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const user = resolveCommsUser(req);
+  const user = await resolveCommsUser(req);
   if (!isManagerRole(user.role)) {
     return NextResponse.json({ error: "Only a manager can place or release an investigation hold" }, { status: 403 });
   }

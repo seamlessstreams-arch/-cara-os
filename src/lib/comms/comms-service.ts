@@ -21,15 +21,54 @@ export function isOnShift(staffId: string): boolean {
   return isStaffOnShift(staffId);
 }
 
-/** Resolve the acting comms user from the request (header → staff record). */
-export function resolveCommsUser(req: NextRequest): CommsUser {
-  const userId = req.headers.get("x-user-id") || DEFAULT_USER_ID;
-  const staff = (db.staff?.findAll?.() ?? []).find((s: { id: string }) => s.id === userId) as
-    | { id: string; role: string; home_id: string; key_worker_for?: string[] }
-    | undefined;
+/**
+ * Resolve the acting comms user from the request.
+ *
+ * Activated mode (Supabase configured): identity comes from the validated session
+ * — the X-User-Id header is ignored. With no valid session we return a POWERLESS
+ * identity (no id, base role, no home, off-shift, no assignments) so comms-access
+ * denies sensitive/safeguarding channels rather than escalating via a forged header.
+ *
+ * Demo mode: X-User-Id header → staff record convention, unchanged.
+ */
+export async function resolveCommsUser(req: NextRequest): Promise<CommsUser> {
+  const { isSupabaseEnabled } = await import("@/lib/supabase/server");
 
-  const role = staff?.role ?? "residential_care_worker";
-  const home_id = staff?.home_id ?? "home_oak";
+  let userId: string;
+  let role: string;
+  let home_id: string;
+
+  if (isSupabaseEnabled()) {
+    const { resolveStaffSession } = await import("@/lib/supabase/auth");
+    let session: Awaited<ReturnType<typeof resolveStaffSession>> | null = null;
+    try {
+      session = await resolveStaffSession(req);
+    } catch {
+      session = null;
+    }
+    if (!session) {
+      // No authenticated session — powerless identity (comms-access denies sensitive access).
+      return {
+        id: "",
+        role: "none",
+        home_id: "",
+        shift_active: false,
+        assigned_child_ids: [],
+        safeguarding_lead: false,
+      };
+    }
+    userId = session.userId;
+    role = session.role;
+    home_id = session.homeId;
+  } else {
+    // Demo mode: X-User-Id header → staff record.
+    userId = req.headers.get("x-user-id") || DEFAULT_USER_ID;
+    const staff = (db.staff?.findAll?.() ?? []).find((s: { id: string }) => s.id === userId) as
+      | { id: string; role: string; home_id: string; key_worker_for?: string[] }
+      | undefined;
+    role = staff?.role ?? "residential_care_worker";
+    home_id = staff?.home_id ?? "home_oak";
+  }
 
   // Children this user key-works (assigned). Derived from young people, best-effort.
   const assigned = (db.youngPeople?.findAll?.() ?? [])
