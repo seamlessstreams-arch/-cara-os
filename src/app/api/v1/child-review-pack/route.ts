@@ -9,7 +9,8 @@
 // Pure read aggregation — no mutations, notifications, or external calls.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
 import { getStaffName } from "@/lib/seed-data";
 import {
@@ -36,11 +37,16 @@ function num(v: any): number {
   return typeof v === "number" && isFinite(v) ? v : 0;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const url = new URL(request.url);
     const baseUrl = `${url.protocol}//${url.host}`;
     const childId = url.searchParams.get("childId");
+
+    const identity = await getRequestIdentity(request);
+    if (identity instanceof NextResponse) return identity;
+    const denied = assertChildHomeAccess(identity, childId);
+    if (denied) return denied;
     const today = new Date().toISOString().slice(0, 10);
 
     const store = getStore();

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { getStore, db } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
@@ -34,6 +35,11 @@ export async function GET(req: NextRequest) {
     const now = new Date().toISOString();
     const { searchParams } = new URL(req.url);
     const childId = searchParams.get("child_id");
+
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity;
+    const denied = assertChildHomeAccess(identity, childId);
+    if (denied) return denied;
     const incidentId = searchParams.get("incident_id");
 
     if (incidentId) {

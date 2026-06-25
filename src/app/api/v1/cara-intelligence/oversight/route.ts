@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import { runPostSaveIntelligence } from "@/lib/cara/post-save-intelligence";
 import type { CaraOversight, CaraOversightStyle, CaraOversightStatus } from "@/types/extended";
@@ -6,6 +7,11 @@ import type { CaraOversight, CaraOversightStyle, CaraOversightStatus } from "@/t
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const childId = searchParams.get("child_id");
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const denied = assertChildHomeAccess(identity, childId);
+  if (denied) return denied;
   const homeId  = searchParams.get("home_id") ?? "home_oak";
 
   const results = childId
