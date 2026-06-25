@@ -10,6 +10,8 @@
 // power the system before database tables are populated.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { isAiGloballyEnabled } from "./ai-availability";
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface CaraConfig {
@@ -385,7 +387,7 @@ export function getCaraConfig(): CaraConfig {
     (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ??
     (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ??
     (provider === "openai" ? "gpt-4.1-mini" : "claude-sonnet-4-20250514");
-  const enabled = (process.env.CARA_AI_ENABLED ?? process.env.CARA_AI_ENABLED) !== "false";
+  const enabled = isAiGloballyEnabled();
   const temperature = parseFloat((process.env.CARA_TEMPERATURE ?? process.env.CARA_TEMPERATURE) ?? "0.4");
   const maxTokens = parseInt((process.env.CARA_MAX_TOKENS ?? process.env.CARA_MAX_TOKENS) ?? "1500", 10);
 

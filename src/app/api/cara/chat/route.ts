@@ -18,6 +18,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getCaraProviderConfig,
 } from "@/lib/cara/cara-provider";
+import { isAiKillSwitchOn } from "@/lib/cara/ai-availability";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import {
   getActiveSystemProfile,
@@ -157,7 +158,7 @@ export async function POST(req: NextRequest) {
   const context = typeof body.context === "string" ? body.context : null;
 
   // ── Check if Cara AI is enabled ───────────────────────────────────────
-  if ((process.env.CARA_AI_ENABLED ?? process.env.CARA_AI_ENABLED) === "false") {
+  if (isAiKillSwitchOn()) {
     return NextResponse.json(
       {
         error: "Cara AI is currently disabled",

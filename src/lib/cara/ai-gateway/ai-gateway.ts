@@ -33,6 +33,7 @@ import { classifyInputSensitivity, redactSensitiveData, detectChildIdentifiers, 
 import { getCaraProviderConfig, generateText, type CaraTextGenerationResult } from "../cara-provider";
 import { DEFAULT_COST_LIMITS } from "../core/constants";
 import { estimateCostGbp, recordDecision } from "@/lib/hq/usage-meter";
+import { isAiKillSwitchOn, canRoleUseAi } from "../ai-availability";
 import type { CaraDataSensitivity, CaraTaskType } from "../core/types";
 
 // ── Public contract ───────────────────────────────────────────────────────────
@@ -287,8 +288,8 @@ function defaultDeps(): AiGatewayDeps {
     classify: classifyInputSensitivity,
     redact: (text) => { const r = redactSensitiveData(text); return { redactedText: r.redactedText, sensitiveItemsDetected: r.sensitiveItemsDetected }; },
     providerConfigured: () => getCaraProviderConfig().configured,
-    aiKillSwitchOn: () => (process.env.CARA_AI_ENABLED ?? "").toLowerCase() === "false",
-    permitAi: () => true, // hook for the permissions engine (Phase 5 adoption)
+    aiKillSwitchOn: isAiKillSwitchOn,
+    permitAi: (identity) => canRoleUseAi(identity?.role),
     generate: generateText,
     spentTodayGbp: () => {
       try {
