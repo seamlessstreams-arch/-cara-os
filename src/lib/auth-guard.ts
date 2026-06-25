@@ -71,13 +71,15 @@ export function requirePermission(
 /**
  * Async variant of requirePermission that supports real Supabase auth sessions.
  *
- * When Supabase is configured:
- *   - Validates the JWT from the session cookie via getClaims()
- *   - Resolves the matching staff_members row for role and userId
- *   - Falls back to demo-mode (X-User-Id header) if no valid session found
+ * When Supabase IS configured (activated mode):
+ *   - Requires a valid Supabase session (JWT validated, staff_members row resolved).
+ *   - If there is NO valid session — or session resolution errors — it DENIES (401).
+ *     It must never fall back to the client-controlled X-User-Id header here: that
+ *     would let an unauthenticated request be treated as the default demo manager
+ *     (an auth bypass). Fail closed, not open.
  *
- * When Supabase is not configured:
- *   - Behaves identically to requirePermission (demo mode)
+ * When Supabase is NOT configured (demo mode):
+ *   - Behaves identically to requirePermission (X-User-Id header convention).
  *
  * Usage:
  *   const auth = await requirePermissionAsync(req, PERMISSIONS.CREATE_TASKS);
@@ -88,30 +90,34 @@ export async function requirePermissionAsync(
   request: NextRequest,
   permission: Permission
 ): Promise<{ role: AppRole; userId: string } | NextResponse> {
-  // Try Supabase session resolution first
-  try {
-    const { isSupabaseEnabled } = await import("@/lib/supabase/server");
-    if (isSupabaseEnabled()) {
-      const { resolveStaffSession } = await import("@/lib/supabase/auth");
-      const session = await resolveStaffSession(request);
-      if (session) {
-        const role = toAppRole(session.role);
-        if (!hasPermission(role, permission)) {
-          return NextResponse.json(
-            {
-              error: "Forbidden",
-              detail: `Role '${role}' does not have permission '${permission}'`,
-            },
-            { status: 403 }
-          );
-        }
-        return { role, userId: session.userId };
-      }
+  const { isSupabaseEnabled } = await import("@/lib/supabase/server");
+
+  if (isSupabaseEnabled()) {
+    // Activated mode: a valid Supabase session is REQUIRED — no header fallback.
+    const { resolveStaffSession } = await import("@/lib/supabase/auth");
+    let session: Awaited<ReturnType<typeof resolveStaffSession>> | null = null;
+    try {
+      session = await resolveStaffSession(request);
+    } catch {
+      // Session resolution failed (transient error / misconfig) — deny, never fall open.
+      session = null;
     }
-  } catch {
-    // If session resolution fails (e.g. missing env vars), fall through to demo
+    if (!session) {
+      return NextResponse.json(
+        { error: "Unauthorized", detail: "A valid authenticated session is required." },
+        { status: 401 }
+      );
+    }
+    const role = toAppRole(session.role);
+    if (!hasPermission(role, permission)) {
+      return NextResponse.json(
+        { error: "Forbidden", detail: `Role '${role}' does not have permission '${permission}'` },
+        { status: 403 }
+      );
+    }
+    return { role, userId: session.userId };
   }
 
-  // Demo / fallback: use X-User-Id header
+  // Demo mode only (Supabase not configured): X-User-Id header convention.
   return requirePermission(request, permission);
 }
