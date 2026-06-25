@@ -19,7 +19,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
-import { getAnthropicClient } from "@/lib/anthropic-client";
+import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { SAFEGUARDING_SENSITIVE_TERMS, type WritingMode } from "@/lib/writing-assistant/types";
 import { deterministicRewrite } from "@/lib/writing-assistant/deterministic-rewrite";
 
@@ -89,14 +89,6 @@ export async function POST(req: NextRequest) {
     });
   };
 
-  // No API key (e.g. production) → deterministic local rewrite.
-  let anthropicClient: ReturnType<typeof getAnthropicClient>;
-  try {
-    anthropicClient = getAnthropicClient();
-  } catch {
-    return deterministic();
-  }
-
   // Safeguarding gate — never send sensitive content to the model. The original
   // wording is preserved; the author keeps full control of safeguarding records.
   const lower = text.toLowerCase();
@@ -111,24 +103,22 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  try {
-    const message = await anthropicClient.messages.create({
-      model: "claude-sonnet-4-6",
-      max_tokens: 1024,
-      messages: [{ role: "user", content: buildPrompt(text, mode) }],
-    });
+  // Through the AI Gateway: it meters cost, enforces the per-request/daily caps,
+  // and audits the call. redact:false because a rewrite must mirror the author's
+  // exact text (placeholders would corrupt it) — the safeguarding block above and
+  // the gateway's own safeguarding-sensitivity block are what protect the content.
+  const gw = await invokeAiGateway({
+    purpose: "writing_assistant_rewrite",
+    feature: "writing_assistant_rewrite",
+    systemPrompt: "",
+    userPrompt: buildPrompt(text, mode),
+    maxOutputTokens: 1024,
+    redact: false,
+  });
 
-    const rewrittenText =
-      message.content[0]?.type === "text" ? message.content[0].text.trim() : text;
+  // No key / refused / cost-capped / provider error → deterministic floor (the
+  // same graceful degradation as before, now also covering the budget cap).
+  if (!gw.llmUsed || !gw.output?.trim()) return deterministic();
 
-    return NextResponse.json({ data: { available: true, blocked: false, rewrittenText } });
-  } catch (error) {
-    const msg = String(error);
-    // Credit balance exhausted → fall back to the deterministic engine, not failure.
-    if (msg.includes("credit balance") || msg.includes("credit_balance_too_low")) {
-      return deterministic();
-    }
-    console.error("[writing-assistant] rewrite failed", { length: text.length, message: msg.slice(0, 200) });
-    return NextResponse.json({ error: "Rewrite failed" }, { status: 500 });
-  }
+  return NextResponse.json({ data: { available: true, blocked: false, rewrittenText: gw.output.trim() } });
 }
