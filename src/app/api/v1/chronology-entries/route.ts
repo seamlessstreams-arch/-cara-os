@@ -23,6 +23,9 @@ export async function GET(req: NextRequest) {
 
 // POST /api/v1/chronology-entries → create a chronology entry
 export async function POST(req: NextRequest) {
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   let body: Record<string, unknown>;
   try {
     body = await req.json();

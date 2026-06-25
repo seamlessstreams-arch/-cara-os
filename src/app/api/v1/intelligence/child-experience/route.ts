@@ -37,7 +37,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   const body = await req.json() as Partial<ChildExperienceSnapshot>;
+  const denied = assertChildHomeAccess(identity, (body as { child_id?: string }).child_id);
+  if (denied) return denied;
 
   const required = [
     "child_id", "home_id", "period_start", "period_end",

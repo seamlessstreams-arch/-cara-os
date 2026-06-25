@@ -28,6 +28,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   const body = await req.json() as Partial<CaraAssessment>;
 
   const required = ["child_id", "assessment_type", "ai_generated_text"] as const;

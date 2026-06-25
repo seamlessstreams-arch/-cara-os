@@ -39,7 +39,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   const body = await req.json() as Partial<ActionOutcome>;
+  const denied = assertChildHomeAccess(identity, (body as { child_id?: string }).child_id);
+  if (denied) return denied;
 
   const required = ["title", "what_was_agreed", "why_it_matters"] as const;
   for (const field of required) {
