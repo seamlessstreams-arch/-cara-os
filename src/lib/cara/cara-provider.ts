@@ -88,6 +88,9 @@ export interface CaraTextGenerationResult {
   llmUsed: boolean;
   providerId: CaraProviderConfig["providerId"];
   modelId: string;
+  /** Token usage from the provider (present only when llmUsed). */
+  tokensInput?: number;
+  tokensOutput?: number;
 }
 
 export async function generateText(
@@ -159,16 +162,13 @@ async function generateTextInner(
         usage?: { input_tokens?: number; output_tokens?: number };
       };
       const text = data.content?.[0]?.text?.trim() ?? "";
+      const tokensInput = data.usage?.input_tokens ?? 0;
+      const tokensOutput = data.usage?.output_tokens ?? Math.ceil(text.length / 4);
       // HQ cost metering — best-effort, never blocks or fails the call.
       // Dynamic import keeps the server-only meter out of this module graph.
       void import("@/lib/hq/usage-meter")
         .then((m) =>
-          m.recordAiUsage({
-            feature: input.feature ?? "cara_text",
-            model: config.textModel,
-            tokensInput: data.usage?.input_tokens ?? 0,
-            tokensOutput: data.usage?.output_tokens ?? Math.ceil(text.length / 4),
-          }),
+          m.recordAiUsage({ feature: input.feature ?? "cara_text", model: config.textModel, tokensInput, tokensOutput }),
         )
         .catch(() => {});
       return {
@@ -176,6 +176,8 @@ async function generateTextInner(
         llmUsed: true,
         providerId: "anthropic",
         modelId: config.textModel,
+        tokensInput,
+        tokensOutput,
       };
     } catch (err) {
       const aborted = err instanceof Error && err.name === "AbortError";

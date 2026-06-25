@@ -93,23 +93,20 @@ export async function generateStudioContent(
   // ── Anthropic ───────────────────────────────────────────────────────────
   if (config.configured && config.provider === "anthropic") {
     try {
-      const { default: Anthropic } = await import("@anthropic-ai/sdk");
-      const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-      const response = await client.messages.create({
-        model: config.model,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: "user", content: userPrompt }],
+      const { invokeAiGateway } = await import("@/lib/cara/ai-gateway");
+      const gw = await invokeAiGateway({
+        purpose: "cara_studio_content",
+        feature: "cara_studio",
+        systemPrompt,
+        userPrompt,
+        maxOutputTokens: maxTokens,
       });
-      const text = response.content
-        .filter((b) => b.type === "text")
-        .map((b) => ("text" in b ? b.text : ""))
-        .join("");
+      if (!gw.llmUsed || !gw.output) return generateStubContent(systemPrompt, userPrompt);
       return {
-        content: text,
-        model: config.model,
+        content: gw.output,
+        model: gw.model ?? config.model,
         provider: "anthropic",
-        tokens_used: (response.usage?.input_tokens ?? 0) + (response.usage?.output_tokens ?? 0),
+        tokens_used: (gw.tokensInput ?? 0) + (gw.tokensOutput ?? 0),
       };
     } catch (err) {
       console.error("[cara-studio] Anthropic generation failed:", err);

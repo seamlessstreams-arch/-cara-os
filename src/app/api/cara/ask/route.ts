@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runCaraIntelligence } from "@/lib/cara/engine";
+import { isAiGloballyEnabled } from "@/lib/cara/ai-availability";
 
 export async function POST(req: NextRequest) {
   try {
-    if ((process.env.CARA_AI_ENABLED ?? process.env.CARA_AI_ENABLED) !== "true") {
-      return NextResponse.json({ error: "Cara AI is disabled. Set CARA_AI_ENABLED=true in your environment." }, { status: 403 });
+    if (!isAiGloballyEnabled()) {
+      return NextResponse.json({ error: "Cara AI is disabled (CARA_AI_ENABLED=false)." }, { status: 403 });
     }
 
     // Use Cara's existing auth — for now fall back to x-user-id header

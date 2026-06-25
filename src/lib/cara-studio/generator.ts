@@ -27,9 +27,8 @@ import type {
 
 // ── Configuration ────────────────────────────────────────────────────────────
 
-// Claude (Anthropic) only — OpenAI was removed platform-wide.
-const LLM_API_URL = (process.env.CARA_STUDIO_LLM_URL ?? process.env.CARA_STUDIO_LLM_URL) ?? "https://api.anthropic.com/v1/messages";
-const LLM_API_KEY = (process.env.CARA_STUDIO_LLM_KEY ?? process.env.CARA_STUDIO_LLM_KEY) ?? process.env.ANTHROPIC_API_KEY ?? "";
+// Claude (Anthropic) only — OpenAI was removed platform-wide. The AI call now
+// goes through the AI Gateway (see callLLM); only the model label is read here.
 const LLM_MODEL = (process.env.CARA_STUDIO_MODEL ?? process.env.CARA_STUDIO_MODEL) ?? (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? "claude-sonnet-4-20250514";
 
 // ── Result Type ──────────────────────────────────────────────────────────────
@@ -147,40 +146,19 @@ export async function generate(request: GenerationRequest): Promise<GenerationRe
 // ── LLM Call ─────────────────────────────────────────────────────────────────
 
 async function callLLM(systemPrompt: string, userPrompt: string): Promise<string> {
-  if (!LLM_API_KEY) {
-    // Return demo content when no API key configured
-    return generateDemoContent(userPrompt);
-  }
-
-  const response = await fetch(LLM_API_URL, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": LLM_API_KEY,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: LLM_MODEL,
-      max_tokens: 4000,
-      temperature: 0.7,
-      system: systemPrompt,
-      messages: [{ role: "user", content: userPrompt }],
-    }),
+  // Through the AI Gateway — metering, cost limits, redaction, and audit apply.
+  // No key / refused / provider error → the same demo-content fallback as before.
+  const { invokeAiGateway } = await import("@/lib/cara/ai-gateway");
+  const gw = await invokeAiGateway({
+    purpose: "cara_studio_generate",
+    feature: "cara_studio",
+    systemPrompt,
+    userPrompt,
+    temperature: 0.7,
+    maxOutputTokens: 4000,
   });
-
-  if (!response.ok) {
-    const errorBody = await response.text().catch(() => "");
-    throw new Error(`LLM API returned ${response.status}: ${errorBody.slice(0, 200)}`);
-  }
-
-  const json = await response.json();
-  const content = json.content?.[0]?.text;
-
-  if (!content) {
-    throw new Error("LLM returned empty response");
-  }
-
-  return content;
+  if (!gw.llmUsed || !gw.output) return generateDemoContent(userPrompt);
+  return gw.output;
 }
 
 // ── Parse Output ─────────────────────────────────────────────────────────────

@@ -156,27 +156,25 @@ async function generateWithAnthropic(
   input: CaraStudioGenerationInput,
   config: CaraStudioProviderConfig
 ): Promise<CaraStudioProviderResult> {
-  const { default: Anthropic } = await import("@anthropic-ai/sdk");
-  const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
-  const message = await client.messages.create({
-    model: config.model,
-    max_tokens: input.maxTokens ?? config.maxTokens,
-    system: input.systemPrompt,
-    messages: [{ role: "user", content: input.userPrompt }],
+  // Through the AI Gateway — metering, cost limits, redaction, audit. A no-key /
+  // refused gateway throws so the dispatcher's catch falls back to demo content,
+  // matching the previous "generation unavailable → stub" behaviour.
+  const { invokeAiGateway } = await import("@/lib/cara/ai-gateway");
+  const gw = await invokeAiGateway({
+    purpose: "cara_studio_content",
+    feature: "cara_studio",
+    systemPrompt: input.systemPrompt,
+    userPrompt: input.userPrompt,
+    maxOutputTokens: input.maxTokens ?? config.maxTokens,
   });
-
-  const content = message.content
-    .filter((b) => b.type === "text")
-    .map((b) => (b as { type: "text"; text: string }).text)
-    .join("\n");
+  if (!gw.llmUsed || !gw.output) throw new Error("AI Gateway returned no content (no key or refused).");
 
   return {
-    content,
-    model: config.model,
+    content: gw.output,
+    model: gw.model ?? config.model,
     provider: "anthropic",
-    inputTokens: message.usage.input_tokens,
-    outputTokens: message.usage.output_tokens,
+    inputTokens: gw.tokensInput ?? Math.ceil((input.systemPrompt.length + input.userPrompt.length) / 4),
+    outputTokens: gw.tokensOutput ?? Math.ceil(gw.output.length / 4),
     isStub: false,
   };
 }

@@ -18,6 +18,7 @@ import { runCaraIntelligence } from "./engine";
 import type { CaraOutput } from "./types";
 import { detectUnsafeOutput } from "./guardrails";
 import { hasIntelligencePermission } from "./intelligence-permissions";
+import { isAiGloballyEnabled } from "./ai-availability";
 
 // ── Input schema ─────────────────────────────────────────────────────────────
 
@@ -393,7 +394,7 @@ export async function runIncidentIntelligence(
     output: null,
   };
 
-  const aiEnabled = (process.env.CARA_AI_ENABLED ?? process.env.CARA_AI_ENABLED) === "true";
+  const aiEnabled = isAiGloballyEnabled();
 
   if (aiEnabled) {
     try {
