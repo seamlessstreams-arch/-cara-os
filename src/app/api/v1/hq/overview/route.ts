@@ -1,15 +1,15 @@
 // CARA HQ — GET /api/v1/hq/overview (platform-owner cockpit)
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { computeHqOverview } from "@/lib/engines/platform-hq-engine";
-import { hqActorFromHeaders, isPlatformAdmin } from "@/lib/hq/hq-service";
+import { resolveHqActor, isPlatformAdmin } from "@/lib/hq/hq-service";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import { getCaraProviderConfig } from "@/lib/cara/cara-provider";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
-  const actor = hqActorFromHeaders(new Headers(req.headers));
+export async function GET(req: NextRequest) {
+  const actor = await resolveHqActor(req);
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }

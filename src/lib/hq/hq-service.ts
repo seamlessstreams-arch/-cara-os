@@ -14,6 +14,7 @@ import "server-only";
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { z } from "zod";
+import type { NextRequest } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import type { HqBreakGlassGrant, HqOrganisation, HqUsageEvent } from "./hq-types";
@@ -35,6 +36,36 @@ export function hqActorFromHeaders(headers: Headers): HqActor {
     id: headers.get("x-user-id") ?? "anonymous",
     role: headers.get("x-user-role") ?? "",
   };
+}
+
+/**
+ * Resolve the HQ actor for a request.
+ *
+ * Activated mode (Supabase configured): the actor is derived from the validated
+ * session — ONLY a `super_admin` staff member is treated as the platform owner.
+ * The client-supplied X-User-Role header is ignored here, closing the spoofable
+ * admin gate. No session → an empty role (isPlatformAdmin → false).
+ *
+ * Demo mode: the X-User-Role header convention, unchanged.
+ */
+export async function resolveHqActor(request: NextRequest): Promise<HqActor> {
+  const { isSupabaseEnabled } = await import("@/lib/supabase/server");
+  if (isSupabaseEnabled()) {
+    const { resolveStaffSession } = await import("@/lib/supabase/auth");
+    let session: Awaited<ReturnType<typeof resolveStaffSession>> | null = null;
+    try {
+      session = await resolveStaffSession(request);
+    } catch {
+      session = null;
+    }
+    if (!session) return { id: "anonymous", role: "" };
+    // The platform-owner identity in activated mode is the super_admin staff role.
+    return {
+      id: session.userId,
+      role: session.role === "super_admin" ? "platform_admin" : session.role,
+    };
+  }
+  return hqActorFromHeaders(request.headers);
 }
 
 export function isPlatformAdmin(actor: HqActor): boolean {

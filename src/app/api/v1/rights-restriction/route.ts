@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStore, db } from "@/lib/db/store";
+import { getRequestIdentity, assertHomeAccess } from "@/lib/auth-guard";
 import { generateId } from "@/lib/utils";
 import { getYPName } from "@/lib/seed-data";
 import {
@@ -28,11 +29,17 @@ function childrenList() {
  */
 export async function GET(req: NextRequest) {
   try {
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity; // 401 in activated mode without a session
     const store = getStore();
     const childId = new URL(req.url).searchParams.get("child_id");
     const now = new Date().toISOString();
 
     if (childId) {
+      // Tenant isolation: a child's restriction reviews may only be read by their own home.
+      const child = (store.youngPeople ?? []).find((yp: { id: string }) => yp.id === childId) as { home_id?: string } | undefined;
+      const denied = assertHomeAccess(identity, child?.home_id);
+      if (denied) return denied;
       const reviews = db.restrictionReviews.findByChild(childId);
       return NextResponse.json({
         data: {
@@ -68,6 +75,8 @@ const str = (v: unknown): string => (typeof v === "string" ? v : "");
  */
 export async function POST(req: NextRequest) {
   try {
+    const identity = await getRequestIdentity(req);
+    if (identity instanceof NextResponse) return identity; // 401 in activated mode without a session
     const body = await req.json();
     if (!body?.child_id || !str(body.restriction_description).trim() || !str(body.reason).trim()) {
       return NextResponse.json(
@@ -76,12 +85,20 @@ export async function POST(req: NextRequest) {
       );
     }
     const now = new Date().toISOString();
-    const actor = String(req.headers.get("x-user-id") ?? body.created_by ?? "staff_unknown");
+    const store = getStore();
+    // Tenant isolation: the child must belong to the caller's home (activated mode).
+    const child = (store.youngPeople ?? []).find((yp: { id: string }) => yp.id === String(body.child_id)) as { home_id?: string } | undefined;
+    const denied = assertHomeAccess(identity, child?.home_id);
+    if (denied) return denied;
+    // Identity + home come from the validated session in activated mode (never the
+    // client body); demo mode (identity.homeId null) keeps the header/body convention.
+    const actor = identity.homeId != null ? identity.userId : String(req.headers.get("x-user-id") ?? body.created_by ?? "staff_unknown");
+    const homeId = identity.homeId ?? String(body.home_id ?? child?.home_id ?? "home_oak");
 
     const review: RestrictionReview = {
       id: generateId("rr"),
       child_id: String(body.child_id),
-      home_id: String(body.home_id ?? "home_oak"),
+      home_id: homeId,
       review_date: str(body.review_date) || now.slice(0, 10),
       decision_considered: str(body.decision_considered),
       restriction_kind: body.restriction_kind ?? "other",

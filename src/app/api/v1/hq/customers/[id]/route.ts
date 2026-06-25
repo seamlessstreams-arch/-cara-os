@@ -1,5 +1,5 @@
 // CARA HQ — /api/v1/hq/customers/[id] (detail + status)
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getStore } from "@/lib/db/store";
 import {
   summariseAiUsage,
@@ -7,7 +7,7 @@ import {
   summariseUsage,
 } from "@/lib/engines/platform-hq-engine";
 import {
-  hqActorFromHeaders,
+  resolveHqActor,
   isPlatformAdmin,
   SetOrgStatusSchema,
   setOrgStatus,
@@ -17,8 +17,8 @@ export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
-export async function GET(req: Request, { params }: Params) {
-  const actor = hqActorFromHeaders(new Headers(req.headers));
+export async function GET(req: NextRequest, { params }: Params) {
+  const actor = await resolveHqActor(req);
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
@@ -42,8 +42,8 @@ export async function GET(req: Request, { params }: Params) {
   });
 }
 
-export async function PATCH(req: Request, { params }: Params) {
-  const actor = hqActorFromHeaders(new Headers(req.headers));
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const actor = await resolveHqActor(req);
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }

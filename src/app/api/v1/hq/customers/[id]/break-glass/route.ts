@@ -1,11 +1,11 @@
 // CARA HQ — /api/v1/hq/customers/[id]/break-glass (record + revoke)
 // Records an auditable, time-boxed support-access REQUEST. It does NOT open
 // children's records — record-level access needs the DPO-approved process.
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import {
   BreakGlassSchema,
-  hqActorFromHeaders,
+  resolveHqActor,
   isPlatformAdmin,
   recordBreakGlass,
   revokeBreakGlass,
@@ -15,8 +15,8 @@ export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
-export async function POST(req: Request, { params }: Params) {
-  const actor = hqActorFromHeaders(new Headers(req.headers));
+export async function POST(req: NextRequest, { params }: Params) {
+  const actor = await resolveHqActor(req);
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
@@ -38,8 +38,8 @@ export async function POST(req: Request, { params }: Params) {
 
 const RevokeSchema = z.object({ grant_id: z.string().min(1) });
 
-export async function PATCH(req: Request, { params }: Params) {
-  const actor = hqActorFromHeaders(new Headers(req.headers));
+export async function PATCH(req: NextRequest, { params }: Params) {
+  const actor = await resolveHqActor(req);
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }

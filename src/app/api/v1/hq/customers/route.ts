@@ -1,8 +1,8 @@
 // CARA HQ — /api/v1/hq/customers (list + provision)
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { getStore } from "@/lib/db/store";
 import {
-  hqActorFromHeaders,
+  resolveHqActor,
   isPlatformAdmin,
   ProvisionCustomerSchema,
   provisionCustomer,
@@ -10,8 +10,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export async function GET(req: Request) {
-  const actor = hqActorFromHeaders(new Headers(req.headers));
+export async function GET(req: NextRequest) {
+  const actor = await resolveHqActor(req);
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
@@ -22,8 +22,8 @@ export async function GET(req: Request) {
   return NextResponse.json({ data: { customers } });
 }
 
-export async function POST(req: Request) {
-  const actor = hqActorFromHeaders(new Headers(req.headers));
+export async function POST(req: NextRequest) {
+  const actor = await resolveHqActor(req);
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
