@@ -17,8 +17,8 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import {
   getCaraProviderConfig,
-  generateText,
 } from "@/lib/cara/cara-provider";
+import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import {
   getActiveSystemProfile,
   logInteraction,
@@ -227,11 +227,14 @@ export async function POST(req: NextRequest) {
 
   // ── Call the LLM ──────────────────────────────────────────────────────
   try {
-    const result = await generateText({
+    const result = await invokeAiGateway({
+      purpose: "cara_chat",
+      feature: "cara_chat",
       systemPrompt,
       userPrompt: message,
       temperature: 0.4,
       maxOutputTokens: 1500,
+      identity: { userId: req.headers.get("x-user-id") ?? undefined, childId: childId ?? undefined },
     });
 
     // ── Assess risk and log the interaction ─────────────────────────────
@@ -244,7 +247,7 @@ export async function POST(req: NextRequest) {
       conversation_id: conversationId,
       request_type: "chat",
       prompt_summary: summarise(message),
-      response_summary: summarise(result.text),
+      response_summary: summarise(result.output),
       tools_used: [],
       risk_level: riskLevel,
       requires_review: requiresReview,
@@ -252,7 +255,7 @@ export async function POST(req: NextRequest) {
 
     // ── Return response ─────────────────────────────────────────────────
     return NextResponse.json({
-      response: result.text,
+      response: result.output,
       llmUsed: result.llmUsed,
       provider: result.providerId,
       model: result.modelId,
