@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
 import {
   computeChild360,
@@ -9,6 +10,11 @@ export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
   const store = getStore();
   const childId = req.nextUrl.searchParams.get("childId");
+
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const denied = assertChildHomeAccess(identity, childId);
+  if (denied) return denied;
   if (!childId) {
     return NextResponse.json({ error: "childId query parameter required" }, { status: 400 });
   }
