@@ -178,6 +178,32 @@ function deterministicReturnHomeInterview() {
   };
 }
 
+// Deterministic Regulation 45 report template — a structured RI report FORM the
+// Responsible Individual completes from the home's evidence, when no AI is
+// available to draft a narrative. Cara structures; the RI evaluates and signs.
+function deterministicReg45Report() {
+  return {
+    report_period: "",
+    strengths: "[Complete from the home's evidence: what is working well for the children, with examples.]",
+    weaknesses: "[Identify shortfalls this period and their impact on children.]",
+    improvement_areas: "[What must improve, and by when.]",
+    child_impact: "[The difference the home is making to children's progress and experiences.]",
+    action_plan: [
+      "Review safeguarding records and outstanding actions",
+      "Confirm all Regulation 40 notifications are complete",
+      "Update each child's progress evidence",
+    ],
+    ri_statement: "[Responsible Individual's evaluative statement — to be completed and signed.]",
+    quality_standards_met: [] as string[],
+    quality_standards_partial: [] as string[],
+    quality_standards_not_met: [] as string[],
+    evidence_gaps: ["AI narrative unavailable — complete the evaluation manually from the home's records."],
+    child_voice_summary: "[Summarise how children's views were sought and acted on this period.]",
+    safeguarding_summary: "[Summarise safeguarding activity, concerns and actions this period.]",
+    overall_judgement: "insufficient_evidence",
+  };
+}
+
 // Shared deterministic fallback — used when there is no AI key AND when an AI
 // call FAILS (no credits, rate limit, provider error). Keeps every feature
 // working deterministically instead of surfacing a provider error to the user.
@@ -194,6 +220,7 @@ function deterministicCaraResponse(mode: string, resolvedStyle: string) {
   if (mode === "pattern_scan") return caraDeterministicJson(deterministicPatternScan(), mode, resolvedStyle);
   if (mode === "return_home_interview") return caraDeterministicJson(deterministicReturnHomeInterview(), mode, resolvedStyle);
   if (mode === "safeguarding_scan") return caraDeterministicJson(deterministicSafeguardingScan(), mode, resolvedStyle);
+  if (mode === "ri_reg45_generate") return caraDeterministicJson(deterministicReg45Report(), mode, resolvedStyle);
   return NextResponse.json({
     data: {
       response:
@@ -806,6 +833,18 @@ Every field about the child's behaviour should frame it as communication of unme
 
   convert_writing_style: `You are rewriting professional care content into a different style as requested. Available styles include: writing_to_child (speak directly to the child, warm, emotionally safe, no jargon, validates feelings, explains adult concern), child_friendly, teenage_conversational, simple_english, social_worker_update, reg_45_evidence, ofsted_ready, trauma_informed, team_learning. Return the rewritten text as plain text only — no JSON, no preamble, no explanation.`,
 
+  // ── Workforce modes ───────────────────────────────────────────────────────
+
+  staff_development_summary: `You are in STAFF DEVELOPMENT SUMMARY mode. Based ONLY on the supervision, training, competency and practice data provided for this staff member, draft a development plan summary a manager can use in supervision. Output plain text with these clear headings:
+
+**Strengths and what's going well**
+**Development areas**
+**Recommended training and support**
+**SMART development goals** (specific, measurable, time-bound)
+**Manager actions**
+
+Be strengths-based and developmental, never punitive. This is a draft for the manager to discuss and agree WITH the staff member — Cara drafts, the manager and staff member decide together.`,
+
   // ── RI Command Centre modes ───────────────────────────────────────────────
 
   ri_strategic_analysis: `You are generating a strategic governance analysis for a Responsible Individual. Based on the provided service data, produce a comprehensive governance picture. Return ONLY a valid JSON object — no markdown, no prose, no code fences, just the raw JSON:
@@ -1299,8 +1338,10 @@ export async function POST(req: NextRequest) {
 
   // ── Deterministic fallback when no AI key is configured ──────────────────────
   //
-  // Prod has no ANTHROPIC_API_KEY. Rather than error, return real data computed
+  // When no ANTHROPIC_API_KEY is configured, return real data computed
   // deterministically from the store for modes that have a deterministic engine.
+  // (When a key IS present but the AI CALL fails — e.g. exhausted credits — the
+  // try/catch around the provider call serves the same deterministic fallback.)
   const hasAiKey = Boolean(process.env.ANTHROPIC_API_KEY);
   // Streaming callers (the CaraPanel, via useCaraStream) expect an SSE stream —
   // they must NOT receive a JSON body here. Let them fall through to the streaming
@@ -1456,6 +1497,7 @@ export async function POST(req: NextRequest) {
       "curriculum_builder", "learning_session_plan", "learning_worksheet",
       "learning_safety_plan", "learning_micro_learning", "return_home_interview",
       "voice_summary", "practice_bank",
+      "ri_reg45_generate", "ri_strategic_analysis", "ri_ofsted_readiness", "ri_challenge_question",
     ]);
     const isJsonMode = JSON_OUTPUT_MODES.has(mode);
 

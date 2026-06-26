@@ -68,7 +68,10 @@ async function streamAnthropic(
   });
 
   if (!upstream.ok || !upstream.body) {
-    return new Response(sseDone, sseHeaders());
+    // Non-OK (e.g. exhausted credits / rate limit) — throw so the handler falls
+    // through to the next provider and ultimately to a graceful message. Never
+    // return an empty stream, which would leave the Cara drawer blank.
+    throw new Error(`cara chat upstream not ok (${upstream.status})`);
   }
 
   const body = new ReadableStream({
@@ -135,7 +138,10 @@ async function streamOpenAI(
   });
 
   if (!upstream.ok || !upstream.body) {
-    return new Response(sseDone, sseHeaders());
+    // Non-OK (e.g. exhausted credits / rate limit) — throw so the handler falls
+    // through to the next provider and ultimately to a graceful message. Never
+    // return an empty stream, which would leave the Cara drawer blank.
+    throw new Error(`cara chat upstream not ok (${upstream.status})`);
   }
 
   const body = new ReadableStream({
@@ -274,9 +280,16 @@ export async function POST(req: NextRequest) {
 
   // ── Neither configured ─────────────────────────────────────────────────────
 
-  const notConfigured =
-    "Cara is not yet configured. To enable AI assistance, set OPENAI_API_KEY or ANTHROPIC_API_KEY " +
-    "in your environment variables. Contact your system administrator to configure AI providers.";
+  // If a key was present but we reached here, the provider call failed (e.g.
+  // exhausted credits / rate limit) rather than being unconfigured — be honest
+  // about which case it is so the message isn't misleading in production.
+  const keyPresent =
+    Boolean(anthropicKey && anthropicKey.length > 10 && !anthropicKey.includes("placeholder")) ||
+    Boolean(openaiKey && openaiKey.length > 10 && !openaiKey.includes("placeholder"));
+  const notConfigured = keyPresent
+    ? "Cara's AI assistant is temporarily unavailable — the AI service couldn't be reached just now (it may be rate-limited or out of credit). Cara's deterministic features continue to work; please try the AI assistant again shortly."
+    : "Cara is not yet configured. To enable AI assistance, set OPENAI_API_KEY or ANTHROPIC_API_KEY " +
+      "in your environment variables. Contact your system administrator to configure AI providers.";
 
   if (shouldStream) {
     const body = new ReadableStream({
