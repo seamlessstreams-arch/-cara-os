@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 
 interface RouteParams { params: Promise<{ id: string }>; }
 
@@ -11,6 +13,9 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_SAFEGUARDING_FLAGS);
+  if (auth instanceof NextResponse) return auth;
+
   const { id } = await params;
   let body: Record<string, unknown>;
   try { body = await req.json(); }

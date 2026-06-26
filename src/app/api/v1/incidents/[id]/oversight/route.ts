@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.ADD_OVERSIGHT);
+  if (auth instanceof NextResponse) return auth;
+
   const { id } = await params;
   const body = await req.json();
   const { oversight_note, oversight_by } = body;

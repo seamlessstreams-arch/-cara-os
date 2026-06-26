@@ -20,7 +20,7 @@ export const GET = withShiftAccess("missing_episode", "view", getEpisode);
 
 // ── PATCH /api/v1/missing-episodes/[id] ──────────────────────────────────────
 
-export async function PATCH(
+async function patchEpisode(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -50,3 +50,7 @@ export async function PATCH(
 
   return NextResponse.json({ data: updated });
 }
+
+// PATCH a missing episode is editing a sensitive operational record — shift-gated
+// for general staff, like this route's GET; fail-closed once Supabase auth is on.
+export const PATCH = withShiftAccess("missing_episode", "edit", patchEpisode);
