@@ -412,6 +412,16 @@ function deterministicCaraResponse(mode: string, resolvedStyle: string) {
   if (learning) return caraDeterministicJson(learning, mode, resolvedStyle);
   const intel = buildDeterministicIntelligence(mode);
   if (intel) return caraDeterministicJson(intel, mode, resolvedStyle);
+  if (mode === "voice_summary") {
+    return NextResponse.json({
+      data: {
+        response:
+          "AI voice summary is unavailable in this environment. Cara will not summarise or paraphrase a child's voice without a practitioner reviewing the records — putting words in a child's mouth would misrepresent them. Please review this child's recorded voice directly (daily logs, key work notes, complaints, wishes-and-feelings forms, advocacy records) and capture their words verbatim.",
+        parsed: null, mode, style: resolvedStyle, model: "deterministic",
+        input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
+      },
+    });
+  }
   if (mode === "staff_development_summary") {
     return NextResponse.json({
       data: {

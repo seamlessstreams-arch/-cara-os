@@ -151,15 +151,161 @@ function computeHomeClimate() {
   };
 }
 
+// ── Practice bank → generic evidence-based "what works" (safe to template) ────
+function practiceBank() {
+  return {
+    what_is_working: [
+      "Consistent, attuned relationships with key staff — predictability builds safety",
+      "Co-regulation: a calm adult helping the young person settle before problem-solving",
+      "Clear, kind boundaries held warmly rather than punitively",
+    ],
+    suggested_approaches: [
+      { approach: "PACE stance (Playfulness, Acceptance, Curiosity, Empathy)", rationale: "Helps a child feel understood rather than judged.", how_to_try: "Lead with curiosity about the feeling beneath the behaviour before any expectation.", expected_benefit: "Reduced escalation and a stronger relationship." },
+      { approach: "Connection before correction", rationale: "A dysregulated child can't access reasoning; regulate first.", how_to_try: "Acknowledge the feeling, lower demands, offer presence; reflect and repair later.", expected_benefit: "Faster de-escalation and less rupture." },
+      { approach: "Strengths-based key work (ARC competency)", rationale: "Noticing what a child can do builds self-worth.", how_to_try: "Name one genuine strength each shift; plan around their interests.", expected_benefit: "Improved engagement and self-esteem." },
+    ],
+    note: "AI tailoring is unavailable, so these are evidence-based starting points from trauma-informed and relational practice. Adapt them to this young person using what you know from their records and key work.",
+  };
+}
+
+const LIVERS_NOTE =
+  "AI is unavailable, so Cara cannot analyse this child. This is the L.I.V.E.R.S. framework structure for you to complete from the child's records — never generalise; ground every statement in evidence.";
+
+// ── L.I.V.E.R.S. → HONEST framework scaffold (the prompt forbids generic output,
+//    so we provide the structure to complete, never a fabricated analysis) ─────
+function liversAnalysis() {
+  return {
+    lived_experience_summary: "[L — Lived Experience: what is it actually like to be this child every day? What do they communicate through behaviour; what do they fear, protect, avoid, need?]",
+    immediate_cumulative_risk: "[I — Immediate and cumulative risk: current harm, pattern of escalation, chronic vs acute, risk at worst moments.]",
+    risk_pattern: "[Describe the risk pattern over time.]",
+    viability_of_change: "[V — Viability of change: is change achievable now? What barriers exist? What has been tried?]",
+    viability_rating: "moderate",
+    environment_system_forces: "[E — Environment and system forces: staff consistency, family, education, peers, online.]",
+    relational_psychological_drivers: "[R — Relational and psychological drivers: trauma, attachment, the function the behaviour serves, the unmet need beneath it.]",
+    sustainability_independence_safety: "[S — Sustainability and independence of safety: can this child be safe without professionals present? What must be strengthened?]",
+    sustainability_rating: "moderate",
+    cara_summary: LIVERS_NOTE,
+    cara_confidence: "insufficient_information",
+    recommended_intervention_type: "[Determine from the completed analysis.]",
+    escalation_required: false,
+    escalation_actions: ["Complete this L.I.V.E.R.S. analysis from the child's records", "Review the completed analysis with a manager"],
+    management_oversight: "A manager should review the completed analysis.",
+  };
+}
+
+function liversIntervention() {
+  return {
+    title: "Trauma-informed key work session (starter)",
+    session_type: "key_work_session",
+    reason_for_session: "A planned, relationship-focused session to check in and strengthen safety. Adapt to this child's L.I.V.E.R.S. analysis.",
+    aim: "Build trust, hear the child's voice, and support one small step.",
+    staff_preparation: "Read recent records. Choose a calm setting and an activity the child enjoys. (Cara deterministic starter — AI tailoring is unavailable; adapt to the individual.)",
+    emotional_safety_notes: "Let the child set the pace; offer breaks; presence over content. Don't push disclosure.",
+    pace_opening_script: "I just wanted some time with you — no agenda, just to see how you're doing.",
+    session_steps: [
+      { step_number: 1, title: "Warm-up", duration_minutes: 5, description: "Do something low-pressure together.", facilitator_prompt: "Let the child lead.", child_activity: "Choose an activity (walk, game, drawing)." },
+      { step_number: 2, title: "Check-in", duration_minutes: 10, description: "How are things, on a scale of 1-10?", facilitator_prompt: "Stay curious; reflect feelings.", child_activity: "Share how the week has been." },
+      { step_number: 3, title: "What would help", duration_minutes: 10, description: "Explore one worry and one wish.", facilitator_prompt: "What would make things a bit better?", child_activity: "Name something they'd like." },
+      { step_number: 4, title: "Close", duration_minutes: 5, description: "Summarise, agree a next step, end positively.", facilitator_prompt: "Thank them; confirm the next session.", child_activity: "Agree one small step." },
+    ],
+    child_friendly_version: "This is your time — to talk, be heard, and sort anything that's on your mind.",
+    reflective_questions_child: ["What helps you feel safe here?", "What's one thing you'd change?"],
+    reflective_questions_staff: ["What did I learn about how this child feels?", "What will I follow up?"],
+    follow_up_actions: ["Record the session in the child's own words", "Action the agreed step"],
+    management_oversight_note: "Confirm the session captured the child's voice and led to a clear next step.",
+  };
+}
+
+function liversEscalation() {
+  return {
+    escalation_required: false,
+    escalation_level: "internal_oversight",
+    escalation_rationale: "AI escalation review is unavailable in this environment, so Cara has NOT made an escalation decision. A manager must review this child's L.I.V.E.R.S. analysis and current risk directly and decide. Defaulting to internal management oversight — do not treat the absence of an AI flag as 'no risk'.",
+    escalation_actions: ["A manager reviews the child's risk and L.I.V.E.R.S. analysis", "Escalate externally if safeguarding thresholds are met"],
+    management_oversight_required: true,
+    management_oversight_note: "Manager to review and decide on escalation.",
+    safeguarding_referral_required: false,
+    safeguarding_rationale: "Not assessed by AI — a practitioner must assess against safeguarding thresholds.",
+    review_timeframe: "As soon as possible",
+  };
+}
+
+// ── Oversight radar → the page expects parsed to be an ARRAY of gap items.
+//    Honest single "blue" (reflective) item — Cara couldn't scan, review manually.
+function checkMissingEvidence() {
+  return [
+    {
+      id: "radar_manual",
+      category: "Oversight",
+      issue: "Deterministic oversight scan unavailable",
+      why_it_matters: "AI is unavailable in this environment, so Cara couldn't scan for missing evidence. An empty result does NOT mean there are no gaps — review the child's records manually against your oversight checklist.",
+      suggested_action: "Complete a manual oversight review of this child's records (daily logs, key work, plans, safeguarding, statutory reviews).",
+      regulation: "Children's Homes Regulations 2015 — Reg 13 (leadership and management)",
+      severity: "blue",
+      child_id: "",
+      record_type: "",
+      record_id: "",
+      is_reviewed: false,
+    },
+  ];
+}
+
+// ── Document modes → honest "couldn't auto-extract; review/enter manually" ────
+function documentClassify() {
+  return {
+    document_type: "Unknown — manual review needed",
+    confidence: 0,
+    suggested_module: "/documents",
+    suggested_child_id: null,
+    suggested_form_type: "",
+    suggested_tags: [] as string[],
+    suggested_confidentiality: "restricted",
+    key_facts: [] as string[],
+    key_dates: [] as string[],
+    key_people: [] as string[],
+    risks_identified: [] as string[],
+    actions_identified: [] as string[],
+    child_voice_present: false,
+    safeguarding_indicators: [] as string[],
+    missing_information: ["AI extraction unavailable — review the document manually"],
+    recommended_placement: "Review and file manually",
+    recommended_linkages: [] as Array<{ type: string; description: string }>,
+    cara_summary: "AI document analysis is unavailable in this environment, so Cara couldn't classify or extract from this document. Please review it and file it manually.",
+  };
+}
+
+function documentToForm() {
+  const fields = {
+    date: null, time: null, location: null, description: null, immediate_action: null,
+    young_person_name: null, reported_by: null, severity: null, type: null,
+  };
+  return {
+    form_type: "unknown",
+    form_title: "Manual entry required",
+    fields, // the document-wizard reads formResult.fields …
+    extracted_fields: fields, // … the prompt names it extracted_fields — provide both
+    missing_fields: ["AI extraction unavailable — complete all fields manually"],
+    cara_notes: "AI extraction is unavailable in this environment, so Cara couldn't auto-fill this form. Please complete it manually from the document.",
+    confidence: 0,
+  };
+}
+
 // ── Dispatcher ────────────────────────────────────────────────────────────────
 
-const BUILDERS: Record<string, () => Record<string, unknown>> = {
+const BUILDERS: Record<string, () => unknown> = {
   keywork_session_plan: keyworkSessionPlan,
   situation_review: situationReview,
   generate_oversight: generateOversight,
   interactive_session_summary: interactiveSessionSummary,
   compute_experience_snapshot: computeExperienceSnapshot,
   compute_home_climate: computeHomeClimate,
+  practice_bank: practiceBank,
+  livers_analysis: liversAnalysis,
+  livers_intervention: liversIntervention,
+  livers_escalation: liversEscalation,
+  check_missing_evidence: checkMissingEvidence,
+  document_classify: documentClassify,
+  document_to_form: documentToForm,
 };
 
 /**
@@ -169,7 +315,7 @@ const BUILDERS: Record<string, () => Record<string, unknown>> = {
  * modes return an honest scaffold (never fabricated analysis); scoring modes return
  * neutral defaults with an explicit placeholder narrative.
  */
-export function buildDeterministicIntelligence(mode: string): Record<string, unknown> | null {
+export function buildDeterministicIntelligence(mode: string): unknown {
   const builder = BUILDERS[mode];
   return builder ? builder() : null;
 }

@@ -2,13 +2,20 @@ import { describe, it, expect } from "vitest";
 import { buildDeterministicIntelligence, DETERMINISTIC_INTELLIGENCE_MODES } from "../deterministic-intelligence";
 
 describe("buildDeterministicIntelligence", () => {
-  it("covers the 6 supported intelligence modes", () => {
+  it("covers the 13 supported intelligence modes", () => {
     expect(DETERMINISTIC_INTELLIGENCE_MODES.sort()).toEqual([
+      "check_missing_evidence",
       "compute_experience_snapshot",
       "compute_home_climate",
+      "document_classify",
+      "document_to_form",
       "generate_oversight",
       "interactive_session_summary",
       "keywork_session_plan",
+      "livers_analysis",
+      "livers_escalation",
+      "livers_intervention",
+      "practice_bank",
       "situation_review",
     ]);
   });
@@ -19,10 +26,66 @@ describe("buildDeterministicIntelligence", () => {
     expect(buildDeterministicIntelligence("")).toBeNull();
   });
 
-  it("every mode returns a non-null object", () => {
+  it("every mode returns a non-null value", () => {
     for (const mode of DETERMINISTIC_INTELLIGENCE_MODES) {
       expect(buildDeterministicIntelligence(mode), mode).not.toBeNull();
     }
+  });
+
+  it("check_missing_evidence returns an ARRAY (the oversight-radar page requires it) with a valid severity", () => {
+    const arr = buildDeterministicIntelligence("check_missing_evidence");
+    expect(Array.isArray(arr)).toBe(true);
+    const items = arr as Array<Record<string, unknown>>;
+    expect(items.length).toBeGreaterThan(0);
+    for (const it of items) {
+      expect(["red", "amber", "green", "blue"]).toContain(it.severity);
+      expect(it.issue).toBeTruthy();
+    }
+  });
+
+  it("practice_bank provides what_is_working[] and suggested_approaches[] the page reads", () => {
+    const p = buildDeterministicIntelligence("practice_bank") as Record<string, unknown>;
+    expect(Array.isArray(p.what_is_working)).toBe(true);
+    expect((p.what_is_working as unknown[]).length).toBeGreaterThan(0);
+    const approaches = p.suggested_approaches as Array<Record<string, unknown>>;
+    expect(approaches.length).toBeGreaterThan(0);
+    for (const a of approaches) { expect(a.approach).toBeTruthy(); expect(a.rationale).toBeTruthy(); }
+  });
+
+  it("livers_analysis is honest (insufficient_information) and never auto-escalates", () => {
+    const a = buildDeterministicIntelligence("livers_analysis") as Record<string, unknown>;
+    expect(a.cara_confidence).toBe("insufficient_information");
+    expect(a.escalation_required).toBe(false);
+    expect(["low", "moderate", "high"]).toContain(a.viability_rating);
+  });
+
+  it("livers_escalation defaults to human oversight, not a fabricated emergency", () => {
+    const e = buildDeterministicIntelligence("livers_escalation") as Record<string, unknown>;
+    expect(e.management_oversight_required).toBe(true);
+    expect(["none", "internal_oversight", "external_referral", "emergency"]).toContain(e.escalation_level);
+    expect(e.escalation_level).not.toBe("emergency"); // never fabricate an emergency
+    expect(Array.isArray(e.escalation_actions)).toBe(true);
+  });
+
+  it("livers_intervention provides the arrays the page maps", () => {
+    const s = buildDeterministicIntelligence("livers_intervention") as Record<string, unknown>;
+    expect((s.session_steps as unknown[]).length).toBeGreaterThan(0);
+    expect((s.reflective_questions_staff as unknown[]).length).toBeGreaterThan(0); // page maps unguarded
+  });
+
+  it("document_classify returns all the arrays the wizard maps (empty is safe)", () => {
+    const d = buildDeterministicIntelligence("document_classify") as Record<string, unknown>;
+    for (const f of ["suggested_tags", "key_facts", "key_dates", "key_people", "risks_identified", "actions_identified"]) {
+      expect(Array.isArray(d[f]), f).toBe(true);
+    }
+  });
+
+  it("document_to_form exposes `fields` (the wizard calls Object.entries on it)", () => {
+    const d = buildDeterministicIntelligence("document_to_form") as Record<string, unknown>;
+    expect(typeof d.fields).toBe("object");
+    expect(d.fields).not.toBeNull();
+    expect(() => Object.entries(d.fields as object)).not.toThrow();
+    expect(Array.isArray(d.missing_fields)).toBe(true);
   });
 
   it("keywork_session_plan provides the arrays the page maps, all non-empty", () => {
