@@ -169,6 +169,7 @@ function CaraStudioContent() {
   const [gaps, setGaps] = useState<CaraStudioGap[]>([]);
   const [editableContent, setEditableContent] = useState("");
   const [showTypeSelector, setShowTypeSelector] = useState(true);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   // ── Children from staff query (demo) ───────────────────────────────────────
   const children = [
@@ -182,6 +183,7 @@ function CaraStudioContent() {
     if (!selectedArtifactType) return;
     setGenerating(true);
     setShowTypeSelector(false);
+    setGenerationError(null);
 
     try {
       const res = await fetch("/api/cara-studio/generate", {
@@ -197,15 +199,24 @@ function CaraStudioContent() {
         }),
       });
 
-      const data = await res.json();
-      if (data.artifact) {
+      const data = await res.json().catch(() => null);
+      if (res.ok && data?.artifact) {
         setGeneratedArtifact(data.artifact);
         setEditableContent(data.artifact.generated_content ?? "");
         setQualityCheck(data.quality_check ?? null);
         setGaps(data.gaps_found ?? []);
+      } else {
+        // Never fail silently — surface why so the user can retry or adjust.
+        setGenerationError(
+          data?.error || data?.detail ||
+          "Cara couldn't generate this draft. Please try again, or adjust the type and context.",
+        );
+        setShowTypeSelector(true);
       }
     } catch (err) {
       console.error("Generation failed:", err);
+      setGenerationError("Cara couldn't reach the generation service. Check your connection and try again.");
+      setShowTypeSelector(true);
     } finally {
       setGenerating(false);
     }
@@ -269,6 +280,16 @@ function CaraStudioContent() {
             </div>
           </div>
         </div>
+
+        {generationError && !generating && (
+          <div className="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-500" />
+            <div>
+              <p className="font-medium">Generation didn&apos;t complete</p>
+              <p className="text-xs text-rose-700 mt-0.5">{generationError}</p>
+            </div>
+          </div>
+        )}
 
         {/* ── Type selector grid ───────────────────────────────────────────── */}
         {showTypeSelector && !generatedArtifact && (

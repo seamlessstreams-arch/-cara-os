@@ -7,6 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropicClient } from "@/lib/anthropic-client";
 import { invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
 import { getStore } from "@/lib/db/store";
+import { scanForPatterns, type IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 
@@ -93,6 +94,141 @@ function deterministicSafeguardingScan() {
     recommended_actions,
     timestamp: new Date().toISOString(),
   };
+}
+
+// ─── Deterministic pattern scan (no AI key required) ─────────────────────────
+// Wires the existing deterministic cara-pattern-engine so the pattern scanner
+// works with no AI — escalation / cluster / time-of-day / staff / repeat /
+// oversight-gap / cross-child patterns from the incident data.
+
+function deterministicPatternScan() {
+  const store = getStore();
+  const incidents: IncidentRecord[] = (store.incidents ?? []).map((i) => {
+    const x = i as Record<string, unknown>;
+    return {
+      id: String(x.id ?? ""),
+      reference: String(x.reference ?? x.id ?? ""),
+      type: String(x.type ?? "incident"),
+      severity: String(x.severity ?? "medium"),
+      child_id: String(x.child_id ?? ""),
+      reported_by: String(x.reported_by ?? ""),
+      date: String(x.date ?? ""),
+      time: x.time ? String(x.time) : undefined,
+      location: x.location ? String(x.location) : undefined,
+      description: String(x.description ?? ""),
+      status: String(x.status ?? "open"),
+      requires_oversight: Boolean(x.requires_oversight),
+      oversight_by: (x.oversight_by as string | null) ?? null,
+      oversight_at: (x.oversight_at as string | null) ?? null,
+      home_id: String(x.home_id ?? "home_oak"),
+    };
+  });
+  const homes = [...new Set(incidents.map((i) => i.home_id))];
+  const patterns = homes.flatMap((h) => scanForPatterns(incidents, { homeId: h }));
+  // Map to the shape the pattern-scan UI expects (data.parsed = array).
+  return patterns.map((p) => ({
+    alert_type: p.type,
+    title: p.title,
+    description: p.description,
+    severity: p.severity,
+    child_id: p.childId,
+    reflective_prompt: p.reflectivePrompt,
+    period_start: p.periodStart,
+    period_end: p.periodEnd,
+  }));
+}
+
+// Deterministic Return Home Interview template — the statutory RHI protocol
+// (Working Together) as a working form: standard questions + structure for the
+// practitioner to complete, when no AI is configured to draft a narrative.
+function deterministicReturnHomeInterview() {
+  return {
+    interview_summary:
+      "Complete this Return Home Interview with the young person within 72 hours of their return, in a safe, relaxed setting, using a PACE approach (Playfulness, Acceptance, Curiosity, Empathy). Record the young person's own words. [AI narrative unavailable — complete manually.]",
+    child_voice_themes: [] as string[],
+    reasons_for_going_missing: "",
+    where_they_went: "",
+    who_they_were_with: "",
+    any_harm_experienced: "",
+    exploitation_risk_indicators: [] as string[],
+    contextual_safeguarding_factors:
+      "Consider the peers, places and online contacts associated with this episode, not only the young person's own behaviour.",
+    risk_level_assessment: "medium",
+    escalation_required: false,
+    escalation_actions: [] as string[],
+    child_support_needs: "",
+    what_could_help_in_future: "",
+    recommended_follow_up: [
+      "Update the missing-from-care risk assessment",
+      "Notify the social worker and placing authority of the interview outcome",
+    ],
+    referral_recommendations: [] as string[],
+    suggested_interview_questions: [
+      "How are you feeling now you're back? Is there anything you need right now?",
+      "Where did you go, and how did you get there?",
+      "Who were you with? Did you feel safe with them?",
+      "Was there anything that worried you or made you feel uncomfortable?",
+      "Did anyone ask you to do anything, or give you anything — money, gifts, a phone?",
+      "What made you decide to leave? Is there something here we could change?",
+      "What would help you feel safer or happier here?",
+      "What would help you talk to us before leaving next time?",
+    ],
+    staff_guidance_notes:
+      "Deterministic Return Home Interview template (no AI configured). The questions follow statutory RHI guidance. Conduct the interview, record the young person's words, and escalate to the DSL/manager if any harm or exploitation indicators emerge. Cara drafts the structure; the practitioner leads and records.",
+  };
+}
+
+// Deterministic Regulation 45 report template — a structured RI report FORM the
+// Responsible Individual completes from the home's evidence, when no AI is
+// available to draft a narrative. Cara structures; the RI evaluates and signs.
+function deterministicReg45Report() {
+  return {
+    report_period: "",
+    strengths: "[Complete from the home's evidence: what is working well for the children, with examples.]",
+    weaknesses: "[Identify shortfalls this period and their impact on children.]",
+    improvement_areas: "[What must improve, and by when.]",
+    child_impact: "[The difference the home is making to children's progress and experiences.]",
+    action_plan: [
+      "Review safeguarding records and outstanding actions",
+      "Confirm all Regulation 40 notifications are complete",
+      "Update each child's progress evidence",
+    ],
+    ri_statement: "[Responsible Individual's evaluative statement — to be completed and signed.]",
+    quality_standards_met: [] as string[],
+    quality_standards_partial: [] as string[],
+    quality_standards_not_met: [] as string[],
+    evidence_gaps: ["AI narrative unavailable — complete the evaluation manually from the home's records."],
+    child_voice_summary: "[Summarise how children's views were sought and acted on this period.]",
+    safeguarding_summary: "[Summarise safeguarding activity, concerns and actions this period.]",
+    overall_judgement: "insufficient_evidence",
+  };
+}
+
+// Shared deterministic fallback — used when there is no AI key AND when an AI
+// call FAILS (no credits, rate limit, provider error). Keeps every feature
+// working deterministically instead of surfacing a provider error to the user.
+function caraDeterministicJson(parsed: unknown, mode: string, resolvedStyle: string) {
+  return NextResponse.json({
+    data: {
+      response: parsed, parsed, mode, style: resolvedStyle, model: "deterministic",
+      input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
+    },
+  });
+}
+
+function deterministicCaraResponse(mode: string, resolvedStyle: string) {
+  if (mode === "pattern_scan") return caraDeterministicJson(deterministicPatternScan(), mode, resolvedStyle);
+  if (mode === "return_home_interview") return caraDeterministicJson(deterministicReturnHomeInterview(), mode, resolvedStyle);
+  if (mode === "safeguarding_scan") return caraDeterministicJson(deterministicSafeguardingScan(), mode, resolvedStyle);
+  if (mode === "ri_reg45_generate") return caraDeterministicJson(deterministicReg45Report(), mode, resolvedStyle);
+  return NextResponse.json({
+    data: {
+      response:
+        "Cara ran without AI for this feature — the AI service is unavailable in this environment. Cara's deterministic engines continue to power the rest of the platform; AI enhancement returns once the AI service is available.",
+      parsed: null, mode, style: resolvedStyle, model: "deterministic",
+      input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
+    },
+  });
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -697,6 +833,18 @@ Every field about the child's behaviour should frame it as communication of unme
 
   convert_writing_style: `You are rewriting professional care content into a different style as requested. Available styles include: writing_to_child (speak directly to the child, warm, emotionally safe, no jargon, validates feelings, explains adult concern), child_friendly, teenage_conversational, simple_english, social_worker_update, reg_45_evidence, ofsted_ready, trauma_informed, team_learning. Return the rewritten text as plain text only — no JSON, no preamble, no explanation.`,
 
+  // ── Workforce modes ───────────────────────────────────────────────────────
+
+  staff_development_summary: `You are in STAFF DEVELOPMENT SUMMARY mode. Based ONLY on the supervision, training, competency and practice data provided for this staff member, draft a development plan summary a manager can use in supervision. Output plain text with these clear headings:
+
+**Strengths and what's going well**
+**Development areas**
+**Recommended training and support**
+**SMART development goals** (specific, measurable, time-bound)
+**Manager actions**
+
+Be strengths-based and developmental, never punitive. This is a draft for the manager to discuss and agree WITH the staff member — Cara drafts, the manager and staff member decide together.`,
+
   // ── RI Command Centre modes ───────────────────────────────────────────────
 
   ri_strategic_analysis: `You are generating a strategic governance analysis for a Responsible Individual. Based on the provided service data, produce a comprehensive governance picture. Return ONLY a valid JSON object — no markdown, no prose, no code fences, just the raw JSON:
@@ -1190,34 +1338,18 @@ export async function POST(req: NextRequest) {
 
   // ── Deterministic fallback when no AI key is configured ──────────────────────
   //
-  // Prod has no ANTHROPIC_API_KEY. Rather than error, return real data computed
+  // When no ANTHROPIC_API_KEY is configured, return real data computed
   // deterministically from the store for modes that have a deterministic engine.
+  // (When a key IS present but the AI CALL fails — e.g. exhausted credits — the
+  // try/catch around the provider call serves the same deterministic fallback.)
   const hasAiKey = Boolean(process.env.ANTHROPIC_API_KEY);
-  if (!hasAiKey) {
-    if (mode === "safeguarding_scan") {
-      const result = deterministicSafeguardingScan();
-      return NextResponse.json({
-        data: {
-          response: result,
-          parsed: result,
-          mode: "safeguarding_scan",
-          style: resolvedStyle,
-          model: "deterministic",
-          input_tokens: 0,
-          output_tokens: 0,
-          cache_creation_input_tokens: 0,
-          cache_read_input_tokens: 0,
-        },
-      });
-    }
-    // Other modes: return a clear no-key message rather than crashing
-    return NextResponse.json(
-      {
-        error: "AI features require an ANTHROPIC_API_KEY. Configure it in the Vercel / hosting dashboard.",
-        data: { response: "Cara AI is not configured in this environment. Add your ANTHROPIC_API_KEY to enable AI-powered insights." },
-      },
-      { status: 200 },
-    );
+  // Streaming callers (the CaraPanel, via useCaraStream) expect an SSE stream —
+  // they must NOT receive a JSON body here. Let them fall through to the streaming
+  // branch below, which degrades gracefully via the AI Gateway (emits a calm
+  // "ran without AI" message as a delta). Only NON-streaming callers get the
+  // deterministic JSON fallbacks here.
+  if (!hasAiKey && !streamMode) {
+    return deterministicCaraResponse(mode, resolvedStyle);
   }
 
   // Build the user message
@@ -1294,11 +1426,19 @@ export async function POST(req: NextRequest) {
             },
           );
 
-          // If the gateway answered without the model (kill-switch / sensitivity /
-          // cost / permission), stream its deterministic note so the client shows
-          // something coherent rather than an empty response.
-          if (result.method === "refused" && result.output) {
-            send({ type: "text_delta", text: result.output, mode, style: resolvedStyle });
+          // The gateway answered without the model (kill-switch / sensitivity /
+          // cost / permission / no key / provider failure). Always emit SOMETHING
+          // so the panel shows a calm note rather than an empty box — even when
+          // the provider call failed and left no output (e.g. exhausted credits).
+          if (result.method === "refused") {
+            send({
+              type: "text_delta",
+              text:
+                result.output ||
+                "Cara couldn't produce an AI-enhanced response just now — the AI service is unavailable in this environment. The rest of Cara continues to run on its deterministic engines.",
+              mode,
+              style: resolvedStyle,
+            });
           }
 
           send({
@@ -1357,6 +1497,7 @@ export async function POST(req: NextRequest) {
       "curriculum_builder", "learning_session_plan", "learning_worksheet",
       "learning_safety_plan", "learning_micro_learning", "return_home_interview",
       "voice_summary", "practice_bank",
+      "ri_reg45_generate", "ri_strategic_analysis", "ri_ofsted_readiness", "ri_challenge_question",
     ]);
     const isJsonMode = JSON_OUTPUT_MODES.has(mode);
 
@@ -1399,34 +1540,15 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (err) {
-    if (err instanceof Anthropic.BadRequestError) {
-      return NextResponse.json(
-        { error: `Bad request: ${err.message}` },
-        { status: 400 }
-      );
-    }
-    if (err instanceof Anthropic.AuthenticationError) {
-      return NextResponse.json(
-        { error: "Authentication failed — check ANTHROPIC_API_KEY" },
-        { status: 401 }
-      );
-    }
-    if (err instanceof Anthropic.RateLimitError) {
-      return NextResponse.json(
-        { error: "Rate limit reached — please retry shortly" },
-        { status: 429 }
-      );
-    }
-    if (err instanceof Anthropic.APIError) {
-      return NextResponse.json(
-        { error: `API error (${err.status}): ${err.message}` },
-        { status: err.status ?? 500 }
-      );
-    }
-    console.error("[cara] Unexpected error:", err);
-    return NextResponse.json(
-      { error: "An unexpected error occurred", detail: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
+    // The AI call failed (no credits / rate limit / auth / provider error).
+    // Degrade GRACEFULLY: serve the deterministic fallback so the feature still
+    // works, rather than surfacing a provider error to the user. The cause is
+    // logged for operators. (Prod currently has a key but exhausted credits, so
+    // this — not the no-key branch — is the path that keeps features alive.)
+    console.warn(
+      "[cara] AI call failed; serving deterministic fallback:",
+      err instanceof Error ? err.message : String(err),
     );
+    return deterministicCaraResponse(mode, resolvedStyle);
   }
 }

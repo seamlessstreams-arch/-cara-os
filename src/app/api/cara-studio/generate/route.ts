@@ -11,10 +11,59 @@ import { generateRequestSchema } from "@/lib/cara-studio/schemas";
 import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeStudioAuditLog } from "@/lib/cara-studio/audit.service";
-import { TONES } from "@/lib/cara-studio/types";
+import { TONES, GENERATION_TYPES } from "@/lib/cara-studio/types";
 import type { GenerationRequest } from "@/lib/cara-studio/types";
 
 type SB = any;
+
+// The standalone Studio page offers a richer artifact catalogue
+// (CARA_ARTIFACT_TYPE_LABELS — 31 entries) than the generator's GenerationType
+// enum (GENERATION_TYPES — 22 entries). Without a mapping, 28 of the 31 page
+// types uppercase to a value that isn't in the enum, so generation failed
+// validation with a 400 and the page silently showed nothing ("no outcomes").
+// Map every page artifact_type to the closest generator type; unknown/empty
+// values fall back to a safe generic briefing so generation never hard-fails.
+const ARTIFACT_TYPE_TO_GENERATION_TYPE: Record<string, string> = {
+  keywork_session: "KEYWORK_SESSION",
+  direct_work_session: "DIRECT_WORK_SESSION",
+  child_friendly_worksheet: "FLASHCARDS",
+  child_friendly_explanation: "YOUNG_PERSON_EXPLAINER",
+  staff_training: "STAFF_MICRO_TRAINING",
+  quiz: "STAFF_MICRO_TRAINING",
+  flashcards: "FLASHCARDS",
+  reflective_practice_prompt: "MANAGER_OVERSIGHT_PROMPTS",
+  management_oversight: "MANAGER_OVERSIGHT_PROMPTS",
+  incident_learning_review: "STAFF_BRIEFING",
+  risk_review: "RISK_ASSESSMENT_DRAFT",
+  safeguarding_review: "STAFF_BRIEFING",
+  child_plan: "CARE_PLAN_DRAFT",
+  placement_plan_update: "PLACEMENT_PLAN_DRAFT",
+  care_plan_update: "CARE_PLAN_DRAFT",
+  annex_a_update: "REG45_EVIDENCE_PREP",
+  ofsted_readiness_summary: "REG44_EVIDENCE_PREP",
+  ri_briefing: "STAFF_BRIEFING",
+  social_worker_update: "STAFF_BRIEFING",
+  parent_professional_letter: "STAFF_BRIEFING",
+  team_meeting_discussion: "TEAM_DISCUSSION_GUIDE",
+  supervision_prompt: "MANAGER_OVERSIGHT_PROMPTS",
+  audio_briefing_script: "STAFF_BRIEFING",
+  video_briefing_script: "STAFF_BRIEFING",
+  slide_deck_outline: "TEAM_MEETING_PACK",
+  mind_map: "STAFF_BRIEFING",
+  timeline: "STAFF_BRIEFING",
+  visual_formulation: "STAFF_BRIEFING",
+  action_plan: "STAFF_BRIEFING",
+  reflective_workbook: "DIRECT_WORK_SESSION",
+  scenario_simulation: "STAFF_MICRO_TRAINING",
+};
+
+function resolveGenerationType(raw: unknown): string {
+  const direct = String(raw ?? "").trim();
+  if (!direct) return "STAFF_BRIEFING";
+  const upper = direct.toUpperCase();
+  if ((GENERATION_TYPES as readonly string[]).includes(upper)) return upper;
+  return ARTIFACT_TYPE_TO_GENERATION_TYPE[direct.toLowerCase()] ?? "STAFF_BRIEFING";
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,7 +79,7 @@ export async function POST(req: NextRequest) {
     // title/brief; map them + coerce so generation isn't rejected with a 400.
     const body = {
       childId: rawBody.childId ?? rawBody.child_id,
-      generationType: String(rawBody.generationType ?? rawBody.artifact_type ?? "").toUpperCase(),
+      generationType: resolveGenerationType(rawBody.generationType ?? rawBody.artifact_type),
       title: rawBody.title ?? (rawBody.artifact_type ? `${String(rawBody.artifact_type).replace(/_/g, " ")} draft` : undefined),
       brief: rawBody.brief ?? rawBody.additional_context ?? rawBody.additionalContext
         ?? "Generate this artifact using the child's profile and the context provided.",
