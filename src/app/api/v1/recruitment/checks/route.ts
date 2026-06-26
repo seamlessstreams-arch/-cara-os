@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 import { createRecruitmentAuditRecord, persistRecruitmentCheck } from "@/lib/supabase/recruitment-persist";
 
 // ── GET /api/v1/recruitment/checks?candidate_id= ──────────────────────────────
@@ -46,6 +48,9 @@ export async function GET(req: NextRequest) {
 // ── PATCH /api/v1/recruitment/checks ─────────────────────────────────────────
 
 export async function PATCH(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
+  if (auth instanceof NextResponse) return auth;
+
   const body = await req.json();
   const { id, candidate_id, status, verified_by, verified_at, received_date,
     requested_date, certificate_number, document_type, expiry_date,

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 import { persistRecruitmentCandidate } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 import type { CandidateProfile } from "@/types/recruitment";
@@ -134,6 +136,9 @@ export async function GET(_req: NextRequest) {
 // ── POST /api/v1/recruitment ─────────────────────────────────────────────────
 // Creates a new candidate at the "enquiry" stage.
 export async function POST(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
+  if (auth instanceof NextResponse) return auth;
+
   let body: Record<string, unknown>;
   try {
     body = (await req.json()) as Record<string, unknown>;

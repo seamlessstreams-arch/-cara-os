@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 import { createRecruitmentAuditRecord, persistRecruitmentOffer } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 
@@ -7,6 +9,9 @@ import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 // Supports: grant_final_clearance, update offer details
 
 export async function PATCH(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
+  if (auth instanceof NextResponse) return auth;
+
   const body = await req.json();
   const { candidate_id, action, by } = body;
 
