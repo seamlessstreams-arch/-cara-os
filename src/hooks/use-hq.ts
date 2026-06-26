@@ -24,6 +24,10 @@ import type {
   GatewayAuditSummary,
   AiGatewayAuditEntry,
 } from "@/lib/cara/ai-gateway/audit-summary";
+import type {
+  RuleCatalogEntry,
+  RuleCatalogSummary,
+} from "@/lib/rules-catalog/rules-catalog";
 
 const HQ_HEADERS = {
   "content-type": "application/json",
@@ -94,6 +98,18 @@ export function useHqAiGateway() {
   return useQuery({
     queryKey: ["hq-ai-gateway"],
     queryFn: () => hqFetch<HqAiGatewayData>("/api/v1/hq/ai-gateway"),
+  });
+}
+
+export interface HqRuleCatalogData {
+  catalog: RuleCatalogEntry[];
+  summary: RuleCatalogSummary;
+}
+
+export function useHqRuleCatalog() {
+  return useQuery({
+    queryKey: ["hq-rule-catalog"],
+    queryFn: () => hqFetch<HqRuleCatalogData>("/api/v1/hq/rule-catalog"),
   });
 }
 

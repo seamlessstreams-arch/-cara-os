@@ -235,6 +235,12 @@ export default function HqOverviewPage() {
             AI usage &amp; cost <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <Link
+            href="/hq/rules"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-4 py-2 text-sm font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-surface)]"
+          >
+            Rule catalog <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+          <Link
             href="/data-persistence"
             className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] px-4 py-2 text-sm font-semibold text-[var(--cs-navy)] hover:bg-[var(--cs-surface)]"
           >
