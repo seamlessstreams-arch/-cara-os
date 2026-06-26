@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { validateOutputSafety } from "@/lib/cara/ai/safety";
+import { getSafeguardingSignal, type SafeguardingSignalId } from "@/lib/cara/safeguarding-signals";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -53,84 +54,89 @@ interface ThemePattern {
   message: string;
 }
 
+// Patterns are sourced from the canonical safeguarding-signals registry (defined
+// ONCE there), so this scanner and every other detector share one set of
+// patterns. Guardrails keeps its OWN severity + message: those are tuned for
+// "does this AI output need human review" (a different axis from the registry's
+// real-world action urgency), so they must not be derived from the registry.
+const sig = (id: SafeguardingSignalId): RegExp => getSafeguardingSignal(id).pattern;
+
+/** Union of several canonical patterns into one case-insensitive matcher. */
+function unionSignals(...ids: SafeguardingSignalId[]): RegExp {
+  return new RegExp(ids.map((id) => `(?:${getSafeguardingSignal(id).pattern.source})`).join("|"), "i");
+}
+
 const SAFEGUARDING_THEMES: ThemePattern[] = [
-  // Physical abuse indicators
   {
     id: "sg_physical_abuse",
     category: "safeguarding",
-    pattern: /\b(?:physical\s+(?:abuse|harm|assault)|unexplained\s+(?:bruising|marks|injuries)|non-accidental\s+injury|NAI)\b/i,
+    pattern: sig("physical_abuse"),
     severity: "critical",
     message: "Physical abuse indicators detected. This output requires mandatory safeguarding-qualified human review.",
   },
-  // Sexual abuse / exploitation
   {
     id: "sg_sexual",
     category: "safeguarding",
-    pattern: /\b(?:sexual\s+(?:abuse|exploitation|harm)|CSE|CCE|indecent|grooming|sexuali[sz]ed\s+behaviour|trafficking)\b/i,
+    pattern: sig("sexual_harm_exploitation"),
     severity: "critical",
     message: "Sexual abuse/exploitation indicators detected. This output requires mandatory safeguarding-qualified human review.",
   },
-  // Self-harm / suicidal ideation
   {
     id: "sg_self_harm",
     category: "safeguarding",
-    pattern: /\b(?:self[-\s]?harm(?:ing)?|suicid(?:al|e)|ligature|overdose|cutting|hurting\s+(?:them|him|her)self)\b/i,
+    pattern: sig("self_harm"),
     severity: "critical",
     message: "Self-harm or suicidal ideation indicators detected. Mandatory review required before any output is shared.",
   },
-  // Missing from care
   {
     id: "sg_missing",
     category: "safeguarding",
-    pattern: /\b(?:missing\s+from\s+(?:care|home|placement)|abscond(?:ed|ing)?|missing\s+episode|MFC)\b/i,
+    pattern: sig("missing_from_care"),
     severity: "warning",
     message: "Missing from care references detected. Verify return interview and risk assessment are in place.",
   },
-  // Allegation against staff
   {
     id: "sg_allegation",
     category: "safeguarding",
-    pattern: /\b(?:allegation(?:s)?\s+(?:against|involving)\s+staff|LADO|position\s+of\s+trust|professional\s+boundaries)\b/i,
+    pattern: sig("allegation_against_staff"),
     severity: "critical",
     message: "Staff allegation references detected. LADO referral status must be verified by a human.",
   },
-  // Neglect indicators
   {
     id: "sg_neglect",
     category: "safeguarding",
-    pattern: /\b(?:neglect|failure\s+to\s+(?:protect|safeguard|supervise)|unmet\s+(?:basic\s+)?needs)\b/i,
+    pattern: sig("neglect"),
     severity: "warning",
     message: "Neglect indicators detected. Verify source evidence supports these references.",
   },
-  // Contextual safeguarding
   {
+    // Guardrails treats contextual exploitation and radicalisation as one theme;
+    // the registry separates them (different statutory routes), so union both to
+    // preserve this scanner's existing coverage.
     id: "sg_contextual",
     category: "safeguarding",
-    pattern: /\b(?:contextual\s+safeguarding|county\s+lines|gang\s+(?:affiliation|involvement)|radicalisation|extremism)\b/i,
+    pattern: unionSignals("contextual_exploitation", "radicalisation"),
     severity: "critical",
     message: "Contextual safeguarding themes detected. Mandatory senior manager review.",
   },
-  // Restraint / physical intervention
   {
     id: "sg_restraint",
     category: "practice",
-    pattern: /\b(?:physical\s+(?:intervention|restraint)|restrictive\s+(?:practice|physical\s+intervention)|RPI|PMVA|prone\s+restraint)\b/i,
+    pattern: sig("restrictive_practice"),
     severity: "warning",
     message: "Physical intervention references detected. Verify body map and debrief records exist.",
   },
-  // Medication concerns
   {
     id: "sg_medication",
     category: "practice",
-    pattern: /\b(?:medication\s+error|wrong\s+(?:dose|medication)|missed\s+medication|over[-\s]?medicated|covert\s+medication)\b/i,
+    pattern: sig("medication_error"),
     severity: "warning",
     message: "Medication concern detected. Verify against medication administration records.",
   },
-  // Bullying
   {
     id: "sg_bullying",
     category: "safeguarding",
-    pattern: /\b(?:bullying|peer[-\s]?(?:on[-\s]?peer|aggression|violence)|intimidat(?:ion|ing)|cyber[-\s]?bullying)\b/i,
+    pattern: sig("peer_abuse_bullying"),
     severity: "warning",
     message: "Bullying references detected. Verify anti-bullying strategy and follow-up actions.",
   },
