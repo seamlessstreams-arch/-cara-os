@@ -8,6 +8,7 @@ import { getAnthropicClient } from "@/lib/anthropic-client";
 import { invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
 import { getStore } from "@/lib/db/store";
 import { scanForPatterns, type IncidentRecord } from "@/lib/cara/cara-pattern-engine";
+import { computeStaffDevelopmentIntelligence } from "@/lib/engines/staff-development-intelligence-engine";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 
@@ -204,6 +205,110 @@ function deterministicReg45Report() {
   };
 }
 
+// Deterministic staff development summary — when AI can't author a narrative,
+// build a real team development picture from the SAME engine that powers the
+// Staff Development Intelligence dashboard (appraisals, competency, qualifications,
+// inductions, plans). This is the deterministic floor for the cara-planner's
+// "Generate Plan with Cara" panel: a genuine, evidence-grounded summary instead
+// of a placeholder. Cara structures; the manager and staff member agree the plan.
+function deterministicStaffDevelopmentSummary(): string {
+  const store = getStore() as any;
+
+  const staff = (store.staff ?? []).map((s: any) => ({
+    id: s.id,
+    name: s.full_name ?? (`${s.first_name ?? ""} ${s.last_name ?? ""}`.trim() || s.id),
+    role: s.job_title ?? s.role ?? "Staff",
+    is_active: s.employment_status ? s.employment_status === "active" : Boolean(s.is_active),
+    start_date: s.start_date,
+  }));
+  const appraisals = (store.appraisals ?? []).map((a: any) => ({
+    id: a.id, staff_id: a.staff_id, appraisal_type: a.appraisal_type, appraisal_date: a.appraisal_date,
+    status: a.status, overall_rating: a.overall_rating ?? undefined, competency_scores: a.competency_scores ?? {},
+    signed_by_staff: Boolean(a.signed_by_staff), next_review_date: a.next_review_date ?? undefined,
+  }));
+  const competency_profiles = (store.competencyProfiles ?? []).map((p: any) => ({
+    id: p.id, staff_id: p.staff_id, current_stage: p.current_stage ?? "", target_stage: p.target_stage ?? undefined,
+    overall_readiness_score: p.overall_readiness_score ?? 0, strengths: p.strengths ?? [],
+    development_areas: p.development_areas ?? [], next_review_date: p.next_review_date ?? undefined,
+  }));
+  const qualifications = (store.qualifications ?? []).map((q: any) => ({
+    id: q.id, staff_id: q.staff_id, qualification_name: q.qualification_name, level: q.level ?? undefined,
+    mandatory: Boolean(q.mandatory), status: q.status, started_at: q.started_at ?? undefined,
+    completed_at: q.completed_at ?? undefined, expiry_date: q.expiry_date ?? undefined,
+  }));
+  const inductions = (store.inductionRecords ?? []).map((i: any) => {
+    const items: any[] = i.items ?? [];
+    return {
+      id: i.id, staff_id: i.staff_id, start_date: i.start_date, target_completion_date: i.target_completion_date,
+      overall_status: i.overall_status, total_items: items.length,
+      completed_items: items.filter((it: any) => it.status === "completed" || it.status === "signed_off").length,
+      overdue_items: items.filter((it: any) => it.status === "not_started" || it.status === "in_progress").length,
+      probation_passed: Boolean(i.probation_passed),
+    };
+  });
+  const development_plans = (store.developmentPlans ?? []).map((dp: any) => {
+    const actions: any[] = dp.actions ?? [];
+    return {
+      id: dp.id, staff_id: dp.staff_id, title: dp.title, from_stage: dp.from_stage ?? "", to_stage: dp.to_stage ?? "",
+      status: dp.status, total_actions: actions.length, completed_actions: actions.filter((a: any) => a.completed).length,
+    };
+  });
+
+  let result;
+  try {
+    result = computeStaffDevelopmentIntelligence({ staff, appraisals, competency_profiles, qualifications, inductions, development_plans });
+  } catch {
+    return "Cara couldn't assemble the development summary just now. The Staff Development Intelligence dashboard has the full picture.";
+  }
+
+  const o = result.overview;
+  const lines: string[] = [
+    "## Team development summary (Cara — deterministic)",
+    "",
+    "AI narrative is unavailable in this environment, so this is computed directly from your appraisal, competency, qualification, induction and development-plan records.",
+    "",
+    "**Workforce development at a glance**",
+    `- Active staff: ${o.active_staff} of ${o.total_staff}`,
+    `- Appraisals: ${o.appraisals_completed} completed, ${o.appraisals_overdue} overdue (${o.appraisal_completion_rate}% of active staff complete)`,
+    `- Average competency readiness: ${o.avg_competency_readiness}%`,
+    `- Mandatory qualification compliance: ${o.mandatory_qual_compliance_rate}% (${o.qualifications_expiring_soon} expiring within 90 days)`,
+    `- Active development plans: ${o.development_plans_active} (avg ${o.development_plan_progress_rate}% complete)`,
+    "",
+  ];
+
+  const topAlerts = result.alerts.slice(0, 6);
+  if (topAlerts.length) {
+    lines.push("**Priorities Cara would raise**");
+    for (const a of topAlerts) lines.push(`- [${a.severity.toUpperCase()}] ${a.message}`);
+    lines.push("");
+  }
+
+  const needFocus = result.staff_profiles
+    .filter((p) => p.appraisal_overdue || p.risk_flags.length > 0 || !p.mandatory_qual_compliant)
+    .slice(0, 8);
+  if (needFocus.length) {
+    lines.push("**Staff to prioritise for a development conversation**");
+    for (const p of needFocus) {
+      const reasons: string[] = [];
+      if (p.appraisal_overdue) reasons.push("appraisal overdue");
+      if (!p.mandatory_qual_compliant) reasons.push(`${p.mandatory_quals_completed}/${p.mandatory_quals_total} mandatory quals`);
+      if (p.risk_flags.length) reasons.push(...p.risk_flags);
+      lines.push(`- **${p.staff_name}** (${p.role}) — ${reasons.join("; ")}`);
+    }
+    lines.push("");
+  }
+
+  const positives = result.insights.filter((i) => i.severity === "positive").slice(0, 3);
+  if (positives.length) {
+    lines.push("**Strengths to build on**");
+    for (const i of positives) lines.push(`- ${i.text}`);
+    lines.push("");
+  }
+
+  lines.push("_Cara structures the picture from your records; the manager and staff member agree the plan together. This is decision support, not a decision._");
+  return lines.join("\n");
+}
+
 // Shared deterministic fallback — used when there is no AI key AND when an AI
 // call FAILS (no credits, rate limit, provider error). Keeps every feature
 // working deterministically instead of surfacing a provider error to the user.
@@ -221,6 +326,14 @@ function deterministicCaraResponse(mode: string, resolvedStyle: string) {
   if (mode === "return_home_interview") return caraDeterministicJson(deterministicReturnHomeInterview(), mode, resolvedStyle);
   if (mode === "safeguarding_scan") return caraDeterministicJson(deterministicSafeguardingScan(), mode, resolvedStyle);
   if (mode === "ri_reg45_generate") return caraDeterministicJson(deterministicReg45Report(), mode, resolvedStyle);
+  if (mode === "staff_development_summary") {
+    return NextResponse.json({
+      data: {
+        response: deterministicStaffDevelopmentSummary(), parsed: null, mode, style: resolvedStyle,
+        model: "deterministic", input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
+      },
+    });
+  }
   return NextResponse.json({
     data: {
       response:
@@ -1431,9 +1544,15 @@ export async function POST(req: NextRequest) {
           // so the panel shows a calm note rather than an empty box — even when
           // the provider call failed and left no output (e.g. exhausted credits).
           if (result.method === "refused") {
+            // For modes with a deterministic engine, stream the real computed
+            // result rather than a generic note — keeps the feature useful when
+            // the model is unavailable (e.g. exhausted credits).
+            const deterministicText =
+              mode === "staff_development_summary" ? deterministicStaffDevelopmentSummary() : null;
             send({
               type: "text_delta",
               text:
+                deterministicText ||
                 result.output ||
                 "Cara couldn't produce an AI-enhanced response just now — the AI service is unavailable in this environment. The rest of Cara continues to run on its deterministic engines.",
               mode,
