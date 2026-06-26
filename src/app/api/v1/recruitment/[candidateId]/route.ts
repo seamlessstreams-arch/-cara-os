@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 import { createRecruitmentAuditRecord, persistRecruitmentCandidate } from "@/lib/supabase/recruitment-persist";
 import { evaluateCandidateRules } from "@/lib/recruitment-rules";
 
@@ -190,6 +192,9 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ candidateId: string }> }
 ) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
+  if (auth instanceof NextResponse) return auth;
+
   const { candidateId } = await params;
   const body = await req.json();
 

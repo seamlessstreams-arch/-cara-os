@@ -10,7 +10,9 @@
 export const dynamic = "force-dynamic";
 
 import { persistReflectiveSupervision } from "@/lib/supabase/incident-persist";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
@@ -38,7 +40,10 @@ export async function GET() {
   return NextResponse.json({ data: { overview, records: sortedRecords, staff } });
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_SUPERVISION);
+  if (auth instanceof NextResponse) return auth;
+
   const store = getStore() as any;
   const body = (await req.json().catch(() => ({}))) as any;
 

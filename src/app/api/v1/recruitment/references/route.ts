@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { requirePermissionAsync } from "@/lib/auth-guard";
+import { PERMISSIONS } from "@/lib/permissions";
 import { createRecruitmentAuditRecord, updateCandidateReferenceRecord } from "@/lib/supabase/recruitment-persist";
 import { generateId } from "@/lib/utils";
 import type { CandidateReference } from "@/types/recruitment";
@@ -24,6 +26,9 @@ export async function GET(req: NextRequest) {
 // ── POST /api/v1/recruitment/references ──────────────────────────────────────
 
 export async function POST(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
+  if (auth instanceof NextResponse) return auth;
+
   const body = await req.json();
 
   const { candidate_id, referee_name, referee_org, referee_role, referee_email,
@@ -80,6 +85,9 @@ export async function POST(req: NextRequest) {
 // ── PATCH /api/v1/recruitment/references ─────────────────────────────────────
 
 export async function PATCH(req: NextRequest) {
+  const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
+  if (auth instanceof NextResponse) return auth;
+
   const body = await req.json();
   const { id, candidate_id, status, received_date, employment_dates_confirmed,
     role_confirmed, performance_rating, safeguarding_concerns, safeguarding_detail,
