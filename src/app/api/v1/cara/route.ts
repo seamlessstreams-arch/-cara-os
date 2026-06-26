@@ -10,6 +10,7 @@ import { getStore } from "@/lib/db/store";
 import { scanForPatterns, type IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import { computeStaffDevelopmentIntelligence } from "@/lib/engines/staff-development-intelligence-engine";
 import { buildDeterministicLearning } from "@/lib/cara/deterministic-learning";
+import { buildDeterministicIntelligence } from "@/lib/cara/deterministic-intelligence";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 
@@ -409,6 +410,8 @@ function deterministicCaraResponse(mode: string, resolvedStyle: string) {
   if (mode === "ri_challenge_question") return caraDeterministicJson(deterministicRiChallengeQuestion(), mode, resolvedStyle);
   const learning = buildDeterministicLearning(mode);
   if (learning) return caraDeterministicJson(learning, mode, resolvedStyle);
+  const intel = buildDeterministicIntelligence(mode);
+  if (intel) return caraDeterministicJson(intel, mode, resolvedStyle);
   if (mode === "staff_development_summary") {
     return NextResponse.json({
       data: {
