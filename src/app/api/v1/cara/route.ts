@@ -7,6 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropicClient } from "@/lib/anthropic-client";
 import { invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
 import { getStore } from "@/lib/db/store";
+import { scanForPatterns, type IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 
@@ -92,6 +93,88 @@ function deterministicSafeguardingScan() {
     cross_yp_patterns: crossYpPatterns,
     recommended_actions,
     timestamp: new Date().toISOString(),
+  };
+}
+
+// ─── Deterministic pattern scan (no AI key required) ─────────────────────────
+// Wires the existing deterministic cara-pattern-engine so the pattern scanner
+// works with no AI — escalation / cluster / time-of-day / staff / repeat /
+// oversight-gap / cross-child patterns from the incident data.
+
+function deterministicPatternScan() {
+  const store = getStore();
+  const incidents: IncidentRecord[] = (store.incidents ?? []).map((i) => {
+    const x = i as Record<string, unknown>;
+    return {
+      id: String(x.id ?? ""),
+      reference: String(x.reference ?? x.id ?? ""),
+      type: String(x.type ?? "incident"),
+      severity: String(x.severity ?? "medium"),
+      child_id: String(x.child_id ?? ""),
+      reported_by: String(x.reported_by ?? ""),
+      date: String(x.date ?? ""),
+      time: x.time ? String(x.time) : undefined,
+      location: x.location ? String(x.location) : undefined,
+      description: String(x.description ?? ""),
+      status: String(x.status ?? "open"),
+      requires_oversight: Boolean(x.requires_oversight),
+      oversight_by: (x.oversight_by as string | null) ?? null,
+      oversight_at: (x.oversight_at as string | null) ?? null,
+      home_id: String(x.home_id ?? "home_oak"),
+    };
+  });
+  const homes = [...new Set(incidents.map((i) => i.home_id))];
+  const patterns = homes.flatMap((h) => scanForPatterns(incidents, { homeId: h }));
+  // Map to the shape the pattern-scan UI expects (data.parsed = array).
+  return patterns.map((p) => ({
+    alert_type: p.type,
+    title: p.title,
+    description: p.description,
+    severity: p.severity,
+    child_id: p.childId,
+    reflective_prompt: p.reflectivePrompt,
+    period_start: p.periodStart,
+    period_end: p.periodEnd,
+  }));
+}
+
+// Deterministic Return Home Interview template — the statutory RHI protocol
+// (Working Together) as a working form: standard questions + structure for the
+// practitioner to complete, when no AI is configured to draft a narrative.
+function deterministicReturnHomeInterview() {
+  return {
+    interview_summary:
+      "Complete this Return Home Interview with the young person within 72 hours of their return, in a safe, relaxed setting, using a PACE approach (Playfulness, Acceptance, Curiosity, Empathy). Record the young person's own words. [AI narrative unavailable — complete manually.]",
+    child_voice_themes: [] as string[],
+    reasons_for_going_missing: "",
+    where_they_went: "",
+    who_they_were_with: "",
+    any_harm_experienced: "",
+    exploitation_risk_indicators: [] as string[],
+    contextual_safeguarding_factors:
+      "Consider the peers, places and online contacts associated with this episode, not only the young person's own behaviour.",
+    risk_level_assessment: "medium",
+    escalation_required: false,
+    escalation_actions: [] as string[],
+    child_support_needs: "",
+    what_could_help_in_future: "",
+    recommended_follow_up: [
+      "Update the missing-from-care risk assessment",
+      "Notify the social worker and placing authority of the interview outcome",
+    ],
+    referral_recommendations: [] as string[],
+    suggested_interview_questions: [
+      "How are you feeling now you're back? Is there anything you need right now?",
+      "Where did you go, and how did you get there?",
+      "Who were you with? Did you feel safe with them?",
+      "Was there anything that worried you or made you feel uncomfortable?",
+      "Did anyone ask you to do anything, or give you anything — money, gifts, a phone?",
+      "What made you decide to leave? Is there something here we could change?",
+      "What would help you feel safer or happier here?",
+      "What would help you talk to us before leaving next time?",
+    ],
+    staff_guidance_notes:
+      "Deterministic Return Home Interview template (no AI configured). The questions follow statutory RHI guidance. Conduct the interview, record the young person's words, and escalate to the DSL/manager if any harm or exploitation indicators emerge. Cara drafts the structure; the practitioner leads and records.",
   };
 }
 
@@ -1210,11 +1293,43 @@ export async function POST(req: NextRequest) {
         },
       });
     }
-    // Other modes: return a clear no-key message rather than crashing
+    if (mode === "pattern_scan") {
+      const parsed = deterministicPatternScan();
+      return NextResponse.json({
+        data: {
+          response: parsed, parsed, mode: "pattern_scan", style: resolvedStyle,
+          model: "deterministic", input_tokens: 0, output_tokens: 0,
+          cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
+        },
+      });
+    }
+    if (mode === "return_home_interview") {
+      const parsed = deterministicReturnHomeInterview();
+      return NextResponse.json({
+        data: {
+          response: parsed, parsed, mode: "return_home_interview", style: resolvedStyle,
+          model: "deterministic", input_tokens: 0, output_tokens: 0,
+          cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
+        },
+      });
+    }
+    // Modes that genuinely need a model degrade GRACEFULLY (no `error` field, so the
+    // caller shows a calm note rather than a failure state). Cara's deterministic
+    // engines power the rest of the platform; this is optional AI enhancement only.
     return NextResponse.json(
       {
-        error: "AI features require an ANTHROPIC_API_KEY. Configure it in the Vercel / hosting dashboard.",
-        data: { response: "Cara AI is not configured in this environment. Add your ANTHROPIC_API_KEY to enable AI-powered insights." },
+        data: {
+          response:
+            "Cara ran without AI in this environment. The deterministic engines power the rest of Cara; this particular feature offers optional AI enhancement, which becomes available once an AI key is configured.",
+          parsed: null,
+          mode,
+          style: resolvedStyle,
+          model: "deterministic",
+          input_tokens: 0,
+          output_tokens: 0,
+          cache_creation_input_tokens: 0,
+          cache_read_input_tokens: 0,
+        },
       },
       { status: 200 },
     );
