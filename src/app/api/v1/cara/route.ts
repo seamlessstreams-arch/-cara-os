@@ -1276,7 +1276,12 @@ export async function POST(req: NextRequest) {
   // Prod has no ANTHROPIC_API_KEY. Rather than error, return real data computed
   // deterministically from the store for modes that have a deterministic engine.
   const hasAiKey = Boolean(process.env.ANTHROPIC_API_KEY);
-  if (!hasAiKey) {
+  // Streaming callers (the CaraPanel, via useCaraStream) expect an SSE stream —
+  // they must NOT receive a JSON body here. Let them fall through to the streaming
+  // branch below, which degrades gracefully via the AI Gateway (emits a calm
+  // "ran without AI" message as a delta). Only NON-streaming callers get the
+  // deterministic JSON fallbacks here.
+  if (!hasAiKey && !streamMode) {
     if (mode === "safeguarding_scan") {
       const result = deterministicSafeguardingScan();
       return NextResponse.json({
