@@ -9,6 +9,7 @@ import { invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
 import { getStore } from "@/lib/db/store";
 import { scanForPatterns, type IncidentRecord } from "@/lib/cara/cara-pattern-engine";
 import { computeStaffDevelopmentIntelligence } from "@/lib/engines/staff-development-intelligence-engine";
+import { buildDeterministicLearning } from "@/lib/cara/deterministic-learning";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 
@@ -205,6 +206,83 @@ function deterministicReg45Report() {
   };
 }
 
+// Deterministic RI strategic analysis — a governance-analysis FORM the
+// Responsible Individual completes from the home's records when AI can't author
+// the narrative. Cara structures; the RI evaluates. No fabricated verdicts.
+function deterministicRiStrategicAnalysis() {
+  return {
+    overall_governance_narrative: "[RI to complete: an evaluative governance narrative for this period, grounded in the home's records.]",
+    safeguarding_analysis: "[Summarise the safeguarding position — concerns raised, actions taken, outstanding risks.]",
+    outcome_evidence: "[Evidence of the difference the home is making to children's progress and experiences.]",
+    management_effectiveness: "[Assess leadership and management effectiveness this period.]",
+    compliance_position: "[Regulatory compliance position — notifications, statements of purpose, audits.]",
+    staffing_stability: "[Staffing stability — turnover, vacancies, agency use, supervision coverage.]",
+    key_strengths: ["Review the governance scorecard metrics above for the strongest areas"],
+    areas_requiring_attention: ["Identify the lowest-scoring scorecard metrics and the actions to address them"],
+    immediate_ri_actions: ["Complete this strategic analysis from the home's records", "Confirm all Regulation 40 notifications are up to date"],
+    challenge_questions_for_manager: [
+      "Which area of the scorecard concerns you most this month, and what is your plan?",
+      "What evidence shows children's outcomes are improving?",
+    ],
+    ofsted_readiness_summary: "[Summarise inspection readiness — strongest evidence and the biggest gaps.]",
+    risk_level: "medium",
+    ri_confidence: "insufficient_data",
+  };
+}
+
+// Deterministic RI Ofsted-readiness review — a structured readiness FORM. Cara
+// NEVER predicts an Ofsted grade (the judgement is the inspector's, informed by
+// the RI's evaluation), so headline_judgement_prediction is always "unknown".
+function deterministicRiOfstedReadiness() {
+  return {
+    headline_judgement_prediction: "unknown",
+    headline_rationale: "Cara does not predict Ofsted grades — the judgement is the inspector's, informed by the Responsible Individual's evaluation of the evidence below. Complete each section from the home's records.",
+    strengths: [
+      { area: "[Strength area — complete from records]", evidence: "[Evidence from the home's records]", ofsted_language: "[How an inspector might describe this strength]" },
+    ],
+    vulnerabilities: [
+      { area: "[Area of vulnerability]", risk: "[The risk to children or to compliance]", recommended_action: "[Action to take before inspection]", priority: "high" },
+    ],
+    safeguarding_position: "[Summarise the safeguarding position and any open concerns.]",
+    children_experience_evidence: "[Evidence of children's day-to-day experience and progress.]",
+    leaders_and_managers_evidence: "[Evidence on the effectiveness of leaders and managers.]",
+    inspection_readiness_score: 0,
+    immediate_actions_before_inspection: [
+      "Complete this readiness review from the home's records",
+      "Check all Regulation 40 notifications are filed",
+      "Ensure each child's progress evidence is current",
+    ],
+    mock_interview_questions: [
+      "How do you know children feel safe here?",
+      "Show me how you evidence each child's progress.",
+      "How do you assure yourself about the quality of recording?",
+    ],
+    evidence_to_prepare: [
+      "Children's case files and progress records",
+      "Safeguarding log and actions",
+      "Staff supervision and training records",
+      "The most recent Regulation 44 and 45 reports",
+    ],
+  };
+}
+
+// Deterministic RI challenge to a Registered Manager — a template the RI
+// completes from evidence; AI drafting unavailable, so the structure is provided.
+function deterministicRiChallengeQuestion() {
+  return {
+    challenge_title: "Manager challenge — to be completed by the RI",
+    challenge_area: "oversight",
+    evidence_summary: "[Summarise the evidence prompting this challenge.]",
+    challenge_text: "Cara's AI drafting is unavailable in this environment, so this challenge is a template for you to complete. State the specific concern, the evidence behind it, and what you are asking the Registered Manager to address.",
+    escalation_level: "standard",
+    expected_manager_response: "[What a satisfactory response from the manager would include.]",
+    action_required: "Complete this challenge from the evidence and set a clear, time-bound action for the Registered Manager.",
+    action_due_days: 14,
+    linked_regulation: "[Relevant regulation — e.g. Reg 13, leadership and management]",
+    what_good_looks_like: "[Describe what good practice looks like in this area.]",
+  };
+}
+
 // Deterministic staff development summary — when AI can't author a narrative,
 // build a real team development picture from the SAME engine that powers the
 // Staff Development Intelligence dashboard (appraisals, competency, qualifications,
@@ -326,6 +404,11 @@ function deterministicCaraResponse(mode: string, resolvedStyle: string) {
   if (mode === "return_home_interview") return caraDeterministicJson(deterministicReturnHomeInterview(), mode, resolvedStyle);
   if (mode === "safeguarding_scan") return caraDeterministicJson(deterministicSafeguardingScan(), mode, resolvedStyle);
   if (mode === "ri_reg45_generate") return caraDeterministicJson(deterministicReg45Report(), mode, resolvedStyle);
+  if (mode === "ri_strategic_analysis") return caraDeterministicJson(deterministicRiStrategicAnalysis(), mode, resolvedStyle);
+  if (mode === "ri_ofsted_readiness") return caraDeterministicJson(deterministicRiOfstedReadiness(), mode, resolvedStyle);
+  if (mode === "ri_challenge_question") return caraDeterministicJson(deterministicRiChallengeQuestion(), mode, resolvedStyle);
+  const learning = buildDeterministicLearning(mode);
+  if (learning) return caraDeterministicJson(learning, mode, resolvedStyle);
   if (mode === "staff_development_summary") {
     return NextResponse.json({
       data: {
