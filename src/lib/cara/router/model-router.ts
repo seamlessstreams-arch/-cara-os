@@ -80,7 +80,7 @@ export class CaraModelRouter {
 
     if (blocked) {
       return {
-        provider: provider ?? "openai",
+        provider: provider ?? "anthropic",
         model: model ?? "none",
         riskLevel,
         sensitivityLevel,
@@ -338,7 +338,7 @@ export class CaraModelRouter {
   }
 
   private selectProvider(
-    input: CaraTaskRequest,
+    _input: CaraTaskRequest,
     sensitivity: CaraDataSensitivity,
     _riskLevel: CaraRiskLevel,
   ): {
@@ -348,51 +348,38 @@ export class CaraModelRouter {
     blocked: boolean;
     blockReason?: string;
   } {
-    // Check user preferred provider
-    if (input.options?.preferredProvider) {
-      const pref = input.options.preferredProvider;
-      if (validateProviderAllowedForSensitivity(pref, sensitivity)) {
-        const provider = getProvider(pref);
-        if (provider.isAvailable()) {
-          const fallbacks = this.getFallbacks(input.taskType, pref, sensitivity);
-          return { provider: pref, model: provider.getDefaultModel(), fallbacks, blocked: false };
-        }
-      }
+    // Cara uses Anthropic (Claude) as the ONLY text-generation provider. OpenAI
+    // — and every other provider — is never selected for AI calls. The order is
+    // deterministic-first, then Anthropic only. The preferred-provider hint and
+    // the task provider-preference table are intentionally ignored here so no
+    // request can ever route to OpenAI.
+    const ANTHROPIC: CaraProviderName = "anthropic";
+
+    if (!validateProviderAllowedForSensitivity(ANTHROPIC, sensitivity)) {
+      return {
+        provider: null, model: null, fallbacks: [], blocked: true,
+        blockReason: `Anthropic is not approved for sensitivity '${sensitivity}'.`,
+      };
     }
 
-    // Use task-specific provider preferences
-    const preferences = TASK_PROVIDER_PREFERENCE[input.taskType] ?? ["openai", "anthropic"];
-
-    for (const name of preferences) {
-      if (!validateProviderAllowedForSensitivity(name, sensitivity)) continue;
-      const provider = getProvider(name);
-      if (!provider.isAvailable()) continue;
-
-      const fallbacks = this.getFallbacks(input.taskType, name, sensitivity);
-      return { provider: name, model: provider.getDefaultModel(), fallbacks, blocked: false };
+    const provider = getProvider(ANTHROPIC);
+    if (!provider.isAvailable()) {
+      return {
+        provider: null, model: null, fallbacks: [], blocked: true,
+        blockReason: "Anthropic (Claude) is not configured — set ANTHROPIC_API_KEY.",
+      };
     }
 
-    // No valid provider found
-    return {
-      provider: null,
-      model: null,
-      fallbacks: [],
-      blocked: true,
-      blockReason: `No available provider approved for sensitivity '${sensitivity}' and task '${input.taskType}'`,
-    };
+    return { provider: ANTHROPIC, model: provider.getDefaultModel(), fallbacks: [], blocked: false };
   }
 
   private getFallbacks(
-    taskType: string,
-    primary: CaraProviderName,
-    sensitivity: CaraDataSensitivity,
+    _taskType: string,
+    _primary: CaraProviderName,
+    _sensitivity: CaraDataSensitivity,
   ): CaraProviderName[] {
-    const preferences = TASK_PROVIDER_PREFERENCE[taskType as keyof typeof TASK_PROVIDER_PREFERENCE] ?? [];
-    return preferences
-      .filter(p => p !== primary)
-      .filter(p => validateProviderAllowedForSensitivity(p, sensitivity))
-      .filter(p => getProvider(p).isAvailable())
-      .slice(0, 2);
+    // Anthropic only — never fall back to OpenAI or any other provider.
+    return [];
   }
 
   private buildSystemPrompt(input: CaraTaskRequest): string {

@@ -125,15 +125,7 @@ export async function generateViaGateway(request: GatewayRequest): Promise<Gatew
     const latencyMs = Date.now() - start;
     console.error(`[cara-gateway] ${provider} generation failed (${model}):`, err);
 
-    // If OpenAI fails, try Anthropic as fallback (and vice versa)
-    if (provider === "openai") {
-      console.warn("[cara-gateway] Falling back to Anthropic...");
-      return generateViaGateway({
-        ...request,
-        provider: "anthropic",
-      });
-    }
-
+    // Anthropic is the only provider — no cross-provider fallback.
     return {
       content:
         "Cara was unable to generate content via AI Gateway. " +
@@ -185,7 +177,8 @@ export interface OversightAnalysisResponse {
 
 /**
  * Run management oversight analysis with optional cross-validation.
- * Primary analysis via OpenAI, cross-validation via Anthropic.
+ * Both the primary analysis and cross-validation run on Anthropic (Claude) —
+ * OpenAI has been removed.
  */
 export async function runOversightAnalysis(
   request: OversightAnalysisRequest
@@ -193,9 +186,9 @@ export async function runOversightAnalysis(
   const systemPrompt = buildOversightSystemPrompt(request.domain);
   const userPrompt = buildOversightUserPrompt(request);
 
-  // Primary analysis (OpenAI for management oversight)
+  // Primary analysis (Anthropic / Claude)
   const primaryAnalysis = await generateViaGateway({
-    provider: "openai",
+    provider: "anthropic",
     domain: request.domain,
     systemPrompt,
     userPrompt,

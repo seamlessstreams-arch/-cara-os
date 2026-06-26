@@ -6,9 +6,10 @@ import { NextRequest, NextResponse } from "next/server";
 // Lightweight chat endpoint for the Cara drawer.
 // Accepts { context, prompt } and returns { response }.
 //
-// Tries Anthropic first; falls back to OpenAI if only OpenAI is configured.
-// If neither is configured returns a clear "not configured" message — never
-// a crash or a mock.
+// Provider order is deterministic-first, then ANTHROPIC ONLY. Cara never calls
+// OpenAI. If Anthropic isn't configured or the call fails (e.g. exhausted
+// credits), it returns a clear honest message — never a crash, a mock, or a
+// fall-through to another provider.
 //
 // This endpoint does NOT persist to the DB. The drawer is a live-assist tool.
 // Persisted drafts and approvals go through POST /api/cara/generate.
@@ -44,7 +45,7 @@ function sseHeaders(): ResponseInit {
   };
 }
 
-// ── Anthropic streaming ───────────────────────────────────────────────────────
+// ── Anthropic streaming (the only provider) ───────────────────────────────────
 
 async function streamAnthropic(
   key: string,
@@ -68,9 +69,9 @@ async function streamAnthropic(
   });
 
   if (!upstream.ok || !upstream.body) {
-    // Non-OK (e.g. exhausted credits / rate limit) — throw so the handler falls
-    // through to the next provider and ultimately to a graceful message. Never
-    // return an empty stream, which would leave the Cara drawer blank.
+    // Non-OK (e.g. exhausted credits / rate limit) — throw so the handler serves
+    // a graceful message. Never return an empty stream (blank drawer) and never
+    // fall through to another provider — Anthropic is the only one.
     throw new Error(`cara chat upstream not ok (${upstream.status})`);
   }
 
@@ -112,70 +113,6 @@ async function streamAnthropic(
   return new Response(body, sseHeaders());
 }
 
-// ── OpenAI streaming ──────────────────────────────────────────────────────────
-
-async function streamOpenAI(
-  key: string,
-  model: string,
-  userMessage: string,
-): Promise<Response> {
-  const upstream = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: MAX_TOKENS,
-      stream: true,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: userMessage },
-      ],
-    }),
-    signal: AbortSignal.timeout(30_000),
-  });
-
-  if (!upstream.ok || !upstream.body) {
-    // Non-OK (e.g. exhausted credits / rate limit) — throw so the handler falls
-    // through to the next provider and ultimately to a graceful message. Never
-    // return an empty stream, which would leave the Cara drawer blank.
-    throw new Error(`cara chat upstream not ok (${upstream.status})`);
-  }
-
-  const body = new ReadableStream({
-    async start(ctrl) {
-      const reader = upstream.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split("\n");
-        buf = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const raw = line.slice(6).trim();
-          if (raw === "[DONE]") break;
-          try {
-            const evt = JSON.parse(raw) as {
-              choices?: Array<{ delta?: { content?: string } }>;
-            };
-            const text = evt.choices?.[0]?.delta?.content;
-            if (text) ctrl.enqueue(sseChunk(text));
-          } catch { /* ignore */ }
-        }
-      }
-      ctrl.enqueue(sseDone);
-      ctrl.close();
-    },
-  });
-
-  return new Response(body, sseHeaders());
-}
-
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
@@ -196,15 +133,17 @@ export async function POST(req: NextRequest) {
 
   const userMessage = context ? `Context: ${context}\n\n${prompt}` : prompt;
 
-  // ── Try Anthropic ──────────────────────────────────────────────────────────
+  // ── Anthropic only (no OpenAI, ever) ─────────────────────────────────────────
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  if (anthropicKey && anthropicKey.length > 10 && !anthropicKey.includes("placeholder")) {
+  const anthropicConfigured = Boolean(anthropicKey && anthropicKey.length > 10 && !anthropicKey.includes("placeholder"));
+
+  if (anthropicConfigured) {
     if (shouldStream) {
       try {
-        return await streamAnthropic(anthropicKey, userMessage);
+        return await streamAnthropic(anthropicKey!, userMessage);
       } catch {
-        // Fall through to OpenAI
+        // Fall through to the honest message below — never to another provider.
       }
     } else {
       try {
@@ -212,11 +151,11 @@ export async function POST(req: NextRequest) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": anthropicKey,
+            "x-api-key": anthropicKey!,
             "anthropic-version": "2023-06-01",
           },
           body: JSON.stringify({
-            model: (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? "claude-sonnet-4-20250514",
+            model: process.env.CARA_MODEL ?? "claude-sonnet-4-20250514",
             max_tokens: MAX_TOKENS,
             system: SYSTEM_PROMPT,
             messages: [{ role: "user", content: userMessage }],
@@ -231,75 +170,28 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ response: text, provider: "anthropic" });
         }
       } catch {
-        // Fall through to OpenAI
+        // Fall through to the honest message below.
       }
     }
   }
 
-  // ── Try OpenAI ─────────────────────────────────────────────────────────────
-
-  const openaiKey = process.env.OPENAI_API_KEY;
-  const openaiModel = (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ?? "gpt-4o-mini";
-  if (openaiKey && openaiKey.length > 10 && !openaiKey.includes("placeholder")) {
-    if (shouldStream) {
-      try {
-        return await streamOpenAI(openaiKey, openaiModel, userMessage);
-      } catch {
-        // Fall through to not-configured response
-      }
-    } else {
-      try {
-        const res = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${openaiKey}`,
-          },
-          body: JSON.stringify({
-            model: openaiModel,
-            max_tokens: MAX_TOKENS,
-            messages: [
-              { role: "system", content: SYSTEM_PROMPT },
-              { role: "user", content: userMessage },
-            ],
-          }),
-          signal: AbortSignal.timeout(30_000),
-        });
-        if (res.ok) {
-          const data = (await res.json()) as {
-            choices?: Array<{ message?: { content?: string } }>;
-          };
-          const text = data.choices?.[0]?.message?.content ?? "";
-          return NextResponse.json({ response: text, provider: "openai" });
-        }
-      } catch {
-        // Fall through
-      }
-    }
-  }
-
-  // ── Neither configured ─────────────────────────────────────────────────────
-
-  // If a key was present but we reached here, the provider call failed (e.g.
-  // exhausted credits / rate limit) rather than being unconfigured — be honest
-  // about which case it is so the message isn't misleading in production.
-  const keyPresent =
-    Boolean(anthropicKey && anthropicKey.length > 10 && !anthropicKey.includes("placeholder")) ||
-    Boolean(openaiKey && openaiKey.length > 10 && !openaiKey.includes("placeholder"));
-  const notConfigured = keyPresent
-    ? "Cara's AI assistant is temporarily unavailable — the AI service couldn't be reached just now (it may be rate-limited or out of credit). Cara's deterministic features continue to work; please try the AI assistant again shortly."
-    : "Cara is not yet configured. To enable AI assistance, set OPENAI_API_KEY or ANTHROPIC_API_KEY " +
-      "in your environment variables. Contact your system administrator to configure AI providers.";
+  // ── Anthropic unavailable ────────────────────────────────────────────────────
+  //
+  // If the key was present we reached here because the call failed (e.g. exhausted
+  // credits / rate limit) rather than being unconfigured — be honest about which.
+  const notConfigured = anthropicConfigured
+    ? "Cara's AI assistant is temporarily unavailable — Anthropic couldn't be reached just now (it may be rate-limited or out of credit). Cara's deterministic features continue to work; please try the AI assistant again shortly."
+    : "Cara is not yet configured. To enable AI assistance, set ANTHROPIC_API_KEY in your server environment. Cara uses Anthropic (Claude) only.";
 
   if (shouldStream) {
-    const body = new ReadableStream({
+    const stream = new ReadableStream({
       start(ctrl) {
         ctrl.enqueue(sseChunk(notConfigured));
         ctrl.enqueue(sseDone);
         ctrl.close();
       },
     });
-    return new Response(body, sseHeaders());
+    return new Response(stream, sseHeaders());
   }
 
   return NextResponse.json({ response: notConfigured, provider: "none" }, { status: 200 });
