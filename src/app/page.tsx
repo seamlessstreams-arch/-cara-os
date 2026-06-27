@@ -16,7 +16,7 @@ import type { Metadata } from "next";
 import {
   ArrowRight, PenLine, ShieldAlert, HeartHandshake, ClipboardCheck, GraduationCap,
   Radar, Eye, Quote, CheckCircle2, Siren, Users, Baby, Lock, ScrollText,
-  KeyRound, UserCheck, Brain, FileCheck, Ear, Sparkles,
+  KeyRound, UserCheck, Brain, FileCheck, Ear, Sparkles, Cpu, ShieldCheck,
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
@@ -177,6 +177,32 @@ export default function HomePage() {
             </p>
             <Link href="/product/tour" className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-[var(--cs-teal-strong)]">See Incident Mode in the tour <ArrowRight className="h-3 w-3" /></Link>
           </div>
+        </div>
+      </section>
+
+      {/* ── Reliable by design ───────────────────────────────────────────────── */}
+      <section id="reliability" className="mx-auto max-w-7xl px-5 py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <SectionEyebrow>Reliable by design</SectionEyebrow>
+          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Built to keep working — with or without AI.</h2>
+          <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">
+            Cara&rsquo;s intelligence runs on around 300 deterministic engines — transparent rules that read your records the
+            same way every time. AI adds extra help on top, but it&rsquo;s an enhancement, never a dependency: if AI is ever
+            unavailable, every core feature keeps working.
+          </p>
+        </div>
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {[
+            { Icon: Cpu, t: "Deterministic at the core", d: "Patterns, RAG ratings, compliance and evidence are computed by auditable rules — not an AI black box. Same records in, same result out, every time." },
+            { Icon: Sparkles, t: "AI as enhancement, not dependency", d: "When AI is available it drafts, narrates and rewrites. When it isn't, Cara falls back to deterministic output — you still get the report, the plan and the analysis." },
+            { Icon: ShieldCheck, t: "No single point of failure", d: "Live care data is never trapped behind a model call. Recording, intelligence and evidence stay available on the hardest shifts — when you need them most." },
+          ].map((c, i) => (
+            <div key={i} className="rounded-2xl border border-[var(--cs-border)] bg-white p-7 shadow-[var(--cs-shadow-card)]">
+              <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]"><c.Icon className="h-6 w-6" /></div>
+              <h3 className="mt-4 text-lg font-bold text-[var(--cs-navy)]">{c.t}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--cs-text-secondary)]">{c.d}</p>
+            </div>
+          ))}
         </div>
       </section>
 

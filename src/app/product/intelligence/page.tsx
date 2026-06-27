@@ -105,6 +105,10 @@ export default function IntelligencePage() {
                   </div>
                 ))}
               </div>
+              <div className="mt-5 flex items-start gap-3 rounded-2xl border border-[var(--cs-teal-soft)] bg-[var(--cs-teal-bg)]/40 p-4">
+                <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[var(--cs-teal-strong)]" />
+                <p className="text-sm leading-relaxed text-[var(--cs-text-secondary)]"><span className="font-bold text-[var(--cs-navy)]">Reliable by design.</span> Because the engines are deterministic, Cara keeps working even when AI is unavailable — you still get the ratings, reports and evidence, computed straight from your records.</p>
+              </div>
             </div>
             {/* Live analysis panel */}
             <div className="rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-navy)] p-5 text-white shadow-[var(--cs-shadow-card)]">
@@ -207,6 +211,56 @@ export default function IntelligencePage() {
             <p className="mx-auto mt-3 max-w-2xl text-base leading-relaxed text-white/75">
               This is what comes from being built by people who love this work: a critical friend grounded in the models the sector trusts &mdash; trauma-informed, rights-based, anti-oppressive, relationship-first &mdash; not generic AI bolted onto care. One that actually knows the work, and holds your team to the standard the children deserve.
             </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Cara Knowledge Base */}
+      <section className="mx-auto max-w-7xl px-5 py-20">
+        <div className="grid items-start gap-12 lg:grid-cols-2">
+          <div>
+            <SectionEyebrow>Cara Knowledge Base</SectionEyebrow>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Grounded in the practice the sector trusts.</h2>
+            <p className="mt-4 text-lg text-[var(--cs-text-secondary)]">
+              Cara&rsquo;s critical friend isn&rsquo;t generic AI. It reasons from a curated, browsable knowledge base of the
+              models, concepts and regulations that define good residential care — each entry sourced from practice
+              literature and expert practitioners, and reviewed before any engine reasons with it.
+            </p>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                { Icon: HeartHandshake, t: "Relational models", d: "PACE, DDP, the CARE model, Sanctuary & TCI, and Non-Violent Resistance." },
+                { Icon: Brain, t: "Trauma-informed concepts", d: "ACEs, the window of tolerance, psychological safety, rupture & repair." },
+                { Icon: BookOpen, t: "Social pedagogy", d: "Haltung — head, hands, heart — and reflective, relationship-first practice." },
+                { Icon: Scale, t: "Regulation", d: "Children's Homes (England) Regulations 2015 and the Quality Standards." },
+              ].map((c, i) => (
+                <div key={i} className="flex gap-3 rounded-2xl border border-[var(--cs-border)] bg-white p-4 shadow-[var(--cs-shadow-card)]">
+                  <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--cs-teal-bg)] text-[var(--cs-teal-strong)]"><c.Icon className="h-5 w-5" /></div>
+                  <div>
+                    <div className="text-sm font-bold text-[var(--cs-navy)]">{c.t}</div>
+                    <p className="mt-0.5 text-xs leading-relaxed text-[var(--cs-text-secondary)]">{c.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-navy)] p-7 text-white shadow-[var(--cs-shadow-card)]">
+            <div className="flex items-center gap-2 text-sm font-bold text-white"><BookOpen className="h-4 w-4 text-[var(--cs-cara-gold-soft)]" /> Cara&rsquo;s Heart — 10 core values</div>
+            <p className="mt-3 text-sm leading-relaxed text-white/70">
+              The knowledge base starts with what Cara believes about care — the values every prompt and every challenge is held to.
+            </p>
+            <ul className="mt-4 space-y-2">
+              {[
+                "Relationships are the primary intervention",
+                "What happened to you, not what's wrong with you",
+                "Co-regulation before correction",
+                "Rupture, repair, and still safe",
+                "Safeguard the carers to safeguard the children",
+                "The child's voice reduces shame",
+              ].map((v, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-white/85"><CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-teal-soft)]" /> {v}</li>
+              ))}
+            </ul>
+            <Link href="/cara-knowledge-base" className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--cs-teal-soft)] transition-colors hover:text-white">Browse the Knowledge Base <ArrowRight className="h-4 w-4" /></Link>
           </div>
         </div>
       </section>
