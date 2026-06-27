@@ -29,8 +29,6 @@ export async function GET() {
     if (!providerConfig.configured) {
       if (providerConfig.providerId === "anthropic") {
         missing.push("ANTHROPIC_API_KEY");
-      } else if (providerConfig.providerId === "openai") {
-        missing.push("OPENAI_API_KEY");
       } else {
         missing.push("CARA_PROVIDER (valid provider not configured)");
       }
@@ -62,25 +60,17 @@ export async function GET() {
     let providerReachable = false;
     let providerError: string | null = null;
 
-    if (providerConfig.configured) {
+    if (providerConfig.configured && providerConfig.providerId === "anthropic") {
       try {
-        const testUrl = providerConfig.providerId === "anthropic"
-          ? "https://api.anthropic.com/v1/messages"
-          : "https://api.openai.com/v1/chat/completions";
+        const testUrl = "https://api.anthropic.com/v1/messages";
 
         const testHeaders: Record<string, string> = {
           "content-type": "application/json",
+          "x-api-key": process.env.ANTHROPIC_API_KEY ?? "",
+          "anthropic-version": "2023-06-01",
         };
-        if (providerConfig.providerId === "anthropic") {
-          testHeaders["x-api-key"] = process.env.ANTHROPIC_API_KEY ?? "";
-          testHeaders["anthropic-version"] = "2023-06-01";
-        } else {
-          testHeaders["Authorization"] = `Bearer ${process.env.OPENAI_API_KEY ?? ""}`;
-        }
 
-        const testBody = providerConfig.providerId === "anthropic"
-          ? { model: providerConfig.textModel, max_tokens: 1, messages: [{ role: "user", content: "ping" }] }
-          : { model: providerConfig.textModel, max_tokens: 1, messages: [{ role: "user", content: "ping" }] };
+        const testBody = { model: providerConfig.textModel, max_tokens: 1, messages: [{ role: "user", content: "ping" }] };
 
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), 8000);

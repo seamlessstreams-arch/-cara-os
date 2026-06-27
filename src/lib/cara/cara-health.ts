@@ -4,7 +4,7 @@
 // Server-only. Never import this file in client components.
 //
 // Checks the full Cara stack:
-//   - Provider keys (OpenAI, Anthropic) — presence + optional live ping
+//   - Provider key (Anthropic) — presence + optional live ping
 //   - Supabase connection + table existence
 //   - Audit log writability
 //   - Pending approval queue depth
@@ -106,7 +106,6 @@ export interface ModuleCoverageHealth {
 
 export interface CaraHealthStatus {
   overallStatus: CaraOverallStatus;
-  openai: ProviderHealth;
   anthropic: ProviderHealth;
   supabase: PersistenceHealth;
   audit: AuditHealth;
@@ -176,50 +175,6 @@ const PLATFORM_MODULES = [
 function isKeyConfigured(envVar: string): boolean {
   const val = process.env[envVar];
   return Boolean(val && !val.includes("placeholder") && val.length > 10);
-}
-
-// ─── Helper: live OpenAI ping (1 token) ──────────────────────────────────────
-
-async function pingOpenAI(model: string): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) return { ok: false, latencyMs: 0, error: "Key not present" };
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 10_000);
-  const start = Date.now();
-
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: "ping" }],
-        max_tokens: 1,
-      }),
-      signal: controller.signal,
-    });
-
-    const latencyMs = Date.now() - start;
-
-    if (res.status === 401) return { ok: false, latencyMs, error: "Authentication failed — key may be invalid or expired" };
-    if (res.status === 429) return { ok: false, latencyMs, error: "Rate limit exceeded" };
-    if (res.status === 503) return { ok: false, latencyMs, error: "Provider temporarily unavailable" };
-    if (!res.ok) return { ok: false, latencyMs, error: `Provider returned HTTP ${res.status}` };
-
-    return { ok: true, latencyMs };
-  } catch (err) {
-    const latencyMs = Date.now() - start;
-    if (err instanceof Error && err.name === "AbortError") {
-      return { ok: false, latencyMs, error: "Provider call timed out after 10 s" };
-    }
-    return { ok: false, latencyMs, error: "Network error reaching provider" };
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 // ─── Helper: live Anthropic ping (1 token) ───────────────────────────────────
@@ -319,28 +274,13 @@ export async function checkCaraHealth(
 
   // ── 1. Provider health ───────────────────────────────────────────────────
 
-  const openaiConfigured = isKeyConfigured("OPENAI_API_KEY");
   const anthropicConfigured = isKeyConfigured("ANTHROPIC_API_KEY");
 
-  const openaiModel = (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ?? "gpt-4o-mini";
   const anthropicModel = (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ?? "claude-sonnet-4-20250514";
-
-  let openaiTestStatus: ProviderTestStatus = "skipped";
-  let openaiLatency: number | undefined;
-  let openaiError: string | undefined;
 
   let anthropicTestStatus: ProviderTestStatus = "skipped";
   let anthropicLatency: number | undefined;
   let anthropicError: string | undefined;
-
-  if (!openaiConfigured) {
-    openaiTestStatus = "not_configured";
-  } else if (deepTest) {
-    const result = await pingOpenAI(openaiModel);
-    openaiTestStatus = result.ok ? "ok" : "failed";
-    openaiLatency = result.latencyMs;
-    if (!result.ok) openaiError = result.error;
-  }
 
   if (!anthropicConfigured) {
     anthropicTestStatus = "not_configured";
@@ -380,9 +320,7 @@ export async function checkCaraHealth(
   let failedPersistenceCount: number | undefined;
 
   // Provider request counts
-  let openaiRequestsToday = 0;
   let anthropicRequestsToday = 0;
-  let openaiLastUsed: string | undefined;
   let anthropicLastUsed: string | undefined;
 
   const supabase = createServerClient();
@@ -444,25 +382,6 @@ export async function checkCaraHealth(
 
       // Provider usage stats
       try {
-        const { data: openaiReqs } = await sb
-          .from("cara_requests")
-          .select("created_at")
-          .eq("provider_id", "openai")
-          .gte("created_at", todayIso)
-          .order("created_at", { ascending: false })
-          .limit(1);
-        if (openaiReqs && openaiReqs.length > 0) {
-          openaiRequestsToday = openaiReqs.length;
-          openaiLastUsed = openaiReqs[0]?.created_at;
-        }
-
-        const { count: openaiCount } = await sb
-          .from("cara_requests")
-          .select("id", { count: "exact", head: true })
-          .eq("provider_id", "openai")
-          .gte("created_at", todayIso);
-        openaiRequestsToday = openaiCount ?? 0;
-
         const { data: anthropicReqs } = await sb
           .from("cara_requests")
           .select("created_at")
@@ -579,9 +498,8 @@ export async function checkCaraHealth(
 
   // ── 5. Overall status ────────────────────────────────────────────────────
 
-  const anyProviderConfigured = openaiConfigured || anthropicConfigured;
+  const anyProviderConfigured = anthropicConfigured;
   const anyProviderFailed =
-    (deepTest && openaiConfigured && openaiTestStatus === "failed") ||
     (deepTest && anthropicConfigured && anthropicTestStatus === "failed");
 
   let overallStatus: CaraOverallStatus;
@@ -602,17 +520,9 @@ export async function checkCaraHealth(
 
   // ── 6. Recommendations ──────────────────────────────────────────────────
 
-  if (!openaiConfigured && !anthropicConfigured) {
+  if (!anthropicConfigured) {
     recommendations.push(
-      "Set ANTHROPIC_API_KEY or OPENAI_API_KEY to enable Cara intelligence features.",
-    );
-  } else if (!openaiConfigured) {
-    recommendations.push(
-      "Optional: Set OPENAI_API_KEY to enable audio transcription and additional model options.",
-    );
-  } else if (!anthropicConfigured) {
-    recommendations.push(
-      "Optional: Set ANTHROPIC_API_KEY to enable Anthropic-powered engines as an alternative provider.",
+      "Set ANTHROPIC_API_KEY to enable Cara intelligence features.",
     );
   }
   if (!supabaseConnected) {
@@ -635,11 +545,6 @@ export async function checkCaraHealth(
       `${overdueCount} Cara draft${overdueCount === 1 ? "" : "s"} pending approval for more than 24 hours. Review the Cara approval queue.`,
     );
   }
-  if (deepTest && openaiTestStatus === "failed") {
-    recommendations.push(
-      `OpenAI live test call failed: ${openaiError ?? "unknown error"}. Check the API key and your OpenAI account status.`,
-    );
-  }
   if (deepTest && anthropicTestStatus === "failed") {
     recommendations.push(
       `Anthropic live test call failed: ${anthropicError ?? "unknown error"}. Check the API key and your Anthropic account status.`,
@@ -655,16 +560,6 @@ export async function checkCaraHealth(
 
   return {
     overallStatus,
-    openai: {
-      configured: openaiConfigured,
-      keyEnvVar: "OPENAI_API_KEY",
-      testCallStatus: openaiTestStatus,
-      latencyMs: openaiLatency,
-      model: openaiConfigured ? openaiModel : undefined,
-      errorMessage: openaiError,
-      lastUsedAt: openaiLastUsed,
-      requestsToday: openaiRequestsToday,
-    },
     anthropic: {
       configured: anthropicConfigured,
       keyEnvVar: "ANTHROPIC_API_KEY",

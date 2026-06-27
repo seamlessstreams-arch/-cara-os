@@ -79,7 +79,7 @@ export default function CaraCostsPage() {
             <CaraCostEstimate
               estimatedCost={0}
               actualCost={data.summary.totalCost}
-              provider="openai"
+              provider="anthropic"
               model="aggregate"
               dailyUsed={data.summary.totalCost}
               dailyLimit={data.limits.dailyPerHome}

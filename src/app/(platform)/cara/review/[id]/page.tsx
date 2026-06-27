@@ -173,7 +173,7 @@ Next review within 48 hours to confirm actions have been progressed.`,
   ],
   audit_timeline: [
     { id: "aud_001", action: "suggestion_created", actor_role: "system", created_at: "2026-05-05T08:15:00Z" },
-    { id: "aud_002", action: "draft_generated", actor_role: "system", created_at: "2026-05-05T08:15:01Z", metadata: { ai_provider: "openai", mock_mode: false } },
+    { id: "aud_002", action: "draft_generated", actor_role: "system", created_at: "2026-05-05T08:15:01Z", metadata: { ai_provider: "anthropic", mock_mode: false } },
     { id: "aud_003", action: "linked_records_suggested", actor_role: "system", created_at: "2026-05-05T08:15:02Z", metadata: { count: 4 } },
     { id: "aud_004", action: "suggestion_viewed", actor_role: "registered_manager", created_at: "2026-05-05T09:30:00Z" },
   ],

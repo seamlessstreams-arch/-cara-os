@@ -67,7 +67,6 @@ export interface ModuleCoverageHealth {
 
 export interface CaraHealthStatus {
   overallStatus: CaraOverallStatus;
-  openai: ProviderHealth;
   anthropic: ProviderHealth;
   supabase: PersistenceHealth;
   audit: AuditHealth;

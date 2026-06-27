@@ -9,16 +9,14 @@ const SENSITIVITY_LEVELS = [
   { level: "internal", description: "Internal business data — most providers allowed", colour: "bg-blue-100 text-blue-800" },
   { level: "confidential", description: "Organisation-sensitive — governed providers only", colour: "bg-amber-100 text-amber-800" },
   { level: "child_sensitive", description: "Child personal data — redaction required", colour: "bg-orange-100 text-orange-800" },
-  { level: "safeguarding_sensitive", description: "Safeguarding concerns — Azure OpenAI only", colour: "bg-red-100 text-red-800" },
+  { level: "safeguarding_sensitive", description: "Safeguarding concerns — Anthropic (Claude)", colour: "bg-red-100 text-red-800" },
   { level: "legal_sensitive", description: "Legal proceedings — enterprise providers only", colour: "bg-violet-100 text-violet-800" },
   { level: "staff_sensitive", description: "Staff personal matters — enterprise providers only", colour: "bg-pink-100 text-pink-800" },
   { level: "health_sensitive", description: "Health data — enterprise providers with UK residency", colour: "bg-rose-100 text-rose-800" },
 ];
 
 const PROVIDER_CLEARANCE = [
-  { provider: "Azure OpenAI", maxSensitivity: "safeguarding_sensitive", residency: "UK/EU", governance: "enterprise" },
-  { provider: "OpenAI", maxSensitivity: "confidential", residency: "US/EU", governance: "standard" },
-  { provider: "Anthropic", maxSensitivity: "confidential", residency: "US/EU", governance: "standard" },
+  { provider: "Anthropic", maxSensitivity: "safeguarding_sensitive", residency: "US/EU", governance: "enterprise" },
   { provider: "Mistral", maxSensitivity: "internal", residency: "EU", governance: "standard" },
   { provider: "Voyage AI", maxSensitivity: "child_sensitive", residency: "US", governance: "standard" },
   { provider: "Cohere", maxSensitivity: "internal", residency: "US/CA", governance: "standard" },

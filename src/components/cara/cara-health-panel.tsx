@@ -360,11 +360,6 @@ export function CaraHealthPanel({
                 <SectionLabel>AI Providers</SectionLabel>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <ProviderCard
-                    name="OpenAI"
-                    icon={<Sparkles className="h-4 w-4 text-emerald-600" />}
-                    health={health.openai}
-                  />
-                  <ProviderCard
                     name="Anthropic"
                     icon={<Sparkles className="h-4 w-4 text-violet-600" />}
                     health={health.anthropic}
@@ -578,7 +573,6 @@ export function CaraHealthPanel({
                 <div className="rounded-lg border bg-white p-4">
                   <div className="space-y-1.5">
                     {[
-                      { name: "OPENAI_API_KEY", ok: health.openai.configured },
                       { name: "ANTHROPIC_API_KEY", ok: health.anthropic.configured },
                       { name: "NEXT_PUBLIC_SUPABASE_URL", ok: health.supabase.connected },
                       { name: "SUPABASE_SERVICE_ROLE_KEY", ok: health.supabase.connected },

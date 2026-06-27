@@ -186,20 +186,20 @@ describe("checkCaraHealth — env var checks (no Supabase or provider calls)", (
     const health = await checkCaraHealth({ deepTest: false });
 
     expect(health.overallStatus).toBe("not_configured");
-    expect(health.openai.configured).toBe(false);
     expect(health.anthropic.configured).toBe(false);
-    expect(health.openai.testCallStatus).toBe("not_configured");
     expect(health.anthropic.testCallStatus).toBe("not_configured");
   });
 
-  it("marks openai as configured when OPENAI_API_KEY is set", async () => {
+  it("does not treat OPENAI_API_KEY as a configured provider (Anthropic-only)", async () => {
+    // Cara is Anthropic-only: an OpenAI key must not enable a provider or
+    // change the overall status. The health surface no longer exposes openai.
     process.env.OPENAI_API_KEY = "sk-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
     const { checkCaraHealth } = await import("../cara-health");
     const health = await checkCaraHealth({ deepTest: false });
 
-    expect(health.openai.configured).toBe(true);
-    // No deep test, so status should be skipped
-    expect(health.openai.testCallStatus).toBe("skipped");
+    expect(health.anthropic.configured).toBe(false);
+    expect(health.overallStatus).toBe("not_configured");
+    expect("openai" in health).toBe(false);
   });
 
   it("marks anthropic as configured when ANTHROPIC_API_KEY is set", async () => {
@@ -212,28 +212,26 @@ describe("checkCaraHealth — env var checks (no Supabase or provider calls)", (
   });
 
   it("does not mark placeholder values as configured", async () => {
-    process.env.OPENAI_API_KEY = "your-openai-key-placeholder";
     process.env.ANTHROPIC_API_KEY = "placeholder";
     const { checkCaraHealth } = await import("../cara-health");
     const health = await checkCaraHealth({ deepTest: false });
 
-    expect(health.openai.configured).toBe(false);
     expect(health.anthropic.configured).toBe(false);
   });
 
   it("includes supabase not configured recommendation", async () => {
-    process.env.OPENAI_API_KEY = "sk-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
+    process.env.ANTHROPIC_API_KEY = "sk-ant-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
     const { checkCaraHealth } = await import("../cara-health");
     const health = await checkCaraHealth({ deepTest: false });
 
     expect(health.recommendations.some((r) => r.toLowerCase().includes("supabase"))).toBe(true);
   });
 
-  it("adds OPENAI_API_KEY recommendation when not configured", async () => {
+  it("never recommends OPENAI_API_KEY (Anthropic-only)", async () => {
     const { checkCaraHealth } = await import("../cara-health");
     const health = await checkCaraHealth();
 
-    expect(health.recommendations.some((r) => r.includes("OPENAI_API_KEY"))).toBe(true);
+    expect(health.recommendations.some((r) => r.includes("OPENAI_API_KEY"))).toBe(false);
   });
 
   it("adds ANTHROPIC_API_KEY recommendation when not configured", async () => {
@@ -250,11 +248,11 @@ describe("checkCaraHealth — env var checks (no Supabase or provider calls)", (
     expect(health.lastCheckedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
-  it("returns full_capacity when one provider is configured (Supabase is optional)", async () => {
-    // Intentional design: a single configured AI provider is sufficient for
+  it("returns full_capacity when the provider is configured (Supabase is optional)", async () => {
+    // Intentional design: a configured AI provider (Anthropic) is sufficient for
     // full capacity. Supabase persistence is optional — its absence downgrades
     // individual capabilities, not the overall operational status.
-    process.env.OPENAI_API_KEY = "sk-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
+    process.env.ANTHROPIC_API_KEY = "sk-ant-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
     const { checkCaraHealth } = await import("../cara-health");
     const health = await checkCaraHealth({ deepTest: false });
 

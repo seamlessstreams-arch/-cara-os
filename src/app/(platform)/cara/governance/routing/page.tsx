@@ -50,12 +50,12 @@ const RISK_MAP: Record<string, string> = {
 };
 
 const PROVIDER_MAP: Record<string, string> = {
-  safeguarding_analysis: "azure_openai",
-  reg45_report: "azure_openai",
-  annex_a_report: "azure_openai",
+  safeguarding_analysis: "anthropic",
+  reg45_report: "anthropic",
+  annex_a_report: "anthropic",
   keywork_session_plan: "anthropic",
   direct_work_session: "anthropic",
-  staff_briefing: "openai",
+  staff_briefing: "anthropic",
   public_research: "perplexity",
   competitor_research: "perplexity",
   document_extraction: "mistral",
@@ -119,7 +119,7 @@ export default function CaraRoutingPage() {
           <tbody className="divide-y divide-border">
             {filtered.map(task => {
               const risk = RISK_MAP[task] ?? "low";
-              const provider = PROVIDER_MAP[task] ?? "openai";
+              const provider = PROVIDER_MAP[task] ?? "anthropic";
               const needsApproval = ["safeguarding_analysis", "reg45_report", "annex_a_report", "rag44_evidence_review", "child_review_report", "placement_planning", "risk_assessment_update", "management_oversight"].includes(task);
 
               return (
