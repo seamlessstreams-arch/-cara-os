@@ -11,7 +11,7 @@
 //   7. Persist to database
 //   8. Audit trail
 //
-// Supports OpenAI-compatible API (configurable via env).
+// Runs on Claude (Anthropic) via the AI Gateway (configurable via env).
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { buildChildProfile } from "./profile-builder";
@@ -27,7 +27,7 @@ import type {
 
 // ── Configuration ────────────────────────────────────────────────────────────
 
-// Claude (Anthropic) only — OpenAI was removed platform-wide. The AI call now
+// Claude (Anthropic) is the only AI provider, platform-wide. The AI call now
 // goes through the AI Gateway (see callLLM); only the model label is read here.
 const LLM_MODEL = (process.env.CARA_STUDIO_MODEL ?? process.env.CARA_STUDIO_MODEL) ?? (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? "claude-sonnet-4-20250514";
 

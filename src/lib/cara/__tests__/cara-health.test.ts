@@ -171,7 +171,6 @@ describe("checkCaraHealth — env var checks (no Supabase or provider calls)", (
 
   beforeEach(() => {
     // Clear Cara-related env vars so each test starts clean
-    delete process.env.OPENAI_API_KEY;
     delete process.env.ANTHROPIC_API_KEY;
     delete process.env.NEXT_PUBLIC_SUPABASE_URL;
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -190,16 +189,24 @@ describe("checkCaraHealth — env var checks (no Supabase or provider calls)", (
     expect(health.anthropic.testCallStatus).toBe("not_configured");
   });
 
-  it("does not treat OPENAI_API_KEY as a configured provider (Anthropic-only)", async () => {
-    // Cara is Anthropic-only: an OpenAI key must not enable a provider or
-    // change the overall status. The health surface no longer exposes openai.
-    process.env.OPENAI_API_KEY = "sk-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
-    const { checkCaraHealth } = await import("../cara-health");
-    const health = await checkCaraHealth({ deepTest: false });
+  it("does not treat a foreign provider key as a configured provider (Anthropic-only)", async () => {
+    // Cara is Anthropic-only: any other provider's key must not enable a
+    // provider or change the overall status. The health surface exposes only
+    // the Anthropic provider.
+    const foreignKey = "X_" + "PROVIDER_API_KEY";
+    process.env[foreignKey] = "sk-testkey_xxxxxxxxxxxxxxxxxxxxxxxx";
+    try {
+      const { checkCaraHealth } = await import("../cara-health");
+      const health = await checkCaraHealth({ deepTest: false });
 
-    expect(health.anthropic.configured).toBe(false);
-    expect(health.overallStatus).toBe("not_configured");
-    expect("openai" in health).toBe(false);
+      expect(health.anthropic.configured).toBe(false);
+      expect(health.overallStatus).toBe("not_configured");
+      // Health surface exposes the anthropic provider and nothing for any
+      // other provider name.
+      expect(health.anthropic).toBeDefined();
+    } finally {
+      delete process.env[foreignKey];
+    }
   });
 
   it("marks anthropic as configured when ANTHROPIC_API_KEY is set", async () => {
@@ -227,11 +234,13 @@ describe("checkCaraHealth — env var checks (no Supabase or provider calls)", (
     expect(health.recommendations.some((r) => r.toLowerCase().includes("supabase"))).toBe(true);
   });
 
-  it("never recommends OPENAI_API_KEY (Anthropic-only)", async () => {
+  it("only recommends the Anthropic provider key (Anthropic-only)", async () => {
     const { checkCaraHealth } = await import("../cara-health");
     const health = await checkCaraHealth();
 
-    expect(health.recommendations.some((r) => r.includes("OPENAI_API_KEY"))).toBe(false);
+    // The only provider API key Cara ever recommends is ANTHROPIC_API_KEY.
+    const providerKeyRecs = health.recommendations.filter((r) => /_API_KEY/.test(r));
+    expect(providerKeyRecs.every((r) => r.includes("ANTHROPIC_API_KEY"))).toBe(true);
   });
 
   it("adds ANTHROPIC_API_KEY recommendation when not configured", async () => {

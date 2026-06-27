@@ -2,7 +2,7 @@
 // API: /api/cara/oversight-intelligence
 //
 // AI-powered management oversight intelligence using Vercel AI Gateway.
-// Runs on Claude (Anthropic) — OpenAI has been removed.
+// Runs on Claude (Anthropic) — the only AI provider.
 //
 // POST — Run AI analysis for a specific oversight domain
 // GET  — Health check / provider status
@@ -186,7 +186,7 @@ export async function GET() {
         domains: ALL_OVERSIGHT_DOMAINS,
       },
     },
-    routing: "All oversight domains run on Claude (Anthropic) — OpenAI removed",
+    routing: "All oversight domains run on Claude (Anthropic) — the only AI provider",
     caraLabel: "All AI output is labelled 'AI suggested draft' — never final until human-approved",
   });
 }

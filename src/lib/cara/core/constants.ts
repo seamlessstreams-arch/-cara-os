@@ -39,8 +39,6 @@ export const CRITICAL_RISK_TASKS: CaraTaskType[] = [
 // Maps providers to the maximum sensitivity they're approved for.
 
 export const PROVIDER_MAX_SENSITIVITY: Record<CaraProviderName, CaraDataSensitivity[]> = {
-  openai: ["public", "internal", "confidential", "child_sensitive", "staff_sensitive"],
-  azure_openai: ["public", "internal", "confidential", "child_sensitive", "safeguarding_sensitive", "legal_sensitive", "staff_sensitive", "health_sensitive"],
   anthropic: ["public", "internal", "confidential", "child_sensitive", "staff_sensitive", "health_sensitive"],
   bedrock: ["public", "internal", "confidential", "child_sensitive", "safeguarding_sensitive", "legal_sensitive", "staff_sensitive", "health_sensitive"],
   vertex_ai: ["public", "internal", "confidential", "child_sensitive", "staff_sensitive"],
@@ -58,16 +56,12 @@ export const PROVIDER_MAX_SENSITIVITY: Record<CaraProviderName, CaraDataSensitiv
 // These providers have enterprise governance and data processing agreements.
 
 export const ENTERPRISE_GOVERNED_PROVIDERS: CaraProviderName[] = [
-  "azure_openai",
   "bedrock",
 ];
 
 // ── Provider Cost Per 1K Tokens (GBP estimates) ──────────────────────────
 
 export const PROVIDER_COST_PER_1K: Record<string, { input: number; output: number }> = {
-  "gpt-4o": { input: 0.002, output: 0.008 },
-  "gpt-4o-mini": { input: 0.00012, output: 0.00048 },
-  "gpt-4-turbo": { input: 0.008, output: 0.024 },
   "claude-sonnet-4-20250514": { input: 0.0024, output: 0.012 },
   "claude-opus-4-20250514": { input: 0.012, output: 0.06 },
   "claude-haiku-3": { input: 0.0002, output: 0.001 },
@@ -85,49 +79,49 @@ export const PROVIDER_COST_PER_1K: Record<string, { input: number; output: numbe
 
 export const TASK_PROVIDER_PREFERENCE: Partial<Record<CaraTaskType, CaraProviderName[]>> = {
   // Anthropic for warm, reflective, child-centred content
-  keywork_session_plan: ["anthropic", "openai", "azure_openai"],
-  direct_work_session: ["anthropic", "openai", "azure_openai"],
-  staff_briefing: ["anthropic", "openai", "azure_openai"],
-  staff_supervision_reflection: ["anthropic", "openai", "azure_openai"],
-  child_weekly_report: ["anthropic", "openai", "azure_openai"],
-  child_review_report: ["anthropic", "azure_openai", "openai"],
+  keywork_session_plan: ["anthropic"],
+  direct_work_session: ["anthropic"],
+  staff_briefing: ["anthropic"],
+  staff_supervision_reflection: ["anthropic"],
+  child_weekly_report: ["anthropic"],
+  child_review_report: ["anthropic"],
 
-  // Azure/Bedrock for high-risk governance
-  safeguarding_analysis: ["azure_openai", "bedrock", "anthropic"],
-  reg45_report: ["azure_openai", "anthropic", "bedrock"],
-  annex_a_report: ["azure_openai", "anthropic", "bedrock"],
-  rag44_evidence_review: ["azure_openai", "bedrock", "anthropic"],
-  risk_assessment_update: ["azure_openai", "bedrock", "anthropic"],
-  management_oversight: ["azure_openai", "anthropic", "openai"],
-  placement_planning: ["azure_openai", "bedrock", "anthropic"],
+  // Bedrock/Anthropic for high-risk governance
+  safeguarding_analysis: ["bedrock", "anthropic"],
+  reg45_report: ["anthropic", "bedrock"],
+  annex_a_report: ["anthropic", "bedrock"],
+  rag44_evidence_review: ["bedrock", "anthropic"],
+  risk_assessment_update: ["bedrock", "anthropic"],
+  management_oversight: ["anthropic"],
+  placement_planning: ["bedrock", "anthropic"],
 
-  // OpenAI for structured reasoning and planning
-  daily_task_generation: ["openai", "anthropic", "mistral"],
-  form_prompt_support: ["openai", "mistral", "anthropic"],
-  behaviour_pattern_analysis: ["openai", "anthropic", "azure_openai"],
-  incident_summary: ["openai", "anthropic", "azure_openai"],
+  // Anthropic for structured reasoning and planning
+  daily_task_generation: ["anthropic", "mistral"],
+  form_prompt_support: ["mistral", "anthropic"],
+  behaviour_pattern_analysis: ["anthropic"],
+  incident_summary: ["anthropic"],
 
   // Mistral for classification and extraction
-  document_extraction: ["mistral", "openai", "anthropic"],
-  document_classification: ["mistral", "openai", "anthropic"],
-  admin_summary: ["mistral", "openai", "anthropic"],
-  email_draft: ["mistral", "openai", "anthropic"],
+  document_extraction: ["mistral", "anthropic"],
+  document_classification: ["mistral", "anthropic"],
+  admin_summary: ["mistral", "anthropic"],
+  email_draft: ["mistral", "anthropic"],
 
   // Vertex AI for multimodal and creative
-  training_material_generation: ["vertex_ai", "anthropic", "openai"],
-  creative_resource_generation: ["vertex_ai", "anthropic", "openai"],
+  training_material_generation: ["vertex_ai", "anthropic"],
+  creative_resource_generation: ["vertex_ai", "anthropic"],
 
   // Perplexity for public research only
   public_research: ["perplexity"],
   competitor_research: ["perplexity"],
 
   // Evidence search
-  evidence_search: ["voyage", "cohere", "openai"],
-  filing_cabinet_search: ["voyage", "cohere", "openai"],
-  policy_search: ["voyage", "cohere", "openai"],
+  evidence_search: ["voyage", "cohere", "anthropic"],
+  filing_cabinet_search: ["voyage", "cohere", "anthropic"],
+  policy_search: ["voyage", "cohere", "anthropic"],
 
   // QA
-  quality_assurance_review: ["anthropic", "openai", "azure_openai"],
+  quality_assurance_review: ["anthropic"],
 };
 
 // ── Risk Classification by Task Type ─────────────────────────────────────

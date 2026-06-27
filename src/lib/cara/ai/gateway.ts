@@ -2,13 +2,10 @@
 // Cara AI GATEWAY — Vercel AI SDK Integration
 //
 // Unified AI provider for all Cara intelligence features using Vercel AI Gateway.
-// Routes requests to OpenAI (management oversight) or Anthropic (operational)
-// based on the task domain.
-//
-// - OpenAI: management-level oversight, pattern detection, compliance audit,
-//           Ofsted readiness, risk escalation, governance verification
-// - Anthropic (Claude): operational intelligence, daily analysis, therapeutic
-//           support suggestions, care record enhancement
+// Every request runs on Anthropic (Claude) — the only AI provider — across all
+// task domains: management-level oversight, pattern detection, compliance audit,
+// Ofsted readiness, risk escalation, governance verification, operational
+// intelligence, daily analysis, therapeutic support and care record enhancement.
 //
 // All requests go through Vercel AI Gateway — authenticated via OIDC token,
 // no direct API keys needed in production.
@@ -19,7 +16,7 @@ import { CARA_SYSTEM_PREAMBLE, sanitiseOutput } from "./safety";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type AIProvider = "openai" | "anthropic";
+export type AIProvider = "anthropic";
 
 export type OversightDomain =
   | "quality_of_care_review"
@@ -61,7 +58,7 @@ export interface GatewayResponse {
 
 // ── Provider Routing ─────────────────────────────────────────────────────────
 
-// Every oversight domain now runs on Claude (OpenAI removed). Kept as a single list
+// Every oversight domain runs on Claude (Anthropic). Kept as a single list
 // so callers that enumerate valid domains keep working.
 export const ALL_OVERSIGHT_DOMAINS: OversightDomain[] = [
   "quality_of_care_review", "compliance_audit", "pattern_detection", "ofsted_readiness",
@@ -71,8 +68,8 @@ export const ALL_OVERSIGHT_DOMAINS: OversightDomain[] = [
 ];
 
 function resolveProvider(domain: OversightDomain, explicit?: AIProvider): AIProvider {
-  // OpenAI removed — every oversight domain runs on Claude (Anthropic) now,
-  // regardless of domain or any legacy explicit request. (Params retained for
+  // Every oversight domain runs on Claude (Anthropic) — the only AI provider —
+  // regardless of domain or any explicit request. (Params retained for
   // signature compatibility.)
   void domain;
   void explicit;
@@ -80,7 +77,7 @@ function resolveProvider(domain: OversightDomain, explicit?: AIProvider): AIProv
 }
 
 function resolveModel(provider: AIProvider): string {
-  // OpenAI removed — Claude is the only gateway model.
+  // Claude is the only gateway model.
   void provider;
   return "anthropic/claude-sonnet-4-6";
 }
@@ -88,8 +85,8 @@ function resolveModel(provider: AIProvider): string {
 // ── Core Generation ──────────────────────────────────────────────────────────
 
 /**
- * Generate AI content through Vercel AI Gateway. Runs on Claude (Anthropic) —
- * OpenAI has been removed.
+ * Generate AI content through Vercel AI Gateway. Runs on Claude (Anthropic),
+ * the only AI provider.
  */
 export async function generateViaGateway(request: GatewayRequest): Promise<GatewayResponse> {
   const provider = resolveProvider(request.domain, request.provider);
@@ -177,8 +174,8 @@ export interface OversightAnalysisResponse {
 
 /**
  * Run management oversight analysis with optional cross-validation.
- * Both the primary analysis and cross-validation run on Anthropic (Claude) —
- * OpenAI has been removed.
+ * Both the primary analysis and cross-validation run on Anthropic (Claude),
+ * the only AI provider.
  */
 export async function runOversightAnalysis(
   request: OversightAnalysisRequest

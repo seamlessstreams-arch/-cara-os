@@ -129,7 +129,6 @@ export class CaraCostControlService {
     if (riskLevel === "low" && isSimpleTask(taskType)) {
       // Return the smallest/cheapest available model
       const cheapModels: Record<string, string> = {
-        openai: "gpt-4o-mini",
         anthropic: "claude-haiku-3",
         mistral: "mistral-small-latest",
         vertex_ai: "gemini-1.5-flash",

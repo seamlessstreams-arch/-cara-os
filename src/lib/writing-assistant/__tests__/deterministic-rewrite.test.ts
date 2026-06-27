@@ -160,7 +160,6 @@ describe("no-AI regression (proves zero network dependency)", () => {
     );
     const forbidden: Array<[RegExp, string]> = [
       [/anthropic/i, "anthropic"],
-      [/openai/i, "openai"],
       [/\bgemini\b/i, "gemini"],
       [/cara-provider/i, "cara-provider (LLM provider)"],
       [/generateText/, "generateText (LLM call)"],

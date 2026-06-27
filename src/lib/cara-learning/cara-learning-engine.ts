@@ -87,7 +87,7 @@ export interface AgentCapabilityProfile {
   organisationId: string;
   agentName: string;
   agentType: AgentType;
-  currentProvider: string;               // e.g. "anthropic_claude", "openai_gpt4"
+  currentProvider: string;               // e.g. "anthropic_claude"
   internalReplacementStatus: ReplacementStatus;
   // Scope
   taskScope: string;                     // what the agent does

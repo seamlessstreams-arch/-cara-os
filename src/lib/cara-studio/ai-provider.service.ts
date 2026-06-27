@@ -1,13 +1,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara STUDIO — AI PROVIDER ABSTRACTION
 //
-// Multi-provider layer: OpenAI, Anthropic, Gemini, or safe stub fallback.
+// Multi-provider layer: Anthropic, Gemini, or safe stub fallback.
 // Server-side only — never import in client components.
 // ══════════════════════════════════════════════════════════════════════════════
 
 export interface StudioAIProviderConfig {
   configured: boolean;
-  provider: "openai" | "anthropic" | "gemini" | "stub";
+  provider: "anthropic" | "gemini" | "stub";
   model: string;
   maxSourceTokens: number;
   reason?: string;
@@ -25,16 +25,8 @@ export function getStudioAIProvider(): StudioAIProviderConfig {
   // (matching the platform-wide cara-provider default) — stub only when no key.
   const defaultProvider = process.env.ANTHROPIC_API_KEY ? "anthropic" : "stub";
   const provider = (process.env.AI_PROVIDER ?? defaultProvider).toLowerCase() as StudioAIProviderConfig["provider"];
-  const model = process.env.AI_DEFAULT_MODEL ?? "gpt-4.1-mini";
+  const model = process.env.AI_DEFAULT_MODEL ?? "claude-sonnet-4-20250514";
   const maxSourceTokens = parseInt((process.env.CARA_MAX_SOURCE_TOKENS ?? process.env.CARA_MAX_SOURCE_TOKENS) ?? "8000", 10);
-
-  if (provider === "openai") {
-    const key = process.env.OPENAI_API_KEY;
-    if (!key || key.includes("placeholder")) {
-      return { configured: false, provider: "stub", model, maxSourceTokens, reason: "OPENAI_API_KEY not configured. Using demo mode." };
-    }
-    return { configured: true, provider: "openai", model, maxSourceTokens };
-  }
 
   if (provider === "anthropic") {
     const key = process.env.ANTHROPIC_API_KEY;
@@ -62,33 +54,6 @@ export async function generateStudioContent(
 ): Promise<StudioAIResponse> {
   const config = getStudioAIProvider();
   const maxTokens = options?.maxTokens ?? 4096;
-  const temperature = options?.temperature ?? 0.4;
-
-  // ── OpenAI ──────────────────────────────────────────────────────────────
-  if (config.configured && config.provider === "openai") {
-    try {
-      const moduleName = "openai"; const { default: OpenAI } = await import(/* webpackIgnore: true */ moduleName) as { default: new (opts: { apiKey: string | undefined }) => any };
-      const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      const response = await client.chat.completions.create({
-        model: config.model,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        max_tokens: maxTokens,
-        temperature,
-      });
-      return {
-        content: response.choices[0]?.message?.content ?? "",
-        model: config.model,
-        provider: "openai",
-        tokens_used: response.usage?.total_tokens,
-      };
-    } catch (err) {
-      console.error("[cara-studio] OpenAI generation failed:", err);
-      return generateStubContent(systemPrompt, userPrompt);
-    }
-  }
 
   // ── Anthropic ───────────────────────────────────────────────────────────
   if (config.configured && config.provider === "anthropic") {

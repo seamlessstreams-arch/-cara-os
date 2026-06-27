@@ -1,13 +1,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara STUDIO — EXTENDED AI PROVIDER
-// Supports: OpenAI, Anthropic, Gemini, Stub (safe fallback for dev/demo)
+// Supports: Anthropic, Gemini, Stub (safe fallback for dev/demo)
 // All providers return CaraStudioProviderResult.
 // The stub provider returns clearly-marked demo content only.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { CaraArtifactType, CaraFramework, CaraTone, CaraCreativeMode } from "@/types/cara-studio";
 
-export type CaraStudioProvider = "openai" | "anthropic" | "gemini" | "stub";
+export type CaraStudioProvider = "anthropic" | "gemini" | "stub";
 
 export interface CaraStudioProviderConfig {
   provider: CaraStudioProvider;
@@ -41,7 +41,6 @@ export interface CaraStudioProviderResult {
 
 export function getCaraStudioProviderConfig(): CaraStudioProviderConfig {
   const explicit = process.env.AI_PROVIDER as CaraStudioProvider | undefined;
-  const openaiKey = process.env.OPENAI_API_KEY;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
   const enableStubFallback = process.env.AI_ENABLE_STUB_FALLBACK !== "false";
@@ -54,15 +53,6 @@ export function getCaraStudioProviderConfig(): CaraStudioProviderConfig {
     return {
       provider: "anthropic",
       model: defaultModel ?? "claude-sonnet-4-20250514",
-      configured: true,
-      maxTokens: 4096,
-      temperature: 0.4,
-    };
-  }
-  if (explicit === "openai" && openaiKey) {
-    return {
-      provider: "openai",
-      model: defaultModel ?? "gpt-4o",
       configured: true,
       maxTokens: 4096,
       temperature: 0.4,
@@ -86,15 +76,6 @@ export function getCaraStudioProviderConfig(): CaraStudioProviderConfig {
     return {
       provider: "anthropic",
       model: defaultModel ?? "claude-sonnet-4-20250514",
-      configured: true,
-      maxTokens: 4096,
-      temperature: 0.4,
-    };
-  }
-  if (openaiKey) {
-    return {
-      provider: "openai",
-      model: defaultModel ?? "gpt-4o",
       configured: true,
       maxTokens: 4096,
       temperature: 0.4,
@@ -134,8 +115,6 @@ export async function generateCaraStudioContent(
     switch (cfg.provider) {
       case "anthropic":
         return await generateWithAnthropic(input, cfg);
-      case "openai":
-        return await generateWithOpenAI(input, cfg);
       case "gemini":
         return await generateWithGemini(input, cfg);
       default:
@@ -175,38 +154,6 @@ async function generateWithAnthropic(
     provider: "anthropic",
     inputTokens: gw.tokensInput ?? Math.ceil((input.systemPrompt.length + input.userPrompt.length) / 4),
     outputTokens: gw.tokensOutput ?? Math.ceil(gw.output.length / 4),
-    isStub: false,
-  };
-}
-
-// ── OpenAI provider ───────────────────────────────────────────────────────────
-
-async function generateWithOpenAI(
-  input: CaraStudioGenerationInput,
-  config: CaraStudioProviderConfig
-): Promise<CaraStudioProviderResult> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { default: OpenAI } = await import(/* webpackIgnore: true */ /* turbopackIgnore: true */ "openai" as any);
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-  const completion = await client.chat.completions.create({
-    model: config.model,
-    max_tokens: input.maxTokens ?? config.maxTokens,
-    temperature: config.temperature,
-    messages: [
-      { role: "system", content: input.systemPrompt },
-      { role: "user", content: input.userPrompt },
-    ],
-  });
-
-  const content = completion.choices[0]?.message?.content ?? "";
-
-  return {
-    content,
-    model: config.model,
-    provider: "openai",
-    inputTokens: completion.usage?.prompt_tokens,
-    outputTokens: completion.usage?.completion_tokens,
     isStub: false,
   };
 }
@@ -272,7 +219,7 @@ function generateStubContent(input: CaraStudioGenerationInput): CaraStudioProvid
 This is a ${typeLabel} prepared using ${frameworkLabel} with a ${input.tone} tone.
 
 ### What Cara would do here
-When connected to a live AI provider (Anthropic Claude, OpenAI GPT-4o, or Google Gemini), Cara would:
+When connected to a live AI provider (Anthropic Claude or Google Gemini), Cara would:
 
 1. **Gather verified evidence** from the child's record, daily logs, incidents, keywork sessions and care plans
 2. **Analyse patterns** across the evidence using ${frameworkLabel}
@@ -300,7 +247,6 @@ Set one of the following environment variables:
 
 \`\`\`
 ANTHROPIC_API_KEY=...   # Recommended — Claude Opus/Sonnet
-OPENAI_API_KEY=...      # Alternative — GPT-4o
 GEMINI_API_KEY=...      # Alternative — Gemini 1.5 Pro
 \`\`\`
 

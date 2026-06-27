@@ -237,8 +237,8 @@ describe("redactSensitiveData", () => {
 // ══════════════════════════════════════════════════════════════════════════════
 
 describe("provider safety validation", () => {
-  it("allows Azure for safeguarding_sensitive data", () => {
-    expect(validateProviderAllowedForSensitivity("azure_openai", "safeguarding_sensitive")).toBe(true);
+  it("allows Bedrock for safeguarding_sensitive data", () => {
+    expect(validateProviderAllowedForSensitivity("bedrock", "safeguarding_sensitive")).toBe(true);
   });
 
   it("blocks Perplexity for anything above public", () => {
@@ -263,7 +263,7 @@ describe("provider safety validation", () => {
   });
 
   it("does not throw for safe routing", () => {
-    expect(() => blockUnsafeRouting("azure_openai", "safeguarding_sensitive")).not.toThrow();
+    expect(() => blockUnsafeRouting("bedrock", "safeguarding_sensitive")).not.toThrow();
   });
 });
 
@@ -495,7 +495,7 @@ describe("CaraCostControlService", () => {
 
   it("estimates cost before request", () => {
     const estimate = costService.estimateCost(
-      "openai", "gpt-4o", 1000, 2000,
+      "anthropic", "claude-sonnet-4-20250514", 1000, 2000,
       { organisationId: "org-1" },
     );
     expect(estimate.estimatedCostGBP).toBeGreaterThan(0);
@@ -509,13 +509,13 @@ describe("CaraCostControlService", () => {
   });
 
   it("selects cheaper models for low-risk simple tasks", () => {
-    const model = costService.selectCostEfficientModel("openai", "low", "admin_summary");
-    expect(model).toBe("gpt-4o-mini");
+    const model = costService.selectCostEfficientModel("anthropic", "low", "admin_summary");
+    expect(model).toBe("claude-haiku-3");
   });
 
   it("uses default model for high-risk tasks", () => {
-    const model = costService.selectCostEfficientModel("openai", "high", "safeguarding_analysis");
-    expect(model).toBe("gpt-4o");
+    const model = costService.selectCostEfficientModel("anthropic", "high", "safeguarding_analysis");
+    expect(model).toBe("claude-sonnet-4-20250514");
   });
 
   it("records usage correctly", () => {
@@ -617,7 +617,6 @@ describe("configuration constants", () => {
   });
 
   it("enterprise providers allow safeguarding data", () => {
-    expect(PROVIDER_MAX_SENSITIVITY["azure_openai"]).toContain("safeguarding_sensitive");
     expect(PROVIDER_MAX_SENSITIVITY["bedrock"]).toContain("safeguarding_sensitive");
   });
 });

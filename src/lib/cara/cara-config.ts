@@ -386,7 +386,7 @@ export function getCaraConfig(): CaraConfig {
   const model =
     (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ??
     (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ??
-    (provider === "openai" ? "gpt-4.1-mini" : "claude-sonnet-4-20250514");
+    "claude-sonnet-4-20250514";
   const enabled = isAiGloballyEnabled();
   const temperature = parseFloat((process.env.CARA_TEMPERATURE ?? process.env.CARA_TEMPERATURE) ?? "0.4");
   const maxTokens = parseInt((process.env.CARA_MAX_TOKENS ?? process.env.CARA_MAX_TOKENS) ?? "1500", 10);

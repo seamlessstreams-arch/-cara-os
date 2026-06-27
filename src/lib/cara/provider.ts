@@ -2,7 +2,7 @@
 // Cara INTELLIGENCE — PROVIDER ADAPTER
 //
 // JSON generation for the intelligence engine. Claude (Anthropic) is the only LLM
-// provider; anything else falls back to stub/demo mode. OpenAI has been removed —
+// provider; anything else falls back to stub/demo mode.
 // Cara resolves rules → learned cache → Claude (last resort).
 // Server-side only — never import in client components.
 // ══════════════════════════════════════════════════════════════════════════════

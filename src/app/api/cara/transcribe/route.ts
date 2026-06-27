@@ -142,11 +142,12 @@ export async function POST(req: NextRequest) {
   }
 
   if (!providerConfig.configured || providerConfig.providerId === "anthropic") {
-    // Transcription requires OpenAI Whisper — Anthropic does not support audio.
-    // Fail safely. The UI falls back to browser-based speech recognition.
-    const reason = providerConfig.providerId === "anthropic"
-      ? "Voice transcription requires OpenAI (Whisper). Your AI provider (Anthropic) does not support audio transcription. Browser speech recognition will be used instead."
-      : "Transcription is not configured. Set up an AI provider server-side to enable Cara voice dictation.";
+    // Server-side transcription is unavailable — Cara's only AI provider is
+    // Anthropic (Claude), which does not support audio transcription. Fail
+    // safely. The UI falls back to the browser's built-in voice input
+    // (Web Speech API), so dictation still works without any external call.
+    const reason =
+      "Server-side voice transcription is unavailable — use the browser's voice input instead. Cara's AI provider does not support audio transcription.";
     return NextResponse.json(
       {
         error: reason,

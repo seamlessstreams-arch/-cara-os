@@ -6,8 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 // Lightweight chat endpoint for the Cara drawer.
 // Accepts { context, prompt } and returns { response }.
 //
-// Provider order is deterministic-first, then ANTHROPIC ONLY. Cara never calls
-// OpenAI. If Anthropic isn't configured or the call fails (e.g. exhausted
+// Provider order is deterministic-first, then ANTHROPIC ONLY — the only AI
+// provider. If Anthropic isn't configured or the call fails (e.g. exhausted
 // credits), it returns a clear honest message — never a crash, a mock, or a
 // fall-through to another provider.
 //
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
 
   const userMessage = context ? `Context: ${context}\n\n${prompt}` : prompt;
 
-  // ── Anthropic only (no OpenAI, ever) ─────────────────────────────────────────
+  // ── Anthropic only — the only AI provider ────────────────────────────────────
 
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const anthropicConfigured = Boolean(anthropicKey && anthropicKey.length > 10 && !anthropicKey.includes("placeholder"));

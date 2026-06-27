@@ -1,7 +1,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // Cara REPORTS — AI PROVIDER
 //
-// Wraps the existing multi-provider layer (OpenAI / Anthropic / Gemini / stub)
+// Wraps the existing multi-provider layer (Anthropic / Gemini / stub)
 // with Cara-specific safety controls. Every call through this module:
 //
 //   1. Prepends CARA_SYSTEM_PREAMBLE to the system prompt

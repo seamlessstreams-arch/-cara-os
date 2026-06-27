@@ -57,8 +57,6 @@ export type CaraDataSensitivity =
 // ── Providers ─────────────────────────────────────────────────────────────
 
 export type CaraProviderName =
-  | "openai"
-  | "azure_openai"
   | "anthropic"
   | "bedrock"
   | "vertex_ai"
@@ -73,7 +71,7 @@ export type CaraProviderName =
 
 // ── Model Identifiers ─────────────────────────────────────────────────────
 
-export type CaraModelId = string; // e.g. "gpt-4o", "claude-sonnet-4-20250514", "mistral-large-latest"
+export type CaraModelId = string; // e.g. "claude-sonnet-4-20250514", "mistral-large-latest"
 
 // ── Approval Statuses ─────────────────────────────────────────────────────
 

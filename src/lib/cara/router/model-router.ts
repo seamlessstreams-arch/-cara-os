@@ -348,11 +348,11 @@ export class CaraModelRouter {
     blocked: boolean;
     blockReason?: string;
   } {
-    // Cara uses Anthropic (Claude) as the ONLY text-generation provider. OpenAI
-    // — and every other provider — is never selected for AI calls. The order is
+    // Cara uses Anthropic (Claude) as the ONLY text-generation provider. No
+    // other provider is ever selected for AI calls. The order is
     // deterministic-first, then Anthropic only. The preferred-provider hint and
     // the task provider-preference table are intentionally ignored here so no
-    // request can ever route to OpenAI.
+    // request can ever route to a non-Anthropic provider.
     const ANTHROPIC: CaraProviderName = "anthropic";
 
     if (!validateProviderAllowedForSensitivity(ANTHROPIC, sensitivity)) {
@@ -378,7 +378,7 @@ export class CaraModelRouter {
     _primary: CaraProviderName,
     _sensitivity: CaraDataSensitivity,
   ): CaraProviderName[] {
-    // Anthropic only — never fall back to OpenAI or any other provider.
+    // Anthropic only — never fall back to any other provider.
     return [];
   }
 
@@ -418,9 +418,7 @@ export class CaraModelRouter {
 
   private estimateLatency(provider: CaraProviderName): number {
     const estimates: Partial<Record<CaraProviderName, number>> = {
-      openai: 2000,
       anthropic: 3000,
-      azure_openai: 2500,
       mistral: 1500,
       perplexity: 3000,
       cohere: 2000,

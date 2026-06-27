@@ -5,8 +5,10 @@
 //
 // Modal/drawer for Cara voice dictation. Works in two modes:
 //
-//  • Server mode  — MediaRecorder → upload → OpenAI Whisper transcription.
-//                   Requires OPENAI_API_KEY server-side.
+//  • Server mode  — MediaRecorder → upload → server-side transcription.
+//                   Requires a server provider that supports audio. Cara's
+//                   AI provider (Anthropic) does not, so this mode is inactive
+//                   and the panel uses browser mode below.
 //  • Browser mode — Web Speech API (SpeechRecognition), no API key needed.
 //                   Automatically activated when server is not configured.
 //
@@ -318,9 +320,9 @@ export function CaraDictationPanel(props: CaraDictationPanelProps) {
           {/* ── Unavailable ────────────────────────────────────────────────── */}
           {mode === "unavailable" && (
             <Notice tone="amber" title="Voice dictation unavailable">
-              Server transcription requires OPENAI_API_KEY, and this browser does
-              not support the Web Speech API. Try Chrome or Edge, or add the key
-              server-side.
+              This browser does not support the Web Speech API, so voice input
+              isn&apos;t available here. Try Chrome or Edge, or type your notes
+              instead.
             </Notice>
           )}
 

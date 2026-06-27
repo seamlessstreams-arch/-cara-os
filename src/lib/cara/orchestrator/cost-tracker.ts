@@ -21,15 +21,11 @@ type SB = any;
 const INPUT_COST_PER_1K: Record<string, number> = {
   "claude-haiku-4-20250514": 0.00025,
   "claude-sonnet-4-20250514": 0.003,
-  "gpt-4.1-mini": 0.0004,
-  "gpt-4.1": 0.002,
 };
 
 const OUTPUT_COST_PER_1K: Record<string, number> = {
   "claude-haiku-4-20250514": 0.00125,
   "claude-sonnet-4-20250514": 0.015,
-  "gpt-4.1-mini": 0.0016,
-  "gpt-4.1": 0.008,
 };
 
 // ── Cost Estimation ───────────────────────────────────────────────────────

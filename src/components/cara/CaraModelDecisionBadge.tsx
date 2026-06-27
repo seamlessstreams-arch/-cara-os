@@ -18,8 +18,6 @@ interface Props {
 }
 
 const PROVIDER_LABELS: Record<string, string> = {
-  openai: "OpenAI",
-  azure_openai: "Azure OpenAI",
   anthropic: "Anthropic Claude",
   bedrock: "AWS Bedrock",
   vertex_ai: "Google Vertex",

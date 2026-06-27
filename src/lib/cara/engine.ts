@@ -156,7 +156,7 @@ export async function runCaraIntelligence(rawRequest: unknown, requestedBy: stri
       role_mode: request.roleMode,
       feature_key: request.featureKey,
       prompt_hash: promptHash,
-      model: (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? "gpt-4.1-mini",
+      model: (process.env.CARA_MODEL ?? process.env.CARA_MODEL) ?? "claude-sonnet-4-20250514",
       input_summary: request.userQuestion.slice(0, 1000),
       output_summary: output.executiveSummary ?? output.answer.slice(0, 1000),
       output_json: output,

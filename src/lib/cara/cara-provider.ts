@@ -3,7 +3,7 @@
 //
 // Server-side only. Never imported into client code.
 //
-// Uses Claude (Anthropic) as the only LLM provider — OpenAI has been removed.
+// Uses Claude (Anthropic) as the only LLM provider.
 // The provider is read from CARA_PROVIDER / AI_PROVIDER (defaults to "anthropic").
 // The repo also has Anthropic-based engines
 // (managementOversightEngine, voiceOfChildSummariser, hrProcessGuardian)
@@ -29,7 +29,10 @@ export interface CaraProviderConfig {
 
 export function getCaraProviderConfig(): CaraProviderConfig {
   const providerEnv = ((process.env.CARA_PROVIDER ?? process.env.CARA_PROVIDER) ?? process.env.AI_PROVIDER ?? "anthropic").toLowerCase();
-  const transcribeModel = (process.env.CARA_TRANSCRIBE_MODEL ?? process.env.CARA_TRANSCRIBE_MODEL) ?? "gpt-4o-transcribe";
+  // Cara's only AI provider (Anthropic) does not support audio transcription,
+  // so there is no server-side transcription model. Left empty; the UI falls
+  // back to the browser's built-in voice input.
+  const transcribeModel = (process.env.CARA_TRANSCRIBE_MODEL ?? process.env.CARA_TRANSCRIBE_MODEL) ?? "";
   const maxAudioMb = Number.parseInt((process.env.CARA_MAX_AUDIO_MB ?? process.env.CARA_MAX_AUDIO_MB) ?? "25", 10);
   const maxAudioBytes = Number.isFinite(maxAudioMb) ? maxAudioMb * 1024 * 1024 : 25 * 1024 * 1024;
 
@@ -57,7 +60,7 @@ export function getCaraProviderConfig(): CaraProviderConfig {
     };
   }
 
-  // Any other provider value is unsupported — OpenAI has been removed; Claude only.
+  // Any other provider value is unsupported — Claude (Anthropic) only.
   const textModel = (process.env.CARA_TEXT_MODEL ?? process.env.CARA_TEXT_MODEL) ?? "claude-sonnet-4-20250514";
   return {
     configured: false,
@@ -194,7 +197,7 @@ async function generateTextInner(
     }
   }
 
-  // Only "anthropic" and "none" are possible now (OpenAI removed), both handled above.
+  // Only "anthropic" and "none" are possible, both handled above.
   // Defensive fallback should the provider config ever be in an unexpected state.
   return {
     text: caraNotConfiguredFallback(input.expectJson === true),
@@ -243,9 +246,9 @@ export async function transcribeAudio(
     };
   }
 
-  // Only "anthropic" and "none" are possible now (OpenAI removed) — both handled
-  // above. Server-side transcription is unavailable; callers fall back to the
-  // browser's built-in SpeechRecognition.
+  // Only "anthropic" and "none" are possible — both handled above. Server-side
+  // transcription is unavailable; callers fall back to the browser's built-in
+  // SpeechRecognition.
   return {
     transcript: "",
     llmUsed: false,
