@@ -38,6 +38,7 @@ const FILING_PATHS: Record<CaraStudioArtifactType, string> = {
   parent_professional_letter: "young-people/{child_id}/correspondence",
   team_meeting_discussion: "staff/team-meetings/{date}",
   supervision_prompt: "staff/supervision/{date}",
+  reflective_practice_prompt: "staff/supervision/reflective-prompts",
   audio_briefing_script: "resources/audio/{date}",
   video_briefing_script: "resources/video/{date}",
   slide_deck_outline: "resources/presentations/{date}",

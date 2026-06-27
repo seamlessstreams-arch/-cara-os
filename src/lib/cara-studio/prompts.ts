@@ -184,6 +184,10 @@ export const TONE_PROMPTS: Record<CaraStudioTone, string> = {
 // ── Artifact type prompts ────────────────────────────────────────────────────
 
 export const ARTIFACT_TYPE_PROMPTS: Record<CaraStudioArtifactType, { systemFragment: string; outputStructure: string[] }> = {
+  reflective_practice_prompt: {
+    systemFragment: "Generate a reflective practice prompt for staff. Pose open, non-judgemental questions that help a worker reflect on their practice, the child's lived experience, and what to try next.",
+    outputStructure: ["Title", "Context", "Reflective Questions", "Practice Considerations", "Suggested Next Steps", "Human Review Required"],
+  },
   keywork_session: {
     systemFragment: "Generate a key work session plan. Include therapeutic rationale, child-friendly opening, reflective questions, creative activity options, and follow-up actions.",
     outputStructure: ["Session Title", "Child", "Date", "Purpose", "Evidence Used", "Child Voice Currently Known", "Therapeutic Rationale", "Selected Framework", "Staff Preparation", "Emotional Safety Considerations", "Child-Friendly Opening", "Main Activity", "Reflective Questions", "Scaling Question", "Creative Activity Option", "Risk Considerations", "What to Avoid", "Recording Template", "Follow-up Actions", "Suggested Plan Updates", "Human Review Required"],
