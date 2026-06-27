@@ -15,7 +15,8 @@
 import { db, getStore } from "@/lib/db/store";
 import { createIncidentRecord, createTaskRecord } from "@/lib/supabase/care-records";
 import type { Incident, Task } from "@/types";
-import { recordEvent, type TimelineEvent } from "@/lib/timeline/timeline-service";
+import { recordEvent } from "@/lib/timeline/timeline-service";
+import type { TimelineEvent } from "@/lib/timeline/types";
 import { evaluateRules, getApplicableRules } from "@/lib/automation/automation-engine";
 import { logInteraction } from "@/lib/cara/cara-config";
 import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
