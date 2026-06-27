@@ -667,15 +667,18 @@ function meterApiCall(slugKey: string, method: string): void {
 export async function GET(req: NextRequest, ctx: RouteContext) {
   try {
     const { slug } = await ctx.params;
-    const slugKey = slug[0];
+    let slugKey = slug[0];
 
     // Proxy /api/v1/home/[engine] to the home intelligence dispatcher.
     // This handles Vercel routing when the dedicated home/[engine] route
     // is bypassed in favour of this catch-all.
     if (slugKey === "home" && slug.length >= 2) {
       const handler = dispatchHomeHandler(slug[1]);
-      if (!handler) return json({ error: `Unknown intelligence engine: ${slug[1]}` }, 404);
-      return handler();
+      if (handler) return handler();
+      // Not an intelligence engine: the `/api/v1/home-:engine` rewrite also catches
+      // home-* DATA collections (e.g. home-emergency-contacts, home-policies).
+      // Resolve those via the normal accessor below instead of 404ing.
+      slugKey = `home-${slug[1]}`;
     }
 
     meterApiCall(slugKey, req.method);
@@ -710,7 +713,10 @@ const HQ_USAGE_KINDS: Record<string, string> = {
 export async function POST(req: NextRequest, ctx: RouteContext) {
   try {
     const { slug } = await ctx.params;
-    const slugKey = slug[0];
+    // The `/api/v1/home-:engine` rewrite maps bare home-* data routes to
+    // /api/v1/home/<x>; reconstruct the collection slug so writes resolve
+    // (home-emergency-contacts, home-policies).
+    const slugKey = slug[0] === "home" && slug.length >= 2 ? `home-${slug[1]}` : slug[0];
     meterApiCall(slugKey, req.method);
     const collection = resolveAccessor(slugKey);
     if (!collection) return notFound(slugKey);
