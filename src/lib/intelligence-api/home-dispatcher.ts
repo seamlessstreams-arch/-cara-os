@@ -12883,7 +12883,18 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   },
 
   "keyworker-intelligence": async () => {
-  
+
+    // Helper restored from pre-consolidation source (d2188c87^) — dropped during
+    // route consolidation, which made this UI-consumed card 500. Pure & deterministic.
+    const parseMood = (value: unknown): number => {
+      if (typeof value === "number") return value;
+      if (typeof value === "string") {
+        const n = parseInt(value, 10);
+        return isNaN(n) ? 0 : n;
+      }
+      return 0;
+    };
+
     const store = getStore();
     const today = new Date().toISOString().slice(0, 10);
   
@@ -15395,7 +15406,15 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   },
 
   "night-safety-intelligence": async () => {
-  
+
+    // Helper restored from pre-consolidation source (d2188c87^) — dropped during
+    // route consolidation, which made this UI-consumed card 500. Pure & deterministic.
+    const isNightTime = (time: string): boolean => {
+      if (!time) return false;
+      const hour = parseInt(time.split(":")[0], 10);
+      return hour >= 22 || hour < 6;
+    };
+
     const store = getStore();
     const today = new Date().toISOString().slice(0, 10);
   
@@ -20897,7 +20916,32 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   },
 
   "safer-recruitment-intelligence": async () => {
-  
+
+    // Helpers restored from pre-consolidation source (d2188c87^) — dropped during
+    // route consolidation, which made this UI-consumed card 500. Pure & deterministic.
+    const mapRefStatus = (status: string | undefined): string => {
+      switch (status) {
+        case "satisfactory":
+        case "verbal_only":
+          return "verified";
+        case "unsatisfactory":
+        case "concerns_noted":
+          return "declined";
+        case "received":
+          return "received";
+        case "requested":
+        case "chased":
+        case "not_requested":
+        default:
+          return "requested";
+      }
+    };
+    const deriveIsSatisfactory = (r: any): boolean | null => {
+      if (r.status === "satisfactory") return true;
+      if (r.status === "unsatisfactory" || r.status === "concerns_noted") return false;
+      return null;
+    };
+
     const store = getStore();
     const today = new Date().toISOString().slice(0, 10);
   
@@ -27129,7 +27173,25 @@ const HOME_HANDLERS: Record<string, HomeHandler> = {
   },
 
   "wellbeing-intelligence": async () => {
-  
+
+    // Helpers restored from pre-consolidation source (d2188c87^) — dropped during
+    // route consolidation, which made this UI-consumed card 500. Pure & deterministic.
+    const deriveSleepQuality = (checks: Array<{ status: string; mood?: string }>): string => {
+      const hasConcern = checks.some((c) => c.status === "concern");
+      const hasAwake = checks.some((c) => c.status === "awake" || c.status === "not_in_room");
+      const hasRestless = checks.some((c) => c.mood === "restless" || c.mood === "unsettled" || c.mood === "anxious");
+      const hasRefused = checks.some((c) => c.status === "refused");
+      if (hasConcern) return "disturbed";
+      if (hasAwake || hasRefused) return "poor";
+      if (hasRestless) return "fair";
+      return "good";
+    };
+    const isNightTime = (time: string): boolean => {
+      if (!time) return false;
+      const hour = parseInt(time.split(":")[0], 10);
+      return hour >= 22 || hour < 6;
+    };
+
     const store = getStore();
     const today = new Date().toISOString().slice(0, 10);
   
