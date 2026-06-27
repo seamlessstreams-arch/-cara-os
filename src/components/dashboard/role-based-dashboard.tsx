@@ -43,7 +43,7 @@ import {
 } from "lucide-react";
 import { useDashboard } from "@/hooks/use-dashboard";
 import { useAuthContext } from "@/contexts/auth-context";
-import { CalmStatusBadge } from "@/components/ui/calm-status-badge";
+import { CalmStatusBadge, type CalmStatus } from "@/components/ui/calm-status-badge";
 import { RiskBadge } from "@/components/ui/risk-badge";
 import { CalmEmptyState } from "@/components/ui/empty-state-calm";
 import { cn, todayStr, isOverdue, pluralise } from "@/lib/utils";
@@ -416,7 +416,7 @@ function MetricRow({
 }: {
   label: string;
   value: string | number;
-  status?: "good" | "adequate" | "overdue" | "urgent" | "info";
+  status?: CalmStatus;
   href?: string;
 }) {
   const inner = (

@@ -19,7 +19,7 @@ import {
   ThumbsUp,
 } from "lucide-react";
 
-type CalmStatus =
+export type CalmStatus =
   | "outstanding"
   | "good"
   | "adequate"
