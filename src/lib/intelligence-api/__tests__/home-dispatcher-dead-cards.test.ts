@@ -15,6 +15,9 @@ const RESTORED = [
   "keyworker-intelligence",
   "night-safety-intelligence",
   "safer-recruitment-intelligence",
+  // Composites reworked to compose in-process (no request/baseUrl self-fetch):
+  "ofsted-readiness-composite",
+  "summary-report",
 ];
 
 describe("home-dispatcher — restored dead-card handlers", () => {
@@ -29,4 +32,19 @@ describe("home-dispatcher — restored dead-card handlers", () => {
       expect(body.data).toBeTruthy();
     });
   }
+
+  // The composites fan out to sibling engines IN-PROCESS. Assert that fan-out
+  // actually populated the result (not a degenerate all-null composite).
+  it("ofsted-readiness-composite is populated by the in-process fan-out", async () => {
+    const body = await (await dispatchHomeHandler("ofsted-readiness-composite")!()).json();
+    expect(body.data.overall_grade).not.toBe("insufficient_data");
+    expect(body.data.overall_score).toBeGreaterThan(0);
+  });
+
+  it("summary-report aggregates real sibling-engine signals", async () => {
+    const body = await (await dispatchHomeHandler("summary-report")!()).json();
+    expect(body.data.engines_responded).toBeGreaterThan(0);
+    expect(Array.isArray(body.data.sections)).toBe(true);
+    expect(body.data.sections.length).toBeGreaterThan(0);
+  });
 });
