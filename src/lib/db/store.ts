@@ -2791,7 +2791,37 @@ const store = {
 
   // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
   reg44Packs: [] as PersistedReg44Pack[],
-  inspectionBundles: [] as PersistedInspectionBundle[],
+  // Demo trajectory for home_oak: inspection readiness regressing 82 → 73 → 57
+  // over ~6 weeks. The latest (6-day-old) bundle is BOTH a large single-step drop
+  // (−16) and a net regression (−25) → two critical trajectory alerts. Left
+  // unacknowledged past 48h (reminder) + 72h (escalation) they surface as
+  // Responsible-Individual escalations — lighting up the full M49–M52 chain
+  // (trajectory page → ack-overdue reminders → RI escalations) instead of an
+  // empty demo. Bundles are user-generated in real use; this seeds a realistic
+  // declining home so the oversight feature is visible.
+  inspectionBundles: [
+    {
+      id: "inspection_bundle_home_oak_seed_a", home_id: "home_oak", generated_at: daysFromNow(-40),
+      generated_by: "staff_darren", schema_version: 1, reg44_packs_included: 2, filing_total: 184,
+      reg45_evidence_items: 12, annex_a_evidence_items: 9, recent_exports_included: 4,
+      readiness_score: 82, readiness_severity: "good", trajectory_alerts_open: 0, trajectory_acks_recent: 0,
+      payload: { trajectory_alerts_open: [], trajectory_acks_recent: [] },
+    },
+    {
+      id: "inspection_bundle_home_oak_seed_b", home_id: "home_oak", generated_at: daysFromNow(-20),
+      generated_by: "staff_darren", schema_version: 1, reg44_packs_included: 2, filing_total: 178,
+      reg45_evidence_items: 10, annex_a_evidence_items: 8, recent_exports_included: 3,
+      readiness_score: 73, readiness_severity: "requires_improvement", trajectory_alerts_open: 1, trajectory_acks_recent: 0,
+      payload: { trajectory_alerts_open: [], trajectory_acks_recent: [] },
+    },
+    {
+      id: "inspection_bundle_home_oak_seed_c", home_id: "home_oak", generated_at: daysFromNow(-6),
+      generated_by: "staff_darren", schema_version: 1, reg44_packs_included: 1, filing_total: 171,
+      reg45_evidence_items: 8, annex_a_evidence_items: 6, recent_exports_included: 2,
+      readiness_score: 57, readiness_severity: "inadequate", trajectory_alerts_open: 2, trajectory_acks_recent: 0,
+      payload: { trajectory_alerts_open: [], trajectory_acks_recent: [] },
+    },
+  ] as PersistedInspectionBundle[],
   trajectoryAlertAcks: [] as TrajectoryAlertAck[],
   trajectoryRiEscalationAcks: [] as TrajectoryRiEscalationAck[],
 
