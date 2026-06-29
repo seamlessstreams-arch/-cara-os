@@ -2,6 +2,9 @@
   "name": "cornerstone-v2",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "scripts": {
     "dev": "sh -c 'set -a && . .env.local && set +a && next dev --port 3001'",
     "build": "next build",
