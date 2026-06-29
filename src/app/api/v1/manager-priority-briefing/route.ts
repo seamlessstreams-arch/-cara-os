@@ -20,6 +20,7 @@ import {
   mapInspectionToSignal,
   mapOutcomeHomeToSignal,
   mapRelationshipHomeToSignal,
+  mapSopRealityCheckToSignal,
 } from "@/lib/engines/briefing-native-mappers";
 
 export const dynamic = "force-dynamic";
@@ -185,16 +186,18 @@ async function fetchNativeSignals(baseUrl: string): Promise<EngineSignalInput[]>
     }
   };
 
-  const [insp, outc, rel] = await Promise.all([
+  const [insp, outc, rel, sop] = await Promise.all([
     get("inspection-intelligence"),
     get("outcome-intelligence/home"),
     get("relationship-intelligence/home"),
+    get("sop-reality-check"),
   ]);
 
   return [
     mapInspectionToSignal(insp),
     mapOutcomeHomeToSignal(outc),
     mapRelationshipHomeToSignal(rel),
+    mapSopRealityCheckToSignal(sop),
   ].filter((s): s is EngineSignalInput => s !== null);
 }
 
@@ -213,7 +216,7 @@ export async function GET(request: Request) {
       .filter((v): v is EngineSignalInput => v !== null);
     const signals = [...httpSignals, ...nativeSignals];
 
-    const NATIVE_COUNT = 3;
+    const NATIVE_COUNT = 4;
     const result = computeManagerPriorityBriefing({
       signals,
       engines_queried: ENGINES.length + NATIVE_COUNT,

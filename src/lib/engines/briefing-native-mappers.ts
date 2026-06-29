@@ -71,3 +71,26 @@ export function mapRelationshipHomeToSignal(data: any): EngineSignalInput | null
     recommendations: [],
   };
 }
+
+/** SOP Reality Check (can the home prove it lives its Statement of Purpose?) → one manager signal. */
+export function mapSopRealityCheckToSignal(data: any): EngineSignalInput | null {
+  if (!data || typeof data !== "object") return null;
+  const risks = Array.isArray(data.inspectionRisks) ? data.inspectionRisks : [];
+  return {
+    engine_key: "sop-reality-check",
+    label: "Statement of Purpose reality check",
+    domain: "leadership",
+    rating:
+      (data.areasLimited ?? 0) > 0 ? "inadequate"
+      : (data.areasDeveloping ?? 0) > 0 ? "requires_improvement"
+      : "good",
+    score: null,
+    headline: typeof data.headline === "string" ? data.headline : null,
+    insights: risks.map((r: any) => ({
+      text: `SoP — ${r.label}${r.detail ? `: ${r.detail}` : ""}`,
+      severity: "high",
+    })),
+    concerns: [],
+    recommendations: [],
+  };
+}
