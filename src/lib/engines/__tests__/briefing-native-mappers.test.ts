@@ -3,6 +3,7 @@ import {
   mapInspectionToSignal,
   mapOutcomeHomeToSignal,
   mapRelationshipHomeToSignal,
+  mapSopRealityCheckToSignal,
 } from "../briefing-native-mappers";
 
 describe("briefing native mappers", () => {
@@ -88,6 +89,33 @@ describe("briefing native mappers", () => {
       })!;
       expect(s.rating).toBe("good");
       expect(s.insights).toHaveLength(0);
+    });
+  });
+
+  describe("mapSopRealityCheckToSignal", () => {
+    it("returns null for empty data", () => {
+      expect(mapSopRealityCheckToSignal(null)).toBeNull();
+      expect(mapSopRealityCheckToSignal(undefined)).toBeNull();
+    });
+
+    it("rates inadequate/limited, requires_improvement/developing, else good", () => {
+      expect(mapSopRealityCheckToSignal({ areasLimited: 1, areasDeveloping: 0, inspectionRisks: [] })!.rating).toBe("inadequate");
+      expect(mapSopRealityCheckToSignal({ areasLimited: 0, areasDeveloping: 2, inspectionRisks: [] })!.rating).toBe("requires_improvement");
+      expect(mapSopRealityCheckToSignal({ areasLimited: 0, areasDeveloping: 0, inspectionRisks: [] })!.rating).toBe("good");
+    });
+
+    it("turns each inspection risk into a high-severity SoP insight (leadership domain)", () => {
+      const s = mapSopRealityCheckToSignal({
+        areasLimited: 1,
+        areasDeveloping: 0,
+        headline: "3 of 7 SOP areas strongly evidenced",
+        inspectionRisks: [{ area: "safeguarding", label: "Safeguarding", detail: "No recent oversight evidence" }],
+      })!;
+      expect(s.engine_key).toBe("sop-reality-check");
+      expect(s.domain).toBe("leadership");
+      expect(s.insights).toEqual([
+        { text: "SoP — Safeguarding: No recent oversight evidence", severity: "high" },
+      ]);
     });
   });
 });
