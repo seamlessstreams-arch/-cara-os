@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { useBehaviourLog, useCreateBehaviourEntry } from "@/hooks/use-behaviour-log";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
 import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -465,6 +466,7 @@ export default function BehaviourLogPage() {
               </div>
             </div>
             {nChild && <InlinePracticeReasoning childId={nChild} childName={getYPName(nChild)} />}
+            {nChild && <InlinePracticeModules childId={nChild} modules={["relationships"]} />}
             <div>
               <label className="text-sm font-medium mb-1 block">Intensity</label>
               <Select value={nIntensity} onValueChange={v => setNIntensity(v as BehaviourIntensity)}>

@@ -7,6 +7,7 @@ import { PacePanel } from "@/components/pace/pace-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
 import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -309,7 +310,10 @@ export default function RestraintLogPage() {
               </div>
             </div>
             {rlForm.child_id && (
-              <InlinePracticeReasoning childId={rlForm.child_id} childName={YOUNG_PEOPLE.find((y) => y.id === rlForm.child_id)?.preferred_name ?? rlForm.child_id} />
+              <>
+                <InlinePracticeReasoning childId={rlForm.child_id} childName={YOUNG_PEOPLE.find((y) => y.id === rlForm.child_id)?.preferred_name ?? rlForm.child_id} />
+                <InlinePracticeModules childId={rlForm.child_id} modules={["rights"]} />
+              </>
             )}
             <div className="grid grid-cols-2 gap-2">
               <div><label className="text-sm font-medium">Start Time</label><Input type="time" value={rlForm.start_time} onChange={(e) => setRL("start_time", e.target.value)} /></div>
