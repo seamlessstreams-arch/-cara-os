@@ -158,6 +158,16 @@ export interface EvidenceRef {
 
 // ── Generation Request ───────────────────────────────────────────────────────
 
+/** A care record selected as grounding evidence for generation — the user's
+ *  filing-cabinet / record selection. The generator works FROM these: it must
+ *  base content on the profile + these records and never fabricate beyond them. */
+export interface GroundingSource {
+  type: string;     // daily_log | incident | keywork | risk_assessment | missing_from_care
+  title: string;
+  content: string;
+  date: string;
+}
+
 export interface GenerationRequest {
   organisationId: string;
   homeId: string;
@@ -168,6 +178,9 @@ export interface GenerationRequest {
   tone: Tone;
   audience: Audience;
   additionalContext?: string;
+  /** Care records to ground generation in (selected from the filing cabinet, or
+   *  auto-gathered from the child's recent records). */
+  sources?: GroundingSource[];
   userId: string;
 }
 

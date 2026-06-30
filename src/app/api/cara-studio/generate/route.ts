@@ -12,7 +12,9 @@ import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { writeStudioAuditLog } from "@/lib/cara-studio/audit.service";
 import { TONES, GENERATION_TYPES } from "@/lib/cara-studio/types";
-import type { GenerationRequest } from "@/lib/cara-studio/types";
+import type { GenerationRequest, GroundingSource } from "@/lib/cara-studio/types";
+import { gatherSourcesForRequest } from "@/lib/cara/cara-studio-sources";
+import type { CaraGenerationRequest } from "@/types/cara-studio";
 
 type SB = any;
 
@@ -99,6 +101,40 @@ export async function POST(req: NextRequest) {
 
     const input = parsed.data;
 
+    // ── Gather the care records to ground generation in (the "work from
+    //    records" path). Honour an explicit filing-cabinet selection
+    //    (source_ids); otherwise auto-gather the child's recent records. ───────
+    let sources: GroundingSource[] = [];
+    const sourceIds: string[] = Array.isArray(rawBody.source_ids)
+      ? rawBody.source_ids.map(String)
+      : [];
+    if (input.childId || sourceIds.length > 0) {
+      try {
+        const dateFrom = rawBody.date_range?.from ?? rawBody.dateFrom ?? null;
+        const gathered = await gatherSourcesForRequest({
+          child_id: input.childId ?? null,
+          date_range_from: dateFrom,
+          requested_by: userId,
+        } as CaraGenerationRequest);
+        const selected =
+          sourceIds.length > 0
+            ? gathered.filter(
+                (s) =>
+                  (s.linked_record_id != null && sourceIds.includes(s.linked_record_id)) ||
+                  sourceIds.includes(s.id),
+              )
+            : gathered;
+        sources = selected.slice(0, 12).map((s) => ({
+          type: s.source_type,
+          title: s.title,
+          content: s.content,
+          date: s.source_date,
+        }));
+      } catch (e) {
+        console.error("[cara-studio/generate] source gather failed:", e);
+      }
+    }
+
     // ── Build generation request ────────────────────────────────────────────
     const request: GenerationRequest = {
       organisationId,
@@ -111,6 +147,7 @@ export async function POST(req: NextRequest) {
       tone: input.tone,
       audience: input.audience ?? "staff",
       additionalContext: input.additionalContext,
+      sources,
     };
 
     // ── Generate (safety-checked pipeline) ──────────────────────────────────
@@ -192,6 +229,7 @@ export async function POST(req: NextRequest) {
           : undefined,
         quality_check: result.safety,
         gaps_found: [],
+        sourcesUsed: sources.map((s) => ({ type: s.type, title: s.title, date: s.date })),
         safety: result.safety,
         profile: result.profile ? {
           childName: result.profile.preferredName ?? result.profile.childName,

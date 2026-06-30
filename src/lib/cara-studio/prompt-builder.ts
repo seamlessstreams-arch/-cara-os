@@ -15,7 +15,7 @@
 //   - Professional boundaries
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { CaraChildProfile, GenerationType, Tone, Audience } from "./types";
+import type { CaraChildProfile, GenerationType, Tone, Audience, GroundingSource } from "./types";
 
 // ── Main Builder ─────────────────────────────────────────────────────────────
 
@@ -32,11 +32,12 @@ export function buildPrompt(params: {
   tone: Tone;
   audience: Audience;
   additionalContext?: string;
+  sources?: GroundingSource[];
 }): BuiltPrompt {
-  const { generationType, profile, title, brief, tone, audience, additionalContext } = params;
+  const { generationType, profile, title, brief, tone, audience, additionalContext, sources } = params;
 
   const system = buildSystemPrompt(generationType, tone, audience);
-  const user = buildUserPrompt(generationType, profile, title, brief, additionalContext);
+  const user = buildUserPrompt(generationType, profile, title, brief, additionalContext, sources);
 
   return { system, user };
 }
@@ -64,7 +65,7 @@ You create personalised, trauma-informed, child-centred resources for care profe
 2. NEVER diagnose, prescribe, or make clinical recommendations — defer to professionals
 3. NEVER minimise risk �� if risk flags are present, acknowledge and signpost appropriately
 4. NEVER use punitive or blaming language toward the child
-5. NEVER fabricate evidence — only reference information from the provided profile
+5. NEVER fabricate evidence — only reference information from the provided profile and the care records supplied
 6. Always use the child's preferred name if provided
 7. Use language that a ${audience === "young_person" ? "young person aged 13-17" : "care professional"} would understand
 
@@ -103,6 +104,7 @@ function buildUserPrompt(
   title?: string,
   brief?: string,
   additionalContext?: string,
+  sources?: GroundingSource[],
 ): string {
   let prompt = "";
 
@@ -151,6 +153,17 @@ function buildUserPrompt(
       prompt += `\n**Family Context**: ${profile.familyContext}\n`;
     }
 
+    prompt += `\n---\n\n`;
+  }
+
+  // Care records the user is working FROM — the grounding evidence. Base the
+  // content on these (and the profile); never invent beyond them.
+  if (sources && sources.length > 0) {
+    prompt += `## Care Records (work from these — do not invent beyond them)\n`;
+    for (const s of sources) {
+      const body = s.content && s.content.length > 600 ? `${s.content.slice(0, 600)}…` : (s.content ?? "");
+      prompt += `\n### ${s.type} — ${s.title}${s.date ? ` (${s.date})` : ""}\n${body}\n`;
+    }
     prompt += `\n---\n\n`;
   }
 
