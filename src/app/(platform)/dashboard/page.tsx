@@ -49,6 +49,7 @@ const PremisesComplianceCard = dynamic(() => import("@/components/dashboard/prem
 const InspectionReadinessIntelligenceCard = dynamic(() => import("@/components/dashboard/inspection-readiness-intelligence-card").then(m => ({ default: m.InspectionReadinessIntelligenceCard })), { ssr: false });
 const StaffWellbeingIntelligenceCard = dynamic(() => import("@/components/dashboard/staff-wellbeing-intelligence-card").then(m => ({ default: m.StaffWellbeingIntelligenceCard })), { ssr: false });
 const RiskIntelligenceDashboardCard = dynamic(() => import("@/components/dashboard/risk-intelligence-dashboard-card").then(m => ({ default: m.RiskIntelligenceDashboardCard })), { ssr: false });
+const ManagerPracticeOversightCard = dynamic(() => import("@/components/dashboard/manager-practice-oversight-card").then(m => ({ default: m.ManagerPracticeOversightCard })), { ssr: false });
 const CaraDashboardPanel = dynamic(() => import("@/components/dashboard/cara-dashboard-panel").then(m => ({ default: m.CaraDashboardPanel })), { ssr: false });
 const CaraDailyIntelligence = dynamic(() => import("@/components/cara/cara-daily-intelligence").then(m => ({ default: m.CaraDailyIntelligence })), { ssr: false });
 const CaraTodayBriefing = dynamic(() => import("@/components/cara/cara-today-briefing").then(m => ({ default: m.CaraTodayBriefing })), { ssr: false });
@@ -1657,6 +1658,7 @@ export default function DashboardPage() {
                     <InspectionReadinessIntelligenceCard />
                     <StaffWellbeingIntelligenceCard />
                     <RiskIntelligenceDashboardCard />
+                    <ManagerPracticeOversightCard />
                     <CaraTodayBriefing />
                     <CaraShiftSafety />
                     <CaraRegulatoryPulse />
