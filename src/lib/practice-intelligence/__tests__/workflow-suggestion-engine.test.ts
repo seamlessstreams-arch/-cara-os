@@ -67,6 +67,24 @@ describe("buildPracticeFollowUps", () => {
     expect(out).toHaveLength(0);
   });
 
+  it("daily-log follow-up uses word boundaries — no substring false positives", () => {
+    const log = (content: string, id: string) => ({
+      event: "daily_log_created" as const,
+      source_table: "daily_log",
+      source_id: id,
+      child_id: "yp_alex",
+      content,
+      label: "Daily log",
+      date: "2026-06-29",
+    });
+    // "brisk"/"harmonious"/"harmless" must NOT trigger (substrings of risk/harm).
+    expect(buildPracticeFollowUps(input({ records: [log("Lovely brisk walk; a harmonious, harmless day", "d1")] }))).toHaveLength(0);
+    // genuine concern (stemmed) must still trigger an oversight follow-up.
+    const real = buildPracticeFollowUps(input({ records: [log("Staff raised a safeguarding concern about contact", "d2")] }));
+    expect(real.length).toBeGreaterThan(0);
+    expect(real[0].type).toBe("oversight");
+  });
+
   it("sorts by priority (urgent first) and resolves child names", () => {
     const out = buildPracticeFollowUps(
       input({
