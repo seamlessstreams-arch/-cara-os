@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +25,13 @@ const TYPE_LABEL: Record<string, string> = {
   create_approval_task: "Approval task", create_task: "Task", create_debrief_task: "Debrief",
   suggest_keywork: "Key-working follow-up", add_evidence: "Evidence", generate_cara_summary: "Cara summary",
   update_trend: "Trend update", create_notification_draft: "Notification draft",
+};
+// Workflow actions Cara Studio can draft — deep-link to Studio, pre-filled with
+// the artifact type + child so generation grounds in that child's care records.
+const ACTION_TO_STUDIO: Record<string, string> = {
+  suggest_keywork: "keywork_session",
+  create_debrief_task: "incident_learning_review",
+  generate_cara_summary: "ri_briefing",
 };
 
 export default function WorkflowOrchestrationPage() {
@@ -113,6 +121,14 @@ export default function WorkflowOrchestrationPage() {
                   <div className="flex flex-wrap gap-1 mt-1">
                     {a.evidence_categories.map((c, i) => <Badge key={i} className="text-[9px] bg-green-50 text-green-700 border-green-200">{c}</Badge>)}
                   </div>
+                )}
+                {ACTION_TO_STUDIO[a.type] && (
+                  <Link
+                    href={`/cara-studio?type=${ACTION_TO_STUDIO[a.type]}${a.child_id ? `&childId=${a.child_id}` : ""}&context=${encodeURIComponent(a.title)}`}
+                    className="mt-2 inline-flex items-center gap-1 rounded-md border border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] px-2 py-1 text-[10px] font-semibold text-[var(--cs-cara-gold)] transition-colors hover:bg-[var(--cs-cara-gold)] hover:text-white"
+                  >
+                    <Brain className="h-3 w-3" /> Draft in Cara Studio
+                  </Link>
                 )}
               </div>
             ))}
