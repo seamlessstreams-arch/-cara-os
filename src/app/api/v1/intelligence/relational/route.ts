@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
@@ -33,7 +34,9 @@ export async function POST(req: NextRequest) {
 
   const identity = await getRequestIdentity(req);
   if (identity instanceof NextResponse) return identity;
-  const body = await req.json() as Partial<RelationalRecord>;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as Partial<RelationalRecord>;
   const denied = assertChildHomeAccess(identity, (body as { child_id?: string }).child_id);
   if (denied) return denied;
 

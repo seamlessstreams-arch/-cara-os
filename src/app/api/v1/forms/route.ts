@@ -9,6 +9,7 @@
 // POST /api/v1/forms (create new form)
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 
@@ -64,7 +65,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const form = await dal.careForms.create(body);
   return NextResponse.json({ data: form }, { status: 201 });
 }

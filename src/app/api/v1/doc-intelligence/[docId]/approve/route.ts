@@ -1,5 +1,6 @@
 // POST /api/v1/doc-intelligence/:docId/approve
 // Approve AI recommendations — optionally select which tasks to create
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { createTaskRecord } from "@/lib/supabase/care-records";
@@ -7,7 +8,9 @@ import { generateId, todayStr, daysFromNow } from "@/lib/utils";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ docId: string }> }) {
   const { docId } = await params;
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const {
     actor_id = "staff_darren",
     approved_task_ids = [] as string[],    // IDs from suggested_tasks to create

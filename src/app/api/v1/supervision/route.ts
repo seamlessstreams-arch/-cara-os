@@ -9,6 +9,7 @@
 // POST /api/v1/supervision (create new supervision)
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
@@ -76,7 +77,9 @@ export async function POST(req: NextRequest) {
   const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_SUPERVISION);
   if (auth instanceof NextResponse) return auth;
 
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const supervision = db.supervisions.create(body);
   return NextResponse.json({ data: supervision }, { status: 201 });
 }

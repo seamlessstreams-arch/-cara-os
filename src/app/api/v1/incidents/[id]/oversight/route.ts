@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { requirePermissionAsync } from "@/lib/auth-guard";
@@ -8,7 +9,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (auth instanceof NextResponse) return auth;
 
   const { id } = await params;
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const { oversight_note, oversight_by } = body;
 
   if (!oversight_note || !oversight_by) {

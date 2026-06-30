@@ -9,6 +9,7 @@
 // POST /api/v1/audits (create new audit)
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 
@@ -69,7 +70,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const audit = db.audits.create(body);
   return NextResponse.json({ data: audit }, { status: 201 });
 }

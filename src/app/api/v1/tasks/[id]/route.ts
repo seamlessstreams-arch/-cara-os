@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
@@ -24,7 +25,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
 
   // ── Action: complete ──────────────────────────────────────────────────────
   if (body.action === "complete") {

@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
@@ -29,7 +30,9 @@ export async function POST(req: NextRequest) {
   const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
   if (auth instanceof NextResponse) return auth;
 
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
 
   const { candidate_id, referee_name, referee_org, referee_role, referee_email,
     referee_phone, relationship, is_most_recent_employer } = body;
@@ -88,7 +91,9 @@ export async function PATCH(req: NextRequest) {
   const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
   if (auth instanceof NextResponse) return auth;
 
-  const body = await req.json();
+  const __parsed2 = await readJsonBody(req);
+  if (!__parsed2.ok) return __parsed2.response;
+  const body = __parsed2.data;
   const { id, candidate_id, status, received_date, employment_dates_confirmed,
     role_confirmed, performance_rating, safeguarding_concerns, safeguarding_detail,
     would_re_employ, would_re_employ_reason, discrepancy_flag, discrepancy_notes } = body;
