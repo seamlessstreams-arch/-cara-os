@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { processMedicationException } from "@/lib/db/linked-updates";
@@ -8,7 +9,9 @@ export const dynamic = "force-dynamic";
 // Administering medication is an operational write — guarded by medication / create.
 async function administerMedication(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const { status, administered_by, witnessed_by, dose_given, reason_not_given, notes, prn_reason, prn_effectiveness } = body;
 
   const updated = db.medicationAdministrations.administer(id, {

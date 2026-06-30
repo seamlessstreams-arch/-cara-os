@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
@@ -14,7 +15,9 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ doc
 // PATCH /api/v1/doc-intelligence/:docId — update status, approvals, etc.
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ docId: string }> }) {
   const { docId } = await params;
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const { actor_id = "staff_darren", ...updates } = body;
 
   const updated = db.uploadedDocuments.patch(docId, updates);

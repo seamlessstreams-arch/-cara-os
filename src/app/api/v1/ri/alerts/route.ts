@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { RiAlert, RiAlertType, RiAlertSeverity } from "@/types/extended";
@@ -72,7 +73,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const record = intelligenceDb.riAlerts.create({
     home_id: body.home_id ?? "home_oak",
     alert_type: body.alert_type ?? "rising_risk",

@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { HomeClimateSnapshot } from "@/types/extended";
@@ -24,7 +25,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json() as Partial<HomeClimateSnapshot>;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as Partial<HomeClimateSnapshot>;
 
   const required = ["period_start", "period_end", "overall_climate_score", "narrative"] as const;
   for (const field of required) {

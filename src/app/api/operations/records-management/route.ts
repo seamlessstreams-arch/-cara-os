@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -68,7 +69,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const __parsed = await readJsonBody(request);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const { action, ...payload } = body;
 
   if (action === "create_audit") {

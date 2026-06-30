@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
@@ -51,7 +52,9 @@ export async function PATCH(req: NextRequest) {
   const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_RECRUITMENT);
   if (auth instanceof NextResponse) return auth;
 
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const { id, candidate_id, status, verified_by, verified_at, received_date,
     requested_date, certificate_number, document_type, expiry_date,
     concern_flag, concern_notes, override_reason, risk_mitigation, notes, owner } = body;

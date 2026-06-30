@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { dal } from "@/lib/db/dal";
 import { requirePermission } from "@/lib/auth-guard";
@@ -30,7 +31,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const incident = await dal.incidents.findById(id);
   if (!incident) return NextResponse.json({ error: "Incident not found" }, { status: 404 });
 
-  const body = await req.json();
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const { action, ...rest } = body;
 
   if (action === "oversight") {
