@@ -451,4 +451,18 @@ describe("Complaints & Representations Intelligence Engine", () => {
       expect(result.recommendations.length).toBeLessThanOrEqual(1);
     });
   });
+
+  describe("Future-date guard (no recency inflation)", () => {
+    it("excludes future-dated complaints from the last-30-day count", () => {
+      // now is pinned to 2026-05-16 — a record dated after today must not count as recent.
+      const result = analyseComplaints(makeInput({
+        complaints: [
+          makeComplaint({ date: "2026-05-10" }),
+          makeComplaint({ date: "2026-05-01" }),
+          makeComplaint({ date: "2026-06-10" }), // future — must not inflate
+        ],
+      }));
+      expect(result.complaintsLast30Days).toBe(2);
+    });
+  });
 });

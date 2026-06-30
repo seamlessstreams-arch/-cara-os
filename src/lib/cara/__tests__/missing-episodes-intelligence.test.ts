@@ -625,4 +625,18 @@ describe("Missing Episodes Intelligence Engine", () => {
       expect(goodResult.responseScore).toBeGreaterThan(badResult.responseScore);
     });
   });
+
+  describe("Future-date guard (no recency inflation)", () => {
+    it("excludes future-dated episodes from the last-30-day count", () => {
+      // now is pinned to 2026-05-16 — a record dated after today must not count as recent.
+      const result = analyseMissingEpisodes(makeInput({
+        episodes: [
+          makeEpisode({ date: "2026-05-10" }),
+          makeEpisode({ date: "2026-05-01" }),
+          makeEpisode({ date: "2026-06-10" }), // future — must not inflate
+        ],
+      }));
+      expect(result.episodesLast30Days).toBe(2);
+    });
+  });
 });
