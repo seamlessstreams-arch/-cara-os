@@ -42,6 +42,7 @@ const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
   self: "bg-teal-50 text-teal-700 border-teal-200",
   maintenance: "bg-orange-50 text-orange-700 border-orange-200",
   regulatory: "bg-rose-50 text-rose-700 border-rose-200",
+  org_risk: "bg-violet-50 text-violet-700 border-violet-200",
 };
 
 const PRIORITY_COLOUR: Record<ObjectivePriority, string> = {

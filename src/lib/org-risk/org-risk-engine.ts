@@ -177,3 +177,48 @@ export function buildOrgRiskDashboard(input: OrgRiskInput): OrgRiskDashboard {
 
   return { generatedAt: input.now, overallLevel, headline, indicators, correlations, trend };
 }
+
+// ── Action planning ──────────────────────────────────────────────────────────
+// Turn an organisational-risk finding into a deterministic improvement-objective
+// DRAFT. PURE — the UI maps the draft onto a persisted ImprovementObjective via
+// the existing /api/v1/improvement-objectives endpoint (no parallel collection;
+// it links into the home improvement plan + inspection evidence pack). A stable
+// `[ref:org-risk:<key>]` marker is embedded in the notes so a given finding is
+// only ever turned into one action plan.
+
+export interface OrgRiskObjectiveDraft {
+  title: string;
+  priority: "high" | "medium" | "low";
+  notes: string;
+  /** Stable marker embedded in the objective notes, for de-duplication. */
+  ref: string;
+}
+
+const objectivePriorityFor = (level: RiskLevel): "high" | "medium" | "low" =>
+  level === "critical" || level === "high" ? "high" : level === "moderate" ? "medium" : "low";
+
+/** Marker embedded in an objective's notes to tie it back to its org-risk source. */
+export function orgRiskObjectiveRef(key: string): string {
+  return `[ref:org-risk:${key}]`;
+}
+
+export function draftObjectiveFromIndicator(ind: RiskIndicator): OrgRiskObjectiveDraft {
+  const ref = orgRiskObjectiveRef(ind.key);
+  return {
+    title: `Address ${ind.label.toLowerCase()} (${ind.value})`,
+    priority: objectivePriorityFor(ind.level),
+    notes: `Auto-drafted from the Burnout & Organisational Risk dashboard. ${ind.detail} Current level: ${ind.level}. ${ref}`,
+    ref,
+  };
+}
+
+export function draftObjectiveFromCorrelation(c: Correlation): OrgRiskObjectiveDraft {
+  const ref = orgRiskObjectiveRef(c.key);
+  const text = c.text.length > 70 ? `${c.text.slice(0, 67)}…` : c.text;
+  return {
+    title: `Act on: ${text}`,
+    priority: c.severity === "concern" ? "high" : "medium",
+    notes: `Auto-drafted from an organisational-risk pattern Cara noticed. ${c.text} ${ref}`,
+    ref,
+  };
+}

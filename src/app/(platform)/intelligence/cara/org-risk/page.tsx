@@ -1,12 +1,20 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useOrgRisk } from "@/hooks/use-org-risk";
-import type { RiskLevel } from "@/lib/org-risk/org-risk-engine";
-import { cn } from "@/lib/utils";
-import { Activity, Loader2, AlertTriangle, TrendingUp, Link2, HeartHandshake } from "lucide-react";
+import { useImprovementObjectives, useCreateImprovementObjective } from "@/hooks/use-improvement-objectives";
+import {
+  draftObjectiveFromIndicator,
+  draftObjectiveFromCorrelation,
+  type RiskLevel,
+  type OrgRiskObjectiveDraft,
+} from "@/lib/org-risk/org-risk-engine";
+import { OBJECTIVE_STATUS_LABEL } from "@/types/extended";
+import { cn, daysFromNow } from "@/lib/utils";
+import { Activity, Loader2, AlertTriangle, TrendingUp, Link2, HeartHandshake, ClipboardCheck, ClipboardPlus, Check } from "lucide-react";
 
 const LEVEL: Record<RiskLevel, { label: string; badge: string; dot: string; bar: string }> = {
   low: { label: "Low / healthy", badge: "bg-emerald-100 text-emerald-800 border-emerald-200", dot: "bg-emerald-500", bar: "bg-emerald-400" },
@@ -15,10 +23,54 @@ const LEVEL: Record<RiskLevel, { label: string; badge: string; dot: string; bar:
   critical: { label: "Critical / immediate action", badge: "bg-red-100 text-red-800 border-red-200", dot: "bg-red-500", bar: "bg-red-500" },
 };
 
+function ActionPlanButton({ created, pending, onCreate }: { created: boolean; pending: boolean; onCreate: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onCreate}
+      disabled={created || pending}
+      className={cn(
+        "mt-2 inline-flex items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-semibold transition-colors disabled:cursor-default",
+        created
+          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          : "border-[var(--cs-cara-gold,#b45309)] text-[var(--cs-cara-gold,#b45309)] hover:bg-[var(--cs-cara-gold-bg,#fffbeb)]",
+      )}
+    >
+      {created ? (
+        <><Check className="h-3 w-3" /> Action plan created</>
+      ) : (
+        <><ClipboardPlus className="h-3 w-3" /> Create action plan</>
+      )}
+    </button>
+  );
+}
+
 export default function OrgRiskPage() {
   const { data, isLoading } = useOrgRisk();
   const overall = data ? LEVEL[data.overallLevel] : null;
   const maxIncidents = data ? Math.max(1, ...data.trend.map((t) => t.incidents)) : 1;
+
+  const { data: objData } = useImprovementObjectives();
+  const objectives = objData?.data ?? [];
+  const createObjective = useCreateImprovementObjective();
+  const orgRiskObjectives = objectives.filter((o) => o.source === "org_risk");
+  const hasPlan = (ref: string) => objectives.some((o) => (o.notes ?? "").includes(ref));
+  const createPlan = (draft: OrgRiskObjectiveDraft) => {
+    if (hasPlan(draft.ref) || createObjective.isPending) return;
+    createObjective.mutate({
+      title: draft.title,
+      source: "org_risk",
+      priority: draft.priority,
+      status: "planned",
+      owner: "",
+      target_date: daysFromNow(30),
+      completed_date: null,
+      progress: 0,
+      budget: null,
+      notes: draft.notes,
+      updates: [],
+    });
+  };
 
   return (
     <PageShell
@@ -59,6 +111,13 @@ export default function OrgRiskPage() {
                     </div>
                     <div className="mt-1 text-lg font-bold text-[var(--cs-navy,#1e293b)]">{ind.value}</div>
                     <p className="mt-1 text-[11px] text-[var(--cs-text-muted,#64748b)]">{ind.detail}</p>
+                    {(ind.level === "high" || ind.level === "critical") && (
+                      <ActionPlanButton
+                        created={hasPlan(draftObjectiveFromIndicator(ind).ref)}
+                        pending={createObjective.isPending}
+                        onCreate={() => createPlan(draftObjectiveFromIndicator(ind))}
+                      />
+                    )}
                   </div>
                 );
               })}
@@ -71,9 +130,38 @@ export default function OrgRiskPage() {
                   <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-[var(--cs-navy,#1e293b)]"><Link2 className="h-4 w-4 text-[var(--cs-cara-gold,#b45309)]" /> What Cara notices</h3>
                   <div className="space-y-2">
                     {data.correlations.map((c) => (
-                      <div key={c.key} className={cn("flex items-start gap-2 rounded-lg border px-3 py-2 text-sm", c.severity === "concern" ? "border-orange-100 bg-orange-50 text-orange-800" : "border-amber-100 bg-amber-50 text-amber-800")}>
-                        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                        <span>{c.text}</span>
+                      <div key={c.key} className={cn("rounded-lg border px-3 py-2 text-sm", c.severity === "concern" ? "border-orange-100 bg-orange-50 text-orange-800" : "border-amber-100 bg-amber-50 text-amber-800")}>
+                        <div className="flex items-start gap-2">
+                          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+                          <span>{c.text}</span>
+                        </div>
+                        <ActionPlanButton
+                          created={hasPlan(draftObjectiveFromCorrelation(c).ref)}
+                          pending={createObjective.isPending}
+                          onCreate={() => createPlan(draftObjectiveFromCorrelation(c))}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Action plans created from these findings */}
+            {orgRiskObjectives.length > 0 && (
+              <Card>
+                <CardContent className="p-5">
+                  <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-[var(--cs-navy,#1e293b)]">
+                    <ClipboardCheck className="h-4 w-4 text-[var(--cs-cara-gold,#b45309)]" /> Action plans from these findings
+                    <Link href="/home-improvement-plan" className="ml-auto text-xs font-medium text-[var(--cs-cara-gold,#b45309)] hover:underline">Manage in improvement plan →</Link>
+                  </h3>
+                  <div className="space-y-2">
+                    {orgRiskObjectives.map((o) => (
+                      <div key={o.id} className="flex items-center gap-3 rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-white px-3 py-2 text-sm">
+                        <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase", o.priority === "high" ? "border-red-200 bg-red-50 text-red-700" : o.priority === "medium" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-slate-200 bg-slate-50 text-slate-600")}>{o.priority}</span>
+                        <span className="flex-1 text-[var(--cs-navy,#1e293b)]">{o.title}</span>
+                        <span className="text-xs text-[var(--cs-text-muted,#64748b)]">{OBJECTIVE_STATUS_LABEL[o.status]}</span>
+                        <span className="text-xs font-semibold text-[var(--cs-text-secondary,#475569)]">{o.progress}%</span>
                       </div>
                     ))}
                   </div>

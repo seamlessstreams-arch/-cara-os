@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { buildOrgRiskDashboard, type OrgRiskInput } from "../org-risk-engine";
+import {
+  buildOrgRiskDashboard,
+  draftObjectiveFromIndicator,
+  draftObjectiveFromCorrelation,
+  orgRiskObjectiveRef,
+  type OrgRiskInput,
+} from "../org-risk-engine";
 
 const NOW = "2026-06-23T12:00:00.000Z";
 
@@ -65,5 +71,46 @@ describe("buildOrgRiskDashboard", () => {
     const may = d.trend.find((t) => t.month === "2026-05")!;
     expect(jun.incidents).toBe(1);
     expect(may.incidents).toBe(1);
+  });
+});
+
+describe("org-risk action planning (improvement-objective drafts)", () => {
+  it("drafts a high-priority objective from a critical indicator with a stable ref in the notes", () => {
+    const draft = draftObjectiveFromIndicator({
+      key: "training",
+      label: "Mandatory training",
+      value: "7 not compliant",
+      level: "critical",
+      detail: "7 of 10 mandatory training records need attention.",
+    });
+    expect(draft.priority).toBe("high");
+    expect(draft.title).toContain("mandatory training");
+    expect(draft.title).toContain("7 not compliant");
+    expect(draft.notes).toContain("7 of 10 mandatory training records need attention.");
+    expect(draft.ref).toBe(orgRiskObjectiveRef("training"));
+    expect(draft.ref).toBe("[ref:org-risk:training]");
+    expect(draft.notes).toContain(draft.ref);
+  });
+
+  it("maps indicator level to priority (moderate -> medium, low -> low)", () => {
+    expect(draftObjectiveFromIndicator({ key: "sickness", label: "Sickness", value: "6 days", level: "moderate", detail: "" }).priority).toBe("medium");
+    expect(draftObjectiveFromIndicator({ key: "missing", label: "Missing", value: "0", level: "low", detail: "" }).priority).toBe("low");
+  });
+
+  it("drafts from a correlation: truncates long text, rates concern->high / watch->medium", () => {
+    const concern = draftObjectiveFromCorrelation({
+      key: "agency_incidents",
+      severity: "concern",
+      text: "Bank/agency cover and incidents are both elevated — extra induction and consistent handovers may help.",
+    });
+    expect(concern.priority).toBe("high");
+    expect(concern.title.startsWith("Act on: ")).toBe(true);
+    expect(concern.title.endsWith("…")).toBe(true);
+    expect(concern.ref).toBe("[ref:org-risk:agency_incidents]");
+    expect(concern.notes).toContain(concern.ref);
+
+    const watch = draftObjectiveFromCorrelation({ key: "sickness_supervision", severity: "watch", text: "short" });
+    expect(watch.priority).toBe("medium");
+    expect(watch.title).toBe("Act on: short");
   });
 });

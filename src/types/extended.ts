@@ -10111,7 +10111,7 @@ export interface TripPlan {
 
 /* ── Home Improvement Plan ───────────────────────────────────────────────────── */
 
-export type ObjectiveSource = "reg44" | "ofsted" | "reg45" | "self" | "maintenance" | "regulatory";
+export type ObjectiveSource = "reg44" | "ofsted" | "reg45" | "self" | "maintenance" | "regulatory" | "org_risk";
 
 export const OBJECTIVE_SOURCE_LABEL: Record<ObjectiveSource, string> = {
   reg44: "Reg 44 Recommendation",
@@ -10120,6 +10120,7 @@ export const OBJECTIVE_SOURCE_LABEL: Record<ObjectiveSource, string> = {
   self: "Self-identified (RM)",
   maintenance: "Maintenance Inspection",
   regulatory: "Regulatory Requirement",
+  org_risk: "Organisational risk",
 };
 
 export type ObjectivePriority = "high" | "medium" | "low";
