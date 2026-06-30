@@ -242,6 +242,36 @@ describe("prompt-builder", () => {
       expect(user).toContain("difficult family contact");
     });
 
+    it("user prompt includes the care records it must work from (grounding)", () => {
+      const { user, system } = buildPrompt({
+        generationType: "KEYWORK_SESSION",
+        title: "Test",
+        brief: "Test brief content",
+        tone: "warm_professional",
+        audience: "staff",
+        sources: [
+          { type: "daily_log", title: "Daily log — note", content: "Jordan baked a cake and felt proud.", date: "2026-06-20" },
+          { type: "incident", title: "Incident — verbal", content: "Raised voice at staff during a transition.", date: "2026-06-18" },
+        ],
+      });
+      expect(user).toContain("Care Records");
+      expect(user).toContain("Jordan baked a cake");
+      expect(user).toContain("Raised voice at staff");
+      // system rule extended: must not fabricate beyond profile + supplied records
+      expect(system).toContain("care records supplied");
+    });
+
+    it("omits the care-records section when no sources are supplied", () => {
+      const { user } = buildPrompt({
+        generationType: "STAFF_BRIEFING",
+        title: "Test",
+        brief: "Brief content",
+        tone: "direct",
+        audience: "staff",
+      });
+      expect(user).not.toContain("Care Records");
+    });
+
     it("works without profile", () => {
       const { user } = buildPrompt({
         generationType: "STAFF_MICRO_TRAINING",

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { PageShell } from "@/components/ui/page-shell";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ export default function FilingCabinetPage() {
   const [loading, setLoading] = useState(true);
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -73,6 +75,7 @@ export default function FilingCabinetPage() {
           onClick={() => {
             if (hasChildren) toggleExpand(folder.path);
             setSelectedPath(folder.path);
+            setSelectedChildId(folder.childId);
           }}
           className={cn(
             "w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-all hover:bg-[var(--cs-surface)]",
@@ -173,6 +176,13 @@ export default function FilingCabinetPage() {
                     <p className="text-xs text-[var(--cs-text-muted)]">
                       Artifacts filed in this location will appear here once committed through the Cara Studio approval workflow.
                     </p>
+                    <Link
+                      href={selectedChildId ? `/cara-studio?childId=${selectedChildId}` : "/cara-studio"}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--cs-cara-gold)] bg-[var(--cs-cara-gold-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--cs-cara-gold)] transition-colors hover:bg-[var(--cs-cara-gold)] hover:text-white"
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Draft in Cara Studio{selectedChildId ? " — grounded in this child's records" : ""}
+                    </Link>
                     <div className="rounded-xl border border-dashed border-[var(--cs-border)] bg-[var(--cs-surface)] p-8 text-center">
                       <Archive className="h-8 w-8 text-[var(--cs-text-muted)] mx-auto mb-2" />
                       <p className="text-xs text-[var(--cs-text-muted)]">

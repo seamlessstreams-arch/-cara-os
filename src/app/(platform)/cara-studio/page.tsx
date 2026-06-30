@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useStaff } from "@/hooks/use-staff";
+import { useYoungPeople } from "@/hooks/use-young-people";
 import {
   Sparkles, FileText, Brain, Shield, AlertTriangle, CheckCircle2,
   ChevronDown, Loader2, Send, Download, Archive, History, Eye,
@@ -167,16 +168,17 @@ function CaraStudioContent() {
   const [generatedArtifact, setGeneratedArtifact] = useState<CaraStudioArtifact | null>(null);
   const [qualityCheck, setQualityCheck] = useState<CaraStudioQualityCheck | null>(null);
   const [gaps, setGaps] = useState<CaraStudioGap[]>([]);
+  const [sourcesUsed, setSourcesUsed] = useState<{ type: string; title: string; date: string }[]>([]);
   const [editableContent, setEditableContent] = useState("");
   const [showTypeSelector, setShowTypeSelector] = useState(true);
   const [generationError, setGenerationError] = useState<string | null>(null);
 
-  // ── Children from staff query (demo) ───────────────────────────────────────
-  const children = [
-    { id: "child_1", name: "Jayden" },
-    { id: "child_2", name: "Amara" },
-    { id: "child_3", name: "Reuben" },
-  ];
+  // ── Real children in placement — so generation grounds in THEIR records ────
+  const ypQuery = useYoungPeople();
+  const children = (ypQuery.data?.data ?? []).map((yp: any) => ({
+    id: yp.id,
+    name: yp.preferred_name || yp.first_name || yp.name || "Child",
+  }));
 
   // ── Generate artifact ──────────────────────────────────────────────────────
   const handleGenerate = useCallback(async () => {
@@ -205,6 +207,7 @@ function CaraStudioContent() {
         setEditableContent(data.artifact.generated_content ?? "");
         setQualityCheck(data.quality_check ?? null);
         setGaps(data.gaps_found ?? []);
+        setSourcesUsed(Array.isArray(data.sourcesUsed) ? data.sourcesUsed : []);
       } else {
         // Never fail silently — surface why so the user can retry or adjust.
         setGenerationError(
@@ -243,6 +246,7 @@ function CaraStudioContent() {
     setEditableContent("");
     setQualityCheck(null);
     setGaps([]);
+    setSourcesUsed([]);
     setSelectedArtifactType(null);
     setShowTypeSelector(true);
     setAdditionalContext("");
@@ -512,6 +516,24 @@ function CaraStudioContent() {
 
               {/* Right sidebar — Quality, Evidence, Gaps */}
               <div className="space-y-4">
+                {/* Grounded-in records — what Cara actually worked from */}
+                {sourcesUsed.length > 0 && (
+                  <div className="rounded-2xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4 space-y-2">
+                    <h4 className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide flex items-center gap-1.5">
+                      <FileText className="h-3.5 w-3.5 text-[var(--cs-cara-gold)]" />
+                      Worked from {sourcesUsed.length} record{sourcesUsed.length === 1 ? "" : "s"}
+                    </h4>
+                    <p className="text-[11px] text-[var(--cs-text-muted)]">This draft is grounded in the child&apos;s own care records:</p>
+                    <ul className="space-y-1">
+                      {sourcesUsed.slice(0, 10).map((s, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-[var(--cs-text-secondary)]">
+                          <span className="mt-1 h-1 w-1 rounded-full bg-[var(--cs-cara-gold)] shrink-0" />
+                          <span>{s.title}{s.date ? ` (${s.date})` : ""}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {/* Quality check panel */}
                 {qualityCheck && (
                   <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-3">

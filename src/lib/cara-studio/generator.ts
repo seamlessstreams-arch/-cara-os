@@ -90,6 +90,7 @@ export async function generate(request: GenerationRequest): Promise<GenerationRe
     tone: request.tone,
     audience: request.audience,
     additionalContext: request.additionalContext,
+    sources: request.sources,
   });
 
   // Step 4: Call LLM
@@ -246,6 +247,21 @@ function generateDemoContent(userPrompt: string): string {
   const hasJordan = userPrompt.toLowerCase().includes("jordan");
   const childName = hasJordan ? "Jordan" : "the young person";
 
+  // If the request was grounded in care records, reflect them so the draft
+  // visibly "works from" the selected records even when AI is unavailable.
+  let recordsSection = "";
+  const recIdx = userPrompt.indexOf("## Care Records");
+  if (recIdx !== -1) {
+    const titles = Array.from(userPrompt.slice(recIdx).matchAll(/^### (.+)$/gm))
+      .map((m) => m[1])
+      .slice(0, 12);
+    if (titles.length > 0) {
+      recordsSection =
+        `\n\n## Drafted from these records\n\nGrounded in ${titles.length} care record${titles.length === 1 ? "" : "s"} you selected:\n` +
+        titles.map((t) => `- ${t}`).join("\n");
+    }
+  }
+
   return `## Session Overview
 
 This session is designed to be personalised for ${childName}, building on their identified strengths and interests while gently working toward care plan objectives.
@@ -298,5 +314,5 @@ Begin with a low-pressure check-in. Use open questions:
 - If ${childName} becomes dysregulated, pause and offer a break
 - This is not an interrogation — if they don't want to talk, that's OK
 - Document the child's own words wherever possible
-- Link observations back to care plan objectives in your recording`;
+- Link observations back to care plan objectives in your recording${recordsSection}`;
 }
