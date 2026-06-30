@@ -65,6 +65,7 @@ import { ChildMedicationIntelligenceCard } from "@/components/intelligence/child
 import { ChildRestrictivePracticeIntelligenceCard } from "@/components/intelligence/child-restrictive-practice-intelligence-card";
 import { ChildEmotionalWellbeingIntelligenceCard } from "@/components/intelligence/child-emotional-wellbeing-intelligence-card";
 import { ChildPracticeModulesCard } from "@/components/intelligence/child-practice-modules-card";
+import { InlineRelationalPanel } from "@/components/relational-timeline/inline-relational-panel";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -746,6 +747,11 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
             {/* Rights, Safety & Relationships — practice modules surfaced inline at the child record */}
             <div className="sm:col-span-2">
               <ChildPracticeModulesCard childId={id} />
+            </div>
+
+            {/* Relational timeline — the child's relationship story (connection / repair / rupture) */}
+            <div className="sm:col-span-2">
+              <InlineRelationalPanel childId={id} />
             </div>
           </div>
         )}

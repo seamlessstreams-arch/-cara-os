@@ -45,6 +45,7 @@ import { ExportButton, type ExportColumn } from "@/components/common/export-butt
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
 import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 
@@ -411,6 +412,7 @@ function ReportMissingDialog({
             </Select>
           </div>
           {childId && <InlinePracticeReasoning childId={childId} childName={youngPeople.find((y) => y.id === childId)?.preferred_name ?? childId} />}
+          {childId && <InlinePracticeModules childId={childId} modules={["safe", "relationships"]} />}
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide">Date Missing *</label>
