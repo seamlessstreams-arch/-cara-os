@@ -212,7 +212,7 @@ export function computeHomeEmergencyPreparedness(
   const cutoff90 = new Date(today);
   cutoff90.setDate(cutoff90.getDate() - 90);
   const cutoff90Str = cutoff90.toISOString().slice(0, 10);
-  const testedIn90d = emergency_plans.filter(p => p.last_tested >= cutoff90Str).length;
+  const testedIn90d = emergency_plans.filter(p => p.last_tested >= cutoff90Str && p.last_tested.slice(0, 10) <= today).length;
 
   const planProfile: PlanCoverageProfile = {
     total_plans: emergency_plans.length,

@@ -160,7 +160,7 @@ export function computeEmergencyIntelligence(input: {
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
   const ninetyDaysAgoStr = ninetyDaysAgo.toISOString().slice(0, 10);
 
-  const drillsLast90 = drills.filter((d) => d.date >= ninetyDaysAgoStr);
+  const drillsLast90 = drills.filter((d) => d.date >= ninetyDaysAgoStr && d.date.slice(0, 10) <= today);
 
   const avgResponseTime =
     drills.length > 0

@@ -132,6 +132,7 @@ export interface RegulatoryFlag {
 export function analyseComplaints(input: ComplaintsInput): ComplaintsAssessment {
   const { childName, complaints } = input;
   const now = new Date();
+  const today = now.toISOString().slice(0, 10);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10);
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 86400000).toISOString().slice(0, 10);
 
@@ -139,8 +140,8 @@ export function analyseComplaints(input: ComplaintsInput): ComplaintsAssessment 
   const totalComplaints = complaints.length;
   const openComplaints = complaints.filter(c => c.status === "open" || c.status === "investigating").length;
   const resolvedComplaints = complaints.filter(c => c.status === "resolved").length;
-  const complaintsLast30 = complaints.filter(c => c.date >= thirtyDaysAgo).length;
-  const complaintsLast90 = complaints.filter(c => c.date >= ninetyDaysAgo).length;
+  const complaintsLast30 = complaints.filter(c => c.date >= thirtyDaysAgo && c.date.slice(0, 10) <= today).length;
+  const complaintsLast90 = complaints.filter(c => c.date >= ninetyDaysAgo && c.date.slice(0, 10) <= today).length;
 
   // ── Resolution times ──────────────────────────────────────────────────
   const resolved = complaints.filter(c => c.resolutionDays !== undefined);

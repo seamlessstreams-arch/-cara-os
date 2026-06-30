@@ -474,7 +474,7 @@ export function computeWorkforceIntelligence(input: WorkforceEngineInput): Workf
     return d.toISOString().slice(0, 10);
   })();
 
-  const recentSick = sickLeave.filter((l) => l.start_date >= ninetyDaysAgo);
+  const recentSick = sickLeave.filter((l) => l.start_date >= ninetyDaysAgo && l.start_date.slice(0, 10) <= today);
   const staffSickInstances = new Map<string, { instances: number; days: number }>();
   for (const l of recentSick) {
     const current = staffSickInstances.get(l.staff_id) ?? { instances: 0, days: 0 };

@@ -153,13 +153,14 @@ export interface RegulatoryFlag {
 export function analyseSanctionsRewards(input: SanctionsRewardsInput): SanctionsRewardsAssessment {
   const { childName, sanctions, rewards } = input;
   const now = new Date();
+  const today = now.toISOString().slice(0, 10);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10);
 
   // ── Counts ────────────────────────────────────────────────────────────
   const totalSanctions = sanctions.length;
   const totalRewards = rewards.length;
-  const sanctionsLast30 = sanctions.filter(s => s.date >= thirtyDaysAgo).length;
-  const rewardsLast30 = rewards.filter(r => r.date >= thirtyDaysAgo).length;
+  const sanctionsLast30 = sanctions.filter(s => s.date >= thirtyDaysAgo && s.date.slice(0, 10) <= today).length;
+  const rewardsLast30 = rewards.filter(r => r.date >= thirtyDaysAgo && r.date.slice(0, 10) <= today).length;
   const ratio = totalSanctions > 0 ? totalRewards / totalSanctions : totalRewards > 0 ? 10 : 0;
 
   // ── Prohibited sanctions ──────────────────────────────────────────────
@@ -322,12 +323,13 @@ function scoreCompliance(input: SanctionsRewardsInput, sanctions: SanctionRecord
 
 function analyseTrend(sanctions: SanctionRecord[], rewards: RewardRecord[]): "improving" | "stable" | "worsening" {
   const now = new Date();
+  const today = now.toISOString().slice(0, 10);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10);
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 86400000).toISOString().slice(0, 10);
 
-  const recentSanctions = sanctions.filter(s => s.date >= thirtyDaysAgo).length;
+  const recentSanctions = sanctions.filter(s => s.date >= thirtyDaysAgo && s.date.slice(0, 10) <= today).length;
   const prevSanctions = sanctions.filter(s => s.date >= sixtyDaysAgo && s.date < thirtyDaysAgo).length;
-  const recentRewards = rewards.filter(r => r.date >= thirtyDaysAgo).length;
+  const recentRewards = rewards.filter(r => r.date >= thirtyDaysAgo && r.date.slice(0, 10) <= today).length;
   const prevRewards = rewards.filter(r => r.date >= sixtyDaysAgo && r.date < thirtyDaysAgo).length;
 
   // Improving: fewer sanctions OR better ratio recently
