@@ -21,6 +21,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { cn, formatDate } from "@/lib/utils";
 import { useDailyLog, useCreateDailyLog } from "@/hooks/use-daily-log";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { InlineRelationalPanel } from "@/components/relational-timeline/inline-relational-panel";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
 import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
@@ -188,6 +189,7 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
 
           {/* Practice reasoning for the selected child — the engine heart at the point of recording */}
           {childId && <InlinePracticeReasoning childId={childId} childName={getYPName(childId)} />}
+          {childId && <InlineRelationalPanel childId={childId} />}
 
           {/* Content */}
           <CaraCompose

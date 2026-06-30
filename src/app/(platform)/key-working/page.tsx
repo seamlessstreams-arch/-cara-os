@@ -18,6 +18,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
+import { InlineRelationalPanel } from "@/components/relational-timeline/inline-relational-panel";
 import { toast } from "sonner";
 import {
   useKeyWorkingSessions,
@@ -499,6 +500,7 @@ export default function KeyWorkingPage() {
               </Select>
             </div>
             {formChildId && <InlinePracticeReasoning childId={formChildId} childName={getYPName(formChildId)} />}
+            {formChildId && <InlineRelationalPanel childId={formChildId} />}
             <div>
               <label className="text-sm font-medium">Session Type</label>
               <Select value={formType} onValueChange={setFormType}>
