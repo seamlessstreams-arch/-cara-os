@@ -11,6 +11,8 @@ import type {
   EvidenceItem,
   InspectionEvidencePack,
 } from "./types";
+import type { SopRealityCheck } from "@/lib/sop-reality-check/sop-reality-check-engine";
+import type { OrgRiskDashboard } from "@/lib/org-risk/org-risk-engine";
 
 // ── Input type ─────────────────────────────────────────────────────────────
 
@@ -74,6 +76,12 @@ export interface EvidencePackInput {
   postIncidentReflections: any[];
   stayingSafePlans: any[];
   relationshipEntries: any[];
+
+  // Whole-home assurance — pre-computed by the route (each engine reads a wide
+  // slice of the store) so the generator stays a pure mapping. Optional so every
+  // existing caller/test keeps working (the section reports "not assessed").
+  sopRealityCheck?: SopRealityCheck | null;
+  orgRisk?: OrgRiskDashboard | null;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -144,6 +152,7 @@ export function computeInspectionEvidencePack(
     buildLearningFromIncidents(input, children),
     buildChildSafetyPlanning(input, children),
     buildProtectiveRelationshipsEvidence(input, children),
+    buildSopAndOrganisationalAssurance(input),
   ];
 
   const totalItems = sections.reduce((sum, s) => sum + s.items.length, 0);
@@ -1524,6 +1533,133 @@ function buildProtectiveRelationshipsEvidence(
     score,
     rating: score === undefined ? "not_assessed" : scoreToRating(score),
     summary: `${childrenWithProtective}/${children.length} children have at least one protective relationship recorded.`,
+  };
+}
+
+// ── Section: Statement of Purpose & Organisational Assurance (whole-home) ────
+// Composes the Statement of Purpose Reality Check (can the home prove it lives
+// its SoP every day?) with the Burnout & Organisational Risk dashboard into one
+// whole-home leadership-and-management assurance section. Both results are pre-
+// computed by the route (each engine reads a wide slice of the store) and passed
+// in; this builder maps them to evidence items and an honest, critical-friend
+// score — organisational pressure pulls assurance down, and it is only "not
+// assessed" when neither engine produced a result.
+function buildSopAndOrganisationalAssurance(
+  input: EvidencePackInput,
+): EvidenceSection {
+  const sop = input.sopRealityCheck ?? null;
+  const org = input.orgRisk ?? null;
+  const items: EvidenceItem[] = [];
+
+  // One evidence item per Statement-of-Purpose assurance area.
+  if (sop) {
+    for (const a of sop.areas) {
+      const gapText =
+        a.gaps.length > 0
+          ? ` Gaps: ${a.gaps.map((g) => g.label).join("; ")}.`
+          : "";
+      items.push({
+        id: `ev_sop_${a.key}`,
+        type: "sop_assurance_area",
+        title: `Statement of Purpose — ${a.label}: ${a.strength} evidence`,
+        date: input.today,
+        summary: `${a.summary}${gapText}`,
+        linked_record_type: "sop_reality_check",
+        linked_record_id: `sop_${a.key}`,
+        risk_level:
+          a.strength === "limited"
+            ? "high"
+            : a.inspectionRisk
+              ? "medium"
+              : undefined,
+        tags: [
+          "statement_of_purpose",
+          "leadership",
+          a.key,
+          ...(a.inspectionRisk ? ["inspection_risk"] : []),
+        ],
+      });
+    }
+  }
+
+  // Whole-home organisational picture: overall level + each high/critical
+  // indicator (pressure points that can become safeguarding risks for children).
+  if (org) {
+    items.push({
+      id: "ev_org_overall",
+      type: "organisational_risk",
+      title: `Organisational risk — ${org.overallLevel}`,
+      date: input.today,
+      summary: org.headline,
+      linked_record_type: "org_risk_dashboard",
+      linked_record_id: "org_overall",
+      risk_level:
+        org.overallLevel === "critical" || org.overallLevel === "high"
+          ? "high"
+          : org.overallLevel === "moderate"
+            ? "medium"
+            : "low",
+      tags: ["organisational_risk", "leadership", "workforce"],
+    });
+    for (const ind of org.indicators.filter(
+      (i) => i.level === "high" || i.level === "critical",
+    )) {
+      items.push({
+        id: `ev_org_${ind.key}`,
+        type: "organisational_risk_indicator",
+        title: `${ind.label}: ${ind.value} (${ind.level})`,
+        date: input.today,
+        summary: ind.detail,
+        linked_record_type: "org_risk_dashboard",
+        linked_record_id: `org_${ind.key}`,
+        risk_level: ind.level === "critical" ? "critical" : "high",
+        tags: ["organisational_risk", "workforce", ind.key],
+      });
+    }
+  }
+
+  // Honest score (no false green): SoP evidence strength, reduced by
+  // organisational-risk pressure. Limited SoP areas contribute 0.
+  const ORG_PENALTY: Record<string, number> = {
+    low: 0,
+    moderate: 5,
+    high: 15,
+    critical: 25,
+  };
+  let score: number | undefined;
+  if (sop && sop.areas.length > 0) {
+    const sopScore = Math.round(
+      (sop.areasStrong * 100 + sop.areasDeveloping * 50) / sop.areas.length,
+    );
+    score = clamp(
+      sopScore - (org ? (ORG_PENALTY[org.overallLevel] ?? 0) : 0),
+      0,
+      100,
+    );
+  } else if (org) {
+    score = clamp(100 - (ORG_PENALTY[org.overallLevel] ?? 0) * 3, 0, 100);
+  } else {
+    score = undefined;
+  }
+
+  const summary = sop
+    ? `${sop.areasStrong}/${sop.areas.length} Statement-of-Purpose areas strongly evidenced; ${sop.inspectionRisks.length} inspection risk(s)${org ? `; organisational risk ${org.overallLevel}` : ""}.`
+    : org
+      ? `Organisational risk is ${org.overallLevel}. ${org.headline}`
+      : "Statement of Purpose and organisational-risk assurance not yet assessed.";
+
+  return {
+    id: "sop_and_organisational_assurance",
+    title: "Statement of Purpose & Organisational Assurance",
+    description:
+      "Whole-home leadership assurance: can the home prove it lives its Statement of Purpose every day, and are organisational pressures (staffing, supervision, training) being managed before they become risks for children?",
+    ofsted_reference:
+      "CHR 2015 Reg 16 (Statement of Purpose) & Reg 13 (leadership and management); SCCIF — leadership & management",
+    data_sources: ["sopRealityCheck", "orgRisk"],
+    items,
+    score,
+    rating: score === undefined ? "not_assessed" : scoreToRating(score),
+    summary,
   };
 }
 

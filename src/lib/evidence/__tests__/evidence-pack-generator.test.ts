@@ -237,4 +237,58 @@ describe("evidence pack — practice-intelligence module sections", () => {
     expect(actionIds).toContain("action_restriction_rr_overdue");
     expect(actionIds).toContain("action_safeplan_ssp_unapproved");
   });
+
+  it("includes a Statement-of-Purpose & organisational-assurance section, not_assessed with no engine results", () => {
+    const pack = computeInspectionEvidencePack(emptyInput());
+    const sec = pack.sections.find(
+      (s) => s.id === "sop_and_organisational_assurance",
+    );
+    expect(sec).toBeDefined();
+    expect(sec?.items).toHaveLength(0);
+    expect(sec?.score).toBeUndefined();
+    expect(sec?.rating).toBe("not_assessed");
+  });
+
+  it("maps SoP areas + high org indicators to evidence and lets organisational pressure pull the score down (no false green)", () => {
+    const input = emptyInput();
+    input.sopRealityCheck = {
+      generatedAt: TODAY,
+      headline: "h",
+      overallConfidence: "developing",
+      areasStrong: 1,
+      areasDeveloping: 0,
+      areasLimited: 1,
+      inspectionRisks: [
+        { area: "Safeguarding & behaviour", label: "no current risk assessment", detail: "d" },
+      ],
+      areas: [
+        { key: "clarity", label: "Clarity of service", strength: "strong", summary: "Strong.", evidence: [], gaps: [], inspectionRisk: false },
+        { key: "safeguarding", label: "Safeguarding & behaviour", strength: "limited", summary: "Thin.", evidence: [], gaps: [{ label: "no current risk assessment", severity: "high", detail: "d" }], inspectionRisk: true },
+      ],
+    } as any;
+    input.orgRisk = {
+      generatedAt: TODAY,
+      overallLevel: "high",
+      headline: "Organisational risk is high.",
+      indicators: [
+        { key: "supervision", label: "Supervision overdue", value: "3", level: "high", detail: "3 overdue" },
+        { key: "agency", label: "Agency / bank mix", value: "10%", level: "low", detail: "ok" },
+      ],
+      correlations: [],
+      trend: [],
+    } as any;
+    const sec = sectionById(input, "sop_and_organisational_assurance")!;
+    const ids = sec.items.map((i) => i.id);
+    // 2 SoP areas + org overall + 1 high indicator (the "low" indicator is filtered out)
+    expect(sec.items).toHaveLength(4);
+    expect(ids).toContain("ev_sop_safeguarding");
+    expect(ids).toContain("ev_org_overall");
+    expect(ids).toContain("ev_org_supervision");
+    expect(ids).not.toContain("ev_org_agency");
+    // a "limited" SoP area is flagged high risk
+    expect(sec.items.find((i) => i.id === "ev_sop_safeguarding")?.risk_level).toBe("high");
+    // sopScore = (1*100 + 0*50) / 2 = 50; high org penalty (15) → 35 → inadequate
+    expect(sec.score).toBe(35);
+    expect(sec.rating).toBe("inadequate");
+  });
 });

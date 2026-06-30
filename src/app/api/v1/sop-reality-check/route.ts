@@ -15,17 +15,17 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const store = getStore();
-    const children = (store.youngPeople ?? [])
-      .filter((yp: { status?: string }) => yp.status === "current")
-      .map((yp: { id: string; preferred_name?: string; first_name?: string }) => ({
-        id: yp.id,
+    const children = ((store.youngPeople ?? []) as any[])
+      .filter((yp) => yp.status === "current")
+      .map((yp) => ({
+        id: yp.id as string,
         name: yp.preferred_name || yp.first_name || "Child",
       }));
 
     const data = buildSopRealityCheck({
       now: new Date().toISOString(),
       children,
-      carePlans: store.carePlans ?? [],
+      carePlans: (store as any).carePlans ?? [],
       dailyLog: (store.dailyLog ?? []) as { child_id: string; date?: string }[],
       keyWorkingSessions: store.keyWorkingSessions ?? [],
       incidents: store.incidents ?? [],
