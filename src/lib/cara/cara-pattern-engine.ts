@@ -87,9 +87,10 @@ export function scanForPatterns(
   const minCluster = config.minClusterSize ?? 3;
   const escalationWindow = config.escalationWindowDays ?? 14;
   const cutoff = daysAgo(lookback);
+  const today = daysAgo(0);
 
   const recent = incidents
-    .filter((i) => i.date >= cutoff && i.home_id === config.homeId)
+    .filter((i) => i.date >= cutoff && i.date.slice(0, 10) <= today && i.home_id === config.homeId)
     .sort((a, b) => a.date.localeCompare(b.date));
 
   if (recent.length === 0) return [];
@@ -260,7 +261,6 @@ export function scanForPatterns(
 
   // ── 6. Missing oversight ──────────────────────────────────────────────
   const oversightSLADays = 2;
-  const today = new Date().toISOString().split("T")[0];
   const missingOversight = recent.filter(
     (i) => i.requires_oversight && !i.oversight_by && daysBetween(i.date, today) > oversightSLADays,
   );

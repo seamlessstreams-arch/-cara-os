@@ -162,10 +162,11 @@ export function analyseMissingEpisodes(input: MissingInput): MissingAssessment {
 
   // ── Recent episodes ───────────────────────────────────────────────────
   const now = new Date();
+  const today = now.toISOString().slice(0, 10);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10);
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 86400000).toISOString().slice(0, 10);
-  const episodesLast30 = episodes.filter(e => e.date >= thirtyDaysAgo).length;
-  const episodesLast90 = episodes.filter(e => e.date >= ninetyDaysAgo).length;
+  const episodesLast30 = episodes.filter(e => e.date >= thirtyDaysAgo && e.date.slice(0, 10) <= today).length;
+  const episodesLast90 = episodes.filter(e => e.date >= ninetyDaysAgo && e.date.slice(0, 10) <= today).length;
 
   // ── Trend ─────────────────────────────────────────────────────────────
   const trend = analyseTrend(episodes);
@@ -261,11 +262,12 @@ function analyseTrend(episodes: MissingEpisode[]): "improving" | "stable" | "esc
   if (episodes.length < 4) return "stable";
 
   const now = new Date();
+  const today = now.toISOString().slice(0, 10);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10);
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 86400000).toISOString().slice(0, 10);
   const ninetyDaysAgo = new Date(now.getTime() - 90 * 86400000).toISOString().slice(0, 10);
 
-  const last30 = episodes.filter(e => e.date >= thirtyDaysAgo).length;
+  const last30 = episodes.filter(e => e.date >= thirtyDaysAgo && e.date.slice(0, 10) <= today).length;
   const mid30 = episodes.filter(e => e.date >= sixtyDaysAgo && e.date < thirtyDaysAgo).length;
   const first30 = episodes.filter(e => e.date >= ninetyDaysAgo && e.date < sixtyDaysAgo).length;
 
@@ -286,8 +288,9 @@ function assessRiskLevel(
 
   // Frequency
   const now = new Date();
+  const today = now.toISOString().slice(0, 10);
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000).toISOString().slice(0, 10);
-  const recent = episodes.filter(e => e.date >= thirtyDaysAgo).length;
+  const recent = episodes.filter(e => e.date >= thirtyDaysAgo && e.date.slice(0, 10) <= today).length;
   if (recent >= 5) riskPoints += 4;
   else if (recent >= 3) riskPoints += 3;
   else if (recent >= 1) riskPoints += 1;
