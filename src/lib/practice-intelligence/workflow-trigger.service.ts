@@ -21,12 +21,12 @@ function homeId(): string {
 // ── Trigger rules engine ────────────────────────────────────────────────────
 // Maps events to suggestion generators
 
-interface TriggerRule {
+export interface TriggerRule {
   events: WorkflowTriggerEvent[];
   generate: (context: TriggerContext) => WorkflowSuggestion[];
 }
 
-interface TriggerContext {
+export interface TriggerContext {
   event: WorkflowTriggerEvent;
   sourceTable: string;
   sourceId: string;
@@ -35,7 +35,7 @@ interface TriggerContext {
   metadata: Record<string, unknown>;
 }
 
-const TRIGGER_RULES: TriggerRule[] = [
+export const TRIGGER_RULES: TriggerRule[] = [
   // Incident triggers
   {
     events: ["incident_created", "incident_updated"],

@@ -893,6 +893,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Staying Safe Plans", href: "/intelligence/cara/staying-safe-plans", icon: "ShieldCheck", module: "young-people" },
       { label: "Protective Relationships", href: "/intelligence/cara/protective-relationships", icon: "Network", module: "young-people" },
       { label: "Practice Action Centre", href: "/intelligence/cara/action-centre", icon: "ListChecks", module: "dashboard" },
+      { label: "Practice Follow-ups", href: "/practice-follow-ups", icon: "RefreshCcw", module: "dashboard" },
       { label: "Inspection Intelligence", href: "/intelligence/cara/inspection-intelligence", icon: "ClipboardCheck", module: "dashboard" },
       { label: "Burnout & Org Risk", href: "/intelligence/cara/org-risk", icon: "Activity", module: "dashboard" },
       { label: "SOP Reality Check", href: "/intelligence/cara/sop-reality-check", icon: "FileCheck", module: "dashboard" },
