@@ -3389,9 +3389,9 @@ Yours sincerely,
     }
 
     // Who with
-    if (/unknown|stranger|adult|man|men|older/i.test(input)) {
+    if (/\b(unknown|stranger|adults?|man|men|older)\b/i.test(input)) {
       riskIndicators.push({ indicator: "Associates", score: 5, detail: "Unknown or older associates — exploitation risk" });
-    } else if (/friend|peer|other\s+young/i.test(input)) {
+    } else if (/\b(friends?|peers?|other\s+young)\b/i.test(input)) {
       riskIndicators.push({ indicator: "Associates", score: 2, detail: "Known peers" });
     }
 

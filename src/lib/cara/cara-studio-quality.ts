@@ -52,7 +52,7 @@ function evaluateArtifact(artifact: CaraArtifact): QualityCheckResult {
   // Check 1: Evidence cited
   const evidence_cited = content.includes("evidence") ||
     content.includes("record") ||
-    content.includes("log") ||
+    /\blog(s|ged|ging)?\b/i.test(content) ||
     artifact.source_ids.length > 0;
   if (!evidence_cited) issues.push("No evidence cited in the content");
 

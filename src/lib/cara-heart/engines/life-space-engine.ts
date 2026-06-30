@@ -74,9 +74,9 @@ function classifyPracticeValue(record: CaraPracticeRecord, context: LifeSpaceCon
 
   if (lower.includes("calm") || lower.includes("regulat") || lower.includes("co-") || lower.includes("breathe")) return "co_regulation";
   if (lower.includes("feeling") || lower.includes("emotion") || lower.includes("expressed")) return "emotional_literacy";
-  if (lower.includes("choice") || lower.includes("right") || lower.includes("voice")) return "rights";
+  if (lower.includes("choice") || /\brights?\b/.test(lower) || /\bvoice\b/.test(lower)) return "rights";
   if (lower.includes("independen") || lower.includes("life skill") || lower.includes("cooked") || lower.includes("managed alone")) return "independence";
-  if (lower.includes("belong") || lower.includes("home") || lower.includes("safe")) return "belonging";
+  if (lower.includes("belong") || lower.includes("home") || /\bsafe/i.test(lower)) return "belonging";
   if (lower.includes("trust") || lower.includes("confided") || lower.includes("accepted help")) return "trust_building";
 
   return "routine";

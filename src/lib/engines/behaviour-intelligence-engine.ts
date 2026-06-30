@@ -203,13 +203,13 @@ export function classifyBehaviourCategory(entry: BehaviourEntryInput): Behaviour
 
   const text = (entry.behaviour + " " + entry.title + " " + entry.antecedent).toLowerCase();
 
-  if (text.includes("self-harm") || text.includes("self harm") || text.includes("cut") || text.includes("scratch")) {
+  if (text.includes("self-harm") || text.includes("self harm") || /\b(cut|cuts|cutting)\b/i.test(text) || text.includes("scratch")) {
     return "self_harm";
   }
   if (text.includes("abscond") || text.includes("ran away") || text.includes("left without")) {
     return "absconding";
   }
-  if (text.includes("hit") || text.includes("kick") || text.includes("punch") || text.includes("assault") || text.includes("attack") || text.includes("violent")) {
+  if (/\b(hit|hits|hitting)\b/i.test(text) || text.includes("kick") || text.includes("punch") || text.includes("assault") || text.includes("attack") || text.includes("violent")) {
     return "aggression";
   }
   if (text.includes("property") || text.includes("smash") || text.includes("broke") || text.includes("damage") || text.includes("threw") || text.includes("throw")) {

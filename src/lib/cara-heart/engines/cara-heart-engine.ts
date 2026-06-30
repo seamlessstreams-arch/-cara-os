@@ -222,9 +222,9 @@ export function runCaraHeartEngine(
   // ── Rights language ───────────────────────────────────────────────────────
   const lower = combinedText.toLowerCase();
   const rightsConsidered =
-    lower.includes("right") ||
+    /\brights?\b/.test(lower) ||
     lower.includes("choice") ||
-    lower.includes("voice") ||
+    /\bvoice\b/.test(lower) ||
     lower.includes("advocate") ||
     lower.includes("dignity") ||
     lower.includes("privacy");

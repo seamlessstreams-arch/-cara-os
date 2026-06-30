@@ -195,12 +195,12 @@ export function computeIncidentAnalytics(
     return d.toISOString().slice(0, 10);
   })();
 
-  const incidents30d = incidents.filter((i) => i.date >= thirtyDaysAgo);
-  const incidents90d = incidents.filter((i) => i.date >= ninetyDaysAgo);
+  const incidents30d = incidents.filter((i) => i.date >= thirtyDaysAgo && i.date.slice(0, 10) <= today);
+  const incidents90d = incidents.filter((i) => i.date >= ninetyDaysAgo && i.date.slice(0, 10) <= today);
 
   // ── Period Summary ────────────────────────────────────────────────────
 
-  const recentPeriod = incidents.filter((i) => i.date >= thirtyDaysAgo).length;
+  const recentPeriod = incidents.filter((i) => i.date >= thirtyDaysAgo && i.date.slice(0, 10) <= today).length;
   const olderPeriod = incidents.filter((i) => i.date >= sixtyDaysAgo && i.date < thirtyDaysAgo).length;
 
   let trendDirection: "increasing" | "stable" | "decreasing" = "stable";

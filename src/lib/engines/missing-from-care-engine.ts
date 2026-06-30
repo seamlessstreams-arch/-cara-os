@@ -15,6 +15,8 @@
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
+import { mentionsAny } from "@/lib/text/keyword-match";
+
 export interface MissingEpisodeInput {
   id: string;
   reference?: string;
@@ -137,7 +139,7 @@ export function extractFactors(episode: MissingEpisodeInput): {
   const notes = ((episode.pattern_notes ?? "") + " " + (episode.return_interview_notes ?? "")).toLowerCase();
 
   // Pull factors (external attractions drawing the child away)
-  if (notes.includes("peer") || notes.includes("mate") || notes.includes("friend")) {
+  if (mentionsAny(notes, ["peer", "mate", "friend"])) {
     pull.push("peer_influence");
   }
   if (notes.includes("online") || notes.includes("social media") || notes.includes("internet")) {
@@ -149,7 +151,7 @@ export function extractFactors(episode: MissingEpisodeInput): {
   if (notes.includes("drugs") || notes.includes("alcohol") || notes.includes("substance")) {
     pull.push("substance_use");
   }
-  if (notes.includes("community") || notes.includes("park") || notes.includes("town")) {
+  if (mentionsAny(notes, ["community", "park", "town"])) {
     pull.push("community_attraction");
   }
   if (notes.includes("family") || notes.includes("birth parent") || notes.includes("mum") || notes.includes("dad")) {
@@ -174,7 +176,7 @@ export function extractFactors(episode: MissingEpisodeInput): {
   }
 
   // Risk factors (exploitation indicators)
-  if (notes.includes("older") || notes.includes("unknown male") || notes.includes("unknown adult")) {
+  if (mentionsAny(notes, ["older", "unknown male", "unknown adult"])) {
     risk.push("unknown_adults");
   }
   if (notes.includes("exploit") || notes.includes("groom") || notes.includes("trafficking")) {

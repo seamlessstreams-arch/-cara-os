@@ -164,7 +164,7 @@ export function createDailyLog(input: CreateDailyLogInput): DailyLogOrchestratio
     alerts.push("Follow-up flagged by recording staff — ensure this is actioned on the next shift");
     linkedUpdates.push("Follow-up flagged for next shift");
   }
-  if (input.concerns.length > 0 && /safeguard|harm|abuse|disclosure|exploit/i.test(input.concerns)) {
+  if (input.concerns.length > 0 && /safeguard|\bharm(s|ed|ful)?\b|abuse|disclosure|exploit/i.test(input.concerns)) {
     alerts.push("SAFEGUARDING LANGUAGE DETECTED in concerns — review immediately and consider raising a safeguarding concern if not already done");
     linkedUpdates.push("Alert: safeguarding language detected in concerns");
   }

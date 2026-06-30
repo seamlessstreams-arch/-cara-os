@@ -322,7 +322,7 @@ function detectPracticeDrift(
 
   const logsWithoutChildVoice = dailyLogs.filter((l) => {
     const text = String(l.content ?? "").toLowerCase();
-    return !(/said|told|expressed|voice|wish|feel|want|quote/.test(text));
+    return !(/said|told|expressed|\bvoice\b|wish|feel|want|quote/.test(text));
   });
 
   if (logsWithoutChildVoice.length > dailyLogs.length * 0.6 && dailyLogs.length >= 5) {
