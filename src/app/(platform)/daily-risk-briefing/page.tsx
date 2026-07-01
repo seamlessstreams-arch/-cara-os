@@ -24,10 +24,10 @@ const riskBorder = (level: DailyRiskLevel) =>
   level === "low" ? "border-l-green-400" : level === "medium" ? "border-l-amber-400" : "border-l-red-500";
 
 const riskBadge = (level: DailyRiskLevel) =>
-  level === "low" ? "bg-green-100 text-green-800" : level === "medium" ? "bg-amber-100 text-amber-800" : "bg-red-100 text-red-800";
+  level === "low" ? "bg-[--cs-success-bg] text-[--cs-success]" : level === "medium" ? "bg-[--cs-warning-bg] text-[--cs-warning]" : "bg-[--cs-risk-bg] text-[--cs-risk]";
 
 const alertIcon = (severity: string) =>
-  severity === "critical" ? "text-red-500" : severity === "warning" ? "text-amber-500" : "text-green-600";
+  severity === "critical" ? "text-red-500" : severity === "warning" ? "text-amber-500" : "text-[--cs-success]";
 
 const AlertIconComponent = ({ severity }: { severity: string }) =>
   severity === "info" ? <CheckCircle2 className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", alertIcon(severity))} /> : <AlertTriangle className={cn("h-3.5 w-3.5 shrink-0 mt-0.5", alertIcon(severity))} />;
@@ -60,7 +60,7 @@ export default function DailyRiskBriefingPage() {
               onClick={() => setShift("day")}
               className={cn(
                 "px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors",
-                shift === "day" ? "bg-amber-100 text-amber-800" : "bg-white text-slate-500 hover:bg-slate-50"
+                shift === "day" ? "bg-[--cs-warning-bg] text-[--cs-warning]" : "bg-white text-slate-500 hover:bg-slate-50"
               )}
             >
               <Sun className="h-3.5 w-3.5" /> Day
@@ -69,7 +69,7 @@ export default function DailyRiskBriefingPage() {
               onClick={() => setShift("night")}
               className={cn(
                 "px-3 py-1.5 text-xs font-medium flex items-center gap-1.5 transition-colors border-l",
-                shift === "night" ? "bg-blue-100 text-blue-800" : "bg-white text-slate-500 hover:bg-slate-50"
+                shift === "night" ? "bg-[--cs-info-bg] text-[--cs-info]" : "bg-white text-slate-500 hover:bg-slate-50"
               )}
             >
               <Moon className="h-3.5 w-3.5" /> Night
@@ -82,11 +82,11 @@ export default function DailyRiskBriefingPage() {
     >
       <div id="print-area">
         {/* shift info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-          {shift === "day" ? <Sun className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" /> : <Moon className="h-5 w-5 text-blue-600 shrink-0 mt-0.5" />}
+        <div className="bg-[--cs-info-bg] border border-[--cs-info-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+          {shift === "day" ? <Sun className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" /> : <Moon className="h-5 w-5 text-[--cs-info] shrink-0 mt-0.5" />}
           <div className="text-sm">
-            <p className="font-semibold text-blue-800">{shift === "day" ? "Day Shift" : "Waking Night"} Briefing — {today}</p>
-            <p className="text-blue-700">
+            <p className="font-semibold text-[--cs-info]">{shift === "day" ? "Day Shift" : "Waking Night"} Briefing — {today}</p>
+            <p className="text-[--cs-info]">
               Shift Leader: {briefing ? getStaffName(briefing.shift_leader) : "—"} ·
               Staff on shift: {briefing ? briefing.staff_on_shift.map(getStaffName).join(", ") : "—"} ·
               On-call: {briefing ? getStaffName(briefing.on_call) : "—"}
@@ -118,12 +118,12 @@ export default function DailyRiskBriefingPage() {
                 </div>
                 {/* medication */}
                 <div>
-                  <p className="font-medium mb-1 flex items-center gap-1"><Pill className="h-3.5 w-3.5 text-green-600" /> Medication</p>
+                  <p className="font-medium mb-1 flex items-center gap-1"><Pill className="h-3.5 w-3.5 text-[--cs-success]" /> Medication</p>
                   <p className="text-muted-foreground">{yp.medication}</p>
                 </div>
                 {/* key info */}
                 <div>
-                  <p className="font-medium mb-1 flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-blue-600" /> Today</p>
+                  <p className="font-medium mb-1 flex items-center gap-1"><Calendar className="h-3.5 w-3.5 text-[--cs-info]" /> Today</p>
                   <p className="text-muted-foreground">{yp.key_info}</p>
                 </div>
                 {/* mood */}
@@ -141,7 +141,7 @@ export default function DailyRiskBriefingPage() {
           <Card className="mb-6">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
-                <Shield className="h-5 w-5 text-red-600" /> Home-Level Alerts
+                <Shield className="h-5 w-5 text-[--cs-risk]" /> Home-Level Alerts
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
@@ -160,7 +160,7 @@ export default function DailyRiskBriefingPage() {
           <Card className="mb-6">
             <CardHeader className="pb-2">
               <CardTitle className="text-base flex items-center gap-2">
-                <Phone className="h-5 w-5 text-blue-600" /> Key Contacts Today
+                <Phone className="h-5 w-5 text-[--cs-info]" /> Key Contacts Today
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -190,8 +190,8 @@ export default function DailyRiskBriefingPage() {
             <CardContent>
               <div className={cn("grid gap-2 text-xs", `grid-cols-${Math.min(childRisks.length, 3)}`)}>
                 {childRisks.map((yp) => {
-                  const bg = yp.risk_level === "low" ? "bg-green-50" : yp.risk_level === "medium" ? "bg-amber-50" : "bg-red-50";
-                  const clr = yp.risk_level === "low" ? "text-green-700" : yp.risk_level === "medium" ? "text-amber-700" : "text-red-700";
+                  const bg = yp.risk_level === "low" ? "bg-[--cs-success-bg]" : yp.risk_level === "medium" ? "bg-[--cs-warning-bg]" : "bg-[--cs-risk-bg]";
+                  const clr = yp.risk_level === "low" ? "text-[--cs-success]" : yp.risk_level === "medium" ? "text-[--cs-warning]" : "text-[--cs-risk]";
                   return (
                     <div key={yp.child_id} className={cn(bg, "rounded p-2 text-center")}>
                       <p className="font-bold">{getYPName(yp.child_id)}</p>
