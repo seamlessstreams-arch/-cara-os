@@ -45,23 +45,23 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 // ── config ──────────────────────────────────────────────────────────────────
 const severityColour: Record<string, string> = {
-  low: "bg-blue-100 text-blue-800",
-  medium: "bg-amber-100 text-amber-800",
+  low: "bg-[--cs-info-bg] text-[--cs-info]",
+  medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
   high: "bg-orange-100 text-orange-800",
-  crisis: "bg-red-100 text-red-800",
+  crisis: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const statusColour: Record<string, string> = {
-  active_investigation: "bg-red-100 text-red-800",
+  active_investigation: "bg-[--cs-risk-bg] text-[--cs-risk]",
   external_agency_leading: "bg-purple-100 text-purple-800",
-  closed_actioned: "bg-green-100 text-green-800",
-  monitoring: "bg-blue-100 text-blue-800",
+  closed_actioned: "bg-[--cs-success-bg] text-[--cs-success]",
+  monitoring: "bg-[--cs-info-bg] text-[--cs-info]",
 };
 
 const questionsColour: Record<string, string> = {
-  none_listened_only: "bg-green-100 text-green-800",
-  open_clarifying: "bg-blue-100 text-blue-800",
-  closed_leading_flagged: "bg-amber-100 text-amber-800",
+  none_listened_only: "bg-[--cs-success-bg] text-[--cs-success]",
+  open_clarifying: "bg-[--cs-info-bg] text-[--cs-info]",
+  closed_leading_flagged: "bg-[--cs-warning-bg] text-[--cs-warning]",
 };
 
 // ── export columns ──────────────────────────────────────────────────────────
@@ -145,9 +145,9 @@ export default function DisclosureLogPage() {
       }
     >
       {/* ── confidentiality banner ────────────────────────────────────── */}
-      <div className="rounded-lg bg-red-50 border-2 border-red-300 p-4 mb-6 flex items-start gap-3">
-        <Lock className="h-5 w-5 text-red-700 mt-0.5 shrink-0" />
-        <div className="text-sm text-red-900 space-y-1">
+      <div className="rounded-lg bg-[--cs-risk-bg] border-2 border-[--cs-risk-soft] p-4 mb-6 flex items-start gap-3">
+        <Lock className="h-5 w-5 text-[--cs-risk] mt-0.5 shrink-0" />
+        <div className="text-sm text-[--cs-risk] space-y-1">
           <p className="font-semibold">Strictly Confidential — Sensitive Content</p>
           <p>
             This log contains anonymised summaries of safeguarding disclosures made by children. Detail is
@@ -162,7 +162,7 @@ export default function DisclosureLogPage() {
       {/* ── summary stats ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-red-600">{activeDisclosures}</p>
+          <p className="text-2xl font-bold text-[--cs-risk]">{activeDisclosures}</p>
           <p className="text-xs text-muted-foreground">Active Disclosures</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -174,15 +174,15 @@ export default function DisclosureLogPage() {
           <p className="text-xs text-muted-foreground">Police-Reported</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-blue-600">{externalAgencies}</p>
+          <p className="text-2xl font-bold text-[--cs-info]">{externalAgencies}</p>
           <p className="text-xs text-muted-foreground">External Agencies Involved</p>
         </div>
       </div>
 
       {/* ── practice reminder banner ──────────────────────────────────── */}
-      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 mb-6 flex items-start gap-2">
-        <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-        <p className="text-sm text-amber-800">
+      <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3 mb-6 flex items-start gap-2">
+        <AlertTriangle className="h-4 w-4 text-[--cs-warning] mt-0.5 shrink-0" />
+        <p className="text-sm text-[--cs-warning]">
           <strong>Practice reminder:</strong> Listen, do not lead. Believe the child. Record verbatim as soon as
           possible. Tell the DSL. Keep the child informed in age-appropriate terms. Never promise confidentiality
           you cannot keep.
@@ -254,7 +254,7 @@ export default function DisclosureLogPage() {
                 onClick={() => setExpandedId(isExpanded ? null : rec.id)}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Ear className="h-5 w-5 text-red-600 shrink-0" />
+                  <Ear className="h-5 w-5 text-[--cs-risk] shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">
                       {DISCLOSURE_TYPE_LABEL[rec.disclosure_type]} &middot; {getYPName(rec.child_id)}
@@ -301,13 +301,13 @@ export default function DisclosureLogPage() {
                   </div>
 
                   {/* what child said */}
-                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-blue-900 uppercase tracking-wide mb-1">
+                  <div className="bg-[--cs-info-bg] border border-[--cs-info-soft] rounded-lg p-3">
+                    <p className="text-xs font-semibold text-[--cs-info] uppercase tracking-wide mb-1">
                       <MessageCircle className="h-3 w-3 inline mr-1" />
                       Child&apos;s Own Words (recorded with sensitivity)
                     </p>
-                    <p className="text-sm italic text-blue-900">{rec.child_words_used}</p>
-                    <p className="text-xs text-blue-800 mt-2">
+                    <p className="text-sm italic text-[--cs-info]">{rec.child_words_used}</p>
+                    <p className="text-xs text-[--cs-info] mt-2">
                       <strong>Anonymised summary:</strong> {rec.disclosure_summary}
                     </p>
                   </div>
@@ -372,7 +372,7 @@ export default function DisclosureLogPage() {
                     <div
                       className={cn(
                         "rounded-lg p-2 text-center text-xs border",
-                        rec.reported_to_dsl ? "bg-green-50 border-green-200" : "bg-slate-50",
+                        rec.reported_to_dsl ? "bg-[--cs-success-bg] border-[--cs-success-soft]" : "bg-slate-50",
                       )}
                     >
                       <Shield className="h-4 w-4 mx-auto mb-1" />
@@ -394,7 +394,7 @@ export default function DisclosureLogPage() {
                     <div
                       className={cn(
                         "rounded-lg p-2 text-center text-xs border",
-                        rec.reported_to_lado ? "bg-amber-50 border-amber-200" : "bg-slate-50",
+                        rec.reported_to_lado ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" : "bg-slate-50",
                       )}
                     >
                       <FileText className="h-4 w-4 mx-auto mb-1" />
@@ -404,7 +404,7 @@ export default function DisclosureLogPage() {
                     <div
                       className={cn(
                         "rounded-lg p-2 text-center text-xs border",
-                        rec.child_informed_of_actions ? "bg-blue-50 border-blue-200" : "bg-slate-50",
+                        rec.child_informed_of_actions ? "bg-[--cs-info-bg] border-[--cs-info-soft]" : "bg-slate-50",
                       )}
                     >
                       <MessageCircle className="h-4 w-4 mx-auto mb-1" />
@@ -435,12 +435,12 @@ export default function DisclosureLogPage() {
                   )}
 
                   {/* child agency */}
-                  <div className="bg-green-50 border border-green-100 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-green-900 uppercase tracking-wide mb-1">
+                  <div className="bg-[--cs-success-bg] border border-[--cs-success-soft] rounded-lg p-3">
+                    <p className="text-xs font-semibold text-[--cs-success] uppercase tracking-wide mb-1">
                       <Heart className="h-3 w-3 inline mr-1" />
                       Child&apos;s Voice &amp; Agency
                     </p>
-                    <p className="text-sm text-green-900">{rec.child_given_agency}</p>
+                    <p className="text-sm text-[--cs-success]">{rec.child_given_agency}</p>
                   </div>
 
                   {/* support */}
