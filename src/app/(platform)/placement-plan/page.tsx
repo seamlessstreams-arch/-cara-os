@@ -51,12 +51,12 @@ const AREA_CONFIG: Record<ObjectiveArea, { label: string; colour: string }> = {
 };
 
 const STATUS_CONFIG: Record<PlacementObjectiveStatus, { label: string; colour: string }> = {
-  on_track:      { label: "On Track",      colour: "bg-green-100 text-green-700" },
-  some_progress: { label: "Some Progress", colour: "bg-amber-100 text-amber-700" },
-  no_progress:   { label: "No Progress",   colour: "bg-red-100 text-red-700" },
-  achieved:      { label: "Achieved",      colour: "bg-emerald-100 text-emerald-700" },
+  on_track:      { label: "On Track",      colour: "bg-[--cs-success-bg] text-[--cs-success]" },
+  some_progress: { label: "Some Progress", colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
+  no_progress:   { label: "No Progress",   colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
+  achieved:      { label: "Achieved",      colour: "bg-[--cs-success-bg] text-[--cs-success]" },
   not_started:   { label: "Not Started",   colour: "bg-gray-100 text-gray-600" },
-  at_risk:       { label: "At Risk",       colour: "bg-red-100 text-red-800" },
+  at_risk:       { label: "At Risk",       colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -205,11 +205,11 @@ export default function PlacementPlanPage() {
       {/* ── Stats ────────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
-          { label: "Total Objectives", value: stats.total, icon: ListChecks, c: "text-blue-600" },
-          { label: "On Track",         value: stats.onTrack, icon: TrendingUp, c: "text-green-600" },
-          { label: "At Risk",          value: stats.atRisk, icon: AlertTriangle, c: "text-red-600" },
-          { label: "Needs Review",     value: stats.needsReview, icon: Clock, c: "text-amber-600" },
-          { label: "Achieved",         value: stats.achieved, icon: CheckCircle2, c: "text-emerald-600" },
+          { label: "Total Objectives", value: stats.total, icon: ListChecks, c: "text-[--cs-info]" },
+          { label: "On Track",         value: stats.onTrack, icon: TrendingUp, c: "text-[--cs-success]" },
+          { label: "At Risk",          value: stats.atRisk, icon: AlertTriangle, c: "text-[--cs-risk]" },
+          { label: "Needs Review",     value: stats.needsReview, icon: Clock, c: "text-[--cs-warning]" },
+          { label: "Achieved",         value: stats.achieved, icon: CheckCircle2, c: "text-[--cs-success]" },
         ].map(s => (
           <div key={s.label} className="rounded-lg border bg-card p-3 flex items-center gap-3">
             <s.icon className={cn("h-5 w-5", s.c)} />
@@ -223,9 +223,9 @@ export default function PlacementPlanPage() {
 
       {/* ── At risk alert ─────────────────────────────────────────────────────── */}
       {stats.atRisk > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 dark:bg-red-950/30 p-3 mb-6 flex items-center gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
-          <p className="text-sm text-red-800 dark:text-red-300">
+        <div className="rounded-lg border border-[--cs-risk-soft] bg-[--cs-risk-bg] dark:bg-red-950/30 p-3 mb-6 flex items-center gap-3">
+          <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0" />
+          <p className="text-sm text-[--cs-risk] dark:text-red-300">
             {stats.atRisk} objective{stats.atRisk !== 1 ? "s" : ""} at risk or showing no progress — review required.
           </p>
         </div>
@@ -241,15 +241,15 @@ export default function PlacementPlanPage() {
               <div className="flex items-center justify-between mb-1">
                 <p className="font-medium text-sm">{getYPName(cid)}</p>
                 <Badge variant="outline" className={cn("text-xs",
-                  s.atRisk > 0 ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"
+                  s.atRisk > 0 ? "bg-[--cs-risk-bg] text-[--cs-risk]" : "bg-[--cs-success-bg] text-[--cs-success]"
                 )}>
                   {s.onTrack}/{s.total} on track
                 </Badge>
               </div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
                 <span>{s.total} objective{s.total !== 1 ? "s" : ""}</span>
-                {s.atRisk > 0 && <span className="text-red-600">{s.atRisk} at risk</span>}
-                <span className={overdue ? "text-amber-600 font-medium" : ""}>
+                {s.atRisk > 0 && <span className="text-[--cs-risk]">{s.atRisk} at risk</span>}
+                <span className={overdue ? "text-[--cs-warning] font-medium" : ""}>
                   Review: {formatDate(s.nextReview)}
                 </span>
               </div>
@@ -346,8 +346,8 @@ export default function PlacementPlanPage() {
 
           return (
             <div key={entry.id} className={cn("rounded-lg border bg-card overflow-hidden",
-              entry.current_status === "at_risk" && "border-red-200",
-              overdue && "border-amber-200",
+              entry.current_status === "at_risk" && "border-[--cs-risk-soft]",
+              overdue && "border-[--cs-warning-soft]",
             )}>
               <button
                 onClick={() => setExpandedId(isOpen ? null : entry.id)}
@@ -361,7 +361,7 @@ export default function PlacementPlanPage() {
                     <span className="font-medium text-sm">{entry.title}</span>
                     <Badge variant="outline" className={cn("text-xs", ac.colour)}>{ac.label}</Badge>
                     <Badge variant="outline" className={cn("text-xs", sc.colour)}>{sc.label}</Badge>
-                    {overdue && <Badge variant="outline" className="text-xs bg-amber-50 text-amber-700">Review Due</Badge>}
+                    {overdue && <Badge variant="outline" className="text-xs bg-[--cs-warning-bg] text-[--cs-warning]">Review Due</Badge>}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {getYPName(entry.child_id)} · {getStaffName(entry.responsible)} · Review: {formatDate(entry.review_date)}
