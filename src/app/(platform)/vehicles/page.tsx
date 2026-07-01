@@ -116,28 +116,28 @@ function expiryStatus(date: string | null): "ok" | "warning" | "expired" {
 }
 
 const EXP_CFG = {
-  ok: { color: "text-emerald-700", bg: "bg-emerald-100", dot: "bg-emerald-500" },
-  warning: { color: "text-amber-700", bg: "bg-amber-100", dot: "bg-amber-500" },
-  expired: { color: "text-red-700", bg: "bg-red-100", dot: "bg-red-500" },
+  ok: { color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", dot: "bg-[--cs-success]" },
+  warning: { color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]", dot: "bg-[--cs-warning]" },
+  expired: { color: "text-[--cs-risk]", bg: "bg-[--cs-risk-bg]", dot: "bg-[--cs-risk]" },
 };
 
 const STATUS_CFG = {
-  available: { color: "text-emerald-700", bg: "bg-emerald-100", label: "Available" },
-  restricted: { color: "text-red-700", bg: "bg-red-100", label: "Restricted" },
-  in_use: { color: "text-amber-700", bg: "bg-amber-100", label: "In Use" },
+  available: { color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", label: "Available" },
+  restricted: { color: "text-[--cs-risk]", bg: "bg-[--cs-risk-bg]", label: "Restricted" },
+  in_use: { color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]", label: "In Use" },
   off_road: { color: "text-[var(--cs-text-secondary)]", bg: "bg-slate-100", label: "Off Road" },
 };
 
 const CHECK_ITEM_CFG = {
-  pass: { color: "text-emerald-600", bg: "bg-emerald-50", dot: "bg-emerald-500", icon: CheckCircle2 },
-  advisory: { color: "text-amber-600", bg: "bg-amber-50", dot: "bg-amber-500", icon: AlertTriangle },
-  fail: { color: "text-red-600", bg: "bg-red-50", dot: "bg-red-500", icon: XCircle },
+  pass: { color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", dot: "bg-[--cs-success]", icon: CheckCircle2 },
+  advisory: { color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]", dot: "bg-[--cs-warning]", icon: AlertTriangle },
+  fail: { color: "text-[--cs-risk]", bg: "bg-[--cs-risk-bg]", dot: "bg-[--cs-risk]", icon: XCircle },
 };
 
 const RESULT_CFG = {
-  pass: { color: "text-emerald-700", bg: "bg-emerald-100", label: "Pass" },
-  advisory: { color: "text-amber-700", bg: "bg-amber-100", label: "Advisory" },
-  fail: { color: "text-red-700", bg: "bg-red-100", label: "Fail" },
+  pass: { color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", label: "Pass" },
+  advisory: { color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]", label: "Advisory" },
+  fail: { color: "text-[--cs-risk]", bg: "bg-[--cs-risk-bg]", label: "Fail" },
 };
 
 const FUEL_LEVELS = ["Empty", "1/4", "1/2", "3/4", "Full"];
@@ -261,9 +261,9 @@ function VehicleCheckForm({
                         className={cn(
                           "px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all border",
                           form[key] === val
-                            ? val === "pass" ? "bg-emerald-100 text-emerald-700 border-emerald-300"
-                              : val === "advisory" ? "bg-amber-100 text-amber-700 border-amber-300"
-                              : "bg-red-100 text-red-700 border-red-300"
+                            ? val === "pass" ? "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]"
+                              : val === "advisory" ? "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]"
+                              : "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]"
                             : "bg-slate-50 text-[var(--cs-text-muted)] border-[var(--cs-border)] hover:bg-[var(--cs-surface)]"
                         )}
                       >
@@ -320,22 +320,22 @@ function VehicleCheckForm({
           {/* Overall result preview */}
           <div className={cn(
             "rounded-xl p-4 border",
-            result === "pass" ? "bg-emerald-50 border-emerald-200" :
-              result === "advisory" ? "bg-amber-50 border-amber-200" :
-                "bg-red-50 border-red-200"
+            result === "pass" ? "bg-[--cs-success-bg] border-[--cs-success-soft]" :
+              result === "advisory" ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" :
+                "bg-[--cs-risk-bg] border-[--cs-risk-soft]"
           )}>
             <div className="flex items-center gap-2">
-              {result === "pass" ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> :
-                result === "advisory" ? <AlertTriangle className="h-4 w-4 text-amber-600" /> :
-                  <XCircle className="h-4 w-4 text-red-600" />}
+              {result === "pass" ? <CheckCircle2 className="h-4 w-4 text-[--cs-success]" /> :
+                result === "advisory" ? <AlertTriangle className="h-4 w-4 text-[--cs-warning]" /> :
+                  <XCircle className="h-4 w-4 text-[--cs-risk]" />}
               <span className={cn("text-sm font-bold capitalize",
-                result === "pass" ? "text-emerald-700" : result === "advisory" ? "text-amber-700" : "text-red-700"
+                result === "pass" ? "text-[--cs-success]" : result === "advisory" ? "text-[--cs-warning]" : "text-[--cs-risk]"
               )}>
                 Overall Result: {result}
               </span>
             </div>
             {isNonPass && (
-              <div className={cn("text-xs mt-1.5", result === "fail" ? "text-red-700" : "text-amber-700")}>
+              <div className={cn("text-xs mt-1.5", result === "fail" ? "text-[--cs-risk]" : "text-[--cs-warning]")}>
                 Submitting will automatically create a maintenance task and notify the manager.
               </div>
             )}
@@ -389,13 +389,13 @@ function FleetOverviewTab({
             return (
               <div key={i} className={cn(
                 "rounded-2xl border p-4 flex items-start gap-3",
-                isCritical ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"
+                isCritical ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-[--cs-warning-bg] border-[--cs-warning-soft]"
               )}>
-                <AlertTriangle className={cn("h-5 w-5 shrink-0 mt-0.5", isCritical ? "text-red-600" : "text-amber-600")} />
+                <AlertTriangle className={cn("h-5 w-5 shrink-0 mt-0.5", isCritical ? "text-[--cs-risk]" : "text-[--cs-warning]")} />
                 <div>
-                  <div className={cn("text-sm font-semibold", isCritical ? "text-red-800" : "text-amber-800")}>{alert}</div>
+                  <div className={cn("text-sm font-semibold", isCritical ? "text-[--cs-risk]" : "text-[--cs-warning]")}>{alert}</div>
                   {!isCritical && (
-                    <div className={cn("text-xs mt-0.5", isCritical ? "text-red-600" : "text-amber-600")}>
+                    <div className={cn("text-xs mt-0.5", isCritical ? "text-[--cs-risk]" : "text-[--cs-warning]")}>
                       Book renewal now to maintain compliance — vehicle should not be driven after expiry.
                     </div>
                   )}
@@ -410,9 +410,9 @@ function FleetOverviewTab({
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         {[
           { label: "Total Vehicles", value: meta.total, color: "text-[var(--cs-text-secondary)]", bg: "bg-slate-50", icon: Car },
-          { label: "Available", value: meta.available, color: "text-emerald-600", bg: "bg-emerald-50", icon: CheckCircle2 },
-          { label: "Restricted", value: meta.restricted, color: "text-red-600", bg: "bg-red-50", icon: XCircle },
-          { label: "Active Defects", value: meta.defects, color: "text-amber-600", bg: "bg-amber-50", icon: Wrench },
+          { label: "Available", value: meta.available, color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", icon: CheckCircle2 },
+          { label: "Restricted", value: meta.restricted, color: "text-[--cs-risk]", bg: "bg-[--cs-risk-bg]", icon: XCircle },
+          { label: "Active Defects", value: meta.defects, color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]", icon: Wrench },
           { label: "Compliance Alerts", value: meta.compliance_alerts, color: "text-rose-600", bg: "bg-rose-50", icon: AlertTriangle },
         ].map(({ label, value, color, bg, icon: Icon }) => (
           <div key={label} className="rounded-2xl border border-[var(--cs-border)] bg-white p-4">
@@ -448,7 +448,7 @@ function FleetOverviewTab({
           return (
             <div key={vehicle.id} className={cn(
               "rounded-2xl border bg-white p-5",
-              hasDefect ? "border-amber-200" : "border-[var(--cs-border)]"
+              hasDefect ? "border-[--cs-warning-soft]" : "border-[var(--cs-border)]"
             )}>
               {/* Header */}
               <div className="flex items-start justify-between gap-3 mb-4">
@@ -483,7 +483,7 @@ function FleetOverviewTab({
                   const days = daysUntil(expiry);
                   return (
                     <div key={label} className={cn("rounded-xl p-2.5 text-center border", cfg.bg,
-                      status === "expired" ? "border-red-200" : status === "warning" ? "border-amber-200" : "border-transparent"
+                      status === "expired" ? "border-[--cs-risk-soft]" : status === "warning" ? "border-[--cs-warning-soft]" : "border-transparent"
                     )}>
                       <Icon className={cn("h-3.5 w-3.5 mx-auto mb-1", cfg.color)} />
                       <div className="text-[9px] font-semibold text-[var(--cs-text-muted)]">{label}</div>
@@ -499,19 +499,19 @@ function FleetOverviewTab({
               {latestCheck ? (
                 <div className={cn(
                   "rounded-xl border px-3 py-2.5 flex items-center gap-3",
-                  checkResult === "pass" ? "bg-emerald-50 border-emerald-200" :
-                    checkResult === "advisory" ? "bg-amber-50 border-amber-200" :
-                      "bg-red-50 border-red-200"
+                  checkResult === "pass" ? "bg-[--cs-success-bg] border-[--cs-success-soft]" :
+                    checkResult === "advisory" ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" :
+                      "bg-[--cs-risk-bg] border-[--cs-risk-soft]"
                 )}>
-                  {checkResult === "pass" ? <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" /> :
-                    checkResult === "advisory" ? <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" /> :
-                      <XCircle className="h-4 w-4 text-red-600 shrink-0" />}
+                  {checkResult === "pass" ? <CheckCircle2 className="h-4 w-4 text-[--cs-success] shrink-0" /> :
+                    checkResult === "advisory" ? <AlertTriangle className="h-4 w-4 text-[--cs-warning] shrink-0" /> :
+                      <XCircle className="h-4 w-4 text-[--cs-risk] shrink-0" />}
                   <div className="flex-1 min-w-0">
                     <div className="text-xs font-medium text-[var(--cs-text-secondary)]">
                       Last check: {formatDate(latestCheck.check_date)} · Driver: {latestCheck.driver}
                     </div>
                     {latestCheck.defects && (
-                      <div className="text-[10px] text-amber-700 mt-0.5 truncate">{latestCheck.defects}</div>
+                      <div className="text-[10px] text-[--cs-warning] mt-0.5 truncate">{latestCheck.defects}</div>
                     )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -535,8 +535,8 @@ function FleetOverviewTab({
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm flex items-center gap-2">
-              <div className="rounded-lg p-1.5 bg-amber-50">
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+              <div className="rounded-lg p-1.5 bg-[--cs-warning-bg]">
+                <AlertTriangle className="h-3.5 w-3.5 text-[--cs-warning]" />
               </div>
               Active Defects / Advisories
             </CardTitle>
@@ -548,11 +548,11 @@ function FleetOverviewTab({
                 return (
                   <div key={d.id} className={cn(
                     "rounded-xl border px-4 py-3 flex items-center gap-4",
-                    d.overall_result === "fail" ? "border-red-200 bg-red-50" : "border-amber-200 bg-amber-50"
+                    d.overall_result === "fail" ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : "border-[--cs-warning-soft] bg-[--cs-warning-bg]"
                   )}>
                     <div className={cn(
                       "h-2 w-2 rounded-full shrink-0",
-                      d.overall_result === "fail" ? "bg-red-500" : "bg-amber-500"
+                      d.overall_result === "fail" ? "bg-[--cs-risk]" : "bg-[--cs-warning]"
                     )} />
                     <div className="flex-1 min-w-0">
                       <span className="text-xs font-semibold text-[var(--cs-navy)]">{vehicle?.registration} — {vehicle?.make} {vehicle?.model}</span>
@@ -642,8 +642,8 @@ function CheckHistoryTab({
           return (
             <div key={check.id} className={cn(
               "rounded-2xl border bg-white p-4 transition-all hover:shadow-sm",
-              check.overall_result === "fail" ? "border-l-4 border-l-red-500 border-red-200" :
-                check.overall_result === "advisory" ? "border-l-4 border-l-amber-400 border-amber-200" :
+              check.overall_result === "fail" ? "border-l-4 border-l-[--cs-risk] border-[--cs-risk-soft]" :
+                check.overall_result === "advisory" ? "border-l-4 border-l-[--cs-warning] border-[--cs-warning-soft]" :
                   "border-[var(--cs-border)]"
             )}>
               <div className="flex items-start gap-4 flex-wrap">
@@ -664,7 +664,7 @@ function CheckHistoryTab({
                     <span>Mileage: {check.mileage_start.toLocaleString()}{check.mileage_end ? `–${check.mileage_end.toLocaleString()}` : ""}</span>
                   </div>
                   {check.defects && isNonPass && (
-                    <div className="mt-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-800">
+                    <div className="mt-2 rounded-xl bg-[--cs-warning-bg] border border-[--cs-warning-soft] px-3 py-2 text-xs text-[--cs-warning]">
                       <span className="font-semibold">Defect: </span>{check.defects}
                     </div>
                   )}
@@ -718,9 +718,9 @@ function TransportComplianceTab({ data }: { data: VehiclesData }) {
   ];
 
   const statusCfg = {
-    ok: { color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200", dot: "bg-emerald-500", label: "Compliant", icon: CheckCircle2 },
-    warning: { color: "text-amber-700", bg: "bg-amber-50", border: "border-amber-200", dot: "bg-amber-500", label: "Attention Needed", icon: AlertTriangle },
-    expired: { color: "text-red-700", bg: "bg-red-50", border: "border-red-200", dot: "bg-red-500", label: "Non-Compliant", icon: XCircle },
+    ok: { color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", border: "border-[--cs-success-soft]", dot: "bg-[--cs-success]", label: "Compliant", icon: CheckCircle2 },
+    warning: { color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]", border: "border-[--cs-warning-soft]", dot: "bg-[--cs-warning]", label: "Attention Needed", icon: AlertTriangle },
+    expired: { color: "text-[--cs-risk]", bg: "bg-[--cs-risk-bg]", border: "border-[--cs-risk-soft]", dot: "bg-[--cs-risk]", label: "Non-Compliant", icon: XCircle },
   };
 
   return (
@@ -848,14 +848,14 @@ function TransportComplianceTab({ data }: { data: VehiclesData }) {
                 return (
                   <div key={label} className={cn(
                     "flex items-center gap-3 rounded-xl px-4 py-3 border",
-                    isUrgent ? "bg-red-50 border-red-200" : "bg-amber-50 border-amber-200"
+                    isUrgent ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-[--cs-warning-bg] border-[--cs-warning-soft]"
                   )}>
-                    <AlertCircle className={cn("h-4 w-4 shrink-0", isUrgent ? "text-red-500" : "text-amber-500")} />
+                    <AlertCircle className={cn("h-4 w-4 shrink-0", isUrgent ? "text-[--cs-risk]" : "text-[--cs-warning]")} />
                     <div className="flex-1">
                       <span className="text-xs font-semibold text-[var(--cs-navy)]">{label}</span>
                       <span className="text-xs text-[var(--cs-text-muted)] ml-2">expires {formatDate(expiry)}</span>
                     </div>
-                    <span className={cn("text-xs font-bold", isUrgent ? "text-red-700" : "text-amber-700")}>{days} days</span>
+                    <span className={cn("text-xs font-bold", isUrgent ? "text-[--cs-risk]" : "text-[--cs-warning]")}>{days} days</span>
                     <Button
                       size="sm"
                       variant="outline"
@@ -869,7 +869,7 @@ function TransportComplianceTab({ data }: { data: VehiclesData }) {
                 );
               })}
             {vehicles.every((v) => [v.mot_expiry, v.insurance_expiry, v.next_service_due].every((x) => daysUntil(x) > 90)) && (
-              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-center text-sm text-emerald-700">
+              <div className="rounded-xl bg-[--cs-success-bg] border border-[--cs-success-soft] p-4 text-center text-sm text-[--cs-success]">
                 <CheckCircle2 className="h-4 w-4 mx-auto mb-1" />No renewals due in the next 90 days.
               </div>
             )}
@@ -964,7 +964,7 @@ export default function VehiclesPage() {
               <Icon className="h-3.5 w-3.5" />
               {label}
               {id === "fleet" && alertCount > 0 && (
-                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-amber-500 text-white text-[9px] font-bold flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[--cs-warning] text-white text-[9px] font-bold flex items-center justify-center">
                   {alertCount}
                 </span>
               )}
@@ -982,7 +982,7 @@ export default function VehiclesPage() {
         )}
 
         {error && (
-          <div className="rounded-2xl bg-red-50 border border-red-200 p-4 text-sm text-red-700">
+          <div className="rounded-2xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-4 text-sm text-[--cs-risk]">
             Failed to load vehicle data. Please refresh.
           </div>
         )}
