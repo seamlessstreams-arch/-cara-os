@@ -88,13 +88,13 @@ export default function PlacementImpactAssessmentPage() {
   const statusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>;
+        return <Badge className="bg-[--cs-success-bg] text-[--cs-success]">Approved</Badge>;
       case "approved_with_conditions":
-        return <Badge className="bg-blue-100 text-blue-800">Approved (Conditions)</Badge>;
+        return <Badge className="bg-[--cs-info-bg] text-[--cs-info]">Approved (Conditions)</Badge>;
       case "declined":
-        return <Badge className="bg-red-100 text-red-800">Declined</Badge>;
+        return <Badge className="bg-[--cs-risk-bg] text-[--cs-risk]">Declined</Badge>;
       case "pending":
-        return <Badge className="bg-amber-100 text-amber-800">Pending</Badge>;
+        return <Badge className="bg-[--cs-warning-bg] text-[--cs-warning]">Pending</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -103,11 +103,11 @@ export default function PlacementImpactAssessmentPage() {
   const riskBadge = (risk: string) => {
     switch (risk) {
       case "low":
-        return <Badge className="bg-green-100 text-green-800 text-xs">Low Risk</Badge>;
+        return <Badge className="bg-[--cs-success-bg] text-[--cs-success] text-xs">Low Risk</Badge>;
       case "medium":
-        return <Badge className="bg-amber-100 text-amber-800 text-xs">Medium Risk</Badge>;
+        return <Badge className="bg-[--cs-warning-bg] text-[--cs-warning] text-xs">Medium Risk</Badge>;
       case "high":
-        return <Badge className="bg-red-100 text-red-800 text-xs">High Risk</Badge>;
+        return <Badge className="bg-[--cs-risk-bg] text-[--cs-risk] text-xs">High Risk</Badge>;
       default:
         return null;
     }
@@ -116,9 +116,9 @@ export default function PlacementImpactAssessmentPage() {
   const compatRating = (rating: string) => {
     switch (rating) {
       case "positive":
-        return <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />;
+        return <CheckCircle2 className="h-4 w-4 text-[--cs-success] shrink-0" />;
       case "concern":
-        return <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />;
+        return <AlertTriangle className="h-4 w-4 text-[--cs-risk] shrink-0" />;
       default:
         return <Scale className="h-4 w-4 text-gray-400 shrink-0" />;
     }
@@ -157,19 +157,19 @@ export default function PlacementImpactAssessmentPage() {
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-2xl font-bold text-green-700">{stats.approved}</p>
+            <p className="text-2xl font-bold text-[--cs-success]">{stats.approved}</p>
             <p className="text-xs text-muted-foreground">Approved</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-2xl font-bold text-red-700">{stats.declined}</p>
+            <p className="text-2xl font-bold text-[--cs-risk]">{stats.declined}</p>
             <p className="text-xs text-muted-foreground">Declined</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-2xl font-bold text-amber-700">{stats.pending}</p>
+            <p className="text-2xl font-bold text-[--cs-warning]">{stats.pending}</p>
             <p className="text-xs text-muted-foreground">Pending</p>
           </CardContent>
         </Card>
@@ -177,12 +177,12 @@ export default function PlacementImpactAssessmentPage() {
 
       {/* ─── pending alert ─── */}
       {stats.pending > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+        <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-4 mb-6">
           <div className="flex items-start gap-2">
-            <Scale className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
+            <Scale className="h-5 w-5 text-[--cs-warning] mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-amber-800">Assessment Pending</p>
-              <p className="text-xs text-amber-700 mt-1">
+              <p className="text-sm font-medium text-[--cs-warning]">Assessment Pending</p>
+              <p className="text-xs text-[--cs-warning] mt-1">
                 {entries
                   .filter((a) => a.status === "pending")
                   .map((a) => `${a.referral_name} (${a.referral_la})`)
@@ -229,8 +229,8 @@ export default function PlacementImpactAssessmentPage() {
           return (
             <Card key={assessment.id} className={cn(
               "overflow-hidden",
-              assessment.status === "declined" && "border-red-200",
-              assessment.status === "pending" && "border-amber-200"
+              assessment.status === "declined" && "border-[--cs-risk-soft]",
+              assessment.status === "pending" && "border-[--cs-warning-soft]"
             )}>
               <CardHeader
                 className="cursor-pointer hover:bg-muted/40 transition-colors py-4"
@@ -240,15 +240,15 @@ export default function PlacementImpactAssessmentPage() {
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "p-2 rounded-full",
-                      assessment.status === "declined" ? "bg-red-100" :
-                      assessment.status === "pending" ? "bg-amber-100" : "bg-green-100"
+                      assessment.status === "declined" ? "bg-[--cs-risk-bg]" :
+                      assessment.status === "pending" ? "bg-[--cs-warning-bg]" : "bg-[--cs-success-bg]"
                     )}>
                       {assessment.status === "declined" ? (
-                        <XCircle className="h-5 w-5 text-red-600" />
+                        <XCircle className="h-5 w-5 text-[--cs-risk]" />
                       ) : assessment.status === "pending" ? (
-                        <Scale className="h-5 w-5 text-amber-600" />
+                        <Scale className="h-5 w-5 text-[--cs-warning]" />
                       ) : (
-                        <CheckCircle2 className="h-5 w-5 text-green-600" />
+                        <CheckCircle2 className="h-5 w-5 text-[--cs-success]" />
                       )}
                     </div>
                     <div>
@@ -281,9 +281,9 @@ export default function PlacementImpactAssessmentPage() {
                   {/* decision */}
                   <div className={cn(
                     "rounded-lg p-3 border",
-                    assessment.status === "declined" ? "bg-red-50 border-red-200" :
-                    assessment.status === "pending" ? "bg-amber-50 border-amber-200" :
-                    "bg-green-50 border-green-200"
+                    assessment.status === "declined" ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" :
+                    assessment.status === "pending" ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" :
+                    "bg-[--cs-success-bg] border-[--cs-success-soft]"
                   )}>
                     <p className="text-sm font-medium">{assessment.decision}</p>
                     <p className="text-sm text-muted-foreground mt-1">{assessment.decision_rationale}</p>
@@ -317,14 +317,14 @@ export default function PlacementImpactAssessmentPage() {
                               <ul className="space-y-0.5">
                                 {impact.mitigations.map((m, i) => (
                                   <li key={i} className="text-xs text-muted-foreground flex items-start gap-1.5">
-                                    <span className="text-green-500 mt-1">✓</span> {m}
+                                    <span className="text-[--cs-success] mt-1">✓</span> {m}
                                   </li>
                                 ))}
                               </ul>
                             </div>
                             {impact.child_view && (
-                              <div className="bg-blue-50 rounded p-2 mt-1">
-                                <p className="text-xs text-blue-700">
+                              <div className="bg-[--cs-info-bg] rounded p-2 mt-1">
+                                <p className="text-xs text-[--cs-info]">
                                   <span className="font-medium">Child&apos;s view:</span> {impact.child_view}
                                 </p>
                               </div>
@@ -385,11 +385,11 @@ export default function PlacementImpactAssessmentPage() {
                   {/* conditions */}
                   {assessment.conditions.length > 0 && (
                     <div>
-                      <p className="text-sm font-medium mb-2 text-blue-700">Conditions of Approval</p>
+                      <p className="text-sm font-medium mb-2 text-[--cs-info]">Conditions of Approval</p>
                       <ol className="space-y-1">
                         {assessment.conditions.map((cond, i) => (
                           <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                            <span className="text-xs font-medium bg-blue-100 text-blue-800 rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
+                            <span className="text-xs font-medium bg-[--cs-info-bg] text-[--cs-info] rounded-full w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
                               {i + 1}
                             </span>
                             {cond}
