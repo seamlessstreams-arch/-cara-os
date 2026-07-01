@@ -113,13 +113,13 @@ export default function NightLogPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className={cn("text-2xl font-bold", totalIncidents > 0 ? "text-amber-600" : "text-green-600")}>{totalIncidents}</p>
+              <p className={cn("text-2xl font-bold", totalIncidents > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{totalIncidents}</p>
               <p className="text-xs text-muted-foreground">Incidents</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className={cn("text-2xl font-bold", nightsWithConcerns > 0 ? "text-red-600" : "text-green-600")}>{nightsWithConcerns}</p>
+              <p className={cn("text-2xl font-bold", nightsWithConcerns > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{nightsWithConcerns}</p>
               <p className="text-xs text-muted-foreground">Nights with Concerns</p>
             </CardContent>
           </Card>
@@ -153,11 +153,11 @@ export default function NightLogPage() {
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <CardTitle className="text-base flex items-center gap-2">
-                        <Moon className="h-4 w-4 text-blue-600" />
+                        <Moon className="h-4 w-4 text-[--cs-info]" />
                         Night of {entry.date}
-                        {hasIncidents && <Badge variant="outline" className="bg-amber-100 text-amber-800">{entry.incidents.length} incident(s)</Badge>}
-                        {hasConcerns && <Badge variant="outline" className="bg-red-100 text-red-800">Concerns</Badge>}
-                        {!hasIncidents && !hasConcerns && <Badge variant="outline" className="bg-green-100 text-green-800">Uneventful</Badge>}
+                        {hasIncidents && <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning]">{entry.incidents.length} incident(s)</Badge>}
+                        {hasConcerns && <Badge variant="outline" className="bg-[--cs-risk-bg] text-[--cs-risk]">Concerns</Badge>}
+                        {!hasIncidents && !hasConcerns && <Badge variant="outline" className="bg-[--cs-success-bg] text-[--cs-success]">Uneventful</Badge>}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         {entry.shift_start}–{entry.shift_end} · Waking night: {entry.waking_night_staff.map((s) => getStaffName(s)).join(", ")}
@@ -172,16 +172,16 @@ export default function NightLogPage() {
                 {isOpen && (
                   <CardContent className="pt-0 space-y-4 text-sm">
                     {/* handover from day */}
-                    <div className="bg-blue-50 border border-blue-200 rounded p-2">
-                      <p className="font-medium text-xs text-blue-800 mb-1">Handover from Day Shift</p>
-                      <p className="text-xs text-blue-700">{entry.handover_from_day}</p>
+                    <div className="bg-[--cs-info-bg] border border-[--cs-info-soft] rounded p-2">
+                      <p className="font-medium text-xs text-[--cs-info] mb-1">Handover from Day Shift</p>
+                      <p className="text-xs text-[--cs-info]">{entry.handover_from_day}</p>
                     </div>
 
                     {/* concerns */}
                     {entry.concerns && (
-                      <div className="bg-red-50 border border-red-200 rounded p-2">
-                        <p className="font-medium text-xs text-red-800 mb-1 flex items-center gap-1"><AlertTriangle className="h-3.5 w-3.5" /> Concerns Raised</p>
-                        <p className="text-xs text-red-700">{entry.concerns}</p>
+                      <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded p-2">
+                        <p className="font-medium text-xs text-[--cs-risk] mb-1 flex items-center gap-1"><AlertTriangle className="h-3.5 w-3.5" /> Concerns Raised</p>
+                        <p className="text-xs text-[--cs-risk]">{entry.concerns}</p>
                       </div>
                     )}
 
@@ -190,15 +190,15 @@ export default function NightLogPage() {
                       <div>
                         <p className="font-medium mb-1 flex items-center gap-1"><ShieldAlert className="h-4 w-4 text-amber-500" /> Incidents</p>
                         {entry.incidents.map((inc, i) => (
-                          <div key={i} className="bg-amber-50 border border-amber-200 rounded p-2 mb-1">
+                          <div key={i} className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded p-2 mb-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <Badge variant="outline" className="bg-amber-100 text-amber-800 text-[10px]">{inc.time}</Badge>
+                              <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning] text-[10px]">{inc.time}</Badge>
                               {inc.child_id && <span className="text-xs font-medium">{getYPName(inc.child_id)}</span>}
                               <Badge variant="outline" className="text-[10px]">{inc.incident_type.replace(/_/g, " ")}</Badge>
                             </div>
                             <p className="text-xs mb-1">{inc.description}</p>
                             <p className="text-xs text-muted-foreground"><strong>Action:</strong> {inc.action_taken}</p>
-                            {inc.escalated && <p className="text-xs text-red-700 mt-0.5">Escalated to: {inc.escalated_to}</p>}
+                            {inc.escalated && <p className="text-xs text-[--cs-risk] mt-0.5">Escalated to: {inc.escalated_to}</p>}
                           </div>
                         ))}
                       </div>
@@ -234,7 +234,7 @@ export default function NightLogPage() {
                     {/* medication */}
                     {entry.medication_given.length > 0 && (
                       <div>
-                        <p className="font-medium mb-1 flex items-center gap-1"><Pill className="h-4 w-4 text-green-600" /> Medication Given During Night</p>
+                        <p className="font-medium mb-1 flex items-center gap-1"><Pill className="h-4 w-4 text-[--cs-success]" /> Medication Given During Night</p>
                         {entry.medication_given.map((med, i) => (
                           <div key={i} className="bg-muted/40 rounded p-2 mb-1 text-xs">
                             <span className="font-medium">{med.time}</span> — {getYPName(med.child_id)}: {med.medication} ({med.dose}). {med.notes}
@@ -245,14 +245,14 @@ export default function NightLogPage() {
 
                     {/* security checks */}
                     <div>
-                      <p className="font-medium mb-1 flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-green-600" /> Security Checks</p>
+                      <p className="font-medium mb-1 flex items-center gap-1"><CheckCircle2 className="h-4 w-4 text-[--cs-success]" /> Security Checks</p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
                         {entry.security_checks.map((sec, i) => (
                           <div key={i} className="flex items-center gap-2 text-xs bg-muted/40 rounded p-1.5">
                             {sec.status === "secure" ? (
-                              <CheckCircle2 className="h-3 w-3 text-green-600 shrink-0" />
+                              <CheckCircle2 className="h-3 w-3 text-[--cs-success] shrink-0" />
                             ) : (
-                              <AlertTriangle className="h-3 w-3 text-red-600 shrink-0" />
+                              <AlertTriangle className="h-3 w-3 text-[--cs-risk] shrink-0" />
                             )}
                             <span>{sec.time} — {sec.item}</span>
                           </div>
@@ -267,9 +267,9 @@ export default function NightLogPage() {
                     </div>
 
                     {/* handover to morning */}
-                    <div className="bg-green-50 border border-green-200 rounded p-2">
-                      <p className="font-medium text-xs text-green-800 mb-1">Handover to Morning Shift</p>
-                      <p className="text-xs text-green-700">{entry.handover_to_morning}</p>
+                    <div className="bg-[--cs-success-bg] border border-[--cs-success-soft] rounded p-2">
+                      <p className="font-medium text-xs text-[--cs-success] mb-1">Handover to Morning Shift</p>
+                      <p className="text-xs text-[--cs-success]">{entry.handover_to_morning}</p>
                     </div>
 
                     <SmartLinkPanel sourceType="night_log" sourceId={entry.id} childId="yp_alex" compact />
