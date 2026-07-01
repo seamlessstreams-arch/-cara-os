@@ -81,9 +81,9 @@ const DOMAIN_COLOURS: Record<OutcomeDomain, { bg: string; text: string; border: 
 };
 
 const DIRECTION_CFG: Record<OutcomeDirection, { icon: React.ElementType; colour: string; label: string }> = {
-  improving: { icon: TrendingUp,   colour: "text-emerald-600", label: "Improving" },
-  stable:    { icon: Minus,        colour: "text-amber-600",   label: "Stable"    },
-  declining: { icon: TrendingDown, colour: "text-red-600",     label: "Declining" },
+  improving: { icon: TrendingUp,   colour: "text-[--cs-success]", label: "Improving" },
+  stable:    { icon: Minus,        colour: "text-[--cs-warning]",   label: "Stable"    },
+  declining: { icon: TrendingDown, colour: "text-[--cs-risk]",     label: "Declining" },
 };
 
 function RatingStars({ rating, max = 5, size = "sm" }: { rating: number; max?: number; size?: "sm" | "md" }) {
@@ -198,7 +198,7 @@ function ReviewDialog({
           {/* Progress notes */}
           <div>
             <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">
-              Progress Notes <span className="text-red-500">*</span>
+              Progress Notes <span className="text-[--cs-risk]">*</span>
             </label>
             <Textarea
               value={notes}
@@ -341,7 +341,7 @@ function NewTargetDialog({
           {/* Young person selector */}
           <div>
             <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">
-              Young Person <span className="text-red-500">*</span>
+              Young Person <span className="text-[--cs-risk]">*</span>
             </label>
             <select
               value={childId}
@@ -357,7 +357,7 @@ function NewTargetDialog({
           {/* Domain selector */}
           <div>
             <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-2 block">
-              Outcome Domain <span className="text-red-500">*</span>
+              Outcome Domain <span className="text-[--cs-risk]">*</span>
             </label>
             <div className="grid grid-cols-4 gap-1.5">
               {(Object.entries(OUTCOME_DOMAIN_LABELS) as [OutcomeDomain, string][]).map(([key, label]) => {
@@ -387,7 +387,7 @@ function NewTargetDialog({
           {/* Target description */}
           <div>
             <label className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase tracking-wide mb-1 block">
-              Target Description <span className="text-red-500">*</span>
+              Target Description <span className="text-[--cs-risk]">*</span>
             </label>
             <Textarea
               value={description}
@@ -442,8 +442,8 @@ function NewTargetDialog({
                     className={cn(
                       "flex-1 rounded-lg border-2 py-2 text-center transition-all",
                       targetRating === r
-                        ? "border-emerald-500 bg-emerald-50"
-                        : "border-[var(--cs-border)] hover:border-emerald-200",
+                        ? "border-[--cs-success] bg-[--cs-success-bg]"
+                        : "border-[var(--cs-border)] hover:border-[--cs-success-soft]",
                     )}
                   >
                     <Star className={cn("h-4 w-4 mx-auto", targetRating >= r ? "text-amber-400 fill-amber-400" : "text-slate-200")} />
@@ -527,9 +527,9 @@ function TargetCard({
     <>
       <div className={cn(
         "rounded-2xl border bg-white overflow-hidden transition-all",
-        target.direction === "declining" && "border-red-200",
-        reviewOverdue && !isAchieved && "border-amber-200",
-        isAchieved && "border-emerald-200 opacity-70",
+        target.direction === "declining" && "border-[--cs-risk-soft]",
+        reviewOverdue && !isAchieved && "border-[--cs-warning-soft]",
+        isAchieved && "border-[--cs-success-soft] opacity-70",
       )}>
         {/* Header row */}
         <div
@@ -546,7 +546,7 @@ function TargetCard({
                 {target.target_description}
               </span>
               {isAchieved && (
-                <Badge className="text-[9px] bg-emerald-100 text-emerald-700 border-0 rounded-full">
+                <Badge className="text-[9px] bg-[--cs-success-bg] text-[--cs-success] border-0 rounded-full">
                   <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />Achieved
                 </Badge>
               )}
@@ -561,7 +561,7 @@ function TargetCard({
                 <span className="text-[10px] text-[var(--cs-text-muted)]">/ {target.target_rating}</span>
               </div>
               {reviewOverdue && !isAchieved && (
-                <span className="text-[10px] text-red-600 font-medium flex items-center gap-0.5">
+                <span className="text-[10px] text-[--cs-risk] font-medium flex items-center gap-0.5">
                   <AlertTriangle className="h-3 w-3" />Review overdue
                 </span>
               )}
@@ -573,7 +573,7 @@ function TargetCard({
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
-                    clampedPct >= 80 ? "bg-emerald-500" : clampedPct >= 40 ? "bg-amber-400" : "bg-red-400",
+                    clampedPct >= 80 ? "bg-[--cs-success]" : clampedPct >= 40 ? "bg-[--cs-warning]" : "bg-[--cs-risk]",
                   )}
                   style={{ width: `${clampedPct}%` }}
                 />
@@ -626,9 +626,9 @@ function TargetCard({
               </div>
             )}
             {target.evidence_notes && (
-              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-2.5">
-                <p className="text-[10px] font-semibold text-emerald-600 mb-0.5">Evidence</p>
-                <p className="text-xs text-emerald-800">{target.evidence_notes}</p>
+              <div className="rounded-xl bg-[--cs-success-bg] border border-[--cs-success-soft] p-2.5">
+                <p className="text-[10px] font-semibold text-[--cs-success] mb-0.5">Evidence</p>
+                <p className="text-xs text-[--cs-success]">{target.evidence_notes}</p>
               </div>
             )}
 
@@ -652,7 +652,7 @@ function TargetCard({
             <div className="flex items-center gap-4 text-[10px] text-[var(--cs-text-muted)]">
               <span>Set by: {target.set_by.replace("staff_", "")}</span>
               <span>Set: {formatDate(target.set_date)}</span>
-              <span className={cn(reviewOverdue && "text-red-600 font-medium")}>
+              <span className={cn(reviewOverdue && "text-[--cs-risk] font-medium")}>
                 Review: {formatDate(target.review_date)}
               </span>
             </div>
@@ -685,7 +685,7 @@ function TargetCard({
                         </div>
                       )}
                       {review.barriers && (
-                        <p className="text-[10px] text-red-600 mt-1">Barriers: {review.barriers}</p>
+                        <p className="text-[10px] text-[--cs-risk] mt-1">Barriers: {review.barriers}</p>
                       )}
                       {review.next_steps && (
                         <p className="text-[10px] text-indigo-600 mt-0.5">Next: {review.next_steps}</p>
@@ -740,7 +740,7 @@ function ChildSummaryCard({
   return (
     <div className={cn(
       "rounded-2xl border p-4",
-      declining > 0 ? "border-red-200 bg-red-50/30" : "border-[var(--cs-border)] bg-white",
+      declining > 0 ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : "border-[var(--cs-border)] bg-white",
     )}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -755,7 +755,7 @@ function ChildSummaryCard({
         <div className="text-right">
           <p className={cn(
             "text-lg font-bold",
-            avgRating >= 3.5 ? "text-emerald-600" : avgRating >= 2.5 ? "text-amber-600" : "text-red-600",
+            avgRating >= 3.5 ? "text-[--cs-success]" : avgRating >= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
           )}>
             {avgRating}
           </p>
@@ -786,19 +786,19 @@ function ChildSummaryCard({
 
       {/* Direction summary */}
       <div className="grid grid-cols-3 gap-2">
-        <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-2 text-center">
-          <p className="text-sm font-bold text-emerald-600">{improving}</p>
+        <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-2 text-center">
+          <p className="text-sm font-bold text-[--cs-success]">{improving}</p>
           <p className="text-[9px] text-[var(--cs-text-muted)]">Improving</p>
         </div>
-        <div className="rounded-lg bg-amber-50 border border-amber-100 p-2 text-center">
-          <p className="text-sm font-bold text-amber-600">{active.length - improving - declining}</p>
+        <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-2 text-center">
+          <p className="text-sm font-bold text-[--cs-warning]">{active.length - improving - declining}</p>
           <p className="text-[9px] text-[var(--cs-text-muted)]">Stable</p>
         </div>
         <div className={cn(
           "rounded-lg border p-2 text-center",
-          declining > 0 ? "bg-red-50 border-red-100" : "bg-slate-50 border-[var(--cs-border-subtle)]",
+          declining > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-slate-50 border-[var(--cs-border-subtle)]",
         )}>
-          <p className={cn("text-sm font-bold", declining > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]")}>{declining}</p>
+          <p className={cn("text-sm font-bold", declining > 0 ? "text-[--cs-risk]" : "text-[var(--cs-text-muted)]")}>{declining}</p>
           <p className="text-[9px] text-[var(--cs-text-muted)]">Declining</p>
         </div>
       </div>
@@ -834,8 +834,8 @@ function DomainRadar({
                 <p className="text-[9px] text-[var(--cs-text-muted)]">{d.count} targets</p>
               </div>
               <div className="text-right text-[10px]">
-                {d.improving > 0 && <p className="text-emerald-600">{d.improving} improving</p>}
-                {d.declining > 0 && <p className="text-red-600">{d.declining} declining</p>}
+                {d.improving > 0 && <p className="text-[--cs-success]">{d.improving} improving</p>}
+                {d.declining > 0 && <p className="text-[--cs-risk]">{d.declining} declining</p>}
               </div>
             </div>
           </div>
@@ -939,10 +939,10 @@ export default function OutcomesPage() {
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
               { label: "Active Targets",   value: meta.active_targets,    colour: "text-indigo-600", bg: "bg-indigo-50 border-indigo-100", icon: Target },
-              { label: "Improving",        value: meta.improving,         colour: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100", icon: TrendingUp },
-              { label: "Stable",           value: meta.stable,            colour: "text-amber-600", bg: "bg-amber-50 border-amber-100", icon: Minus },
-              { label: "Declining",        value: meta.declining,         colour: meta.declining > 0 ? "text-red-600" : "text-emerald-600", bg: meta.declining > 0 ? "bg-red-50 border-red-100" : "bg-emerald-50 border-emerald-100", icon: TrendingDown },
-              { label: "Reviews Due",      value: meta.reviews_due_soon,  colour: meta.reviews_due_soon > 3 ? "text-amber-600" : "text-[var(--cs-text-secondary)]", bg: meta.reviews_due_soon > 3 ? "bg-amber-50 border-amber-100" : "bg-slate-50 border-[var(--cs-border-subtle)]", icon: Clock },
+              { label: "Improving",        value: meta.improving,         colour: "text-[--cs-success]", bg: "bg-[--cs-success-bg] border-[--cs-success-soft]", icon: TrendingUp },
+              { label: "Stable",           value: meta.stable,            colour: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg] border-[--cs-warning-soft]", icon: Minus },
+              { label: "Declining",        value: meta.declining,         colour: meta.declining > 0 ? "text-[--cs-risk]" : "text-[--cs-success]", bg: meta.declining > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-[--cs-success-bg] border-[--cs-success-soft]", icon: TrendingDown },
+              { label: "Reviews Due",      value: meta.reviews_due_soon,  colour: meta.reviews_due_soon > 3 ? "text-[--cs-warning]" : "text-[var(--cs-text-secondary)]", bg: meta.reviews_due_soon > 3 ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" : "bg-slate-50 border-[var(--cs-border-subtle)]", icon: Clock },
             ].map(({ label, value, colour, bg, icon: Icon }) => (
               <div key={label} className={cn("rounded-2xl border p-4", bg)}>
                 <div className="flex items-center gap-2 mb-1">
@@ -959,13 +959,13 @@ export default function OutcomesPage() {
         {meta && meta.avg_rating > 0 && (
           <div className={cn(
             "rounded-2xl border p-4 flex items-center gap-4",
-            meta.avg_rating >= 3.5 ? "bg-emerald-50 border-emerald-200" :
-            meta.avg_rating >= 2.5 ? "bg-amber-50 border-amber-200" :
-            "bg-red-50 border-red-200",
+            meta.avg_rating >= 3.5 ? "bg-[--cs-success-bg] border-[--cs-success-soft]" :
+            meta.avg_rating >= 2.5 ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" :
+            "bg-[--cs-risk-bg] border-[--cs-risk-soft]",
           )}>
             <BarChart3 className={cn(
               "h-6 w-6",
-              meta.avg_rating >= 3.5 ? "text-emerald-600" : meta.avg_rating >= 2.5 ? "text-amber-600" : "text-red-600",
+              meta.avg_rating >= 3.5 ? "text-[--cs-success]" : meta.avg_rating >= 2.5 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )} />
             <div className="flex-1">
               <p className="text-sm font-semibold text-[var(--cs-navy)]">
