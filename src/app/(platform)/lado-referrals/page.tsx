@@ -44,7 +44,7 @@ const ALLG_CLR: Record<LadoAllegationType, string> = {
   boundary_violation: "bg-blue-100 text-blue-800", other: "bg-slate-100 text-[var(--cs-navy)]",
 };
 
-const OUTCOME_CLR: Record<LadoOutcome, string> = { substantiated: "bg-red-100 text-red-800", unsubstantiated: "bg-amber-100 text-amber-800", unfounded: "bg-green-100 text-green-800", malicious: "bg-purple-100 text-purple-800", pending: "bg-blue-100 text-blue-800" };
+const OUTCOME_CLR: Record<LadoOutcome, string> = { substantiated: "bg-[--cs-risk-bg] text-[--cs-risk]", unsubstantiated: "bg-[--cs-warning-bg] text-[--cs-warning]", unfounded: "bg-[--cs-success-bg] text-[--cs-success]", malicious: "bg-purple-100 text-purple-800", pending: "bg-[--cs-info-bg] text-[--cs-info]" };
 
 const STATUS_CLR: Record<LadoReferralStatus, string> = {
   initial_assessment: "bg-blue-100 text-blue-800", lado_contacted: "bg-indigo-100 text-indigo-800",
@@ -53,9 +53,9 @@ const STATUS_CLR: Record<LadoReferralStatus, string> = {
   nfa: "bg-green-100 text-green-800",
 };
 
-const STAFF_ACTION_CLR: Record<LadoStaffAction, string> = { suspended: "bg-red-100 text-red-800", restricted_duties: "bg-orange-100 text-orange-800", normal_duties: "bg-green-100 text-green-800", resigned: "bg-slate-100 text-[var(--cs-navy)]", dismissed: "bg-red-100 text-red-800", cleared: "bg-green-100 text-green-800" };
+const STAFF_ACTION_CLR: Record<LadoStaffAction, string> = { suspended: "bg-[--cs-risk-bg] text-[--cs-risk]", restricted_duties: "bg-orange-100 text-orange-800", normal_duties: "bg-[--cs-success-bg] text-[--cs-success]", resigned: "bg-slate-100 text-[var(--cs-navy)]", dismissed: "bg-[--cs-risk-bg] text-[--cs-risk]", cleared: "bg-[--cs-success-bg] text-[--cs-success]" };
 
-const BORDER_OUTCOME: Record<LadoOutcome, string> = { substantiated: "border-l-red-600", unsubstantiated: "border-l-amber-400", unfounded: "border-l-green-400", malicious: "border-l-purple-500", pending: "border-l-blue-400" };
+const BORDER_OUTCOME: Record<LadoOutcome, string> = { substantiated: "border-l-[--cs-risk]", unsubstantiated: "border-l-[--cs-warning]", unfounded: "border-l-[--cs-success]", malicious: "border-l-purple-500", pending: "border-l-[--cs-info]" };
 
 /* ── page ─────────────────────────────────────────────────────────────────── */
 
@@ -138,11 +138,11 @@ export default function LADOReferralsPage() {
     >
       <div id="print-area">
         {/* confidentiality banner */}
-        <div className="bg-red-50 border border-red-300 rounded-lg p-3 mb-6 flex items-start gap-2">
-          <Lock className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+          <Lock className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-semibold text-red-800">HIGHLY RESTRICTED — Confidential Personnel Information</p>
-            <p className="text-red-700">Access to LADO referral records is restricted to the Registered Manager, Responsible Individual, and authorised HR personnel. Do not discuss details with staff members not directly involved.</p>
+            <p className="font-semibold text-[--cs-risk]">HIGHLY RESTRICTED — Confidential Personnel Information</p>
+            <p className="text-[--cs-risk]">Access to LADO referral records is restricted to the Registered Manager, Responsible Individual, and authorised HR personnel. Do not discuss details with staff members not directly involved.</p>
           </div>
         </div>
 
@@ -166,11 +166,11 @@ export default function LADOReferralsPage() {
 
         {/* active alert */}
         {activeReferrals > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-amber-800">{activeReferrals} active LADO referral(s)</p>
-              <p className="text-amber-700">Ensure regular review meetings are scheduled and all actions are progressed in a timely manner.</p>
+              <p className="font-semibold text-[--cs-warning]">{activeReferrals} active LADO referral(s)</p>
+              <p className="text-[--cs-warning]">Ensure regular review meetings are scheduled and all actions are progressed in a timely manner.</p>
             </div>
           </div>
         )}
