@@ -34,10 +34,10 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const severityColour: Record<string, string> = {
-  life_threatening: "bg-red-200 text-red-900",
-  severe: "bg-red-100 text-red-800",
-  moderate: "bg-amber-100 text-amber-800",
-  mild: "bg-blue-100 text-blue-800",
+  life_threatening: "bg-[--cs-risk-bg] text-[--cs-risk]",
+  severe: "bg-[--cs-risk-bg] text-[--cs-risk]",
+  moderate: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  mild: "bg-[--cs-info-bg] text-[--cs-info]",
 };
 
 const exportCols: ExportColumn<DietaryPlan>[] = [
@@ -111,22 +111,22 @@ export default function DietaryRequirementsPage() {
           <p className="text-xs text-muted-foreground">Active Plans</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className={cn("text-2xl font-bold", criticalAllergies > 0 ? "text-red-600" : "text-green-600")}>{criticalAllergies}</p>
+          <p className={cn("text-2xl font-bold", criticalAllergies > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{criticalAllergies}</p>
           <p className="text-xs text-muted-foreground">Severe Allergies</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{allChildAgreed ? "100%" : `${records.filter((p) => p.child_agreed).length}/${total}`}</p>
+          <p className="text-2xl font-bold text-[--cs-success]">{allChildAgreed ? "100%" : `${records.filter((p) => p.child_agreed).length}/${total}`}</p>
           <p className="text-xs text-muted-foreground">Child Agreed</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className={cn("text-2xl font-bold", dueReview > 0 ? "text-amber-600" : "text-green-600")}>{dueReview}</p>
+          <p className={cn("text-2xl font-bold", dueReview > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{dueReview}</p>
           <p className="text-xs text-muted-foreground">Review Due 30d</p>
         </div>
       </div>
 
-      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 mb-6 flex items-start gap-2">
-        <Utensils className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-        <p className="text-sm text-amber-800">
+      <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3 mb-6 flex items-start gap-2">
+        <Utensils className="h-4 w-4 text-[--cs-warning] mt-0.5 shrink-0" />
+        <p className="text-sm text-[--cs-warning]">
           Food is identity, comfort, and culture. Each child&apos;s plan respects allergies, sensory profiles,
           religious/cultural needs, and personal preferences. Plans include ARFID profiles where relevant —
           see individual plans for detail.
@@ -162,7 +162,7 @@ export default function DietaryRequirementsPage() {
 
           return (
             <div key={plan.id} className={cn("rounded-xl border bg-white overflow-hidden",
-              hasCritical && "border-l-4 border-l-red-500"
+              hasCritical && "border-l-4 border-l-[--cs-risk]"
             )}>
               <button
                 className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
@@ -178,11 +178,11 @@ export default function DietaryRequirementsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  {hasCritical && <AlertTriangle className="h-4 w-4 text-red-500" />}
+                  {hasCritical && <AlertTriangle className="h-4 w-4 text-[--cs-risk]" />}
                   {plan.signed_off_by_dietitian && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium">Dietitian</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[--cs-success-bg] text-[--cs-success] font-medium">Dietitian</span>
                   )}
-                  {plan.child_agreed && <CheckCircle className="h-4 w-4 text-green-500" />}
+                  {plan.child_agreed && <CheckCircle className="h-4 w-4 text-[--cs-success]" />}
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
               </button>
@@ -192,18 +192,18 @@ export default function DietaryRequirementsPage() {
                   {/* allergies */}
                   {plan.allergies.length > 0 && (
                     <div>
-                      <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-2">
+                      <p className="text-xs font-semibold text-[--cs-risk] uppercase tracking-wide mb-2">
                         <AlertTriangle className="h-3 w-3 inline mr-1" />Allergies
                       </p>
                       <div className="space-y-1">
                         {plan.allergies.map((a, i) => (
-                          <div key={i} className="bg-white rounded-lg p-2 border border-red-200">
+                          <div key={i} className="bg-white rounded-lg p-2 border border-[--cs-risk-soft]">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-medium">{a.allergen}</span>
                               <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", severityColour[a.severity])}>{DIETARY_ALLERGY_SEVERITY_LABEL[a.severity]}</span>
                             </div>
                             <p className="text-xs text-muted-foreground">Reaction: {a.reaction}</p>
-                            <p className="text-xs text-red-700 mt-1"><strong>Treatment:</strong> {a.treatment}</p>
+                            <p className="text-xs text-[--cs-risk] mt-1"><strong>Treatment:</strong> {a.treatment}</p>
                           </div>
                         ))}
                       </div>
@@ -339,8 +339,8 @@ export default function DietaryRequirementsPage() {
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
                     <span>Reviewed: {plan.reviewed_date} by {getStaffName(plan.reviewed_by)}</span>
                     <span>Next review: {plan.next_review_date}</span>
-                    {plan.signed_off_by_dietitian && <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-medium">Dietitian Signed Off</span>}
-                    {plan.child_agreed && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">Child Co-Produced</span>}
+                    {plan.signed_off_by_dietitian && <span className="px-2 py-0.5 rounded-full bg-[--cs-success-bg] text-[--cs-success] font-medium">Dietitian Signed Off</span>}
+                    {plan.child_agreed && <span className="px-2 py-0.5 rounded-full bg-[--cs-success-bg] text-[--cs-success] font-medium">Child Co-Produced</span>}
                   </div>
 
                   <SmartLinkPanel sourceType="dietary-plans" sourceId={plan.id} childId={plan.child_id} compact />
