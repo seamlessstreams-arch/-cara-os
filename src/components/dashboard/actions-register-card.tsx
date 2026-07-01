@@ -18,16 +18,16 @@ export function ActionsRegisterCard() {
   const hot = overdue > 0;
 
   return (
-    <Card className={cn("overflow-hidden border-2", hot ? "border-amber-300" : "border-slate-300")}>
+    <Card className={cn("overflow-hidden border-2", hot ? "border-[--cs-warning-soft]" : "border-slate-300")}>
       <CardContent className="p-0">
         <Link
           href="/actions-register"
           className={cn(
             "group flex items-center gap-4 bg-gradient-to-r p-4 transition-colors",
-            hot ? "from-amber-50 to-white hover:from-amber-100" : "from-slate-50 to-white hover:from-slate-100",
+            hot ? "from-[--cs-warning-bg] to-white hover:from-[--cs-warning-soft]" : "from-slate-50 to-white hover:from-slate-100",
           )}
         >
-          <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm", hot ? "bg-amber-500" : "bg-slate-600")}>
+          <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm", hot ? "bg-[--cs-warning]" : "bg-slate-600")}>
             <ListChecks className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">

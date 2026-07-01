@@ -35,9 +35,9 @@ export function ManagerPriorityBriefingCard() {
               Your single &ldquo;what needs my attention&rdquo; view — critical signals ranked across all 78 intelligence engines.
             </p>
             <div className="mt-1.5 flex items-center gap-2 text-slate-400">
-              <AlertOctagon className="h-3.5 w-3.5 text-red-500" />
+              <AlertOctagon className="h-3.5 w-3.5 text-[--cs-risk]" />
               <ShieldAlert className="h-3.5 w-3.5 text-orange-500" />
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+              <AlertTriangle className="h-3.5 w-3.5 text-[--cs-warning]" />
               <Eye className="h-3.5 w-3.5 text-slate-400" />
               <span className="text-[11px]">critical · high · warning · watch</span>
             </div>

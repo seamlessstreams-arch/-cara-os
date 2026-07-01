@@ -11,19 +11,19 @@ import { FileText, ArrowRight } from "lucide-react";
  */
 export function HomeSummaryReportCard() {
   return (
-    <Card className="overflow-hidden border-2 border-emerald-300">
+    <Card className="overflow-hidden border-2 border-[--cs-success-soft]">
       <CardContent className="p-0">
         <Link
           href="/home-summary-report"
-          className="group flex items-center gap-4 bg-gradient-to-r from-emerald-50 to-white p-4 transition-colors hover:from-emerald-100"
+          className="group flex items-center gap-4 bg-gradient-to-r from-[--cs-success-bg] to-white p-4 transition-colors hover:from-[--cs-success-soft]"
         >
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[--cs-success] text-white shadow-sm">
             <FileText className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-slate-900">Home Summary Report</span>
-              <span className="rounded-full border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">
+              <span className="rounded-full border border-[--cs-success-soft] bg-[--cs-success-bg] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[--cs-success]">
                 Print-ready
               </span>
             </div>
@@ -31,7 +31,7 @@ export function HomeSummaryReportCard() {
               One-click shareable summary of the home&rsquo;s standing across six domains — for the LA, board or a review.
             </p>
           </div>
-          <ArrowRight className="h-5 w-5 shrink-0 text-emerald-400 transition-transform group-hover:translate-x-0.5 group-hover:text-emerald-600" />
+          <ArrowRight className="h-5 w-5 shrink-0 text-[--cs-success]/50 transition-transform group-hover:translate-x-0.5 group-hover:text-[--cs-success]" />
         </Link>
       </CardContent>
     </Card>

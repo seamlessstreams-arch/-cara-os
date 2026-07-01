@@ -10,9 +10,9 @@ import type { HomeTrendsResult } from "@/lib/engines/home-trends-engine";
 type Overall = HomeTrendsResult["overview"]["overall_direction"];
 
 const META: Record<Overall, { label: string; Icon: typeof TrendingUp; border: string; grad: string; chip: string }> = {
-  improving: { label: "Improving", Icon: TrendingUp, border: "border-green-300", grad: "from-green-50 to-white hover:from-green-100", chip: "bg-green-600" },
-  worsening: { label: "Needs attention", Icon: TrendingDown, border: "border-red-300", grad: "from-red-50 to-white hover:from-red-100", chip: "bg-red-600" },
-  mixed: { label: "Mixed picture", Icon: Activity, border: "border-amber-300", grad: "from-amber-50 to-white hover:from-amber-100", chip: "bg-amber-600" },
+  improving: { label: "Improving", Icon: TrendingUp, border: "border-[--cs-success-soft]", grad: "from-[--cs-success-bg] to-white hover:from-[--cs-success-soft]", chip: "bg-[--cs-success]" },
+  worsening: { label: "Needs attention", Icon: TrendingDown, border: "border-[--cs-risk-soft]", grad: "from-[--cs-risk-bg] to-white hover:from-[--cs-risk-soft]", chip: "bg-[--cs-risk]" },
+  mixed: { label: "Mixed picture", Icon: Activity, border: "border-[--cs-warning-soft]", grad: "from-[--cs-warning-bg] to-white hover:from-[--cs-warning-soft]", chip: "bg-[--cs-warning]" },
   stable: { label: "Steady", Icon: Minus, border: "border-slate-300", grad: "from-slate-50 to-white hover:from-slate-100", chip: "bg-slate-500" },
   insufficient_data: { label: "Building history", Icon: Minus, border: "border-slate-300", grad: "from-slate-50 to-white hover:from-slate-100", chip: "bg-slate-400" },
 };

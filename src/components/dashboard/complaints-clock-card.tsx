@@ -18,16 +18,16 @@ export function ComplaintsClockCard() {
   const hot = breached > 0;
 
   return (
-    <Card className={cn("overflow-hidden border-2", hot ? "border-red-300" : "border-slate-300")}>
+    <Card className={cn("overflow-hidden border-2", hot ? "border-[--cs-risk-soft]" : "border-slate-300")}>
       <CardContent className="p-0">
         <Link
           href="/complaints-clock"
           className={cn(
             "group flex items-center gap-4 bg-gradient-to-r p-4 transition-colors",
-            hot ? "from-red-50 to-white hover:from-red-100" : "from-slate-50 to-white hover:from-slate-100",
+            hot ? "from-[--cs-risk-bg] to-white hover:from-[--cs-risk-soft]" : "from-slate-50 to-white hover:from-slate-100",
           )}
         >
-          <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm", hot ? "bg-red-500" : "bg-slate-600")}>
+          <div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white shadow-sm", hot ? "bg-[--cs-risk]" : "bg-slate-600")}>
             <Clock className="h-6 w-6" />
           </div>
           <div className="min-w-0 flex-1">
