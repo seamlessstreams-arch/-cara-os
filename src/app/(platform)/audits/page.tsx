@@ -200,15 +200,15 @@ export default function AuditsPage() {
     <div key={audit.id} className="flex items-center gap-4 rounded-xl border border-[var(--cs-border)] bg-white p-4 hover:shadow-sm transition-all">
       <div className={cn(
         "h-10 w-10 rounded-xl flex items-center justify-center shrink-0",
-        audit.status === "completed" ? "bg-emerald-100"
-          : audit.status === "in_progress" ? "bg-amber-100"
-          : "bg-blue-100"
+        audit.status === "completed" ? "bg-[--cs-success-bg]"
+          : audit.status === "in_progress" ? "bg-[--cs-warning-bg]"
+          : "bg-[--cs-info-bg]"
       )}>
         <ClipboardCheck className={cn(
           "h-5 w-5",
-          audit.status === "completed" ? "text-emerald-600"
-            : audit.status === "in_progress" ? "text-amber-600"
-            : "text-blue-600"
+          audit.status === "completed" ? "text-[--cs-success]"
+            : audit.status === "in_progress" ? "text-[--cs-warning]"
+            : "text-[--cs-info]"
         )} />
       </div>
       <div className="flex-1 min-w-0">
@@ -219,14 +219,14 @@ export default function AuditsPage() {
             <Badge variant="outline" className="text-[10px] rounded-full">{CATEGORY_LABEL[audit.category] ?? audit.category}</Badge>
           )}
           {audit.findings > 0 && (
-            <span className="text-[10px] text-amber-600 font-medium">{audit.findings} finding{audit.findings !== 1 ? "s" : ""}</span>
+            <span className="text-[10px] text-[--cs-warning] font-medium">{audit.findings} finding{audit.findings !== 1 ? "s" : ""}</span>
           )}
         </div>
         {audit.status === "completed" && (
           <div className="mt-2">
             <Progress
               value={audit.score}
-              color={audit.score >= 90 ? "bg-emerald-500" : audit.score >= 70 ? "bg-amber-500" : "bg-red-500"}
+              color={audit.score >= 90 ? "bg-[--cs-success-bg]0" : audit.score >= 70 ? "bg-[--cs-warning-bg]0" : "bg-[--cs-risk-bg]0"}
               className="h-1.5"
             />
             <div className="text-[10px] text-[var(--cs-text-muted)] mt-1">
@@ -237,9 +237,9 @@ export default function AuditsPage() {
       </div>
       <Badge className={cn(
         "text-[10px] rounded-full shrink-0",
-        audit.status === "completed" ? "bg-emerald-100 text-emerald-700"
-          : audit.status === "in_progress" ? "bg-amber-100 text-amber-700"
-          : "bg-blue-100 text-blue-700"
+        audit.status === "completed" ? "bg-[--cs-success-bg] text-[--cs-success]"
+          : audit.status === "in_progress" ? "bg-[--cs-warning-bg] text-[--cs-warning]"
+          : "bg-[--cs-info-bg] text-[--cs-info]"
       )}>
         {audit.status.replace(/_/g, " ")}
       </Badge>
@@ -257,7 +257,7 @@ export default function AuditsPage() {
             needsCreated.has(audit.id) ? (
               <a
                 href="/learning/training-needs"
-                className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors shrink-0"
+                className="inline-flex items-center gap-1 rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] px-2.5 py-1 text-xs font-medium text-[--cs-success] hover:bg-[--cs-success-bg] transition-colors shrink-0"
               >
                 <Link className="h-3 w-3" />
                 Need created
@@ -322,15 +322,15 @@ export default function AuditsPage() {
 
           {/* ── Overdue/scheduled alert ──────────────────────────────────── */}
           {scheduledAudits.length > 0 && (
-            <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 flex items-center gap-3">
-              <div className="rounded-full bg-blue-100 p-1.5">
-                <Calendar className="h-4 w-4 text-blue-600" />
+            <div className="rounded-xl border border-[--cs-info-soft] bg-[--cs-info-bg] px-4 py-3 flex items-center gap-3">
+              <div className="rounded-full bg-[--cs-info-bg] p-1.5">
+                <Calendar className="h-4 w-4 text-[--cs-info]" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-semibold text-blue-800">
+                <p className="text-sm font-semibold text-[--cs-info]">
                   {scheduledAudits.length} audit{scheduledAudits.length !== 1 ? "s" : ""} scheduled
                 </p>
-                <p className="text-xs text-blue-600 mt-0.5">
+                <p className="text-xs text-[--cs-info] mt-0.5">
                   {inProgressAudits.length > 0 && `${inProgressAudits.length} currently in progress. `}
                   Regular auditing is a key Ofsted requirement under Reg 45.
                 </p>
@@ -338,7 +338,7 @@ export default function AuditsPage() {
               <Button
                 size="sm"
                 variant="outline"
-                className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                className="border-[--cs-info-soft] text-[--cs-info] hover:bg-[--cs-info-bg]"
                 onClick={() => setFilter("scheduled")}
               >
                 View scheduled
@@ -349,11 +349,11 @@ export default function AuditsPage() {
           {/* ── KPI Stats ─────────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
             {[
-              { label: "Completed", value: completedAudits.length, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Scheduled", value: scheduledAudits.length, icon: Calendar, color: "text-blue-600", bg: "bg-blue-50" },
-              { label: "In Progress", value: inProgressAudits.length, icon: ClipboardCheck, color: "text-amber-600", bg: "bg-amber-50" },
+              { label: "Completed", value: completedAudits.length, icon: CheckCircle2, color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]" },
+              { label: "Scheduled", value: scheduledAudits.length, icon: Calendar, color: "text-[--cs-info]", bg: "bg-[--cs-info-bg]" },
+              { label: "In Progress", value: inProgressAudits.length, icon: ClipboardCheck, color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]" },
               { label: "Open Findings", value: totalFindings, icon: AlertTriangle, color: "text-orange-600", bg: "bg-orange-50" },
-              { label: "Avg Score", value: `${avgScore}%`, icon: BarChart3, color: avgScore >= 80 ? "text-emerald-600" : avgScore >= 60 ? "text-amber-600" : "text-red-600", bg: avgScore >= 80 ? "bg-emerald-50" : avgScore >= 60 ? "bg-amber-50" : "bg-red-50" },
+              { label: "Avg Score", value: `${avgScore}%`, icon: BarChart3, color: avgScore >= 80 ? "text-[--cs-success]" : avgScore >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]", bg: avgScore >= 80 ? "bg-[--cs-success-bg]" : avgScore >= 60 ? "bg-[--cs-warning-bg]" : "bg-[--cs-risk-bg]" },
             ].map(({ label, value, icon: Icon, color, bg }) => (
               <div key={label} className="rounded-2xl border border-[var(--cs-border)] bg-white p-5">
                 <div className="flex items-start justify-between gap-3">
@@ -380,7 +380,7 @@ export default function AuditsPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {AUDIT_CATEGORIES.filter((c) => categoryStats[c.value]).map((cat) => {
                     const stat = categoryStats[cat.value];
-                    const scoreColour = stat.avgScore >= 80 ? "text-emerald-600" : stat.avgScore >= 60 ? "text-amber-600" : "text-red-600";
+                    const scoreColour = stat.avgScore >= 80 ? "text-[--cs-success]" : stat.avgScore >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]";
                     const barColour = stat.avgScore >= 80 ? "bg-emerald-400" : stat.avgScore >= 60 ? "bg-amber-400" : "bg-red-400";
                     return (
                       <div key={cat.value} className="rounded-xl border border-[var(--cs-border-subtle)] bg-slate-50 p-3">
@@ -398,7 +398,7 @@ export default function AuditsPage() {
                         <div className="flex items-center justify-between mt-1.5">
                           <span className="text-[10px] text-[var(--cs-text-muted)]">{stat.completed} completed</span>
                           {stat.findings > 0 && (
-                            <span className="text-[10px] text-amber-600">{stat.findings} findings</span>
+                            <span className="text-[10px] text-[--cs-warning]">{stat.findings} findings</span>
                           )}
                         </div>
                       </div>
@@ -575,7 +575,7 @@ export default function AuditsPage() {
                   className="text-sm"
                 />
               </div>
-              {formError && <p className="text-xs text-red-600 font-medium">{formError}</p>}
+              {formError && <p className="text-xs text-[--cs-risk] font-medium">{formError}</p>}
             </div>
             <div className="mt-4 flex gap-3">
               <Button
