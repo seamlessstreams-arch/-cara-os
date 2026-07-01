@@ -1373,4 +1373,17 @@ describe("Emergency Intelligence Engine", () => {
       expect(result.recent_drills[0].issues_count).toBe(5); // 4 actions + 1 protocol
     });
   });
+
+  describe("Future-date guard (no recency inflation)", () => {
+    it("excludes a future-dated drill from drills_last_90_days", () => {
+      // TODAY is 2026-05-25 — a drill dated after today must not count as recent.
+      const result = computeEmergencyIntelligence({
+        drills: [makeDrill({ date: "2026-05-10" }), makeDrill({ date: "2026-06-15" })],
+        plans: [],
+        staff: STAFF,
+        today: TODAY,
+      });
+      expect(result.overview.drills_last_90_days).toBe(1);
+    });
+  });
 });

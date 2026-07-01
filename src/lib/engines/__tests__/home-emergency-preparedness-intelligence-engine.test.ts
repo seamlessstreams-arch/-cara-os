@@ -725,4 +725,12 @@ describe("Edge cases", () => {
     }));
     expect(r.drill_readiness.total_drills_12m).toBe(0);
   });
+
+  it("excludes a future-dated last_tested from plans_tested_in_90d", () => {
+    // TODAY is 2026-05-26 — a plan 'last tested' in the future must not count.
+    const r = computeHomeEmergencyPreparedness(baseInput({
+      emergency_plans: [makePlan({ last_tested: daysAgo(10) }), makePlan({ last_tested: daysFrom(30) })],
+    }));
+    expect(r.plan_coverage.plans_tested_in_90d).toBe(1);
+  });
 });

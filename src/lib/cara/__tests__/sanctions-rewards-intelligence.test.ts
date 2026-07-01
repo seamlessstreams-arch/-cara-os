@@ -496,4 +496,16 @@ describe("Sanctions & Rewards Intelligence Engine", () => {
       expect(["inadequate", "requires_improvement"]).toContain(result.overallRating);
     });
   });
+
+  describe("Future-date guard (no recency inflation)", () => {
+    it("excludes future-dated sanctions and rewards from the last-30-day counts", () => {
+      // now is pinned to 2026-05-16 — a record dated after today must not count as recent.
+      const result = analyseSanctionsRewards(makeInput({
+        sanctions: [makeSanction({ date: "2026-05-10" }), makeSanction({ date: "2026-06-10" })],
+        rewards: [makeReward({ date: "2026-05-12" }), makeReward({ date: "2026-07-01" })],
+      }));
+      expect(result.sanctionsLast30Days).toBe(1);
+      expect(result.rewardsLast30Days).toBe(1);
+    });
+  });
 });
