@@ -33,14 +33,14 @@ const CHECK_TYPE_CLR: Record<StockCheckType, string> = {
 };
 
 const STATUS_CLR: Record<StockCheckStatus, string> = {
-  balanced: "bg-green-100 text-green-800",
-  discrepancy: "bg-red-100 text-red-800",
-  action_required: "bg-amber-100 text-amber-800",
+  balanced: "bg-[--cs-success-bg] text-[--cs-success]",
+  discrepancy: "bg-[--cs-risk-bg] text-[--cs-risk]",
+  action_required: "bg-[--cs-warning-bg] text-[--cs-warning]",
 };
 const BORDER_STATUS: Record<StockCheckStatus, string> = {
-  balanced: "border-l-green-400",
-  discrepancy: "border-l-red-600",
-  action_required: "border-l-amber-400",
+  balanced: "border-l-[--cs-success]",
+  discrepancy: "border-l-[--cs-risk]",
+  action_required: "border-l-[--cs-warning]",
 };
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
@@ -152,10 +152,10 @@ export default function MedicationStockCheckPage() {
       <div id="print-area">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
-            { label: "Last Check", value: lastCheckDate, icon: Calendar, clr: "text-blue-600" },
-            { label: "Checks This Month", value: checksThisMonth, icon: ClipboardCheck, clr: "text-green-600" },
-            { label: "Discrepancies This Month", value: discrepanciesThisMonth, icon: AlertTriangle, clr: "text-red-600" },
-            { label: "Expiry Warnings", value: uniqueExpiring.length, icon: Clock, clr: "text-amber-600" },
+            { label: "Last Check", value: lastCheckDate, icon: Calendar, clr: "text-[--cs-info]" },
+            { label: "Checks This Month", value: checksThisMonth, icon: ClipboardCheck, clr: "text-[--cs-success]" },
+            { label: "Discrepancies This Month", value: discrepanciesThisMonth, icon: AlertTriangle, clr: "text-[--cs-risk]" },
+            { label: "Expiry Warnings", value: uniqueExpiring.length, icon: Clock, clr: "text-[--cs-warning]" },
           ].map((s) => (
             <Card key={s.label}>
               <CardContent className="pt-4 pb-3 text-center">
@@ -168,20 +168,20 @@ export default function MedicationStockCheckPage() {
         </div>
 
         {uniqueExpiring.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-amber-800">
+              <p className="font-semibold text-[--cs-warning]">
                 {uniqueExpiring.length} medication(s) expiring within 14 days
               </p>
               <ul className="mt-1 space-y-0.5">
                 {uniqueExpiring.map((item: StockCheckItem, idx: number) => (
-                  <li key={idx} className="text-amber-700">
+                  <li key={idx} className="text-[--cs-warning]">
                     {getYPName(item.yp)} — {item.medication} (expires {item.expiry_date})
                   </li>
                 ))}
               </ul>
-              <p className="text-amber-700 mt-1">
+              <p className="text-[--cs-warning] mt-1">
                 Review whether repeat prescriptions are needed or stock should be returned to pharmacy before expiry.
               </p>
             </div>
@@ -189,13 +189,13 @@ export default function MedicationStockCheckPage() {
         )}
 
         {discrepanciesThisMonth > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-red-800">
+              <p className="font-semibold text-[--cs-risk]">
                 {discrepanciesThisMonth} stock discrepancy(ies) recorded this month
               </p>
-              <p className="text-red-700">
+              <p className="text-[--cs-risk]">
                 All discrepancies must be investigated, documented, and reported to the Registered Manager.
               </p>
             </div>
@@ -273,7 +273,7 @@ export default function MedicationStockCheckPage() {
                         <Badge variant="destructive">{discrepancyCount} discrepancy</Badge>
                       )}
                       {itemExpiryWarnings.length > 0 && (
-                        <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                        <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning]">
                           {itemExpiryWarnings.length} expiry warning
                         </Badge>
                       )}
@@ -309,8 +309,8 @@ export default function MedicationStockCheckPage() {
                                 key={idx}
                                 className={cn(
                                   "border-b last:border-0",
-                                  item.discrepancy && "bg-red-50",
-                                  expiringSoon && !item.discrepancy && "bg-amber-50"
+                                  item.discrepancy && "bg-[--cs-risk-bg]",
+                                  expiringSoon && !item.discrepancy && "bg-[--cs-warning-bg]"
                                 )}
                               >
                                 <td className="py-2 pr-3">{getYPName(item.yp)}</td>
@@ -318,14 +318,14 @@ export default function MedicationStockCheckPage() {
                                 <td className="py-2 pr-3 text-center">{item.expected_count}</td>
                                 <td className={cn(
                                   "py-2 pr-3 text-center font-medium",
-                                  item.discrepancy ? "text-red-700" : "text-green-700"
+                                  item.discrepancy ? "text-[--cs-risk]" : "text-[--cs-success]"
                                 )}>
                                   {item.actual_count}
                                 </td>
                                 <td className="py-2 pr-3 text-center text-muted-foreground">{item.unit}</td>
                                 <td className={cn(
                                   "py-2 pr-3 text-center",
-                                  expiringSoon && "text-amber-700 font-medium"
+                                  expiringSoon && "text-[--cs-warning] font-medium"
                                 )}>
                                   {item.expiry_date}
                                   {expiringSoon && <span className="ml-1">⚠</span>}
@@ -334,7 +334,7 @@ export default function MedicationStockCheckPage() {
                                   {item.discrepancy ? (
                                     <Badge variant="destructive" className="text-xs">Discrepancy</Badge>
                                   ) : (
-                                    <Badge variant="outline" className="bg-green-100 text-green-800 text-xs">
+                                    <Badge variant="outline" className="bg-[--cs-success-bg] text-[--cs-success] text-xs">
                                       <CheckCircle2 className="h-3 w-3 mr-1" /> Match
                                     </Badge>
                                   )}
@@ -351,15 +351,15 @@ export default function MedicationStockCheckPage() {
                         <p className="font-medium text-xs">Total Items</p>
                         <p className="text-lg font-bold">{r.items.length}</p>
                       </div>
-                      <div className={cn("rounded p-2 text-center", discrepancyCount > 0 ? "bg-red-50" : "bg-green-50")}>
+                      <div className={cn("rounded p-2 text-center", discrepancyCount > 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]")}>
                         <p className="font-medium text-xs">Discrepancies</p>
                         <p className="text-lg font-bold">{discrepancyCount}</p>
                       </div>
-                      <div className={cn("rounded p-2 text-center", itemExpiryWarnings.length > 0 ? "bg-amber-50" : "bg-muted/40")}>
+                      <div className={cn("rounded p-2 text-center", itemExpiryWarnings.length > 0 ? "bg-[--cs-warning-bg]" : "bg-muted/40")}>
                         <p className="font-medium text-xs">Expiry Warnings</p>
                         <p className="text-lg font-bold">{itemExpiryWarnings.length}</p>
                       </div>
-                      <div className={cn("rounded p-2 text-center", r.status === "balanced" ? "bg-green-50" : r.status === "discrepancy" ? "bg-red-50" : "bg-amber-50")}>
+                      <div className={cn("rounded p-2 text-center", r.status === "balanced" ? "bg-[--cs-success-bg]" : r.status === "discrepancy" ? "bg-[--cs-risk-bg]" : "bg-[--cs-warning-bg]")}>
                         <p className="font-medium text-xs">Overall</p>
                         <p className="text-sm font-bold">{STOCK_CHECK_STATUS_LABEL[r.status]}</p>
                       </div>
