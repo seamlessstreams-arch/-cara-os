@@ -30,24 +30,24 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const STATUS_META: Record<PepStatus, { label: string; color: string }> = {
-  current: { label: PEP_STATUS_LABEL.current, color: "bg-green-100 text-green-800" },
-  review_due: { label: PEP_STATUS_LABEL.review_due, color: "bg-amber-100 text-amber-800" },
-  overdue: { label: PEP_STATUS_LABEL.overdue, color: "bg-red-100 text-red-800" },
+  current: { label: PEP_STATUS_LABEL.current, color: "bg-[--cs-success-bg] text-[--cs-success]" },
+  review_due: { label: PEP_STATUS_LABEL.review_due, color: "bg-[--cs-warning-bg] text-[--cs-warning]" },
+  overdue: { label: PEP_STATUS_LABEL.overdue, color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
   draft: { label: PEP_STATUS_LABEL.draft, color: "bg-slate-100 text-[var(--cs-text-secondary)]" },
 };
 
 const ATT_META: Record<PepAttainmentLevel, { label: string; color: string }> = {
-  above: { label: PEP_ATTAINMENT_LEVEL_LABEL.above, color: "text-green-700 bg-green-100" },
-  at: { label: PEP_ATTAINMENT_LEVEL_LABEL.at, color: "text-blue-700 bg-blue-100" },
-  below: { label: PEP_ATTAINMENT_LEVEL_LABEL.below, color: "text-amber-700 bg-amber-100" },
-  significantly_below: { label: PEP_ATTAINMENT_LEVEL_LABEL.significantly_below, color: "text-red-700 bg-red-100" },
+  above: { label: PEP_ATTAINMENT_LEVEL_LABEL.above, color: "text-[--cs-success] bg-[--cs-success-bg]" },
+  at: { label: PEP_ATTAINMENT_LEVEL_LABEL.at, color: "text-[--cs-info] bg-[--cs-info-bg]" },
+  below: { label: PEP_ATTAINMENT_LEVEL_LABEL.below, color: "text-[--cs-warning] bg-[--cs-warning-bg]" },
+  significantly_below: { label: PEP_ATTAINMENT_LEVEL_LABEL.significantly_below, color: "text-[--cs-risk] bg-[--cs-risk-bg]" },
 };
 
 const PROGRESS_META: Record<PepProgress, { label: string; color: string; icon: React.ElementType }> = {
-  exceeded: { label: PEP_PROGRESS_LABEL.exceeded, color: "text-green-700", icon: TrendingUp },
-  on_track: { label: PEP_PROGRESS_LABEL.on_track, color: "text-green-600", icon: TrendingUp },
-  some_progress: { label: PEP_PROGRESS_LABEL.some_progress, color: "text-amber-600", icon: Minus },
-  limited_progress: { label: PEP_PROGRESS_LABEL.limited_progress, color: "text-red-600", icon: TrendingDown },
+  exceeded: { label: PEP_PROGRESS_LABEL.exceeded, color: "text-[--cs-success]", icon: TrendingUp },
+  on_track: { label: PEP_PROGRESS_LABEL.on_track, color: "text-[--cs-success]", icon: TrendingUp },
+  some_progress: { label: PEP_PROGRESS_LABEL.some_progress, color: "text-[--cs-warning]", icon: Minus },
+  limited_progress: { label: PEP_PROGRESS_LABEL.limited_progress, color: "text-[--cs-risk]", icon: TrendingDown },
 };
 
 /* ── page ──────────────────────────────────────────────────────────────────── */
@@ -169,7 +169,7 @@ export default function PepTrackerPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className={cn("text-2xl font-bold", overdueCount > 0 ? "text-amber-600" : "text-green-600")}>{overdueCount}</p>
+              <p className={cn("text-2xl font-bold", overdueCount > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{overdueCount}</p>
               <p className="text-xs text-muted-foreground">Reviews Due / Overdue</p>
             </CardContent>
           </Card>
@@ -177,11 +177,11 @@ export default function PepTrackerPage() {
 
         {/* attendance alert */}
         {peps.some((p) => p.attendance < 70) && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-red-800">Attendance Concern</p>
-              <p className="text-red-700">
+              <p className="font-semibold text-[--cs-risk]">Attendance Concern</p>
+              <p className="text-[--cs-risk]">
                 {peps.filter((p) => p.attendance < 70).map((p) => `${getYPName(p.child_id)} (${p.attendance}%)`).join(", ")} — attendance below 70%. Virtual School Head notified. Educational engagement is a priority in care planning.
               </p>
             </div>
@@ -254,12 +254,12 @@ export default function PepTrackerPage() {
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-blue-600" />
-                        <span className={cn("font-medium", p.attendance >= 85 ? "text-green-700" : p.attendance >= 70 ? "text-amber-700" : "text-red-700")}>
+                        <span className={cn("font-medium", p.attendance >= 85 ? "text-[--cs-success]" : p.attendance >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
                           {p.attendance}% attendance
                         </span>
                       </div>
                       {p.exclusions > 0 && (
-                        <div className="flex items-center gap-1 text-red-700">
+                        <div className="flex items-center gap-1 text-[--cs-risk]">
                           <AlertTriangle className="h-4 w-4" />
                           <span className="font-medium">{p.exclusions} exclusion(s) — {p.exclusion_days} day(s)</span>
                         </div>
@@ -334,22 +334,22 @@ export default function PepTrackerPage() {
 
                     {/* strengths & barriers */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      <div className="bg-green-50 border border-green-200 rounded p-2">
-                        <p className="font-medium text-xs text-green-800 mb-1">Strengths</p>
+                      <div className="bg-[--cs-success-bg] border border-[--cs-success-soft] rounded p-2">
+                        <p className="font-medium text-xs text-[--cs-success] mb-1">Strengths</p>
                         <ul className="space-y-0.5">
                           {(p.strengths ?? []).map((s, i) => (
-                            <li key={i} className="text-xs text-green-700 flex items-start gap-1">
+                            <li key={i} className="text-xs text-[--cs-success] flex items-start gap-1">
                               <CheckCircle2 className="h-3 w-3 shrink-0 mt-0.5" />
                               <span>{s}</span>
                             </li>
                           ))}
                         </ul>
                       </div>
-                      <div className="bg-red-50 border border-red-200 rounded p-2">
-                        <p className="font-medium text-xs text-red-800 mb-1">Barriers to Learning</p>
+                      <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded p-2">
+                        <p className="font-medium text-xs text-[--cs-risk] mb-1">Barriers to Learning</p>
                         <ul className="space-y-0.5">
                           {p.barriers.map((b, i) => (
-                            <li key={i} className="text-xs text-red-700 flex items-start gap-1">
+                            <li key={i} className="text-xs text-[--cs-risk] flex items-start gap-1">
                               <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />
                               <span>{b}</span>
                             </li>
@@ -359,9 +359,9 @@ export default function PepTrackerPage() {
                     </div>
 
                     {/* child views */}
-                    <div className="bg-blue-50 border border-blue-200 rounded p-2">
-                      <p className="font-medium text-xs text-blue-800 mb-1">Child&apos;s Views</p>
-                      <p className="text-xs text-blue-700">{p.child_views}</p>
+                    <div className="bg-[--cs-info-bg] border border-[--cs-info-soft] rounded p-2">
+                      <p className="font-medium text-xs text-[--cs-info] mb-1">Child&apos;s Views</p>
+                      <p className="text-xs text-[--cs-info]">{p.child_views}</p>
                     </div>
 
                     {/* carer views */}
@@ -382,9 +382,9 @@ export default function PepTrackerPage() {
                       {(p.actions ?? []).map((act, i) => (
                         <div key={i} className="bg-muted/40 rounded p-2 mb-1 flex items-start gap-2 text-xs">
                           {act.status === "completed" ? (
-                            <CheckCircle2 className="h-3.5 w-3.5 text-green-600 shrink-0 mt-0.5" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success] shrink-0 mt-0.5" />
                           ) : (
-                            <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />
+                            <Clock className="h-3.5 w-3.5 text-[--cs-warning] shrink-0 mt-0.5" />
                           )}
                           <div className="flex-1">
                             <p className={act.status === "completed" ? "line-through text-muted-foreground" : ""}>{act.action}</p>
