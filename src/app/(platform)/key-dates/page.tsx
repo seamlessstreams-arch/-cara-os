@@ -82,9 +82,9 @@ function getBucket(days: number): Bucket {
 }
 
 const BUCKET_CONFIG: Record<Bucket, { label: string; badgeClass: string; bg: string; border: string }> = {
-  overdue:   { label: "Overdue",        badgeClass: "bg-red-100 text-red-700 border-red-200",       bg: "bg-red-50",     border: "border-red-200"    },
-  week:      { label: "This Week",      badgeClass: "bg-amber-100 text-amber-700 border-amber-200",  bg: "bg-amber-50",   border: "border-amber-200"  },
-  fortnight: { label: "Next 2 Weeks",   badgeClass: "bg-blue-100 text-blue-700 border-blue-200",     bg: "bg-blue-50",    border: "border-blue-200"   },
+  overdue:   { label: "Overdue",        badgeClass: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",       bg: "bg-[--cs-risk-bg]",     border: "border-[--cs-risk-soft]"    },
+  week:      { label: "This Week",      badgeClass: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",  bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]"  },
+  fortnight: { label: "Next 2 Weeks",   badgeClass: "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]",     bg: "bg-[--cs-info-bg]",    border: "border-[--cs-info-soft]"   },
   month:     { label: "This Month",     badgeClass: "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",  bg: "bg-slate-50",   border: "border-[var(--cs-border)]"  },
   quarter:   { label: "Next 90 Days",   badgeClass: "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",  bg: "bg-white",      border: "border-[var(--cs-border-subtle)]"  },
 };
@@ -110,10 +110,10 @@ function EventRow({ item }: { item: KeyDateItem }) {
   const cfg = CAT_CONFIG[item.category];
   const Icon = cfg.icon;
   const badgeCls =
-    item.overdue           ? "bg-red-100 text-red-700 border-red-200"     :
-    item.days === 0        ? "bg-amber-100 text-amber-700 border-amber-200":
-    item.days <= 7         ? "bg-amber-100 text-amber-700 border-amber-200":
-    item.days <= 14        ? "bg-blue-100 text-blue-700 border-blue-200"  :
+    item.overdue           ? "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]"     :
+    item.days === 0        ? "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]":
+    item.days <= 7         ? "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]":
+    item.days <= 14        ? "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]"  :
                              "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]";
 
   return (
@@ -322,8 +322,8 @@ export default function KeyDatesPage() {
         {/* ── Summary strip ──────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { label: "Overdue",          value: overdueCount,  color: overdueCount  > 0 ? "text-red-600"  : "text-emerald-600", bg: overdueCount  > 0 ? "bg-red-50 border-red-100"  : "bg-emerald-50 border-emerald-100" },
-            { label: "This Week",        value: thisWeekCount, color: thisWeekCount > 0 ? "text-amber-600": "text-emerald-600", bg: thisWeekCount > 0 ? "bg-amber-50 border-amber-100": "bg-emerald-50 border-emerald-100" },
+            { label: "Overdue",          value: overdueCount,  color: overdueCount  > 0 ? "text-[--cs-risk]"  : "text-[--cs-success]", bg: overdueCount  > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]"  : "bg-[--cs-success-bg] border-[--cs-success-soft]" },
+            { label: "This Week",        value: thisWeekCount, color: thisWeekCount > 0 ? "text-[--cs-warning]": "text-[--cs-success]", bg: thisWeekCount > 0 ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]": "bg-[--cs-success-bg] border-[--cs-success-soft]" },
             { label: "Next 90 Days",     value: upcomingCount, color: "text-indigo-600", bg: "bg-indigo-50 border-indigo-100" },
             { label: "Types Tracked",    value: Object.keys(CAT_CONFIG).length, color: "text-[var(--cs-text-secondary)]", bg: "bg-slate-50 border-[var(--cs-border-subtle)]" },
           ].map(({ label, value, color, bg }) => (
@@ -431,7 +431,7 @@ export default function KeyDatesPage() {
 
             {filtered.length === 0 && !isLoading && (
               <div className="text-center py-16">
-                <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-3" />
+                <CheckCircle2 className="h-10 w-10 text-[--cs-success] mx-auto mb-3" />
                 <p className="text-sm font-semibold text-[var(--cs-text-secondary)]">No upcoming dates in the selected categories</p>
                 <p className="text-xs text-[var(--cs-text-muted)] mt-1">Try enabling more category filters or check back later</p>
               </div>
