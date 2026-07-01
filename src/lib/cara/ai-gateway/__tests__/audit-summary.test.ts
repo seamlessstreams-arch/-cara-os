@@ -16,6 +16,9 @@ function entry(over: Partial<AiGatewayAuditEntry>): AiGatewayAuditEntry {
     sensitivity: "internal",
     identifiableDataSent: false,
     redactionCount: 0,
+    redactionSkipped: false,
+    promptInjectionFlagged: false,
+    responseBlocked: false,
     ...over,
   };
 }

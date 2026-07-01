@@ -28,3 +28,9 @@ export {
 } from "./data-protection";
 
 export type { RedactionResult } from "./data-protection";
+
+export { guardUntrustedText } from "./prompt-injection-guard";
+export type { PromptGuardResult } from "./prompt-injection-guard";
+
+export { scanAiResponse } from "./response-safety-scanner";
+export type { ResponseSafetyResult } from "./response-safety-scanner";

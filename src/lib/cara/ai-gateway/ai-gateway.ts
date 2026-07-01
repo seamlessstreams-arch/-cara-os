@@ -9,33 +9,55 @@
 //   3. Availability  — global kill-switch + provider configured? If not → refuse.
 //   4. Permission    — is the caller allowed to use AI?
 //   5. Sensitivity   — classify; block data too sensitive to leave the building.
+//   5.5 Provider risk register — is the ACTIVE provider approved to receive data
+//       at this sensitivity level? (PROVIDER_MAX_SENSITIVITY.) A provider with no
+//       risk profile, or not approved for this sensitivity, is refused.
 //   6. Redaction     — strip PII before send; record whether identifiable data went.
+//   6.5 Prompt-injection guard — wrap outbound text so instructions embedded in
+//       record/user text can never override Cara's system rules; flag (audit-only)
+//       any obvious hijack attempt.
 //   7. Cost limits   — refuse if the per-request / daily-per-org budget is spent.
-//   8. Provider call — the metered generateText seam (records tokens + cost).
-//   9. Cache store   — remember the answer for next time.
-//  10. Audit         — log purpose, user, child/workflow, identifiable-flag, cost.
+//   8. Provider call — the metered generateText/streamGenerate seam. The streaming
+//      path re-scans the accumulating response on every delta and stops forwarding
+//      further text the instant a hijack-compliance artifact appears — text already
+//      sent cannot be recalled, but an escaping response is cut short rather than
+//      reaching the client in full.
+//   9. Response safety scan — never surface a response that shows signs of having
+//      complied with an injected instruction. Identifier leakage in the response
+//      is only treated as unsafe when the outbound prompt WAS redacted (some modes
+//      intentionally keep the child's own words, in which case identifiers are
+//      expected, not a leak).
+//   9.5 Cache store  — remember the answer for next time (non-streaming only).
+//  10. Audit         — log purpose, user, child/workflow, identifiable-flag, cost,
+//      redaction-skipped, prompt-injection-flagged, response-blocked.
 //
 // Steps 1/2 are why this is "deterministic-first": most calls never reach a model.
 // Demo / prod (no AI key): availability fails at step 3, so the gateway returns a
 // graceful deterministic fallback — it never throws and never depends on a key.
 //
+// Fail-closed: if classification, redaction, the provider-risk check, the
+// injection guard, or the response scanner cannot complete (throws), the request
+// is refused rather than silently passed through or allowed to crash upward.
+//
 // The effects (rules, cache, redactor, provider, meter, audit, clock) are injected
 // so the "must NOT call AI" branches are unit-testable without a real key. The
 // default deps wire the real, already-existing modules — this CONSOLIDATES the
-// four pre-existing seams rather than adding a fifth.
+// pre-existing seams rather than adding parallel ones.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import "server-only";
 
 import { tryRulesFirst, hasRuleHandler, type RuleContext, type RuleResult } from "../rules-engine";
 import { isCacheableCommand, lookupLearnedAnswer, learnAnswer } from "../resolution/learned-cache";
-import { classifyInputSensitivity, redactSensitiveData, detectChildIdentifiers, detectNames, detectStaffIdentifiers } from "../safety/data-protection";
+import { classifyInputSensitivity, redactSensitiveData, detectChildIdentifiers, detectNames, detectStaffIdentifiers, validateProviderAllowedForSensitivity } from "../safety/data-protection";
+import { guardUntrustedText, type PromptGuardResult } from "../safety/prompt-injection-guard";
+import { scanAiResponse, type ResponseSafetyResult } from "../safety/response-safety-scanner";
 import { getCaraProviderConfig, generateText, type CaraTextGenerationResult } from "../cara-provider";
 import { streamCaraText, type CaraStreamInput, type CaraStreamHandlers, type CaraStreamResult } from "../cara-provider-stream";
 import { DEFAULT_COST_LIMITS } from "../core/constants";
 import { estimateCostGbp, recordDecision } from "@/lib/hq/usage-meter";
 import { isAiKillSwitchOn, canRoleUseAi } from "../ai-availability";
-import type { CaraDataSensitivity, CaraTaskType } from "../core/types";
+import type { CaraDataSensitivity, CaraTaskType, CaraProviderName } from "../core/types";
 
 // ── Public contract ───────────────────────────────────────────────────────────
 
@@ -88,6 +110,14 @@ export interface AiGatewayResult {
   tokensOutput?: number;
   redactionCount?: number;
   refusedReason?: string;
+  /** True when the caller explicitly skipped redaction (req.redact === false). */
+  redactionSkipped?: boolean;
+  /** True when the outbound prompt matched a known prompt-injection pattern. */
+  promptInjectionFlagged?: boolean;
+  /** True when the response safety scan withheld or cut short the response. */
+  responseBlocked?: boolean;
+  /** The scanner's flags, when a scan ran (compliance + identifier signals). */
+  responseSafetyFlags?: string[];
 }
 
 export interface AiGatewayStreamHandlers {
@@ -114,6 +144,9 @@ export interface AiGatewayAuditEntry {
   costGbp?: number;
   redactionCount: number;
   refusedReason?: string;
+  redactionSkipped: boolean;
+  promptInjectionFlagged: boolean;
+  responseBlocked: boolean;
 }
 
 // ── Injectable effects (defaults wire the real modules) ───────────────────────
@@ -130,6 +163,12 @@ export interface AiGatewayDeps {
   /** Global kill-switch: true means AI is hard-disabled regardless of key. */
   aiKillSwitchOn: () => boolean;
   permitAi: (identity: AiGatewayIdentity | undefined) => boolean;
+  /** Is the CURRENT provider approved (via the provider risk register) for this sensitivity? */
+  isProviderAllowedForSensitivity?: (sensitivity: CaraDataSensitivity) => boolean;
+  /** Wrap outbound text so embedded instructions can't override system rules; flags obvious hijack attempts. */
+  guardPrompt?: (text: string) => PromptGuardResult;
+  /** Scan a model response for hijack-compliance artifacts / unexpected identifier leakage. */
+  scanResponse?: (text: string, opts: { redactionWasApplied: boolean }) => ResponseSafetyResult;
   generate: (input: {
     systemPrompt: string; userPrompt: string; temperature?: number;
     maxOutputTokens?: number; expectJson?: boolean; feature?: string;
@@ -170,7 +209,17 @@ export async function invokeAiGateway(
   overrides: Partial<AiGatewayDeps> = {},
 ): Promise<AiGatewayResult> {
   const deps = { ...defaultDeps(), ...overrides };
-  const sens = req.sensitivity ?? deps.classify(req.userPrompt, req.taskType ?? "form_prompt_support", { childId: req.identity?.childId });
+
+  // Classification failure fails closed: treat an unclassifiable prompt as
+  // maximally sensitive rather than let it fall through with no sensitivity.
+  let sens: CaraDataSensitivity;
+  let classifyFailed = false;
+  try {
+    sens = req.sensitivity ?? deps.classify(req.userPrompt, req.taskType ?? "form_prompt_support", { childId: req.identity?.childId });
+  } catch {
+    sens = BLOCK_SENSITIVITY;
+    classifyFailed = true;
+  }
 
   const finish = (r: Omit<AiGatewayResult, "sensitivity"> & { sensitivity?: CaraDataSensitivity }): AiGatewayResult => {
     const result: AiGatewayResult = { sensitivity: sens, ...r } as AiGatewayResult;
@@ -188,6 +237,9 @@ export async function invokeAiGateway(
       costGbp: result.costGbp,
       redactionCount: result.redactionCount ?? 0,
       refusedReason: result.refusedReason,
+      redactionSkipped: result.redactionSkipped ?? false,
+      promptInjectionFlagged: result.promptInjectionFlagged ?? false,
+      responseBlocked: result.responseBlocked ?? false,
     });
     return result;
   };
@@ -220,6 +272,8 @@ export async function invokeAiGateway(
     });
   };
 
+  if (classifyFailed) return refuse("Sensitivity classification failed; blocked by default (fail-closed).");
+
   // 3. Availability — kill-switch + provider configured.
   if (deps.aiKillSwitchOn()) return refuse("AI is disabled (CARA_AI_ENABLED=false).");
   if (!deps.providerConfigured()) return refuse("No AI provider is configured (no API key).");
@@ -232,15 +286,41 @@ export async function invokeAiGateway(
     return refuse(`Data classified '${sens}' must not be sent to an external model; answered deterministically.`);
   }
 
+  // 5.5 Provider risk register — is the active provider approved for this sensitivity?
+  let providerAllowed: boolean;
+  try {
+    providerAllowed = deps.isProviderAllowedForSensitivity ? deps.isProviderAllowedForSensitivity(sens) : true;
+  } catch {
+    providerAllowed = false;
+  }
+  if (!providerAllowed) {
+    return refuse(`The configured AI provider is not approved to receive '${sens}' data; answered deterministically.`);
+  }
+
   // 6. Redaction — strip PII before the prompt leaves the building.
   const doRedact = req.redact !== false;
-  const sentPrompt = doRedact ? deps.redact(req.userPrompt).redactedText : req.userPrompt;
-  const redactionCount = doRedact ? deps.redact(req.userPrompt).sensitiveItemsDetected : 0;
+  let sentPrompt: string;
+  let redactionCount: number;
+  try {
+    const r = doRedact ? deps.redact(req.userPrompt) : { redactedText: req.userPrompt, sensitiveItemsDetected: 0 };
+    sentPrompt = r.redactedText;
+    redactionCount = r.sensitiveItemsDetected;
+  } catch {
+    return refuse("Redaction step failed; blocked by default (fail-closed).");
+  }
   const identifiableDataSent = residualIdentifiable(sentPrompt);
 
-  // 7. Cost limits.
+  // 6.5 Prompt-injection guard — wrap the outbound text; flag (never block) hijack attempts.
+  let guarded: PromptGuardResult;
+  try {
+    guarded = deps.guardPrompt ? deps.guardPrompt(sentPrompt) : { guardedText: sentPrompt, flagged: false, matchedPatterns: [] };
+  } catch {
+    return refuse("Prompt-injection guard failed; blocked by default (fail-closed).");
+  }
+
+  // 7. Cost limits — estimate on the text actually sent (post-guard).
   const model = getCaraProviderConfig().textModel;
-  const estGbp = deps.estimateRequestGbp(model, req.systemPrompt.length + sentPrompt.length, req.maxOutputTokens ?? 1500);
+  const estGbp = deps.estimateRequestGbp(model, req.systemPrompt.length + guarded.guardedText.length, req.maxOutputTokens ?? 1500);
   if (estGbp > deps.costLimits.perRequestMax) {
     return refuse(`Estimated cost £${estGbp.toFixed(4)} exceeds the per-request limit £${deps.costLimits.perRequestMax}.`);
   }
@@ -251,22 +331,37 @@ export async function invokeAiGateway(
   // 8. Provider call (the metered seam — records tokens + cost + the "ai" decision).
   const gen = await deps.generate({
     systemPrompt: req.systemPrompt,
-    userPrompt: sentPrompt,
+    userPrompt: guarded.guardedText,
     temperature: req.temperature,
     maxOutputTokens: req.maxOutputTokens,
     expectJson: req.expectJson,
     feature: req.feature,
   });
 
-  // 9. Cache store (only a real model answer is worth remembering).
-  if (gen.llmUsed && req.commandId && deps.isCacheable(req.commandId)) {
+  // 9. Response safety scan — never surface a hijack-compliance response. Identifier
+  // leakage is only unsafe when the outbound prompt WAS redacted.
+  let scan: ResponseSafetyResult | null = null;
+  if (gen.llmUsed) {
+    try {
+      scan = deps.scanResponse ? deps.scanResponse(gen.text, { redactionWasApplied: doRedact }) : { safe: true, complianceFlags: [], identifierFlags: [] };
+    } catch {
+      scan = { safe: false, complianceFlags: ["scanner_failed"], identifierFlags: [] };
+    }
+  }
+  const responseBlocked = scan !== null && !scan.safe;
+  const finalOutput = responseBlocked
+    ? "Cara withheld this response — it did not pass a safety check and has been blocked from display. This has been logged for review."
+    : gen.text;
+
+  // 9.5 Cache store (only a real, unblocked model answer is worth remembering).
+  if (gen.llmUsed && !responseBlocked && req.commandId && deps.isCacheable(req.commandId)) {
     try { deps.cacheStore(req.commandId, req.userPrompt, gen.text); } catch { /* best-effort */ }
   }
 
   // 10. Audit + return. If the provider degraded to its fallback (llmUsed=false),
   // no identifiable data actually reached a model.
   return finish({
-    output: gen.text,
+    output: finalOutput,
     method: gen.llmUsed ? "ai" : "refused",
     llmUsed: gen.llmUsed,
     identifiableDataSent: gen.llmUsed ? identifiableDataSent : false,
@@ -275,7 +370,13 @@ export async function invokeAiGateway(
     tokensInput: gen.tokensInput,
     tokensOutput: gen.tokensOutput,
     redactionCount,
-    refusedReason: gen.llmUsed ? undefined : "AI provider unavailable; deterministic fallback returned.",
+    redactionSkipped: !doRedact,
+    promptInjectionFlagged: guarded.flagged,
+    responseBlocked,
+    responseSafetyFlags: scan ? [...scan.complianceFlags, ...scan.identifierFlags] : undefined,
+    refusedReason: gen.llmUsed
+      ? (responseBlocked ? `Response blocked: ${scan!.complianceFlags.concat(scan!.identifierFlags).join(", ")}` : undefined)
+      : "AI provider unavailable; deterministic fallback returned.",
   });
 }
 
@@ -292,7 +393,15 @@ export async function invokeAiGatewayStream(
   overrides: Partial<AiGatewayDeps> = {},
 ): Promise<AiGatewayStreamResult> {
   const deps = { ...defaultDeps(), ...overrides };
-  const sens = req.sensitivity ?? deps.classify(req.userPrompt, req.taskType ?? "form_prompt_support", { childId: req.identity?.childId });
+
+  let sens: CaraDataSensitivity;
+  let classifyFailed = false;
+  try {
+    sens = req.sensitivity ?? deps.classify(req.userPrompt, req.taskType ?? "form_prompt_support", { childId: req.identity?.childId });
+  } catch {
+    sens = BLOCK_SENSITIVITY;
+    classifyFailed = true;
+  }
 
   const finish = (
     r: Omit<AiGatewayStreamResult, "sensitivity"> & { sensitivity?: CaraDataSensitivity },
@@ -312,6 +421,9 @@ export async function invokeAiGatewayStream(
       costGbp: result.costGbp,
       redactionCount: result.redactionCount ?? 0,
       refusedReason: result.refusedReason,
+      redactionSkipped: result.redactionSkipped ?? false,
+      promptInjectionFlagged: result.promptInjectionFlagged ?? false,
+      responseBlocked: result.responseBlocked ?? false,
     });
     return result;
   };
@@ -344,6 +456,8 @@ export async function invokeAiGatewayStream(
     });
   };
 
+  if (classifyFailed) return refuse("Sensitivity classification failed; blocked by default (fail-closed).");
+
   // 3-5. Availability + permission + sensitivity — never reach the model.
   if (deps.aiKillSwitchOn()) return refuse("AI is disabled (CARA_AI_ENABLED=false).");
   if (!deps.providerConfigured()) return refuse("No AI provider is configured (no API key).");
@@ -352,15 +466,41 @@ export async function invokeAiGatewayStream(
     return refuse(`Data classified '${sens}' must not be sent to an external model; answered deterministically.`);
   }
 
+  // 5.5 Provider risk register.
+  let providerAllowed: boolean;
+  try {
+    providerAllowed = deps.isProviderAllowedForSensitivity ? deps.isProviderAllowedForSensitivity(sens) : true;
+  } catch {
+    providerAllowed = false;
+  }
+  if (!providerAllowed) {
+    return refuse(`The configured AI provider is not approved to receive '${sens}' data; answered deterministically.`);
+  }
+
   // 6. Redaction.
   const doRedact = req.redact !== false;
-  const sentPrompt = doRedact ? deps.redact(req.userPrompt).redactedText : req.userPrompt;
-  const redactionCount = doRedact ? deps.redact(req.userPrompt).sensitiveItemsDetected : 0;
+  let sentPrompt: string;
+  let redactionCount: number;
+  try {
+    const r = doRedact ? deps.redact(req.userPrompt) : { redactedText: req.userPrompt, sensitiveItemsDetected: 0 };
+    sentPrompt = r.redactedText;
+    redactionCount = r.sensitiveItemsDetected;
+  } catch {
+    return refuse("Redaction step failed; blocked by default (fail-closed).");
+  }
   const identifiableDataSent = residualIdentifiable(sentPrompt);
+
+  // 6.5 Prompt-injection guard.
+  let guarded: PromptGuardResult;
+  try {
+    guarded = deps.guardPrompt ? deps.guardPrompt(sentPrompt) : { guardedText: sentPrompt, flagged: false, matchedPatterns: [] };
+  } catch {
+    return refuse("Prompt-injection guard failed; blocked by default (fail-closed).");
+  }
 
   // 7. Cost limits.
   const model = getCaraProviderConfig().textModel;
-  const estGbp = deps.estimateRequestGbp(model, req.systemPrompt.length + sentPrompt.length, req.maxOutputTokens ?? 1500);
+  const estGbp = deps.estimateRequestGbp(model, req.systemPrompt.length + guarded.guardedText.length, req.maxOutputTokens ?? 1500);
   if (estGbp > deps.costLimits.perRequestMax) {
     return refuse(`Estimated cost £${estGbp.toFixed(4)} exceeds the per-request limit £${deps.costLimits.perRequestMax}.`);
   }
@@ -368,24 +508,68 @@ export async function invokeAiGatewayStream(
     return refuse(`Daily AI budget (£${deps.costLimits.dailyPerOrganisation}) reached for the organisation.`);
   }
 
-  // 8. Stream from the provider (the metered streaming seam). Text reaches the
-  // caller through the handlers; only metadata is returned here.
+  // 8. Stream from the provider (the metered streaming seam). A live circuit
+  // breaker re-scans the accumulating response on every delta for hijack-
+  // compliance artifacts and stops forwarding further text the instant one
+  // appears — already-forwarded text cannot be recalled, but the rest of an
+  // escaping response is cut short. Identifier leakage is scanned post-hoc
+  // (audit only): it cannot usefully gate a partial stream, and is expected in
+  // modes that intentionally skip redaction.
+  let buffered = "";
+  let forwarded = "";
+  let circuitBroken = false;
+  let breakReason: string | undefined;
+  const guardedHandlers: AiGatewayStreamHandlers = {
+    onTextDelta: (text) => {
+      if (circuitBroken) return;
+      buffered += text;
+      let midScan: ResponseSafetyResult;
+      try {
+        midScan = deps.scanResponse ? deps.scanResponse(buffered, { redactionWasApplied: doRedact }) : { safe: true, complianceFlags: [], identifierFlags: [] };
+      } catch {
+        circuitBroken = true;
+        breakReason = "scanner_failed";
+        return;
+      }
+      if (midScan.complianceFlags.length > 0) {
+        circuitBroken = true;
+        breakReason = midScan.complianceFlags.join(", ");
+        return;
+      }
+      forwarded += text;
+      handlers.onTextDelta(text);
+    },
+    onMessageDelta: handlers.onMessageDelta,
+  };
+
   const gen = await deps.streamGenerate(
     {
       systemPrompt: req.systemPrompt,
-      userPrompt: sentPrompt,
+      userPrompt: guarded.guardedText,
       model,
       maxOutputTokens: req.maxOutputTokens,
       temperature: req.temperature,
       cacheSystem: req.cacheSystem,
       feature: req.feature,
     },
-    handlers,
+    guardedHandlers,
   );
 
-  // 9. Audit + return.
+  // 9. Post-hoc identifier check on the full buffer (audit-only for streaming —
+  // by this point everything the model said has already been forwarded or cut).
+  let finalScan: ResponseSafetyResult | null = null;
+  if (gen.llmUsed) {
+    try {
+      finalScan = deps.scanResponse ? deps.scanResponse(buffered, { redactionWasApplied: doRedact }) : { safe: true, complianceFlags: [], identifierFlags: [] };
+    } catch {
+      finalScan = { safe: false, complianceFlags: ["scanner_failed"], identifierFlags: [] };
+    }
+  }
+  const responseBlocked = circuitBroken || (finalScan !== null && !finalScan.safe);
+
+  // 10. Audit + return.
   return finish({
-    output: "",
+    output: forwarded,
     method: gen.llmUsed ? "ai" : "refused",
     llmUsed: gen.llmUsed,
     identifiableDataSent: gen.llmUsed ? identifiableDataSent : false,
@@ -394,7 +578,15 @@ export async function invokeAiGatewayStream(
     tokensInput: gen.tokensInput,
     tokensOutput: gen.tokensOutput,
     redactionCount,
-    refusedReason: gen.llmUsed ? undefined : "AI provider unavailable; deterministic fallback returned.",
+    redactionSkipped: !doRedact,
+    promptInjectionFlagged: guarded.flagged,
+    responseBlocked,
+    responseSafetyFlags: finalScan ? [...finalScan.complianceFlags, ...finalScan.identifierFlags] : undefined,
+    refusedReason: gen.llmUsed
+      ? (circuitBroken
+          ? `Response cut off mid-stream: ${breakReason}`
+          : responseBlocked ? `Response flagged: ${finalScan!.complianceFlags.concat(finalScan!.identifierFlags).join(", ")}` : undefined)
+      : "AI provider unavailable; deterministic fallback returned.",
     cacheCreationInputTokens: gen.cacheCreationInputTokens,
     cacheReadInputTokens: gen.cacheReadInputTokens,
   });
@@ -426,6 +618,13 @@ function defaultDeps(): AiGatewayDeps {
     providerConfigured: () => getCaraProviderConfig().configured,
     aiKillSwitchOn: isAiKillSwitchOn,
     permitAi: (identity) => canRoleUseAi(identity?.role),
+    isProviderAllowedForSensitivity: (sensitivity) => {
+      const { providerId } = getCaraProviderConfig();
+      if (providerId === "none") return false; // defensive — step 3 already refuses before this runs
+      return validateProviderAllowedForSensitivity(providerId as CaraProviderName, sensitivity);
+    },
+    guardPrompt: guardUntrustedText,
+    scanResponse: scanAiResponse,
     generate: generateText,
     streamGenerate: streamCaraText,
     spentTodayGbp: () => {
