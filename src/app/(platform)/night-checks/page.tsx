@@ -47,7 +47,7 @@ function CheckRow({ check }: { check: NightCheck }) {
   const SsIcon = ss.icon;
 
   return (
-    <div className={cn("rounded-lg border bg-white transition-all", check.concern_raised && "border-amber-200 bg-amber-50/30")}>
+    <div className={cn("rounded-lg border bg-white transition-all", check.concern_raised && "border-[--cs-warning-soft] bg-[--cs-warning-bg]")}>
       <div className="flex items-center gap-3 p-3 cursor-pointer" onClick={() => setExpanded(!expanded)}>
         <div className="w-12 text-center flex-shrink-0"><div className="text-sm font-bold text-slate-700 tabular-nums">{check.time}</div></div>
         <div className={cn("rounded-md p-1.5 border flex-shrink-0", ss.bg, ss.border)}><SsIcon className={cn("h-3.5 w-3.5", ss.color)} /></div>
@@ -55,7 +55,7 @@ function CheckRow({ check }: { check: NightCheck }) {
           <div className="flex items-center gap-2 mb-0.5">
             <span className="text-xs font-semibold text-slate-900">{getYPName(check.child_id)}</span>
             <Badge className={cn("text-[9px] px-1.5 py-0 border", ss.bg, ss.color, ss.border)}>{ss.label}</Badge>
-            {check.concern_raised && <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[9px] px-1.5 py-0"><AlertTriangle className="h-2.5 w-2.5 mr-0.5" />Concern</Badge>}
+            {check.concern_raised && <Badge className="bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft] text-[9px] px-1.5 py-0"><AlertTriangle className="h-2.5 w-2.5 mr-0.5" />Concern</Badge>}
             {check.check_type !== "scheduled" && <Badge className="bg-violet-50 text-violet-700 border-violet-200 text-[9px] px-1.5 py-0">{NIGHT_CHECK_TYPE_LABEL[check.check_type]}</Badge>}
           </div>
           <p className="text-[11px] text-slate-600 line-clamp-1">{check.notes}</p>
@@ -69,9 +69,9 @@ function CheckRow({ check }: { check: NightCheck }) {
         <div className="border-t px-3 pb-3 pt-2 space-y-2">
           <p className="text-xs text-slate-700">{check.notes}</p>
           {check.concern_detail && (
-            <div className="rounded-md bg-amber-50 border border-amber-200 p-2">
-              <p className="text-[11px] font-semibold text-amber-800 mb-0.5">Concern Raised</p>
-              <p className="text-xs text-amber-700">{check.concern_detail}</p>
+            <div className="rounded-md bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-2">
+              <p className="text-[11px] font-semibold text-[--cs-warning] mb-0.5">Concern Raised</p>
+              <p className="text-xs text-[--cs-warning]">{check.concern_detail}</p>
             </div>
           )}
           <div className="flex items-center gap-4 text-[10px] text-slate-400">
@@ -187,10 +187,10 @@ export default function NightChecksPage() {
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         {[
           { label: "Total Checks", value: stats.total, color: "text-indigo-600", bg: "bg-indigo-50", border: "border-indigo-200" },
-          { label: "YP Checked", value: stats.uniqueYP, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
-          { label: "Sleeping", value: stats.sleeping, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
-          { label: "Concerns", value: stats.concerns, color: stats.concerns > 0 ? "text-amber-600" : "text-emerald-600", bg: stats.concerns > 0 ? "bg-amber-50" : "bg-emerald-50", border: stats.concerns > 0 ? "border-amber-200" : "border-emerald-200" },
-          { label: "Distressed", value: stats.distressed, color: stats.distressed > 0 ? "text-red-600" : "text-emerald-600", bg: stats.distressed > 0 ? "bg-red-50" : "bg-emerald-50", border: stats.distressed > 0 ? "border-red-200" : "border-emerald-200" },
+          { label: "YP Checked", value: stats.uniqueYP, color: "text-[--cs-info]", bg: "bg-[--cs-info-bg]", border: "border-[--cs-info-soft]" },
+          { label: "Sleeping", value: stats.sleeping, color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", border: "border-[--cs-success-soft]" },
+          { label: "Concerns", value: stats.concerns, color: stats.concerns > 0 ? "text-[--cs-warning]" : "text-[--cs-success]", bg: stats.concerns > 0 ? "bg-[--cs-warning-bg]" : "bg-[--cs-success-bg]", border: stats.concerns > 0 ? "border-[--cs-warning-soft]" : "border-[--cs-success-soft]" },
+          { label: "Distressed", value: stats.distressed, color: stats.distressed > 0 ? "text-[--cs-risk]" : "text-[--cs-success]", bg: stats.distressed > 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]", border: stats.distressed > 0 ? "border-[--cs-risk-soft]" : "border-[--cs-success-soft]" },
         ].map((s) => (
           <div key={s.label} className={cn("rounded-lg border p-3 text-center", s.bg, s.border)}>
             <div className={cn("text-xl font-bold", s.color)}>{s.value}</div>
@@ -203,10 +203,10 @@ export default function NightChecksPage() {
         {ypSummary.map((yp) => {
           const lastSs = yp.lastCheck ? SLEEP_STATUS_CONFIG[yp.lastCheck.sleep_status] : null;
           return (
-            <div key={yp.id} className={cn("rounded-lg border p-3", yp.hasConcern ? "border-amber-200 bg-amber-50/30" : "border-slate-200 bg-white")}>
+            <div key={yp.id} className={cn("rounded-lg border p-3", yp.hasConcern ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "border-slate-200 bg-white")}>
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs font-semibold text-slate-900">{yp.name}</span>
-                {yp.hasConcern && <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[9px] px-1.5 py-0">Concern</Badge>}
+                {yp.hasConcern && <Badge className="bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft] text-[9px] px-1.5 py-0">Concern</Badge>}
               </div>
               <div className="text-[10px] text-slate-500">{yp.checkCount} check{yp.checkCount !== 1 ? "s" : ""} recorded</div>
               {yp.lastCheck && lastSs && (
@@ -215,7 +215,7 @@ export default function NightChecksPage() {
                   <span className="text-[10px] text-slate-600">Last: {yp.lastCheck.time} — {lastSs.label}</span>
                 </div>
               )}
-              {yp.checkCount === 0 && <div className="text-[10px] text-red-500 font-medium mt-1">No checks recorded yet</div>}
+              {yp.checkCount === 0 && <div className="text-[10px] text-[--cs-risk] font-medium mt-1">No checks recorded yet</div>}
             </div>
           );
         })}
