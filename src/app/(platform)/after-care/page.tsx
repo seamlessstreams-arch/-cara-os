@@ -45,15 +45,15 @@ const LR_LABEL: Record<AfterCareLeftReason, string> = { age_18: "Turned 18", mov
 const LR_CLR: Record<AfterCareLeftReason, string> = { age_18: "bg-blue-100 text-blue-800", moved_placement: "bg-purple-100 text-purple-800", reunification: "bg-green-100 text-green-800", semi_independent: "bg-teal-100 text-teal-800", adoption: "bg-indigo-100 text-indigo-800", other: "bg-gray-100 text-gray-800" };
 
 const AS_LABEL: Record<AfterCareAccomStatus, string> = { stable: "Stable", at_risk: "At Risk", homeless: "Homeless", sofa_surfing: "Sofa Surfing", supported_housing: "Supported Housing" };
-const AS_CLR: Record<AfterCareAccomStatus, string> = { stable: "bg-green-100 text-green-800", at_risk: "bg-amber-100 text-amber-800", homeless: "bg-red-100 text-red-800", sofa_surfing: "bg-orange-100 text-orange-800", supported_housing: "bg-blue-100 text-blue-800" };
+const AS_CLR: Record<AfterCareAccomStatus, string> = { stable: "bg-[--cs-success-bg] text-[--cs-success]", at_risk: "bg-[--cs-warning-bg] text-[--cs-warning]", homeless: "bg-[--cs-risk-bg] text-[--cs-risk]", sofa_surfing: "bg-orange-100 text-orange-800", supported_housing: "bg-[--cs-info-bg] text-[--cs-info]" };
 
 const EET_LABEL: Record<AfterCareEETStatus, string> = { education: "Education", employment: "Employment", training: "Training", neet: "NEET", unknown: "Unknown" };
 const EET_CLR: Record<AfterCareEETStatus, string> = { education: "bg-blue-100 text-blue-800", employment: "bg-green-100 text-green-800", training: "bg-teal-100 text-teal-800", neet: "bg-red-100 text-red-800", unknown: "bg-gray-100 text-gray-800" };
 
-const RAG_CLR: Record<AfterCareRAG, string> = { green: "border-green-400 bg-green-50", amber: "border-amber-400 bg-amber-50", red: "border-red-400 bg-red-50" };
-const RAG_BADGE: Record<AfterCareRAG, string> = { green: "bg-green-100 text-green-800", amber: "bg-amber-100 text-amber-800", red: "bg-red-100 text-red-800" };
+const RAG_CLR: Record<AfterCareRAG, string> = { green: "border-[--cs-success] bg-[--cs-success-bg]", amber: "border-[--cs-warning] bg-[--cs-warning-bg]", red: "border-[--cs-risk] bg-[--cs-risk-bg]" };
+const RAG_BADGE: Record<AfterCareRAG, string> = { green: "bg-[--cs-success-bg] text-[--cs-success]", amber: "bg-[--cs-warning-bg] text-[--cs-warning]", red: "bg-[--cs-risk-bg] text-[--cs-risk]" };
 
-const WB_CLR: Record<AfterCareWellbeing, string> = { good: "text-green-600", fair: "text-blue-600", poor: "text-amber-600", concern: "text-red-600" };
+const WB_CLR: Record<AfterCareWellbeing, string> = { good: "text-[--cs-success]", fair: "text-[--cs-info]", poor: "text-[--cs-warning]", concern: "text-[--cs-risk]" };
 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
@@ -196,7 +196,7 @@ export default function AfterCarePage() {
                   <div className="flex justify-between"><span className="text-muted-foreground">Accommodation</span><Badge className={cn("text-xs", AS_CLR[r.accommodation_status])}>{AS_LABEL[r.accommodation_status]}</Badge></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">EET</span><Badge className={cn("text-xs", EET_CLR[r.eet_status])}>{EET_LABEL[r.eet_status]}</Badge></div>
                   <div className="flex justify-between"><span className="text-muted-foreground">Last Contact</span><span>{daysSince} days ago</span></div>
-                  <div className="flex justify-between"><span className="text-muted-foreground">Next Due</span><span className={cn(r.next_contact_due < today && "text-red-600 font-medium")}>{r.next_contact_due}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Next Due</span><span className={cn(r.next_contact_due < today && "text-[--cs-risk] font-medium")}>{r.next_contact_due}</span></div>
                 </CardContent>
               </Card>
             );
@@ -205,10 +205,10 @@ export default function AfterCarePage() {
 
         {/* alert */}
         {contactOverdue > 0 && (
-          <div className="rounded-lg border border-red-300 bg-red-50 p-4 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
-            <div><p className="font-semibold text-red-900">{contactOverdue} overdue contact(s)</p>
-              <ul className="text-sm text-red-800 mt-1 list-disc list-inside">{records.filter(r => r.next_contact_due < today).map(r => <li key={r.id}>{getYPName(r.child_id)} — due {r.next_contact_due}</li>)}</ul>
+          <div className="rounded-lg border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] mt-0.5" />
+            <div><p className="font-semibold text-[--cs-risk]">{contactOverdue} overdue contact(s)</p>
+              <ul className="text-sm text-[--cs-risk] mt-1 list-disc list-inside">{records.filter(r => r.next_contact_due < today).map(r => <li key={r.id}>{getYPName(r.child_id)} — due {r.next_contact_due}</li>)}</ul>
             </div>
           </div>
         )}
@@ -268,7 +268,7 @@ export default function AfterCarePage() {
                           <tbody>{r.support_package.map((sp, i) => (
                             <tr key={i} className="border-t">
                               <td className="p-2">{sp.area}</td><td className="p-2">{sp.provider}</td><td className="p-2">{sp.frequency}</td>
-                              <td className="p-2"><Badge className={cn("text-xs", sp.status === "active" ? "bg-green-100 text-green-800" : sp.status === "pending" ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-800")}>{sp.status}</Badge></td>
+                              <td className="p-2"><Badge className={cn("text-xs", sp.status === "active" ? "bg-[--cs-success-bg] text-[--cs-success]" : sp.status === "pending" ? "bg-[--cs-warning-bg] text-[--cs-warning]" : "bg-gray-100 text-gray-800")}>{sp.status}</Badge></td>
                             </tr>
                           ))}</tbody>
                         </table>
@@ -299,14 +299,14 @@ export default function AfterCarePage() {
                     {/* concerns / positives */}
                     <div className="grid md:grid-cols-2 gap-4">
                       {r.current_concerns.length > 0 && (
-                        <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-                          <p className="text-xs font-semibold text-red-800 mb-1">Current Concerns</p>
-                          <ul className="text-sm text-red-900 list-disc list-inside space-y-0.5">{r.current_concerns.map((c, i) => <li key={i}>{c}</li>)}</ul>
+                        <div className="rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
+                          <p className="text-xs font-semibold text-[--cs-risk] mb-1">Current Concerns</p>
+                          <ul className="text-sm text-[--cs-risk] list-disc list-inside space-y-0.5">{r.current_concerns.map((c, i) => <li key={i}>{c}</li>)}</ul>
                         </div>
                       )}
-                      <div className="rounded-lg bg-green-50 border border-green-200 p-3">
-                        <p className="text-xs font-semibold text-green-800 mb-1">Positives</p>
-                        <ul className="text-sm text-green-900 list-disc list-inside space-y-0.5">{r.positives.map((p, i) => <li key={i}>{p}</li>)}</ul>
+                      <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-3">
+                        <p className="text-xs font-semibold text-[--cs-success] mb-1">Positives</p>
+                        <ul className="text-sm text-[--cs-success] list-disc list-inside space-y-0.5">{r.positives.map((p, i) => <li key={i}>{p}</li>)}</ul>
                       </div>
                     </div>
 
@@ -318,7 +318,7 @@ export default function AfterCarePage() {
                       <span>Emergency Contact: <strong>{r.emergency_contact}</strong></span>
                     </div>
 
-                    <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />Next contact due: <strong className={cn(r.next_contact_due < today && "text-red-600")}>{r.next_contact_due}</strong></p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" />Next contact due: <strong className={cn(r.next_contact_due < today && "text-[--cs-risk]")}>{r.next_contact_due}</strong></p>
 
                     {r.notes && <p className="text-xs text-muted-foreground italic">{r.notes}</p>}
 
