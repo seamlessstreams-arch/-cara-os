@@ -48,10 +48,10 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 // ── Config ────────────────────────────────────────────────────────────────────
 
 const INTENSITY_CONFIG: Record<BehaviourIntensity, { label: string; colour: string }> = {
-  low:      { label: "Low",      colour: "bg-green-100 text-green-700" },
-  moderate: { label: "Moderate", colour: "bg-amber-100 text-amber-700" },
+  low:      { label: "Low",      colour: "bg-[--cs-success-bg] text-[--cs-success]" },
+  moderate: { label: "Moderate", colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   high:     { label: "High",     colour: "bg-orange-100 text-orange-700" },
-  critical: { label: "Critical", colour: "bg-red-100 text-red-700" },
+  critical: { label: "Critical", colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -225,11 +225,11 @@ export default function BehaviourLogPage() {
     >      <CaraPanel mode="assist" pageContext="Behaviour Log — ABC observations, antecedent-behaviour-consequence, intensity tracking, positive behaviour support" recordType="behaviour_log" userRole="registered_manager" className="mb-2" />      {/* ── Stats ────────────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
-          { label: "Total Entries", value: stats.total, icon: Activity, c: "text-blue-600" },
-          { label: "Positive",      value: stats.positive, icon: Smile, c: "text-green-600" },
-          { label: "Concerns",      value: stats.concerns, icon: Frown, c: "text-amber-600" },
-          { label: "Pos:Con Ratio", value: `${stats.ratio}:1`, icon: TrendingUp, c: "text-purple-600" },
-          { label: "High/Critical", value: stats.highCritical, icon: Zap, c: "text-red-600" },
+          { label: "Total Entries", value: stats.total, icon: Activity, c: "text-[--cs-info]" },
+          { label: "Positive",      value: stats.positive, icon: Smile, c: "text-[--cs-success]" },
+          { label: "Concerns",      value: stats.concerns, icon: Frown, c: "text-[--cs-warning]" },
+          { label: "Pos:Con Ratio", value: `${stats.ratio}:1`, icon: TrendingUp, c: "text-[--cs-oversight]" },
+          { label: "High/Critical", value: stats.highCritical, icon: Zap, c: "text-[--cs-risk]" },
         ].map(s => (
           <div key={s.label} className="rounded-lg border bg-card p-3 flex items-center gap-3">
             <s.icon className={cn("h-5 w-5", s.c)} />
@@ -253,8 +253,8 @@ export default function BehaviourLogPage() {
                 <Badge variant="outline" className="text-xs">{ratio}:1</Badge>
               </div>
               <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Smile className="h-3 w-3 text-green-600" />{r.positive} positive</span>
-                <span className="flex items-center gap-1"><Frown className="h-3 w-3 text-amber-600" />{r.concerns} concern{r.concerns !== 1 ? "s" : ""}</span>
+                <span className="flex items-center gap-1"><Smile className="h-3 w-3 text-[--cs-success]" />{r.positive} positive</span>
+                <span className="flex items-center gap-1"><Frown className="h-3 w-3 text-[--cs-warning]" />{r.concerns} concern{r.concerns !== 1 ? "s" : ""}</span>
               </div>
             </div>
           );
@@ -339,14 +339,14 @@ export default function BehaviourLogPage() {
 
           return (
             <div key={entry.id} className={cn("rounded-lg border bg-card overflow-hidden",
-              isPositive ? "border-l-4 border-l-green-400" : "border-l-4 border-l-amber-400"
+              isPositive ? "border-l-4 border-l-[--cs-success]" : "border-l-4 border-l-[--cs-warning]"
             )}>
               <button
                 onClick={() => setExpandedId(isOpen ? null : entry.id)}
                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/50 transition-colors"
               >
                 <div className={cn("rounded-full p-1.5 shrink-0",
-                  isPositive ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                  isPositive ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]"
                 )}>
                   {isPositive ? <Smile className="h-4 w-4" /> : <Frown className="h-4 w-4" />}
                 </div>
@@ -354,7 +354,7 @@ export default function BehaviourLogPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm">{entry.title}</span>
                     <Badge variant="outline" className={cn("text-xs",
-                      isPositive ? "bg-green-50 text-green-700" : "bg-amber-50 text-amber-700"
+                      isPositive ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]"
                     )}>
                       {isPositive ? "Positive" : "Concern"}
                     </Badge>
@@ -373,7 +373,7 @@ export default function BehaviourLogPage() {
                     <Link
                       href={`/care-events/${(entry as never as { care_event_id: string }).care_event_id}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                      className="inline-flex items-center gap-1 rounded-full bg-[--cs-info-bg] border border-[--cs-info-soft] px-2.5 py-1 text-[10px] font-medium text-[--cs-info] hover:bg-[--cs-info-soft] transition-colors"
                     >
                       <Zap className="h-3 w-3" />
                       Logged from Care Event
