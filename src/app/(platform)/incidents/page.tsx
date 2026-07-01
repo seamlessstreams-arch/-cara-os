@@ -48,16 +48,16 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 const SEV_CONFIG = {
   critical: {
-    color: "text-red-700", bg: "bg-red-50", border: "border-l-red-600",
-    badge: "bg-red-100 text-red-800", dot: "bg-red-500",
+    color: "text-[--cs-risk]", bg: "bg-[--cs-risk-bg]", border: "border-l-[--cs-risk]",
+    badge: "bg-[--cs-risk-bg] text-[--cs-risk]", dot: "bg-[--cs-risk]",
   },
   high: {
     color: "text-orange-700", bg: "bg-orange-50", border: "border-l-orange-500",
     badge: "bg-orange-100 text-orange-800", dot: "bg-orange-500",
   },
   medium: {
-    color: "text-amber-700", bg: "bg-amber-50", border: "border-l-amber-400",
-    badge: "bg-amber-100 text-amber-800", dot: "bg-amber-400",
+    color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]", border: "border-l-[--cs-warning]",
+    badge: "bg-[--cs-warning-bg] text-[--cs-warning]", dot: "bg-[--cs-warning]",
   },
   low: {
     color: "text-[var(--cs-text-secondary)]", bg: "bg-slate-50", border: "border-l-slate-300",
@@ -66,9 +66,9 @@ const SEV_CONFIG = {
 } as const;
 
 const STATUS_CONFIG = {
-  open: { badge: "bg-red-100 text-red-700", label: "Open" },
-  under_review: { badge: "bg-amber-100 text-amber-700", label: "Under Review" },
-  closed: { badge: "bg-emerald-100 text-emerald-700", label: "Closed" },
+  open: { badge: "bg-[--cs-risk-bg] text-[--cs-risk]", label: "Open" },
+  under_review: { badge: "bg-[--cs-warning-bg] text-[--cs-warning]", label: "Under Review" },
+  closed: { badge: "bg-[--cs-success-bg] text-[--cs-success]", label: "Closed" },
 } as const;
 
 const TABS = [
@@ -222,7 +222,7 @@ function IncidentCard({
                   className={cn(
                     "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium",
                     n.acknowledged
-                      ? "bg-emerald-50 text-emerald-700"
+                      ? "bg-[--cs-success-bg] text-[--cs-success]"
                       : "bg-slate-100 text-[var(--cs-text-secondary)]"
                   )}
                 >
@@ -250,7 +250,7 @@ function IncidentCard({
                 <a
                   href="/learning/training-needs"
                   onClick={(e) => e.stopPropagation()}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] px-2.5 py-1 text-xs font-medium text-[--cs-success] hover:bg-[--cs-success-soft] transition-colors"
                 >
                   <LinkIcon className="h-3.5 w-3.5" />
                   Training need created
@@ -287,8 +287,8 @@ function IncidentCard({
               <span className={cn(
                 "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium",
                 inc.body_map_completed
-                  ? "bg-emerald-50 text-emerald-700"
-                  : "bg-red-50 text-red-700"
+                  ? "bg-[--cs-success-bg] text-[--cs-success]"
+                  : "bg-[--cs-risk-bg] text-[--cs-risk]"
               )}>
                 Body map {inc.body_map_completed ? "done" : "required"}
               </span>
@@ -402,13 +402,13 @@ function AllIncidentsTab() {
     <div className="space-y-5">
       {/* Critical alert */}
       {stats.critical > 0 && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="rounded-2xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
           <div>
-            <div className="text-sm font-semibold text-red-800">
+            <div className="text-sm font-semibold text-[--cs-risk]">
               {stats.critical} critical incident{stats.critical > 1 ? "s" : ""} — immediate manager oversight required
             </div>
-            <div className="text-xs text-red-600 mt-0.5">
+            <div className="text-xs text-[--cs-risk] mt-0.5">
               Review and record oversight before end of shift. Ensure all statutory notifications have been made.
             </div>
           </div>
@@ -419,9 +419,9 @@ function AllIncidentsTab() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
           { label: "Total", value: stats.total, color: "text-[var(--cs-navy)]" },
-          { label: "Open", value: stats.open, color: "text-red-600" },
-          { label: "Needs Oversight", value: stats.awaitingOversight, color: "text-amber-600" },
-          { label: "Critical Open", value: stats.critical, color: "text-red-700" },
+          { label: "Open", value: stats.open, color: "text-[--cs-risk]" },
+          { label: "Needs Oversight", value: stats.awaitingOversight, color: "text-[--cs-warning]" },
+          { label: "Critical Open", value: stats.critical, color: "text-[--cs-risk]" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl border bg-white p-4 text-center">
             <div className={cn("text-2xl font-bold", s.color)}>{s.value}</div>
@@ -528,7 +528,7 @@ function AllIncidentsTab() {
       <div className="space-y-3">
         {filtered.length === 0 ? (
           <div className="rounded-2xl border bg-white p-12 text-center">
-            <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-3" />
+            <CheckCircle2 className="h-8 w-8 text-[--cs-success] mx-auto mb-3" />
             <div className="text-sm font-semibold text-[var(--cs-navy)]">No incidents match your filters</div>
             <div className="text-xs text-[var(--cs-text-muted)] mt-1">Try adjusting your filters to see more records</div>
           </div>
@@ -557,7 +557,7 @@ function AllIncidentsTab() {
             <div className="sticky top-0 z-10 bg-white border-b px-6 py-4 flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-amber-600" />
+                  <Shield className="h-4 w-4 text-[--cs-warning]" />
                   <span className="text-sm font-bold text-[var(--cs-navy)]">Add Management Oversight</span>
                 </div>
                 <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">{oversightTarget.reference}</div>
@@ -599,7 +599,7 @@ function AllIncidentsTab() {
               {/* Oversight textarea */}
               <div>
                 <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-2">
-                  Oversight note <span className="text-red-500">*</span>
+                  Oversight note <span className="text-[--cs-risk]">*</span>
                 </label>
                 <textarea
                   value={oversightNote}
@@ -660,8 +660,8 @@ function OversightQueueTab() {
   if (queue.length === 0) {
     return (
       <div className="rounded-2xl border bg-white p-16 text-center">
-        <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-          <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+        <div className="h-14 w-14 rounded-full bg-[--cs-success-bg] flex items-center justify-center mx-auto mb-4">
+          <CheckCircle2 className="h-7 w-7 text-[--cs-success]" />
         </div>
         <div className="text-base font-bold text-[var(--cs-navy)]">All incidents have manager oversight</div>
         <div className="text-sm text-[var(--cs-text-muted)] mt-1">
@@ -687,13 +687,13 @@ function OversightQueueTab() {
   return (
     <div className="space-y-4">
       {/* Queue banner */}
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-start gap-3">
-        <Eye className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+      <div className="rounded-2xl border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4 flex items-start gap-3">
+        <Eye className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
         <div>
-          <div className="text-sm font-semibold text-amber-800">
+          <div className="text-sm font-semibold text-[--cs-warning]">
             {queue.length} incident{queue.length !== 1 ? "s" : ""} awaiting management oversight
           </div>
-          <div className="text-xs text-amber-700 mt-0.5">
+          <div className="text-xs text-[--cs-warning] mt-0.5">
             Oversight must be recorded by the Registered Manager. Cara can help you draft your comments.
           </div>
         </div>
@@ -770,8 +770,8 @@ function OversightQueueTab() {
                           <span className="font-medium">{n.role}:</span> {n.name} — {n.method}
                         </span>
                         {n.acknowledged
-                          ? <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-                          : <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                          ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success] shrink-0" />
+                          : <Clock className="h-3.5 w-3.5 text-[--cs-warning] shrink-0" />
                         }
                       </div>
                     ))}
@@ -830,17 +830,17 @@ function OversightQueueTab() {
               </div>
 
               {/* Oversight form */}
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 space-y-3">
+              <div className="rounded-2xl border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Shield className="h-4 w-4 text-amber-600" />
-                  <span className="text-sm font-semibold text-amber-800">Record Management Oversight</span>
+                  <Shield className="h-4 w-4 text-[--cs-warning]" />
+                  <span className="text-sm font-semibold text-[--cs-warning]">Record Management Oversight</span>
                 </div>
                 <textarea
                   value={note}
                   onChange={(e) => setNotesById((prev) => ({ ...prev, [inc.id]: e.target.value }))}
                   rows={4}
                   placeholder="Record your oversight — considerations, actions agreed, lessons identified, follow-up required…"
-                  className="w-full rounded-xl border border-amber-200 bg-white px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-[--cs-warning-soft] bg-white px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-[var(--cs-text-muted)] leading-relaxed"
                 />
                 <Button
                   onClick={() => handleSubmit(inc)}
@@ -978,23 +978,23 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
 
   if (successResult) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-8 text-center space-y-4">
-        <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto">
-          <CheckCircle2 className="h-7 w-7 text-emerald-600" />
+      <div className="rounded-2xl border border-[--cs-success-soft] bg-[--cs-success-bg] p-8 text-center space-y-4">
+        <div className="h-14 w-14 rounded-full bg-[--cs-success-bg] flex items-center justify-center mx-auto">
+          <CheckCircle2 className="h-7 w-7 text-[--cs-success]" />
         </div>
         <div>
-          <div className="text-base font-bold text-emerald-800">{successResult.ref} — Incident logged</div>
-          <div className="text-sm text-emerald-700 mt-1">
+          <div className="text-base font-bold text-[--cs-success]">{successResult.ref} — Incident logged</div>
+          <div className="text-sm text-[--cs-success] mt-1">
             The incident has been created and is now in the oversight queue.
           </div>
         </div>
         {successResult.links.length > 0 && (
-          <div className="rounded-xl bg-white border border-emerald-200 p-4 text-left">
+          <div className="rounded-xl bg-white border border-[--cs-success-soft] p-4 text-left">
             <div className="text-xs font-semibold text-[var(--cs-text-secondary)] mb-2">Auto-created linked records:</div>
             <ul className="space-y-1">
               {successResult.links.map((l, i) => (
                 <li key={i} className="text-xs text-[var(--cs-text-secondary)] flex items-center gap-2">
-                  <CheckCircle2 className="h-3 w-3 text-emerald-500 shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 text-[--cs-success] shrink-0" />
                   {l}
                 </li>
               ))}
@@ -1019,7 +1019,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
 
         <div>
           <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">
-            Young Person <span className="text-red-500">*</span>
+            Young Person <span className="text-[--cs-risk]">*</span>
           </label>
           <select
             value={form.child_id}
@@ -1038,7 +1038,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">
-              Incident Type <span className="text-red-500">*</span>
+              Incident Type <span className="text-[--cs-risk]">*</span>
             </label>
             <select
               value={form.type}
@@ -1237,7 +1237,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
                   {n.name && `: ${n.name}`}
                   <span className="text-[var(--cs-text-muted)]"> — {n.method}</span>
                 </span>
-                <button onClick={() => removeNotif(i)} className="text-[var(--cs-text-gentle)] hover:text-red-500 transition-colors">
+                <button onClick={() => removeNotif(i)} className="text-[var(--cs-text-gentle)] hover:text-[--cs-risk] transition-colors">
                   <X className="h-3.5 w-3.5" />
                 </button>
               </div>
