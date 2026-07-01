@@ -165,9 +165,9 @@ function OverviewTab() {
           </div>
           <span className={cn(
             "text-xs font-semibold px-2 py-0.5 rounded-full",
-            DEMO_READINESS.grade === "Outstanding" ? "bg-emerald-100 text-emerald-700" :
-            DEMO_READINESS.grade === "Good" ? "bg-blue-100 text-blue-700" :
-            "bg-amber-100 text-amber-700"
+            DEMO_READINESS.grade === "Outstanding" ? "bg-[--cs-success-bg] text-[--cs-success]" :
+            DEMO_READINESS.grade === "Good" ? "bg-[--cs-info-bg] text-[--cs-info]" :
+            "bg-[--cs-warning-bg] text-[--cs-warning]"
           )}>
             {DEMO_READINESS.grade} — {DEMO_READINESS.overall}%
           </span>
@@ -195,10 +195,10 @@ function OverviewTab() {
 
 function TasksTab() {
   const PRIORITY_COLOURS: Record<string, string> = {
-    critical: "bg-red-100 text-red-700 border-red-200",
-    urgent: "bg-red-50 text-red-600 border-red-200",
+    critical: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
+    urgent: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
     high: "bg-orange-50 text-orange-600 border-orange-200",
-    medium: "bg-blue-50 text-blue-600 border-blue-200",
+    medium: "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]",
     low: "bg-slate-50 text-slate-600 border-slate-200",
   };
 
@@ -216,11 +216,11 @@ function TasksTab() {
       <div className="grid grid-cols-3 md:grid-cols-7 gap-2">
         {[
           { label: "Total", value: DEMO_TASK_STATS.total, colour: "text-[var(--cs-navy)]" },
-          { label: "Overdue", value: DEMO_TASK_STATS.overdue, colour: "text-red-600" },
-          { label: "Due Today", value: DEMO_TASK_STATS.due_today, colour: "text-amber-600" },
-          { label: "In Progress", value: DEMO_TASK_STATS.in_progress, colour: "text-blue-600" },
+          { label: "Overdue", value: DEMO_TASK_STATS.overdue, colour: "text-[--cs-risk]" },
+          { label: "Due Today", value: DEMO_TASK_STATS.due_today, colour: "text-[--cs-warning]" },
+          { label: "In Progress", value: DEMO_TASK_STATS.in_progress, colour: "text-[--cs-info]" },
           { label: "Sign Off", value: DEMO_TASK_STATS.awaiting_sign_off, colour: "text-purple-600" },
-          { label: "Done (7d)", value: DEMO_TASK_STATS.completed_this_week, colour: "text-emerald-600" },
+          { label: "Done (7d)", value: DEMO_TASK_STATS.completed_this_week, colour: "text-[--cs-success]" },
           { label: "Unassigned", value: DEMO_TASK_STATS.unassigned, colour: "text-orange-600" },
         ].map((s) => (
           <div key={s.label} className="text-center px-2 py-2 rounded-lg bg-white border border-[var(--cs-border)]">
@@ -256,7 +256,7 @@ function TasksTab() {
                       </span>
                     )}
                     {task.status === "overdue" && (
-                      <span className="flex items-center gap-0.5 text-[10px] text-red-600 font-semibold">
+                      <span className="flex items-center gap-0.5 text-[10px] text-[--cs-risk] font-semibold">
                         <AlertTriangle className="h-2.5 w-2.5" /> Overdue
                       </span>
                     )}
@@ -271,10 +271,10 @@ function TasksTab() {
                 <div className="flex flex-col items-center shrink-0">
                   <div className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold border-2",
-                    task.riskScore >= 70 ? "border-red-300 bg-red-50 text-red-700" :
+                    task.riskScore >= 70 ? "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]" :
                     task.riskScore >= 50 ? "border-orange-300 bg-orange-50 text-orange-700" :
-                    task.riskScore >= 25 ? "border-amber-300 bg-amber-50 text-amber-700" :
-                    "border-emerald-300 bg-emerald-50 text-emerald-700"
+                    task.riskScore >= 25 ? "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]" :
+                    "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]"
                   )}>
                     {task.riskScore}
                   </div>
@@ -353,8 +353,8 @@ function WorkflowsTab() {
                     <div
                       className={cn(
                         "h-full rounded-full transition-all",
-                        w.progress >= 100 ? "bg-emerald-500" :
-                        w.progress >= 50 ? "bg-purple-500" : "bg-amber-500"
+                        w.progress >= 100 ? "bg-[--cs-success]" :
+                        w.progress >= 50 ? "bg-purple-500" : "bg-[--cs-warning]"
                       )}
                       style={{ width: `${Math.min(w.progress, 100)}%` }}
                     />
@@ -474,11 +474,11 @@ function OversightTab() {
               </div>
               <div className="flex items-center gap-2">
                 {r.needing > 0 ? (
-                  <span className="flex items-center gap-1 text-xs text-red-600 font-semibold bg-red-50 px-2 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-xs text-[--cs-risk] font-semibold bg-[--cs-risk-bg] px-2 py-0.5 rounded-full">
                     <AlertTriangle className="h-3 w-3" /> {r.needing} needing
                   </span>
                 ) : (
-                  <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-xs text-[--cs-success] bg-[--cs-success-bg] px-2 py-0.5 rounded-full">
                     <CheckCircle2 className="h-3 w-3" /> All covered
                   </span>
                 )}
@@ -519,8 +519,8 @@ function ReadinessTab() {
                 <span className="text-xs font-medium text-[var(--cs-text-secondary)]">{m.label}</span>
                 <span className={cn(
                   "text-xs font-semibold",
-                  m.score >= 80 ? "text-emerald-600" :
-                  m.score >= 60 ? "text-amber-600" : "text-red-600"
+                  m.score >= 80 ? "text-[--cs-success]" :
+                  m.score >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
                 )}>
                   {m.score}%
                 </span>
@@ -554,8 +554,8 @@ function ReadinessTab() {
               <p className="text-xs font-semibold text-[var(--cs-navy)]">{f.framework}</p>
               <p className={cn(
                 "text-2xl font-bold mt-1",
-                f.coverage >= 80 ? "text-emerald-600" :
-                f.coverage >= 60 ? "text-amber-600" : "text-red-600"
+                f.coverage >= 80 ? "text-[--cs-success]" :
+                f.coverage >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]"
               )}>
                 {f.coverage}%
               </p>
@@ -683,17 +683,17 @@ const DEMO_RECOMMENDATIONS = [
 ];
 
 const SEVERITY_STYLES: Record<string, { bg: string; text: string; border: string; icon: string }> = {
-  critical: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", icon: "text-red-600" },
+  critical: { bg: "bg-[--cs-risk-bg]", text: "text-[--cs-risk]", border: "border-[--cs-risk-soft]", icon: "text-[--cs-risk]" },
   high: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200", icon: "text-orange-600" },
-  medium: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", icon: "text-amber-600" },
-  low: { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-200", icon: "text-blue-600" },
-  info: { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-200", icon: "text-emerald-600" },
+  medium: { bg: "bg-[--cs-warning-bg]", text: "text-[--cs-warning]", border: "border-[--cs-warning-soft]", icon: "text-[--cs-warning]" },
+  low: { bg: "bg-[--cs-info-bg]", text: "text-[--cs-info]", border: "border-[--cs-info-soft]", icon: "text-[--cs-info]" },
+  info: { bg: "bg-[--cs-success-bg]", text: "text-[--cs-success]", border: "border-[--cs-success-soft]", icon: "text-[--cs-success]" },
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  active: "bg-blue-100 text-blue-700",
-  acknowledged: "bg-amber-100 text-amber-700",
-  actioned: "bg-emerald-100 text-emerald-700",
+  active: "bg-[--cs-info-bg] text-[--cs-info]",
+  acknowledged: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  actioned: "bg-[--cs-success-bg] text-[--cs-success]",
   dismissed: "bg-gray-100 text-gray-500",
 };
 
@@ -814,12 +814,12 @@ const DEMO_AUDIT_ENTRIES = [
 ];
 
 const ACTION_STYLES: Record<string, string> = {
-  create: "bg-emerald-100 text-emerald-700",
-  update: "bg-blue-100 text-blue-700",
-  approve: "bg-green-100 text-green-700",
-  sign_off: "bg-green-100 text-green-700",
-  complete: "bg-emerald-100 text-emerald-700",
-  escalate: "bg-red-100 text-red-700",
+  create: "bg-[--cs-success-bg] text-[--cs-success]",
+  update: "bg-[--cs-info-bg] text-[--cs-info]",
+  approve: "bg-[--cs-success-bg] text-[--cs-success]",
+  sign_off: "bg-[--cs-success-bg] text-[--cs-success]",
+  complete: "bg-[--cs-success-bg] text-[--cs-success]",
+  escalate: "bg-[--cs-risk-bg] text-[--cs-risk]",
   oversight_added: "bg-purple-100 text-purple-700",
   workflow_advance: "bg-indigo-100 text-indigo-700",
 };
