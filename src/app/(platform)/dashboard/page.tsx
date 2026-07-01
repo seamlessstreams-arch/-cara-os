@@ -622,18 +622,18 @@ function AlertCommandStrip({ alerts }: { alerts: AlertItem[] }) {
     <div className={cn(
       "rounded-2xl border p-4 flex flex-wrap items-center gap-3",
       hasCritical
-        ? "bg-red-50 border-red-300"
-        : "bg-amber-50 border-amber-300"
+        ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]"
+        : "bg-[--cs-warning-bg] border-[--cs-warning-soft]"
     )}>
       <div className="flex items-center gap-2 shrink-0">
         {hasCritical ? (
-          <XCircle className="h-5 w-5 text-red-600 shrink-0" />
+          <XCircle className="h-5 w-5 text-[--cs-risk] shrink-0" />
         ) : (
-          <TriangleAlert className="h-5 w-5 text-amber-600 shrink-0" />
+          <TriangleAlert className="h-5 w-5 text-[--cs-warning] shrink-0" />
         )}
         <span className={cn(
           "text-sm font-bold",
-          hasCritical ? "text-red-800" : "text-amber-800"
+          hasCritical ? "text-[--cs-risk]" : "text-[--cs-warning]"
         )}>
           {hasCritical ? "Immediate action required" : "Attention needed"}
         </span>
@@ -670,9 +670,9 @@ function TaskRow({ task, onComplete }: { task: Task; onComplete?: (id: string) =
   const [completing, setCompleting] = useState(false);
 
   const prioColors: Record<string, string> = {
-    urgent: "bg-red-100 text-red-700",
+    urgent: "bg-[--cs-risk-bg] text-[--cs-risk]",
     high: "bg-orange-100 text-orange-700",
-    medium: "bg-blue-100 text-blue-700",
+    medium: "bg-[--cs-info-bg] text-[--cs-info]",
     low: "bg-slate-100 text-[var(--cs-text-secondary)]",
   };
 
@@ -713,7 +713,7 @@ function TaskRow({ task, onComplete }: { task: Task; onComplete?: (id: string) =
           {task.due_date && (
             <span className={cn(
               "text-[10px]",
-              overdue ? "text-red-600 font-semibold" :
+              overdue ? "text-[--cs-risk] font-semibold" :
               dueToday ? "text-orange-600 font-medium" :
               "text-[var(--cs-text-muted)]"
             )}>
@@ -739,8 +739,8 @@ function TaskRow({ task, onComplete }: { task: Task; onComplete?: (id: string) =
           className={cn(
             "shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-all",
             completing
-              ? "bg-emerald-100 text-emerald-600"
-              : "bg-slate-100 text-[var(--cs-text-muted)] hover:bg-emerald-100 hover:text-emerald-600 opacity-0 group-hover:opacity-100"
+              ? "bg-[--cs-success-bg] text-[--cs-success]"
+              : "bg-slate-100 text-[var(--cs-text-muted)] hover:bg-[--cs-success-bg] hover:text-[--cs-success] opacity-0 group-hover:opacity-100"
           )}
         >
           {completing ? <CheckCheck className="h-3.5 w-3.5" /> : <CheckCircle2 className="h-3.5 w-3.5" />}
@@ -765,9 +765,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const SEV_COLORS: Record<string, string> = {
-  critical: "bg-red-100 text-red-700 border-red-200",
+  critical: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
   high: "bg-orange-100 text-orange-700 border-orange-200",
-  medium: "bg-amber-100 text-amber-700 border-amber-200",
+  medium: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
   low: "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
 };
 
@@ -852,7 +852,7 @@ function ShiftRow({ shift }: { shift: Shift }) {
         {SHIFT_TYPE_LABELS[shift.shift_type] || shift.shift_type}
       </Badge>
       {isOnNow && (
-        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" title="On shift now" />
+        <span className="h-2 w-2 rounded-full bg-[--cs-success] animate-pulse shrink-0" title="On shift now" />
       )}
     </div>
   );
@@ -894,25 +894,25 @@ function ScoreGauge({ score, size = 80 }: { score: number; size?: number }) {
 }
 
 const RISK_LEVEL_CONFIG = {
-  low: { color: "bg-emerald-100 text-emerald-700 border-emerald-200", label: "Low Risk" },
-  medium: { color: "bg-amber-100 text-amber-700 border-amber-200", label: "Medium Risk" },
+  low: { color: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]", label: "Low Risk" },
+  medium: { color: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]", label: "Medium Risk" },
   high: { color: "bg-orange-100 text-orange-700 border-orange-200", label: "High Risk" },
-  critical: { color: "bg-red-100 text-red-700 border-red-200", label: "Critical" },
+  critical: { color: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]", label: "Critical" },
 };
 
 const PRIORITY_COLORS = {
-  critical: "text-red-600",
+  critical: "text-[--cs-risk]",
   high: "text-orange-500",
-  medium: "text-amber-500",
+  medium: "text-[--cs-warning]",
   low: "text-[var(--cs-text-muted)]",
 };
 
 function SubScoreBar({ label, value, icon: Icon }: { label: string; value: number; icon: React.ElementType }) {
   const color =
-    value >= 80 ? "bg-emerald-500" :
-    value >= 60 ? "bg-amber-500" :
+    value >= 80 ? "bg-[--cs-success]" :
+    value >= 60 ? "bg-[--cs-warning]" :
     value >= 40 ? "bg-orange-500" :
-    "bg-red-500";
+    "bg-[--cs-risk]";
 
   return (
     <div className="space-y-1">
@@ -1244,10 +1244,10 @@ export default function DashboardPage() {
     return (
       <PageShell title="Command Centre" showQuickCreate={false}>
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="rounded-2xl bg-red-50 border border-red-200 p-8 text-center max-w-md">
-            <XCircle className="h-10 w-10 text-red-400 mx-auto mb-3" />
-            <p className="text-base font-semibold text-red-800 mb-1">Dashboard failed to load</p>
-            <p className="text-sm text-red-600 mb-4">Unable to reach the API. Please try again.</p>
+          <div className="rounded-2xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-8 text-center max-w-md">
+            <XCircle className="h-10 w-10 text-[--cs-risk] mx-auto mb-3" />
+            <p className="text-base font-semibold text-[--cs-risk] mb-1">Dashboard failed to load</p>
+            <p className="text-sm text-[--cs-risk] mb-4">Unable to reach the API. Please try again.</p>
             <Button variant="outline" size="sm" onClick={() => dashboard.refetch()} className="gap-1.5">
               <RefreshCw className="h-3.5 w-3.5" /> Retry
             </Button>
@@ -1307,11 +1307,11 @@ export default function DashboardPage() {
 
           {/* Read-only access banner */}
           {config.showReadOnlyBanner && (
-            <div className="mt-3 flex items-center gap-3 rounded-2xl border border-blue-200 bg-blue-50 px-5 py-3">
-              <Eye className="h-5 w-5 text-blue-400 shrink-0" />
+            <div className="mt-3 flex items-center gap-3 rounded-2xl border border-[--cs-info-soft] bg-[--cs-info-bg] px-5 py-3">
+              <Eye className="h-5 w-5 text-[--cs-info] shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-blue-800">Read-only access</p>
-                <p className="text-xs text-blue-600 mt-0.5">You have view-only access to this dashboard. Contact a manager to make changes.</p>
+                <p className="text-sm font-semibold text-[--cs-info]">Read-only access</p>
+                <p className="text-xs text-[--cs-info] mt-0.5">You have view-only access to this dashboard. Contact a manager to make changes.</p>
               </div>
             </div>
           )}
@@ -1417,11 +1417,11 @@ export default function DashboardPage() {
             (d?.medication.missed_today ?? 0) === 0 &&
             (d?.tasks.overdue ?? 0) === 0 &&
             (d?.staffing.open_shifts ?? 0) === 0 && (
-            <div className="mt-3 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
-              <CheckCircle2 className="h-6 w-6 text-emerald-500 shrink-0" />
+            <div className="mt-3 flex items-center gap-3 rounded-2xl border border-[--cs-success-soft] bg-[--cs-success-bg] px-5 py-4">
+              <CheckCircle2 className="h-6 w-6 text-[--cs-success] shrink-0" />
               <div>
-                <p className="text-sm font-semibold text-emerald-800">All clear — no immediate attention items</p>
-                <p className="text-xs text-emerald-600 mt-0.5">Chamberlain House is running smoothly. Keep it up.</p>
+                <p className="text-sm font-semibold text-[--cs-success]">All clear — no immediate attention items</p>
+                <p className="text-xs text-[--cs-success] mt-0.5">Chamberlain House is running smoothly. Keep it up.</p>
               </div>
             </div>
           )}
@@ -1438,14 +1438,14 @@ export default function DashboardPage() {
           if (recentEvents.length === 0) return null;
           const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
             draft:          { label: "Draft",             color: "bg-slate-100 text-slate-600",   icon: <Circle className="w-3 h-3" /> },
-            submitted:      { label: "Submitted",         color: "bg-blue-50 text-blue-700",      icon: <Clock className="w-3 h-3" /> },
+            submitted:      { label: "Submitted",         color: "bg-[--cs-info-bg] text-[--cs-info]",      icon: <Clock className="w-3 h-3" /> },
             routing:        { label: "Routing…",          color: "bg-indigo-50 text-indigo-700",  icon: <Activity className="w-3 h-3 animate-pulse" /> },
-            routed:         { label: "Pending review",    color: "bg-amber-50 text-amber-700",    icon: <Clock className="w-3 h-3" /> },
+            routed:         { label: "Pending review",    color: "bg-[--cs-warning-bg] text-[--cs-warning]",    icon: <Clock className="w-3 h-3" /> },
             manager_review: { label: "Manager review",   color: "bg-orange-50 text-orange-700",  icon: <Eye className="w-3 h-3" /> },
-            returned:       { label: "Returned",          color: "bg-red-50 text-red-700",        icon: <AlertCircle className="w-3 h-3" /> },
-            verified:       { label: "Verified",          color: "bg-emerald-50 text-emerald-700",icon: <CheckCircle2 className="w-3 h-3" /> },
+            returned:       { label: "Returned",          color: "bg-[--cs-risk-bg] text-[--cs-risk]",        icon: <AlertCircle className="w-3 h-3" /> },
+            verified:       { label: "Verified",          color: "bg-[--cs-success-bg] text-[--cs-success]",icon: <CheckCircle2 className="w-3 h-3" /> },
             locked:         { label: "Locked",            color: "bg-slate-50 text-slate-600",    icon: <CheckCheck className="w-3 h-3" /> },
-            routing_failed: { label: "Routing failed",   color: "bg-red-50 text-red-700",        icon: <AlertTriangle className="w-3 h-3" /> },
+            routing_failed: { label: "Routing failed",   color: "bg-[--cs-risk-bg] text-[--cs-risk]",        icon: <AlertTriangle className="w-3 h-3" /> },
           };
           return (
             <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
@@ -1472,7 +1472,7 @@ export default function DashboardPage() {
                         <p className="text-xs text-slate-400 mt-0.5">
                           {enriched.staff_name ?? event.staff_id}{enriched.child_name ? ` · ${enriched.child_name}` : ""}
                           {event.routing_summary && event.routing_summary.records_updated > 0 && (
-                            <> · <span className="text-emerald-600">{event.routing_summary.records_updated} records updated</span></>
+                            <> · <span className="text-[--cs-success]">{event.routing_summary.records_updated} records updated</span></>
                           )}
                         </p>
                       </div>
@@ -1572,10 +1572,10 @@ export default function DashboardPage() {
                       <div className="py-6 text-center text-xs text-[var(--cs-text-muted)]">No shifts recorded today</div>
                     )}
                     {(d?.staffing.open_shifts ?? 0) > 0 && (
-                      <Link href="/rota" className="flex items-center gap-2 rounded-xl bg-amber-50 border border-amber-200 px-3 py-2.5 hover:bg-amber-100 transition-colors mt-1">
-                        <UserX className="h-4 w-4 text-amber-600 shrink-0" />
-                        <span className="text-xs font-medium text-amber-800">{d!.staffing.open_shifts} open shift{d!.staffing.open_shifts > 1 ? "s" : ""} — assign staff</span>
-                        <ChevronRight className="h-3.5 w-3.5 text-amber-500 ml-auto" />
+                      <Link href="/rota" className="flex items-center gap-2 rounded-xl bg-[--cs-warning-bg] border border-[--cs-warning-soft] px-3 py-2.5 hover:bg-[--cs-warning-soft] transition-colors mt-1">
+                        <UserX className="h-4 w-4 text-[--cs-warning] shrink-0" />
+                        <span className="text-xs font-medium text-[--cs-warning]">{d!.staffing.open_shifts} open shift{d!.staffing.open_shifts > 1 ? "s" : ""} — assign staff</span>
+                        <ChevronRight className="h-3.5 w-3.5 text-[--cs-warning] ml-auto" />
                       </Link>
                     )}
                     {(d?.staffing.on_leave ?? 0) > 0 && (
@@ -1619,8 +1619,8 @@ export default function DashboardPage() {
                       </div>
                     ) : (
                       <div className="py-8 text-center">
-                        <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-                        <p className="text-sm font-medium text-emerald-700">
+                        <CheckCircle2 className="h-8 w-8 text-[--cs-success] mx-auto mb-2" />
+                        <p className="text-sm font-medium text-[--cs-success]">
                           {config.personalTasksOnly ? "No outstanding tasks" : "All clear"}
                         </p>
                         <p className="text-xs text-[var(--cs-text-muted)] mt-0.5">
@@ -1630,7 +1630,7 @@ export default function DashboardPage() {
                     )}
                     {(d?.tasks.completed_today ?? 0) > 0 && (
                       <div className="mt-3 pt-2 border-t border-[var(--cs-border-subtle)] flex items-center gap-2 px-2">
-                        <CheckCheck className="h-3.5 w-3.5 text-emerald-500" />
+                        <CheckCheck className="h-3.5 w-3.5 text-[--cs-success]" />
                         <span className="text-[11px] text-[var(--cs-text-muted)]">{d!.tasks.completed_today} completed today</span>
                       </div>
                     )}
@@ -2114,8 +2114,8 @@ export default function DashboardPage() {
                         </div>
                       ) : (
                         <div className="py-8 text-center">
-                          <Shield className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
-                          <p className="text-sm font-medium text-emerald-700">All incidents overseen</p>
+                          <Shield className="h-8 w-8 text-[--cs-success] mx-auto mb-2" />
+                          <p className="text-sm font-medium text-[--cs-success]">All incidents overseen</p>
                         </div>
                       )}
                     </CardContent>
@@ -2140,24 +2140,24 @@ export default function DashboardPage() {
                         </CardHeader>
                         <CardContent className="pt-0">
                           <div className="grid grid-cols-3 gap-2 text-center">
-                            <div className="rounded-xl bg-red-50 p-2.5">
-                              <p className="text-xl font-bold text-red-600 tabular-nums">{d?.compliance.training_expired ?? 0}</p>
-                              <p className="text-[10px] text-red-500">Expired</p>
+                            <div className="rounded-xl bg-[--cs-risk-bg] p-2.5">
+                              <p className="text-xl font-bold text-[--cs-risk] tabular-nums">{d?.compliance.training_expired ?? 0}</p>
+                              <p className="text-[10px] text-[--cs-risk]">Expired</p>
                             </div>
-                            <div className="rounded-xl bg-amber-50 p-2.5">
-                              <p className="text-xl font-bold text-amber-600 tabular-nums">{d?.compliance.training_expiring ?? 0}</p>
-                              <p className="text-[10px] text-amber-500">Expiring</p>
+                            <div className="rounded-xl bg-[--cs-warning-bg] p-2.5">
+                              <p className="text-xl font-bold text-[--cs-warning] tabular-nums">{d?.compliance.training_expiring ?? 0}</p>
+                              <p className="text-[10px] text-[--cs-warning]">Expiring</p>
                             </div>
-                            <div className="rounded-xl bg-blue-50 p-2.5">
-                              <p className="text-xl font-bold text-blue-600 tabular-nums">{d?.compliance.cert_warnings ?? 0}</p>
-                              <p className="text-[10px] text-blue-500">Warnings</p>
+                            <div className="rounded-xl bg-[--cs-info-bg] p-2.5">
+                              <p className="text-xl font-bold text-[--cs-info] tabular-nums">{d?.compliance.cert_warnings ?? 0}</p>
+                              <p className="text-[10px] text-[--cs-info]">Warnings</p>
                             </div>
                           </div>
                           {(d?.compliance.cert_warnings_list?.length ?? 0) > 0 && (
                             <div className="mt-3 space-y-1">
                               {d!.compliance.cert_warnings_list.slice(0, 3).map((w, i) => (
                                 <div key={i} className="flex items-center gap-2 text-[10px] text-[var(--cs-text-secondary)]">
-                                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                                  <span className="h-1.5 w-1.5 rounded-full bg-[--cs-warning] shrink-0" />
                                   <span className="truncate">{w}</span>
                                 </div>
                               ))}
@@ -2187,7 +2187,7 @@ export default function DashboardPage() {
                                 <Icon className="h-3.5 w-3.5 text-[var(--cs-text-muted)]" />
                                 <span className="text-xs text-[var(--cs-text-secondary)]">{label}</span>
                               </div>
-                              <span className={cn("text-[10px] font-medium", overdue > 0 ? "text-red-600" : due > 0 ? "text-amber-600" : "text-emerald-600")}>
+                              <span className={cn("text-[10px] font-medium", overdue > 0 ? "text-[--cs-risk]" : due > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>
                                 {overdue > 0 ? `${overdue} overdue` : due > 0 ? `${due} due` : "All clear"}
                               </span>
                             </Link>
