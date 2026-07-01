@@ -124,10 +124,10 @@ export default function StaffPage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {[
               { label: "Active Staff", value: meta.total, icon: Users, color: "text-[var(--cs-navy)]", bg: "bg-slate-50" },
-              { label: "On Shift Today", value: meta.on_shift, icon: Clock, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "On Leave", value: meta.on_leave, icon: Calendar, color: "text-amber-600", bg: "bg-amber-50" },
+              { label: "On Shift Today", value: meta.on_shift, icon: Clock, color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]" },
+              { label: "On Leave", value: meta.on_leave, icon: Calendar, color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]" },
               { label: "Bank Staff", value: meta.bank, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-              { label: "Supervision Overdue", value: meta.supervision_overdue, icon: AlertTriangle, color: meta.supervision_overdue > 0 ? "text-red-600" : "text-emerald-600", bg: meta.supervision_overdue > 0 ? "bg-red-50" : "bg-emerald-50" },
+              { label: "Supervision Overdue", value: meta.supervision_overdue, icon: AlertTriangle, color: meta.supervision_overdue > 0 ? "text-[--cs-risk]" : "text-[--cs-success]", bg: meta.supervision_overdue > 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]" },
             ].map(({ label, value, icon: Icon, color, bg }) => (
               <div key={label} className="rounded-2xl border border-[var(--cs-border-subtle)] bg-white p-4 flex items-center gap-3">
                 <div className={cn("rounded-xl p-2", bg)}>
@@ -144,13 +144,13 @@ export default function StaffPage() {
 
         {/* Compliance alerts */}
         {complianceStats.withExpiredTraining > 0 && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-3">
-            <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
+          <div className="rounded-xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] px-4 py-3 flex items-center gap-3">
+            <AlertTriangle className="h-4 w-4 text-[--cs-risk] shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-semibold text-red-800">
+              <p className="text-sm font-semibold text-[--cs-risk]">
                 {complianceStats.withExpiredTraining} staff member{complianceStats.withExpiredTraining !== 1 ? "s have" : " has"} expired training
               </p>
-              <p className="text-xs text-red-600 mt-0.5">Expired mandatory training must be addressed to maintain Ofsted compliance (Reg 33)</p>
+              <p className="text-xs text-[--cs-risk] mt-0.5">Expired mandatory training must be addressed to maintain Ofsted compliance (Reg 33)</p>
             </div>
           </div>
         )}
@@ -188,7 +188,7 @@ export default function StaffPage() {
                 className={cn(
                   "rounded-full px-2.5 py-1 text-[10px] font-medium transition-colors",
                   statusFilter === key
-                    ? key === "training_expired" || key === "supervision_due" ? "bg-red-600 text-white" : "bg-slate-900 text-white"
+                    ? key === "training_expired" || key === "supervision_due" ? "bg-[--cs-risk] text-white" : "bg-slate-900 text-white"
                     : "bg-slate-100 text-[var(--cs-text-secondary)] hover:bg-slate-200",
                 )}
               >
@@ -228,7 +228,7 @@ export default function StaffPage() {
 
         {/* Error */}
         {isError && (
-          <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] px-4 py-3 text-sm text-[--cs-risk]">
             <AlertTriangle className="h-4 w-4 inline mr-2" />Failed to load staff. Please refresh.
           </div>
         )}
@@ -248,10 +248,10 @@ export default function StaffPage() {
                     <div className="relative">
                       <Avatar name={staff.full_name} size="lg" />
                       {staff.is_on_shift_today && staff.today_shift_status === "in_progress" && (
-                        <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-emerald-500 border-2 border-white" title="On shift" />
+                        <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-[--cs-success] border-2 border-white" title="On shift" />
                       )}
                       {staff.is_on_leave_today && (
-                        <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-amber-500 border-2 border-white" title="On leave" />
+                        <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-[--cs-warning] border-2 border-white" title="On leave" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -267,13 +267,13 @@ export default function StaffPage() {
                   {/* Stats row */}
                   <div className="mt-4 grid grid-cols-3 gap-2 text-center">
                     <div className="rounded-lg bg-slate-50 p-2">
-                      <div className={cn("text-lg font-bold", staff.overdue_tasks > 0 ? "text-red-600" : "text-[var(--cs-navy)]")}>
+                      <div className={cn("text-lg font-bold", staff.overdue_tasks > 0 ? "text-[--cs-risk]" : "text-[var(--cs-navy)]")}>
                         {staff.active_tasks}
                       </div>
                       <div className="text-[10px] text-[var(--cs-text-muted)]">Tasks</div>
                     </div>
                     <div className="rounded-lg bg-slate-50 p-2">
-                      <div className={cn("text-lg font-bold", staff.training_expired_count > 0 ? "text-red-600" : "text-emerald-600")}>
+                      <div className={cn("text-lg font-bold", staff.training_expired_count > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>
                         {staff.training_total_count - staff.training_expired_count}/{staff.training_total_count}
                       </div>
                       <div className="text-[10px] text-[var(--cs-text-muted)]">Training</div>
@@ -288,7 +288,7 @@ export default function StaffPage() {
                   <div className="mt-3 flex flex-wrap gap-1">
                     {staff.is_on_shift_today && (
                       <Badge variant="success" className="text-[9px] rounded-full gap-0.5">
-                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse-dot" />
+                        <div className="h-1.5 w-1.5 rounded-full bg-[--cs-success] animate-pulse-dot" />
                         {staff.today_shift_type === "day" ? "Day shift" : staff.today_shift_type === "sleep_in" ? "Sleep-in" : staff.today_shift_type ?? "On shift"}
                       </Badge>
                     )}
@@ -340,7 +340,7 @@ export default function StaffPage() {
               <div className="flex flex-wrap gap-2">
                 {selectedStaff.is_on_shift_today && (
                   <Badge variant="success" className="rounded-full gap-1.5">
-                    <div className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse-dot" />
+                    <div className="h-2 w-2 rounded-full bg-[--cs-success] animate-pulse-dot" />
                     {selectedStaff.today_shift_type === "day" ? "On day shift" : selectedStaff.today_shift_type === "sleep_in" ? "Sleep-in tonight" : "On shift"}
                   </Badge>
                 )}
@@ -351,16 +351,16 @@ export default function StaffPage() {
               {/* Quick stats */}
               <div className="grid grid-cols-3 gap-3">
                 <div className="rounded-xl bg-slate-50 p-3 text-center">
-                  <div className={cn("text-2xl font-bold", selectedStaff.overdue_tasks > 0 ? "text-red-600" : "text-[var(--cs-navy)]")}>{selectedStaff.active_tasks}</div>
+                  <div className={cn("text-2xl font-bold", selectedStaff.overdue_tasks > 0 ? "text-[--cs-risk]" : "text-[var(--cs-navy)]")}>{selectedStaff.active_tasks}</div>
                   <div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">Active Tasks</div>
-                  {selectedStaff.overdue_tasks > 0 && <div className="text-[9px] text-red-500 mt-0.5">{selectedStaff.overdue_tasks} overdue</div>}
+                  {selectedStaff.overdue_tasks > 0 && <div className="text-[9px] text-[--cs-risk] mt-0.5">{selectedStaff.overdue_tasks} overdue</div>}
                 </div>
                 <div className="rounded-xl bg-slate-50 p-3 text-center">
-                  <div className={cn("text-2xl font-bold", selectedStaff.training_expired_count > 0 ? "text-red-600" : "text-emerald-600")}>
+                  <div className={cn("text-2xl font-bold", selectedStaff.training_expired_count > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>
                     {selectedStaff.training_total_count - selectedStaff.training_expired_count}/{selectedStaff.training_total_count}
                   </div>
                   <div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">Training</div>
-                  {selectedStaff.training_expiring_count > 0 && <div className="text-[9px] text-amber-500 mt-0.5">{selectedStaff.training_expiring_count} expiring</div>}
+                  {selectedStaff.training_expiring_count > 0 && <div className="text-[9px] text-[--cs-warning] mt-0.5">{selectedStaff.training_expiring_count} expiring</div>}
                 </div>
                 <div className="rounded-xl bg-slate-50 p-3 text-center">
                   <div className="text-2xl font-bold text-[var(--cs-navy)]">{selectedStaff.contracted_hours}h</div>
@@ -377,7 +377,7 @@ export default function StaffPage() {
                   <div className="rounded-xl bg-slate-50 p-3"><div className="text-[10px] text-[var(--cs-text-muted)] mb-0.5">Contracted Hours</div><div className="text-sm font-medium">{selectedStaff.contracted_hours}h/week</div></div>
                   <div className="rounded-xl bg-slate-50 p-3"><div className="text-[10px] text-[var(--cs-text-muted)] mb-0.5">Payroll ID</div><div className="text-sm font-medium">{selectedStaff.payroll_id || "N/A"}</div></div>
                   <div className="rounded-xl bg-slate-50 p-3"><div className="text-[10px] text-[var(--cs-text-muted)] mb-0.5">DBS Number</div><div className="text-sm font-medium">{selectedStaff.dbs_number || "N/A"}</div></div>
-                  <div className="rounded-xl bg-slate-50 p-3"><div className="text-[10px] text-[var(--cs-text-muted)] mb-0.5">Next Supervision</div><div className={cn("text-sm font-medium", selectedStaff.supervision_overdue ? "text-red-600" : "text-[var(--cs-navy)]")}>{selectedStaff.next_supervision_due ? formatDate(selectedStaff.next_supervision_due) : "Not set"}</div></div>
+                  <div className="rounded-xl bg-slate-50 p-3"><div className="text-[10px] text-[var(--cs-text-muted)] mb-0.5">Next Supervision</div><div className={cn("text-sm font-medium", selectedStaff.supervision_overdue ? "text-[--cs-risk]" : "text-[var(--cs-navy)]")}>{selectedStaff.next_supervision_due ? formatDate(selectedStaff.next_supervision_due) : "Not set"}</div></div>
                 </div>
               </div>
 
@@ -388,17 +388,17 @@ export default function StaffPage() {
                   Training &amp; Compliance
                 </h3>
                 <div className="grid grid-cols-3 gap-2">
-                  <div className="rounded-xl bg-emerald-50 border border-emerald-100 p-3 text-center">
-                    <div className="text-xl font-bold text-emerald-700">{selectedStaff.training_total_count - selectedStaff.training_expired_count - selectedStaff.training_expiring_count}</div>
-                    <div className="text-[10px] text-emerald-600 mt-0.5">Compliant</div>
+                  <div className="rounded-xl bg-[--cs-success-bg] border border-[--cs-success-soft] p-3 text-center">
+                    <div className="text-xl font-bold text-[--cs-success]">{selectedStaff.training_total_count - selectedStaff.training_expired_count - selectedStaff.training_expiring_count}</div>
+                    <div className="text-[10px] text-[--cs-success] mt-0.5">Compliant</div>
                   </div>
-                  <div className="rounded-xl bg-amber-50 border border-amber-100 p-3 text-center">
-                    <div className="text-xl font-bold text-amber-700">{selectedStaff.training_expiring_count}</div>
-                    <div className="text-[10px] text-amber-600 mt-0.5">Expiring soon</div>
+                  <div className="rounded-xl bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3 text-center">
+                    <div className="text-xl font-bold text-[--cs-warning]">{selectedStaff.training_expiring_count}</div>
+                    <div className="text-[10px] text-[--cs-warning] mt-0.5">Expiring soon</div>
                   </div>
-                  <div className="rounded-xl bg-red-50 border border-red-100 p-3 text-center">
-                    <div className="text-xl font-bold text-red-700">{selectedStaff.training_expired_count}</div>
-                    <div className="text-[10px] text-red-600 mt-0.5">Expired</div>
+                  <div className="rounded-xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3 text-center">
+                    <div className="text-xl font-bold text-[--cs-risk]">{selectedStaff.training_expired_count}</div>
+                    <div className="text-[10px] text-[--cs-risk] mt-0.5">Expired</div>
                   </div>
                 </div>
                 <p className="text-xs text-[var(--cs-text-muted)] mt-2 text-center">Full training matrix available in the Training module</p>
