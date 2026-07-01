@@ -38,9 +38,9 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 const prepStatusColour: Record<LacPrepStatus, string> = {
   not_started: "bg-slate-100 text-[var(--cs-navy)]",
-  in_progress: "bg-amber-100 text-amber-800",
-  ready_for_review: "bg-blue-100 text-blue-800",
-  review_held: "bg-green-100 text-green-800",
+  in_progress: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  ready_for_review: "bg-[--cs-info-bg] text-[--cs-info]",
+  review_held: "bg-[--cs-success-bg] text-[--cs-success]",
   post_review_actions: "bg-purple-100 text-purple-800",
 };
 
@@ -111,11 +111,11 @@ export default function LacReviewPrepPage() {
           <p className="text-xs text-muted-foreground">Active Reviews</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-amber-600">{upcoming30}</p>
+          <p className="text-2xl font-bold text-[--cs-warning]">{upcoming30}</p>
           <p className="text-xs text-muted-foreground">Due Next 30 Days</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-blue-600">{reportsSubmitted}/{total}</p>
+          <p className="text-2xl font-bold text-[--cs-info]">{reportsSubmitted}/{total}</p>
           <p className="text-xs text-muted-foreground">Home Reports Submitted</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -169,7 +169,7 @@ export default function LacReviewPrepPage() {
                 onClick={() => setExpandedId(isExpanded ? null : prep.id)}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Calendar className="h-5 w-5 text-blue-600 shrink-0" />
+                  <Calendar className="h-5 w-5 text-[--cs-info] shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">{getYPName(prep.child_id)} &middot; {LAC_REVIEW_TYPE_LABEL[prep.review_type]}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -207,14 +207,14 @@ export default function LacReviewPrepPage() {
                   </div>
 
                   {/* wishes and feelings */}
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">
+                  <div className="bg-[--cs-info-bg] rounded-lg p-3">
+                    <p className="text-xs font-semibold text-[--cs-info] uppercase tracking-wide mb-1">
                       <Heart className="h-3 w-3 inline mr-1" />Wishes &amp; Feelings
                     </p>
                     <ul className="space-y-1">
                       {prep.child_wishes_and_feelings.map((w, i) => (
                         <li key={i} className="text-sm flex items-start gap-1">
-                          <span className="text-blue-600 mt-0.5">•</span>
+                          <span className="text-[--cs-info] mt-0.5">•</span>
                           <span>{w}</span>
                         </li>
                       ))}
@@ -223,23 +223,23 @@ export default function LacReviewPrepPage() {
 
                   {/* topics to raise/avoid */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-emerald-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Topics To Raise</p>
+                    <div className="bg-[--cs-success-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-success] uppercase tracking-wide mb-1">Topics To Raise</p>
                       <ul className="space-y-1">
                         {prep.child_topics_to_raise.map((t, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
-                            <span className="text-emerald-600 mt-0.5">•</span>
+                            <span className="text-[--cs-success] mt-0.5">•</span>
                             <span>{t}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
-                    <div className="bg-amber-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">Topics To Avoid</p>
+                    <div className="bg-[--cs-warning-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-warning] uppercase tracking-wide mb-1">Topics To Avoid</p>
                       <ul className="space-y-1">
                         {prep.child_topics_to_avoid.map((t, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
-                            <span className="text-amber-600 mt-0.5">•</span>
+                            <span className="text-[--cs-warning] mt-0.5">•</span>
                             <span>{t}</span>
                           </li>
                         ))}
@@ -257,9 +257,9 @@ export default function LacReviewPrepPage() {
                         <div key={i} className="bg-white rounded-lg p-2 border text-sm flex items-center justify-between">
                           <span>{r.agency}</span>
                           {r.received ? (
-                            <span className="text-xs text-green-600 flex items-center gap-1"><CheckCircle className="h-3 w-3" />{r.received_date}</span>
+                            <span className="text-xs text-[--cs-success] flex items-center gap-1"><CheckCircle className="h-3 w-3" />{r.received_date}</span>
                           ) : (
-                            <span className="text-xs text-amber-600 flex items-center gap-1"><Clock className="h-3 w-3" />Pending</span>
+                            <span className="text-xs text-[--cs-warning] flex items-center gap-1"><Clock className="h-3 w-3" />Pending</span>
                           )}
                         </div>
                       ))}
@@ -272,9 +272,9 @@ export default function LacReviewPrepPage() {
                     <ul className="space-y-1">
                       {prep.past_actions_to_review_progress.map((a, i) => (
                         <li key={i} className="text-sm flex items-start gap-1">
-                          {a.status.startsWith("Achieved") ? <CheckCircle className="h-3 w-3 text-green-500 mt-1 shrink-0" /> :
-                           a.status.startsWith("In progress") || a.status.startsWith("Progress") ? <Clock className="h-3 w-3 text-amber-500 mt-1 shrink-0" /> :
-                           <AlertTriangle className="h-3 w-3 text-red-500 mt-1 shrink-0" />}
+                          {a.status.startsWith("Achieved") ? <CheckCircle className="h-3 w-3 text-[--cs-success] mt-1 shrink-0" /> :
+                           a.status.startsWith("In progress") || a.status.startsWith("Progress") ? <Clock className="h-3 w-3 text-[--cs-warning] mt-1 shrink-0" /> :
+                           <AlertTriangle className="h-3 w-3 text-[--cs-risk] mt-1 shrink-0" />}
                           <span>{a.action} — <em>{a.status}</em></span>
                         </li>
                       ))}
@@ -292,9 +292,9 @@ export default function LacReviewPrepPage() {
                             {a.owner.startsWith("staff_") ? getStaffName(a.owner) : a.owner} &middot; {a.deadline}
                           </span>
                           <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium shrink-0",
-                            a.status === "done" ? "bg-green-100 text-green-800" :
-                            a.status === "in_progress" ? "bg-blue-100 text-blue-800" :
-                            "bg-amber-100 text-amber-800"
+                            a.status === "done" ? "bg-[--cs-success-bg] text-[--cs-success]" :
+                            a.status === "in_progress" ? "bg-[--cs-info-bg] text-[--cs-info]" :
+                            "bg-[--cs-warning-bg] text-[--cs-warning]"
                           )}>
                             {LAC_PREP_ACTION_STATUS_LABEL[a.status]}
                           </span>
@@ -307,28 +307,28 @@ export default function LacReviewPrepPage() {
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Document Currency</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                      <div className={cn("rounded-lg p-2 text-center text-sm", prep.risk_assessment_current ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800")}>
+                      <div className={cn("rounded-lg p-2 text-center text-sm", prep.risk_assessment_current ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-risk-bg] text-[--cs-risk]")}>
                         {prep.risk_assessment_current ? <CheckCircle className="h-4 w-4 inline mr-1" /> : <AlertTriangle className="h-4 w-4 inline mr-1" />}
                         Risk Assessment
                       </div>
-                      <div className={cn("rounded-lg p-2 text-center text-sm", prep.care_plan_current ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800")}>
+                      <div className={cn("rounded-lg p-2 text-center text-sm", prep.care_plan_current ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-risk-bg] text-[--cs-risk]")}>
                         {prep.care_plan_current ? <CheckCircle className="h-4 w-4 inline mr-1" /> : <AlertTriangle className="h-4 w-4 inline mr-1" />}
                         Care Plan
                       </div>
-                      <div className={cn("rounded-lg p-2 text-center text-sm", prep.education_report_obtained ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800")}>
+                      <div className={cn("rounded-lg p-2 text-center text-sm", prep.education_report_obtained ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]")}>
                         {prep.education_report_obtained ? <CheckCircle className="h-4 w-4 inline mr-1" /> : <Clock className="h-4 w-4 inline mr-1" />}
                         Education Report
                       </div>
-                      <div className={cn("rounded-lg p-2 text-center text-sm", prep.health_report_obtained ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800")}>
+                      <div className={cn("rounded-lg p-2 text-center text-sm", prep.health_report_obtained ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]")}>
                         {prep.health_report_obtained ? <CheckCircle className="h-4 w-4 inline mr-1" /> : <Clock className="h-4 w-4 inline mr-1" />}
                         Health Report
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-emerald-50 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Post-Review Support Plan</p>
-                    <p className="text-sm text-emerald-900">{prep.child_post_review_support_plan}</p>
+                  <div className="bg-[--cs-success-bg] rounded-lg p-3">
+                    <p className="text-xs font-semibold text-[--cs-success] uppercase tracking-wide mb-1">Post-Review Support Plan</p>
+                    <p className="text-sm text-[--cs-success]">{prep.child_post_review_support_plan}</p>
                   </div>
 
                   {prep.notes && (
