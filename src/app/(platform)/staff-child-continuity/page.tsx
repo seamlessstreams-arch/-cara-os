@@ -15,25 +15,25 @@ import { cn } from "@/lib/utils";
 import { useStaffChildContinuity } from "@/hooks/use-staff-child-continuity";
 
 const ALERT_STYLES: Record<string, string> = {
-  critical: "border-red-200 bg-red-50 text-red-800",
-  high: "border-red-200 bg-red-50 text-red-800",
-  medium: "border-amber-200 bg-amber-50 text-amber-800",
-  low: "border-blue-200 bg-blue-50 text-blue-800",
+  critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
+  high: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
+  medium: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]",
+  low: "border-[--cs-info-soft] bg-[--cs-info-bg] text-[--cs-info]",
 };
 const INSIGHT_STYLES: Record<string, string> = {
-  critical: "border-red-200 bg-red-50 text-red-800",
-  warning: "border-amber-200 bg-amber-50 text-amber-800",
-  positive: "border-green-200 bg-green-50 text-green-800",
+  critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
+  warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]",
+  positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]",
 };
 const BAND_STYLES: Record<string, { bg: string; text: string; ring: string; bar: string }> = {
-  strong: { bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200", bar: "bg-green-400" },
-  adequate: { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200", bar: "bg-blue-400" },
-  fragmented: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200", bar: "bg-amber-400" },
-  critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200", bar: "bg-red-400" },
+  strong: { bg: "bg-[--cs-success-bg]", text: "text-[--cs-success]", ring: "ring-[--cs-success-soft]", bar: "bg-[--cs-success]" },
+  adequate: { bg: "bg-[--cs-info-bg]", text: "text-[--cs-info]", ring: "ring-[--cs-info-soft]", bar: "bg-[--cs-info]" },
+  fragmented: { bg: "bg-[--cs-warning-bg]", text: "text-[--cs-warning]", ring: "ring-[--cs-warning-soft]", bar: "bg-[--cs-warning]" },
+  critical: { bg: "bg-[--cs-risk-bg]", text: "text-[--cs-risk]", ring: "ring-[--cs-risk-soft]", bar: "bg-[--cs-risk]" },
 };
 const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
-  urgent: { bg: "bg-red-100", text: "text-red-700" },
-  high: { bg: "bg-amber-100", text: "text-amber-700" },
+  urgent: { bg: "bg-[--cs-risk-bg]", text: "text-[--cs-risk]" },
+  high: { bg: "bg-[--cs-warning-bg]", text: "text-[--cs-warning]" },
   routine: { bg: "bg-gray-100", text: "text-gray-600" },
 };
 
@@ -119,7 +119,7 @@ export default function StaffChildContinuityPage() {
                         <CardTitle className="text-base flex items-center gap-2">
                           {c.child_name}
                           {(!c.key_worker_id || !c.key_worker_active) && (
-                            <Badge className="text-[10px] bg-red-50 text-red-700 border-red-200 flex items-center gap-0.5">
+                            <Badge className="text-[10px] bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft] flex items-center gap-0.5">
                               <UserX className="h-3 w-3" /> {c.key_worker_id ? "key worker inactive" : "no key worker"}
                             </Badge>
                           )}
@@ -143,7 +143,7 @@ export default function StaffChildContinuityPage() {
                     {(c.flags ?? []).length > 0 && (
                       <div className="flex flex-wrap gap-1.5">
                         {(c.flags ?? []).map((f, i) => (
-                          <Badge key={i} className="text-[10px] bg-amber-50 text-amber-700 border-amber-200">{f}</Badge>
+                          <Badge key={i} className="text-[10px] bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">{f}</Badge>
                         ))}
                       </div>
                     )}
@@ -185,7 +185,7 @@ function OverviewStat({
   tone?: "neutral" | "red" | "amber" | "green" | "gray";
 }) {
   const toneCls: Record<string, string> = {
-    neutral: "text-[var(--cs-navy)]", red: "text-red-600", amber: "text-amber-600", green: "text-green-600", gray: "text-gray-400",
+    neutral: "text-[var(--cs-navy)]", red: "text-[--cs-risk]", amber: "text-[--cs-warning]", green: "text-[--cs-success]", gray: "text-gray-400",
   };
   return (
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4">
