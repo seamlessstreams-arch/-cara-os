@@ -46,25 +46,25 @@ const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
 };
 
 const PRIORITY_COLOUR: Record<ObjectivePriority, string> = {
-  high: "bg-red-50 text-red-700 border-red-200",
-  medium: "bg-amber-50 text-amber-700 border-amber-200",
+  high: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
+  medium: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
   low: "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
 };
 
 const STATUS_COLOUR: Record<ObjectiveStatus, string> = {
-  planned: "bg-blue-50 text-blue-700 border-blue-200",
-  in_progress: "bg-amber-50 text-amber-700 border-amber-200",
-  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  overdue: "bg-red-50 text-red-700 border-red-200",
+  planned: "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]",
+  in_progress: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
+  completed: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
+  overdue: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
 };
 
 const STATUS_LABELS = OBJECTIVE_STATUS_LABEL;
 
 const STATUS_CARD_BORDER: Record<ObjectiveStatus, string> = {
-  planned: "border-l-blue-400",
-  in_progress: "border-l-amber-400",
-  completed: "border-l-emerald-400",
-  overdue: "border-l-red-400",
+  planned: "border-l-[--cs-info]",
+  in_progress: "border-l-[--cs-warning]",
+  completed: "border-l-[--cs-success]",
+  overdue: "border-l-[--cs-risk]",
 };
 
 const PRIORITY_ORDER: Record<ObjectivePriority, number> = { high: 0, medium: 1, low: 2 };
@@ -176,15 +176,15 @@ export default function HomeImprovementPlanPage() {
       <div id="print-area" className="space-y-6">
         {/* ── overdue alert ─────────────────────────────────────────── */}
         {overdueCount > 0 && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-3">
-            <div className="rounded-full bg-red-100 p-1.5">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
+          <div className="rounded-xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] px-4 py-3 flex items-center gap-3">
+            <div className="rounded-full bg-[--cs-risk-bg] p-1.5">
+              <AlertTriangle className="h-4 w-4 text-[--cs-risk]" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-red-800">
+              <p className="text-sm font-semibold text-[--cs-risk]">
                 {overdueCount} objective{overdueCount !== 1 ? "s" : ""} overdue
               </p>
-              <p className="text-xs text-red-600 mt-0.5">
+              <p className="text-xs text-[--cs-risk] mt-0.5">
                 Overdue objectives require immediate attention. Review and update target dates or escalate as needed.
               </p>
             </div>
@@ -203,9 +203,9 @@ export default function HomeImprovementPlanPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Total Objectives", value: total, icon: Target, colour: "text-indigo-600" },
-            { label: "Completed", value: completedCount, icon: CheckCircle2, colour: "text-emerald-600" },
-            { label: "In Progress", value: inProgressCount, icon: TrendingUp, colour: "text-amber-600" },
-            { label: "Overdue", value: overdueCount, icon: AlertTriangle, colour: overdueCount > 0 ? "text-red-600" : "text-emerald-600" },
+            { label: "Completed", value: completedCount, icon: CheckCircle2, colour: "text-[--cs-success]" },
+            { label: "In Progress", value: inProgressCount, icon: TrendingUp, colour: "text-[--cs-warning]" },
+            { label: "Overdue", value: overdueCount, icon: AlertTriangle, colour: overdueCount > 0 ? "text-[--cs-risk]" : "text-[--cs-success]" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">
               <s.icon className={cn("h-5 w-5", s.colour)} />
@@ -305,10 +305,10 @@ export default function HomeImprovementPlanPage() {
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Target className={cn(
                       "h-5 w-5 shrink-0",
-                      obj.status === "completed" ? "text-emerald-600"
-                        : obj.status === "overdue" ? "text-red-600"
-                        : obj.status === "in_progress" ? "text-amber-600"
-                        : "text-blue-600"
+                      obj.status === "completed" ? "text-[--cs-success]"
+                        : obj.status === "overdue" ? "text-[--cs-risk]"
+                        : obj.status === "in_progress" ? "text-[--cs-warning]"
+                        : "text-[--cs-info]"
                     )} />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -347,7 +347,7 @@ export default function HomeImprovementPlanPage() {
                       </div>
                     )}
                     {obj.status === "completed" && (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                     )}
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
@@ -384,7 +384,7 @@ export default function HomeImprovementPlanPage() {
                               className={cn(
                                 "h-full rounded-full transition-all",
                                 obj.progress === 100 ? "bg-emerald-500"
-                                  : obj.status === "overdue" ? "bg-red-500"
+                                  : obj.status === "overdue" ? "bg-[--cs-risk-bg]0"
                                   : obj.progress >= 50 ? "bg-amber-500"
                                   : "bg-blue-500"
                               )}
@@ -448,7 +448,7 @@ export default function HomeImprovementPlanPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Completed:</span>{" "}
-                        <span className={cn("font-medium", obj.completed_date ? "text-emerald-600" : "text-[var(--cs-text-muted)]")}>
+                        <span className={cn("font-medium", obj.completed_date ? "text-[--cs-success]" : "text-[var(--cs-text-muted)]")}>
                           {obj.completed_date ?? "Pending"}
                         </span>
                       </div>
