@@ -41,11 +41,11 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── local config (colours not serializable) ────────────────────────────── */
 
 const PRESENTED_CLR: Record<StatutoryVisitChildPresented, string> = {
-  settled: "bg-green-100 text-green-800",
-  engaged: "bg-emerald-100 text-emerald-800",
-  anxious: "bg-amber-100 text-amber-800",
+  settled: "bg-[--cs-success-bg] text-[--cs-success]",
+  engaged: "bg-[--cs-success-bg] text-[--cs-success]",
+  anxious: "bg-[--cs-warning-bg] text-[--cs-warning]",
   withdrawn: "bg-slate-100 text-[var(--cs-text-secondary)]",
-  distressed: "bg-red-100 text-red-800",
+  distressed: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const TYPE_CLR: Record<StatutoryVisitType, string> = {
@@ -205,13 +205,13 @@ export default function StatutoryVisitLogPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Visits This Month", value: visitsThisMonth, icon: Calendar, clr: "text-blue-600" },
-            { label: "Saw Child Alone", value: `${alonePct}%`, icon: UserCheck, clr: alonePct >= 80 ? "text-green-600" : "text-amber-600" },
-            { label: "Within Timeframe", value: `${onTimePct}%`, icon: CheckCircle2, clr: onTimePct >= 90 ? "text-green-600" : "text-amber-600" },
+            { label: "Saw Child Alone", value: `${alonePct}%`, icon: UserCheck, clr: alonePct >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]" },
+            { label: "Within Timeframe", value: `${onTimePct}%`, icon: CheckCircle2, clr: onTimePct >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]" },
             {
               label: "Next Visit Due",
               value: closestDue ? fmt(closestDue.due) : "—",
               icon: Clock,
-              clr: closestDue && closestDue.due < today ? "text-red-600" : "text-blue-600",
+              clr: closestDue && closestDue.due < today ? "text-[--cs-risk]" : "text-blue-600",
               sub: closestDue ? getYPName(closestDue.yp) : undefined,
             },
           ].map((s) => (
@@ -230,13 +230,13 @@ export default function StatutoryVisitLogPage() {
         {(overdueVisits.length > 0 || unfiledReports.length > 0 || declinedAlone.length > 0) && (
           <div className="space-y-2">
             {overdueVisits.length > 0 && (
-              <Card className="border-l-4 border-l-red-500 bg-red-50">
+              <Card className="border-l-4 border-l-[--cs-risk] bg-[--cs-risk-bg]">
                 <CardContent className="pt-3 pb-3">
-                  <p className="text-sm font-medium text-red-800 flex items-center gap-2">
+                  <p className="text-sm font-medium text-[--cs-risk] flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4" />
                     {overdueVisits.length} child{overdueVisits.length !== 1 ? "ren have" : " has"} an overdue statutory visit
                   </p>
-                  <ul className="text-xs text-red-700 mt-1.5 space-y-0.5">
+                  <ul className="text-xs text-[--cs-risk] mt-1.5 space-y-0.5">
                     {overdueVisits.map((o) => (
                       <li key={o.yp}>· {getYPName(o.yp)} — was due {fmt(o.due)}</li>
                     ))}
@@ -245,13 +245,13 @@ export default function StatutoryVisitLogPage() {
               </Card>
             )}
             {unfiledReports.length > 0 && (
-              <Card className="border-l-4 border-l-amber-400 bg-amber-50">
+              <Card className="border-l-4 border-l-[--cs-warning] bg-[--cs-warning-bg]">
                 <CardContent className="pt-3 pb-3">
-                  <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
+                  <p className="text-sm font-medium text-[--cs-warning] flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     {unfiledReports.length} visit report{unfiledReports.length !== 1 ? "s" : ""} not yet filed by social worker
                   </p>
-                  <ul className="text-xs text-amber-700 mt-1.5 space-y-0.5">
+                  <ul className="text-xs text-[--cs-warning] mt-1.5 space-y-0.5">
                     {unfiledReports.map((u) => (
                       <li key={u.id}>· {getYPName(u.child_id)} — visit {fmt(u.date)} ({u.social_worker})</li>
                     ))}
@@ -260,13 +260,13 @@ export default function StatutoryVisitLogPage() {
               </Card>
             )}
             {declinedAlone.length > 0 && (
-              <Card className="border-l-4 border-l-amber-400 bg-amber-50">
+              <Card className="border-l-4 border-l-[--cs-warning] bg-[--cs-warning-bg]">
                 <CardContent className="pt-3 pb-3">
-                  <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
+                  <p className="text-sm font-medium text-[--cs-warning] flex items-center gap-2">
                     <UserCheck className="h-4 w-4" />
                     {declinedAlone.length} visit{declinedAlone.length !== 1 ? "s" : ""} where SW did not see child alone
                   </p>
-                  <p className="text-xs text-amber-700 mt-1.5">
+                  <p className="text-xs text-[--cs-warning] mt-1.5">
                     Statutory expectation is that SW sees and speaks with the child alone unless the child refuses or it is contrary to their welfare.
                   </p>
                 </CardContent>
@@ -349,10 +349,10 @@ export default function StatutoryVisitLogPage() {
             const reportLate = !visit.report_filed_date;
 
             const borderClr = !visit.within_timeframe || reportLate
-              ? "border-l-red-500"
+              ? "border-l-[--cs-risk]"
               : !visit.saw_child_alone
-              ? "border-l-amber-400"
-              : "border-l-green-400";
+              ? "border-l-[--cs-warning]"
+              : "border-l-[--cs-success]";
 
             return (
               <Card key={visit.id} className={cn("border-l-4", borderClr)}>
@@ -370,28 +370,28 @@ export default function StatutoryVisitLogPage() {
                           Presented: {STATUTORY_VISIT_CHILD_PRESENTED_LABEL[visit.child_presented]}
                         </Badge>
                         {visit.saw_child_alone ? (
-                          <Badge variant="outline" className="bg-green-100 text-green-800">
+                          <Badge variant="outline" className="bg-[--cs-success-bg] text-[--cs-success]">
                             <UserCheck className="h-3 w-3 mr-0.5" /> Saw alone {visit.alone_time}m
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                          <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning]">
                             <AlertTriangle className="h-3 w-3 mr-0.5" /> Not seen alone
                           </Badge>
                         )}
                         {!visit.within_timeframe && (
-                          <Badge variant="outline" className="bg-red-100 text-red-800">
+                          <Badge variant="outline" className="bg-[--cs-risk-bg] text-[--cs-risk]">
                             Out of timeframe
                           </Badge>
                         )}
                         {reportLate && (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                          <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning]">
                             Report not filed
                           </Badge>
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         SW: {visit.social_worker} · {visit.local_authority} · {visit.duration_minutes} mins
-                        {" · "}Next due: <span className={cn(isOverdue && "text-red-600 font-medium")}>{fmt(visit.next_visit_due)}</span>
+                        {" · "}Next due: <span className={cn(isOverdue && "text-[--cs-risk] font-medium")}>{fmt(visit.next_visit_due)}</span>
                       </p>
                     </div>
                     {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
@@ -422,7 +422,7 @@ export default function StatutoryVisitLogPage() {
                           ))}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Bedroom seen: <span className={cn("font-medium", visit.bedrooms_seen ? "text-green-700" : "text-red-700")}>{visit.bedrooms_seen ? "Yes" : "No"}</span>
+                          Bedroom seen: <span className={cn("font-medium", visit.bedrooms_seen ? "text-[--cs-success]" : "text-[--cs-risk]")}>{visit.bedrooms_seen ? "Yes" : "No"}</span>
                         </p>
                       </div>
                       <div>
@@ -476,15 +476,15 @@ export default function StatutoryVisitLogPage() {
 
                     {/* Actions agreed */}
                     {visit.actions_agreed.length > 0 && (
-                      <div className="bg-emerald-50 rounded-lg p-3">
-                        <p className="font-medium text-emerald-800 mb-2 flex items-center gap-1">
+                      <div className="bg-[--cs-success-bg] rounded-lg p-3">
+                        <p className="font-medium text-[--cs-success] mb-2 flex items-center gap-1">
                           <ClipboardList className="h-3.5 w-3.5" /> Actions Agreed
                         </p>
                         <div className="space-y-2">
                           {visit.actions_agreed.map((a, i) => (
-                            <div key={i} className="text-xs bg-white rounded p-2 border border-emerald-100">
-                              <p className="text-emerald-900 font-medium">{a.action}</p>
-                              <p className="text-emerald-600 mt-1">
+                            <div key={i} className="text-xs bg-white rounded p-2 border border-[--cs-success-soft]">
+                              <p className="text-[--cs-success] font-medium">{a.action}</p>
+                              <p className="text-[--cs-success] mt-1">
                                 Owner: {a.owner.startsWith("staff_") ? getStaffName(a.owner) : a.owner}
                                 {" · "}Deadline: {fmt(a.deadline)}
                               </p>
@@ -498,15 +498,15 @@ export default function StatutoryVisitLogPage() {
                     <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-2 border-t flex-wrap">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
-                        Next visit due: <span className={cn(isOverdue && "text-red-600 font-medium")}>{fmt(visit.next_visit_due)}</span>
+                        Next visit due: <span className={cn(isOverdue && "text-[--cs-risk] font-medium")}>{fmt(visit.next_visit_due)}</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <FileText className="h-3.5 w-3.5" />
-                        Report filed: {visit.report_filed_date ? fmt(visit.report_filed_date) : <span className="text-amber-600 font-medium">Not yet filed</span>}
+                        Report filed: {visit.report_filed_date ? fmt(visit.report_filed_date) : <span className="text-[--cs-warning] font-medium">Not yet filed</span>}
                       </span>
                       <span className="flex items-center gap-1">
                         <Shield className="h-3.5 w-3.5" />
-                        Within timeframe: <span className={cn("font-medium", visit.within_timeframe ? "text-green-700" : "text-red-700")}>{visit.within_timeframe ? "Yes" : "No"}</span>
+                        Within timeframe: <span className={cn("font-medium", visit.within_timeframe ? "text-[--cs-success]" : "text-[--cs-risk]")}>{visit.within_timeframe ? "Yes" : "No"}</span>
                       </span>
                     </div>
 
