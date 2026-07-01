@@ -86,11 +86,11 @@ export default function EscalationTrackerPage() {
   const priorityBadge = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return <Badge className="bg-red-100 text-red-800">Urgent</Badge>;
+        return <Badge className="bg-[--cs-risk-bg] text-[--cs-risk]">Urgent</Badge>;
       case "high":
         return <Badge className="bg-orange-100 text-orange-800">High</Badge>;
       case "medium":
-        return <Badge className="bg-amber-100 text-amber-800">Medium</Badge>;
+        return <Badge className="bg-[--cs-warning-bg] text-[--cs-warning]">Medium</Badge>;
       default:
         return <Badge variant="outline">{priority}</Badge>;
     }
@@ -99,9 +99,9 @@ export default function EscalationTrackerPage() {
   const statusBadge = (status: string) => {
     switch (status) {
       case "resolved":
-        return <Badge className="bg-green-100 text-green-800">Resolved</Badge>;
+        return <Badge className="bg-[--cs-success-bg] text-[--cs-success]">Resolved</Badge>;
       case "open":
-        return <Badge className="bg-blue-100 text-blue-800">Open</Badge>;
+        return <Badge className="bg-[--cs-info-bg] text-[--cs-info]">Open</Badge>;
       case "monitoring":
         return <Badge className="bg-purple-100 text-purple-800">Monitoring</Badge>;
       default:
@@ -142,19 +142,19 @@ export default function EscalationTrackerPage() {
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-2xl font-bold text-blue-700">{stats.open}</p>
+            <p className="text-2xl font-bold text-[--cs-info]">{stats.open}</p>
             <p className="text-xs text-muted-foreground">Open / Monitoring</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-2xl font-bold text-green-700">{stats.resolved}</p>
+            <p className="text-2xl font-bold text-[--cs-success]">{stats.resolved}</p>
             <p className="text-xs text-muted-foreground">Resolved</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className={cn("text-2xl font-bold", stats.urgent > 0 ? "text-red-700" : "text-green-700")}>
+            <p className={cn("text-2xl font-bold", stats.urgent > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>
               {stats.urgent}
             </p>
             <p className="text-xs text-muted-foreground">Urgent Active</p>
@@ -164,12 +164,12 @@ export default function EscalationTrackerPage() {
 
       {/* ─── urgent alert ─── */}
       {stats.urgent > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-4 mb-6">
           <div className="flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-red-800">Urgent Escalation Active</p>
-              <p className="text-xs text-red-700 mt-1">
+              <p className="text-sm font-medium text-[--cs-risk]">Urgent Escalation Active</p>
+              <p className="text-xs text-[--cs-risk] mt-1">
                 {records
                   .filter((e) => e.priority === "urgent" && e.status !== "resolved")
                   .map((e) => e.title)
@@ -226,7 +226,7 @@ export default function EscalationTrackerPage() {
           return (
             <Card key={esc.id} className={cn(
               "overflow-hidden",
-              esc.priority === "urgent" && esc.status !== "resolved" && "border-red-200"
+              esc.priority === "urgent" && esc.status !== "resolved" && "border-[--cs-risk-soft]"
             )}>
               <CardHeader
                 className="cursor-pointer hover:bg-muted/40 transition-colors py-4"
@@ -236,13 +236,13 @@ export default function EscalationTrackerPage() {
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "p-2 rounded-full",
-                      esc.priority === "urgent" ? "bg-red-100" :
-                      esc.priority === "high" ? "bg-orange-100" : "bg-amber-100"
+                      esc.priority === "urgent" ? "bg-[--cs-risk-bg]" :
+                      esc.priority === "high" ? "bg-orange-100" : "bg-[--cs-warning-bg]"
                     )}>
                       <ArrowUp className={cn(
                         "h-5 w-5",
-                        esc.priority === "urgent" ? "text-red-600" :
-                        esc.priority === "high" ? "text-orange-600" : "text-amber-600"
+                        esc.priority === "urgent" ? "text-[--cs-risk]" :
+                        esc.priority === "high" ? "text-orange-600" : "text-[--cs-warning]"
                       )} />
                     </div>
                     <div>
@@ -274,29 +274,29 @@ export default function EscalationTrackerPage() {
                     <p className="text-sm text-muted-foreground">{esc.description}</p>
                   </div>
 
-                  <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-                    <p className="text-sm font-medium text-amber-800 mb-1">Why Escalated</p>
-                    <p className="text-sm text-amber-700">{esc.reason}</p>
+                  <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-md p-3">
+                    <p className="text-sm font-medium text-[--cs-warning] mb-1">Why Escalated</p>
+                    <p className="text-sm text-[--cs-warning]">{esc.reason}</p>
                   </div>
 
                   <div>
                     <p className="text-sm font-medium mb-1 flex items-center gap-1">
-                      <CheckCircle2 className="h-4 w-4 text-green-600" /> Action Taken
+                      <CheckCircle2 className="h-4 w-4 text-[--cs-success]" /> Action Taken
                     </p>
                     <p className="text-sm text-muted-foreground">{esc.action_taken}</p>
                   </div>
 
                   <div className={cn(
                     "rounded-md p-3 border",
-                    esc.status === "resolved" ? "bg-green-50 border-green-200" : "bg-blue-50 border-blue-200"
+                    esc.status === "resolved" ? "bg-[--cs-success-bg] border-[--cs-success-soft]" : "bg-[--cs-info-bg] border-[--cs-info-soft]"
                   )}>
                     <p className={cn(
                       "text-sm font-medium mb-1",
-                      esc.status === "resolved" ? "text-green-800" : "text-blue-800"
+                      esc.status === "resolved" ? "text-[--cs-success]" : "text-[--cs-info]"
                     )}>Outcome</p>
                     <p className={cn(
                       "text-sm",
-                      esc.status === "resolved" ? "text-green-700" : "text-blue-700"
+                      esc.status === "resolved" ? "text-[--cs-success]" : "text-[--cs-info]"
                     )}>{esc.outcome}</p>
                   </div>
 
