@@ -32,29 +32,29 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── UI metadata ──────────────────────────────────────────────────────── */
 
 const STATUS_CLR: Record<TrainingCourseStatus, string> = {
-  valid: "bg-green-100 text-green-800",
-  expiring_soon: "bg-amber-100 text-amber-800",
-  expired: "bg-red-100 text-red-800",
+  valid: "bg-[--cs-success-bg] text-[--cs-success]",
+  expiring_soon: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  expired: "bg-[--cs-risk-bg] text-[--cs-risk]",
   not_completed: "bg-slate-100 text-[var(--cs-text-secondary)]",
 };
 
 const STATUS_DOT: Record<TrainingCourseStatus, string> = {
-  valid: "bg-green-500",
-  expiring_soon: "bg-amber-500",
-  expired: "bg-red-500",
+  valid: "bg-[--cs-success]",
+  expiring_soon: "bg-[--cs-warning]",
+  expired: "bg-[--cs-risk]",
   not_completed: "bg-slate-400",
 };
 
 const COMPLIANCE_CLR: Record<TrainingOverallCompliance, string> = {
-  fully_compliant: "bg-green-100 text-green-800",
-  action_required: "bg-amber-100 text-amber-800",
-  non_compliant: "bg-red-100 text-red-800",
+  fully_compliant: "bg-[--cs-success-bg] text-[--cs-success]",
+  action_required: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  non_compliant: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const COMPLIANCE_BORDER: Record<TrainingOverallCompliance, string> = {
-  fully_compliant: "border-l-green-400",
-  action_required: "border-l-amber-400",
-  non_compliant: "border-l-red-500",
+  fully_compliant: "border-l-[--cs-success]",
+  action_required: "border-l-[--cs-warning]",
+  non_compliant: "border-l-[--cs-risk]",
 };
 
 const CATEGORY_CLR: Record<TrainingCourseCategory, string> = {
@@ -145,9 +145,9 @@ export default function MandatoryTrainingMatrixPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: "Team Compliance", value: `${stats.compliancePct}%`, icon: Shield, clr: "text-purple-600" },
-            { label: "Expiring (30 days)", value: stats.totalExpiring, icon: Clock, clr: "text-amber-600" },
-            { label: "Expired Courses", value: stats.totalExpired, icon: AlertTriangle, clr: "text-red-600" },
-            { label: "Fully Compliant Staff", value: `${stats.fullyCompliant}/${stats.totalStaff}`, icon: CheckCircle2, clr: "text-green-600" },
+            { label: "Expiring (30 days)", value: stats.totalExpiring, icon: Clock, clr: "text-[--cs-warning]" },
+            { label: "Expired Courses", value: stats.totalExpired, icon: AlertTriangle, clr: "text-[--cs-risk]" },
+            { label: "Fully Compliant Staff", value: `${stats.fullyCompliant}/${stats.totalStaff}`, icon: CheckCircle2, clr: "text-[--cs-success]" },
           ].map((s) => (
             <Card key={s.label}>
               <CardContent className="pt-4 pb-3 text-center">
@@ -161,13 +161,13 @@ export default function MandatoryTrainingMatrixPage() {
 
         {/* alerts */}
         {alerts.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
             <div className="text-sm flex-1">
-              <p className="font-semibold text-red-800 mb-1">
+              <p className="font-semibold text-[--cs-risk] mb-1">
                 {alerts.length} training {alerts.length === 1 ? "issue" : "issues"} requiring attention
               </p>
-              <ul className="space-y-1 text-red-700">
+              <ul className="space-y-1 text-[--cs-risk]">
                 {alerts.map((a, i) => (
                   <li key={i} className="text-xs flex items-start gap-2">
                     <span className={cn("h-1.5 w-1.5 rounded-full mt-1.5 shrink-0", STATUS_DOT[a.status])} />
@@ -242,9 +242,9 @@ export default function MandatoryTrainingMatrixPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="hidden md:flex items-center gap-2 text-xs">
-                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-green-500" />{r.valid_count}</span>
-                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-amber-500" />{r.expiring_count}</span>
-                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-red-500" />{r.expired_count}</span>
+                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[--cs-success]" />{r.valid_count}</span>
+                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[--cs-warning]" />{r.expiring_count}</span>
+                        <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[--cs-risk]" />{r.expired_count}</span>
                       </div>
                       {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </div>
@@ -259,17 +259,17 @@ export default function MandatoryTrainingMatrixPage() {
                         <p className="text-xs text-muted-foreground">Total Courses</p>
                         <p className="text-lg font-bold">{r.total_courses}</p>
                       </div>
-                      <div className="bg-green-50 rounded p-2 text-center">
-                        <p className="text-xs text-green-700">Valid</p>
-                        <p className="text-lg font-bold text-green-700">{r.valid_count}</p>
+                      <div className="bg-[--cs-success-bg] rounded p-2 text-center">
+                        <p className="text-xs text-[--cs-success]">Valid</p>
+                        <p className="text-lg font-bold text-[--cs-success]">{r.valid_count}</p>
                       </div>
-                      <div className="bg-amber-50 rounded p-2 text-center">
-                        <p className="text-xs text-amber-700">Expiring soon</p>
-                        <p className="text-lg font-bold text-amber-700">{r.expiring_count}</p>
+                      <div className="bg-[--cs-warning-bg] rounded p-2 text-center">
+                        <p className="text-xs text-[--cs-warning]">Expiring soon</p>
+                        <p className="text-lg font-bold text-[--cs-warning]">{r.expiring_count}</p>
                       </div>
-                      <div className="bg-red-50 rounded p-2 text-center">
-                        <p className="text-xs text-red-700">Expired</p>
-                        <p className="text-lg font-bold text-red-700">{r.expired_count}</p>
+                      <div className="bg-[--cs-risk-bg] rounded p-2 text-center">
+                        <p className="text-xs text-[--cs-risk]">Expired</p>
+                        <p className="text-lg font-bold text-[--cs-risk]">{r.expired_count}</p>
                       </div>
                     </div>
 
@@ -303,8 +303,8 @@ export default function MandatoryTrainingMatrixPage() {
                                 <span className="text-muted-foreground">No expiry</span>
                               ) : (
                                 <span className={cn(
-                                  t.status === "expired" && "text-red-600 font-medium",
-                                  t.status === "expiring_soon" && "text-amber-700 font-medium",
+                                  t.status === "expired" && "text-[--cs-risk] font-medium",
+                                  t.status === "expiring_soon" && "text-[--cs-warning] font-medium",
                                 )}>
                                   {t.expiry_date}
                                 </span>
@@ -315,7 +315,7 @@ export default function MandatoryTrainingMatrixPage() {
                                 {TRAINING_COURSE_STATUS_LABEL[t.status]}
                               </Badge>
                               {t.certificate_on_file ? (
-                                <FileCheck className="h-3.5 w-3.5 text-green-600" aria-label="Certificate on file" />
+                                <FileCheck className="h-3.5 w-3.5 text-[--cs-success]" aria-label="Certificate on file" />
                               ) : (
                                 <FileCheck className="h-3.5 w-3.5 text-[var(--cs-text-gentle)]" aria-label="No certificate" />
                               )}
