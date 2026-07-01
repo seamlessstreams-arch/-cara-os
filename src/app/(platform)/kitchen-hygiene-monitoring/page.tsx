@@ -33,16 +33,16 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const verdictColour: Record<HygieneVerdict, string> = {
-  pass: "bg-green-100 text-green-800",
-  pass_with_minor_actions: "bg-amber-100 text-amber-800",
-  fail: "bg-red-100 text-red-800",
+  pass: "bg-[--cs-success-bg] text-[--cs-success]",
+  pass_with_minor_actions: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  fail: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const cleanColour: Record<FridgeOrganisation, string> = {
-  excellent: "bg-emerald-100 text-emerald-800",
-  good: "bg-blue-100 text-blue-800",
-  adequate: "bg-amber-100 text-amber-800",
-  needs_attention: "bg-red-100 text-red-800",
+  excellent: "bg-[--cs-success-bg] text-[--cs-success]",
+  good: "bg-[--cs-info-bg] text-[--cs-info]",
+  adequate: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  needs_attention: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 export default function KitchenHygieneMonitoringPage() {
@@ -109,15 +109,15 @@ export default function KitchenHygieneMonitoringPage() {
           <p className="text-xs text-muted-foreground">Recent Checks</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-green-600">{total > 0 ? Math.round((passed / total) * 100) : 0}%</p>
+          <p className="text-2xl font-bold text-[--cs-success]">{total > 0 ? Math.round((passed / total) * 100) : 0}%</p>
           <p className="text-xs text-muted-foreground">Full Pass Rate</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className={cn("text-2xl font-bold", tempIssues > 0 ? "text-amber-600" : "text-green-600")}>{tempIssues}</p>
+          <p className={cn("text-2xl font-bold", tempIssues > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{tempIssues}</p>
           <p className="text-xs text-muted-foreground">Temp Deviations</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className={cn("text-2xl font-bold", expiredFound > 0 ? "text-amber-600" : "text-green-600")}>{expiredFound}</p>
+          <p className={cn("text-2xl font-bold", expiredFound > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{expiredFound}</p>
           <p className="text-xs text-muted-foreground">Expired Items Caught</p>
         </div>
       </div>
@@ -195,11 +195,11 @@ export default function KitchenHygieneMonitoringPage() {
               {isExpanded && (
                 <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <div className={cn("rounded-lg p-2 text-center text-sm", c.fridge_within_range ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800")}>
+                    <div className={cn("rounded-lg p-2 text-center text-sm", c.fridge_within_range ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]")}>
                       <Thermometer className="h-3 w-3 inline mr-1" />Fridge {c.fridge_temperature}°C
                       <p className="text-xs">(2-8°C target)</p>
                     </div>
-                    <div className={cn("rounded-lg p-2 text-center text-sm", c.freezer_within_range ? "bg-green-50 text-green-800" : "bg-amber-50 text-amber-800")}>
+                    <div className={cn("rounded-lg p-2 text-center text-sm", c.freezer_within_range ? "bg-[--cs-success-bg] text-[--cs-success]" : "bg-[--cs-warning-bg] text-[--cs-warning]")}>
                       <Thermometer className="h-3 w-3 inline mr-1" />Freezer {c.freezer_temperature}°C
                       <p className="text-xs">(-18°C+)</p>
                     </div>
@@ -220,7 +220,7 @@ export default function KitchenHygieneMonitoringPage() {
                         {c.cooking_temps_recorded.map((t, i) => (
                           <div key={i} className="bg-white rounded-lg p-2 border text-sm flex items-center justify-between">
                             <span>{t.meal}</span>
-                            <span className={cn("text-sm font-medium", t.pass ? "text-green-600" : "text-red-600")}>
+                            <span className={cn("text-sm font-medium", t.pass ? "text-[--cs-success]" : "text-[--cs-risk]")}>
                               {t.temp_reading}°C (min {t.min_required}°C)
                             </span>
                           </div>
@@ -236,7 +236,7 @@ export default function KitchenHygieneMonitoringPage() {
                         {c.hot_holding_temps.map((h, i) => (
                           <div key={i} className="bg-white rounded-lg p-2 border text-sm flex items-center justify-between">
                             <span>{h.item}</span>
-                            <span className={cn("text-sm font-medium", h.pass ? "text-green-600" : "text-red-600")}>
+                            <span className={cn("text-sm font-medium", h.pass ? "text-[--cs-success]" : "text-[--cs-risk]")}>
                               {h.temp}°C
                             </span>
                           </div>
@@ -248,26 +248,26 @@ export default function KitchenHygieneMonitoringPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-white rounded-lg p-3 border space-y-1 text-sm">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">General Hygiene</p>
-                      <p className="flex items-center gap-1">{c.surfaces_cleaned ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Surfaces cleaned</p>
-                      <p className="flex items-center gap-1">{c.cleaning_products_correct ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Correct products used</p>
-                      <p className="flex items-center gap-1">{c.handwashing_observed ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Handwashing observed</p>
-                      <p className="flex items-center gap-1">{c.cutting_board_segregation ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Board segregation</p>
-                      <p className="flex items-center gap-1">{c.allergen_labelling ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Allergen labelling</p>
-                      <p className="flex items-center gap-1">{c.fridge_rotation ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-amber-500" />} Stock rotation</p>
-                      <p className="flex items-center gap-1">{!c.pests_observed ? <CheckCircle className="h-3 w-3 text-green-500" /> : <AlertTriangle className="h-3 w-3 text-red-500" />} No pests</p>
+                      <p className="flex items-center gap-1">{c.surfaces_cleaned ? <CheckCircle className="h-3 w-3 text-[--cs-success]" /> : <AlertTriangle className="h-3 w-3 text-[--cs-warning]" />} Surfaces cleaned</p>
+                      <p className="flex items-center gap-1">{c.cleaning_products_correct ? <CheckCircle className="h-3 w-3 text-[--cs-success]" /> : <AlertTriangle className="h-3 w-3 text-[--cs-warning]" />} Correct products used</p>
+                      <p className="flex items-center gap-1">{c.handwashing_observed ? <CheckCircle className="h-3 w-3 text-[--cs-success]" /> : <AlertTriangle className="h-3 w-3 text-[--cs-warning]" />} Handwashing observed</p>
+                      <p className="flex items-center gap-1">{c.cutting_board_segregation ? <CheckCircle className="h-3 w-3 text-[--cs-success]" /> : <AlertTriangle className="h-3 w-3 text-[--cs-warning]" />} Board segregation</p>
+                      <p className="flex items-center gap-1">{c.allergen_labelling ? <CheckCircle className="h-3 w-3 text-[--cs-success]" /> : <AlertTriangle className="h-3 w-3 text-[--cs-warning]" />} Allergen labelling</p>
+                      <p className="flex items-center gap-1">{c.fridge_rotation ? <CheckCircle className="h-3 w-3 text-[--cs-success]" /> : <AlertTriangle className="h-3 w-3 text-[--cs-warning]" />} Stock rotation</p>
+                      <p className="flex items-center gap-1">{!c.pests_observed ? <CheckCircle className="h-3 w-3 text-[--cs-success]" /> : <AlertTriangle className="h-3 w-3 text-[--cs-risk]" />} No pests</p>
                     </div>
                     <div className="bg-white rounded-lg p-3 border space-y-1 text-sm">
                       <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Children Cooking</p>
                       <p>{c.children_preparing_food_supervision || "No children preparing food this check"}</p>
                       {c.cooking_activity_safety_briefing_done && (
-                        <p className="text-xs text-green-700 flex items-center gap-1"><CheckCircle className="h-3 w-3" />Safety briefing done</p>
+                        <p className="text-xs text-[--cs-success] flex items-center gap-1"><CheckCircle className="h-3 w-3" />Safety briefing done</p>
                       )}
                     </div>
                   </div>
 
                   {c.expired_items_found.length > 0 && (
-                    <div className="bg-amber-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
+                    <div className="bg-[--cs-warning-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-warning] uppercase tracking-wide mb-1">
                         <AlertTriangle className="h-3 w-3 inline mr-1" />Expired Items Caught &amp; Disposed
                       </p>
                       <ul className="space-y-1">
@@ -281,12 +281,12 @@ export default function KitchenHygieneMonitoringPage() {
                   )}
 
                   {(c.immediate_actions?.length ?? 0) > 0 && (
-                    <div className="bg-blue-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Immediate Actions</p>
+                    <div className="bg-[--cs-info-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-info] uppercase tracking-wide mb-1">Immediate Actions</p>
                       <ul className="space-y-1">
                         {(c.immediate_actions ?? []).map((a, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
-                            <CheckCircle className="h-3 w-3 text-blue-500 mt-1 shrink-0" />
+                            <CheckCircle className="h-3 w-3 text-[--cs-info] mt-1 shrink-0" />
                             <span>{a}</span>
                           </li>
                         ))}
@@ -300,7 +300,7 @@ export default function KitchenHygieneMonitoringPage() {
                       <ul className="space-y-1">
                         {(c.follow_up_actions ?? []).map((a, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
-                            <Clock className="h-3 w-3 text-amber-500 mt-1 shrink-0" />
+                            <Clock className="h-3 w-3 text-[--cs-warning] mt-1 shrink-0" />
                             <span>{a}</span>
                           </li>
                         ))}
