@@ -77,9 +77,9 @@ const PATTERN_CONFIG: Record<
 };
 
 const RISK_BADGE: Record<string, string> = {
-  high:   "bg-red-100 text-red-800 border-red-200",
-  medium: "bg-amber-100 text-amber-800 border-amber-200",
-  low:    "bg-blue-100 text-blue-800 border-blue-200",
+  high:   "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
+  medium: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
+  low:    "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]",
 };
 
 function patternCfg(type: string) {
@@ -108,7 +108,7 @@ function InsightCard({ insight }: { insight: PatternInsightItem }) {
         </div>
         <div className="flex items-center gap-2">
           {insight.planReviewNeeded && (
-            <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 bg-amber-50">
+            <Badge variant="outline" className="text-xs border-[--cs-warning-soft] text-[--cs-warning] bg-[--cs-warning-bg]">
               Plan review
             </Badge>
           )}
@@ -177,7 +177,7 @@ function ChildPatternCard({ child }: { child: ChildPatternSummary }) {
     <div
       className={cn(
         "rounded-xl border bg-white shadow-sm overflow-hidden",
-        hasHighRisk ? "border-red-200" : "border-slate-200",
+        hasHighRisk ? "border-[--cs-risk-soft]" : "border-slate-200",
       )}
     >
       <button
@@ -187,7 +187,7 @@ function ChildPatternCard({ child }: { child: ChildPatternSummary }) {
       >
         <div className="flex items-center gap-3">
           <HeartHandshake
-            className={cn("h-5 w-5 shrink-0", hasHighRisk ? "text-red-500" : "text-slate-400")}
+            className={cn("h-5 w-5 shrink-0", hasHighRisk ? "text-[--cs-risk]" : "text-slate-400")}
           />
           <div>
             <p className="font-semibold text-slate-900 text-sm">{child.childName}</p>
@@ -199,13 +199,13 @@ function ChildPatternCard({ child }: { child: ChildPatternSummary }) {
         </div>
         <div className="flex items-center gap-2">
           {child.planReviewNeeded && (
-            <Badge variant="outline" className="text-xs border-amber-300 text-amber-700 bg-amber-50">
+            <Badge variant="outline" className="text-xs border-[--cs-warning-soft] text-[--cs-warning] bg-[--cs-warning-bg]">
               <ClipboardCheck className="h-3 w-3 mr-1" />
               Plan review
             </Badge>
           )}
           {child.highRiskCount > 0 && (
-            <Badge className="text-xs bg-red-100 text-red-800 border border-red-200 hover:bg-red-100">
+            <Badge className="text-xs bg-[--cs-risk-bg] text-[--cs-risk] border border-[--cs-risk-soft] hover:bg-[--cs-risk-bg]">
               {child.highRiskCount} high risk
             </Badge>
           )}
@@ -248,7 +248,7 @@ function PatternStrip({
       <div className="flex items-center gap-2 text-xs text-slate-500">
         <span>{count} signal{count !== 1 ? "s" : ""}</span>
         {highRiskCount > 0 && (
-          <Badge className="text-xs bg-red-100 text-red-800 border border-red-200 hover:bg-red-100">
+          <Badge className="text-xs bg-[--cs-risk-bg] text-[--cs-risk] border border-[--cs-risk-soft] hover:bg-[--cs-risk-bg]">
             {highRiskCount} high risk
           </Badge>
         )}
@@ -277,9 +277,9 @@ export default function ManagerPracticePatternsDashboard() {
       )}
 
       {isError && (
-        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
-          <AlertTriangle className="h-6 w-6 text-red-500 mx-auto mb-2" />
-          <p className="text-sm text-red-700 font-medium">Could not load pattern data</p>
+        <div className="rounded-xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-6 text-center">
+          <AlertTriangle className="h-6 w-6 text-[--cs-risk] mx-auto mb-2" />
+          <p className="text-sm text-[--cs-risk] font-medium">Could not load pattern data</p>
           <Button variant="outline" size="sm" className="mt-3" onClick={() => refetch()}>
             Retry
           </Button>
@@ -295,8 +295,8 @@ export default function ManagerPracticePatternsDashboard() {
               { label: "Records analysed", value: result.summary.totalRecordsAnalysed, icon: BookOpen, color: "text-slate-600" },
               { label: "Pattern signals", value: result.summary.totalInsights, icon: Brain, color: "text-violet-600" },
               { label: "Children flagged", value: result.summary.childrenWithPatterns, icon: HeartHandshake, color: "text-orange-600" },
-              { label: "Plan reviews needed", value: result.summary.planReviewsNeeded, icon: ClipboardCheck, color: "text-amber-600" },
-              { label: "High risk signals", value: result.summary.highRiskInsights, icon: AlertTriangle, color: "text-red-600" },
+              { label: "Plan reviews needed", value: result.summary.planReviewsNeeded, icon: ClipboardCheck, color: "text-[--cs-warning]" },
+              { label: "High risk signals", value: result.summary.highRiskInsights, icon: AlertTriangle, color: "text-[--cs-risk]" },
             ].map(({ label, value, icon: Icon, color }) => (
               <div
                 key={label}
