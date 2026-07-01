@@ -44,16 +44,16 @@ const AUDIT_TYPE_CLR: Record<MedAuditType, string> = {
 };
 
 const RESULT_CLR: Record<MedAuditResult, string> = {
-  satisfactory: "bg-green-100 text-green-800",
-  discrepancy_found: "bg-red-100 text-red-800",
-  action_required: "bg-amber-100 text-amber-800",
+  satisfactory: "bg-[--cs-success-bg] text-[--cs-success]",
+  discrepancy_found: "bg-[--cs-risk-bg] text-[--cs-risk]",
+  action_required: "bg-[--cs-warning-bg] text-[--cs-warning]",
   completed: "bg-slate-100 text-[var(--cs-navy)]",
 };
 
 const BORDER_RES: Record<MedAuditResult, string> = {
-  satisfactory: "border-l-green-400",
-  discrepancy_found: "border-l-red-600",
-  action_required: "border-l-amber-400",
+  satisfactory: "border-l-[--cs-success]",
+  discrepancy_found: "border-l-[--cs-risk]",
+  action_required: "border-l-[--cs-warning]",
   completed: "border-l-slate-400",
 };
 
@@ -210,16 +210,16 @@ export default function MedicationAuditPage() {
         </div>
 
         {discrepancies > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="text-sm"><p className="font-semibold text-red-800">{discrepancies} medication discrepancy(ies) found</p><p className="text-red-700">All discrepancies must be investigated, documented, and reported. Controlled drug discrepancies require notification to the Registered Manager immediately.</p></div>
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
+            <div className="text-sm"><p className="font-semibold text-[--cs-risk]">{discrepancies} medication discrepancy(ies) found</p><p className="text-[--cs-risk]">All discrepancies must be investigated, documented, and reported. Controlled drug discrepancies require notification to the Registered Manager immediately.</p></div>
           </div>
         )}
 
         {expiringMeds > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-sm"><p className="font-semibold text-amber-800">{expiringMeds} medication(s) expiring within 30 days</p><p className="text-amber-700">Request repeat prescriptions and arrange return of near-expiry stock to pharmacy.</p></div>
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <Clock className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
+            <div className="text-sm"><p className="font-semibold text-[--cs-warning]">{expiringMeds} medication(s) expiring within 30 days</p><p className="text-[--cs-warning]">Request repeat prescriptions and arrange return of near-expiry stock to pharmacy.</p></div>
           </div>
         )}
 
@@ -258,21 +258,21 @@ export default function MedicationAuditPage() {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Expected</p><p className="text-lg font-bold">{r.expected_count ?? "—"}</p></div>
                         <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Actual</p><p className="text-lg font-bold">{r.actual_count ?? "—"}</p></div>
-                        <div className={cn("rounded p-2 text-center", r.discrepancy !== 0 ? "bg-red-50" : "bg-green-50")}><p className="font-medium text-xs">Discrepancy</p><p className="text-lg font-bold">{r.discrepancy}</p></div>
+                        <div className={cn("rounded p-2 text-center", r.discrepancy !== 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]")}><p className="font-medium text-xs">Discrepancy</p><p className="text-lg font-bold">{r.discrepancy}</p></div>
                         <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Batch</p><p className="text-xs font-mono">{r.batch_number}</p></div>
                       </div>
                     )}
 
                     <div className="grid grid-cols-3 gap-2">
-                      <div className={cn("rounded p-2 text-center text-xs", r.storage_correct ? "bg-green-50" : "bg-red-50")}><p className="font-medium">Storage</p><p>{r.storage_correct ? "✓ Correct" : "✗ Issue"}</p></div>
-                      <div className={cn("rounded p-2 text-center text-xs", r.temperature_ok ? "bg-green-50" : "bg-red-50")}><p className="font-medium">Temperature</p><p>{r.temperature_ok ? "✓ OK" : "✗ Issue"}</p></div>
-                      <div className={cn("rounded p-2 text-center text-xs", r.labelling_correct ? "bg-green-50" : "bg-red-50")}><p className="font-medium">Labelling</p><p>{r.labelling_correct ? "✓ Correct" : "✗ Issue"}</p></div>
+                      <div className={cn("rounded p-2 text-center text-xs", r.storage_correct ? "bg-[--cs-success-bg]" : "bg-[--cs-risk-bg]")}><p className="font-medium">Storage</p><p>{r.storage_correct ? "✓ Correct" : "✗ Issue"}</p></div>
+                      <div className={cn("rounded p-2 text-center text-xs", r.temperature_ok ? "bg-[--cs-success-bg]" : "bg-[--cs-risk-bg]")}><p className="font-medium">Temperature</p><p>{r.temperature_ok ? "✓ OK" : "✗ Issue"}</p></div>
+                      <div className={cn("rounded p-2 text-center text-xs", r.labelling_correct ? "bg-[--cs-success-bg]" : "bg-[--cs-risk-bg]")}><p className="font-medium">Labelling</p><p>{r.labelling_correct ? "✓ Correct" : "✗ Issue"}</p></div>
                     </div>
 
                     {r.expiry_date && (
-                      <div className={cn("rounded-lg p-2 text-xs", r.expiry_date <= d(30) ? "bg-amber-50" : "bg-muted/40")}>
+                      <div className={cn("rounded-lg p-2 text-xs", r.expiry_date <= d(30) ? "bg-[--cs-warning-bg]" : "bg-muted/40")}>
                         <span className="font-medium">Expiry: </span>{r.expiry_date}
-                        {r.expiry_date <= d(30) && <span className="text-amber-700 ml-2">⚠ Expires within 30 days</span>}
+                        {r.expiry_date <= d(30) && <span className="text-[--cs-warning] ml-2">⚠ Expires within 30 days</span>}
                       </div>
                     )}
 
