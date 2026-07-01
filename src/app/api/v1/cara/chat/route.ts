@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { invokeAiGateway, invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/v1/cara/chat
@@ -6,10 +7,14 @@ import { NextRequest, NextResponse } from "next/server";
 // Lightweight chat endpoint for the Cara drawer.
 // Accepts { context, prompt } and returns { response }.
 //
-// Provider order is deterministic-first, then ANTHROPIC ONLY — the only AI
-// provider. If Anthropic isn't configured or the call fails (e.g. exhausted
-// credits), it returns a clear honest message — never a crash, a mock, or a
-// fall-through to another provider.
+// Through the AI Gateway — the drawer's context is often a child's name plus
+// free narrative text pasted in from a record (e.g. the family-contact page
+// sends full safeguarding-concern detail text when one is flagged), so this
+// endpoint needs the same redaction, sensitivity block, provider-risk check,
+// prompt-injection guard and response scanning as every other Cara call.
+// redact:false — Cara chat intentionally keeps names/context readable in the
+// prompt; the sensitivity gate still blocks safeguarding-sensitive content
+// from ever reaching the model.
 //
 // This endpoint does NOT persist to the DB. The drawer is a live-assist tool.
 // Persisted drafts and approvals go through POST /api/cara/generate.
@@ -45,71 +50,43 @@ function sseHeaders(): ResponseInit {
   };
 }
 
-// ── Anthropic streaming (the only provider) ───────────────────────────────────
-
-async function streamAnthropic(
-  key: string,
-  userMessage: string,
-): Promise<Response> {
-  const upstream = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": key,
-      "anthropic-version": "2023-06-01",
-    },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: MAX_TOKENS,
-      stream: true,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: userMessage }],
-    }),
-    signal: AbortSignal.timeout(30_000),
-  });
-
-  if (!upstream.ok || !upstream.body) {
-    // Non-OK (e.g. exhausted credits / rate limit) — throw so the handler serves
-    // a graceful message. Never return an empty stream (blank drawer) and never
-    // fall through to another provider — Anthropic is the only one.
-    throw new Error(`cara chat upstream not ok (${upstream.status})`);
+function honestMessage(refusedReason: string | undefined): string {
+  // Distinguish "never configured" from "configured but the call failed" (e.g.
+  // exhausted credits / rate limit) — mirrors the gateway's own refusal text.
+  if (refusedReason?.includes("No AI provider is configured")) {
+    return "Cara is not yet configured. To enable AI assistance, set ANTHROPIC_API_KEY in your server environment. Cara uses Anthropic (Claude) only.";
   }
+  return "Cara's AI assistant is temporarily unavailable — Anthropic couldn't be reached just now (it may be rate-limited or out of credit). Cara's deterministic features continue to work; please try the AI assistant again shortly.";
+}
 
+// ── Streaming (through the gateway) ────────────────────────────────────────────
+
+function streamViaGateway(userMessage: string): Response {
   const body = new ReadableStream({
     async start(ctrl) {
-      const reader = upstream.body!.getReader();
-      const decoder = new TextDecoder();
-      let buf = "";
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buf += decoder.decode(value, { stream: true });
-        const lines = buf.split("\n");
-        buf = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const raw = line.slice(6).trim();
-          if (raw === "[DONE]") continue;
-          try {
-            const evt = JSON.parse(raw) as {
-              type: string;
-              delta?: { type: string; text?: string };
-            };
-            if (
-              evt.type === "content_block_delta" &&
-              evt.delta?.type === "text_delta" &&
-              evt.delta.text
-            ) {
-              ctrl.enqueue(sseChunk(evt.delta.text));
-            }
-          } catch { /* ignore malformed */ }
+      try {
+        const result = await invokeAiGatewayStream(
+          {
+            purpose: "cara_chat_stream",
+            feature: "cara_chat",
+            systemPrompt: SYSTEM_PROMPT,
+            userPrompt: userMessage,
+            redact: false,
+            maxOutputTokens: MAX_TOKENS,
+          },
+          { onTextDelta: (text) => ctrl.enqueue(sseChunk(text)) },
+        );
+        if (!result.llmUsed) {
+          ctrl.enqueue(sseChunk(honestMessage(result.refusedReason)));
         }
+      } catch {
+        ctrl.enqueue(sseChunk(honestMessage(undefined)));
+      } finally {
+        ctrl.enqueue(sseDone);
+        ctrl.close();
       }
-      ctrl.enqueue(sseDone);
-      ctrl.close();
     },
   });
-
   return new Response(body, sseHeaders());
 }
 
@@ -133,66 +110,22 @@ export async function POST(req: NextRequest) {
 
   const userMessage = context ? `Context: ${context}\n\n${prompt}` : prompt;
 
-  // ── Anthropic only — the only AI provider ────────────────────────────────────
-
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
-  const anthropicConfigured = Boolean(anthropicKey && anthropicKey.length > 10 && !anthropicKey.includes("placeholder"));
-
-  if (anthropicConfigured) {
-    if (shouldStream) {
-      try {
-        return await streamAnthropic(anthropicKey!, userMessage);
-      } catch {
-        // Fall through to the honest message below — never to another provider.
-      }
-    } else {
-      try {
-        const res = await fetch("https://api.anthropic.com/v1/messages", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": anthropicKey!,
-            "anthropic-version": "2023-06-01",
-          },
-          body: JSON.stringify({
-            model: process.env.CARA_MODEL ?? "claude-sonnet-4-20250514",
-            max_tokens: MAX_TOKENS,
-            system: SYSTEM_PROMPT,
-            messages: [{ role: "user", content: userMessage }],
-          }),
-          signal: AbortSignal.timeout(30_000),
-        });
-        if (res.ok) {
-          const data = (await res.json()) as {
-            content?: Array<{ type: string; text?: string }>;
-          };
-          const text = data.content?.find((b) => b.type === "text")?.text ?? "";
-          return NextResponse.json({ response: text, provider: "anthropic" });
-        }
-      } catch {
-        // Fall through to the honest message below.
-      }
-    }
-  }
-
-  // ── Anthropic unavailable ────────────────────────────────────────────────────
-  //
-  // If the key was present we reached here because the call failed (e.g. exhausted
-  // credits / rate limit) rather than being unconfigured — be honest about which.
-  const notConfigured = anthropicConfigured
-    ? "Cara's AI assistant is temporarily unavailable — Anthropic couldn't be reached just now (it may be rate-limited or out of credit). Cara's deterministic features continue to work; please try the AI assistant again shortly."
-    : "Cara is not yet configured. To enable AI assistance, set ANTHROPIC_API_KEY in your server environment. Cara uses Anthropic (Claude) only.";
-
   if (shouldStream) {
-    const stream = new ReadableStream({
-      start(ctrl) {
-        ctrl.enqueue(sseChunk(notConfigured));
-        ctrl.enqueue(sseDone);
-        ctrl.close();
-      },
-    });
-    return new Response(stream, sseHeaders());
+    return streamViaGateway(userMessage);
   }
 
-  return NextResponse.json({ response: notConfigured, provider: "none" }, { status: 200 });
+  const result = await invokeAiGateway({
+    purpose: "cara_chat",
+    feature: "cara_chat",
+    systemPrompt: SYSTEM_PROMPT,
+    userPrompt: userMessage,
+    redact: false,
+    maxOutputTokens: MAX_TOKENS,
+  });
+
+  if (result.llmUsed && result.method === "ai") {
+    return NextResponse.json({ response: result.output, provider: "anthropic" });
+  }
+
+  return NextResponse.json({ response: honestMessage(result.refusedReason), provider: "none" });
 }

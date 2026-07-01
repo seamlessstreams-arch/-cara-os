@@ -5,11 +5,11 @@
 //
 // Uses Claude (Anthropic) as the only LLM provider.
 // The provider is read from CARA_PROVIDER / AI_PROVIDER (defaults to "anthropic").
-// The repo also has Anthropic-based engines
-// (managementOversightEngine, voiceOfChildSummariser, hrProcessGuardian)
-// that talk to Anthropic directly via the @anthropic-ai/sdk package. This
-// abstraction is for the universal /api/cara/generate and /api/cara/transcribe
-// routes.
+// generateText() is the metered, non-streaming seam the AI Gateway calls into
+// (src/lib/cara/ai-gateway/ai-gateway.ts) — every real AI call in the app goes
+// through the gateway first, which redacts/classifies/guards/scans before
+// reaching this module. This abstraction also backs the universal
+// /api/cara/generate and /api/cara/transcribe routes.
 //
 // The provider is built lazily per request so process.env is read at runtime
 // rather than at module-load time (Turbopack / Next.js 16 compatibility).
