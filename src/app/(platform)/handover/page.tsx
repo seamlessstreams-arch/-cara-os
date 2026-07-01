@@ -58,17 +58,17 @@ const SHIFT_LABELS: Record<string, string> = {
 
 const SEVERITY_COLORS: Record<string, string> = {
   low: "bg-slate-100 text-slate-600",
-  medium: "bg-amber-100 text-amber-700",
+  medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
   high: "bg-orange-100 text-orange-700",
-  critical: "bg-red-100 text-red-700",
+  critical: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 function moodColor(score: number | null): string {
   if (score === null) return "bg-slate-100 text-slate-500";
-  if (score >= 8) return "bg-emerald-100 text-emerald-700";
-  if (score >= 6) return "bg-amber-100 text-amber-700";
+  if (score >= 8) return "bg-[--cs-success-bg] text-[--cs-success]";
+  if (score >= 6) return "bg-[--cs-warning-bg] text-[--cs-warning]";
   if (score >= 4) return "bg-orange-100 text-orange-700";
-  return "bg-red-100 text-red-700";
+  return "bg-[--cs-risk-bg] text-[--cs-risk]";
 }
 
 function MoodIcon({ score }: { score: number | null }) {
@@ -111,7 +111,7 @@ function HandoverChildCard({ cu }: { cu: HandoverChildUpdate }) {
       {(cu.alerts?.length ?? 0) > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {(cu.alerts ?? []).map((alert, i) => (
-            <span key={i} className="text-[10px] bg-amber-100 text-amber-700 rounded-full px-2 py-0.5 flex items-center gap-1">
+            <span key={i} className="text-[10px] bg-[--cs-warning-bg] text-[--cs-warning] rounded-full px-2 py-0.5 flex items-center gap-1">
               <AlertTriangle className="h-2.5 w-2.5" />{alert}
             </span>
           ))}
@@ -149,9 +149,9 @@ function LatestHandoverCard({ handover }: { handover: HandoverEntry }) {
                 {" → "}
                 {SHIFT_LABELS[handover.shift_to] ?? handover.shift_to}
               </span>
-              {isToday && <Badge className="text-[9px] rounded-full bg-blue-100 text-blue-700">Today</Badge>}
+              {isToday && <Badge className="text-[9px] rounded-full bg-[--cs-info-bg] text-[--cs-info]">Today</Badge>}
               {handover.signed_off_by && (
-                <Badge className="text-[9px] rounded-full bg-emerald-100 text-emerald-700">
+                <Badge className="text-[9px] rounded-full bg-[--cs-success-bg] text-[--cs-success]">
                   <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />Signed off
                 </Badge>
               )}
@@ -263,13 +263,13 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
     <div className="border-t border-slate-100 pt-4 mt-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+          <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
           <span className="text-xs font-semibold text-slate-700">
             Acknowledgements ({totalSigned}/{totalExpected})
           </span>
         </div>
         {totalSigned === totalExpected && (
-          <Badge className="text-[9px] rounded-full bg-emerald-100 text-emerald-700">All acknowledged</Badge>
+          <Badge className="text-[9px] rounded-full bg-[--cs-success-bg] text-[--cs-success]">All acknowledged</Badge>
         )}
       </div>
 
@@ -281,14 +281,14 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
             <div key={id} className="flex items-center gap-2 text-xs">
               <div className={cn(
                 "h-2 w-2 rounded-full shrink-0",
-                so ? "bg-emerald-500" : "bg-slate-200"
+                so ? "bg-[--cs-success]" : "bg-slate-200"
               )} />
               <Avatar name={getStaffName(id)} size="xs" />
               <span className={cn("flex-1", so ? "text-slate-700" : "text-slate-400")}>
                 {getStaffName(id)}
               </span>
               {so ? (
-                <span className="text-[10px] text-emerald-600">
+                <span className="text-[10px] text-[--cs-success]">
                   {new Date(so.acknowledged_at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
                 </span>
               ) : (
@@ -303,8 +303,8 @@ function HandoverSignOffSection({ handover }: { handover: HandoverEntry }) {
       {signOffs.filter((s) => s.notes).length > 0 && (
         <div className="space-y-1.5 mb-3">
           {signOffs.filter((s) => s.notes).map((s) => (
-            <div key={s.staff_id} className="rounded-lg bg-emerald-50 px-3 py-2">
-              <span className="text-[10px] font-medium text-emerald-700">{getStaffName(s.staff_id).split(" ")[0]}:</span>
+            <div key={s.staff_id} className="rounded-lg bg-[--cs-success-bg] px-3 py-2">
+              <span className="text-[10px] font-medium text-[--cs-success]">{getStaffName(s.staff_id).split(" ")[0]}:</span>
               <span className="text-[11px] text-slate-600 ml-1">{s.notes}</span>
             </div>
           ))}
@@ -646,7 +646,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
                     {(cu.alerts?.length ?? 0) > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-2">
                         {(cu.alerts ?? []).map((alert, idx) => (
-                          <span key={idx} className="inline-flex items-center gap-1 text-[10px] bg-amber-100 text-amber-700 rounded-full px-2 py-0.5">
+                          <span key={idx} className="inline-flex items-center gap-1 text-[10px] bg-[--cs-warning-bg] text-[--cs-warning] rounded-full px-2 py-0.5">
                             {alert}
                             <button type="button" onClick={() => removeAlert(yp.id, idx)}>
                               <X className="h-2.5 w-2.5" />
@@ -667,7 +667,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
                       <button
                         type="button"
                         onClick={() => addAlert(yp.id)}
-                        className="text-xs bg-amber-100 text-amber-700 rounded-xl px-3 py-1.5 hover:bg-amber-200 transition-colors"
+                        className="text-xs bg-[--cs-warning-bg] text-[--cs-warning] rounded-xl px-3 py-1.5 hover:bg-[--cs-warning-soft] transition-colors"
                       >
                         Add
                       </button>
@@ -749,7 +749,7 @@ function WriteHandoverForm({ youngPeople, onClose, onSuccess }: WriteFormProps) 
           </div>
 
           {createMutation.isError && (
-            <p className="text-xs text-red-600 flex items-center gap-1">
+            <p className="text-xs text-[--cs-risk] flex items-center gap-1">
               <AlertCircle className="h-3.5 w-3.5" />
               {createMutation.error?.message || "Failed to submit handover"}
             </p>
@@ -864,7 +864,7 @@ export default function HandoverPage() {
     >
       <div id="handover-content" className="space-y-0">
       {isError && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-4 flex items-center gap-3 text-red-600 mb-5">
+        <div className="rounded-2xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4 flex items-center gap-3 text-[--cs-risk] mb-5">
           <AlertCircle className="h-5 w-5 shrink-0" />
           <p className="text-sm">{error?.message || "Failed to load handover data"}</p>
         </div>
@@ -882,8 +882,8 @@ export default function HandoverPage() {
           </Card>
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
-              <FileCheck className="h-4 w-4 text-emerald-500 mx-auto mb-1" />
-              <div className="text-lg font-bold text-emerald-700 tabular-nums">{stats.signedOff}</div>
+              <FileCheck className="h-4 w-4 text-[--cs-success] mx-auto mb-1" />
+              <div className="text-lg font-bold text-[--cs-success] tabular-nums">{stats.signedOff}</div>
               <div className="text-[10px] text-slate-500">Signed Off</div>
             </CardContent>
           </Card>
@@ -896,8 +896,8 @@ export default function HandoverPage() {
           </Card>
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
-              <AlertTriangle className="h-4 w-4 text-amber-500 mx-auto mb-1" />
-              <div className={cn("text-lg font-bold tabular-nums", stats.totalAlerts > 0 ? "text-amber-700" : "text-slate-400")}>{stats.totalAlerts}</div>
+              <AlertTriangle className="h-4 w-4 text-[--cs-warning] mx-auto mb-1" />
+              <div className={cn("text-lg font-bold tabular-nums", stats.totalAlerts > 0 ? "text-[--cs-warning]" : "text-slate-400")}>{stats.totalAlerts}</div>
               <div className="text-[10px] text-slate-500">YP Alerts</div>
             </CardContent>
           </Card>
@@ -910,8 +910,8 @@ export default function HandoverPage() {
           </Card>
           <Card className="rounded-2xl">
             <CardContent className="pt-4 pb-3 text-center">
-              <Frown className="h-4 w-4 text-red-500 mx-auto mb-1" />
-              <div className={cn("text-lg font-bold tabular-nums", stats.lowMoodCount > 0 ? "text-red-700" : "text-slate-400")}>{stats.lowMoodCount}</div>
+              <Frown className="h-4 w-4 text-[--cs-risk] mx-auto mb-1" />
+              <div className={cn("text-lg font-bold tabular-nums", stats.lowMoodCount > 0 ? "text-[--cs-risk]" : "text-slate-400")}>{stats.lowMoodCount}</div>
               <div className="text-[10px] text-slate-500">Low Mood (≤4)</div>
             </CardContent>
           </Card>
@@ -1101,7 +1101,7 @@ export default function HandoverPage() {
                 <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : pendingTasks.length === 0 ? (
                 <div className="text-xs text-slate-400 py-2 flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />
                   All tasks complete
                 </div>
               ) : (
@@ -1110,9 +1110,9 @@ export default function HandoverPage() {
                     <div key={t.id} className="flex items-start gap-2 rounded-xl bg-slate-50 px-3 py-2">
                       <div className={cn(
                         "h-1.5 w-1.5 rounded-full shrink-0 mt-2",
-                        t.priority === "urgent" ? "bg-red-500" :
+                        t.priority === "urgent" ? "bg-[--cs-risk]" :
                         t.priority === "high" ? "bg-orange-500" :
-                        t.priority === "medium" ? "bg-amber-400" : "bg-slate-300"
+                        t.priority === "medium" ? "bg-[--cs-warning]" : "bg-slate-300"
                       )} />
                       <div className="flex-1 min-w-0">
                         <div className="text-xs text-slate-700 line-clamp-2">{t.title}</div>
@@ -1141,7 +1141,7 @@ export default function HandoverPage() {
                 <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : openIncidents.length === 0 ? (
                 <div className="text-xs text-slate-400 py-2 flex items-center gap-1.5">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />
                   No open incidents
                 </div>
               ) : (
@@ -1183,7 +1183,7 @@ export default function HandoverPage() {
                       <div className="h-1.5 w-1.5 rounded-full bg-violet-400 shrink-0" />
                       <span className="text-xs text-slate-700 flex-1">{yp.preferred_name || yp.first_name}</span>
                       {yp.risk_flags.includes("medication refusal") && (
-                        <Badge className="text-[9px] rounded-full bg-red-100 text-red-600">Risk</Badge>
+                        <Badge className="text-[9px] rounded-full bg-[--cs-risk-bg] text-[--cs-risk]">Risk</Badge>
                       )}
                     </div>
                   ))}
