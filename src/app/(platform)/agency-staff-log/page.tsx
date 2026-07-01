@@ -33,8 +33,8 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const VETTING_LABEL: Record<AgencyVettingStatus, string> = { fully_vetted: "Fully Vetted", partially_vetted: "Partially Vetted", pending: "Pending", expired: "Expired" };
-const VETTING_CLR: Record<AgencyVettingStatus, string> = { fully_vetted: "bg-green-100 text-green-800", partially_vetted: "bg-amber-100 text-amber-800", pending: "bg-red-100 text-red-800", expired: "bg-red-200 text-red-900" };
-const VETTING_BORDER: Record<AgencyVettingStatus, string> = { fully_vetted: "border-l-green-400", partially_vetted: "border-l-amber-400", pending: "border-l-red-500", expired: "border-l-red-700" };
+const VETTING_CLR: Record<AgencyVettingStatus, string> = { fully_vetted: "bg-[--cs-success-bg] text-[--cs-success]", partially_vetted: "bg-[--cs-warning-bg] text-[--cs-warning]", pending: "bg-[--cs-risk-bg] text-[--cs-risk]", expired: "bg-red-200 text-red-900" };
+const VETTING_BORDER: Record<AgencyVettingStatus, string> = { fully_vetted: "border-l-[--cs-success]", partially_vetted: "border-l-[--cs-warning]", pending: "border-l-[--cs-risk]", expired: "border-l-red-700" };
 
 const REASON_LABEL: Record<AgencyBookingReason, string> = {
   sickness_cover: "Sickness Cover", vacancy_cover: "Vacancy Cover", annual_leave: "Annual Leave Cover",
@@ -217,11 +217,11 @@ export default function AgencyStaffLogPage() {
 
         {/* concerns alert */}
         {withConcerns > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-amber-800">{withConcerns} shift(s) with concerns recorded</p>
-              <p className="text-amber-700">All concerns about agency staff must be fed back to the supplying agency in writing. Concerns about safeguarding must be escalated to the LADO. Persistent concerns should result in the worker being removed from the preferred list.</p>
+              <p className="font-semibold text-[--cs-warning]">{withConcerns} shift(s) with concerns recorded</p>
+              <p className="text-[--cs-warning]">All concerns about agency staff must be fed back to the supplying agency in writing. Concerns about safeguarding must be escalated to the LADO. Persistent concerns should result in the worker being removed from the preferred list.</p>
             </div>
           </div>
         )}
@@ -239,7 +239,7 @@ export default function AgencyStaffLogPage() {
                         {r.worker_name} ({r.worker_ref})
                         <Badge variant="outline" className={VETTING_CLR[r.vetting_status]}>{VETTING_LABEL[r.vetting_status]}</Badge>
                         <Badge variant="outline" className="bg-muted/50">{REASON_LABEL[r.booking_reason]}</Badge>
-                        {r.concerns && <Badge variant="outline" className="bg-red-100 text-red-800">Concern</Badge>}
+                        {r.concerns && <Badge variant="outline" className="bg-[--cs-risk-bg] text-[--cs-risk]">Concern</Badge>}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
                         {r.agency_name} · {r.date_of_shift} · {r.shift_type} · {r.shift_hours}hrs
@@ -250,9 +250,9 @@ export default function AgencyStaffLogPage() {
                     <div className="flex items-center gap-2">
                       {r.feedback_score !== null && (
                         <Badge variant="outline" className={cn(
-                          r.feedback_score >= 4 ? "bg-green-100 text-green-800" :
-                          r.feedback_score >= 3 ? "bg-amber-100 text-amber-800" :
-                          "bg-red-100 text-red-800"
+                          r.feedback_score >= 4 ? "bg-[--cs-success-bg] text-[--cs-success]" :
+                          r.feedback_score >= 3 ? "bg-[--cs-warning-bg] text-[--cs-warning]" :
+                          "bg-[--cs-risk-bg] text-[--cs-risk]"
                         )}>{r.feedback_score}/5</Badge>
                       )}
                       {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
@@ -275,8 +275,8 @@ export default function AgencyStaffLogPage() {
                           { label: "PRICE Trained", ok: !!r.price_trained_level },
                         ].map((c) => (
                           <div key={c.label} className="flex items-center gap-1.5 text-xs">
-                            {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <AlertTriangle className="h-3.5 w-3.5 text-red-500" />}
-                            <span className={c.ok ? "" : "text-red-700 font-medium"}>{c.label}</span>
+                            {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" /> : <AlertTriangle className="h-3.5 w-3.5 text-[--cs-risk]" />}
+                            <span className={c.ok ? "" : "text-[--cs-risk] font-medium"}>{c.label}</span>
                           </div>
                         ))}
                       </div>
@@ -304,13 +304,13 @@ export default function AgencyStaffLogPage() {
 
                     {/* induction */}
                     {r.induction_completed && r.induction_date && r.induction_by && (
-                      <div className="bg-green-50 border border-green-200 rounded p-2">
-                        <p className="text-xs"><span className="font-medium text-green-800">Induction completed:</span> <span className="text-green-700">{r.induction_date} by {getStaffName(r.induction_by)}</span></p>
+                      <div className="bg-[--cs-success-bg] border border-[--cs-success-soft] rounded p-2">
+                        <p className="text-xs"><span className="font-medium text-[--cs-success]">Induction completed:</span> <span className="text-[--cs-success]">{r.induction_date} by {getStaffName(r.induction_by)}</span></p>
                       </div>
                     )}
                     {!r.induction_completed && (
-                      <div className="bg-red-50 border border-red-200 rounded p-2">
-                        <p className="text-xs font-medium text-red-800">⚠ Full induction NOT completed — verbal briefing only</p>
+                      <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded p-2">
+                        <p className="text-xs font-medium text-[--cs-risk]">⚠ Full induction NOT completed — verbal briefing only</p>
                       </div>
                     )}
 
@@ -324,9 +324,9 @@ export default function AgencyStaffLogPage() {
 
                     {/* concerns */}
                     {r.concerns && (
-                      <div className="bg-red-50 border border-red-200 rounded p-2">
-                        <p className="font-medium text-xs text-red-800 mb-1">Concerns</p>
-                        <p className="text-xs text-red-700">{r.concerns}</p>
+                      <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded p-2">
+                        <p className="font-medium text-xs text-[--cs-risk] mb-1">Concerns</p>
+                        <p className="text-xs text-[--cs-risk]">{r.concerns}</p>
                       </div>
                     )}
 
