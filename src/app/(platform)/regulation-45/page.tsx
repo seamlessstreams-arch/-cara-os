@@ -62,10 +62,10 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 // ── Decision colours ──────────────────────────────────────────────────────────
 
 const DECISION_CLR: Record<ManagerDecision, string> = {
-  pending: "bg-amber-100 text-amber-800 border-amber-200",
-  approved: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  accepted: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  rejected: "bg-red-100 text-red-800 border-red-200",
+  pending: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
+  approved: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
+  accepted: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
+  rejected: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
   deferred: "bg-slate-100 text-slate-600 border-slate-200",
 };
 
@@ -103,9 +103,9 @@ function EvidenceItemCard({
     <Card
       className={cn(
         "border transition-all",
-        item.manager_decision === "pending" && "border-amber-200 bg-amber-50/10",
+        item.manager_decision === "pending" && "border-[--cs-warning-soft] bg-amber-50/10",
         item.manager_decision === "approved" || item.manager_decision === "accepted"
-          ? "border-emerald-200 bg-emerald-50/10"
+          ? "border-[--cs-success-soft] bg-emerald-50/10"
           : "",
         item.manager_decision === "rejected" && "opacity-60 border-slate-200",
         item.manager_decision === "deferred" && "border-slate-200 opacity-70"
@@ -197,8 +197,8 @@ function EvidenceItemCard({
             </div>
             {item.manager_approved_text && (
               <div>
-                <p className="text-xs font-medium text-emerald-700 mb-1">Manager-approved text</p>
-                <p className="text-sm text-slate-700 bg-emerald-50 rounded p-2">{item.manager_approved_text}</p>
+                <p className="text-xs font-medium text-[--cs-success] mb-1">Manager-approved text</p>
+                <p className="text-sm text-slate-700 bg-[--cs-success-bg] rounded p-2">{item.manager_approved_text}</p>
               </div>
             )}
             {item.review_notes && (
@@ -279,13 +279,13 @@ function ReviewDialog({
       value: "approved",
       label: "Approve",
       description: "Include in Regulation 45 report",
-      colour: "border-emerald-500 bg-emerald-50",
+      colour: "border-[--cs-success] bg-[--cs-success-bg]",
     },
     {
       value: "rejected",
       label: "Reject",
       description: "Do not include in report",
-      colour: "border-red-400 bg-red-50",
+      colour: "border-[--cs-risk] bg-[--cs-risk-bg]",
     },
     {
       value: "deferred",
@@ -359,10 +359,10 @@ function ReviewDialog({
                   )}
                 >
                   {opt.value === "approved" && (
-                    <CheckCircle2 className={cn("h-4 w-4", decision === "approved" ? "text-emerald-600" : "text-slate-400")} />
+                    <CheckCircle2 className={cn("h-4 w-4", decision === "approved" ? "text-[--cs-success]" : "text-slate-400")} />
                   )}
                   {opt.value === "rejected" && (
-                    <XCircle className={cn("h-4 w-4", decision === "rejected" ? "text-red-500" : "text-slate-400")} />
+                    <XCircle className={cn("h-4 w-4", decision === "rejected" ? "text-[--cs-risk]" : "text-slate-400")} />
                   )}
                   {opt.value === "deferred" && (
                     <Pause className={cn("h-4 w-4", decision === "deferred" ? "text-slate-600" : "text-slate-400")} />
@@ -464,16 +464,16 @@ function ReportBuilderTab({
     <div className="space-y-6">
       {/* Status summary */}
       <div className="grid grid-cols-3 gap-3">
-        <Card className="border-emerald-100 bg-emerald-50/50">
+        <Card className="border-[--cs-success-soft] bg-[--cs-success-bg]">
           <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold text-emerald-700">{counts?.approved ?? 0}</p>
-            <p className="text-xs text-emerald-600 mt-0.5">Approved evidence</p>
+            <p className="text-2xl font-bold text-[--cs-success]">{counts?.approved ?? 0}</p>
+            <p className="text-xs text-[--cs-success] mt-0.5">Approved evidence</p>
           </CardContent>
         </Card>
-        <Card className="border-amber-100 bg-amber-50/50">
+        <Card className="border-[--cs-warning-soft] bg-[--cs-warning-bg]">
           <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold text-amber-700">{counts?.pending ?? 0}</p>
-            <p className="text-xs text-amber-600 mt-0.5">Awaiting review</p>
+            <p className="text-2xl font-bold text-[--cs-warning]">{counts?.pending ?? 0}</p>
+            <p className="text-xs text-[--cs-warning] mt-0.5">Awaiting review</p>
           </CardContent>
         </Card>
         <Card className="border-slate-100 bg-slate-50">
@@ -486,7 +486,7 @@ function ReportBuilderTab({
 
       {/* Pending banner */}
       {pendingItems.length > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-2 text-sm text-amber-800">
+        <div className="rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] px-4 py-3 flex items-start gap-2 text-sm text-[--cs-warning]">
           <Info className="w-4 h-4 mt-0.5 shrink-0" />
           <div>
             <span className="font-semibold">{pendingItems.length} item{pendingItems.length !== 1 ? "s" : ""} still awaiting manager review.</span>{" "}
@@ -801,9 +801,9 @@ function PatternsTab() {
     <div className="space-y-5">
       {/* ── Emerging concerns banner ─────────────────────────────────────── */}
       {emergingConcerns.length > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 flex items-start gap-2">
-          <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
-          <div className="text-sm text-red-800">
+        <div className="rounded-lg border border-[--cs-risk-soft] bg-[--cs-risk-bg] px-4 py-3 flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 text-[--cs-risk] mt-0.5 shrink-0" />
+          <div className="text-sm text-[--cs-risk]">
             <span className="font-semibold">Emerging concerns (last 14 days): </span>
             {emergingConcerns.map(([theme, count], idx) => (
               <span key={theme}>
@@ -847,7 +847,7 @@ function PatternsTab() {
                   <div className="flex items-center gap-1.5 w-14 shrink-0">
                     <span className="text-sm font-semibold text-slate-900">{count}</span>
                     {(themeRecent[theme] ?? 0) > 0 && (
-                      <span className="text-[10px] text-red-600 font-medium">
+                      <span className="text-[10px] text-[--cs-risk] font-medium">
                         +{themeRecent[theme]} new
                       </span>
                     )}
@@ -918,11 +918,11 @@ function PatternsTab() {
 
       {/* ── Management action suggestions ────────────────────────────────── */}
       {suggestions.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50/40">
+        <Card className="border-[--cs-warning-soft] bg-[--cs-warning-bg]">
           <CardContent className="p-4">
             <div className="flex items-center gap-2 mb-3">
-              <Lightbulb className="h-4 w-4 text-amber-600" />
-              <p className="text-sm font-semibold text-amber-800">
+              <Lightbulb className="h-4 w-4 text-[--cs-warning]" />
+              <p className="text-sm font-semibold text-[--cs-warning]">
                 Management actions identified ({suggestions.length})
               </p>
             </div>
@@ -933,13 +933,13 @@ function PatternsTab() {
                   className={cn(
                     "flex items-start gap-2 rounded-lg px-3 py-2 text-sm border",
                     s.priority === "high"
-                      ? "bg-red-50 border-red-200 text-red-800"
-                      : "bg-amber-50 border-amber-200 text-amber-800"
+                      ? "bg-[--cs-risk-bg] border-[--cs-risk-soft] text-[--cs-risk]"
+                      : "bg-[--cs-warning-bg] border-[--cs-warning-soft] text-[--cs-warning]"
                   )}
                 >
                   <AlertTriangle className={cn(
                     "h-3.5 w-3.5 mt-0.5 shrink-0",
-                    s.priority === "high" ? "text-red-600" : "text-amber-600"
+                    s.priority === "high" ? "text-[--cs-risk]" : "text-[--cs-warning]"
                   )} />
                   {s.text}
                 </div>
@@ -1023,20 +1023,20 @@ export default function Regulation45EvidencePage() {
           {
             label: "Pending review",
             value: counts?.pending ?? 0,
-            icon: <Clock className="h-4 w-4 text-amber-600" />,
-            colour: "bg-amber-50 border-amber-100",
+            icon: <Clock className="h-4 w-4 text-[--cs-warning]" />,
+            colour: "bg-[--cs-warning-bg] border-[--cs-warning-soft]",
           },
           {
             label: "Approved",
             value: counts?.approved ?? 0,
-            icon: <CheckCircle2 className="h-4 w-4 text-emerald-600" />,
-            colour: "bg-emerald-50 border-emerald-100",
+            icon: <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />,
+            colour: "bg-[--cs-success-bg] border-[--cs-success-soft]",
           },
           {
             label: "Rejected",
             value: counts?.rejected ?? 0,
-            icon: <XCircle className="h-4 w-4 text-red-500" />,
-            colour: "bg-red-50 border-red-100",
+            icon: <XCircle className="h-4 w-4 text-[--cs-risk]" />,
+            colour: "bg-[--cs-risk-bg] border-[--cs-risk-soft]",
           },
           {
             label: "Total evidence",
@@ -1071,7 +1071,7 @@ export default function Regulation45EvidencePage() {
             <LayoutList className="w-3.5 h-3.5" />
             Evidence Queue
             {(counts?.pending ?? 0) > 0 && (
-              <span className="ml-1 bg-amber-100 text-amber-700 text-xs rounded-full px-1.5 py-0.5">
+              <span className="ml-1 bg-[--cs-warning-bg] text-[--cs-warning] text-xs rounded-full px-1.5 py-0.5">
                 {counts?.pending}
               </span>
             )}
@@ -1080,7 +1080,7 @@ export default function Regulation45EvidencePage() {
             <BookOpen className="w-3.5 h-3.5" />
             Report Builder
             {(counts?.approved ?? 0) > 0 && (
-              <span className="ml-1 bg-emerald-100 text-emerald-700 text-xs rounded-full px-1.5 py-0.5">
+              <span className="ml-1 bg-[--cs-success-bg] text-[--cs-success] text-xs rounded-full px-1.5 py-0.5">
                 {counts?.approved}
               </span>
             )}
