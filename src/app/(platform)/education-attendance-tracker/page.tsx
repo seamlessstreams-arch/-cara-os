@@ -36,15 +36,15 @@ const PROVISION_CLR: Record<EduProvision, string> = {
 };
 
 const CODE_CLR: Record<EduAttendanceCode, string> = {
-  "/": "bg-green-100 text-green-800",
-  "\\": "bg-green-100 text-green-800",
-  "L": "bg-amber-100 text-amber-800",
+  "/": "bg-[--cs-success-bg] text-[--cs-success]",
+  "\\": "bg-[--cs-success-bg] text-[--cs-success]",
+  "L": "bg-[--cs-warning-bg] text-[--cs-warning]",
   "I": "bg-blue-100 text-blue-800",
   "M": "bg-blue-100 text-blue-800",
   "E": "bg-purple-100 text-purple-800",
-  "O": "bg-red-100 text-red-800",
-  "U": "bg-red-100 text-red-800",
-  "N": "bg-red-100 text-red-800",
+  "O": "bg-[--cs-risk-bg] text-[--cs-risk]",
+  "U": "bg-[--cs-risk-bg] text-[--cs-risk]",
+  "N": "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const CODE_OPTIONS: { code: EduAttendanceCode; meaning: string }[] = [
@@ -60,15 +60,15 @@ const CODE_OPTIONS: { code: EduAttendanceCode; meaning: string }[] = [
 ];
 
 const BORDER_CODE: Record<EduAttendanceCode, string> = {
-  "/": "border-l-green-500",
-  "\\": "border-l-green-500",
-  "L": "border-l-amber-500",
+  "/": "border-l-[--cs-success]",
+  "\\": "border-l-[--cs-success]",
+  "L": "border-l-[--cs-warning]",
   "I": "border-l-blue-400",
   "M": "border-l-blue-400",
   "E": "border-l-purple-500",
-  "O": "border-l-red-600",
-  "U": "border-l-red-600",
-  "N": "border-l-red-400",
+  "O": "border-l-[--cs-risk]",
+  "U": "border-l-[--cs-risk]",
+  "N": "border-l-[--cs-risk]",
 };
 
 const PRESENT_CODES: EduAttendanceCode[] = ["/", "\\", "L"];
@@ -188,8 +188,8 @@ export default function EducationAttendanceTrackerPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: "This Week Attendance", value: `${weekPct}%`, icon: CalendarCheck, clr: "text-blue-600" },
-            { label: "Unauthorised Absences (Week)", value: weekUnauth, icon: UserX, clr: "text-red-600" },
-            { label: "Children Meeting 95%+ Target", value: `${meetingTarget}/${perChild.length}`, icon: Target, clr: "text-green-600" },
+            { label: "Unauthorised Absences (Week)", value: weekUnauth, icon: UserX, clr: "text-[--cs-risk]" },
+            { label: "Children Meeting 95%+ Target", value: `${meetingTarget}/${perChild.length}`, icon: Target, clr: "text-[--cs-success]" },
             { label: "Days Tracked", value: daysTracked, icon: GraduationCap, clr: "text-indigo-600" },
           ].map((s) => (
             <Card key={s.label}>
@@ -209,7 +209,7 @@ export default function EducationAttendanceTrackerPage() {
             const concerning = c.pct < 90;
             return (
               <Card key={c.id} className={cn("border-l-4",
-                meets ? "border-l-green-500" : concerning ? "border-l-red-500" : "border-l-amber-500")}>
+                meets ? "border-l-[--cs-success]" : concerning ? "border-l-[--cs-risk]" : "border-l-[--cs-warning]")}>
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center justify-between">
                     <div>
@@ -218,13 +218,13 @@ export default function EducationAttendanceTrackerPage() {
                     </div>
                     <div className="text-right">
                       <p className={cn("text-2xl font-bold",
-                        meets ? "text-green-600" : concerning ? "text-red-600" : "text-amber-600")}>
+                        meets ? "text-[--cs-success]" : concerning ? "text-[--cs-risk]" : "text-[--cs-warning]")}>
                         {c.pct}%
                       </p>
                       <Badge variant="outline" className={cn(
-                        meets ? "bg-green-100 text-green-800"
-                          : concerning ? "bg-red-100 text-red-800"
-                          : "bg-amber-100 text-amber-800")}>
+                        meets ? "bg-[--cs-success-bg] text-[--cs-success]"
+                          : concerning ? "bg-[--cs-risk-bg] text-[--cs-risk]"
+                          : "bg-[--cs-warning-bg] text-[--cs-warning]")}>
                         {meets ? "Meets target" : concerning ? "Below threshold" : "Concerning"}
                       </Badge>
                     </div>
@@ -237,21 +237,21 @@ export default function EducationAttendanceTrackerPage() {
 
         {/* ── alert banner ─────────────────────────────────────────────────── */}
         {weekUnauth > 0 && (
-          <div className="bg-red-50 border border-red-300 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-red-800">{weekUnauth} unauthorised absence(s) recorded this week</p>
-              <p className="text-red-700">Each unauthorised absence (codes O, U, N) must be reported to the Virtual School and reviewed against the child&apos;s PEP. Consider whether the pattern indicates a need for an emergency PEP review or CME referral.</p>
+              <p className="font-semibold text-[--cs-risk]">{weekUnauth} unauthorised absence(s) recorded this week</p>
+              <p className="text-[--cs-risk]">Each unauthorised absence (codes O, U, N) must be reported to the Virtual School and reviewed against the child&apos;s PEP. Consider whether the pattern indicates a need for an emergency PEP review or CME referral.</p>
             </div>
           </div>
         )}
 
         {meetingTarget === perChild.length && weekUnauth === 0 && (
-          <div className="bg-green-50 border border-green-300 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-success-bg] border border-[--cs-success-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <CheckCircle2 className="h-5 w-5 text-[--cs-success] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-green-800">All children currently meeting 95% attendance target</p>
-              <p className="text-green-700">Continue daily monitoring and ensure PEP targets remain on track.</p>
+              <p className="font-semibold text-[--cs-success]">All children currently meeting 95% attendance target</p>
+              <p className="text-[--cs-success]">Continue daily monitoring and ensure PEP targets remain on track.</p>
             </div>
           </div>
         )}
@@ -310,7 +310,7 @@ export default function EducationAttendanceTrackerPage() {
                           {EDU_PROVISION_LABEL[r.provision]}
                         </Badge>
                         {isUnauth && (
-                          <Badge variant="outline" className="bg-red-100 text-red-800">Unauthorised</Badge>
+                          <Badge variant="outline" className="bg-[--cs-risk-bg] text-[--cs-risk]">Unauthorised</Badge>
                         )}
                       </CardTitle>
                       <p className="text-sm text-muted-foreground">
@@ -354,15 +354,15 @@ export default function EducationAttendanceTrackerPage() {
                     {r.reason && (
                       <div className={cn(
                         "rounded-lg p-3",
-                        isUnauth ? "bg-red-50" : r.authorised_absence ? "bg-blue-50" : "bg-amber-50"
+                        isUnauth ? "bg-[--cs-risk-bg]" : r.authorised_absence ? "bg-blue-50" : "bg-[--cs-warning-bg]"
                       )}>
                         <p className={cn(
                           "font-medium mb-1",
-                          isUnauth ? "text-red-800" : r.authorised_absence ? "text-blue-800" : "text-amber-800"
+                          isUnauth ? "text-[--cs-risk]" : r.authorised_absence ? "text-blue-800" : "text-[--cs-warning]"
                         )}>Reason</p>
                         <p className={cn(
                           "text-xs",
-                          isUnauth ? "text-red-700" : r.authorised_absence ? "text-blue-700" : "text-amber-700"
+                          isUnauth ? "text-[--cs-risk]" : r.authorised_absence ? "text-blue-700" : "text-[--cs-warning]"
                         )}>{r.reason}</p>
                       </div>
                     )}
