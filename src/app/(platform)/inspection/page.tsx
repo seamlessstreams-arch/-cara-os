@@ -28,10 +28,10 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 // ── Static data ───────────────────────────────────────────────────────────────
 
 const GRADE_COLORS: Record<string, string> = {
-  "Outstanding": "bg-emerald-100 text-emerald-700 border-emerald-200",
-  "Good": "bg-blue-100 text-blue-700 border-blue-200",
-  "Requires improvement": "bg-amber-100 text-amber-700 border-amber-200",
-  "Inadequate": "bg-red-100 text-red-700 border-red-200",
+  "Outstanding": "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
+  "Good": "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]",
+  "Requires improvement": "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
+  "Inadequate": "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
 };
 
 const READINESS_AREAS_FALLBACK = [
@@ -46,19 +46,19 @@ const READINESS_AREAS_FALLBACK = [
 ];
 
 const CLIMATE_LEVEL_COLORS: Record<string, string> = {
-  settled: "text-emerald-600",
-  stable: "text-blue-600",
-  unsettled: "text-amber-600",
+  settled: "text-[--cs-success]",
+  stable: "text-[--cs-info]",
+  unsettled: "text-[--cs-warning]",
   concerning: "text-orange-600",
-  critical: "text-red-600",
+  critical: "text-[--cs-risk]",
 };
 
 const CLIMATE_LEVEL_BG: Record<string, string> = {
-  settled: "bg-emerald-50 border-emerald-200",
-  stable: "bg-blue-50 border-blue-200",
-  unsettled: "bg-amber-50 border-amber-200",
+  settled: "bg-[--cs-success-bg] border-[--cs-success-soft]",
+  stable: "bg-[--cs-info-bg] border-[--cs-info-soft]",
+  unsettled: "bg-[--cs-warning-bg] border-[--cs-warning-soft]",
   concerning: "bg-orange-50 border-orange-200",
-  critical: "bg-red-50 border-red-200",
+  critical: "bg-[--cs-risk-bg] border-[--cs-risk-soft]",
 };
 
 // ── Cara Narrative Generator ──────────────────────────────────────────────────
@@ -262,8 +262,8 @@ function NarrativeGenerator() {
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                    <span className="text-xs font-semibold text-emerald-700">Draft complete</span>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />
+                    <span className="text-xs font-semibold text-[--cs-success]">Draft complete</span>
                   </>
                 )}
               </div>
@@ -276,7 +276,7 @@ function NarrativeGenerator() {
                 >
                   {copied ? (
                     <>
-                      <CheckCircle2 className="h-3 w-3 mr-1.5 text-emerald-600" />
+                      <CheckCircle2 className="h-3 w-3 mr-1.5 text-[--cs-success]" />
                       Copied
                     </>
                   ) : (
@@ -298,8 +298,8 @@ function NarrativeGenerator() {
             </div>
             {isDone && (
               <div className="px-4 pb-3 flex items-center gap-2">
-                <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
-                <span className="text-[11px] text-amber-700">
+                <AlertTriangle className="h-3 w-3 text-[--cs-warning] shrink-0" />
+                <span className="text-[11px] text-[--cs-warning]">
                   AI-generated draft — requires professional review before use
                 </span>
               </div>
@@ -339,10 +339,10 @@ function LiveIntelligenceSummary() {
       {/* Active Alerts */}
       <Card className={cn(
         "border",
-        alerts.length === 0 ? "border-emerald-200 bg-emerald-50" :
-        criticalAlerts > 0 ? "border-red-200 bg-red-50" :
+        alerts.length === 0 ? "border-[--cs-success-soft] bg-[--cs-success-bg]" :
+        criticalAlerts > 0 ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" :
         highAlerts > 0 ? "border-orange-200 bg-orange-50" :
-        "border-amber-200 bg-amber-50"
+        "border-[--cs-warning-soft] bg-[--cs-warning-bg]"
       )}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between">
@@ -359,16 +359,16 @@ function LiveIntelligenceSummary() {
                 <>
                   <div className={cn(
                     "text-3xl font-black",
-                    alerts.length === 0 ? "text-emerald-600" :
-                    criticalAlerts > 0 ? "text-red-600" :
-                    highAlerts > 0 ? "text-orange-600" : "text-amber-600"
+                    alerts.length === 0 ? "text-[--cs-success]" :
+                    criticalAlerts > 0 ? "text-[--cs-risk]" :
+                    highAlerts > 0 ? "text-orange-600" : "text-[--cs-warning]"
                   )}>
                     {alerts.length}
                   </div>
                   {alerts.length > 0 ? (
                     <div className="flex flex-wrap gap-1 mt-1.5">
                       {criticalAlerts > 0 && (
-                        <span className="text-[10px] font-semibold bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full">
+                        <span className="text-[10px] font-semibold bg-[--cs-risk-bg] text-[--cs-risk] px-1.5 py-0.5 rounded-full">
                           {criticalAlerts} critical
                         </span>
                       )}
@@ -378,28 +378,28 @@ function LiveIntelligenceSummary() {
                         </span>
                       )}
                       {medAlerts > 0 && (
-                        <span className="text-[10px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
+                        <span className="text-[10px] font-semibold bg-[--cs-warning-bg] text-[--cs-warning] px-1.5 py-0.5 rounded-full">
                           {medAlerts} medium
                         </span>
                       )}
                     </div>
                   ) : (
-                    <div className="text-xs text-emerald-600 mt-1 font-medium">No active alerts</div>
+                    <div className="text-xs text-[--cs-success] mt-1 font-medium">No active alerts</div>
                   )}
                 </>
               )}
             </div>
             <div className={cn(
               "flex h-9 w-9 items-center justify-center rounded-xl",
-              alerts.length === 0 ? "bg-emerald-200" :
-              criticalAlerts > 0 ? "bg-red-200" :
-              highAlerts > 0 ? "bg-orange-200" : "bg-amber-200"
+              alerts.length === 0 ? "bg-[--cs-success-soft]" :
+              criticalAlerts > 0 ? "bg-[--cs-risk-soft]" :
+              highAlerts > 0 ? "bg-orange-200" : "bg-[--cs-warning-soft]"
             )}>
               <AlertCircle className={cn(
                 "h-5 w-5",
-                alerts.length === 0 ? "text-emerald-700" :
-                criticalAlerts > 0 ? "text-red-700" :
-                highAlerts > 0 ? "text-orange-700" : "text-amber-700"
+                alerts.length === 0 ? "text-[--cs-success]" :
+                criticalAlerts > 0 ? "text-[--cs-risk]" :
+                highAlerts > 0 ? "text-orange-700" : "text-[--cs-warning]"
               )} />
             </div>
           </div>
@@ -409,9 +409,9 @@ function LiveIntelligenceSummary() {
       {/* Overdue Actions */}
       <Card className={cn(
         "border",
-        overdueActions.length === 0 ? "border-emerald-200 bg-emerald-50" :
-        overdueActions.length >= 5 ? "border-red-200 bg-red-50" :
-        "border-amber-200 bg-amber-50"
+        overdueActions.length === 0 ? "border-[--cs-success-soft] bg-[--cs-success-bg]" :
+        overdueActions.length >= 5 ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" :
+        "border-[--cs-warning-soft] bg-[--cs-warning-bg]"
       )}>
         <CardContent className="p-4">
           <div className="flex items-start justify-between">
@@ -428,15 +428,15 @@ function LiveIntelligenceSummary() {
                 <>
                   <div className={cn(
                     "text-3xl font-black",
-                    overdueActions.length === 0 ? "text-emerald-600" :
-                    overdueActions.length >= 5 ? "text-red-600" : "text-amber-600"
+                    overdueActions.length === 0 ? "text-[--cs-success]" :
+                    overdueActions.length >= 5 ? "text-[--cs-risk]" : "text-[--cs-warning]"
                   )}>
                     {overdueActions.length}
                   </div>
                   <div className={cn(
                     "text-xs mt-1 font-medium",
-                    overdueActions.length === 0 ? "text-emerald-600" :
-                    overdueActions.length >= 5 ? "text-red-600" : "text-amber-600"
+                    overdueActions.length === 0 ? "text-[--cs-success]" :
+                    overdueActions.length >= 5 ? "text-[--cs-risk]" : "text-[--cs-warning]"
                   )}>
                     {overdueActions.length === 0
                       ? "All actions on track"
@@ -449,13 +449,13 @@ function LiveIntelligenceSummary() {
             </div>
             <div className={cn(
               "flex h-9 w-9 items-center justify-center rounded-xl",
-              overdueActions.length === 0 ? "bg-emerald-200" :
-              overdueActions.length >= 5 ? "bg-red-200" : "bg-amber-200"
+              overdueActions.length === 0 ? "bg-[--cs-success-soft]" :
+              overdueActions.length >= 5 ? "bg-[--cs-risk-soft]" : "bg-[--cs-warning-soft]"
             )}>
               <Clock className={cn(
                 "h-5 w-5",
-                overdueActions.length === 0 ? "text-emerald-700" :
-                overdueActions.length >= 5 ? "text-red-700" : "text-amber-700"
+                overdueActions.length === 0 ? "text-[--cs-success]" :
+                overdueActions.length >= 5 ? "text-[--cs-risk]" : "text-[--cs-warning]"
               )} />
             </div>
           </div>
@@ -493,10 +493,10 @@ function LiveIntelligenceSummary() {
             </div>
             <div className={cn(
               "flex h-9 w-9 items-center justify-center rounded-xl",
-              climateLevel === "settled" ? "bg-emerald-200" :
-              climateLevel === "stable" ? "bg-blue-200" :
-              climateLevel === "unsettled" ? "bg-amber-200" :
-              climateLevel === "concerning" ? "bg-orange-200" : "bg-red-200"
+              climateLevel === "settled" ? "bg-[--cs-success-soft]" :
+              climateLevel === "stable" ? "bg-[--cs-info-soft]" :
+              climateLevel === "unsettled" ? "bg-[--cs-warning-soft]" :
+              climateLevel === "concerning" ? "bg-orange-200" : "bg-[--cs-risk-soft]"
             )}>
               <Zap className={cn(
                 "h-5 w-5",
@@ -513,10 +513,10 @@ function LiveIntelligenceSummary() {
 // ── Inspection Action Plan ───────────────────────────────────────────────────
 
 const ACTION_STATUS_CFG: Record<string, { label: string; colour: string; bg: string; icon: React.ElementType }> = {
-  open:        { label: "Open",        colour: "text-blue-700",    bg: "bg-blue-50 border-blue-200",    icon: Clock },
-  in_progress: { label: "In Progress", colour: "text-amber-700",   bg: "bg-amber-50 border-amber-200",  icon: Clock },
-  completed:   { label: "Completed",   colour: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200", icon: CheckCircle2 },
-  overdue:     { label: "Overdue",     colour: "text-red-700",     bg: "bg-red-50 border-red-200",      icon: AlertTriangle },
+  open:        { label: "Open",        colour: "text-[--cs-info]",    bg: "bg-[--cs-info-bg] border-[--cs-info-soft]",    icon: Clock },
+  in_progress: { label: "In Progress", colour: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg] border-[--cs-warning-soft]",  icon: Clock },
+  completed:   { label: "Completed",   colour: "text-[--cs-success]", bg: "bg-[--cs-success-bg] border-[--cs-success-soft]", icon: CheckCircle2 },
+  overdue:     { label: "Overdue",     colour: "text-[--cs-risk]",     bg: "bg-[--cs-risk-bg] border-[--cs-risk-soft]",      icon: AlertTriangle },
   stalled:     { label: "Stalled",     colour: "text-orange-700",  bg: "bg-orange-50 border-orange-200", icon: AlertTriangle },
   cancelled:   { label: "Cancelled",   colour: "text-slate-500",   bg: "bg-slate-50 border-slate-200",  icon: FileText },
 };
@@ -581,16 +581,16 @@ function ActionPlanPanel() {
           <div className="text-xl font-bold text-slate-800 tabular-nums">{actions.length}</div>
           <div className="text-[10px] text-slate-500">Total Actions</div>
         </div>
-        <div className={cn("rounded-xl border p-3 text-center", openCount > 0 ? "bg-blue-50 border-blue-200" : "bg-white")}>
-          <div className={cn("text-xl font-bold tabular-nums", openCount > 0 ? "text-blue-700" : "text-slate-400")}>{openCount}</div>
+        <div className={cn("rounded-xl border p-3 text-center", openCount > 0 ? "bg-[--cs-info-bg] border-[--cs-info-soft]" : "bg-white")}>
+          <div className={cn("text-xl font-bold tabular-nums", openCount > 0 ? "text-[--cs-info]" : "text-slate-400")}>{openCount}</div>
           <div className="text-[10px] text-slate-500">Open</div>
         </div>
-        <div className={cn("rounded-xl border p-3 text-center", overdueCount > 0 ? "bg-red-50 border-red-200" : "bg-white")}>
-          <div className={cn("text-xl font-bold tabular-nums", overdueCount > 0 ? "text-red-700" : "text-slate-400")}>{overdueCount}</div>
+        <div className={cn("rounded-xl border p-3 text-center", overdueCount > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-white")}>
+          <div className={cn("text-xl font-bold tabular-nums", overdueCount > 0 ? "text-[--cs-risk]" : "text-slate-400")}>{overdueCount}</div>
           <div className="text-[10px] text-slate-500">Overdue</div>
         </div>
-        <div className={cn("rounded-xl border p-3 text-center", completedCount > 0 ? "bg-emerald-50 border-emerald-200" : "bg-white")}>
-          <div className={cn("text-xl font-bold tabular-nums", completedCount > 0 ? "text-emerald-700" : "text-slate-400")}>{completedCount}</div>
+        <div className={cn("rounded-xl border p-3 text-center", completedCount > 0 ? "bg-[--cs-success-bg] border-[--cs-success-soft]" : "bg-white")}>
+          <div className={cn("text-xl font-bold tabular-nums", completedCount > 0 ? "text-[--cs-success]" : "text-slate-400")}>{completedCount}</div>
           <div className="text-[10px] text-slate-500">Completed</div>
         </div>
       </div>
@@ -627,7 +627,7 @@ function ActionPlanPanel() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
-          <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto mb-2" />
+          <CheckCircle2 className="h-8 w-8 text-[--cs-success] mx-auto mb-2" />
           <div className="text-sm font-medium text-slate-600">
             {filter === "overdue" ? "No overdue actions" : filter === "completed" ? "No completed actions" : "No open actions"}
           </div>
@@ -648,7 +648,7 @@ function ActionPlanPanel() {
             return (
               <div key={action.id} className={cn(
                 "rounded-2xl border bg-white overflow-hidden transition-all",
-                action.status === "overdue" ? "border-l-4 border-l-red-500 border-red-200" :
+                action.status === "overdue" ? "border-l-4 border-l-[--cs-risk] border-[--cs-risk-soft]" :
                 action.status === "stalled" ? "border-l-4 border-l-orange-400 border-orange-200" :
                 "border-slate-200"
               )}>
@@ -676,7 +676,7 @@ function ActionPlanPanel() {
                       {action.due_date && (
                         <span className={cn(
                           "flex items-center gap-0.5",
-                          action.status === "overdue" ? "text-red-600 font-medium" : ""
+                          action.status === "overdue" ? "text-[--cs-risk] font-medium" : ""
                         )}>
                           <Calendar className="h-3 w-3" />
                           {formatDate(action.due_date)}
@@ -728,7 +728,7 @@ function ActionPlanPanel() {
                           <Button
                             size="sm"
                             variant="outline"
-                            className="h-7 text-xs text-amber-700 border-amber-200 hover:bg-amber-50"
+                            className="h-7 text-xs text-[--cs-warning] border-[--cs-warning-soft] hover:bg-[--cs-warning-bg]"
                             onClick={() => handleStatusChange(action.id, "in_progress")}
                             disabled={updateAction.isPending}
                           >
@@ -873,14 +873,14 @@ export default function InspectionPage() {
 
         {/* ── Current grade & next inspection cards ───────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 col-span-2 lg:col-span-1">
-            <div className="text-[11px] font-semibold text-blue-500 uppercase tracking-wider mb-1">Current Ofsted Grade</div>
-            <div className="text-4xl font-black text-blue-700">{HOME.last_inspection_grade}</div>
-            <div className="text-xs text-blue-500 mt-1">{HOME.last_inspection_date}</div>
+          <div className="rounded-2xl border border-[--cs-info-soft] bg-[--cs-info-bg] p-5 col-span-2 lg:col-span-1">
+            <div className="text-[11px] font-semibold text-[--cs-info] uppercase tracking-wider mb-1">Current Ofsted Grade</div>
+            <div className="text-4xl font-black text-[--cs-info]">{HOME.last_inspection_grade}</div>
+            <div className="text-xs text-[--cs-info] mt-1">{HOME.last_inspection_date}</div>
           </div>
           <div className="rounded-2xl border border-slate-200 bg-white p-5">
             <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Readiness Score</div>
-            <div className={cn("mt-1 text-3xl font-bold", avgReadiness >= 85 ? "text-emerald-600" : avgReadiness >= 70 ? "text-amber-600" : "text-red-600")}>
+            <div className={cn("mt-1 text-3xl font-bold", avgReadiness >= 85 ? "text-[--cs-success]" : avgReadiness >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
               {avgReadiness}%
             </div>
             <div className="text-xs text-slate-400 mt-0.5">{warnings} areas need attention</div>
@@ -896,7 +896,7 @@ export default function InspectionPage() {
               <Loader2 className="h-5 w-5 animate-spin text-slate-300 mt-2" />
             ) : annexAScore !== null ? (
               <>
-                <div className={cn("mt-1 text-3xl font-bold", annexAScore >= 85 ? "text-emerald-600" : annexAScore >= 70 ? "text-amber-600" : "text-red-600")}>
+                <div className={cn("mt-1 text-3xl font-bold", annexAScore >= 85 ? "text-[--cs-success]" : annexAScore >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>
                   {annexAScore}%
                 </div>
                 <div className="text-xs text-slate-400 mt-0.5">
@@ -911,30 +911,30 @@ export default function InspectionPage() {
 
         {/* ── Live Compliance Status ───────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className={cn("rounded-2xl border p-4", reg45Pending > 0 ? "bg-amber-50 border-amber-200" : "bg-emerald-50 border-emerald-200")}>
+          <div className={cn("rounded-2xl border p-4", reg45Pending > 0 ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" : "bg-[--cs-success-bg] border-[--cs-success-soft]")}>
             <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Reg 45 Evidence</div>
-            <div className={cn("text-2xl font-bold mt-1", reg45Pending > 0 ? "text-amber-700" : "text-emerald-700")}>
+            <div className={cn("text-2xl font-bold mt-1", reg45Pending > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>
               {reg45Query.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : reg45Pending}
             </div>
             <div className="text-xs text-slate-500 mt-0.5">awaiting decision</div>
           </div>
-          <div className={cn("rounded-2xl border p-4", oversightPending > 0 ? "bg-amber-50 border-amber-200" : "bg-emerald-50 border-emerald-200")}>
+          <div className={cn("rounded-2xl border p-4", oversightPending > 0 ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" : "bg-[--cs-success-bg] border-[--cs-success-soft]")}>
             <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Management Oversight</div>
-            <div className={cn("text-2xl font-bold mt-1", oversightPending > 0 ? "text-amber-700" : "text-emerald-700")}>
+            <div className={cn("text-2xl font-bold mt-1", oversightPending > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>
               {oversightQuery.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : oversightPending}
             </div>
             <div className="text-xs text-slate-500 mt-0.5">tasks pending</div>
           </div>
-          <div className={cn("rounded-2xl border p-4", reg40Active > 0 ? "bg-red-50 border-red-200" : "bg-emerald-50 border-emerald-200")}>
+          <div className={cn("rounded-2xl border p-4", reg40Active > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-[--cs-success-bg] border-[--cs-success-soft]")}>
             <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Reg 40 Triage</div>
-            <div className={cn("text-2xl font-bold mt-1", reg40Active > 0 ? "text-red-700" : "text-emerald-700")}>
+            <div className={cn("text-2xl font-bold mt-1", reg40Active > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>
               {reg40Query.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : reg40Active}
             </div>
             <div className="text-xs text-slate-500 mt-0.5">active notifications</div>
           </div>
-          <div className={cn("rounded-2xl border p-4", annexAGaps > 0 ? "bg-amber-50 border-amber-200" : "bg-emerald-50 border-emerald-200")}>
+          <div className={cn("rounded-2xl border p-4", annexAGaps > 0 ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" : "bg-[--cs-success-bg] border-[--cs-success-soft]")}>
             <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Annex A Gaps</div>
-            <div className={cn("text-2xl font-bold mt-1", annexAGaps > 0 ? "text-amber-700" : "text-emerald-700")}>
+            <div className={cn("text-2xl font-bold mt-1", annexAGaps > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>
               {annexAQuery.isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : annexAGaps}
             </div>
             <div className="text-xs text-slate-500 mt-0.5">sections incomplete</div>
@@ -965,12 +965,12 @@ export default function InspectionPage() {
                 {readinessAreas.map(({ area, score, status }) => (
                   <div key={area} className="space-y-1">
                     <div className="flex justify-between text-xs">
-                      <span className={cn("text-slate-700", status === "warn" ? "text-amber-700 font-medium" : "")}>{area}</span>
-                      <span className={cn("font-semibold", score >= 85 ? "text-emerald-600" : score >= 70 ? "text-amber-600" : "text-red-600")}>{score}%</span>
+                      <span className={cn("text-slate-700", status === "warn" ? "text-[--cs-warning] font-medium" : "")}>{area}</span>
+                      <span className={cn("font-semibold", score >= 85 ? "text-[--cs-success]" : score >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")}>{score}%</span>
                     </div>
                     <Progress
                       value={score}
-                      color={score >= 85 ? "bg-emerald-500" : score >= 70 ? "bg-amber-500" : "bg-red-500"}
+                      color={score >= 85 ? "bg-[--cs-success]" : score >= 70 ? "bg-[--cs-warning]" : "bg-[--cs-risk]"}
                       className="h-1.5"
                     />
                   </div>
