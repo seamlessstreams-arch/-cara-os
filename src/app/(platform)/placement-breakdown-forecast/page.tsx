@@ -16,34 +16,34 @@ import { cn } from "@/lib/utils";
 import { usePlacementBreakdownForecast } from "@/hooks/use-placement-breakdown-forecast";
 
 const BAND_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
-  critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200" },
-  elevated: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200" },
-  watch: { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200" },
-  stable: { bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200" },
+  critical: { bg: "bg-[--cs-risk-bg]", text: "text-[--cs-risk]", ring: "ring-[--cs-risk-soft]" },
+  elevated: { bg: "bg-[--cs-warning-bg]", text: "text-[--cs-warning]", ring: "ring-[--cs-warning-soft]" },
+  watch: { bg: "bg-[--cs-info-bg]", text: "text-[--cs-info]", ring: "ring-[--cs-info-soft]" },
+  stable: { bg: "bg-[--cs-success-bg]", text: "text-[--cs-success]", ring: "ring-[--cs-success-soft]" },
 };
 
 const TREND_META: Record<string, { icon: React.ReactNode; label: string; cls: string }> = {
-  escalating: { icon: <TrendingUp className="h-4 w-4" />, label: "Escalating", cls: "text-red-600" },
-  improving: { icon: <TrendingDown className="h-4 w-4" />, label: "Improving", cls: "text-green-600" },
+  escalating: { icon: <TrendingUp className="h-4 w-4" />, label: "Escalating", cls: "text-[--cs-risk]" },
+  improving: { icon: <TrendingDown className="h-4 w-4" />, label: "Improving", cls: "text-[--cs-success]" },
   stable: { icon: <Minus className="h-4 w-4" />, label: "Stable", cls: "text-gray-500" },
 };
 
 const ALERT_STYLES: Record<string, string> = {
-  critical: "border-red-200 bg-red-50 text-red-800",
-  high: "border-red-200 bg-red-50 text-red-800",
-  medium: "border-amber-200 bg-amber-50 text-amber-800",
-  low: "border-blue-200 bg-blue-50 text-blue-800",
+  critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
+  high: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
+  medium: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]",
+  low: "border-[--cs-info-soft] bg-[--cs-info-bg] text-[--cs-info]",
 };
 
 const INSIGHT_STYLES: Record<string, string> = {
-  critical: "border-red-200 bg-red-50 text-red-800",
-  warning: "border-amber-200 bg-amber-50 text-amber-800",
-  positive: "border-green-200 bg-green-50 text-green-800",
+  critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
+  warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]",
+  positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]",
 };
 
 const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
-  urgent: { bg: "bg-red-100", text: "text-red-700" },
-  high: { bg: "bg-amber-100", text: "text-amber-700" },
+  urgent: { bg: "bg-[--cs-risk-bg]", text: "text-[--cs-risk]" },
+  high: { bg: "bg-[--cs-warning-bg]", text: "text-[--cs-warning]" },
   routine: { bg: "bg-gray-100", text: "text-gray-600" },
 };
 
@@ -156,7 +156,7 @@ export default function PlacementBreakdownForecastPage() {
                       </div>
                     </div>
                     {f.projected_days_to_critical != null && (
-                      <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-red-50 border border-red-200 px-3 py-1.5 text-xs text-red-800">
+                      <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] px-3 py-1.5 text-xs text-[--cs-risk]">
                         <CalendarClock className="h-3.5 w-3.5" />
                         {f.projected_days_to_critical === 0
                           ? "At or above the critical threshold now"
@@ -175,7 +175,7 @@ export default function PlacementBreakdownForecastPage() {
                             <div className="min-w-0">
                               <span className="font-medium">{cf.factor}</span>
                               {cf.rising && (
-                                <Badge className="ml-1.5 text-[9px] bg-red-50 text-red-700 border-red-200">rising</Badge>
+                                <Badge className="ml-1.5 text-[9px] bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]">rising</Badge>
                               )}
                               <p className="text-[11px] text-[var(--cs-text-muted)] truncate">{cf.detail}</p>
                             </div>
@@ -188,12 +188,12 @@ export default function PlacementBreakdownForecastPage() {
                     {/* Protective factors */}
                     {(f.protective_factors ?? []).length > 0 && (
                       <div className="space-y-1.5">
-                        <p className="text-xs font-semibold text-green-700 flex items-center gap-1">
+                        <p className="text-xs font-semibold text-[--cs-success] flex items-center gap-1">
                           <ShieldCheck className="h-3.5 w-3.5" /> Protective factors
                         </p>
                         <div className="flex flex-wrap gap-1.5">
                           {(f.protective_factors ?? []).map((p, i) => (
-                            <Badge key={i} className="text-[10px] bg-green-50 text-green-700 border-green-200">{p}</Badge>
+                            <Badge key={i} className="text-[10px] bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]">{p}</Badge>
                           ))}
                         </div>
                       </div>
@@ -245,9 +245,9 @@ function OverviewStat({
 }) {
   const toneCls: Record<string, string> = {
     neutral: "text-[var(--cs-navy)]",
-    red: "text-red-600",
-    amber: "text-amber-600",
-    green: "text-green-600",
+    red: "text-[--cs-risk]",
+    amber: "text-[--cs-warning]",
+    green: "text-[--cs-success]",
     gray: "text-gray-400",
   };
   return (
