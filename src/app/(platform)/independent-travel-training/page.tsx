@@ -63,15 +63,15 @@ const stageChip = (s: TravelTrainingStage) => {
 const confidenceChip = (c: TravelConfidence) => {
   switch (c) {
     case "anxious":
-      return "bg-red-100 text-red-800 border-red-300";
+      return "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]";
     case "cautious":
       return "bg-orange-100 text-orange-800 border-orange-300";
     case "building":
-      return "bg-amber-100 text-amber-800 border-amber-300";
+      return "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]";
     case "confident":
       return "bg-blue-100 text-blue-800 border-blue-300";
     case "highly_confident":
-      return "bg-emerald-100 text-emerald-800 border-emerald-300";
+      return "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]";
   }
 };
 
@@ -308,7 +308,7 @@ export default function IndependentTravelTrainingPage() {
                         £{r.monthly_travel_budget}/month
                       </span>
                       {r.phone_and_charger_check && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-[--cs-success-soft] bg-[--cs-success-bg] px-2 py-0.5 text-xs text-[--cs-success]">
                           <Phone className="h-3 w-3" /> phone + charger
                         </span>
                       )}
@@ -349,8 +349,8 @@ export default function IndependentTravelTrainingPage() {
 
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                     {/* Routes mastered */}
-                    <div className="rounded-md border border-emerald-200 bg-emerald-50/60 p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
+                    <div className="rounded-md border border-[--cs-success-soft] bg-[--cs-success-bg] p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-[--cs-success]">
                         Routes mastered ({r.routes_mastered.length})
                       </div>
                       {r.routes_mastered.length === 0 ? (
@@ -362,7 +362,7 @@ export default function IndependentTravelTrainingPage() {
                           {r.routes_mastered.map((x, i) => (
                             <li
                               key={i}
-                              className="rounded border border-emerald-200/70 bg-white p-2"
+                              className="rounded border border-[--cs-success-soft] bg-white p-2"
                             >
                               <div className="font-medium text-[var(--cs-navy)]">
                                 {x.from} → {x.to}
@@ -377,8 +377,8 @@ export default function IndependentTravelTrainingPage() {
                     </div>
 
                     {/* Routes learning */}
-                    <div className="rounded-md border border-amber-200 bg-amber-50/50 p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-amber-800">
+                    <div className="rounded-md border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-[--cs-warning]">
                         Routes in learning ({r.routes_learning.length})
                       </div>
                       {r.routes_learning.length === 0 ? (
@@ -390,7 +390,7 @@ export default function IndependentTravelTrainingPage() {
                           {r.routes_learning.map((x, i) => (
                             <li
                               key={i}
-                              className="rounded border border-amber-200/70 bg-white p-2"
+                              className="rounded border border-[--cs-warning-soft] bg-white p-2"
                             >
                               <div className="font-medium text-[var(--cs-navy)]">
                                 {x.from} → {x.to}
@@ -398,7 +398,7 @@ export default function IndependentTravelTrainingPage() {
                               <div className="text-xs text-[var(--cs-text-secondary)]">
                                 {x.mode}
                               </div>
-                              <div className="mt-1 text-xs text-amber-900">
+                              <div className="mt-1 text-xs text-[--cs-warning]">
                                 Next step: {x.next_step}
                               </div>
                             </li>
@@ -428,8 +428,8 @@ export default function IndependentTravelTrainingPage() {
                     </div>
 
                     {/* Risk factors */}
-                    <div className="rounded-md border border-red-200 bg-red-50/60 p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-red-800">
+                    <div className="rounded-md border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-[--cs-risk]">
                         Risk factors
                       </div>
                       {r.risk_factors.length === 0 ? (
@@ -437,7 +437,7 @@ export default function IndependentTravelTrainingPage() {
                           None recorded.
                         </p>
                       ) : (
-                        <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-red-900">
+                        <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[--cs-risk]">
                           {r.risk_factors.map((s, i) => (
                             <li key={i}>{s}</li>
                           ))}
@@ -446,11 +446,11 @@ export default function IndependentTravelTrainingPage() {
                     </div>
 
                     {/* Protective factors */}
-                    <div className="rounded-md border border-emerald-200 bg-emerald-50/60 p-3">
-                      <div className="text-xs font-semibold uppercase tracking-wide text-emerald-800">
+                    <div className="rounded-md border border-[--cs-success-soft] bg-[--cs-success-bg] p-3">
+                      <div className="text-xs font-semibold uppercase tracking-wide text-[--cs-success]">
                         Protective factors
                       </div>
-                      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-emerald-900">
+                      <ul className="mt-1 list-disc space-y-1 pl-5 text-sm text-[--cs-success]">
                         {r.protective_factors.map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
