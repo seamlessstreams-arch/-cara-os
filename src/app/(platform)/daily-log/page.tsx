@@ -92,10 +92,10 @@ const DATE_FILTER_LABELS: Record<DateFilter, string> = {
 };
 
 function moodColor(score: number): string {
-  if (score >= 8) return "bg-emerald-100 text-emerald-700";
-  if (score >= 6) return "bg-amber-100 text-amber-700";
+  if (score >= 8) return "bg-[--cs-success-bg] text-[--cs-success]";
+  if (score >= 6) return "bg-[--cs-warning-bg] text-[--cs-warning]";
   if (score >= 4) return "bg-orange-100 text-orange-700";
-  return "bg-red-100 text-red-700";
+  return "bg-[--cs-risk-bg] text-[--cs-risk]";
 }
 
 function MoodIcon({ score }: { score: number }) {
@@ -251,7 +251,7 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
                 onClick={() => setIsSignificant(!isSignificant)}
                 className={cn(
                   "h-5 w-9 rounded-full transition-colors",
-                  isSignificant ? "bg-amber-500" : "bg-slate-200"
+                  isSignificant ? "bg-[--cs-warning]" : "bg-slate-200"
                 )}
               >
                 <span
@@ -282,7 +282,7 @@ function NewEntryForm({ onClose, onSuccess }: NewEntryFormProps) {
           </div>
 
           {createMutation.isError && (
-            <p className="text-xs text-red-600 flex items-center gap-1">
+            <p className="text-xs text-[--cs-risk] flex items-center gap-1">
               <AlertCircle className="h-3.5 w-3.5" />
               {createMutation.error?.message || "Failed to save"}
             </p>
@@ -321,7 +321,7 @@ function LogEntryCard({ entry }: { entry: DailyLogEntry }) {
               </span>
               <span className="text-xs text-slate-400">{entry.time} · {staffFirst}</span>
               {entry.is_significant && (
-                <Badge className="text-[9px] rounded-full bg-amber-100 text-amber-700">
+                <Badge className="text-[9px] rounded-full bg-[--cs-warning-bg] text-[--cs-warning]">
                   <Star className="h-2.5 w-2.5 mr-0.5" />Significant
                 </Badge>
               )}
@@ -350,7 +350,7 @@ function LogEntryCard({ entry }: { entry: DailyLogEntry }) {
             {(entry as never as { care_event_id?: string }).care_event_id && (
               <Link
                 href={`/care-events/${(entry as never as { care_event_id: string }).care_event_id}`}
-                className="mt-2 inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-1 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                className="mt-2 inline-flex items-center gap-1 rounded-full bg-[--cs-info-bg] border border-[--cs-info-soft] px-2.5 py-1 text-[10px] font-medium text-[--cs-info] hover:bg-[--cs-info-soft] transition-colors"
               >
                 <Sparkles className="h-3 w-3" />
                 Logged from Care Event
@@ -470,7 +470,7 @@ function CaraPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
               Analysing {entries.length} entries for training patterns…
             </div>
           )}
-          {scanError && <p className="text-xs text-red-600">{scanError}</p>}
+          {scanError && <p className="text-xs text-[--cs-risk]">{scanError}</p>}
           {!scanning && patterns.length === 0 && !scanError && (
             <p className="text-xs text-slate-500 py-1">No training patterns detected in these entries.</p>
           )}
@@ -480,16 +480,16 @@ function CaraPatternScanner({ entries }: { entries: DailyLogEntry[] }) {
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-sm font-semibold text-slate-900">{p.title}</p>
                   <Badge className={cn("text-[10px] h-4 px-1.5 border",
-                    p.priority === "urgent" ? "bg-red-100 text-red-700 border-red-200" :
+                    p.priority === "urgent" ? "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]" :
                     p.priority === "high" ? "bg-orange-100 text-orange-700 border-orange-200" :
-                    "bg-amber-100 text-amber-700 border-amber-200"
+                    "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]"
                   )}>{p.priority}</Badge>
                   <Badge variant="outline" className="text-[10px] h-4 px-1.5">{p.need_type.replace(/_/g, " ")}</Badge>
                 </div>
                 <p className="text-xs text-slate-600 mt-1">{p.description}</p>
               </div>
               {created.has(i) ? (
-                <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium shrink-0 pt-0.5">
+                <span className="flex items-center gap-1 text-[10px] text-[--cs-success] font-medium shrink-0 pt-0.5">
                   <CheckCircle2 className="h-3.5 w-3.5" /> Created
                 </span>
               ) : (
@@ -630,9 +630,9 @@ export default function DailyLogPage() {
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
             {[
               { label: "Total Entries", value: stats.total, colour: "text-slate-700", bg: "bg-slate-50", icon: BookOpen },
-              { label: "Significant", value: stats.significant, colour: stats.significant > 0 ? "text-amber-700" : "text-slate-400", bg: stats.significant > 0 ? "bg-amber-50" : "bg-slate-50", icon: Star },
-              { label: "Avg Mood", value: stats.avgMood !== null ? `${stats.avgMood}/10` : "—", colour: stats.avgMood !== null && stats.avgMood >= 6 ? "text-emerald-700" : stats.avgMood !== null ? "text-amber-700" : "text-slate-400", bg: stats.avgMood !== null && stats.avgMood >= 6 ? "bg-emerald-50" : "bg-amber-50", icon: Smile },
-              { label: "Low Mood", value: stats.lowMoodCount, colour: stats.lowMoodCount > 0 ? "text-red-700" : "text-emerald-700", bg: stats.lowMoodCount > 0 ? "bg-red-50" : "bg-emerald-50", icon: AlertTriangle },
+              { label: "Significant", value: stats.significant, colour: stats.significant > 0 ? "text-[--cs-warning]" : "text-slate-400", bg: stats.significant > 0 ? "bg-[--cs-warning-bg]" : "bg-slate-50", icon: Star },
+              { label: "Avg Mood", value: stats.avgMood !== null ? `${stats.avgMood}/10` : "—", colour: stats.avgMood !== null && stats.avgMood >= 6 ? "text-[--cs-success]" : stats.avgMood !== null ? "text-[--cs-warning]" : "text-slate-400", bg: stats.avgMood !== null && stats.avgMood >= 6 ? "bg-[--cs-success-bg]" : "bg-[--cs-warning-bg]", icon: Smile },
+              { label: "Low Mood", value: stats.lowMoodCount, colour: stats.lowMoodCount > 0 ? "text-[--cs-risk]" : "text-[--cs-success]", bg: stats.lowMoodCount > 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]", icon: AlertTriangle },
               { label: "Young People", value: stats.uniqueYP, colour: "text-violet-700", bg: "bg-violet-50", icon: Heart },
               { label: "Staff Recording", value: stats.uniqueStaff, colour: "text-blue-700", bg: "bg-blue-50", icon: Users },
             ].map(({ label, value, colour, bg, icon: Icon }) => (
@@ -788,7 +788,7 @@ export default function DailyLogPage() {
             <span className="text-sm">Loading entries...</span>
           </div>
         ) : isError ? (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-6 flex items-center gap-3 text-red-600">
+          <div className="rounded-2xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-6 flex items-center gap-3 text-[--cs-risk]">
             <AlertCircle className="h-5 w-5 shrink-0" />
             <div>
               <p className="text-sm font-medium">Failed to load log entries</p>
