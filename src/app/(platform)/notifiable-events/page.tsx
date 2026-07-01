@@ -145,7 +145,7 @@ function CreateNotifiableEventDialog({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-red-600" />
+            <Bell className="h-5 w-5 text-[--cs-risk]" />
             Record Notifiable Event
           </DialogTitle>
           <p className="text-xs text-muted-foreground pt-1">
@@ -251,8 +251,8 @@ function CreateNotifiableEventDialog({
           </div>
 
           {/* Notification tracking */}
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-4">
-            <p className="text-sm font-semibold text-amber-800 flex items-center gap-2">
+          <div className="rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4 space-y-4">
+            <p className="text-sm font-semibold text-[--cs-warning] flex items-center gap-2">
               <Send className="h-4 w-4" /> Notification Tracker
             </p>
 
@@ -307,9 +307,9 @@ function CreateNotifiableEventDialog({
                     {n.label} notified
                   </label>
                   {n.notified ? (
-                    <Badge className="ml-auto bg-green-100 text-green-800 text-xs">Notified</Badge>
+                    <Badge className="ml-auto bg-[--cs-success-bg] text-[--cs-success] text-xs">Notified</Badge>
                   ) : (
-                    <Badge className="ml-auto bg-red-100 text-red-800 text-xs">Pending</Badge>
+                    <Badge className="ml-auto bg-[--cs-risk-bg] text-[--cs-risk] text-xs">Pending</Badge>
                   )}
                 </div>
                 {n.notified && (
@@ -412,8 +412,8 @@ const EVENT_LABELS: Record<NotifiableEventType, string> = {
 
 const NOTIFICATION_STATUS = ["pending", "notified_within_24h", "notified_late", "not_required"] as const;
 const STATUS_COLORS: Record<NotifiableStatus, string> = {
-  pending: "bg-red-100 text-red-800",
-  notified_within_24h: "bg-green-100 text-green-800",
+  pending: "bg-[--cs-risk-bg] text-[--cs-risk]",
+  notified_within_24h: "bg-[--cs-success-bg] text-[--cs-success]",
   notified_late: "bg-orange-100 text-orange-800",
   not_required: "bg-slate-100 text-[var(--cs-navy)]",
 };
@@ -503,9 +503,9 @@ export default function NotifiableEventsPage() {
         {/* ── stats ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Total Events", value: total, icon: Bell, colour: "text-blue-600" },
-            { label: "Pending Notification", value: pending, icon: Clock, colour: pending > 0 ? "text-red-600" : "text-green-600" },
-            { label: "Notified On Time", value: notifiedOnTime, icon: CheckCircle2, colour: "text-green-600" },
+            { label: "Total Events", value: total, icon: Bell, colour: "text-[--cs-info]" },
+            { label: "Pending Notification", value: pending, icon: Clock, colour: pending > 0 ? "text-[--cs-risk]" : "text-[--cs-success]" },
+            { label: "Notified On Time", value: notifiedOnTime, icon: CheckCircle2, colour: "text-[--cs-success]" },
             { label: "Notified Late", value: late, icon: AlertTriangle, colour: late > 0 ? "text-orange-600" : "text-[var(--cs-text-muted)]" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">
@@ -520,10 +520,10 @@ export default function NotifiableEventsPage() {
 
         {/* ── alerts ────────────────────────────────────────────── */}
         {pending > 0 && (
-          <div className="rounded-lg border-l-4 border-red-400 bg-red-50 p-4">
+          <div className="rounded-lg border-l-4 border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4">
             <div className="flex items-start gap-2">
-              <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
-              <p className="text-sm text-red-800">
+              <AlertTriangle className="h-5 w-5 text-[--cs-risk] mt-0.5" />
+              <p className="text-sm text-[--cs-risk]">
                 <strong>{pending}</strong> event(s) pending Ofsted notification — Regulation 40 requires
                 notification without delay and within 24 hours.
               </p>
@@ -597,8 +597,8 @@ export default function NotifiableEventsPage() {
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Shield className={cn("h-5 w-5 shrink-0",
-                      evt.ofsted_status === "pending" ? "text-red-600" :
-                      evt.ofsted_status === "notified_late" ? "text-orange-600" : "text-blue-600"
+                      evt.ofsted_status === "pending" ? "text-[--cs-risk]" :
+                      evt.ofsted_status === "notified_late" ? "text-orange-600" : "text-[--cs-info]"
                     )} />
                     <div className="min-w-0">
                       <p className="font-medium truncate">{EVENT_LABELS[evt.event_type]}</p>
@@ -625,8 +625,8 @@ export default function NotifiableEventsPage() {
                       <p className="text-xs text-muted-foreground mb-1 font-medium">Full Detail</p>
                       <p className="text-sm">{evt.detail}</p>
                     </div>
-                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                      <p className="text-xs font-medium text-blue-700 mb-1">Immediate Action Taken</p>
+                    <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-3">
+                      <p className="text-xs font-medium text-[--cs-info] mb-1">Immediate Action Taken</p>
                       <p className="text-sm">{evt.immediate_action}</p>
                     </div>
 
@@ -640,13 +640,13 @@ export default function NotifiableEventsPage() {
                           { label: "Placing Authority / SW", data: evt.placing },
                         ].map((n) => (
                           <div key={n.label} className={cn("rounded-lg border p-2.5 text-sm",
-                            n.data.notified_date ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"
+                            n.data.notified_date ? "bg-[--cs-success-bg] border-[--cs-success-soft]" : "bg-[--cs-risk-bg] border-[--cs-risk-soft]"
                           )}>
                             <div className="flex items-center gap-1 mb-1">
                               {n.data.notified_date ? (
-                                <Send className="h-3 w-3 text-green-600" />
+                                <Send className="h-3 w-3 text-[--cs-success]" />
                               ) : (
-                                <Clock className="h-3 w-3 text-red-600" />
+                                <Clock className="h-3 w-3 text-[--cs-risk]" />
                               )}
                               <span className="font-medium">{n.label}</span>
                             </div>
@@ -657,22 +657,22 @@ export default function NotifiableEventsPage() {
                                 {n.data.reference && <p>Ref: {n.data.reference}</p>}
                               </div>
                             ) : (
-                              <p className="text-xs text-red-700 font-medium">Pending</p>
+                              <p className="text-xs text-[--cs-risk] font-medium">Pending</p>
                             )}
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                      <p className="text-xs font-medium text-amber-700 mb-1">Follow-Up Actions</p>
+                    <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3">
+                      <p className="text-xs font-medium text-[--cs-warning] mb-1">Follow-Up Actions</p>
                       <p className="text-sm">{evt.follow_up}</p>
                     </div>
 
-                    <div className="rounded-lg bg-green-50 border border-green-200 p-3">
+                    <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-3">
                       <div className="flex items-center gap-1 mb-1">
-                        <FileText className="h-4 w-4 text-green-600" />
-                        <p className="text-xs font-medium text-green-700">Lessons Learned</p>
+                        <FileText className="h-4 w-4 text-[--cs-success]" />
+                        <p className="text-xs font-medium text-[--cs-success]">Lessons Learned</p>
                       </div>
                       <p className="text-sm">{evt.lesson_learned}</p>
                     </div>
