@@ -50,17 +50,17 @@ const TRIP_TYPE_CONFIG: Record<TripType, { label: string; cls: string }> = {
 
 const STATUS_CONFIG: Record<TripStatus, { label: string; cls: string }> = {
   planning:    { label: "Planning",    cls: "bg-gray-50 text-gray-700 border-gray-200" },
-  approved:    { label: "Approved",    cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  ready:       { label: "Ready",       cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  in_progress: { label: "In Progress", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  completed:   { label: "Completed",   cls: "bg-green-50 text-green-700 border-green-200" },
-  cancelled:   { label: "Cancelled",   cls: "bg-red-50 text-red-700 border-red-200" },
+  approved:    { label: "Approved",    cls: "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]" },
+  ready:       { label: "Ready",       cls: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" },
+  in_progress: { label: "In Progress", cls: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]" },
+  completed:   { label: "Completed",   cls: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" },
+  cancelled:   { label: "Cancelled",   cls: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]" },
 };
 
 const RISK_CONFIG: Record<TripRiskLevel, { label: string; cls: string }> = {
-  low:    { label: "Low",    cls: "bg-green-50 text-green-700 border-green-200" },
-  medium: { label: "Medium", cls: "bg-amber-50 text-amber-700 border-amber-200" },
-  high:   { label: "High",   cls: "bg-red-50 text-red-700 border-red-200" },
+  low:    { label: "Low",    cls: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" },
+  medium: { label: "Medium", cls: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]" },
+  high:   { label: "High",   cls: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]" },
 };
 
 // ── Export columns ───────────────────────────────────────────────────────────
@@ -125,7 +125,7 @@ function TripCard({ trip }: { trip: TripPlan }) {
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-sm font-bold text-[var(--cs-navy)]">{trip.title}</span>
             {daysUntil > 0 && daysUntil <= 14 && trip.status !== "completed" && trip.status !== "cancelled" && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-amber-50 text-amber-700 border-amber-200">
+              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">
                 <Clock className="h-2.5 w-2.5 mr-0.5 inline" />{daysUntil}d away
               </Badge>
             )}
@@ -156,7 +156,7 @@ function TripCard({ trip }: { trip: TripPlan }) {
               Risk: {riskCfg.label}
             </Badge>
             {!allConsent && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-red-50 text-red-700 border-red-200">
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]">
                 <AlertTriangle className="h-2.5 w-2.5 mr-0.5 inline" />Consent pending
               </Badge>
             )}
@@ -183,11 +183,11 @@ function TripCard({ trip }: { trip: TripPlan }) {
                 <div key={yp.child_id} className="flex items-center gap-2 text-xs">
                   <span className="font-medium text-[var(--cs-text-secondary)] w-24">{getYPName(yp.child_id)}</span>
                   {yp.consent_obtained ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />
                   ) : (
-                    <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+                    <AlertTriangle className="h-3.5 w-3.5 text-[--cs-risk]" />
                   )}
-                  <span className={cn("text-[10px]", yp.consent_obtained ? "text-green-600" : "text-red-600")}>
+                  <span className={cn("text-[10px]", yp.consent_obtained ? "text-[--cs-success]" : "text-[--cs-risk]")}>
                     {yp.consent_obtained ? `Consent: ${yp.consent_from}` : "Consent pending"}
                   </span>
                   {yp.medical_info_shared && (
@@ -226,11 +226,11 @@ function TripCard({ trip }: { trip: TripPlan }) {
                   {riskCfg.label} Risk
                 </Badge>
                 {trip.risk_assessment.completed ? (
-                  <span className="text-[10px] text-green-600 flex items-center gap-0.5">
+                  <span className="text-[10px] text-[--cs-success] flex items-center gap-0.5">
                     <CheckCircle2 className="h-3 w-3" />Completed
                   </span>
                 ) : (
-                  <span className="text-[10px] text-red-600 flex items-center gap-0.5">
+                  <span className="text-[10px] text-[--cs-risk] flex items-center gap-0.5">
                     <AlertTriangle className="h-3 w-3" />Incomplete
                   </span>
                 )}
@@ -317,9 +317,9 @@ function TripCard({ trip }: { trip: TripPlan }) {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-xs">
                 {trip.manager_approval ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />
                 ) : (
-                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                  <AlertTriangle className="h-3.5 w-3.5 text-[--cs-warning]" />
                 )}
                 <span className="text-[var(--cs-text-secondary)]">
                   Manager approval: {trip.manager_approval
@@ -330,9 +330,9 @@ function TripCard({ trip }: { trip: TripPlan }) {
               {trip.social_worker_approval.map((sw) => (
                 <div key={sw.child_id} className="flex items-center gap-2 text-xs">
                   {sw.approved ? (
-                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />
                   ) : (
-                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                    <AlertTriangle className="h-3.5 w-3.5 text-[--cs-warning]" />
                   )}
                   <span className="text-[var(--cs-text-secondary)]">
                     SW for {getYPName(sw.child_id)}: {sw.approved ? `Approved ${sw.approved_date}` : "Pending"}
@@ -352,28 +352,28 @@ function TripCard({ trip }: { trip: TripPlan }) {
 
           {/* Post-trip evaluation — green panel */}
           {trip.post_trip_evaluation && (
-            <div className="rounded-xl border border-green-100 bg-green-50/40 p-3">
+            <div className="rounded-xl border border-[--cs-success-soft] bg-[--cs-success-bg] p-3">
               <div className="flex items-center gap-2 mb-2">
-                <p className="text-[10px] font-semibold text-green-700 uppercase tracking-widest">Post-Trip Evaluation</p>
+                <p className="text-[10px] font-semibold text-[--cs-success] uppercase tracking-widest">Post-Trip Evaluation</p>
                 <Stars rating={trip.post_trip_evaluation.rating} />
               </div>
               <div className="space-y-2 text-xs text-[var(--cs-text-secondary)] leading-relaxed">
                 <div>
-                  <span className="font-semibold text-green-700">Highlights: </span>
+                  <span className="font-semibold text-[--cs-success]">Highlights: </span>
                   {trip.post_trip_evaluation.highlights}
                 </div>
                 {trip.post_trip_evaluation.concerns && (
                   <div>
-                    <span className="font-semibold text-amber-700">Concerns: </span>
+                    <span className="font-semibold text-[--cs-warning]">Concerns: </span>
                     {trip.post_trip_evaluation.concerns}
                   </div>
                 )}
                 <div>
-                  <span className="font-semibold text-green-700">Would repeat: </span>
+                  <span className="font-semibold text-[--cs-success]">Would repeat: </span>
                   {trip.post_trip_evaluation.would_repeat ? "Yes" : "No"}
                 </div>
-                <div className="rounded-lg border border-green-200 bg-white/60 p-2 mt-1">
-                  <p className="text-[10px] font-semibold text-green-600 uppercase tracking-widest mb-0.5">Child Feedback</p>
+                <div className="rounded-lg border border-[--cs-success-soft] bg-white/60 p-2 mt-1">
+                  <p className="text-[10px] font-semibold text-[--cs-success] uppercase tracking-widest mb-0.5">Child Feedback</p>
                   <p className="text-xs text-[var(--cs-text-secondary)] italic">{trip.post_trip_evaluation.child_feedback}</p>
                 </div>
               </div>
@@ -473,7 +473,7 @@ function NewTripDialog({
         </DialogHeader>
         <div className="space-y-3 text-sm">
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Trip title <span className="text-red-500">*</span></label>
+            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Trip title <span className="text-[--cs-risk]">*</span></label>
             <Input value={form.title} onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))} placeholder="e.g. Lake District Weekend" className="h-8 text-xs" />
           </div>
 
@@ -496,13 +496,13 @@ function NewTripDialog({
           </div>
 
           <div>
-            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Destination <span className="text-red-500">*</span></label>
+            <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Destination <span className="text-[--cs-risk]">*</span></label>
             <Input value={form.destination} onChange={(e) => setForm((p) => ({ ...p, destination: e.target.value }))} placeholder="e.g. Blackpool" className="h-8 text-xs" />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Start date <span className="text-red-500">*</span></label>
+              <label className="text-xs text-[var(--cs-text-muted)] font-medium mb-1 block">Start date <span className="text-[--cs-risk]">*</span></label>
               <Input type="date" value={form.start_date} onChange={(e) => setForm((p) => ({ ...p, start_date: e.target.value }))} className="h-8 text-xs" />
             </div>
             <div>
@@ -682,9 +682,9 @@ export default function HolidayPlanningPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { label: "Upcoming Trips", value: upcomingCount, icon: Calendar, colour: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
-            { label: "Completed This Year", value: completedThisYear, icon: CheckCircle2, colour: "text-green-600", bg: "bg-green-50 border-green-100" },
+            { label: "Completed This Year", value: completedThisYear, icon: CheckCircle2, colour: "text-[--cs-success]", bg: "bg-[--cs-success-bg] border-[--cs-success-soft]" },
             { label: "Total Spend", value: `£${totalSpend}`, icon: MapPin, colour: "text-purple-600", bg: "bg-purple-50 border-purple-100" },
-            { label: "Avg Rating", value: avgRating > 0 ? `${avgRating} ★` : "—", icon: Clock, colour: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
+            { label: "Avg Rating", value: avgRating > 0 ? `${avgRating} ★` : "—", icon: Clock, colour: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg] border-[--cs-warning-soft]" },
           ].map(({ label, value, icon: Icon, colour, bg }) => (
             <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
               <Icon className={cn("h-4 w-4 mx-auto mb-1", colour)} />
@@ -729,20 +729,20 @@ export default function HolidayPlanningPage() {
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           {allApproved ? (
-                            <span className="text-[10px] text-green-600 flex items-center gap-0.5">
+                            <span className="text-[10px] text-[--cs-success] flex items-center gap-0.5">
                               <CheckCircle2 className="h-3 w-3" />All approved
                             </span>
                           ) : (
-                            <span className="text-[10px] text-amber-600 flex items-center gap-0.5">
+                            <span className="text-[10px] text-[--cs-warning] flex items-center gap-0.5">
                               <AlertTriangle className="h-3 w-3" />Approvals pending
                             </span>
                           )}
                           {allConsent ? (
-                            <span className="text-[10px] text-green-600 flex items-center gap-0.5">
+                            <span className="text-[10px] text-[--cs-success] flex items-center gap-0.5">
                               <CheckCircle2 className="h-3 w-3" />Consent complete
                             </span>
                           ) : (
-                            <span className="text-[10px] text-red-600 flex items-center gap-0.5">
+                            <span className="text-[10px] text-[--cs-risk] flex items-center gap-0.5">
                               <AlertTriangle className="h-3 w-3" />Consent pending
                             </span>
                           )}
@@ -844,7 +844,7 @@ export default function HolidayPlanningPage() {
                 <div className="text-[10px] text-[var(--cs-text-muted)]">Avg Per Trip</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-green-600">{completedTrips.length}</div>
+                <div className="text-lg font-bold text-[--cs-success]">{completedTrips.length}</div>
                 <div className="text-[10px] text-[var(--cs-text-muted)]">Trips Completed</div>
               </div>
             </div>
