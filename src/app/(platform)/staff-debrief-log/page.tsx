@@ -40,17 +40,17 @@ const TYPE_META: Record<StaffDebriefType, { color: string }> = {
 };
 
 const STATUS_META: Record<StaffDebriefStatus, { color: string }> = {
-  completed: { color: "bg-green-100 text-green-800" },
-  scheduled: { color: "bg-blue-100 text-blue-800" },
-  overdue: { color: "bg-red-100 text-red-800" },
+  completed: { color: "bg-[--cs-success-bg] text-[--cs-success]" },
+  scheduled: { color: "bg-[--cs-info-bg] text-[--cs-info]" },
+  overdue: { color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
   declined: { color: "bg-slate-100 text-[var(--cs-text-secondary)]" },
 };
 
 const IMPACT_META: Record<StaffDebriefEmotionalImpact, { color: string }> = {
-  low: { color: "text-green-700" },
-  moderate: { color: "text-amber-700" },
+  low: { color: "text-[--cs-success]" },
+  moderate: { color: "text-[--cs-warning]" },
   high: { color: "text-orange-700" },
-  significant: { color: "text-red-700" },
+  significant: { color: "text-[--cs-risk]" },
 };
 
 /* ── component ─────────────────────────────────────────────────────────── */
@@ -141,19 +141,19 @@ export default function StaffDebriefLogPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className="text-2xl font-bold text-green-600">{completedCount}</p>
+              <p className="text-2xl font-bold text-[--cs-success]">{completedCount}</p>
               <p className="text-xs text-muted-foreground">Completed</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className={cn("text-2xl font-bold", highImpactCount > 0 ? "text-red-600" : "text-green-600")}>{highImpactCount}</p>
+              <p className={cn("text-2xl font-bold", highImpactCount > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{highImpactCount}</p>
               <p className="text-xs text-muted-foreground">High / Significant Impact</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4 pb-3">
-              <p className={cn("text-2xl font-bold", followUpCount > 0 ? "text-amber-600" : "text-green-600")}>{followUpCount}</p>
+              <p className={cn("text-2xl font-bold", followUpCount > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{followUpCount}</p>
               <p className="text-xs text-muted-foreground">Follow-Up Needed</p>
             </CardContent>
           </Card>
@@ -194,7 +194,7 @@ export default function StaffDebriefLogPage() {
                         <Brain className="h-4 w-4 text-purple-600" />
                         {STAFF_DEBRIEF_TYPE_LABEL[debrief.type]}
                         <Badge variant="outline" className={STATUS_META[debrief.status].color}>{STAFF_DEBRIEF_STATUS_LABEL[debrief.status]}</Badge>
-                        <Badge variant="outline" className={cn("text-xs", debrief.emotional_impact === "significant" || debrief.emotional_impact === "high" ? "bg-red-100 text-red-800" : debrief.emotional_impact === "moderate" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800")}>
+                        <Badge variant="outline" className={cn("text-xs", debrief.emotional_impact === "significant" || debrief.emotional_impact === "high" ? "bg-[--cs-risk-bg] text-[--cs-risk]" : debrief.emotional_impact === "moderate" ? "bg-[--cs-warning-bg] text-[--cs-warning]" : "bg-[--cs-success-bg] text-[--cs-success]")}>
                           {STAFF_DEBRIEF_EMOTIONAL_IMPACT_LABEL[debrief.emotional_impact]} Impact
                         </Badge>
                         {debrief.confidential && <Badge variant="outline" className="bg-slate-100 text-[var(--cs-text-secondary)]">Confidential</Badge>}
@@ -219,11 +219,11 @@ export default function StaffDebriefLogPage() {
                     {(debrief.what_went_well.length > 0 || debrief.what_could_improve.length > 0) && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {debrief.what_went_well.length > 0 && (
-                          <div className="bg-green-50 border border-green-200 rounded p-2">
-                            <p className="font-medium text-xs text-green-800 mb-1">What Went Well</p>
+                          <div className="bg-[--cs-success-bg] border border-[--cs-success-soft] rounded p-2">
+                            <p className="font-medium text-xs text-[--cs-success] mb-1">What Went Well</p>
                             <ul className="space-y-0.5">
                               {debrief.what_went_well.map((item, i) => (
-                                <li key={i} className="text-xs text-green-700 flex items-start gap-1">
+                                <li key={i} className="text-xs text-[--cs-success] flex items-start gap-1">
                                   <CheckCircle2 className="h-3 w-3 shrink-0 mt-0.5" />
                                   <span>{item}</span>
                                 </li>
@@ -232,11 +232,11 @@ export default function StaffDebriefLogPage() {
                           </div>
                         )}
                         {debrief.what_could_improve.length > 0 && (
-                          <div className="bg-amber-50 border border-amber-200 rounded p-2">
-                            <p className="font-medium text-xs text-amber-800 mb-1">Areas for Improvement</p>
+                          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded p-2">
+                            <p className="font-medium text-xs text-[--cs-warning] mb-1">Areas for Improvement</p>
                             <ul className="space-y-0.5">
                               {debrief.what_could_improve.map((item, i) => (
-                                <li key={i} className="text-xs text-amber-700 flex items-start gap-1">
+                                <li key={i} className="text-xs text-[--cs-warning] flex items-start gap-1">
                                   <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />
                                   <span>{item}</span>
                                 </li>
@@ -249,9 +249,9 @@ export default function StaffDebriefLogPage() {
 
                     {/* staff feelings */}
                     {debrief.staff_feelings && (
-                      <div className="bg-blue-50 border border-blue-200 rounded p-2">
-                        <p className="font-medium text-xs text-blue-800 mb-1 flex items-center gap-1"><Heart className="h-3.5 w-3.5" /> Staff Feelings</p>
-                        <p className="text-xs text-blue-700">{debrief.staff_feelings}</p>
+                      <div className="bg-[--cs-info-bg] border border-[--cs-info-soft] rounded p-2">
+                        <p className="font-medium text-xs text-[--cs-info] mb-1 flex items-center gap-1"><Heart className="h-3.5 w-3.5" /> Staff Feelings</p>
+                        <p className="text-xs text-[--cs-info]">{debrief.staff_feelings}</p>
                       </div>
                     )}
 
@@ -273,11 +273,11 @@ export default function StaffDebriefLogPage() {
                     {/* learning points */}
                     {debrief.learning_points.length > 0 && (
                       <div>
-                        <p className="font-medium text-xs mb-1 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-blue-600" /> Learning Points</p>
+                        <p className="font-medium text-xs mb-1 flex items-center gap-1"><Brain className="h-3.5 w-3.5 text-[--cs-info]" /> Learning Points</p>
                         <ul className="space-y-0.5">
                           {debrief.learning_points.map((lp, i) => (
                             <li key={i} className="text-xs text-muted-foreground flex items-start gap-1">
-                              <span className="text-blue-600 shrink-0">•</span>
+                              <span className="text-[--cs-info] shrink-0">•</span>
                               <span>{lp}</span>
                             </li>
                           ))}
@@ -287,9 +287,9 @@ export default function StaffDebriefLogPage() {
 
                     {/* follow-up */}
                     {debrief.follow_up_needed && debrief.follow_up_details && (
-                      <div className="bg-amber-50 border border-amber-200 rounded p-2">
-                        <p className="font-medium text-xs text-amber-800 mb-1 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Follow-Up Required</p>
-                        <p className="text-xs text-amber-700">{debrief.follow_up_details}</p>
+                      <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded p-2">
+                        <p className="font-medium text-xs text-[--cs-warning] mb-1 flex items-center gap-1"><Clock className="h-3.5 w-3.5" /> Follow-Up Required</p>
+                        <p className="text-xs text-[--cs-warning]">{debrief.follow_up_details}</p>
                       </div>
                     )}
 
