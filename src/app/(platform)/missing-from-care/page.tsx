@@ -71,22 +71,22 @@ const MFC_EXPORT_COLS: ExportColumn<MissingEpisode>[] = [
 // ── Config ─────────────────────────────────────────────────────────────────────
 
 const RISK_COLOURS: Record<string, string> = {
-  low:      "bg-emerald-100 text-emerald-800 border-emerald-200",
-  medium:   "bg-amber-100 text-amber-800 border-amber-200",
+  low:      "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
+  medium:   "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
   high:     "bg-orange-100 text-orange-800 border-orange-200",
-  critical: "bg-red-100 text-red-800 border-red-200",
+  critical: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
 };
 
 const RISK_BORDER: Record<string, string> = {
-  low:      "border-emerald-200",
-  medium:   "border-amber-200",
+  low:      "border-[--cs-success-soft]",
+  medium:   "border-[--cs-warning-soft]",
   high:     "border-orange-200",
-  critical: "border-red-200",
+  critical: "border-[--cs-risk-soft]",
 };
 
 const STATUS_COLOURS: Record<string, string> = {
-  active:   "bg-red-100 text-red-800",
-  returned: "bg-amber-100 text-amber-800",
+  active:   "bg-[--cs-risk-bg] text-[--cs-risk]",
+  returned: "bg-[--cs-warning-bg] text-[--cs-warning]",
   closed:   "bg-slate-100 text-[var(--cs-text-secondary)]",
 };
 
@@ -153,14 +153,14 @@ function EpisodeCard({
         <div className={cn(
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
           episode.risk_level === "critical" || episode.risk_level === "high"
-            ? "bg-red-50"
-            : episode.risk_level === "medium" ? "bg-amber-50" : "bg-emerald-50"
+            ? "bg-[--cs-risk-bg]"
+            : episode.risk_level === "medium" ? "bg-[--cs-warning-bg]" : "bg-[--cs-success-bg]"
         )}>
           <MapPin className={cn(
             "h-4.5 w-4.5",
             episode.risk_level === "critical" || episode.risk_level === "high"
-              ? "text-red-600"
-              : episode.risk_level === "medium" ? "text-amber-600" : "text-emerald-600"
+              ? "text-[--cs-risk]"
+              : episode.risk_level === "medium" ? "text-[--cs-warning]" : "text-[--cs-success]"
           )} style={{ width: "1.125rem", height: "1.125rem" }} />
         </div>
 
@@ -177,7 +177,7 @@ function EpisodeCard({
               {episode.status === "active" ? "ACTIVE — MISSING" : episode.status === "returned" ? "Returned" : "Closed"}
             </Badge>
             {episode.contextual_safeguarding_risk && (
-              <Badge className="text-[10px] h-4 px-1.5 bg-red-100 text-red-700 border border-red-200">
+              <Badge className="text-[10px] h-4 px-1.5 bg-[--cs-risk-bg] text-[--cs-risk] border border-[--cs-risk-soft]">
                 CS Risk
               </Badge>
             )}
@@ -311,10 +311,10 @@ function EpisodeCard({
 
 function PatternRow({ p }: { p: PatternAnalysis }) {
   const riskColour =
-    p.highest_risk === "critical" ? "text-red-700"
+    p.highest_risk === "critical" ? "text-[--cs-risk]"
     : p.highest_risk === "high" ? "text-orange-700"
-    : p.highest_risk === "medium" ? "text-amber-700"
-    : "text-emerald-700";
+    : p.highest_risk === "medium" ? "text-[--cs-warning]"
+    : "text-[--cs-success]";
 
   return (
     <div className="flex items-center gap-4 p-3 rounded-xl border border-[var(--cs-border-subtle)] bg-white hover:bg-[var(--cs-surface)] transition-colors">
@@ -325,7 +325,7 @@ function PatternRow({ p }: { p: PatternAnalysis }) {
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm font-semibold text-[var(--cs-navy)]">{p.child_name}</span>
           {p.contextual_risk && (
-            <Badge className="text-[10px] h-4 px-1.5 bg-red-100 text-red-700 border border-red-200">CS Risk</Badge>
+            <Badge className="text-[10px] h-4 px-1.5 bg-[--cs-risk-bg] text-[--cs-risk] border border-[--cs-risk-soft]">CS Risk</Badge>
           )}
           {p.return_interview_outstanding && (
             <Badge className="text-[10px] h-4 px-1.5 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]">RHI Outstanding</Badge>
@@ -393,7 +393,7 @@ function ReportMissingDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <MapPin className="h-4 w-4 text-red-600" />
+            <MapPin className="h-4 w-4 text-[--cs-risk]" />
             Report Missing from Care
           </DialogTitle>
         </DialogHeader>
@@ -506,12 +506,12 @@ function LogReturnDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <RotateCcw className="h-4 w-4 text-amber-600" />
+            <RotateCcw className="h-4 w-4 text-[--cs-warning]" />
             Log Return — {ypName}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="rounded-lg bg-amber-50 border border-amber-100 p-3 text-xs text-amber-800">
+          <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3 text-xs text-[--cs-warning]">
             Missing since {formatDate(episode.date_missing)} {episode.time_missing && `at ${episode.time_missing}`} · {episode.reference}
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -681,12 +681,12 @@ function RhiDialog({
           {rhiResult && (
             <div className="space-y-4">
               {rhiResult.escalation_required && (
-                <div className="flex items-start gap-2 rounded-xl bg-red-50 border border-red-200 p-3">
-                  <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
+                <div className="flex items-start gap-2 rounded-xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
+                  <AlertTriangle className="h-4 w-4 text-[--cs-risk] mt-0.5 shrink-0" />
                   <div>
-                    <p className="text-sm font-bold text-red-700">Escalation Required</p>
+                    <p className="text-sm font-bold text-[--cs-risk]">Escalation Required</p>
                     {(rhiResult.escalation_actions ?? []).map((a, i) => (
-                      <p key={i} className="text-xs text-red-600 mt-0.5">{a}</p>
+                      <p key={i} className="text-xs text-[--cs-risk] mt-0.5">{a}</p>
                     ))}
                   </div>
                 </div>
@@ -742,7 +742,7 @@ function RhiDialog({
                   <ul className="space-y-1">
                     {rhiResult.recommended_follow_up.map((a, i) => (
                       <li key={i} className="text-sm text-[var(--cs-text-secondary)] flex gap-2">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 mt-0.5 shrink-0" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success] mt-0.5 shrink-0" />
                         {a}
                       </li>
                     ))}
@@ -795,9 +795,9 @@ function RhiDialog({
           <InlineCaraHeartPanel record={rhiHeartRecord} />
 
           {saved && (
-            <div className="flex items-center gap-2 rounded-lg bg-emerald-50 border border-emerald-100 p-3">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              <span className="text-sm text-emerald-700 font-medium">Return interview completed and saved.</span>
+            <div className="flex items-center gap-2 rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-3">
+              <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
+              <span className="text-sm text-[--cs-success] font-medium">Return interview completed and saved.</span>
             </div>
           )}
         </div>
@@ -914,13 +914,13 @@ export default function MissingFromCarePage() {
 
         {/* Active alert banner */}
         {activeEpisodes.length > 0 && (
-          <div className="flex items-center gap-3 rounded-2xl border border-red-300 bg-red-50 p-4">
-            <MapPin className="h-5 w-5 text-red-600 shrink-0 animate-pulse" />
+          <div className="flex items-center gap-3 rounded-2xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4">
+            <MapPin className="h-5 w-5 text-[--cs-risk] shrink-0 animate-pulse" />
             <div>
-              <p className="text-sm font-bold text-red-700">
+              <p className="text-sm font-bold text-[--cs-risk]">
                 {activeEpisodes.length} young person{activeEpisodes.length !== 1 ? "s are" : " is"} currently missing
               </p>
-              <p className="text-xs text-red-600 mt-0.5">
+              <p className="text-xs text-[--cs-risk] mt-0.5">
                 {activeEpisodes.map((e) => getYPName(e.child_id)).join(", ")}
               </p>
             </div>
@@ -955,7 +955,7 @@ export default function MissingFromCarePage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatChip label="Total episodes" value={meta?.total ?? 0} colour="text-[var(--cs-text-secondary)]" bg="bg-slate-50" />
-          <StatChip label="Active / missing" value={meta?.active ?? 0} colour={meta?.active ? "text-red-700" : "text-[var(--cs-text-muted)]"} bg={meta?.active ? "bg-red-50" : "bg-slate-50"} />
+          <StatChip label="Active / missing" value={meta?.active ?? 0} colour={meta?.active ? "text-[--cs-risk]" : "text-[var(--cs-text-muted)]"} bg={meta?.active ? "bg-[--cs-risk-bg]" : "bg-slate-50"} />
           <StatChip label="CS risk episodes" value={meta?.contextual_risk ?? 0} colour={meta?.contextual_risk ? "text-orange-700" : "text-[var(--cs-text-muted)]"} bg={meta?.contextual_risk ? "bg-orange-50" : "bg-slate-50"} />
           <StatChip label="RHI outstanding" value={meta?.unresolved ?? 0} colour={meta?.unresolved ? "text-[var(--cs-cara-gold)]" : "text-[var(--cs-text-muted)]"} bg={meta?.unresolved ? "bg-[var(--cs-cara-gold-bg)]" : "bg-slate-50"} />
         </div>
@@ -1045,7 +1045,7 @@ export default function MissingFromCarePage() {
             {/* Active episodes first */}
             {activeEpisodes.length > 0 && (
               <>
-                <div className="text-[11px] font-semibold text-red-600 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="text-[11px] font-semibold text-[--cs-risk] uppercase tracking-wider flex items-center gap-1.5">
                   <Activity className="h-3.5 w-3.5" />
                   Currently Missing ({activeEpisodes.length})
                 </div>
