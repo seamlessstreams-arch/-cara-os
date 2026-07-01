@@ -44,16 +44,16 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 // ── Constants ──────────────────────────────────────────────────────────────────
 
 const SEVERITY_CONFIG: Record<PatternSeverity, { label: string; icon: React.ElementType; color: string; bg: string; border: string; ring: string }> = {
-  critical: { label: "Critical",  icon: AlertOctagon,  color: "text-red-700",    bg: "bg-red-50",     border: "border-red-300",    ring: "ring-red-400"    },
+  critical: { label: "Critical",  icon: AlertOctagon,  color: "text-[--cs-risk]",    bg: "bg-[--cs-risk-bg]",     border: "border-[--cs-risk-soft]",    ring: "ring-[--cs-risk]"    },
   high:     { label: "High",      icon: AlertTriangle, color: "text-orange-700", bg: "bg-orange-50",  border: "border-orange-300", ring: "ring-orange-400" },
-  medium:   { label: "Medium",    icon: Info,          color: "text-amber-700",  bg: "bg-amber-50",   border: "border-amber-200",  ring: "ring-amber-400"  },
-  low:      { label: "Low",       icon: Info,          color: "text-blue-700",   bg: "bg-blue-50",    border: "border-blue-200",   ring: "ring-blue-400"   },
+  medium:   { label: "Medium",    icon: Info,          color: "text-[--cs-warning]",  bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]",  ring: "ring-[--cs-warning]"  },
+  low:      { label: "Low",       icon: Info,          color: "text-[--cs-info]",   bg: "bg-[--cs-info-bg]",    border: "border-[--cs-info-soft]",   ring: "ring-[--cs-info]"   },
 };
 
 const STATUS_CONFIG: Record<PatternStatus, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
-  active:       { label: "Active",       icon: Zap,           color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200"     },
-  acknowledged: { label: "Acknowledged", icon: Eye,           color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"   },
-  resolved:     { label: "Resolved",     icon: CheckCircle2,  color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
+  active:       { label: "Active",       icon: Zap,           color: "text-[--cs-risk]",     bg: "bg-[--cs-risk-bg]",     border: "border-[--cs-risk-soft]"     },
+  acknowledged: { label: "Acknowledged", icon: Eye,           color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]"   },
+  resolved:     { label: "Resolved",     icon: CheckCircle2,  color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", border: "border-[--cs-success-soft]" },
   dismissed:    { label: "Dismissed",    icon: XCircle,       color: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-50",   border: "border-[var(--cs-border)]"   },
 };
 
@@ -126,7 +126,7 @@ function PatternCard({
     <div
       className={cn(
         "rounded-lg border bg-white transition-all",
-        pattern.severity === "critical" && pattern.status === "active" && "ring-2 ring-red-400 border-red-300",
+        pattern.severity === "critical" && pattern.status === "active" && "ring-2 ring-[--cs-risk] border-[--cs-risk-soft]",
         pattern.severity === "high" && pattern.status === "active" && "border-orange-300",
       )}
     >
@@ -144,7 +144,7 @@ function PatternCard({
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3 className="text-sm font-semibold text-[var(--cs-navy)]">{pattern.title}</h3>
             {isPositive && (
-              <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] px-1.5 py-0">
+              <Badge className="bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft] text-[10px] px-1.5 py-0">
                 ✦ Positive
               </Badge>
             )}
@@ -199,14 +199,14 @@ function PatternCard({
           </div>
 
           {/* Reflective Prompt */}
-          <div className={cn("rounded-lg p-3 border", isPositive ? "bg-emerald-50 border-emerald-200" : "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]")}>
+          <div className={cn("rounded-lg p-3 border", isPositive ? "bg-[--cs-success-bg] border-[--cs-success-soft]" : "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]")}>
             <div className="flex items-center gap-2 mb-1.5">
-              <Brain className={cn("h-4 w-4", isPositive ? "text-emerald-600" : "text-[var(--cs-cara-gold)]")} />
-              <h4 className={cn("text-[11px] font-semibold uppercase tracking-wide", isPositive ? "text-emerald-700" : "text-[var(--cs-cara-gold)]")}>
+              <Brain className={cn("h-4 w-4", isPositive ? "text-[--cs-success]" : "text-[var(--cs-cara-gold)]")} />
+              <h4 className={cn("text-[11px] font-semibold uppercase tracking-wide", isPositive ? "text-[--cs-success]" : "text-[var(--cs-cara-gold)]")}>
                 Reflective Prompt
               </h4>
             </div>
-            <p className={cn("text-xs italic leading-relaxed", isPositive ? "text-emerald-800" : "text-[var(--cs-navy)]")}>
+            <p className={cn("text-xs italic leading-relaxed", isPositive ? "text-[--cs-success]" : "text-[var(--cs-navy)]")}>
               &ldquo;{pattern.reflective_prompt}&rdquo;
             </p>
           </div>
@@ -468,11 +468,11 @@ export default function PatternAlertsPage() {
       {/* ── Summary stats ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         {[
-          { label: "Active",       value: stats.active,   color: "text-red-600",     bg: "bg-red-50",     border: "border-red-200"     },
-          { label: "Critical",     value: stats.critical, color: "text-red-700",     bg: "bg-red-100",    border: "border-red-300"     },
+          { label: "Active",       value: stats.active,   color: "text-[--cs-risk]",     bg: "bg-[--cs-risk-bg]",     border: "border-[--cs-risk-soft]"     },
+          { label: "Critical",     value: stats.critical, color: "text-[--cs-risk]",     bg: "bg-[--cs-risk-bg]",    border: "border-[--cs-risk-soft]"     },
           { label: "High",         value: stats.high,     color: "text-orange-600",  bg: "bg-orange-50",  border: "border-orange-200"  },
-          { label: "Acknowledged", value: stats.acked,    color: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200"   },
-          { label: "Resolved",     value: stats.resolved, color: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200" },
+          { label: "Acknowledged", value: stats.acked,    color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]"   },
+          { label: "Resolved",     value: stats.resolved, color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", border: "border-[--cs-success-soft]" },
         ].map((s) => (
           <div
             key={s.label}
@@ -486,13 +486,13 @@ export default function PatternAlertsPage() {
 
       {/* ── Alert Banner ──────────────────────────────────────────────────── */}
       {stats.active > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 mb-6 flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+        <div className="rounded-lg border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-3 mb-6 flex items-start gap-3">
+          <AlertTriangle className="h-5 w-5 text-[--cs-risk] mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-red-800">
+            <p className="text-sm font-semibold text-[--cs-risk]">
               {stats.active} active pattern{stats.active !== 1 ? "s" : ""} detected
             </p>
-            <p className="text-xs text-red-700 mt-0.5">
+            <p className="text-xs text-[--cs-risk] mt-0.5">
               {stats.critical > 0 ? `${stats.critical} critical · ` : ""}
               {stats.high > 0 ? `${stats.high} high severity · ` : ""}
               Review, acknowledge, and action each pattern to demonstrate proactive oversight.
