@@ -74,17 +74,17 @@ const PROBATION = [
 ];
 
 const RATING_COLORS: Record<string, string> = {
-  exceptional: "bg-emerald-100 text-emerald-700",
-  effective: "bg-blue-100 text-blue-700",
-  developing: "bg-amber-100 text-amber-700",
-  requires_support: "bg-red-100 text-red-700",
+  exceptional: "bg-[--cs-success-bg] text-[--cs-success]",
+  effective: "bg-[--cs-info-bg] text-[--cs-info]",
+  developing: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  requires_support: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 function WellbeingIcon({ score }: { score: number | null }) {
   if (score === null) return <span className="text-[var(--cs-text-muted)] text-xs">—</span>;
-  if (score >= 7) return <Smile className="h-4 w-4 text-emerald-500" />;
-  if (score >= 5) return <Meh className="h-4 w-4 text-amber-500" />;
-  return <Frown className="h-4 w-4 text-red-500" />;
+  if (score >= 7) return <Smile className="h-4 w-4 text-[--cs-success]" />;
+  if (score >= 5) return <Meh className="h-4 w-4 text-[--cs-warning]" />;
+  return <Frown className="h-4 w-4 text-[--cs-risk]" />;
 }
 
 // ── Record Supervision dialog ─────────────────────────────────────────────────
@@ -194,9 +194,9 @@ function RecordSupervisionDialog({ sup, onClose }: { sup: Supervision; onClose: 
             <div className="mt-2 space-y-2">
               {actions.map((action) => (
                 <div key={action.id} className="flex items-center gap-2 rounded-lg bg-slate-50 border border-[var(--cs-border-subtle)] px-3 py-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-[--cs-warning] shrink-0" />
                   <span className="text-xs text-[var(--cs-text-secondary)] flex-1">{action.description}</span>
-                  <button onClick={() => removeAction(action.id)} className="text-[var(--cs-text-gentle)] hover:text-red-500 transition-colors">
+                  <button onClick={() => removeAction(action.id)} className="text-[var(--cs-text-gentle)] hover:text-[--cs-risk] transition-colors">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -267,10 +267,10 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
   const createNeed = useCreateTrainingNeed();
 
   const statusConfig = {
-    completed:   { label: "Completed",   color: "bg-emerald-100 text-emerald-700" },
-    scheduled:   { label: "Scheduled",   color: "bg-blue-100 text-blue-700"      },
+    completed:   { label: "Completed",   color: "bg-[--cs-success-bg] text-[--cs-success]" },
+    scheduled:   { label: "Scheduled",   color: "bg-[--cs-info-bg] text-[--cs-info]"      },
     cancelled:   { label: "Cancelled",   color: "bg-slate-100 text-[var(--cs-text-muted)]"    },
-    rescheduled: { label: "Rescheduled", color: "bg-amber-100 text-amber-700"    },
+    rescheduled: { label: "Rescheduled", color: "bg-[--cs-warning-bg] text-[--cs-warning]"    },
   }[sup.status] ?? { label: sup.status, color: "bg-slate-100 text-[var(--cs-text-secondary)]" };
 
   const typeLabel: Record<string, string> = {
@@ -372,7 +372,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
                 <div className="space-y-1.5">
                   {pendingActions.map((action) => (
                     <div key={action.id} className="flex items-center gap-2 text-xs">
-                      <div className="h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                      <div className="h-1.5 w-1.5 rounded-full bg-[--cs-warning] shrink-0" />
                       <span className="text-[var(--cs-text-secondary)] flex-1">{action.description}</span>
                       <span className="text-[var(--cs-text-muted)] shrink-0">{formatDate(action.due_date)}</span>
                     </div>
@@ -386,7 +386,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
         {/* Collapsed pending actions hint */}
         {!expanded && pendingActions.length > 0 && (
           <div className="text-[10px] text-[var(--cs-text-muted)] flex items-center gap-1">
-            <div className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+            <div className="h-1.5 w-1.5 rounded-full bg-[--cs-warning]" />
             {pendingActions.length} pending action{pendingActions.length !== 1 ? "s" : ""}
           </div>
         )}
@@ -427,9 +427,9 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
           {sup.status === "completed" && (
             <div className="ml-auto flex items-center gap-1 text-[10px] text-[var(--cs-text-muted)]">
               {sup.staff_signature && sup.supervisor_signature ? (
-                <><CheckCircle2 className="h-3 w-3 text-emerald-500" />Signed</>
+                <><CheckCircle2 className="h-3 w-3 text-[--cs-success]" />Signed</>
               ) : (
-                <><Clock className="h-3 w-3 text-amber-500" />Unsigned</>
+                <><Clock className="h-3 w-3 text-[--cs-warning]" />Unsigned</>
               )}
             </div>
           )}
@@ -508,15 +508,15 @@ function ScheduleModal({ onClose }: { onClose: () => void }) {
         </div>
 
         {success ? (
-          <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-center gap-3">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
-            <span className="text-sm font-medium text-emerald-800">Supervision scheduled successfully.</span>
+          <div className="rounded-xl bg-[--cs-success-bg] border border-[--cs-success-soft] p-4 flex items-center gap-3">
+            <CheckCircle2 className="h-5 w-5 text-[--cs-success] shrink-0" />
+            <span className="text-sm font-medium text-[--cs-success]">Supervision scheduled successfully.</span>
           </div>
         ) : (
           <>
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Staff Member <span className="text-red-500">*</span></label>
+                <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Staff Member <span className="text-[--cs-risk]">*</span></label>
                 <select
                   value={form.staff_id}
                   onChange={(e) => setForm((p) => ({ ...p, staff_id: e.target.value }))}
@@ -558,7 +558,7 @@ function ScheduleModal({ onClose }: { onClose: () => void }) {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Date <span className="text-red-500">*</span></label>
+                  <label className="text-xs font-semibold text-[var(--cs-text-secondary)] block mb-1.5">Date <span className="text-[--cs-risk]">*</span></label>
                   <Input
                     type="date"
                     value={form.scheduled_date}
@@ -568,7 +568,7 @@ function ScheduleModal({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
 
-              {error && <p className="text-xs text-red-600">{error}</p>}
+              {error && <p className="text-xs text-[--cs-risk]">{error}</p>}
             </div>
 
             <div className="flex items-center gap-3 pt-1">
@@ -719,11 +719,11 @@ export default function SupervisionPage() {
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {[
-            { label: "Overdue", value: stats.overdue, icon: AlertTriangle, color: stats.overdue > 0 ? "text-red-600" : "text-emerald-600", bg: stats.overdue > 0 ? "bg-red-50" : "bg-emerald-50" },
-            { label: "Due in 14 Days", value: stats.upcoming, icon: Clock, color: stats.upcoming > 0 ? "text-amber-600" : "text-[var(--cs-text-muted)]", bg: stats.upcoming > 0 ? "bg-amber-50" : "bg-slate-50" },
-            { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50" },
+            { label: "Overdue", value: stats.overdue, icon: AlertTriangle, color: stats.overdue > 0 ? "text-[--cs-risk]" : "text-[--cs-success]", bg: stats.overdue > 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]" },
+            { label: "Due in 14 Days", value: stats.upcoming, icon: Clock, color: stats.upcoming > 0 ? "text-[--cs-warning]" : "text-[var(--cs-text-muted)]", bg: stats.upcoming > 0 ? "bg-[--cs-warning-bg]" : "bg-slate-50" },
+            { label: "Completed", value: stats.completed, icon: CheckCircle2, color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]" },
             { label: "Avg Wellbeing", value: stats.avgWellbeing ?? "—", icon: Heart, color: "text-pink-600", bg: "bg-pink-50" },
-            { label: "Pending Actions", value: stats.pendingActions, icon: ClipboardList, color: stats.pendingActions > 0 ? "text-amber-600" : "text-[var(--cs-text-muted)]", bg: stats.pendingActions > 0 ? "bg-amber-50" : "bg-slate-50" },
+            { label: "Pending Actions", value: stats.pendingActions, icon: ClipboardList, color: stats.pendingActions > 0 ? "text-[--cs-warning]" : "text-[var(--cs-text-muted)]", bg: stats.pendingActions > 0 ? "bg-[--cs-warning-bg]" : "bg-slate-50" },
             { label: "Appraisals Due", value: stats.appraisalsDue, icon: Award, color: "text-blue-600", bg: "bg-blue-50" },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <div key={label} className="rounded-2xl border border-[var(--cs-border)] bg-white p-4">
@@ -761,9 +761,9 @@ export default function SupervisionPage() {
           <div className="space-y-5">
             {/* Overdue banner */}
             {stats.overdue > 0 && (
-              <div className="rounded-2xl bg-red-50 border border-red-200 p-4 flex items-center gap-3">
-                <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
-                <div className="text-sm text-red-800">
+              <div className="rounded-2xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-4 flex items-center gap-3">
+                <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0" />
+                <div className="text-sm text-[--cs-risk]">
                   <strong>{stats.overdue} staff member{stats.overdue > 1 ? "s" : ""}</strong> are overdue for supervision.
                   Minimum supervision frequency must be maintained under Reg 34(3) CSCS.
                 </div>
@@ -836,7 +836,7 @@ export default function SupervisionPage() {
                 return (
                   <div key={staff.id} className={cn(
                     "rounded-2xl border p-4 space-y-3",
-                    isOverdue ? "border-red-200 bg-red-50" : isDueSoon ? "border-amber-200 bg-amber-50" : "border-[var(--cs-border)] bg-white"
+                    isOverdue ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : isDueSoon ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "border-[var(--cs-border)] bg-white"
                   )}>
                     <div className="flex items-center gap-3">
                       <Avatar name={staff.full_name} size="sm" />
@@ -845,11 +845,11 @@ export default function SupervisionPage() {
                         <div className="text-xs text-[var(--cs-text-muted)]">{staff.job_title}</div>
                       </div>
                       {isOverdue ? (
-                        <Badge className="text-[9px] rounded-full bg-red-100 text-red-700">Overdue</Badge>
+                        <Badge className="text-[9px] rounded-full bg-[--cs-risk-bg] text-[--cs-risk]">Overdue</Badge>
                       ) : isDueSoon ? (
-                        <Badge className="text-[9px] rounded-full bg-amber-100 text-amber-700">Due soon</Badge>
+                        <Badge className="text-[9px] rounded-full bg-[--cs-warning-bg] text-[--cs-warning]">Due soon</Badge>
                       ) : (
-                        <Badge className="text-[9px] rounded-full bg-emerald-100 text-emerald-700">Current</Badge>
+                        <Badge className="text-[9px] rounded-full bg-[--cs-success-bg] text-[--cs-success]">Current</Badge>
                       )}
                     </div>
                     <div className="space-y-1 text-xs text-[var(--cs-text-secondary)]">
@@ -859,7 +859,7 @@ export default function SupervisionPage() {
                       </div>
                       <div className="flex justify-between">
                         <span>Next due</span>
-                        <span className={cn("font-medium", isOverdue ? "text-red-600" : isDueSoon ? "text-amber-600" : "text-[var(--cs-navy)]")}>
+                        <span className={cn("font-medium", isOverdue ? "text-[--cs-risk]" : isDueSoon ? "text-[--cs-warning]" : "text-[var(--cs-navy)]")}>
                           {staff.next_supervision_due ? formatDate(staff.next_supervision_due) : "Not set"}
                         </span>
                       </div>
@@ -931,11 +931,11 @@ export default function SupervisionPage() {
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center gap-3 flex-wrap">
                           <span className="text-base font-semibold text-[var(--cs-navy)]">{staff?.full_name}</span>
-                          <Badge className={cn("text-[10px] rounded-full", prob.status === "active" ? "bg-blue-100 text-blue-700" : "bg-emerald-100 text-emerald-700")}>
+                          <Badge className={cn("text-[10px] rounded-full", prob.status === "active" ? "bg-[--cs-info-bg] text-[--cs-info]" : "bg-[--cs-success-bg] text-[--cs-success]")}>
                             {prob.status === "active" ? "On Probation" : "Passed"}
                           </Badge>
                           {prob.status === "active" && daysLeft < 30 && (
-                            <Badge className="text-[10px] rounded-full bg-amber-100 text-amber-700">{daysLeft}d remaining</Badge>
+                            <Badge className="text-[10px] rounded-full bg-[--cs-warning-bg] text-[--cs-warning]">{daysLeft}d remaining</Badge>
                           )}
                         </div>
                         <div className="grid grid-cols-3 gap-4 text-sm">
@@ -958,14 +958,14 @@ export default function SupervisionPage() {
                               <span className="text-[var(--cs-text-muted)]">Probation progress</span>
                               <span className="font-medium text-[var(--cs-navy)]">{pct}%</span>
                             </div>
-                            <Progress value={pct} color={pct > 80 ? "bg-emerald-500" : "bg-blue-500"} />
+                            <Progress value={pct} color={pct > 80 ? "bg-[--cs-success]" : "bg-[--cs-info]"} />
                           </div>
                         )}
                         {prob.concerns.length > 0 && (
-                          <div className="rounded-xl bg-amber-50 border border-amber-200 p-3">
-                            <div className="text-xs font-semibold text-amber-800 mb-1">Concerns on record</div>
+                          <div className="rounded-xl bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3">
+                            <div className="text-xs font-semibold text-[--cs-warning] mb-1">Concerns on record</div>
                             {prob.concerns.map((c, i) => (
-                              <div key={i} className="text-xs text-amber-700 flex items-start gap-1.5">
+                              <div key={i} className="text-xs text-[--cs-warning] flex items-start gap-1.5">
                                 <AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" />{c}
                               </div>
                             ))}
@@ -1005,7 +1005,7 @@ export default function SupervisionPage() {
               return (
                 <div key={staff.id} className={cn(
                   "rounded-2xl border p-4 flex items-center gap-5 hover:shadow-md transition-all",
-                  isOverdue ? "border-red-200 bg-red-50" : isDueSoon ? "border-amber-200 bg-amber-50" : "border-[var(--cs-border)] bg-white"
+                  isOverdue ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : isDueSoon ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "border-[var(--cs-border)] bg-white"
                 )}>
                   <Avatar name={staff.full_name} size="md" />
                   <div className="flex-1 min-w-0 space-y-2">
@@ -1025,7 +1025,7 @@ export default function SupervisionPage() {
                       </div>
                       <div>
                         <span className="text-[var(--cs-text-muted)]">Next due</span>
-                        <div className={cn("font-medium", isOverdue ? "text-red-600" : isDueSoon ? "text-amber-600" : "text-[var(--cs-navy)]")}>
+                        <div className={cn("font-medium", isOverdue ? "text-[--cs-risk]" : isDueSoon ? "text-[--cs-warning]" : "text-[var(--cs-navy)]")}>
                           {appraisal?.nextDue ? formatDate(appraisal.nextDue) : "Not set"}
                         </div>
                       </div>
@@ -1035,7 +1035,7 @@ export default function SupervisionPage() {
                       </div>
                     </div>
                     {appraisal && appraisal.objectives > 0 && (
-                      <Progress value={objectivePct} color={objectivePct === 100 ? "bg-emerald-500" : "bg-blue-500"} className="h-1.5" />
+                      <Progress value={objectivePct} color={objectivePct === 100 ? "bg-[--cs-success]" : "bg-[--cs-info]"} className="h-1.5" />
                     )}
                   </div>
                   <div className="flex gap-2 shrink-0">
@@ -1069,8 +1069,8 @@ export default function SupervisionPage() {
                       {staffGoals.map((goal) => (
                         <div key={goal.id} className={cn(
                           "flex items-center gap-4 rounded-xl px-3 py-2.5 border",
-                          goal.status === "achieved" ? "bg-emerald-50 border-emerald-200" :
-                          goal.status === "overdue" ? "bg-red-50 border-red-200" :
+                          goal.status === "achieved" ? "bg-[--cs-success-bg] border-[--cs-success-soft]" :
+                          goal.status === "overdue" ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" :
                           "bg-slate-50 border-[var(--cs-border)]"
                         )}>
                           <div className="flex-1 min-w-0">
@@ -1078,19 +1078,19 @@ export default function SupervisionPage() {
                             <div className="text-xs text-[var(--cs-text-muted)] mt-0.5">Due {formatDate(goal.targetDate)}</div>
                             <Progress
                               value={goal.progress}
-                              color={goal.status === "achieved" ? "bg-emerald-500" : goal.status === "overdue" ? "bg-red-500" : "bg-blue-500"}
+                              color={goal.status === "achieved" ? "bg-[--cs-success]" : goal.status === "overdue" ? "bg-[--cs-risk]" : "bg-[--cs-info]"}
                               className="h-1.5 mt-2"
                             />
                           </div>
                           <div className="text-center shrink-0">
-                            <div className={cn("text-sm font-bold", goal.status === "achieved" ? "text-emerald-600" : goal.status === "overdue" ? "text-red-600" : "text-blue-600")}>
+                            <div className={cn("text-sm font-bold", goal.status === "achieved" ? "text-[--cs-success]" : goal.status === "overdue" ? "text-[--cs-risk]" : "text-[--cs-info]")}>
                               {goal.progress}%
                             </div>
                           </div>
                           <Badge className={cn("text-[9px] rounded-full shrink-0",
-                            goal.status === "achieved" ? "bg-emerald-100 text-emerald-700" :
-                            goal.status === "overdue" ? "bg-red-100 text-red-700" :
-                            "bg-blue-100 text-blue-700"
+                            goal.status === "achieved" ? "bg-[--cs-success-bg] text-[--cs-success]" :
+                            goal.status === "overdue" ? "bg-[--cs-risk-bg] text-[--cs-risk]" :
+                            "bg-[--cs-info-bg] text-[--cs-info]"
                           )}>
                             {goal.status.replace("_", " ")}
                           </Badge>
