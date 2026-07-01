@@ -43,10 +43,10 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── severity helpers ─── */
 const SEVERITY_META: Record<string, { label: string; color: string }> = {
-  mild: { label: "Mild", color: "bg-green-100 text-green-800" },
-  moderate: { label: "Moderate", color: "bg-amber-100 text-amber-800" },
+  mild: { label: "Mild", color: "bg-[--cs-success-bg] text-[--cs-success]" },
+  moderate: { label: "Moderate", color: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   severe: { label: "Severe", color: "bg-orange-100 text-orange-800" },
-  life_threatening: { label: "Life-threatening", color: "bg-red-100 text-red-800" },
+  life_threatening: { label: "Life-threatening", color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
 };
 
 /* ─── export columns ─── */
@@ -153,7 +153,7 @@ export default function HealthcarePlansPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold text-red-700">{stats.allergiesCritical}</p>
+              <p className="text-2xl font-bold text-[--cs-risk]">{stats.allergiesCritical}</p>
               <p className="text-xs text-muted-foreground">Allergies — Severe / Life-threatening</p>
             </CardContent>
           </Card>
@@ -165,7 +165,7 @@ export default function HealthcarePlansPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold text-amber-700">{stats.reviewsDue}</p>
+              <p className="text-2xl font-bold text-[--cs-warning]">{stats.reviewsDue}</p>
               <p className="text-xs text-muted-foreground">Reviews Due ≤ 30 days</p>
             </CardContent>
           </Card>
@@ -173,11 +173,11 @@ export default function HealthcarePlansPage() {
 
         {/* ─── critical allergy alert ─── */}
         {criticalAllergyChildren.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
-            <ShieldAlert className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-4 flex items-start gap-2">
+            <ShieldAlert className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-red-800">Critical Allergies — Immediate Action Required</p>
-              <p className="text-red-700">
+              <p className="font-semibold text-[--cs-risk]">Critical Allergies — Immediate Action Required</p>
+              <p className="text-[--cs-risk]">
                 {criticalAllergyChildren
                   .map(
                     (p) =>
@@ -195,11 +195,11 @@ export default function HealthcarePlansPage() {
 
         {/* ─── reviews due alert ─── */}
         {stats.reviewsDue > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <CalendarClock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <CalendarClock className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-amber-800">Healthcare Plan Reviews Due</p>
-              <p className="text-amber-700">
+              <p className="font-semibold text-[--cs-warning]">Healthcare Plan Reviews Due</p>
+              <p className="text-[--cs-warning]">
                 {plans.filter((p) => {
                   const next = new Date(p.next_review_date);
                   const diff = (next.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
@@ -251,10 +251,10 @@ export default function HealthcarePlansPage() {
                 className={cn(
                   "border-l-4",
                   hasCriticalAllergy
-                    ? "border-l-red-500"
+                    ? "border-l-[--cs-risk]"
                     : reviewSoon
-                      ? "border-l-amber-400"
-                      : "border-l-green-400",
+                      ? "border-l-[--cs-warning]"
+                      : "border-l-[--cs-success]",
                 )}
               >
                 <CardHeader
@@ -274,7 +274,7 @@ export default function HealthcarePlansPage() {
                             variant="outline"
                             className={cn(
                               hasCriticalAllergy
-                                ? "bg-red-100 text-red-800"
+                                ? "bg-[--cs-risk-bg] text-[--cs-risk]"
                                 : "bg-orange-100 text-orange-800",
                             )}
                           >
@@ -286,11 +286,11 @@ export default function HealthcarePlansPage() {
                           {plan.regular_medications.length === 1 ? "" : "s"}
                         </Badge>
                         {plan.signed_off_by_gp ? (
-                          <Badge variant="outline" className="bg-emerald-100 text-emerald-800">
+                          <Badge variant="outline" className="bg-[--cs-success-bg] text-[--cs-success]">
                             <CheckCircle2 className="h-3 w-3 mr-1" /> GP signed
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                          <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning]">
                             <XCircle className="h-3 w-3 mr-1" /> Awaiting GP
                           </Badge>
                         )}
@@ -337,7 +337,7 @@ export default function HealthcarePlansPage() {
                         <ShieldAlert className="h-4 w-4 text-red-600" /> Allergies
                       </p>
                       {plan.allergies.length === 0 ? (
-                        <p className="text-xs text-green-700">No known allergies (NKA).</p>
+                        <p className="text-xs text-[--cs-success]">No known allergies (NKA).</p>
                       ) : (
                         <div className="space-y-1">
                           {plan.allergies.map((a, i) => (
@@ -346,7 +346,7 @@ export default function HealthcarePlansPage() {
                               className={cn(
                                 "rounded p-2 text-xs border",
                                 a.severity === "severe" || a.severity === "life_threatening"
-                                  ? "bg-red-50 border-red-200"
+                                  ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]"
                                   : "bg-orange-50 border-orange-200",
                               )}
                             >
@@ -462,17 +462,17 @@ export default function HealthcarePlansPage() {
 
                     {/* emergency protocols */}
                     <div>
-                      <p className="font-medium mb-1 flex items-center gap-1 text-red-700">
+                      <p className="font-medium mb-1 flex items-center gap-1 text-[--cs-risk]">
                         <AlertTriangle className="h-4 w-4" /> Emergency Protocols
                       </p>
                       <div className="space-y-1">
                         {plan.emergency_protocols.map((p, i) => (
                           <div
                             key={i}
-                            className="bg-red-50 border border-red-200 rounded p-2 text-xs"
+                            className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded p-2 text-xs"
                           >
-                            <p className="font-medium text-red-800 mb-0.5">{p.scenario}</p>
-                            <p className="text-red-700">{p.action}</p>
+                            <p className="font-medium text-[--cs-risk] mb-0.5">{p.scenario}</p>
+                            <p className="text-[--cs-risk]">{p.action}</p>
                           </div>
                         ))}
                       </div>
@@ -536,9 +536,9 @@ export default function HealthcarePlansPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-2 border-t">
                       <div className="flex items-center gap-2 text-xs">
                         {plan.signed_off_by_gp ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                         ) : (
-                          <XCircle className="h-4 w-4 text-amber-600" />
+                          <XCircle className="h-4 w-4 text-[--cs-warning]" />
                         )}
                         <span>
                           {plan.signed_off_by_gp
@@ -548,9 +548,9 @@ export default function HealthcarePlansPage() {
                       </div>
                       <div className="flex items-center gap-2 text-xs">
                         {plan.child_informed_of_plan ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                         ) : (
-                          <XCircle className="h-4 w-4 text-amber-600" />
+                          <XCircle className="h-4 w-4 text-[--cs-warning]" />
                         )}
                         <span>
                           {plan.child_informed_of_plan
