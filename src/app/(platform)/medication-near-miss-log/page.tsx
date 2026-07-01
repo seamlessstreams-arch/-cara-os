@@ -40,8 +40,8 @@ const TYPE_CONFIG: Record<NearMissType, { color: string; bg: string; border: str
 };
 
 const RISK_CONFIG: Record<NearMissRiskGrade, { color: string; bg: string; border: string }> = {
-  low:      { color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
-  medium:   { color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"   },
+  low:      { color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", border: "border-[--cs-success-soft]" },
+  medium:   { color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]"   },
   high:     { color: "text-orange-700",  bg: "bg-orange-50",  border: "border-orange-200"  },
   critical: { color: "text-rose-700",    bg: "bg-rose-50",    border: "border-rose-200"    },
 };
@@ -141,10 +141,10 @@ export default function MedicationNearMissLogPage() {
       }
     >
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-        <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide flex items-center gap-1"><Eye className="h-3 w-3" />Near misses (quarter)</div><div className="text-2xl font-bold text-blue-600 mt-0.5">{stats.thisQuarter}</div><div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">{stats.total} total on record</div></CardContent></Card>
+        <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide flex items-center gap-1"><Eye className="h-3 w-3" />Near misses (quarter)</div><div className="text-2xl font-bold text-[--cs-info] mt-0.5">{stats.thisQuarter}</div><div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">{stats.total} total on record</div></CardContent></Card>
         <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide flex items-center gap-1"><Filter className="h-3 w-3" />Most common type</div><div className="text-sm font-semibold text-[var(--cs-navy)] mt-1 leading-tight">{stats.mostCommonType}</div><div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">{stats.mostCommonCount} occurrence{stats.mostCommonCount !== 1 ? "s" : ""}</div></CardContent></Card>
         <Card className="border-[var(--cs-border)]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide flex items-center gap-1"><BookOpen className="h-3 w-3" />Learning embedded</div><div className="text-2xl font-bold text-[var(--cs-cara-gold)] mt-0.5">{stats.learningEmbedded}<span className="text-sm text-[var(--cs-text-muted)] font-normal">/{stats.total}</span></div><div className="text-[10px] text-[var(--cs-text-muted)] mt-0.5">debrief + systemic change</div></CardContent></Card>
-        <Card className="border-emerald-200 bg-emerald-50/40"><CardContent className="p-3"><div className="text-[10px] font-medium text-emerald-700 uppercase tracking-wide flex items-center gap-1"><ShieldCheck className="h-3 w-3" />Became errors</div><div className="text-2xl font-bold text-emerald-600 mt-0.5">{stats.becameErrors}</div><div className="text-[10px] text-emerald-700/80 mt-0.5">zero reached the child</div></CardContent></Card>
+        <Card className="border-[--cs-success-soft] bg-[--cs-success-bg]"><CardContent className="p-3"><div className="text-[10px] font-medium text-[--cs-success] uppercase tracking-wide flex items-center gap-1"><ShieldCheck className="h-3 w-3" />Became errors</div><div className="text-2xl font-bold text-[--cs-success] mt-0.5">{stats.becameErrors}</div><div className="text-[10px] text-[--cs-success] mt-0.5">zero reached the child</div></CardContent></Card>
       </div>
 
       <div className="mb-5 rounded-lg border border-[var(--cs-cara-gold-soft)] bg-gradient-to-r from-[var(--cs-cara-gold-bg)] to-blue-50 p-4 flex items-start gap-3">
@@ -207,7 +207,7 @@ export default function MedicationNearMissLogPage() {
           return (
             <div key={r.id} className={cn("rounded-lg border bg-white transition-all", r.risk_grade === "critical" && "ring-1 ring-rose-200 border-rose-200", r.risk_grade === "high" && "border-orange-200")}>
               <button type="button" onClick={() => setExpandedId(isExpanded ? null : r.id)} className="w-full flex items-start gap-3 p-4 text-left">
-                <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-2 flex-shrink-0"><ShieldCheck className="h-4 w-4 text-emerald-600" /></div>
+                <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-2 flex-shrink-0"><ShieldCheck className="h-4 w-4 text-[--cs-success]" /></div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="text-xs font-medium text-[var(--cs-text-muted)]">{formatDate(r.date)}</span>
@@ -219,8 +219,8 @@ export default function MedicationNearMissLogPage() {
                     <Badge className={cn("text-[10px] px-2 py-0 border", tCfg.bg, tCfg.color, tCfg.border)}>{NEAR_MISS_TYPE_LABEL[r.near_miss_type]}</Badge>
                     <Badge className={cn("text-[10px] px-2 py-0 border", rCfg.bg, rCfg.color, rCfg.border)}>Risk: {NEAR_MISS_RISK_GRADE_LABEL[r.risk_grade]}</Badge>
                     {r.debrief_held && (<Badge className="text-[10px] px-2 py-0 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border border-[var(--cs-cara-gold-soft)]"><BookOpen className="h-2.5 w-2.5 mr-0.5" />Debriefed</Badge>)}
-                    {r.systemic_changes.length > 0 && (<Badge className="text-[10px] px-2 py-0 bg-blue-50 text-blue-700 border border-blue-200">Systemic change</Badge>)}
-                    {r.shareable_anonymously && (<Badge className="text-[10px] px-2 py-0 bg-emerald-50 text-emerald-700 border border-emerald-200"><Users className="h-2.5 w-2.5 mr-0.5" />Shareable</Badge>)}
+                    {r.systemic_changes.length > 0 && (<Badge className="text-[10px] px-2 py-0 bg-[--cs-info-bg] text-[--cs-info] border border-[--cs-info-soft]">Systemic change</Badge>)}
+                    {r.shareable_anonymously && (<Badge className="text-[10px] px-2 py-0 bg-[--cs-success-bg] text-[--cs-success] border border-[--cs-success-soft]"><Users className="h-2.5 w-2.5 mr-0.5" />Shareable</Badge>)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -231,22 +231,22 @@ export default function MedicationNearMissLogPage() {
 
               {isExpanded && (
                 <div className="border-t px-4 pb-4 pt-3 space-y-4">
-                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                    <h4 className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide mb-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />What nearly happened</h4>
-                    <p className="text-xs text-amber-900 leading-relaxed">{r.what_nearly_happened}</p>
+                  <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3">
+                    <h4 className="text-[11px] font-semibold text-[--cs-warning] uppercase tracking-wide mb-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />What nearly happened</h4>
+                    <p className="text-xs text-[--cs-warning] leading-relaxed">{r.what_nearly_happened}</p>
                   </div>
-                  <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-3">
-                    <h4 className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide mb-1 flex items-center gap-1"><Shield className="h-3 w-3" />How it was caught</h4>
-                    <p className="text-xs text-emerald-900 leading-relaxed">{r.how_caught}</p>
+                  <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-3">
+                    <h4 className="text-[11px] font-semibold text-[--cs-success] uppercase tracking-wide mb-1 flex items-center gap-1"><Shield className="h-3 w-3" />How it was caught</h4>
+                    <p className="text-xs text-[--cs-success] leading-relaxed">{r.how_caught}</p>
                   </div>
                   {r.contributing_factors.length > 0 && (
                     <div><h4 className="text-[11px] font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1.5">Contributing factors</h4><div className="flex flex-wrap gap-1">{r.contributing_factors.map((f, i) => (<Badge key={i} className="text-[10px] px-2 py-0.5 bg-orange-50 text-orange-700 border border-orange-200">{f}</Badge>))}</div></div>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                      <h4 className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide mb-1 flex items-center gap-1"><Heart className="h-3 w-3" />Young person — {getYPName(r.child_id)}</h4>
-                      <div className="flex items-center gap-2 text-[10px] text-blue-700/80 mb-1">{r.child_informed ? (<><CheckCircle2 className="h-3 w-3 text-emerald-600" /> Informed at the time</>) : (<><AlertCircle className="h-3 w-3 text-amber-600" /> Not informed</>)}</div>
-                      <p className="text-xs text-blue-900 leading-relaxed">{r.child_response}</p>
+                    <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-3">
+                      <h4 className="text-[11px] font-semibold text-[--cs-info] uppercase tracking-wide mb-1 flex items-center gap-1"><Heart className="h-3 w-3" />Young person — {getYPName(r.child_id)}</h4>
+                      <div className="flex items-center gap-2 text-[10px] text-[--cs-info] mb-1">{r.child_informed ? (<><CheckCircle2 className="h-3 w-3 text-[--cs-success]" /> Informed at the time</>) : (<><AlertCircle className="h-3 w-3 text-[--cs-warning]" /> Not informed</>)}</div>
+                      <p className="text-xs text-[--cs-info] leading-relaxed">{r.child_response}</p>
                     </div>
                     <div className="rounded-lg bg-[var(--cs-cara-gold-bg)] border border-[var(--cs-cara-gold-soft)] p-3">
                       <h4 className="text-[11px] font-semibold text-[var(--cs-cara-gold)] uppercase tracking-wide mb-1 flex items-center gap-1"><Users className="h-3 w-3" />Staff emotional impact</h4>
@@ -255,13 +255,13 @@ export default function MedicationNearMissLogPage() {
                   </div>
                   <div className="rounded-lg border border-[var(--cs-border)] bg-slate-50 p-3 flex items-center gap-3">
                     <BookOpen className="h-4 w-4 text-[var(--cs-text-muted)] flex-shrink-0" />
-                    <div className="flex-1 text-xs text-[var(--cs-text-secondary)]">{r.debrief_held ? (<span><strong>Debrief held</strong> on {formatDate(r.debrief_date)} — outcomes captured below.</span>) : (<span className="text-amber-700"><strong>Debrief outstanding</strong> — schedule before next shift cycle.</span>)}</div>
+                    <div className="flex-1 text-xs text-[var(--cs-text-secondary)]">{r.debrief_held ? (<span><strong>Debrief held</strong> on {formatDate(r.debrief_date)} — outcomes captured below.</span>) : (<span className="text-[--cs-warning]"><strong>Debrief outstanding</strong> — schedule before next shift cycle.</span>)}</div>
                   </div>
                   {r.learning_points.length > 0 && (
                     <div><h4 className="text-[11px] font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1.5 flex items-center gap-1"><BookOpen className="h-3 w-3" />Learning points</h4><ul className="space-y-1">{r.learning_points.map((l, i) => (<li key={i} className="text-xs text-[var(--cs-text-secondary)] leading-relaxed flex gap-2"><span className="text-[var(--cs-cara-gold)] flex-shrink-0">•</span><span>{l}</span></li>))}</ul></div>
                   )}
                   {r.systemic_changes.length > 0 && (
-                    <div className="rounded-lg bg-blue-50/60 border border-blue-200 p-3"><h4 className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide mb-1.5">Systemic changes implemented</h4><ul className="space-y-1">{r.systemic_changes.map((s, i) => (<li key={i} className="text-xs text-blue-900 leading-relaxed flex gap-2"><CheckCircle2 className="h-3 w-3 text-emerald-600 flex-shrink-0 mt-0.5" /><span>{s}</span></li>))}</ul></div>
+                    <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-3"><h4 className="text-[11px] font-semibold text-[--cs-info] uppercase tracking-wide mb-1.5">Systemic changes implemented</h4><ul className="space-y-1">{r.systemic_changes.map((s, i) => (<li key={i} className="text-xs text-[--cs-info] leading-relaxed flex gap-2"><CheckCircle2 className="h-3 w-3 text-[--cs-success] flex-shrink-0 mt-0.5" /><span>{s}</span></li>))}</ul></div>
                   )}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {r.training_arising.length > 0 && (
@@ -277,7 +277,7 @@ export default function MedicationNearMissLogPage() {
                     <div className="flex flex-wrap gap-1.5 text-[10px]">
                       <Badge className={cn("text-[10px] px-2 py-0 border", r.would_escalate_if_recurred ? "bg-rose-50 text-rose-700 border-rose-200" : "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]")}>{r.would_escalate_if_recurred ? "Would escalate if recurred" : "No escalation trigger"}</Badge>
                       <Badge className={cn("text-[10px] px-2 py-0 border", r.reported_to_pharmacist ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]")}>{r.reported_to_pharmacist ? "Pharmacist notified" : "Pharmacist not notified"}</Badge>
-                      <Badge className={cn("text-[10px] px-2 py-0 border", r.shareable_anonymously ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]")}>{r.shareable_anonymously ? "Shareable for sector learning" : "Internal only"}</Badge>
+                      <Badge className={cn("text-[10px] px-2 py-0 border", r.shareable_anonymously ? "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" : "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]")}>{r.shareable_anonymously ? "Shareable for sector learning" : "Internal only"}</Badge>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 text-[10px] text-[var(--cs-text-muted)] pt-1 border-t border-[var(--cs-border-subtle)]">
