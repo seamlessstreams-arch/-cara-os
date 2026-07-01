@@ -59,25 +59,25 @@ const ERROR_TYPE_CONFIG: Record<MedErrorType, { label: string; color: string; bg
 };
 
 const SEVERITY_CONFIG: Record<MedErrorSeverity, { label: string; color: string; bg: string; border: string }> = {
-  no_harm:   { label: "No Harm",   color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
+  no_harm:   { label: "No Harm",   color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", border: "border-[--cs-success-soft]" },
   low:       { label: "Low",       color: "text-yellow-700",  bg: "bg-yellow-50",  border: "border-yellow-200"  },
-  moderate:  { label: "Moderate",  color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"   },
-  severe:    { label: "Severe",    color: "text-red-700",     bg: "bg-red-50",     border: "border-red-200"     },
+  moderate:  { label: "Moderate",  color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]"   },
+  severe:    { label: "Severe",    color: "text-[--cs-risk]",     bg: "bg-[--cs-risk-bg]",     border: "border-[--cs-risk-soft]"     },
   death:     { label: "Death",     color: "text-white",       bg: "bg-slate-900",  border: "border-slate-700"   },
 };
 
 const STATUS_CONFIG: Record<MedErrorStatus, { label: string; color: string; bg: string; border: string }> = {
-  reported:              { label: "Reported",             color: "text-blue-700",    bg: "bg-blue-50",    border: "border-blue-200"    },
-  under_investigation:   { label: "Under Investigation", color: "text-amber-700",   bg: "bg-amber-50",   border: "border-amber-200"   },
+  reported:              { label: "Reported",             color: "text-[--cs-info]",    bg: "bg-[--cs-info-bg]",    border: "border-[--cs-info-soft]"    },
+  under_investigation:   { label: "Under Investigation", color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]"   },
   action_required:       { label: "Action Required",     color: "text-orange-700",  bg: "bg-orange-50",  border: "border-orange-200"  },
-  closed:                { label: "Closed",              color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
+  closed:                { label: "Closed",              color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", border: "border-[--cs-success-soft]" },
   escalated:             { label: "Escalated",           color: "text-rose-700",    bg: "bg-rose-50",    border: "border-rose-200"    },
 };
 
 const REMEDIAL_STATUS_CONFIG: Record<MedRemedialStatus, { label: string; color: string; bg: string }> = {
-  pending:     { label: "Pending",     color: "text-amber-700",   bg: "bg-amber-50"   },
-  in_progress: { label: "In Progress", color: "text-blue-700",    bg: "bg-blue-50"    },
-  completed:   { label: "Completed",   color: "text-emerald-700", bg: "bg-emerald-50" },
+  pending:     { label: "Pending",     color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]"   },
+  in_progress: { label: "In Progress", color: "text-[--cs-info]",    bg: "bg-[--cs-info-bg]"    },
+  completed:   { label: "Completed",   color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]" },
 };
 
 const PERSONS_OPTIONS = ["Manager", "GP", "Parent", "Social Worker", "Pharmacist", "LADO", "Ofsted", "IRO"];
@@ -253,13 +253,13 @@ export default function MedicationErrorsPage() {
         <Card className="border-[var(--cs-border)]">
           <CardContent className="p-3">
             <div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide">Open Cases</div>
-            <div className={cn("text-2xl font-bold mt-0.5", stats.open > 0 ? "text-amber-600" : "text-emerald-600")}>{stats.open}</div>
+            <div className={cn("text-2xl font-bold mt-0.5", stats.open > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{stats.open}</div>
           </CardContent>
         </Card>
         <Card className="border-[var(--cs-border)]">
           <CardContent className="p-3">
             <div className="text-[10px] font-medium text-[var(--cs-text-muted)] uppercase tracking-wide">Near Misses</div>
-            <div className="text-2xl font-bold text-blue-600 mt-0.5">{stats.nearMisses}</div>
+            <div className="text-2xl font-bold text-[--cs-info] mt-0.5">{stats.nearMisses}</div>
           </CardContent>
         </Card>
         <Card className="border-[var(--cs-border)]">
@@ -272,13 +272,13 @@ export default function MedicationErrorsPage() {
 
       {/* ── Alert Banner ──────────────────────────────────────────────────── */}
       {openCases.length > 0 && (
-        <div className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 flex items-start gap-2.5">
-          <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+        <div className="mb-4 rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-3 flex items-start gap-2.5">
+          <AlertTriangle className="h-4 w-4 text-[--cs-warning] mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-xs font-semibold text-amber-800">
+            <p className="text-xs font-semibold text-[--cs-warning]">
               {openCases.length} case{openCases.length !== 1 ? "s" : ""} requiring attention
             </p>
-            <p className="text-[11px] text-amber-700 mt-0.5">
+            <p className="text-[11px] text-[--cs-warning] mt-0.5">
               {openCases.map((c) => `${getYPName(c.child_id)} — ${ERROR_TYPE_CONFIG[c.error_type].label}`).join(" | ")}
             </p>
           </div>
@@ -481,19 +481,19 @@ export default function MedicationErrorsPage() {
               {isExpanded && (
                 <div className="border-t px-4 pb-4 pt-3 space-y-4">
                   {/* What happened — red panel */}
-                  <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-                    <h4 className="text-[11px] font-semibold text-red-700 uppercase tracking-wide mb-1">What Happened</h4>
-                    <p className="text-xs text-red-900 leading-relaxed">{error.what_happened}</p>
-                    <div className="mt-2 flex items-center gap-3 text-[10px] text-red-600">
+                  <div className="rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
+                    <h4 className="text-[11px] font-semibold text-[--cs-risk] uppercase tracking-wide mb-1">What Happened</h4>
+                    <p className="text-xs text-[--cs-risk] leading-relaxed">{error.what_happened}</p>
+                    <div className="mt-2 flex items-center gap-3 text-[10px] text-[--cs-risk]">
                       <span>Prescribed: <strong>{error.prescribed_dose}</strong></span>
                       <span>Actual: <strong>{error.actual_dose}</strong></span>
                     </div>
                   </div>
 
                   {/* Immediate action — blue panel */}
-                  <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                    <h4 className="text-[11px] font-semibold text-blue-700 uppercase tracking-wide mb-1">Immediate Action Taken</h4>
-                    <p className="text-xs text-blue-900 leading-relaxed">{error.immediate_action}</p>
+                  <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-3">
+                    <h4 className="text-[11px] font-semibold text-[--cs-info] uppercase tracking-wide mb-1">Immediate Action Taken</h4>
+                    <p className="text-xs text-[--cs-info] leading-relaxed">{error.immediate_action}</p>
                   </div>
 
                   {/* Persons informed */}
@@ -509,9 +509,9 @@ export default function MedicationErrorsPage() {
                   </div>
 
                   {/* Root cause — amber panel */}
-                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                    <h4 className="text-[11px] font-semibold text-amber-700 uppercase tracking-wide mb-1">Root Cause Analysis</h4>
-                    <p className="text-xs text-amber-900 leading-relaxed">{error.root_cause}</p>
+                  <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3">
+                    <h4 className="text-[11px] font-semibold text-[--cs-warning] uppercase tracking-wide mb-1">Root Cause Analysis</h4>
+                    <p className="text-xs text-[--cs-warning] leading-relaxed">{error.root_cause}</p>
                   </div>
 
                   {/* Contributing factors */}
@@ -589,12 +589,12 @@ export default function MedicationErrorsPage() {
                       <div className="flex items-center gap-2 text-xs">
                         {error.duty_of_candour_completed ? (
                           <>
-                            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                            <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />
                             <span className="text-[var(--cs-navy)]">Completed on {formatDate(error.duty_of_candour_completed)}</span>
                           </>
                         ) : (
                           <>
-                            <Clock className="h-3.5 w-3.5 text-amber-600" />
+                            <Clock className="h-3.5 w-3.5 text-[--cs-warning]" />
                             <span className="text-[var(--cs-navy)]">Duty of candour notification pending</span>
                           </>
                         )}
