@@ -106,12 +106,12 @@ function YPIntelligenceScore({ childId }: { childId: string }) {
   // Colour band
   const pillClass =
     score >= 80
-      ? "bg-emerald-100 text-emerald-800"
+      ? "bg-[--cs-success-bg] text-[--cs-success]"
       : score >= 60
       ? "bg-teal-100 text-teal-800"
       : score >= 40
-      ? "bg-amber-100 text-amber-800"
-      : "bg-red-100 text-red-800";
+      ? "bg-[--cs-warning-bg] text-[--cs-warning]"
+      : "bg-[--cs-risk-bg] text-[--cs-risk]";
 
   return (
     <div className="flex flex-col items-end gap-0.5">
@@ -191,13 +191,13 @@ function CarePlanExpanded({ carePlan, childId }: { carePlan: CarePlan | null | u
   return (
     <div className={cn(
       "rounded-xl border px-4 py-3 space-y-2",
-      rag === "red" ? "bg-red-50/50 border-red-200" :
-      rag === "amber" ? "bg-amber-50/50 border-amber-200" :
-      "bg-emerald-50/50 border-emerald-100",
+      rag === "red" ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" :
+      rag === "amber" ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" :
+      "bg-[--cs-success-bg] border-[--cs-success-soft]",
     )}>
       <div className="flex items-center gap-2">
         <ClipboardList className={cn("h-4 w-4 shrink-0",
-          rag === "red" ? "text-red-500" : rag === "amber" ? "text-amber-500" : "text-emerald-500",
+          rag === "red" ? "text-[--cs-risk]" : rag === "amber" ? "text-[--cs-warning]" : "text-[--cs-success]",
         )} />
         <span className="text-xs font-semibold text-slate-700">Care Plan Status</span>
         <Badge variant={rag === "red" ? "destructive" : rag === "amber" ? "warning" : "success"} className="text-[9px] ml-auto rounded-full">
@@ -210,11 +210,11 @@ function CarePlanExpanded({ carePlan, childId }: { carePlan: CarePlan | null | u
           <div className="text-[9px] text-slate-500">Goals</div>
         </div>
         <div className="rounded-lg bg-white/60 p-1.5">
-          <div className="text-sm font-bold text-emerald-600">{onTrack}</div>
+          <div className="text-sm font-bold text-[--cs-success]">{onTrack}</div>
           <div className="text-[9px] text-slate-500">On Track</div>
         </div>
         <div className="rounded-lg bg-white/60 p-1.5">
-          <div className="text-sm font-bold text-red-600">{attention}</div>
+          <div className="text-sm font-bold text-[--cs-risk]">{attention}</div>
           <div className="text-[9px] text-slate-500">Attention</div>
         </div>
         <div className="rounded-lg bg-white/60 p-1.5">
@@ -233,12 +233,12 @@ function CarePlanExpanded({ carePlan, childId }: { carePlan: CarePlan | null | u
           return (
             <span key={domain} className={cn(
               "inline-flex items-center gap-1 text-[9px] font-medium rounded-full px-2 py-0.5 border",
-              dr === "red" ? "bg-red-100 text-red-700 border-red-200" :
-              dr === "amber" ? "bg-amber-100 text-amber-700 border-amber-200" :
-              "bg-emerald-100 text-emerald-700 border-emerald-200",
+              dr === "red" ? "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]" :
+              dr === "amber" ? "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]" :
+              "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
             )}>
               <div className={cn("w-1.5 h-1.5 rounded-full shrink-0",
-                dr === "red" ? "bg-red-500" : dr === "amber" ? "bg-amber-400" : "bg-emerald-500",
+                dr === "red" ? "bg-[--cs-risk]" : dr === "amber" ? "bg-[--cs-warning]" : "bg-[--cs-success]",
               )} />
               {label}
             </span>
@@ -297,7 +297,7 @@ function OutcomesSummary({ childId }: { childId: string }) {
           <div className="text-[9px] text-slate-500">Active</div>
         </div>
         <div className="rounded-lg bg-white/60 p-1.5">
-          <div className="text-sm font-bold text-emerald-600 flex items-center justify-center gap-0.5">
+          <div className="text-sm font-bold text-[--cs-success] flex items-center justify-center gap-0.5">
             <TrendingUp className="h-3 w-3" />{improving}
           </div>
           <div className="text-[9px] text-slate-500">Improving</div>
@@ -309,7 +309,7 @@ function OutcomesSummary({ childId }: { childId: string }) {
           <div className="text-[9px] text-slate-500">Stable</div>
         </div>
         <div className="rounded-lg bg-white/60 p-1.5">
-          <div className="text-sm font-bold text-red-600 flex items-center justify-center gap-0.5">
+          <div className="text-sm font-bold text-[--cs-risk] flex items-center justify-center gap-0.5">
             <TrendingDown className="h-3 w-3" />{declining}
           </div>
           <div className="text-[9px] text-slate-500">Declining</div>
@@ -446,7 +446,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
           <div className="rounded-xl bg-slate-50 p-2.5 text-center">
             <div className={cn(
               "text-lg font-bold",
-              yp.open_incidents > 0 ? "text-red-600" : "text-emerald-600"
+              yp.open_incidents > 0 ? "text-[--cs-risk]" : "text-[--cs-success]"
             )}>
               {yp.open_incidents}
             </div>
@@ -455,7 +455,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
           <div className="rounded-xl bg-slate-50 p-2.5 text-center">
             <div className={cn(
               "text-lg font-bold",
-              yp.active_tasks > 0 ? "text-amber-600" : "text-slate-900"
+              yp.active_tasks > 0 ? "text-[--cs-warning]" : "text-slate-900"
             )}>
               {yp.active_tasks}
             </div>
@@ -503,7 +503,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
 
         {/* Allergies */}
         {yp.allergies.length > 0 && (
-          <div className="mt-3 rounded-lg bg-red-50 border border-red-100 px-3 py-2 text-xs text-red-700">
+          <div className="mt-3 rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] px-3 py-2 text-xs text-[--cs-risk]">
             <AlertTriangle className="h-3 w-3 inline mr-1" />
             <strong>Allergy:</strong> {yp.allergies.join(", ")}
           </div>
@@ -520,15 +520,15 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
           return (
             <div className={cn(
               "mt-3 rounded-xl border px-3 py-2 flex items-center gap-2 flex-wrap",
-              rag === "red"   ? "bg-red-50 border-red-200" :
-              rag === "amber" ? "bg-amber-50 border-amber-200" :
-              "bg-emerald-50 border-emerald-100",
+              rag === "red"   ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" :
+              rag === "amber" ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" :
+              "bg-[--cs-success-bg] border-[--cs-success-soft]",
             )}>
               <ClipboardList className={cn("h-3 w-3 shrink-0",
-                rag === "red" ? "text-red-500" : rag === "amber" ? "text-amber-500" : "text-emerald-500",
+                rag === "red" ? "text-[--cs-risk]" : rag === "amber" ? "text-[--cs-warning]" : "text-[--cs-success]",
               )} />
               <span className={cn("text-[10px] font-semibold",
-                rag === "red" ? "text-red-700" : rag === "amber" ? "text-amber-700" : "text-emerald-700",
+                rag === "red" ? "text-[--cs-risk]" : rag === "amber" ? "text-[--cs-warning]" : "text-[--cs-success]",
               )}>
                 Care Plan
               </span>
@@ -544,7 +544,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
                   return (
                     <div key={domain} title={label} className={cn(
                       "w-2 h-2 rounded-full shrink-0",
-                      dr === "red" ? "bg-red-500" : dr === "amber" ? "bg-amber-400" : "bg-emerald-500",
+                      dr === "red" ? "bg-[--cs-risk]" : dr === "amber" ? "bg-[--cs-warning]" : "bg-[--cs-success]",
                     )} />
                   );
                 })}
@@ -552,7 +552,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
 
               {/* Attention count */}
               {attention > 0 && (
-                <span className="ml-auto text-[9px] font-bold bg-red-100 text-red-700 border border-red-200 px-1.5 py-0.5 rounded-full">
+                <span className="ml-auto text-[9px] font-bold bg-[--cs-risk-bg] text-[--cs-risk] border border-[--cs-risk-soft] px-1.5 py-0.5 rounded-full">
                   {attention} attention
                 </span>
               )}
@@ -562,7 +562,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
                 <span className={cn(
                   "text-[9px] font-semibold px-1.5 py-0.5 rounded-full border",
                   lacOverdue
-                    ? "bg-red-100 text-red-700 border-red-200"
+                    ? "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]"
                     : "bg-slate-100 text-slate-600 border-slate-200",
                 )}>
                   {lacLabel}
@@ -813,9 +813,9 @@ export default function YoungPeoplePage() {
               <div className="text-lg font-bold text-slate-800 tabular-nums">{stats.total}</div>
               <div className="text-[10px] text-slate-500">Current</div>
             </div>
-            <div className={cn("rounded-xl border p-3 text-center", stats.withRisk > 0 ? "border-red-200 bg-red-50" : "border-slate-200 bg-white")}>
-              <AlertTriangle className={cn("h-4 w-4 mx-auto mb-1", stats.withRisk > 0 ? "text-red-500" : "text-slate-300")} />
-              <div className={cn("text-lg font-bold tabular-nums", stats.withRisk > 0 ? "text-red-700" : "text-slate-400")}>{stats.withRisk}</div>
+            <div className={cn("rounded-xl border p-3 text-center", stats.withRisk > 0 ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : "border-slate-200 bg-white")}>
+              <AlertTriangle className={cn("h-4 w-4 mx-auto mb-1", stats.withRisk > 0 ? "text-[--cs-risk]" : "text-slate-300")} />
+              <div className={cn("text-lg font-bold tabular-nums", stats.withRisk > 0 ? "text-[--cs-risk]" : "text-slate-400")}>{stats.withRisk}</div>
               <div className="text-[10px] text-slate-500">Risk Flags</div>
             </div>
             <div className={cn("rounded-xl border p-3 text-center", stats.totalIncidents > 0 ? "border-orange-200 bg-orange-50" : "border-slate-200 bg-white")}>
@@ -833,14 +833,14 @@ export default function YoungPeoplePage() {
               <div className={cn("text-lg font-bold tabular-nums", stats.onMeds > 0 ? "text-teal-700" : "text-slate-400")}>{stats.onMeds}</div>
               <div className="text-[10px] text-slate-500">On Meds</div>
             </div>
-            <div className={cn("rounded-xl border p-3 text-center", stats.noKeyWorker > 0 ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white")}>
-              <UserX className={cn("h-4 w-4 mx-auto mb-1", stats.noKeyWorker > 0 ? "text-amber-500" : "text-slate-300")} />
-              <div className={cn("text-lg font-bold tabular-nums", stats.noKeyWorker > 0 ? "text-amber-700" : "text-slate-400")}>{stats.noKeyWorker}</div>
+            <div className={cn("rounded-xl border p-3 text-center", stats.noKeyWorker > 0 ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "border-slate-200 bg-white")}>
+              <UserX className={cn("h-4 w-4 mx-auto mb-1", stats.noKeyWorker > 0 ? "text-[--cs-warning]" : "text-slate-300")} />
+              <div className={cn("text-lg font-bold tabular-nums", stats.noKeyWorker > 0 ? "text-[--cs-warning]" : "text-slate-400")}>{stats.noKeyWorker}</div>
               <div className="text-[10px] text-slate-500">No KW</div>
             </div>
-            <div className={cn("rounded-xl border p-3 text-center", stats.noRecentLog > 0 ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white")}>
-              <BookOpen className={cn("h-4 w-4 mx-auto mb-1", stats.noRecentLog > 0 ? "text-amber-500" : "text-slate-300")} />
-              <div className={cn("text-lg font-bold tabular-nums", stats.noRecentLog > 0 ? "text-amber-700" : "text-slate-400")}>{stats.noRecentLog}</div>
+            <div className={cn("rounded-xl border p-3 text-center", stats.noRecentLog > 0 ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "border-slate-200 bg-white")}>
+              <BookOpen className={cn("h-4 w-4 mx-auto mb-1", stats.noRecentLog > 0 ? "text-[--cs-warning]" : "text-slate-300")} />
+              <div className={cn("text-lg font-bold tabular-nums", stats.noRecentLog > 0 ? "text-[--cs-warning]" : "text-slate-400")}>{stats.noRecentLog}</div>
               <div className="text-[10px] text-slate-500">No Log 2d+</div>
             </div>
           </div>
@@ -911,7 +911,7 @@ export default function YoungPeoplePage() {
 
         {/* Error state */}
         {isError && (
-          <div className="rounded-xl bg-red-50 border border-red-100 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] px-4 py-3 text-sm text-[--cs-risk]">
             <AlertTriangle className="h-4 w-4 inline mr-2" />
             Failed to load young people. Please refresh the page.
           </div>
