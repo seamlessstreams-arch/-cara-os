@@ -166,12 +166,12 @@ const ROUTE_ICONS: Record<string, React.ReactNode> = {
 function RoutingPreviewPanel({ preview }: { preview: RoutingPreview }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3">
+      <div className="rounded-lg border border-[--cs-info-soft] bg-[--cs-info-bg] px-4 py-3">
         <div className="flex items-start gap-2">
-          <Route className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+          <Route className="w-4 h-4 text-[--cs-info] mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-medium text-blue-800">Routing preview</p>
-            <p className="text-xs text-blue-600 mt-0.5">
+            <p className="text-sm font-medium text-[--cs-info]">Routing preview</p>
+            <p className="text-xs text-[--cs-info] mt-0.5">
               When submitted, this event will automatically update {preview.routes.length} area{preview.routes.length !== 1 ? "s" : ""}.
             </p>
           </div>
@@ -242,13 +242,13 @@ function RoutingResultBanner({ result }: { result: RoutingResult }) {
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+      <div className="rounded-lg border border-[--cs-success-soft] bg-[--cs-success-bg] p-4">
         <div className="flex items-start gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+          <CheckCircle2 className="w-5 h-5 text-[--cs-success] mt-0.5 shrink-0" />
           <div>
-            <p className="text-sm font-medium text-emerald-800">{text}</p>
+            <p className="text-sm font-medium text-[--cs-success]">{text}</p>
             {areas.length > 0 && (
-              <p className="text-xs text-emerald-600 mt-1">Areas updated: {areas.join(", ")}</p>
+              <p className="text-xs text-[--cs-success] mt-1">Areas updated: {areas.join(", ")}</p>
             )}
           </div>
         </div>
@@ -560,7 +560,7 @@ function CareEventCard({ event, onAction }: {
               <StatusBadge status={event.status} />
               <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">{categoryLabel}</span>
               {event.is_significant && (
-                <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">Significant</span>
+                <span className="text-xs font-semibold text-[--cs-warning] bg-[--cs-warning-bg] px-2 py-0.5 rounded-full">Significant</span>
               )}
             </div>
             <h3 className="font-medium text-slate-900 text-sm truncate">
