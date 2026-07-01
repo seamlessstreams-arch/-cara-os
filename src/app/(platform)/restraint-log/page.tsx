@@ -45,10 +45,10 @@ const TYPE_META: Record<RestraintType, string> = {
 };
 
 const REVIEW_META: Record<RestraintReviewStatus, { label: string; color: string }> = {
-  pending_rm:    { label: "Pending RM Review",  color: "bg-amber-100 text-amber-700" },
+  pending_rm:    { label: "Pending RM Review",  color: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   pending_ri:    { label: "Pending RI Review",   color: "bg-purple-100 text-purple-700" },
-  reviewed:      { label: "Reviewed",            color: "bg-green-100 text-green-700" },
-  referred_lado: { label: "Referred to LADO",   color: "bg-red-100 text-red-700" },
+  reviewed:      { label: "Reviewed",            color: "bg-[--cs-success-bg] text-[--cs-success]" },
+  referred_lado: { label: "Referred to LADO",   color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
 };
 
 
@@ -159,10 +159,10 @@ export default function RestraintLogPage() {
         />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: "Total Records",    value: stats.total,         icon: <ShieldAlert className="h-4 w-4" />,    color: "text-blue-600" },
+            { label: "Total Records",    value: stats.total,         icon: <ShieldAlert className="h-4 w-4" />,    color: "text-[--cs-info]" },
             { label: "Last 90 Days",      value: stats.last90Days,    icon: <Calendar className="h-4 w-4" />,       color: "text-purple-600" },
-            { label: "Avg Duration",      value: `${stats.avgDuration}s`, icon: <Clock className="h-4 w-4" />,     color: "text-amber-600" },
-            { label: "Pending Review",    value: stats.pendingReview, icon: <Eye className="h-4 w-4" />,            color: stats.pendingReview > 0 ? "text-red-600" : "text-green-600" },
+            { label: "Avg Duration",      value: `${stats.avgDuration}s`, icon: <Clock className="h-4 w-4" />,     color: "text-[--cs-warning]" },
+            { label: "Pending Review",    value: stats.pendingReview, icon: <Eye className="h-4 w-4" />,            color: stats.pendingReview > 0 ? "text-[--cs-risk]" : "text-[--cs-success]" },
           ].map((s) => (
             <Card key={s.label}>
               <CardContent className="p-3 flex items-center gap-3">
@@ -191,7 +191,7 @@ export default function RestraintLogPage() {
                   <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(r.id)}>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <Badge className="bg-red-100 text-red-800 text-xs">Physical Intervention</Badge>
+                        <Badge className="bg-[--cs-risk-bg] text-[--cs-risk] text-xs">Physical Intervention</Badge>
                         <Badge variant="outline" className="text-xs">{TYPE_META[r.restraint_type]}</Badge>
                         <Badge className={cn("text-xs", reviewM.color)}>{reviewM.label}</Badge>
                         {r.injuries.length > 0 && <Badge variant="destructive" className="text-xs">Injury recorded</Badge>}
@@ -222,9 +222,9 @@ export default function RestraintLogPage() {
                       <div><p className="font-medium text-muted-foreground mb-1">Behaviour</p><p className="text-xs">{r.behaviour}</p></div>
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">De-escalation Attempts</p>
-                        <ul className="space-y-0.5 text-xs">{r.de_escalation_attempts.map((de, i) => <li key={i} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-green-600" />{de}</li>)}</ul>
+                        <ul className="space-y-0.5 text-xs">{r.de_escalation_attempts.map((de, i) => <li key={i} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[--cs-success]" />{de}</li>)}</ul>
                       </div>
-                      <div><p className="font-medium text-muted-foreground mb-1">Justification</p><p className="bg-amber-50 p-2 rounded text-xs text-amber-900">{r.justification}</p></div>
+                      <div><p className="font-medium text-muted-foreground mb-1">Justification</p><p className="bg-[--cs-warning-bg] p-2 rounded text-xs text-[--cs-warning]">{r.justification}</p></div>
                       <div><p className="font-medium text-muted-foreground mb-1">Description of Intervention</p><p className="text-xs">{r.description}</p></div>
 
                       <div>
@@ -239,10 +239,10 @@ export default function RestraintLogPage() {
                       </div>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                        <div className="flex items-center gap-1 text-xs">{r.child_debriefed ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <AlertTriangle className="h-3.5 w-3.5 text-red-600" />}<span>Child debriefed</span></div>
-                        <div className="flex items-center gap-1 text-xs">{r.staff_debriefed ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <AlertTriangle className="h-3.5 w-3.5 text-red-600" />}<span>Staff debriefed</span></div>
-                        <div className="flex items-center gap-1 text-xs">{r.body_map_completed ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <AlertTriangle className="h-3.5 w-3.5 text-red-600" />}<span>Body map</span></div>
-                        <div className="flex items-center gap-1 text-xs">{r.medical_check_completed ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <AlertTriangle className="h-3.5 w-3.5 text-red-600" />}<span>Medical check</span></div>
+                        <div className="flex items-center gap-1 text-xs">{r.child_debriefed ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" /> : <AlertTriangle className="h-3.5 w-3.5 text-[--cs-risk]" />}<span>Child debriefed</span></div>
+                        <div className="flex items-center gap-1 text-xs">{r.staff_debriefed ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" /> : <AlertTriangle className="h-3.5 w-3.5 text-[--cs-risk]" />}<span>Staff debriefed</span></div>
+                        <div className="flex items-center gap-1 text-xs">{r.body_map_completed ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" /> : <AlertTriangle className="h-3.5 w-3.5 text-[--cs-risk]" />}<span>Body map</span></div>
+                        <div className="flex items-center gap-1 text-xs">{r.medical_check_completed ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" /> : <AlertTriangle className="h-3.5 w-3.5 text-[--cs-risk]" />}<span>Medical check</span></div>
                       </div>
 
                       {r.child_debrief_notes && (
@@ -253,9 +253,9 @@ export default function RestraintLogPage() {
 
                       {r.injuries.length > 0 && (
                         <div>
-                          <p className="font-medium text-red-700 mb-1">Injuries</p>
+                          <p className="font-medium text-[--cs-risk] mb-1">Injuries</p>
                           {r.injuries.map((inj, i) => (
-                            <div key={i} className="bg-red-50 p-2 rounded text-xs text-red-900">
+                            <div key={i} className="bg-[--cs-risk-bg] p-2 rounded text-xs text-[--cs-risk]">
                               <span className="font-medium">{inj.person}:</span> {inj.injury} — Treatment: {inj.treatment}
                             </div>
                           ))}
@@ -266,13 +266,13 @@ export default function RestraintLogPage() {
                         <div>
                           <p className="font-medium text-muted-foreground mb-1">Notifications Sent</p>
                           <div className="space-y-0.5">{r.notifications_sent.map((n, i) => (
-                            <div key={i} className="flex items-center gap-2 text-xs"><CheckCircle2 className="h-3 w-3 text-green-600" /><span>{n.party}</span><span className="text-muted-foreground">{n.date}</span></div>
+                            <div key={i} className="flex items-center gap-2 text-xs"><CheckCircle2 className="h-3 w-3 text-[--cs-success]" /><span>{n.party}</span><span className="text-muted-foreground">{n.date}</span></div>
                           ))}</div>
                         </div>
                       )}
 
                       {r.review_notes && (
-                        <div><p className="font-medium text-muted-foreground mb-1">Review Notes</p><p className="bg-green-50 p-2 rounded text-xs text-green-900">{r.review_notes}</p><p className="text-xs text-muted-foreground mt-1">Reviewed by: {getStaffName(r.reviewed_by)}</p></div>
+                        <div><p className="font-medium text-muted-foreground mb-1">Review Notes</p><p className="bg-[--cs-success-bg] p-2 rounded text-xs text-[--cs-success]">{r.review_notes}</p><p className="text-xs text-muted-foreground mt-1">Reviewed by: {getStaffName(r.reviewed_by)}</p></div>
                       )}
 
                       <SmartLinkPanel sourceType="restraint" sourceId={r.id} childId={r.child_id} compact />
