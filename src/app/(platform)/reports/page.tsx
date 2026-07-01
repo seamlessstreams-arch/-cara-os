@@ -49,7 +49,7 @@ function Trend({ value, good = "up" }: { value: number; good?: "up" | "down" }) 
   const isPositive = value > 0;
   const isGood = good === "up" ? isPositive : !isPositive;
   return (
-    <div className={cn("flex items-center gap-0.5 text-xs font-medium", isGood ? "text-emerald-600" : "text-red-600")}>
+    <div className={cn("flex items-center gap-0.5 text-xs font-medium", isGood ? "text-[--cs-success]" : "text-[--cs-risk]")}>
       {value > 0 ? <ArrowUp className="h-3 w-3" /> : value < 0 ? <ArrowDown className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
       {Math.abs(value)}%
     </div>
@@ -115,9 +115,9 @@ export default function ReportsPage() {
   ];
 
   const kpiCards = [
-    { label: "Task Completion Rate", value: isLoading ? "—" : `${taskCompletionRate}%`, trend: 5, icon: CheckCircle2, color: "text-emerald-600", bg: "bg-emerald-50", good: "up" as const },
-    { label: "Training Compliance", value: isLoading ? "—" : `${trainingCompliancePct}%`, trend: -3, icon: GraduationCap, color: "text-amber-600", bg: "bg-amber-50", good: "up" as const },
-    { label: "Open Incidents", value: isLoading ? "—" : openIncidents.length, trend: 12, icon: Shield, color: "text-red-600", bg: "bg-red-50", good: "down" as const },
+    { label: "Task Completion Rate", value: isLoading ? "—" : `${taskCompletionRate}%`, trend: 5, icon: CheckCircle2, color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", good: "up" as const },
+    { label: "Training Compliance", value: isLoading ? "—" : `${trainingCompliancePct}%`, trend: -3, icon: GraduationCap, color: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg]", good: "up" as const },
+    { label: "Open Incidents", value: isLoading ? "—" : openIncidents.length, trend: 12, icon: Shield, color: "text-[--cs-risk]", bg: "bg-[--cs-risk-bg]", good: "down" as const },
     { label: "Staff on Leave", value: isLoading ? "—" : (leaveMeta?.on_leave_today ?? "—"), trend: 0, icon: Users, color: "text-blue-600", bg: "bg-blue-50", good: "down" as const },
     { label: "Overdue Tasks", value: isLoading ? "—" : overdueTasks.length, trend: -20, icon: Clock, color: "text-orange-600", bg: "bg-orange-50", good: "down" as const },
     { label: "Sick Absences (30d)", value: isLoading ? "—" : (leaveMeta?.sick_instances_last_30 ?? "—"), trend: 8, icon: Activity, color: "text-rose-600", bg: "bg-rose-50", good: "down" as const },
@@ -200,16 +200,16 @@ export default function ReportsPage() {
                         <div className="text-xl font-bold text-[var(--cs-navy)]">{allTasks.length}</div>
                         <div className="text-[10px] text-[var(--cs-text-muted)]">Total tasks</div>
                       </div>
-                      <div className="rounded-xl bg-emerald-50 p-3">
-                        <div className="text-xl font-bold text-emerald-600">{completedTasks.length}</div>
+                      <div className="rounded-xl bg-[--cs-success-bg] p-3">
+                        <div className="text-xl font-bold text-[--cs-success]">{completedTasks.length}</div>
                         <div className="text-[10px] text-[var(--cs-text-muted)]">Completed</div>
                       </div>
-                      <div className="rounded-xl bg-red-50 p-3">
-                        <div className="text-xl font-bold text-red-600">{overdueTasks.length}</div>
+                      <div className="rounded-xl bg-[--cs-risk-bg] p-3">
+                        <div className="text-xl font-bold text-[--cs-risk]">{overdueTasks.length}</div>
                         <div className="text-[10px] text-[var(--cs-text-muted)]">Overdue</div>
                       </div>
                     </div>
-                    <Progress value={taskCompletionRate} color={taskCompletionRate > 70 ? "bg-emerald-500" : "bg-amber-500"} />
+                    <Progress value={taskCompletionRate} color={taskCompletionRate > 70 ? "bg-[--cs-success]" : "bg-[--cs-warning]"} />
                     <div className="text-xs text-center text-[var(--cs-text-muted)]">{taskCompletionRate}% overall completion rate</div>
                   </div>
                 </CardContent>
@@ -224,16 +224,16 @@ export default function ReportsPage() {
                   <div className="space-y-4">
                     <Sparkline values={[2, 1, 3, 2, 4, 2, 3, 2]} color="bg-red-300" />
                     <div className="grid grid-cols-3 gap-3 text-center">
-                      <div className="rounded-xl bg-red-50 p-3">
-                        <div className="text-xl font-bold text-red-600">{allIncidents.length}</div>
+                      <div className="rounded-xl bg-[--cs-risk-bg] p-3">
+                        <div className="text-xl font-bold text-[--cs-risk]">{allIncidents.length}</div>
                         <div className="text-[10px] text-[var(--cs-text-muted)]">Total</div>
                       </div>
-                      <div className="rounded-xl bg-amber-50 p-3">
-                        <div className="text-xl font-bold text-amber-600">{openIncidents.length}</div>
+                      <div className="rounded-xl bg-[--cs-warning-bg] p-3">
+                        <div className="text-xl font-bold text-[--cs-warning]">{openIncidents.length}</div>
                         <div className="text-[10px] text-[var(--cs-text-muted)]">Open</div>
                       </div>
-                      <div className="rounded-xl bg-emerald-50 p-3">
-                        <div className="text-xl font-bold text-emerald-600">{closedIncidents.length}</div>
+                      <div className="rounded-xl bg-[--cs-success-bg] p-3">
+                        <div className="text-xl font-bold text-[--cs-success]">{closedIncidents.length}</div>
                         <div className="text-[10px] text-[var(--cs-text-muted)]">Closed</div>
                       </div>
                     </div>
@@ -270,9 +270,9 @@ export default function ReportsPage() {
                     { label: "Supervision Compliance", value: "83%", status: "warn" },
                     { label: "Ofsted Grade", value: "Good", status: "good" },
                   ].map(({ label, value, status }) => (
-                    <div key={label} className={cn("rounded-xl p-4 border", status === "good" ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200")}>
+                    <div key={label} className={cn("rounded-xl p-4 border", status === "good" ? "bg-[--cs-success-bg] border-[--cs-success-soft]" : "bg-[--cs-warning-bg] border-[--cs-warning-soft]")}>
                       <div className="text-[10px] text-[var(--cs-text-muted)] uppercase tracking-wide mb-1">{label}</div>
-                      <div className={cn("text-lg font-bold", status === "good" ? "text-emerald-700" : "text-amber-700")}>{value}</div>
+                      <div className={cn("text-lg font-bold", status === "good" ? "text-[--cs-success]" : "text-[--cs-warning]")}>{value}</div>
                     </div>
                   ))}
                 </div>
@@ -355,13 +355,13 @@ export default function ReportsPage() {
                         <Avatar name={staff.full_name} size="xs" />
                         <span className="text-sm font-medium text-[var(--cs-navy)] w-36 truncate">{staff.full_name}</span>
                         <div className="flex-1">
-                          <Progress value={completionRate} color={completionRate > 70 ? "bg-emerald-400" : completionRate > 40 ? "bg-amber-400" : "bg-red-400"} className="h-1.5" />
+                          <Progress value={completionRate} color={completionRate > 70 ? "bg-[--cs-success]" : completionRate > 40 ? "bg-[--cs-warning]" : "bg-[--cs-risk]"} className="h-1.5" />
                         </div>
                         <span className="text-xs text-[var(--cs-text-muted)] w-20">{completedForStaff}/{totalTasks} tasks</span>
                         {staff.training_expired_count > 0 ? (
-                          <Badge className="text-[9px] rounded-full bg-red-100 text-red-700">{staff.training_expired_count} expired training</Badge>
+                          <Badge className="text-[9px] rounded-full bg-[--cs-risk-bg] text-[--cs-risk]">{staff.training_expired_count} expired training</Badge>
                         ) : (
-                          <Badge className="text-[9px] rounded-full bg-emerald-100 text-emerald-700">Training OK</Badge>
+                          <Badge className="text-[9px] rounded-full bg-[--cs-success-bg] text-[--cs-success]">Training OK</Badge>
                         )}
                       </div>
                     );
@@ -392,12 +392,12 @@ export default function ReportsPage() {
                           <Avatar name={staff.full_name} size="xs" />
                           <span className="text-sm text-[var(--cs-navy)] flex-1">{staff.full_name}</span>
                           <div className="flex gap-1.5">
-                            <span className="text-[10px] text-emerald-600 font-medium">{Math.max(0, compliant)} OK</span>
-                            {expired > 0 && <span className="text-[10px] text-red-600 font-medium">{expired} exp</span>}
-                            {expiring > 0 && <span className="text-[10px] text-amber-600 font-medium">{expiring} expiring</span>}
+                            <span className="text-[10px] text-[--cs-success] font-medium">{Math.max(0, compliant)} OK</span>
+                            {expired > 0 && <span className="text-[10px] text-[--cs-risk] font-medium">{expired} exp</span>}
+                            {expiring > 0 && <span className="text-[10px] text-[--cs-warning] font-medium">{expiring} expiring</span>}
                           </div>
                         </div>
-                        <Progress value={pct} color={pct > 80 ? "bg-emerald-500" : pct > 60 ? "bg-amber-500" : "bg-red-500"} className="h-1.5" />
+                        <Progress value={pct} color={pct > 80 ? "bg-[--cs-success]" : pct > 60 ? "bg-[--cs-warning]" : "bg-[--cs-risk]"} className="h-1.5" />
                       </div>
                     );
                   })}
@@ -418,9 +418,9 @@ export default function ReportsPage() {
                     const sevIncidents = allIncidents.filter((i) => i.severity === sev);
                     if (sevIncidents.length === 0) return null;
                     const colors: Record<string, string> = {
-                      critical: "bg-red-100 text-red-700",
+                      critical: "bg-[--cs-risk-bg] text-[--cs-risk]",
                       high: "bg-orange-100 text-orange-700",
-                      medium: "bg-amber-100 text-amber-700",
+                      medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
                       low: "bg-slate-100 text-[var(--cs-text-secondary)]",
                     };
                     return (
@@ -434,7 +434,7 @@ export default function ReportsPage() {
                             <span className="text-[var(--cs-text-muted)] shrink-0">{inc.reference}</span>
                             <span className="text-[var(--cs-text-secondary)] flex-1 truncate">{inc.type.replace(/_/g, " ")}</span>
                             <span className="text-[var(--cs-text-muted)]">{inc.date}</span>
-                            <Badge className={cn("text-[9px] rounded-full", inc.status === "open" ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-700")}>
+                            <Badge className={cn("text-[9px] rounded-full", inc.status === "open" ? "bg-[--cs-risk-bg] text-[--cs-risk]" : "bg-[--cs-success-bg] text-[--cs-success]")}>
                               {inc.status}
                             </Badge>
                           </div>
@@ -456,7 +456,7 @@ export default function ReportsPage() {
                 { label: "Monthly Staff Cost", value: "£24,800", sub: "incl. overtime", color: "text-blue-600" },
                 { label: "Overtime This Month", value: "£380", sub: "6.2 hours OT", color: "text-orange-600" },
                 { label: "Expenses Submitted", value: "£561", sub: "7 claims", color: "text-[var(--cs-cara-gold)]" },
-                { label: "Petty Cash Balance", value: "£43.50", sub: "Last counted: today", color: "text-emerald-600" },
+                { label: "Petty Cash Balance", value: "£43.50", sub: "Last counted: today", color: "text-[--cs-success]" },
               ].map(({ label, value, sub, color }) => (
                 <div key={label} className="rounded-2xl border border-[var(--cs-border)] bg-white p-5">
                   <div className="text-[11px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider">{label}</div>
