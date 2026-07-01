@@ -85,17 +85,17 @@ const ARRANGEMENT_STATUS_LABELS: Record<ContactArrangementStatus, string> = {
 };
 
 function outcomeBadgeClass(outcome: ContactOutcome) {
-  if (outcome === "positive") return "bg-emerald-100 text-emerald-800";
-  if (outcome === "mixed")    return "bg-amber-100  text-amber-800";
+  if (outcome === "positive") return "bg-[--cs-success-bg] text-[--cs-success]";
+  if (outcome === "mixed")    return "bg-[--cs-warning-bg] text-[--cs-warning]";
   if (["difficult", "refused_by_yp"].includes(outcome))
-    return "bg-red-100 text-red-800";
+    return "bg-[--cs-risk-bg] text-[--cs-risk]";
   return "bg-slate-100 text-slate-600";
 }
 
 function arrangementStatusClass(s: ContactArrangementStatus) {
-  if (s === "active")        return "bg-emerald-100 text-emerald-800";
-  if (s === "under_review")  return "bg-amber-100  text-amber-800";
-  if (s === "suspended")     return "bg-red-100    text-red-800";
+  if (s === "active")        return "bg-[--cs-success-bg] text-[--cs-success]";
+  if (s === "under_review")  return "bg-[--cs-warning-bg] text-[--cs-warning]";
+  if (s === "suspended")     return "bg-[--cs-risk-bg] text-[--cs-risk]";
   return "bg-slate-100 text-slate-600";
 }
 
@@ -185,8 +185,8 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
   return (
     <div className={cn(
       "border rounded-xl bg-white shadow-sm overflow-hidden",
-      log.safeguarding_concern && "border-red-300",
-      log.concerns_identified && !log.safeguarding_concern && "border-amber-200",
+      log.safeguarding_concern && "border-[--cs-risk-soft]",
+      log.concerns_identified && !log.safeguarding_concern && "border-[--cs-warning-soft]",
     )}>
       {/* Header */}
       <div
@@ -225,12 +225,12 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
 
         <div className="flex items-center gap-2 flex-shrink-0">
           {log.safeguarding_concern && (
-            <Badge className="bg-red-100 text-red-700 text-xs gap-1">
+            <Badge className="bg-[--cs-risk-bg] text-[--cs-risk] text-xs gap-1">
               <ShieldAlert className="w-3 h-3" /> Safeguarding
             </Badge>
           )}
           {log.concerns_identified && !log.safeguarding_concern && (
-            <Badge className="bg-amber-100 text-amber-700 text-xs gap-1">
+            <Badge className="bg-[--cs-warning-bg] text-[--cs-warning] text-xs gap-1">
               <AlertTriangle className="w-3 h-3" /> Concern
             </Badge>
           )}
@@ -287,21 +287,21 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
 
           {/* Concerns */}
           {log.concerns_identified && log.concerns_detail && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1">
+            <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3">
+              <p className="text-xs font-semibold text-[--cs-warning] mb-1 flex items-center gap-1">
                 <AlertTriangle className="w-3.5 h-3.5" /> Concerns identified
               </p>
-              <p className="text-sm text-amber-900">{log.concerns_detail}</p>
+              <p className="text-sm text-[--cs-warning]">{log.concerns_detail}</p>
             </div>
           )}
 
           {/* Safeguarding */}
           {log.safeguarding_concern && log.safeguarding_detail && (
-            <div className="bg-red-50 border border-red-300 rounded-lg p-3">
-              <p className="text-xs font-semibold text-red-700 mb-1 flex items-center gap-1">
+            <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3">
+              <p className="text-xs font-semibold text-[--cs-risk] mb-1 flex items-center gap-1">
                 <ShieldAlert className="w-3.5 h-3.5" /> Safeguarding concern
               </p>
-              <p className="text-sm text-red-900">{log.safeguarding_detail}</p>
+              <p className="text-sm text-[--cs-risk]">{log.safeguarding_detail}</p>
             </div>
           )}
 
@@ -377,7 +377,7 @@ Safeguarding concern: ${log.safeguarding_concern ? log.safeguarding_detail : "no
             )}
 
             {log.social_worker_notified && (
-              <span className="text-xs text-emerald-600 flex items-center gap-1">
+              <span className="text-xs text-[--cs-success] flex items-center gap-1">
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 SW notified {log.social_worker_notified_at ? formatDate(log.social_worker_notified_at.split("T")[0]) : ""}
               </span>
@@ -499,8 +499,8 @@ function ArrangementCard({
   return (
     <div className={cn(
       "border rounded-xl bg-white shadow-sm overflow-hidden",
-      arrangement.status === "under_review" && "border-amber-300",
-      arrangement.status === "suspended"    && "border-red-300",
+      arrangement.status === "under_review" && "border-[--cs-warning-soft]",
+      arrangement.status === "suspended"    && "border-[--cs-risk-soft]",
       arrangement.status === "ceased"       && "border-slate-300 opacity-60",
     )}>
       {/* Header */}
@@ -535,7 +535,7 @@ function ArrangementCard({
 
         <div className="flex items-center gap-2 flex-shrink-0">
           {distressCount >= 2 && (
-            <Badge className="bg-red-100 text-red-700 text-xs gap-1">
+            <Badge className="bg-[--cs-risk-bg] text-[--cs-risk] text-xs gap-1">
               <AlertTriangle className="w-3 h-3" /> Pattern
             </Badge>
           )}
@@ -585,17 +585,17 @@ function ArrangementCard({
             <div className={cn(
               "rounded-lg p-3 text-sm",
               arrangement.contact_person.la_approved
-                ? "bg-emerald-50 border border-emerald-200"
-                : "bg-red-50 border border-red-200",
+                ? "bg-[--cs-success-bg] border border-[--cs-success-soft]"
+                : "bg-[--cs-risk-bg] border border-[--cs-risk-soft]",
             )}>
               <div className="flex items-center gap-1.5 mb-1">
                 {arrangement.contact_person.la_approved
-                  ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  : <Ban className="w-3.5 h-3.5 text-red-600" />
+                  ? <CheckCircle2 className="w-3.5 h-3.5 text-[--cs-success]" />
+                  : <Ban className="w-3.5 h-3.5 text-[--cs-risk]" />
                 }
                 <span className={cn(
                   "text-xs font-semibold",
-                  arrangement.contact_person.la_approved ? "text-emerald-700" : "text-red-700",
+                  arrangement.contact_person.la_approved ? "text-[--cs-success]" : "text-[--cs-risk]",
                 )}>
                   LA approval: {arrangement.contact_person.la_approved ? `Approved${arrangement.contact_person.approval_date ? ` (${formatDate(arrangement.contact_person.approval_date)})` : ""}` : "NOT APPROVED"}
                 </span>
@@ -603,7 +603,7 @@ function ArrangementCard({
               {arrangement.contact_person.notes && (
                 <p className={cn(
                   "text-xs",
-                  arrangement.contact_person.la_approved ? "text-emerald-800" : "text-red-800",
+                  arrangement.contact_person.la_approved ? "text-[--cs-success]" : "text-[--cs-risk]",
                 )}>{arrangement.contact_person.notes}</p>
               )}
             </div>
@@ -611,12 +611,12 @@ function ArrangementCard({
 
           {/* Suspension reason */}
           {(arrangement.status === "under_review" || arrangement.status === "suspended") && arrangement.suspension_reason && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p className="text-xs font-semibold text-amber-700 mb-1 flex items-center gap-1">
+            <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3">
+              <p className="text-xs font-semibold text-[--cs-warning] mb-1 flex items-center gap-1">
                 <PauseCircle className="w-3.5 h-3.5" />
                 {arrangement.status === "suspended" ? "Suspension reason" : "Review reason"}
               </p>
-              <p className="text-sm text-amber-900">{arrangement.suspension_reason}</p>
+              <p className="text-sm text-[--cs-warning]">{arrangement.suspension_reason}</p>
             </div>
           )}
 
@@ -639,16 +639,16 @@ function ArrangementCard({
               </div>
               <div className={cn(
                 "rounded-lg p-3 text-center",
-                concernCount > 0 ? "bg-amber-50" : "bg-slate-50",
+                concernCount > 0 ? "bg-[--cs-warning-bg]" : "bg-slate-50",
               )}>
-                <p className={cn("text-xl font-bold", concernCount > 0 ? "text-amber-700" : "text-slate-800")}>{concernCount}</p>
+                <p className={cn("text-xl font-bold", concernCount > 0 ? "text-[--cs-warning]" : "text-slate-800")}>{concernCount}</p>
                 <p className="text-xs text-slate-500">With concerns</p>
               </div>
               <div className={cn(
                 "rounded-lg p-3 text-center",
-                distressCount >= 2 ? "bg-red-50" : "bg-slate-50",
+                distressCount >= 2 ? "bg-[--cs-risk-bg]" : "bg-slate-50",
               )}>
-                <p className={cn("text-xl font-bold", distressCount >= 2 ? "text-red-700" : "text-slate-800")}>{distressCount}</p>
+                <p className={cn("text-xl font-bold", distressCount >= 2 ? "text-[--cs-risk]" : "text-slate-800")}>{distressCount}</p>
                 <p className="text-xs text-slate-500">Post-contact distress</p>
               </div>
             </div>
@@ -763,11 +763,11 @@ function ArrangementCard({
                     checked={logSafeguarding}
                     onChange={(e) => setLogSafeguarding(e.target.checked)}
                   />
-                  <span className="text-sm text-red-700 font-medium">Safeguarding concern identified</span>
+                  <span className="text-sm text-[--cs-risk] font-medium">Safeguarding concern identified</span>
                 </label>
                 {logSafeguarding && (
                   <Textarea
-                    className="h-16 text-sm resize-none border-red-300"
+                    className="h-16 text-sm resize-none border-[--cs-risk-soft]"
                     placeholder="Describe the safeguarding concern…"
                     value={logSafeguardingDetail}
                     onChange={(e) => setLogSafeguardingDetail(e.target.value)}
@@ -815,11 +815,11 @@ function UnapprovedPersonsBanner({ arrangements }: { arrangements: EnrichedArran
   if (unapproved.length === 0) return null;
 
   return (
-    <div className="bg-red-50 border border-red-300 rounded-xl p-4 flex items-start gap-3">
-      <Ban className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+    <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-xl p-4 flex items-start gap-3">
+      <Ban className="w-5 h-5 text-[--cs-risk] flex-shrink-0 mt-0.5" />
       <div>
-        <p className="font-semibold text-red-800 text-sm">Unapproved contact person on record</p>
-        <p className="text-xs text-red-700 mt-0.5">
+        <p className="font-semibold text-[--cs-risk] text-sm">Unapproved contact person on record</p>
+        <p className="text-xs text-[--cs-risk] mt-0.5">
           {unapproved.map((a) => `${a.contact_person!.name} (${a.contact_person!.relationship} — ${getYPName(a.child_id)})`).join(", ")} —
           {" "}no LA approval on file. No contact should take place until approval is confirmed.
         </p>
@@ -929,13 +929,13 @@ export default function FamilyContactPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
           {[
             { icon: PhoneCall, label: "Active", value: stats.activeArrangements, colour: "text-blue-700", bg: "bg-blue-50" },
-            { icon: PauseCircle, label: "Suspended", value: stats.suspended, colour: stats.suspended > 0 ? "text-red-700" : "text-slate-500", bg: stats.suspended > 0 ? "bg-red-50" : "bg-slate-50" },
-            { icon: Clock, label: "Under Review", value: stats.underReview, colour: stats.underReview > 0 ? "text-amber-700" : "text-slate-500", bg: stats.underReview > 0 ? "bg-amber-50" : "bg-slate-50" },
+            { icon: PauseCircle, label: "Suspended", value: stats.suspended, colour: stats.suspended > 0 ? "text-[--cs-risk]" : "text-slate-500", bg: stats.suspended > 0 ? "bg-[--cs-risk-bg]" : "bg-slate-50" },
+            { icon: Clock, label: "Under Review", value: stats.underReview, colour: stats.underReview > 0 ? "text-[--cs-warning]" : "text-slate-500", bg: stats.underReview > 0 ? "bg-[--cs-warning-bg]" : "bg-slate-50" },
             { icon: CalendarDays, label: "Court Ordered", value: stats.courtOrdered, colour: "text-indigo-700", bg: "bg-indigo-50" },
             { icon: MessageSquare, label: "Total Sessions", value: stats.totalSessions, colour: "text-slate-700", bg: "bg-slate-50" },
-            { icon: AlertTriangle, label: "Concerns", value: stats.concernsThisMonth, colour: stats.concernsThisMonth > 0 ? "text-orange-700" : "text-emerald-700", bg: stats.concernsThisMonth > 0 ? "bg-orange-50" : "bg-emerald-50" },
-            { icon: ShieldAlert, label: "Safeguarding", value: stats.safeguardingConcerns, colour: stats.safeguardingConcerns > 0 ? "text-red-700" : "text-emerald-700", bg: stats.safeguardingConcerns > 0 ? "bg-red-50" : "bg-emerald-50" },
-            { icon: Heart, label: "Distress Pattern", value: stats.distressPattern, colour: stats.distressPattern > 0 ? "text-red-700" : "text-emerald-700", bg: stats.distressPattern > 0 ? "bg-red-50" : "bg-emerald-50" },
+            { icon: AlertTriangle, label: "Concerns", value: stats.concernsThisMonth, colour: stats.concernsThisMonth > 0 ? "text-orange-700" : "text-[--cs-success]", bg: stats.concernsThisMonth > 0 ? "bg-orange-50" : "bg-[--cs-success-bg]" },
+            { icon: ShieldAlert, label: "Safeguarding", value: stats.safeguardingConcerns, colour: stats.safeguardingConcerns > 0 ? "text-[--cs-risk]" : "text-[--cs-success]", bg: stats.safeguardingConcerns > 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]" },
+            { icon: Heart, label: "Distress Pattern", value: stats.distressPattern, colour: stats.distressPattern > 0 ? "text-[--cs-risk]" : "text-[--cs-success]", bg: stats.distressPattern > 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]" },
           ].map(({ label, value, colour, bg, icon: Icon }) => (
             <div key={label} className={cn("rounded-xl border border-slate-100 p-3", bg)}>
               <div className="flex items-center gap-2 mb-1">
