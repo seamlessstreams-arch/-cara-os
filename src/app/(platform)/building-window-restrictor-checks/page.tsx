@@ -37,10 +37,10 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 const outcomeColour: Record<string, string> = {
-  pass: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  pass_with_advisory: "bg-amber-100 text-amber-800 border-amber-200",
+  pass: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
+  pass_with_advisory: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
   remedial_required: "bg-orange-100 text-orange-900 border-orange-200",
-  failed_restrict_immediately: "bg-red-100 text-red-900 border-red-300",
+  failed_restrict_immediately: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
 };
 
 const restrictorColour: Record<string, string> = {
@@ -142,13 +142,13 @@ export default function BuildingWindowRestrictorChecksPage() {
           <div className="flex items-center gap-2 text-sky-800 text-sm mb-1"><ShieldCheck className="h-4 w-4" /><span>Windows checked (quarter)</span></div>
           <div className="text-2xl font-semibold text-sky-900">{stats.checkedThisQuarter}</div>
         </div>
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-          <div className="flex items-center gap-2 text-emerald-800 text-sm mb-1"><CheckCircle className="h-4 w-4" /><span>All-pass count</span></div>
-          <div className="text-2xl font-semibold text-emerald-900">{stats.allPass}</div>
+        <div className="rounded-lg border border-[--cs-success-soft] bg-[--cs-success-bg] p-4">
+          <div className="flex items-center gap-2 text-[--cs-success] text-sm mb-1"><CheckCircle className="h-4 w-4" /><span>All-pass count</span></div>
+          <div className="text-2xl font-semibold text-[--cs-success]">{stats.allPass}</div>
         </div>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <div className="flex items-center gap-2 text-red-800 text-sm mb-1"><AlertTriangle className="h-4 w-4" /><span>Remedial open</span></div>
-          <div className="text-2xl font-semibold text-red-900">{stats.remedialOpen}</div>
+        <div className="rounded-lg border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4">
+          <div className="flex items-center gap-2 text-[--cs-risk] text-sm mb-1"><AlertTriangle className="h-4 w-4" /><span>Remedial open</span></div>
+          <div className="text-2xl font-semibold text-[--cs-risk]">{stats.remedialOpen}</div>
         </div>
         <div className="rounded-lg border border-teal-200 bg-teal-50 p-4">
           <div className="flex items-center gap-2 text-teal-800 text-sm mb-1"><Calendar className="h-4 w-4" /><span>Next due (30d)</span></div>
@@ -186,26 +186,26 @@ export default function BuildingWindowRestrictorChecksPage() {
           const dueSoon = r.next_due_date >= today && r.next_due_date <= thirtyDaysFromNow;
           const overdue = r.next_due_date < today;
           return (
-            <div key={r.id} className={cn("rounded-lg border bg-white overflow-hidden", failed ? "border-red-300 ring-1 ring-red-200" : "border-[var(--cs-border)]")}>
-              <button onClick={() => setExpandedId(isOpen ? null : r.id)} className={cn("w-full p-4 flex items-start justify-between gap-3 text-left", failed ? "hover:bg-red-50/40" : "hover:bg-sky-50/40")}>
+            <div key={r.id} className={cn("rounded-lg border bg-white overflow-hidden", failed ? "border-[--cs-risk-soft] ring-1 ring-[--cs-risk-soft]" : "border-[var(--cs-border)]")}>
+              <button onClick={() => setExpandedId(isOpen ? null : r.id)} className={cn("w-full p-4 flex items-start justify-between gap-3 text-left", failed ? "hover:bg-[--cs-risk-bg]/40" : "hover:bg-sky-50/40")}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    {failed ? <AlertTriangle className="h-4 w-4 text-red-600" /> : <ShieldCheck className="h-4 w-4 text-sky-600" />}
+                    {failed ? <AlertTriangle className="h-4 w-4 text-[--cs-risk]" /> : <ShieldCheck className="h-4 w-4 text-sky-600" />}
                     <span className="font-semibold text-[var(--cs-navy)]">{r.inspection_date}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", outcomeColour[r.outcome])}>{WINDOW_CHECK_OUTCOME_LABEL[r.outcome]}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", restrictorColour[r.restrictor_type])}>{RESTRICTOR_TYPE_LABEL[r.restrictor_type]}</span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", r.opening_compliance_with_100mm_rule ? "bg-emerald-100 text-emerald-800 border-emerald-200" : "bg-red-100 text-red-900 border-red-300")}>
+                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", r.opening_compliance_with_100mm_rule ? "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" : "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]")}>
                       Opening {r.opening_maximum_cm.toFixed(1)} cm
                     </span>
                     {r.child_aware ? (
                       <span className="text-xs px-2 py-0.5 rounded-full border bg-teal-100 text-teal-800 border-teal-200">Child aware</span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">Child not yet briefed</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">Child not yet briefed</span>
                     )}
                     {overdue ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-red-100 text-red-800 border-red-200">Re-check overdue · {r.next_due_date}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]">Re-check overdue · {r.next_due_date}</span>
                     ) : dueSoon ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">Re-check {r.next_due_date}</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">Re-check {r.next_due_date}</span>
                     ) : null}
                   </div>
                   <div className="text-sm text-[var(--cs-text-secondary)]">{r.window_location} · {WINDOW_TYPE_LABEL[r.window_type]} · {WINDOW_FLOOR_LEVEL_LABEL[r.floor_level]} floor</div>
@@ -213,7 +213,7 @@ export default function BuildingWindowRestrictorChecksPage() {
                 {isOpen ? <ChevronUp className="h-5 w-5 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)]" />}
               </button>
               {isOpen && (
-                <div className={cn("px-4 pb-4 border-t", failed ? "border-red-100 bg-red-50/30" : "border-[var(--cs-border-subtle)] bg-sky-50/20")}>
+                <div className={cn("px-4 pb-4 border-t", failed ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : "border-[var(--cs-border-subtle)] bg-sky-50/20")}>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Inspection details</div>
@@ -234,9 +234,9 @@ export default function BuildingWindowRestrictorChecksPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-sky-700">Working:</span>
                           {r.restrictor_working ? (
-                            <span className="inline-flex items-center gap-1 text-emerald-700"><CheckCircle className="h-3.5 w-3.5" /> Yes — tested</span>
+                            <span className="inline-flex items-center gap-1 text-[--cs-success]"><CheckCircle className="h-3.5 w-3.5" /> Yes — tested</span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-red-700"><AlertTriangle className="h-3.5 w-3.5" /> No — failed under test</span>
+                            <span className="inline-flex items-center gap-1 text-[--cs-risk]"><AlertTriangle className="h-3.5 w-3.5" /> No — failed under test</span>
                           )}
                         </div>
                       </div>
@@ -246,9 +246,9 @@ export default function BuildingWindowRestrictorChecksPage() {
                       <div className="text-sm text-indigo-900">{r.key_location ?? "—"}</div>
                       <div className="text-xs text-indigo-700 mt-2">Keys held only by manager and deputy. Never on the window, frame or accessible to children.</div>
                     </div>
-                    <div className={cn("rounded-md border p-3 lg:col-span-2", r.opening_compliance_with_100mm_rule ? "border-emerald-200 bg-emerald-50" : "border-red-300 bg-red-50")}>
-                      <div className={cn("text-xs font-semibold uppercase mb-2", r.opening_compliance_with_100mm_rule ? "text-emerald-800" : "text-red-800")}>Opening aperture vs 100mm rule</div>
-                      <div className={cn("text-sm", r.opening_compliance_with_100mm_rule ? "text-emerald-900" : "text-red-900")}>
+                    <div className={cn("rounded-md border p-3 lg:col-span-2", r.opening_compliance_with_100mm_rule ? "border-[--cs-success-soft] bg-[--cs-success-bg]" : "border-[--cs-risk-soft] bg-[--cs-risk-bg]")}>
+                      <div className={cn("text-xs font-semibold uppercase mb-2", r.opening_compliance_with_100mm_rule ? "text-[--cs-success]" : "text-[--cs-risk]")}>Opening aperture vs 100mm rule</div>
+                      <div className={cn("text-sm", r.opening_compliance_with_100mm_rule ? "text-[--cs-success]" : "text-[--cs-risk]")}>
                         Maximum opening measured: <span className="font-semibold">{r.opening_maximum_cm.toFixed(1)} cm</span>{" "}
                         ({r.opening_maximum_cm <= 10 ? "within" : "exceeds"} the 100mm / 10cm industry standard for children&rsquo;s settings).{" "}
                         {r.opening_compliance_with_100mm_rule ? "Compliant." : "NON-COMPLIANT — restrict immediately."}
@@ -258,9 +258,9 @@ export default function BuildingWindowRestrictorChecksPage() {
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Signage in place</div>
                       <div className="text-sm text-[var(--cs-text-secondary)]">
                         {r.signage_in_place ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-700"><CheckCircle className="h-3.5 w-3.5" /> Yes — &lsquo;Do not tamper&rsquo; notice present</span>
+                          <span className="inline-flex items-center gap-1 text-[--cs-success]"><CheckCircle className="h-3.5 w-3.5" /> Yes — &lsquo;Do not tamper&rsquo; notice present</span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-amber-700"><AlertTriangle className="h-3.5 w-3.5" /> No — to be added</span>
+                          <span className="inline-flex items-center gap-1 text-[--cs-warning]"><AlertTriangle className="h-3.5 w-3.5" /> No — to be added</span>
                         )}
                       </div>
                     </div>
@@ -268,31 +268,31 @@ export default function BuildingWindowRestrictorChecksPage() {
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Child awareness</div>
                       <div className="text-sm text-[var(--cs-text-secondary)]">
                         {r.child_aware ? (
-                          <span className="inline-flex items-center gap-1 text-emerald-700"><CheckCircle className="h-3.5 w-3.5" /> Briefed age-appropriately — knows not to tamper</span>
+                          <span className="inline-flex items-center gap-1 text-[--cs-success]"><CheckCircle className="h-3.5 w-3.5" /> Briefed age-appropriately — knows not to tamper</span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-amber-700"><AlertTriangle className="h-3.5 w-3.5" /> Brief outstanding</span>
+                          <span className="inline-flex items-center gap-1 text-[--cs-warning]"><AlertTriangle className="h-3.5 w-3.5" /> Brief outstanding</span>
                         )}
                       </div>
                     </div>
                     {r.damage_noted.length > 0 && (
-                      <div className="rounded-md border border-amber-200 bg-amber-50 p-3 lg:col-span-2">
-                        <div className="text-xs font-semibold text-amber-800 uppercase mb-2">Damage noted</div>
-                        <ul className="text-sm text-amber-900 space-y-1">{r.damage_noted.map((dmg, i) => (<li key={i} className="flex gap-2"><span>·</span><span>{dmg}</span></li>))}</ul>
+                      <div className="rounded-md border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-3 lg:col-span-2">
+                        <div className="text-xs font-semibold text-[--cs-warning] uppercase mb-2">Damage noted</div>
+                        <ul className="text-sm text-[--cs-warning] space-y-1">{r.damage_noted.map((dmg, i) => (<li key={i} className="flex gap-2"><span>·</span><span>{dmg}</span></li>))}</ul>
                       </div>
                     )}
                     {r.remedial_actions.length > 0 && (
-                      <div className={cn("rounded-md border p-3 lg:col-span-2", failed ? "border-red-300 bg-red-50" : "border-orange-200 bg-orange-50")}>
+                      <div className={cn("rounded-md border p-3 lg:col-span-2", failed ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : "border-orange-200 bg-orange-50")}>
                         <div className="flex items-center gap-2 mb-2">
-                          <AlertTriangle className={cn("h-4 w-4", failed ? "text-red-700" : "text-orange-700")} />
-                          <div className={cn("text-xs font-semibold uppercase", failed ? "text-red-800" : "text-orange-800")}>Remedial actions</div>
+                          <AlertTriangle className={cn("h-4 w-4", failed ? "text-[--cs-risk]" : "text-orange-700")} />
+                          <div className={cn("text-xs font-semibold uppercase", failed ? "text-[--cs-risk]" : "text-orange-800")}>Remedial actions</div>
                         </div>
-                        <ul className={cn("text-sm space-y-1", failed ? "text-red-900" : "text-orange-900")}>{r.remedial_actions.map((a, i) => (<li key={i} className="flex gap-2"><span>·</span><span>{a}</span></li>))}</ul>
+                        <ul className={cn("text-sm space-y-1", failed ? "text-[--cs-risk]" : "text-orange-900")}>{r.remedial_actions.map((a, i) => (<li key={i} className="flex gap-2"><span>·</span><span>{a}</span></li>))}</ul>
                       </div>
                     )}
                     {r.flags_concerns.length > 0 && (
-                      <div className="rounded-md border border-red-200 bg-red-50 p-3 lg:col-span-2">
-                        <div className="flex items-center gap-2 mb-2"><AlertTriangle className="h-4 w-4 text-red-700" /><div className="text-xs font-semibold text-red-800 uppercase">Flags / concerns</div></div>
-                        <ul className="text-sm text-red-900 space-y-1">{r.flags_concerns.map((f, i) => (<li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>))}</ul>
+                      <div className="rounded-md border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-3 lg:col-span-2">
+                        <div className="flex items-center gap-2 mb-2"><AlertTriangle className="h-4 w-4 text-[--cs-risk]" /><div className="text-xs font-semibold text-[--cs-risk] uppercase">Flags / concerns</div></div>
+                        <ul className="text-sm text-[--cs-risk] space-y-1">{r.flags_concerns.map((f, i) => (<li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>))}</ul>
                       </div>
                     )}
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
