@@ -41,8 +41,8 @@ const KT_CLR: Record<KeyType, string> = {
 };
 
 const KS_CLR: Record<KeyholdingStatus, string> = {
-  in_use: "bg-blue-100 text-blue-800", all_accounted: "bg-green-100 text-green-800",
-  lost: "bg-red-100 text-red-800", replacement_ordered: "bg-amber-100 text-amber-800",
+  in_use: "bg-[--cs-info-bg] text-[--cs-info]", all_accounted: "bg-[--cs-success-bg] text-[--cs-success]",
+  lost: "bg-[--cs-risk-bg] text-[--cs-risk]", replacement_ordered: "bg-[--cs-warning-bg] text-[--cs-warning]",
   decommissioned: "bg-gray-100 text-gray-800",
 };
 
@@ -135,11 +135,11 @@ export default function KeyholdingRegisterPage() {
 
         {/* alerts */}
         {(lostCount > 0 || auditOverdue > 0) && (
-          <div className={cn("rounded-lg border p-4 flex items-start gap-3", lostCount > 0 ? "border-red-300 bg-red-50" : "border-amber-300 bg-amber-50")}>
-            <AlertTriangle className={cn("h-5 w-5 mt-0.5", lostCount > 0 ? "text-red-600" : "text-amber-600")} />
+          <div className={cn("rounded-lg border p-4 flex items-start gap-3", lostCount > 0 ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : "border-[--cs-warning-soft] bg-[--cs-warning-bg]")}>
+            <AlertTriangle className={cn("h-5 w-5 mt-0.5", lostCount > 0 ? "text-[--cs-risk]" : "text-[--cs-warning]")} />
             <div>
-              {lostCount > 0 && <p className="font-semibold text-red-900">{lostCount} key(s) reported lost</p>}
-              {auditOverdue > 0 && <p className="font-semibold text-amber-900">{auditOverdue} key audit(s) overdue</p>}
+              {lostCount > 0 && <p className="font-semibold text-[--cs-risk]">{lostCount} key(s) reported lost</p>}
+              {auditOverdue > 0 && <p className="font-semibold text-[--cs-warning]">{auditOverdue} key audit(s) overdue</p>}
             </div>
           </div>
         )}
@@ -201,10 +201,10 @@ export default function KeyholdingRegisterPage() {
                     </div>
 
                     {currentlyOut.length > 0 && (
-                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                        <p className="text-xs font-semibold text-amber-800 mb-1">Currently Signed Out</p>
+                      <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3">
+                        <p className="text-xs font-semibold text-[--cs-warning] mb-1">Currently Signed Out</p>
                         {currentlyOut.map((e, i) => (
-                          <p key={i} className="text-sm text-amber-900">{getStaffName(e.staff_id)} — {e.purpose} (out: {e.signed_out})</p>
+                          <p key={i} className="text-sm text-[--cs-warning]">{getStaffName(e.staff_id)} — {e.purpose} (out: {e.signed_out})</p>
                         ))}
                       </div>
                     )}
@@ -215,10 +215,10 @@ export default function KeyholdingRegisterPage() {
                         <table className="w-full text-sm border">
                           <thead className="bg-muted/50"><tr><th className="text-left p-2 font-medium">Staff</th><th className="text-left p-2 font-medium">Out</th><th className="text-left p-2 font-medium">In</th><th className="text-left p-2 font-medium">Purpose</th></tr></thead>
                           <tbody>{k.sign_out_log.slice(-5).map((e, i) => (
-                            <tr key={i} className={cn("border-t", !e.signed_in && "bg-amber-50")}>
+                            <tr key={i} className={cn("border-t", !e.signed_in && "bg-[--cs-warning-bg]")}>
                               <td className="p-2">{getStaffName(e.staff_id)}</td>
                               <td className="p-2">{e.signed_out}</td>
-                              <td className="p-2">{e.signed_in ?? <span className="text-amber-600 font-medium">Still out</span>}</td>
+                              <td className="p-2">{e.signed_in ?? <span className="text-[--cs-warning] font-medium">Still out</span>}</td>
                               <td className="p-2">{e.purpose}</td>
                             </tr>
                           ))}</tbody>
@@ -227,13 +227,13 @@ export default function KeyholdingRegisterPage() {
                     )}
 
                     {k.lost_key_incidents.length > 0 && (
-                      <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-                        <p className="text-xs font-semibold text-red-800 mb-1">Lost Key Incidents</p>
+                      <div className="rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
+                        <p className="text-xs font-semibold text-[--cs-risk] mb-1">Lost Key Incidents</p>
                         {k.lost_key_incidents.map((inc, i) => (
-                          <div key={i} className="text-sm text-red-900 space-y-1">
+                          <div key={i} className="text-sm text-[--cs-risk] space-y-1">
                             <p><strong>{inc.date}</strong> — Reported by {getStaffName(inc.reported_by)}</p>
                             <p>{inc.circumstances}</p>
-                            <p>Locks changed: {inc.locks_changed ? "Yes" : "No"} · Resolved: {inc.resolved ? <CheckCircle2 className="inline h-4 w-4 text-green-600" /> : <AlertTriangle className="inline h-4 w-4 text-red-600" />}</p>
+                            <p>Locks changed: {inc.locks_changed ? "Yes" : "No"} · Resolved: {inc.resolved ? <CheckCircle2 className="inline h-4 w-4 text-[--cs-success]" /> : <AlertTriangle className="inline h-4 w-4 text-[--cs-risk]" />}</p>
                           </div>
                         ))}
                       </div>
@@ -241,7 +241,7 @@ export default function KeyholdingRegisterPage() {
 
                     <div className="flex gap-4 text-sm">
                       <span><strong>Last Audit:</strong> {k.last_audit}</span>
-                      <span className={cn(auditDue && "text-red-600 font-medium")}><strong>Next Due:</strong> {k.next_audit_due}{auditDue && " (OVERDUE)"}</span>
+                      <span className={cn(auditDue && "text-[--cs-risk] font-medium")}><strong>Next Due:</strong> {k.next_audit_due}{auditDue && " (OVERDUE)"}</span>
                     </div>
 
                     {k.notes && <p className="text-xs text-muted-foreground italic">{k.notes}</p>}
@@ -261,12 +261,12 @@ export default function KeyholdingRegisterPage() {
               <tbody>{data.map(k => {
                 const due = k.next_audit_due <= today;
                 return (
-                  <tr key={k.id} className={cn("border-t", due && "bg-red-50")}>
+                  <tr key={k.id} className={cn("border-t", due && "bg-[--cs-risk-bg]")}>
                     <td className="p-2 font-medium">{k.key_name}</td>
                     <td className="p-2"><Badge className={cn("text-xs", KT_CLR[k.key_type])}>{KEY_TYPE_LABEL[k.key_type]}</Badge></td>
                     <td className="p-2">{k.last_audit}</td>
-                    <td className={cn("p-2", due && "text-red-600 font-medium")}>{k.next_audit_due}</td>
-                    <td className="p-2">{due ? <Badge className="bg-red-100 text-red-800 text-xs">Overdue</Badge> : <Badge className="bg-green-100 text-green-800 text-xs">On Track</Badge>}</td>
+                    <td className={cn("p-2", due && "text-[--cs-risk] font-medium")}>{k.next_audit_due}</td>
+                    <td className="p-2">{due ? <Badge className="bg-[--cs-risk-bg] text-[--cs-risk] text-xs">Overdue</Badge> : <Badge className="bg-[--cs-success-bg] text-[--cs-success] text-xs">On Track</Badge>}</td>
                   </tr>
                 );
               })}</tbody>
