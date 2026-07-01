@@ -91,10 +91,10 @@ const GOAL_STATUS_LABELS: Record<CarePlanGoalStatus, string> = {
 
 const GOAL_STATUS_COLOUR: Record<CarePlanGoalStatus, string> = {
   not_started:      "bg-slate-100 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
-  in_progress:      "bg-blue-50 text-blue-700 border-blue-200",
-  on_track:         "bg-emerald-50 text-emerald-700 border-emerald-200",
-  attention_needed: "bg-red-50 text-red-700 border-red-200",
-  achieved:         "bg-emerald-100 text-emerald-800 border-emerald-300",
+  in_progress:      "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]",
+  on_track:         "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
+  attention_needed: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
+  achieved:         "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
   closed:           "bg-slate-50 text-[var(--cs-text-muted)] border-[var(--cs-border)]",
 };
 
@@ -135,8 +135,8 @@ function GoalRow({ goal }: { goal: CarePlanGoal }) {
   return (
     <div className={cn(
       "rounded-xl border transition-all",
-      goal.status === "attention_needed" ? "bg-red-50/50 border-red-100" :
-      goal.status === "on_track" || goal.status === "achieved" ? "bg-emerald-50/40 border-emerald-100" :
+      goal.status === "attention_needed" ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" :
+      goal.status === "on_track" || goal.status === "achieved" ? "bg-[--cs-success-bg] border-[--cs-success-soft]" :
       "bg-white border-[var(--cs-border-subtle)]",
     )}>
       <div
@@ -145,8 +145,8 @@ function GoalRow({ goal }: { goal: CarePlanGoal }) {
       >
         <Icon className={cn(
           "h-4 w-4 shrink-0 mt-0.5",
-          goal.status === "attention_needed" ? "text-red-500" :
-          goal.status === "on_track" || goal.status === "achieved" ? "text-emerald-500" :
+          goal.status === "attention_needed" ? "text-[--cs-risk]" :
+          goal.status === "on_track" || goal.status === "achieved" ? "text-[--cs-success]" :
           "text-[var(--cs-text-muted)]",
         )} />
         <div className="flex-1 min-w-0">
@@ -389,16 +389,16 @@ function CarePlanCard({
   return (
     <div className={cn(
       "rounded-2xl border bg-white overflow-hidden",
-      rag === "red" ? "border-red-200" : rag === "amber" ? "border-amber-200" : "border-emerald-200",
+      rag === "red" ? "border-[--cs-risk-soft]" : rag === "amber" ? "border-[--cs-warning-soft]" : "border-[--cs-success-soft]",
     )}>
       {/* Header */}
       <div className="flex items-start gap-3 p-4">
         {/* RAG + avatar */}
         <div className={cn(
           "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 font-bold text-sm",
-          rag === "red" ? "bg-red-100 text-red-700" :
-          rag === "amber" ? "bg-amber-100 text-amber-700" :
-          "bg-emerald-100 text-emerald-700",
+          rag === "red" ? "bg-[--cs-risk-bg] text-[--cs-risk]" :
+          rag === "amber" ? "bg-[--cs-warning-bg] text-[--cs-warning]" :
+          "bg-[--cs-success-bg] text-[--cs-success]",
         )}>
           {ypName.split(" ").map((n) => n[0]).join("").slice(0, 2)}
         </div>
@@ -410,9 +410,9 @@ function CarePlanCard({
             </Link>
             <Badge variant="outline" className={cn(
               "text-[10px] px-1.5 py-0 border",
-              rag === "red" ? "bg-red-50 text-red-700 border-red-200" :
-              rag === "amber" ? "bg-amber-50 text-amber-700 border-amber-200" :
-              "bg-emerald-50 text-emerald-700 border-emerald-200",
+              rag === "red" ? "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]" :
+              rag === "amber" ? "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]" :
+              "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
             )}>
               {rag === "red" ? "⚠ Needs attention" : rag === "amber" ? "Review recommended" : "On track"}
             </Badge>
@@ -430,7 +430,7 @@ function CarePlanCard({
             {lacDays !== null && (
               <span className={cn(
                 "flex items-center gap-1",
-                lacDays < 0 ? "text-red-600 font-medium" : lacDays <= 30 ? "text-amber-600 font-medium" : "",
+                lacDays < 0 ? "text-[--cs-risk] font-medium" : lacDays <= 30 ? "text-[--cs-warning] font-medium" : "",
               )}>
                 <Calendar className="h-3 w-3" />
                 LAC review: {lacDays < 0 ? `${Math.abs(lacDays)}d overdue` : lacDays === 0 ? "today" : `in ${lacDays}d`}
@@ -440,10 +440,10 @@ function CarePlanCard({
 
           {/* Quick goal counts */}
           <div className="flex items-center gap-3 mt-1.5 text-[10px]">
-            {attentionGoals.length > 0 && <span className="text-red-600 font-medium">{attentionGoals.length} attention needed</span>}
-            {onTrackGoals.length > 0 && <span className="text-emerald-600 font-medium">{onTrackGoals.length} on track</span>}
-            {inProgGoals.length > 0 && <span className="text-blue-600 font-medium">{inProgGoals.length} in progress</span>}
-            {achievedGoals.length > 0 && <span className="text-emerald-700 font-medium">{achievedGoals.length} achieved</span>}
+            {attentionGoals.length > 0 && <span className="text-[--cs-risk] font-medium">{attentionGoals.length} attention needed</span>}
+            {onTrackGoals.length > 0 && <span className="text-[--cs-success] font-medium">{onTrackGoals.length} on track</span>}
+            {inProgGoals.length > 0 && <span className="text-[--cs-info] font-medium">{inProgGoals.length} in progress</span>}
+            {achievedGoals.length > 0 && <span className="text-[--cs-success] font-medium">{achievedGoals.length} achieved</span>}
           </div>
         </div>
 
@@ -463,14 +463,14 @@ function CarePlanCard({
           {(plan.strengths_summary || plan.concerns_summary) && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {plan.strengths_summary && (
-                <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3">
-                  <p className="text-[10px] font-semibold text-emerald-700 uppercase tracking-widest mb-1">Strengths</p>
+                <div className="rounded-xl border border-[--cs-success-soft] bg-[--cs-success-bg] p-3">
+                  <p className="text-[10px] font-semibold text-[--cs-success] uppercase tracking-widest mb-1">Strengths</p>
                   <p className="text-xs text-[var(--cs-text-secondary)]">{plan.strengths_summary}</p>
                 </div>
               )}
               {plan.concerns_summary && (
-                <div className="rounded-xl border border-red-100 bg-red-50/40 p-3">
-                  <p className="text-[10px] font-semibold text-red-700 uppercase tracking-widest mb-1">Concerns</p>
+                <div className="rounded-xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-3">
+                  <p className="text-[10px] font-semibold text-[--cs-risk] uppercase tracking-widest mb-1">Concerns</p>
                   <p className="text-xs text-[var(--cs-text-secondary)]">{plan.concerns_summary}</p>
                 </div>
               )}
@@ -674,9 +674,9 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
 
   const RAG_TABS: { key: RAGFilter; label: string; count: number; colour: string }[] = [
     { key: "all",   label: "All Plans",        count: stats.total,      colour: "" },
-    { key: "red",   label: "Needs Attention",  count: stats.redCount,   colour: "text-red-600" },
-    { key: "amber", label: "Review",           count: stats.amberCount, colour: "text-amber-600" },
-    { key: "green", label: "On Track",         count: stats.greenCount, colour: "text-emerald-600" },
+    { key: "red",   label: "Needs Attention",  count: stats.redCount,   colour: "text-[--cs-risk]" },
+    { key: "amber", label: "Review",           count: stats.amberCount, colour: "text-[--cs-warning]" },
+    { key: "green", label: "On Track",         count: stats.greenCount, colour: "text-[--cs-success]" },
   ];
 
   return (
@@ -716,30 +716,30 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
 
       {/* ── LAC review alerts ── */}
       {stats.lacOverdue > 0 && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-3">
-          <div className="rounded-full bg-red-100 p-1.5">
-            <AlertTriangle className="h-4 w-4 text-red-600" />
+        <div className="rounded-xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] px-4 py-3 flex items-center gap-3">
+          <div className="rounded-full bg-[--cs-risk-soft] p-1.5">
+            <AlertTriangle className="h-4 w-4 text-[--cs-risk]" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-red-800">
+            <p className="text-sm font-semibold text-[--cs-risk]">
               {stats.lacOverdue} LAC review{stats.lacOverdue !== 1 ? "s" : ""} overdue
             </p>
-            <p className="text-xs text-red-600 mt-0.5">
+            <p className="text-xs text-[--cs-risk] mt-0.5">
               Overdue LAC reviews must be escalated to the IRO immediately. This is a statutory requirement.
             </p>
           </div>
         </div>
       )}
       {stats.lacDueWithin30 > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 flex items-center gap-3">
-          <div className="rounded-full bg-amber-100 p-1.5">
-            <Calendar className="h-4 w-4 text-amber-600" />
+        <div className="rounded-xl border border-[--cs-warning-soft] bg-[--cs-warning-bg] px-4 py-3 flex items-center gap-3">
+          <div className="rounded-full bg-[--cs-warning-soft] p-1.5">
+            <Calendar className="h-4 w-4 text-[--cs-warning]" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-semibold text-amber-800">
+            <p className="text-sm font-semibold text-[--cs-warning]">
               {stats.lacDueWithin30} LAC review{stats.lacDueWithin30 !== 1 ? "s" : ""} due within 30 days
             </p>
-            <p className="text-xs text-amber-600 mt-0.5">
+            <p className="text-xs text-[--cs-warning] mt-0.5">
               Ensure IRO is notified and review paperwork is prepared.
             </p>
           </div>
@@ -767,29 +767,29 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
             label: "Achieved",
             value: stats.achievedGoals,
             icon: Trophy,
-            colour: "text-emerald-600",
-            bg: "bg-emerald-50 border-emerald-100",
+            colour: "text-[--cs-success]",
+            bg: "bg-[--cs-success-bg] border-[--cs-success-soft]",
           },
           {
             label: "Attention Needed",
             value: stats.totalAttention,
             icon: AlertTriangle,
-            colour: stats.totalAttention > 0 ? "text-red-600" : "text-emerald-600",
-            bg: stats.totalAttention > 0 ? "bg-red-50 border-red-100" : "bg-emerald-50 border-emerald-100",
+            colour: stats.totalAttention > 0 ? "text-[--cs-risk]" : "text-[--cs-success]",
+            bg: stats.totalAttention > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-[--cs-success-bg] border-[--cs-success-soft]",
           },
           {
             label: "LAC Reviews Due",
             value: stats.lacDueWithin30,
             icon: Calendar,
-            colour: stats.lacDueWithin30 > 0 ? "text-amber-600" : "text-emerald-600",
-            bg: stats.lacDueWithin30 > 0 ? "bg-amber-50 border-amber-100" : "bg-emerald-50 border-emerald-100",
+            colour: stats.lacDueWithin30 > 0 ? "text-[--cs-warning]" : "text-[--cs-success]",
+            bg: stats.lacDueWithin30 > 0 ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" : "bg-[--cs-success-bg] border-[--cs-success-soft]",
           },
           {
             label: "LAC Overdue",
             value: stats.lacOverdue,
             icon: Clock,
-            colour: stats.lacOverdue > 0 ? "text-red-600" : "text-emerald-600",
-            bg: stats.lacOverdue > 0 ? "bg-red-50 border-red-100" : "bg-emerald-50 border-emerald-100",
+            colour: stats.lacOverdue > 0 ? "text-[--cs-risk]" : "text-[--cs-success]",
+            bg: stats.lacOverdue > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-[--cs-success-bg] border-[--cs-success-soft]",
           },
         ].map(({ label, value, icon: Icon, colour, bg }) => (
           <div key={label} className={cn("rounded-xl border p-3", bg)}>
@@ -881,7 +881,7 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
             onAddGoal={(p) => setGoalDialogPlan(p)}
           />
         ))}
-        {caraError && <p className="text-xs text-red-600 text-right">{caraError}</p>}
+        {caraError && <p className="text-xs text-[--cs-risk] text-right">{caraError}</p>}
         {filteredPlans.length === 0 && plans.length > 0 && (
           <div className="text-center py-12 text-[var(--cs-text-muted)]">
             <Search className="h-8 w-8 mx-auto mb-2 text-[var(--cs-text-gentle)]" />
@@ -910,8 +910,8 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
                   <p className="text-[11px] font-semibold">{label}</p>
                   <div className="flex items-center gap-2 mt-1 text-[10px]">
                     <span>{goalCount} goal{goalCount !== 1 ? "s" : ""}</span>
-                    {attentionCount > 0 && <span className="text-red-600 font-medium">{attentionCount} attention</span>}
-                    {achievedCount > 0 && <span className="text-emerald-700 font-medium">{achievedCount} achieved</span>}
+                    {attentionCount > 0 && <span className="text-[--cs-risk] font-medium">{attentionCount} attention</span>}
+                    {achievedCount > 0 && <span className="text-[--cs-success] font-medium">{achievedCount} achieved</span>}
                   </div>
                 </div>
               );
