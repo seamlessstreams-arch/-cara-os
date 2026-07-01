@@ -46,17 +46,17 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── helpers ───────────────────────────────────────────────────────────── */
 
 const QUALITY_COLOURS: Record<FriendshipQuality, string> = {
-  strong_positive: "bg-green-100 text-green-800",
-  developing: "bg-blue-100 text-blue-800",
+  strong_positive: "bg-[--cs-success-bg] text-[--cs-success]",
+  developing: "bg-[--cs-info-bg] text-[--cs-info]",
   casual: "bg-gray-100 text-gray-700",
-  some_concerns: "bg-amber-100 text-amber-800",
-  significant_concerns: "bg-red-100 text-red-800",
+  some_concerns: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  significant_concerns: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const RISK_COLOURS: Record<IsolationRisk, string> = {
-  low: "bg-green-100 text-green-800",
-  medium: "bg-amber-100 text-amber-800",
-  high: "bg-red-100 text-red-800",
+  low: "bg-[--cs-success-bg] text-[--cs-success]",
+  medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  high: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const CONTEXT_COLOURS: Record<FriendContextType, string> = {
@@ -66,7 +66,7 @@ const CONTEXT_COLOURS: Record<FriendContextType, string> = {
   cultural_community: "bg-pink-50 text-pink-700",
   online: "bg-indigo-50 text-indigo-700",
   neighbourhood: "bg-teal-50 text-teal-700",
-  family_network: "bg-amber-50 text-amber-700",
+  family_network: "bg-amber-100 text-amber-800",
 };
 
 /* ── export ───────────────────────────────────────────────────────────── */
@@ -183,10 +183,10 @@ export default function FriendshipMappingPage() {
       {/* ── stat strip ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         {[
-          { label: "Children Mapped", value: stats.childrenMapped, icon: Users, colour: "text-blue-600" },
-          { label: "Strong Friendships", value: stats.strongFriendships, icon: Heart, colour: "text-green-600" },
-          { label: "Concerns Flagged", value: stats.concernsFlagged, icon: AlertTriangle, colour: stats.concernsFlagged > 0 ? "text-amber-600" : "text-gray-400" },
-          { label: "Reviews Due (30 d)", value: stats.reviewsDue, icon: CalendarClock, colour: stats.reviewsDue > 0 ? "text-red-600" : "text-gray-400" },
+          { label: "Children Mapped", value: stats.childrenMapped, icon: Users, colour: "text-[--cs-info]" },
+          { label: "Strong Friendships", value: stats.strongFriendships, icon: Heart, colour: "text-[--cs-success]" },
+          { label: "Concerns Flagged", value: stats.concernsFlagged, icon: AlertTriangle, colour: stats.concernsFlagged > 0 ? "text-[--cs-warning]" : "text-gray-400" },
+          { label: "Reviews Due (30 d)", value: stats.reviewsDue, icon: CalendarClock, colour: stats.reviewsDue > 0 ? "text-[--cs-risk]" : "text-gray-400" },
         ].map((s) => (
           <div key={s.label} className="rounded-lg border bg-white p-4 flex items-center gap-3">
             <s.icon className={cn("h-6 w-6", s.colour)} />
@@ -266,12 +266,12 @@ export default function FriendshipMappingPage() {
                       {m.friends.length} friends
                     </span>
                     {strong > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[--cs-success-bg] text-[--cs-success]">
                         {strong} strong
                       </span>
                     )}
                     {concerns > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[--cs-warning-bg] text-[--cs-warning]">
                         {concerns} concern{concerns === 1 ? "" : "s"}
                       </span>
                     )}
@@ -320,11 +320,11 @@ export default function FriendshipMappingPage() {
                               {FRIEND_CONTACT_TYPE_LABEL[f.contact_type]}
                             </span>
                             {f.friends_parents_known ? (
-                              <span className="px-2 py-0.5 rounded text-xs bg-green-50 text-green-700 inline-flex items-center gap-1">
+                              <span className="px-2 py-0.5 rounded text-xs bg-[--cs-success-bg] text-[--cs-success] inline-flex items-center gap-1">
                                 <Shield className="h-3 w-3" /> Parents known
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded text-xs bg-amber-50 text-amber-700">
+                              <span className="px-2 py-0.5 rounded text-xs bg-[--cs-warning-bg] text-[--cs-warning]">
                                 Parents not known
                               </span>
                             )}
@@ -339,15 +339,15 @@ export default function FriendshipMappingPage() {
                               <span className="font-medium text-gray-700">{f.frequency}</span>
                             </div>
                           </div>
-                          <div className="mt-2 rounded bg-amber-50 p-2">
-                            <p className="text-xs font-medium text-amber-700 mb-0.5">
+                          <div className="mt-2 rounded bg-[--cs-warning-bg] p-2">
+                            <p className="text-xs font-medium text-[--cs-warning] mb-0.5">
                               Contextual safeguarding notes
                             </p>
-                            <p className="text-xs text-amber-800">{f.contextual_safeguarding_notes}</p>
+                            <p className="text-xs text-[--cs-warning]">{f.contextual_safeguarding_notes}</p>
                           </div>
-                          <div className="mt-2 rounded bg-blue-50 p-2">
-                            <p className="text-xs font-medium text-blue-700 mb-0.5">Support needed</p>
-                            <p className="text-xs text-blue-800">{f.support_needed}</p>
+                          <div className="mt-2 rounded bg-[--cs-info-bg] p-2">
+                            <p className="text-xs font-medium text-[--cs-info] mb-0.5">Support needed</p>
+                            <p className="text-xs text-[--cs-info]">{f.support_needed}</p>
                           </div>
                         </div>
                       ))}
@@ -356,21 +356,21 @@ export default function FriendshipMappingPage() {
 
                   {/* strengths / challenges */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="rounded-md bg-green-50 p-3">
-                      <h4 className="text-xs font-semibold text-green-700 mb-1">
+                    <div className="rounded-md bg-[--cs-success-bg] p-3">
+                      <h4 className="text-xs font-semibold text-[--cs-success] mb-1">
                         Friendship Strengths
                       </h4>
-                      <ul className="list-disc list-inside text-sm text-green-800 space-y-0.5">
+                      <ul className="list-disc list-inside text-sm text-[--cs-success] space-y-0.5">
                         {(m.friendship_strengths ?? []).map((s, i) => (
                           <li key={i}>{s}</li>
                         ))}
                       </ul>
                     </div>
-                    <div className="rounded-md bg-amber-50 p-3">
-                      <h4 className="text-xs font-semibold text-amber-700 mb-1">
+                    <div className="rounded-md bg-[--cs-warning-bg] p-3">
+                      <h4 className="text-xs font-semibold text-[--cs-warning] mb-1">
                         Friendship Challenges
                       </h4>
-                      <ul className="list-disc list-inside text-sm text-amber-800 space-y-0.5">
+                      <ul className="list-disc list-inside text-sm text-[--cs-warning] space-y-0.5">
                         {m.friendship_challenges.map((c, i) => (
                           <li key={i}>{c}</li>
                         ))}
@@ -387,11 +387,11 @@ export default function FriendshipMappingPage() {
                   </div>
 
                   {/* support plan */}
-                  <div className="rounded-md bg-blue-50 border border-blue-200 p-3">
-                    <h4 className="text-xs font-semibold text-blue-700 mb-1">
+                  <div className="rounded-md bg-[--cs-info-bg] border border-[--cs-info-soft] p-3">
+                    <h4 className="text-xs font-semibold text-[--cs-info] mb-1">
                       Support to Build &amp; Sustain Friendships
                     </h4>
-                    <ul className="list-disc list-inside text-sm text-blue-800 space-y-0.5">
+                    <ul className="list-disc list-inside text-sm text-[--cs-info] space-y-0.5">
                       {m.support_to_build_friendships.map((s, i) => (
                         <li key={i}>{s}</li>
                       ))}
