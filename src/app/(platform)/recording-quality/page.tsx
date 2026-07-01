@@ -15,25 +15,25 @@ import { cn } from "@/lib/utils";
 import { useRecordingQuality } from "@/hooks/use-recording-quality";
 
 const BAND_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
-  strong: { bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200" },
-  good: { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200" },
-  needs_improvement: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200" },
-  poor: { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200" },
+  strong: { bg: "bg-[--cs-success-bg]", text: "text-[--cs-success]", ring: "ring-[--cs-success-soft]" },
+  good: { bg: "bg-[--cs-info-bg]", text: "text-[--cs-info]", ring: "ring-[--cs-info-soft]" },
+  needs_improvement: { bg: "bg-[--cs-warning-bg]", text: "text-[--cs-warning]", ring: "ring-[--cs-warning-soft]" },
+  poor: { bg: "bg-[--cs-risk-bg]", text: "text-[--cs-risk]", ring: "ring-[--cs-risk-soft]" },
 };
 const INSIGHT_STYLES: Record<string, string> = {
-  critical: "border-red-200 bg-red-50 text-red-800",
-  warning: "border-amber-200 bg-amber-50 text-amber-800",
-  positive: "border-green-200 bg-green-50 text-green-800",
+  critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
+  warning: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]",
+  positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]",
 };
 const ALERT_STYLES: Record<string, string> = {
-  critical: "border-red-200 bg-red-50 text-red-800", high: "border-red-200 bg-red-50 text-red-800",
-  medium: "border-amber-200 bg-amber-50 text-amber-800", low: "border-blue-200 bg-blue-50 text-blue-800",
+  critical: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]", high: "border-[--cs-risk-soft] bg-[--cs-risk-bg] text-[--cs-risk]",
+  medium: "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]", low: "border-[--cs-info-soft] bg-[--cs-info-bg] text-[--cs-info]",
 };
 const DIM_LABELS: Record<string, string> = {
   completeness: "Completeness", clarity: "Clarity", professionalLanguage: "Professional language",
   factuality: "Factuality", childCentredness: "Child's voice", riskRelevance: "Risk relevance",
 };
-function dimColor(v: number) { return v >= 85 ? "text-green-600" : v >= 70 ? "text-blue-600" : v >= 50 ? "text-amber-600" : "text-red-600"; }
+function dimColor(v: number) { return v >= 85 ? "text-[--cs-success]" : v >= 70 ? "text-[--cs-info]" : v >= 50 ? "text-[--cs-warning]" : "text-[--cs-risk]"; }
 
 export default function RecordingQualityPage() {
   const { data, isLoading } = useRecordingQuality();
@@ -85,7 +85,7 @@ export default function RecordingQualityPage() {
               <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
                 {(Object.entries(intel.overview.dimension_averages) as [string, number][]).map(([dim, v]) => (
                   <div key={dim} className="flex items-center gap-2 text-xs">
-                    <span className={cn("w-40 truncate", dim === intel.overview.weakest_dimension ? "font-semibold text-amber-700" : "text-[var(--cs-text-secondary)]")}>{DIM_LABELS[dim] ?? dim}</span>
+                    <span className={cn("w-40 truncate", dim === intel.overview.weakest_dimension ? "font-semibold text-[--cs-warning]" : "text-[var(--cs-text-secondary)]")}>{DIM_LABELS[dim] ?? dim}</span>
                     <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden"><div className={cn("h-full rounded-full", v >= 85 ? "bg-green-400" : v >= 70 ? "bg-blue-400" : v >= 50 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${v}%` }} /></div>
                     <span className={cn("w-8 text-right tabular-nums font-medium", dimColor(v))}>{v}</span>
                   </div>
@@ -162,7 +162,7 @@ export default function RecordingQualityPage() {
 
 function OverviewStat({ label, value, tone = "neutral" }: { label: string; value: string | number; tone?: "neutral" | "red" | "amber" | "green" | "gray" }) {
   const toneCls: Record<string, string> = {
-    neutral: "text-[var(--cs-navy)]", red: "text-red-600", amber: "text-amber-600", green: "text-green-600", gray: "text-gray-400",
+    neutral: "text-[var(--cs-navy)]", red: "text-[--cs-risk]", amber: "text-[--cs-warning]", green: "text-[--cs-success]", gray: "text-gray-400",
   };
   return (
     <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4">
