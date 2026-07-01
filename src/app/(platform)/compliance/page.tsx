@@ -21,9 +21,9 @@ interface ComplianceTile {
 }
 
 const STATUS_BADGE: Record<string, { label: string; colour: string }> = {
-  up_to_date:    { label: "Up to Date",    colour: "bg-emerald-50 text-emerald-700 border-emerald-200" },
-  action_needed: { label: "Action Needed", colour: "bg-amber-50 text-amber-700 border-amber-200" },
-  overdue:       { label: "Overdue",       colour: "bg-red-50 text-red-700 border-red-200" },
+  up_to_date:    { label: "Up to Date",    colour: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" },
+  action_needed: { label: "Action Needed", colour: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]" },
+  overdue:       { label: "Overdue",       colour: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]" },
 };
 
 const COMPLIANCE_TILES: ComplianceTile[] = [
@@ -96,7 +96,7 @@ export default function CompliancePage() {
     <PageShell
       title="Compliance & Regulatory"
       subtitle="Regulatory monitoring, inspection readiness, and quality assurance"
-      icon={<ShieldCheck className="h-5 w-5 text-emerald-600" />}
+      icon={<ShieldCheck className="h-5 w-5 text-[--cs-success]" />}
       showQuickCreate={false}
     >
       {/* Summary banner */}
@@ -108,17 +108,17 @@ export default function CompliancePage() {
 
       {/* Status summary */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
-          <p className="text-2xl font-bold text-emerald-600">{upToDate}</p>
-          <p className="text-xs text-emerald-600/70">Up to Date</p>
+        <div className="rounded-2xl border border-[--cs-success-soft] bg-[--cs-success-bg] p-4">
+          <p className="text-2xl font-bold text-[--cs-success]">{upToDate}</p>
+          <p className="text-xs text-[--cs-success]/70">Up to Date</p>
         </div>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50/40 p-4">
-          <p className="text-2xl font-bold text-amber-600">{needsAction}</p>
-          <p className="text-xs text-amber-600/70">Action Needed</p>
+        <div className="rounded-2xl border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4">
+          <p className="text-2xl font-bold text-[--cs-warning]">{needsAction}</p>
+          <p className="text-xs text-[--cs-warning]/70">Action Needed</p>
         </div>
-        <div className="rounded-2xl border border-red-200 bg-red-50/40 p-4">
-          <p className="text-2xl font-bold text-red-600">{overdue}</p>
-          <p className="text-xs text-red-600/70">Overdue</p>
+        <div className="rounded-2xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4">
+          <p className="text-2xl font-bold text-[--cs-risk]">{overdue}</p>
+          <p className="text-xs text-[--cs-risk]/70">Overdue</p>
         </div>
       </div>
 
