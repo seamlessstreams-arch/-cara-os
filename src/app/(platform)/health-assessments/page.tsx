@@ -36,14 +36,14 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 /* ── constants ─────────────────────────────────────────────────────────── */
 
 const STATUS_META: Record<HealthAssessmentStatus, { label: string; colour: string }> = {
-  completed: { label: "Completed",  colour: "bg-green-100 text-green-700" },
-  scheduled: { label: "Scheduled",  colour: "bg-blue-100 text-blue-700" },
-  overdue:   { label: "Overdue",    colour: "bg-red-100 text-red-700" },
-  referred:  { label: "Referred",   colour: "bg-amber-100 text-amber-700" },
+  completed: { label: "Completed",  colour: "bg-[--cs-success-bg] text-[--cs-success]" },
+  scheduled: { label: "Scheduled",  colour: "bg-[--cs-info-bg] text-[--cs-info]" },
+  overdue:   { label: "Overdue",    colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
+  referred:  { label: "Referred",   colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
 };
 
 const SDQ_BAND_COLOUR: Record<SdqBand, string> = {
-  normal: "bg-green-100 text-green-700", borderline: "bg-amber-100 text-amber-700", abnormal: "bg-red-100 text-red-700",
+  normal: "bg-[--cs-success-bg] text-[--cs-success]", borderline: "bg-[--cs-warning-bg] text-[--cs-warning]", abnormal: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 /* ── component ─────────────────────────────────────────────────────────── */
@@ -163,9 +163,9 @@ export default function HealthAssessmentsPage() {
           {[
             { l: "Total",           v: stats.total, icon: Stethoscope, c: "text-blue-600" },
             { l: "Completed",       v: stats.completed, icon: CheckCircle2, c: "text-green-600" },
-            { l: "Overdue",         v: stats.overdue, icon: AlertTriangle, c: stats.overdue > 0 ? "text-red-600" : "text-gray-400" },
+            { l: "Overdue",         v: stats.overdue, icon: AlertTriangle, c: stats.overdue > 0 ? "text-[--cs-risk]" : "text-gray-400" },
             { l: "Pending Actions", v: stats.pendingActions, icon: Clock, c: stats.pendingActions > 0 ? "text-amber-600" : "text-gray-400" },
-            { l: "Avg SDQ",         v: stats.avgSDQ, icon: Heart, c: stats.avgSDQ > 17 ? "text-red-600" : "text-green-600" },
+            { l: "Avg SDQ",         v: stats.avgSDQ, icon: Heart, c: stats.avgSDQ > 17 ? "text-[--cs-risk]" : "text-[--cs-success]" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
               <s.icon className={cn("mx-auto h-5 w-5 mb-1", s.c)} />
@@ -176,9 +176,9 @@ export default function HealthAssessmentsPage() {
         </div>
 
         {stats.overdue > 0 && (
-          <div className="rounded-lg border-l-4 border-red-400 bg-red-50 p-3 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-800"><strong>{stats.overdue} assessment{stats.overdue > 1 ? "s" : ""}</strong> overdue — book immediately.</p>
+          <div className="rounded-lg border-l-4 border-[--cs-risk] bg-[--cs-risk-bg] p-3 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] flex-shrink-0" />
+            <p className="text-sm text-[--cs-risk]"><strong>{stats.overdue} assessment{stats.overdue > 1 ? "s" : ""}</strong> overdue — book immediately.</p>
           </div>
         )}
 
@@ -235,7 +235,7 @@ export default function HealthAssessmentsPage() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   <div><span className="text-muted-foreground">Location:</span> {assessment.location}</div>
                   <div><span className="text-muted-foreground">Conducted By:</span> {assessment.conducted_by}</div>
-                  <div><span className="text-muted-foreground">Next Due:</span> <span className={assessment.next_due < today ? "text-red-600 font-medium" : ""}>{assessment.next_due}</span></div>
+                  <div><span className="text-muted-foreground">Next Due:</span> <span className={assessment.next_due < today ? "text-[--cs-risk] font-medium" : ""}>{assessment.next_due}</span></div>
                   <div><span className="text-muted-foreground">Consent:</span> {assessment.consent.slice(0, 40)}…</div>
                 </div>
 
@@ -296,8 +296,8 @@ export default function HealthAssessmentsPage() {
                             <p className="text-xs text-muted-foreground">{f.owner} · Due {f.due_date}</p>
                           </div>
                           <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium",
-                            f.status === "completed" ? "bg-green-100 text-green-700" :
-                            f.status === "overdue" ? "bg-red-100 text-red-700" :
+                            f.status === "completed" ? "bg-[--cs-success-bg] text-[--cs-success]" :
+                            f.status === "overdue" ? "bg-[--cs-risk-bg] text-[--cs-risk]" :
                             "bg-amber-100 text-amber-700"
                           )}>{HEALTH_FOLLOW_UP_STATUS_LABEL[f.status]}</span>
                         </div>
