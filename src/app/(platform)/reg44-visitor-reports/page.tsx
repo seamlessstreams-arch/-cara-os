@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,15 +41,15 @@ const fmt = (iso: string) => {
 };
 
 const PRIORITY_CLR: Record<RecommendationPriority, string> = {
-  low: "bg-green-100 text-green-800",
+  low: "bg-[--cs-success-bg] text-[--cs-success]",
   medium: "bg-yellow-100 text-yellow-800",
   high: "bg-orange-100 text-orange-800",
 };
 
 const STATUS_CLR: Record<RecommendationStatus, string> = {
-  completed: "bg-green-100 text-green-800",
-  in_progress: "bg-blue-100 text-blue-800",
-  outstanding: "bg-red-100 text-red-800",
+  completed: "bg-[--cs-success-bg] text-[--cs-success]",
+  in_progress: "bg-[--cs-info-bg] text-[--cs-info]",
+  outstanding: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const STATUS_LABEL: Record<RecommendationStatus, string> = {
@@ -57,11 +58,11 @@ const STATUS_LABEL: Record<RecommendationStatus, string> = {
   outstanding: "Outstanding",
 };
 
-const JUDGEMENT_CLR: Record<string, string> = {
-  "Good — no immediate concerns.": "bg-green-100 text-green-800",
-  "Good.": "bg-green-100 text-green-800",
-  "Good with notable practice.": "bg-emerald-100 text-emerald-800",
-  "Requires improvement in one area.": "bg-amber-100 text-amber-800",
+const JUDGEMENT_TEXT: Record<string, string> = {
+  "Good — no immediate concerns.": "text-[--cs-success]",
+  "Good.": "text-[--cs-success]",
+  "Good with notable practice.": "text-[--cs-success]",
+  "Requires improvement in one area.": "text-[--cs-warning]",
 };
 
 /* ── New Visit Form ────────────────────────────────────────────────────────── */
@@ -205,15 +206,15 @@ function ActionPlanProgress({
             <p className="text-xs text-muted-foreground">Total Recommendations</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{completed}</p>
+            <p className="text-2xl font-bold text-[--cs-success]">{completed}</p>
             <p className="text-xs text-muted-foreground">Completed</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-blue-600">{inProgress}</p>
+            <p className="text-2xl font-bold text-[--cs-info]">{inProgress}</p>
             <p className="text-xs text-muted-foreground">In Progress</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">{outstanding}</p>
+            <p className="text-2xl font-bold text-[--cs-risk]">{outstanding}</p>
             <p className="text-xs text-muted-foreground">Outstanding</p>
           </div>
         </div>
@@ -284,8 +285,8 @@ function ActionPlanProgress({
 
         {openActions.length === 0 && total > 0 && (
           <div className="text-center py-3">
-            <CheckCircle2 className="h-6 w-6 text-green-500 mx-auto mb-1" />
-            <p className="text-xs text-green-700 font-medium">All recommendations completed</p>
+            <CheckCircle2 className="h-6 w-6 text-[--cs-success] mx-auto mb-1" />
+            <p className="text-xs text-[--cs-success] font-medium">All recommendations completed</p>
           </div>
         )}
       </CardContent>
@@ -466,8 +467,8 @@ export default function Reg44VisitorReportsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Visits Completed (12 months)", value: visitsCompleted, icon: Calendar, clr: "text-blue-600" },
-            { label: "Outstanding Recommendations", value: outstandingRecommendations, icon: AlertTriangle, clr: outstandingRecommendations > 0 ? "text-amber-600" : "text-green-600" },
-            { label: "Avg. Interval (days)", value: `${avgInterval}`, icon: Clock, clr: avgInterval > 35 ? "text-red-600" : "text-green-600" },
+            { label: "Outstanding Recommendations", value: outstandingRecommendations, icon: AlertTriangle, clr: outstandingRecommendations > 0 ? "text-[--cs-warning]" : "text-[--cs-success]" },
+            { label: "Avg. Interval (days)", value: `${avgInterval}`, icon: Clock, clr: avgInterval > 35 ? "text-[--cs-risk]" : "text-[--cs-success]" },
             { label: "Reports Sent to Ofsted", value: data.filter((v) => v.report_sent_to_ofsted).length + "/" + data.length, icon: FileText, clr: "text-indigo-600" },
           ].map((s) => (
             <Card key={s.label}>
@@ -503,7 +504,7 @@ export default function Reg44VisitorReportsPage() {
         </p>
 
         {/* -- Visit cards ---------------------------------------------------- */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <FileText className="h-10 w-10 mx-auto mb-2 opacity-40" />
@@ -513,30 +514,29 @@ export default function Reg44VisitorReportsPage() {
 
           {filtered.map((visit) => {
             const isOpen = expandedId === visit.id;
-            const judgementClr = JUDGEMENT_CLR[visit.overall_judgement] || "bg-gray-100 text-gray-800";
             const hasOutstanding = visit.recommendations.some((r) => r.status === "outstanding" || r.status === "in_progress");
 
             return (
-              <Card key={visit.id} className={cn("border-l-4", hasOutstanding ? "border-l-amber-400" : "border-l-green-400")}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(visit.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
+              <div key={visit.id}>
+                <FlatListRow severity={hasOutstanding ? "warning" : "success"} onClick={() => toggle(visit.id)} aria-expanded={isOpen}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
                         {fmt(visit.visit_date)}
-                        <Badge variant="outline" className={judgementClr}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", JUDGEMENT_TEXT[visit.overall_judgement] ?? "text-gray-600")}>
                           {visit.overall_judgement}
-                        </Badge>
-                      </CardTitle>
+                        </span>
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {visit.visitor} &middot; {visit.duration} &middot; Children: {visit.children_spoken} &middot; Staff: {visit.staff_spoken}
                       </p>
                     </div>
-                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
                   </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     {/* Records reviewed */}
                     <div>
                       <p className="font-medium mb-1 flex items-center gap-1">
@@ -552,14 +552,14 @@ export default function Reg44VisitorReportsPage() {
                     </div>
 
                     {/* Strengths */}
-                    <div className="bg-green-50 rounded-lg p-3">
-                      <p className="font-medium text-green-800 mb-2 flex items-center gap-1">
+                    <div className="bg-[--cs-success-bg] rounded-lg p-3">
+                      <p className="font-medium text-[--cs-success] mb-2 flex items-center gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5" /> Strengths Identified
                       </p>
                       <ul className="space-y-1">
                         {(visit.strengths ?? []).map((s, i) => (
-                          <li key={i} className="text-green-700 text-xs flex items-start gap-2">
-                            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-green-400 shrink-0" />
+                          <li key={i} className="text-[--cs-success] text-xs flex items-start gap-2">
+                            <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[--cs-success] shrink-0" />
                             {s}
                           </li>
                         ))}
@@ -568,14 +568,14 @@ export default function Reg44VisitorReportsPage() {
 
                     {/* Areas for development */}
                     {visit.areas_for_development.length > 0 && (
-                      <div className="bg-amber-50 rounded-lg p-3">
-                        <p className="font-medium text-amber-800 mb-2 flex items-center gap-1">
+                      <div className="bg-[--cs-warning-bg] rounded-lg p-3">
+                        <p className="font-medium text-[--cs-warning] mb-2 flex items-center gap-1">
                           <AlertTriangle className="h-3.5 w-3.5" /> Areas for Development
                         </p>
                         <ul className="space-y-1">
                           {visit.areas_for_development.map((a, i) => (
-                            <li key={i} className="text-amber-700 text-xs flex items-start gap-2">
-                              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-amber-400 shrink-0" />
+                            <li key={i} className="text-[--cs-warning] text-xs flex items-start gap-2">
+                              <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[--cs-warning] shrink-0" />
                               {a}
                             </li>
                           ))}
@@ -613,9 +613,9 @@ export default function Reg44VisitorReportsPage() {
                         <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Sent to Ofsted</p>
                         <p className="text-xs flex items-center gap-1">
                           {visit.report_sent_to_ofsted ? (
-                            <><CheckCircle2 className="h-3 w-3 text-green-600" /> Yes — {fmt(visit.report_sent_date)}</>
+                            <><CheckCircle2 className="h-3 w-3 text-[--cs-success]" /> Yes — {fmt(visit.report_sent_date)}</>
                           ) : (
-                            <><AlertTriangle className="h-3 w-3 text-amber-600" /> Not yet sent</>
+                            <><AlertTriangle className="h-3 w-3 text-[--cs-warning]" /> Not yet sent</>
                           )}
                         </p>
                       </div>
@@ -643,12 +643,12 @@ export default function Reg44VisitorReportsPage() {
                         compact
                       />
                     </div>
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* -- Regulatory note ------------------------------------------------ */}
         <div className="rounded-lg border border-dashed p-4">
