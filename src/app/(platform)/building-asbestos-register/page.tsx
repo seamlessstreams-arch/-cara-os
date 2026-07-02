@@ -45,10 +45,10 @@ const surveyTypeColour: Record<string, string> = {
 };
 
 const conditionColour: Record<string, string> = {
-  no_acm_identified: "bg-emerald-100 text-emerald-800 border-emerald-200",
-  good_condition_sealed: "bg-amber-100 text-amber-900 border-amber-200",
+  no_acm_identified: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
+  good_condition_sealed: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
   minor_damage_encapsulated: "bg-orange-100 text-orange-900 border-orange-200",
-  significant_damage_action_required: "bg-red-100 text-red-900 border-red-200",
+  significant_damage_action_required: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
   removed: "bg-slate-100 text-[var(--cs-navy)] border-[var(--cs-border)]",
 };
 
@@ -162,12 +162,12 @@ export default function BuildingAsbestosRegisterPage() {
           </div>
           <div className="text-2xl font-semibold text-[var(--cs-navy)]">{stats.surveysCompleted}</div>
         </div>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <div className="flex items-center gap-2 text-amber-800 text-sm mb-1">
+        <div className="rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4">
+          <div className="flex items-center gap-2 text-[--cs-warning] text-sm mb-1">
             <AlertTriangle className="h-4 w-4" />
             <span>ACMs identified</span>
           </div>
-          <div className="text-2xl font-semibold text-amber-900">{stats.acmsIdentified}</div>
+          <div className="text-2xl font-semibold text-[--cs-warning]">{stats.acmsIdentified}</div>
         </div>
         <div className="rounded-lg border border-sky-200 bg-sky-50 p-4">
           <div className="flex items-center gap-2 text-sky-800 text-sm mb-1">
@@ -176,12 +176,12 @@ export default function BuildingAsbestosRegisterPage() {
           </div>
           <div className="text-2xl font-semibold text-sky-900">{stats.nextInspection60d}</div>
         </div>
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-          <div className="flex items-center gap-2 text-emerald-800 text-sm mb-1">
+        <div className="rounded-lg border border-[--cs-success-soft] bg-[--cs-success-bg] p-4">
+          <div className="flex items-center gap-2 text-[--cs-success] text-sm mb-1">
             <Shield className="h-4 w-4" />
             <span>Contractor briefings YTD</span>
           </div>
-          <div className="text-2xl font-semibold text-emerald-900">{stats.briefingsYTD}</div>
+          <div className="text-2xl font-semibold text-[--cs-success]">{stats.briefingsYTD}</div>
         </div>
       </div>
 
@@ -232,11 +232,11 @@ export default function BuildingAsbestosRegisterPage() {
             <div key={r.id} className="rounded-lg border border-[var(--cs-border)] bg-white overflow-hidden">
               <button
                 onClick={() => setExpandedId(isOpen ? null : r.id)}
-                className="w-full p-4 flex items-start justify-between gap-3 hover:bg-amber-50/40 text-left"
+                className="w-full p-4 flex items-start justify-between gap-3 hover:bg-[--cs-warning-bg] text-left"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <Shield className="h-4 w-4 text-amber-600" />
+                    <Shield className="h-4 w-4 text-[--cs-warning]" />
                     <span className="font-semibold text-[var(--cs-navy)]">{r.survey_date}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", surveyTypeColour[r.survey_type])}>
                       {ASBESTOS_SURVEY_TYPE_LABEL[r.survey_type]}
@@ -245,15 +245,15 @@ export default function BuildingAsbestosRegisterPage() {
                       {ASBESTOS_CONDITION_RATING_LABEL[r.condition_rating]}
                     </span>
                     {r.acm_identified ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-amber-100 text-amber-900 border-amber-200">ACM present</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">ACM present</span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-emerald-100 text-emerald-800 border-emerald-200">No ACM</span>
+                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]">No ACM</span>
                     )}
                     {r.next_inspection_due ? (
                       inspectionOverdue ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-red-100 text-red-800 border-red-200">Inspection overdue · {r.next_inspection_due}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]">Inspection overdue · {r.next_inspection_due}</span>
                       ) : inspectionSoon ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">Next inspection {r.next_inspection_due}</span>
+                        <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">Next inspection {r.next_inspection_due}</span>
                       ) : (
                         <span className="text-xs px-2 py-0.5 rounded-full border bg-sky-100 text-sky-800 border-sky-200">Next inspection {r.next_inspection_due}</span>
                       )
@@ -266,7 +266,7 @@ export default function BuildingAsbestosRegisterPage() {
                 {isOpen ? <ChevronUp className="h-5 w-5 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)]" />}
               </button>
               {isOpen && (
-                <div className="px-4 pb-4 border-t border-[var(--cs-border-subtle)] bg-amber-50/20">
+                <div className="px-4 pb-4 border-t border-[var(--cs-border-subtle)] bg-[--cs-warning-bg]">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Surveyor</div>
@@ -282,12 +282,12 @@ export default function BuildingAsbestosRegisterPage() {
                       <p className="text-sm text-[var(--cs-text-secondary)]">{r.building_area}</p>
                     </div>
 
-                    <div className={cn("rounded-md border p-3", r.acm_identified ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50")}>
+                    <div className={cn("rounded-md border p-3", r.acm_identified ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "border-[--cs-success-soft] bg-[--cs-success-bg]")}>
                       <div className="flex items-center gap-2 mb-2">
-                        {r.acm_identified ? <AlertTriangle className="h-4 w-4 text-amber-700" /> : <CheckCircle className="h-4 w-4 text-emerald-700" />}
-                        <div className={cn("text-xs font-semibold uppercase", r.acm_identified ? "text-amber-800" : "text-emerald-800")}>ACM details</div>
+                        {r.acm_identified ? <AlertTriangle className="h-4 w-4 text-[--cs-warning]" /> : <CheckCircle className="h-4 w-4 text-[--cs-success]" />}
+                        <div className={cn("text-xs font-semibold uppercase", r.acm_identified ? "text-[--cs-warning]" : "text-[--cs-success]")}>ACM details</div>
                       </div>
-                      <div className={cn("text-sm", r.acm_identified ? "text-amber-900" : "text-emerald-900")}>
+                      <div className={cn("text-sm", r.acm_identified ? "text-[--cs-warning]" : "text-[--cs-success]")}>
                         {r.acm_identified ? r.acm_type ?? "ACM identified — see register entry" : "No asbestos-containing materials identified in this scope."}
                       </div>
                     </div>
@@ -303,22 +303,22 @@ export default function BuildingAsbestosRegisterPage() {
                     </div>
 
                     {r.encapsulation_details && (
-                      <div className="rounded-md border border-amber-200 bg-amber-50 p-3 lg:col-span-2">
-                        <div className="text-xs font-semibold text-amber-800 uppercase mb-2">Encapsulation</div>
-                        <p className="text-sm text-amber-900">{r.encapsulation_details}</p>
+                      <div className="rounded-md border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-3 lg:col-span-2">
+                        <div className="text-xs font-semibold text-[--cs-warning] uppercase mb-2">Encapsulation</div>
+                        <p className="text-sm text-[--cs-warning]">{r.encapsulation_details}</p>
                       </div>
                     )}
 
                     {r.removal_contractor && (
-                      <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3 lg:col-span-2">
+                      <div className="rounded-md border border-[--cs-success-soft] bg-[--cs-success-bg] p-3 lg:col-span-2">
                         <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="h-4 w-4 text-emerald-700" />
-                          <div className="text-xs font-semibold text-emerald-800 uppercase">Licensed removal contractor</div>
+                          <CheckCircle className="h-4 w-4 text-[--cs-success]" />
+                          <div className="text-xs font-semibold text-[--cs-success] uppercase">Licensed removal contractor</div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-emerald-900">
-                          <div><span className="text-emerald-700">Contractor:</span> {r.removal_contractor.name}</div>
-                          <div><span className="text-emerald-700">HSE licence:</span> <span className="font-mono">{r.removal_contractor.hse_licence_number}</span></div>
-                          <div><span className="text-emerald-700">Removal date:</span> {r.removal_contractor.date}</div>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-[--cs-success]">
+                          <div><span className="text-[--cs-success]">Contractor:</span> {r.removal_contractor.name}</div>
+                          <div><span className="text-[--cs-success]">HSE licence:</span> <span className="font-mono">{r.removal_contractor.hse_licence_number}</span></div>
+                          <div><span className="text-[--cs-success]">Removal date:</span> {r.removal_contractor.date}</div>
                         </div>
                       </div>
                     )}
@@ -334,12 +334,12 @@ export default function BuildingAsbestosRegisterPage() {
                     </div>
 
                     {r.tradesperson_briefings_required ? (
-                      <div className="rounded-md border-2 border-amber-300 bg-amber-50 p-3 lg:col-span-2">
+                      <div className="rounded-md border-2 border-[--cs-warning-soft] bg-[--cs-warning-bg] p-3 lg:col-span-2">
                         <div className="flex items-center gap-2 mb-2">
-                          <Shield className="h-4 w-4 text-amber-700" />
-                          <div className="text-xs font-semibold text-amber-800 uppercase">Tradesperson briefing required before any drilling / disturbance</div>
+                          <Shield className="h-4 w-4 text-[--cs-warning]" />
+                          <div className="text-xs font-semibold text-[--cs-warning] uppercase">Tradesperson briefing required before any drilling / disturbance</div>
                         </div>
-                        <p className="text-sm text-amber-900">
+                        <p className="text-sm text-[--cs-warning]">
                           {r.notes_for_contractors ?? "All contractors must be briefed on the location and condition of identified ACMs before any work begins. Briefing record must be signed and held in the Buildings folder."}
                         </p>
                       </div>
@@ -350,12 +350,12 @@ export default function BuildingAsbestosRegisterPage() {
                     )}
 
                     {r.flags_concerns.length > 0 && (
-                      <div className="rounded-md border border-red-200 bg-red-50 p-3 lg:col-span-2">
+                      <div className="rounded-md border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-3 lg:col-span-2">
                         <div className="flex items-center gap-2 mb-2">
-                          <AlertTriangle className="h-4 w-4 text-red-700" />
-                          <div className="text-xs font-semibold text-red-800 uppercase">Flags / concerns</div>
+                          <AlertTriangle className="h-4 w-4 text-[--cs-risk]" />
+                          <div className="text-xs font-semibold text-[--cs-risk] uppercase">Flags / concerns</div>
                         </div>
-                        <ul className="text-sm text-red-900 space-y-1">
+                        <ul className="text-sm text-[--cs-risk] space-y-1">
                           {r.flags_concerns.map((f, i) => (
                             <li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>
                           ))}
@@ -374,7 +374,7 @@ export default function BuildingAsbestosRegisterPage() {
         })}
       </div>
 
-      <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <div className="mt-6 rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4 text-sm text-[--cs-warning]">
         <div className="font-semibold mb-1">Regulatory framework</div>
         <p>
           Control of Asbestos Regulations 2012 (CAR 2012) — duty to manage asbestos in non-domestic
