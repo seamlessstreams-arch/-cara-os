@@ -10,7 +10,7 @@
 
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
-import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,6 +55,10 @@ const STATUS_CONFIG: Record<PatternStatus, { label: string; icon: React.ElementT
   acknowledged: { label: "Acknowledged", icon: Eye,           color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]"   },
   resolved:     { label: "Resolved",     icon: CheckCircle2,  color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]", border: "border-[--cs-success-soft]" },
   dismissed:    { label: "Dismissed",    icon: XCircle,       color: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-50",   border: "border-[var(--cs-border)]"   },
+};
+
+const SEVERITY_ROW: Record<PatternSeverity, RowSeverity> = {
+  critical: "risk", high: "risk", medium: "warning", low: "info",
 };
 
 const ALERT_TYPE_LABELS: Record<string, { label: string; icon: React.ElementType }> = {
@@ -123,30 +127,17 @@ function PatternCard({
   const isPositive = pattern.alert_type === "education_achievement_milestone" || pattern.alert_type === "positive_trajectory";
 
   return (
-    <div
-      className={cn(
-        "rounded-lg border bg-white transition-all",
-        pattern.severity === "critical" && pattern.status === "active" && "ring-2 ring-[--cs-risk] border-[--cs-risk-soft]",
-        pattern.severity === "high" && pattern.status === "active" && "border-orange-300",
-      )}
-    >
+    <div>
       {/* Header */}
-      <div
-        className="flex items-start gap-3 p-4 cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
-      >
+      <FlatListRow severity={SEVERITY_ROW[pattern.severity]} onClick={() => setExpanded(!expanded)} aria-expanded={expanded} className="items-start gap-3">
         {/* Severity indicator */}
-        <div className={cn("mt-0.5 rounded-md p-1.5", sev.bg, sev.border, "border")}>
-          <SevIcon className={cn("h-4 w-4", sev.color)} />
-        </div>
+        <SevIcon className={cn("mt-0.5 h-4 w-4 shrink-0", sev.color)} />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <h3 className="text-sm font-semibold text-[var(--cs-navy)]">{pattern.title}</h3>
             {isPositive && (
-              <Badge className="bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft] text-[10px] px-1.5 py-0">
-                ✦ Positive
-              </Badge>
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">✦ Positive</span>
             )}
           </div>
 
@@ -172,26 +163,24 @@ function PatternCard({
           </div>
         </div>
 
-        {/* Status + Severity badges */}
+        {/* Status + Severity labels */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <Badge className={cn("text-[10px] px-2 py-0.5 border", sev.bg, sev.color, sev.border)}>
-            {sev.label}
-          </Badge>
-          <Badge className={cn("text-[10px] px-2 py-0.5 border", st.bg, st.color, st.border)}>
-            <StIcon className="h-3 w-3 mr-1" />
+          <span className={cn("text-[11px] font-semibold uppercase tracking-wide", sev.color)}>{sev.label}</span>
+          <span className={cn("flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide", st.color)}>
+            <StIcon className="h-3 w-3" />
             {st.label}
-          </Badge>
+          </span>
           {expanded ? (
             <ChevronUp className="h-4 w-4 text-[var(--cs-text-muted)]" />
           ) : (
             <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted)]" />
           )}
         </div>
-      </div>
+      </FlatListRow>
 
       {/* Expanded body */}
       {expanded && (
-        <div className="border-t px-4 pb-4 pt-3 space-y-4">
+        <FlatListRowDetail className="space-y-4">
           {/* Description */}
           <div>
             <h4 className="text-[11px] font-semibold text-[var(--cs-text-secondary)] uppercase tracking-wide mb-1">Pattern Description</h4>
@@ -288,7 +277,7 @@ function PatternCard({
               </Button>
             </div>
           )}
-        </div>
+        </FlatListRowDetail>
       )}
     </div>
   );
@@ -604,7 +593,7 @@ export default function PatternAlertsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map((pattern) => (
             <PatternCard
               key={pattern.id}
@@ -615,7 +604,7 @@ export default function PatternAlertsPage() {
               busy={busyId === pattern.id}
             />
           ))}
-        </div>
+        </FlatList>
       )}
 
       {/* ── Footer count ──────────────────────────────────────────────────── */}
