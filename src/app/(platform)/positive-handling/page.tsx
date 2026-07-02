@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import type { PositiveHandlingPlan, PHPDeEscalation, PHPPhysicalResponse } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -55,9 +56,9 @@ export default function PositiveHandlingPage() {
   const reviewsDue = plans.filter((p) => p.next_review < today).length;
 
   const EFFECT_COLORS: Record<string, string> = {
-    usually_effective: "bg-green-100 text-green-800",
+    usually_effective: "bg-[--cs-success-bg] text-[--cs-success]",
     sometimes_effective: "bg-yellow-100 text-yellow-800",
-    rarely_effective: "bg-red-100 text-red-800",
+    rarely_effective: "bg-[--cs-risk-bg] text-[--cs-risk]",
   };
 
   const exportData = useMemo(() => plans, [plans]);
@@ -108,10 +109,10 @@ export default function PositiveHandlingPage() {
         {/* ── stats ─────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Active Plans", value: plans.length, icon: HandMetal, colour: "text-blue-600" },
-            { label: "Reviews Due", value: reviewsDue, icon: Clock, colour: reviewsDue > 0 ? "text-orange-600" : "text-green-600" },
-            { label: "SW Consulted", value: plans.filter((p) => p.sw_consulted).length, icon: CheckCircle2, colour: "text-green-600" },
-            { label: "Consent Obtained", value: plans.filter((p) => p.consent_obtained).length, icon: Shield, colour: "text-green-600" },
+            { label: "Active Plans", value: plans.length, icon: HandMetal, colour: "text-[--cs-info]" },
+            { label: "Reviews Due", value: reviewsDue, icon: Clock, colour: reviewsDue > 0 ? "text-orange-600" : "text-[--cs-success]" },
+            { label: "SW Consulted", value: plans.filter((p) => p.sw_consulted).length, icon: CheckCircle2, colour: "text-[--cs-success]" },
+            { label: "Consent Obtained", value: plans.filter((p) => p.consent_obtained).length, icon: Shield, colour: "text-[--cs-success]" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">
               <s.icon className={cn("h-5 w-5", s.colour)} />
@@ -124,19 +125,17 @@ export default function PositiveHandlingPage() {
         </div>
 
         {/* ── plans ─────────────────────────────────────────────── */}
-        <div className="space-y-3">
+        <FlatList>
           {plans.map((plan) => {
             const isExpanded = expanded === plan.id;
             const overdue = plan.next_review < today;
 
             return (
-              <div key={plan.id} className="rounded-xl border bg-white overflow-hidden">
-                <button
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
-                  onClick={() => setExpanded(isExpanded ? null : plan.id)}
-                >
+              <div key={plan.id}>
+                <FlatListRow severity={overdue ? "warning" : "neutral"} onClick={() => setExpanded(isExpanded ? null : plan.id)} aria-expanded={isExpanded}>
+                  <div className="flex items-center justify-between flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <HandMetal className="h-5 w-5 text-blue-600 shrink-0" />
+                    <HandMetal className="h-5 w-5 text-muted-foreground shrink-0" />
                     <div className="min-w-0">
                       <p className="font-medium">{getYPName(plan.child_id)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -144,21 +143,22 @@ export default function PositiveHandlingPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {overdue && <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">Review Due</Badge>}
-                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {overdue && <span className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">Review Due</span>}
+                    {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </div>
-                </button>
+                  </div>
+                </FlatListRow>
 
                 {isExpanded && (
-                  <div className="border-t bg-slate-50 p-4 space-y-4">
+                  <FlatListRowDetail>
                     {/* triggers */}
-                    <div className="rounded-lg bg-red-50 border border-red-200 p-3">
-                      <p className="text-xs font-medium text-red-700 mb-2">Known Triggers</p>
+                    <div className="rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
+                      <p className="text-xs font-medium text-[--cs-risk] mb-2">Known Triggers</p>
                       <ul className="space-y-1">
                         {plan.triggers.map((t, i) => (
                           <li key={i} className="flex items-start gap-1 text-sm">
-                            <AlertTriangle className="h-3 w-3 text-red-600 mt-0.5 shrink-0" />
+                            <AlertTriangle className="h-3 w-3 text-[--cs-risk] mt-0.5 shrink-0" />
                             <span>{t}</span>
                           </li>
                         ))}
@@ -185,8 +185,8 @@ export default function PositiveHandlingPage() {
                         {plan.de_escalation.map((de: PHPDeEscalation, i: number) => (
                           <div key={i} className="flex items-start gap-2 rounded-lg border bg-white p-2.5 text-sm">
                             <CheckCircle2 className={cn("h-4 w-4 mt-0.5 shrink-0",
-                              de.effectiveness === "usually_effective" ? "text-green-600" :
-                              de.effectiveness === "sometimes_effective" ? "text-yellow-600" : "text-red-600"
+                              de.effectiveness === "usually_effective" ? "text-[--cs-success]" :
+                              de.effectiveness === "sometimes_effective" ? "text-yellow-600" : "text-[--cs-risk]"
                             )} />
                             <span className="flex-1">{de.technique}</span>
                             <Badge className={cn("text-xs", EFFECT_COLORS[de.effectiveness])}>
@@ -199,20 +199,20 @@ export default function PositiveHandlingPage() {
 
                     {/* physical responses */}
                     {plan.physical_responses.map((pr: PHPPhysicalResponse, idx: number) => (
-                      <div key={idx} className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                        <p className="text-xs font-medium text-blue-700 mb-2">Physical Response Scenario {idx + 1}</p>
+                      <div key={idx} className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-3">
+                        <p className="text-xs font-medium text-[--cs-info] mb-2">Physical Response Scenario {idx + 1}</p>
                         <p className="text-sm mb-2"><strong>Scenario:</strong> {pr.scenario}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                           <div>
-                            <p className="text-xs font-medium text-green-700 mb-1">Approved Techniques</p>
+                            <p className="text-xs font-medium text-[--cs-success] mb-1">Approved Techniques</p>
                             {pr.approved_techniques.map((t, i) => (
-                              <p key={i} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-green-600" />{t}</p>
+                              <p key={i} className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[--cs-success]" />{t}</p>
                             ))}
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-red-700 mb-1">Contraindicated</p>
+                            <p className="text-xs font-medium text-[--cs-risk] mb-1">Contraindicated</p>
                             {pr.contraindicated.map((t, i) => (
-                              <p key={i} className="flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-red-600" />{t}</p>
+                              <p key={i} className="flex items-center gap-1"><AlertTriangle className="h-3 w-3 text-[--cs-risk]" />{t}</p>
                             ))}
                           </div>
                         </div>
@@ -231,12 +231,12 @@ export default function PositiveHandlingPage() {
                     </div>
 
                     {/* post-incident */}
-                    <div className="rounded-lg bg-green-50 border border-green-200 p-3">
-                      <p className="text-xs font-medium text-green-700 mb-2">Post-Incident Support</p>
+                    <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-3">
+                      <p className="text-xs font-medium text-[--cs-success] mb-2">Post-Incident Support</p>
                       <ul className="space-y-1">
                         {plan.post_incident_support.map((p, i) => (
                           <li key={i} className="flex items-start gap-1 text-sm">
-                            <CheckCircle2 className="h-3 w-3 text-green-600 mt-0.5 shrink-0" />
+                            <CheckCircle2 className="h-3 w-3 text-[--cs-success] mt-0.5 shrink-0" />
                             <span>{p}</span>
                           </li>
                         ))}
@@ -246,15 +246,15 @@ export default function PositiveHandlingPage() {
                     {/* meta */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div className="flex items-center gap-1">
-                        <CheckCircle2 className={cn("h-3 w-3", plan.consent_obtained ? "text-green-600" : "text-red-600")} />
+                        <CheckCircle2 className={cn("h-3 w-3", plan.consent_obtained ? "text-[--cs-success]" : "text-[--cs-risk]")} />
                         <span>Consent: {plan.consent_obtained ? "Yes" : "No"}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <CheckCircle2 className={cn("h-3 w-3", plan.sw_consulted ? "text-green-600" : "text-red-600")} />
+                        <CheckCircle2 className={cn("h-3 w-3", plan.sw_consulted ? "text-[--cs-success]" : "text-[--cs-risk]")} />
                         <span>SW Consulted: {plan.sw_consulted ? "Yes" : "No"}</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <CheckCircle2 className={cn("h-3 w-3", plan.parent_notified ? "text-green-600" : "text-red-600")} />
+                        <CheckCircle2 className={cn("h-3 w-3", plan.parent_notified ? "text-[--cs-success]" : "text-[--cs-risk]")} />
                         <span>Parent Notified: {plan.parent_notified ? "Yes" : "No"}</span>
                       </div>
                       <div><span className="text-muted-foreground">Reviewed By:</span> <span className="font-medium">{getStaffName(plan.reviewed_by)}</span></div>
@@ -279,15 +279,15 @@ export default function PositiveHandlingPage() {
                       childId={plan.child_id}
                       compact
                     />
-                  </div>
+                  </FlatListRowDetail>
                 )}
               </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── reg note ──────────────────────────────────────────── */}
-        <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
+        <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-4 text-sm text-[--cs-info]">
           <strong>Regulation 19 & 20:</strong> Physical intervention must only be used as a last resort
           and must be proportionate, necessary, and for the shortest possible time. Each child must have
           a behaviour support plan that prioritises de-escalation. Plans must be developed with the child&apos;s

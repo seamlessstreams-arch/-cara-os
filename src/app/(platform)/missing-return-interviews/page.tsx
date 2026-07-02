@@ -7,7 +7,8 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -23,16 +24,24 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
 const STATUS_CLR: Record<ReturnInterviewStatus, string> = {
-  completed: "bg-green-100 text-green-800",
-  offered_declined: "bg-amber-100 text-amber-800",
-  pending: "bg-blue-100 text-blue-800",
+  completed: "bg-[--cs-success-bg] text-[--cs-success]",
+  offered_declined: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  pending: "bg-[--cs-info-bg] text-[--cs-info]",
   not_yet_due: "bg-gray-100 text-gray-800",
 };
 
 const ACTION_CLR: Record<ReturnInterviewActionStatus, string> = {
-  completed: "bg-green-100 text-green-800",
-  in_progress: "bg-blue-100 text-blue-800",
+  completed: "bg-[--cs-success-bg] text-[--cs-success]",
+  in_progress: "bg-[--cs-info-bg] text-[--cs-info]",
   pending: "bg-gray-100 text-gray-800",
+};
+
+// Bar: exploitation concern is the alarm tier; otherwise interview status.
+const STATUS_ROW: Record<ReturnInterviewStatus, RowSeverity> = {
+  completed: "success", offered_declined: "warning", pending: "info", not_yet_due: "neutral",
+};
+const STATUS_TEXT: Record<ReturnInterviewStatus, string> = {
+  completed: "text-[--cs-success]", offered_declined: "text-[--cs-warning]", pending: "text-[--cs-info]", not_yet_due: "text-gray-600",
 };
 
 export default function MissingReturnInterviewsPage() {
@@ -106,19 +115,19 @@ export default function MissingReturnInterviewsPage() {
     >
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold">{stats.total}</p><p className="text-xs text-muted-foreground">Total Episodes</p></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-green-700">{stats.completed}</p><p className="text-xs text-muted-foreground">Interviews Done</p></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-amber-700">{stats.declined}</p><p className="text-xs text-muted-foreground">Declined</p></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-blue-700">{stats.within72h}</p><p className="text-xs text-muted-foreground">Within 72hrs</p></CardContent></Card>
-        <Card><CardContent className="pt-4 pb-4 text-center"><p className={cn("text-2xl font-bold", stats.exploitationFlags > 0 ? "text-red-700" : "text-green-700")}>{stats.exploitationFlags}</p><p className="text-xs text-muted-foreground">Exploitation Flags</p></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-[--cs-success]">{stats.completed}</p><p className="text-xs text-muted-foreground">Interviews Done</p></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-[--cs-warning]">{stats.declined}</p><p className="text-xs text-muted-foreground">Declined</p></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4 text-center"><p className="text-2xl font-bold text-[--cs-info]">{stats.within72h}</p><p className="text-xs text-muted-foreground">Within 72hrs</p></CardContent></Card>
+        <Card><CardContent className="pt-4 pb-4 text-center"><p className={cn("text-2xl font-bold", stats.exploitationFlags > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{stats.exploitationFlags}</p><p className="text-xs text-muted-foreground">Exploitation Flags</p></CardContent></Card>
       </div>
 
       {stats.exploitationFlags > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-4 mb-6">
           <div className="flex items-start gap-2">
-            <Shield className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+            <Shield className="h-5 w-5 text-[--cs-risk] mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-red-800">Exploitation Concerns Identified</p>
-              <p className="text-xs text-red-700 mt-1">
+              <p className="text-sm font-medium text-[--cs-risk]">Exploitation Concerns Identified</p>
+              <p className="text-xs text-[--cs-risk] mt-1">
                 {interviews.filter((r) => r.exploitation_concerns).map((r) => `${getYPName(r.child_id)} (${r.missing_episode_date})`).join("; ")} — multi-agency response active.
               </p>
             </div>
@@ -149,27 +158,26 @@ export default function MissingReturnInterviewsPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <FlatList>
         {filtered.map((interview) => {
           const expanded = expandedId === interview.id;
+          const severity: RowSeverity = interview.exploitation_concerns ? "risk" : STATUS_ROW[interview.interview_status];
           return (
-            <Card key={interview.id} className={cn("overflow-hidden", interview.exploitation_concerns && "border-red-200")}>
-              <CardHeader className="cursor-pointer hover:bg-muted/40 transition-colors py-4" onClick={() => toggle(interview.id)}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("p-2 rounded-full", interview.exploitation_concerns ? "bg-red-100" : interview.interview_status === "completed" ? "bg-green-100" : "bg-amber-100")}>
-                      <MapPin className={cn("h-5 w-5", interview.exploitation_concerns ? "text-red-600" : interview.interview_status === "completed" ? "text-green-600" : "text-amber-600")} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{getYPName(interview.child_id)} — {interview.missing_episode_date}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge className={STATUS_CLR[interview.interview_status]}>{RETURN_INTERVIEW_STATUS_LABEL[interview.interview_status]}</Badge>
-                        {interview.exploitation_concerns && <Badge className="bg-red-100 text-red-800">Exploitation Concern</Badge>}
+            <div key={interview.id}>
+              <FlatListRow severity={severity} onClick={() => toggle(interview.id)} aria-expanded={expanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)]">{getYPName(interview.child_id)} — {interview.missing_episode_date}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[interview.interview_status])}>{RETURN_INTERVIEW_STATUS_LABEL[interview.interview_status]}</span>
+                        {interview.exploitation_concerns && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Exploitation Concern</span>}
                         {interview.independent_of_home && <Badge variant="outline" className="text-xs">Independent</Badge>}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right hidden sm:block">
                       <p className="text-xs text-muted-foreground">Interviewer</p>
                       <p className="text-sm">{getStaffName(interview.interviewed_by)}</p>
@@ -177,14 +185,14 @@ export default function MissingReturnInterviewsPage() {
                     {expanded ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                   </div>
                 </div>
-              </CardHeader>
+              </FlatListRow>
 
               {expanded && (
-                <CardContent className="pt-0 pb-4 space-y-5">
+                <FlatListRowDetail className="space-y-5">
                   {interview.declined_reason && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-md p-3">
-                      <p className="text-sm font-medium text-amber-800">Reason Declined</p>
-                      <p className="text-sm text-amber-700 mt-1">{interview.declined_reason}</p>
+                    <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-md p-3">
+                      <p className="text-sm font-medium text-[--cs-warning]">Reason Declined</p>
+                      <p className="text-sm text-[--cs-warning] mt-1">{interview.declined_reason}</p>
                     </div>
                   )}
 
@@ -208,12 +216,12 @@ export default function MissingReturnInterviewsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-sm font-medium text-red-700 mb-2 flex items-center gap-1"><AlertTriangle className="h-4 w-4" /> Push Factors (away from home)</p>
-                      <ul className="space-y-1">{interview.push_factors.map((f, i) => <li key={i} className="text-sm text-muted-foreground flex items-start gap-2"><span className="text-red-400 mt-1.5">•</span> {f}</li>)}</ul>
+                      <p className="text-sm font-medium text-[--cs-risk] mb-2 flex items-center gap-1"><AlertTriangle className="h-4 w-4" /> Push Factors (away from home)</p>
+                      <ul className="space-y-1">{interview.push_factors.map((f, i) => <li key={i} className="text-sm text-muted-foreground flex items-start gap-2"><span className="text-[--cs-risk] mt-1.5">•</span> {f}</li>)}</ul>
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-blue-700 mb-2 flex items-center gap-1"><MapPin className="h-4 w-4" /> Pull Factors (toward destination)</p>
-                      <ul className="space-y-1">{interview.pull_factors.map((f, i) => <li key={i} className="text-sm text-muted-foreground flex items-start gap-2"><span className="text-blue-400 mt-1.5">•</span> {f}</li>)}</ul>
+                      <p className="text-sm font-medium text-[--cs-info] mb-2 flex items-center gap-1"><MapPin className="h-4 w-4" /> Pull Factors (toward destination)</p>
+                      <ul className="space-y-1">{interview.pull_factors.map((f, i) => <li key={i} className="text-sm text-muted-foreground flex items-start gap-2"><span className="text-[--cs-info] mt-1.5">•</span> {f}</li>)}</ul>
                     </div>
                   </div>
 
@@ -223,20 +231,20 @@ export default function MissingReturnInterviewsPage() {
                   </div>
 
                   {interview.exploitation_concerns && interview.exploitation_details && (
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                      <p className="text-sm font-medium text-red-800 flex items-center gap-1"><Shield className="h-4 w-4" /> Exploitation Concerns</p>
-                      <p className="text-sm text-red-700 mt-1">{interview.exploitation_details}</p>
+                    <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3">
+                      <p className="text-sm font-medium text-[--cs-risk] flex items-center gap-1"><Shield className="h-4 w-4" /> Exploitation Concerns</p>
+                      <p className="text-sm text-[--cs-risk] mt-1">{interview.exploitation_details}</p>
                     </div>
                   )}
 
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p className="text-sm font-medium text-blue-800 flex items-center gap-1"><MessageCircle className="h-4 w-4" /> Child&apos;s View on Safety</p>
-                    <p className="text-sm text-blue-700 mt-1">{interview.child_view_on_safety}</p>
+                  <div className="bg-[--cs-info-bg] border border-[--cs-info-soft] rounded-lg p-3">
+                    <p className="text-sm font-medium text-[--cs-info] flex items-center gap-1"><MessageCircle className="h-4 w-4" /> Child&apos;s View on Safety</p>
+                    <p className="text-sm text-[--cs-info] mt-1">{interview.child_view_on_safety}</p>
                   </div>
 
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <p className="text-sm font-medium text-green-800 flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> What Would Help</p>
-                    <p className="text-sm text-green-700 mt-1">{interview.what_would_help}</p>
+                  <div className="bg-[--cs-success-bg] border border-[--cs-success-soft] rounded-lg p-3">
+                    <p className="text-sm font-medium text-[--cs-success] flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> What Would Help</p>
+                    <p className="text-sm text-[--cs-success] mt-1">{interview.what_would_help}</p>
                   </div>
 
                   {interview.actions_agreed.length > 0 && (
@@ -273,12 +281,12 @@ export default function MissingReturnInterviewsPage() {
                   </div>
 
                   <SmartLinkPanel sourceType="missing-return-interviews" sourceId={interview.id} childId={interview.child_id} compact />
-                </CardContent>
+                </FlatListRowDetail>
               )}
-            </Card>
+            </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-8 bg-slate-50 border border-[var(--cs-border)] rounded-lg p-4">
         <p className="text-sm font-medium text-[var(--cs-text-secondary)] mb-1">Regulatory Context</p>

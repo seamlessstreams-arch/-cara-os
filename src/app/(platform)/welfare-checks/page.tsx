@@ -227,8 +227,8 @@ function NewCheckForm({
 
               {/* Concern details */}
               {data.status === "concern" && (
-                <div className="mt-2 rounded-lg bg-red-50 border border-red-200 p-3">
-                  <label className="text-[10px] font-semibold text-red-700 block mb-1">
+                <div className="mt-2 rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
+                  <label className="text-[10px] font-semibold text-[--cs-risk] block mb-1">
                     Concern Details (required)
                   </label>
                   <textarea
@@ -238,7 +238,7 @@ function NewCheckForm({
                       ...prev,
                       [child.id]: { ...prev[child.id], concern_details: e.target.value },
                     }))}
-                    className="w-full rounded-lg border border-red-200 bg-white px-3 py-2 text-xs placeholder:text-red-300 resize-none h-20 focus:outline-none focus:ring-1 focus:ring-red-300"
+                    className="w-full rounded-lg border border-[--cs-risk-soft] bg-white px-3 py-2 text-xs placeholder:text-red-300 resize-none h-20 focus:outline-none focus:ring-1 focus:ring-red-300"
                   />
                 </div>
               )}
@@ -264,7 +264,7 @@ function NewCheckForm({
                     ...prev,
                     [child.id]: { ...prev[child.id], marks_desc: e.target.value },
                   }))}
-                  className="w-full mt-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs placeholder:text-amber-400 resize-none h-16 focus:outline-none focus:ring-1 focus:ring-amber-300"
+                  className="w-full mt-1 rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] px-3 py-2 text-xs placeholder:text-amber-400 resize-none h-16 focus:outline-none focus:ring-1 focus:ring-amber-300"
                 />
               )}
             </div>
@@ -335,7 +335,7 @@ function RoundCard({ round }: { round: WelfareCheckRound }) {
   return (
     <div className={cn(
       "rounded-xl border bg-white overflow-hidden transition-all",
-      hasConcerns ? "border-red-200" : "border-[var(--cs-border)]",
+      hasConcerns ? "border-[--cs-risk-soft]" : "border-[var(--cs-border)]",
     )}>
       {/* Header */}
       <button
@@ -344,12 +344,12 @@ function RoundCard({ round }: { round: WelfareCheckRound }) {
       >
         <div className={cn(
           "flex h-9 w-9 items-center justify-center rounded-xl shrink-0",
-          hasConcerns ? "bg-red-100" : "bg-indigo-100",
+          hasConcerns ? "bg-[--cs-risk-bg]" : "bg-indigo-100",
         )}>
           {round.round_time >= "20:00" || round.round_time < "07:00" ? (
-            <Moon className={cn("h-4 w-4", hasConcerns ? "text-red-600" : "text-indigo-600")} />
+            <Moon className={cn("h-4 w-4", hasConcerns ? "text-[--cs-risk]" : "text-indigo-600")} />
           ) : (
-            <Sun className={cn("h-4 w-4", hasConcerns ? "text-red-600" : "text-amber-600")} />
+            <Sun className={cn("h-4 w-4", hasConcerns ? "text-[--cs-risk]" : "text-amber-600")} />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -357,12 +357,12 @@ function RoundCard({ round }: { round: WelfareCheckRound }) {
             <span className="text-sm font-semibold text-[var(--cs-navy)] tabular-nums">{round.round_time}</span>
             <span className="text-[10px] text-[var(--cs-text-muted)]">{formatRelative(round.round_date)}</span>
             {hasConcerns && (
-              <Badge className="bg-red-100 text-red-700 border-0 text-[9px] rounded-full">
+              <Badge className="bg-[--cs-risk-bg] text-[--cs-risk] border-0 text-[9px] rounded-full">
                 Concern
               </Badge>
             )}
             {round.all_children_checked && (
-              <Badge className="bg-emerald-100 text-emerald-700 border-0 text-[9px] rounded-full">
+              <Badge className="bg-[--cs-success-bg] text-[--cs-success] border-0 text-[9px] rounded-full">
                 All checked
               </Badge>
             )}
@@ -374,10 +374,10 @@ function RoundCard({ round }: { round: WelfareCheckRound }) {
         <div className="flex items-center gap-2 shrink-0">
           {/* Security indicators */}
           <div className="flex gap-1">
-            {round.building_secure && <Lock className="h-3 w-3 text-emerald-500" />}
-            {round.fire_exits_clear && <Flame className="h-3 w-3 text-emerald-500" />}
-            {round.external_doors_locked && <DoorOpen className="h-3 w-3 text-emerald-500" />}
-            {round.alarm_set && <Shield className="h-3 w-3 text-emerald-500" />}
+            {round.building_secure && <Lock className="h-3 w-3 text-[--cs-success]" />}
+            {round.fire_exits_clear && <Flame className="h-3 w-3 text-[--cs-success]" />}
+            {round.external_doors_locked && <DoorOpen className="h-3 w-3 text-[--cs-success]" />}
+            {round.alarm_set && <Shield className="h-3 w-3 text-[--cs-success]" />}
           </div>
           {expanded ? <ChevronUp className="h-4 w-4 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted)]" />}
         </div>
@@ -410,10 +410,10 @@ function RoundCard({ round }: { round: WelfareCheckRound }) {
                     <p className="text-[11px] text-[var(--cs-text-muted)] mt-0.5">{check.notes}</p>
                   )}
                   {check.concern_details && (
-                    <p className="text-[11px] text-red-600 mt-0.5 font-medium">{check.concern_details}</p>
+                    <p className="text-[11px] text-[--cs-risk] mt-0.5 font-medium">{check.concern_details}</p>
                   )}
                   {check.physical_marks_noted && (
-                    <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-700 font-medium">
+                    <div className="mt-1 flex items-center gap-1 text-[10px] text-[--cs-warning] font-medium">
                       <AlertTriangle className="h-3 w-3" />
                       Physical marks: {check.marks_description}
                     </div>
@@ -445,7 +445,7 @@ function RoundCard({ round }: { round: WelfareCheckRound }) {
                 { label: "Doors locked", ok: round.external_doors_locked },
                 { label: "Alarm set", ok: round.alarm_set },
               ].map(({ label, ok }) => (
-                <span key={label} className={cn("flex items-center gap-0.5", ok ? "text-emerald-600" : "text-red-600")}>
+                <span key={label} className={cn("flex items-center gap-0.5", ok ? "text-[--cs-success]" : "text-[--cs-risk]")}>
                   {ok ? <CheckCircle2 className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
                   {label}
                 </span>
@@ -621,7 +621,7 @@ export default function WelfareChecksPage() {
                   </span>
                   <span className={cn(
                     "text-xs font-bold",
-                    coveragePct === 100 ? "text-emerald-600" : coveragePct >= 60 ? "text-amber-600" : "text-red-600",
+                    coveragePct === 100 ? "text-[--cs-success]" : coveragePct >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
                   )}>
                     {coveragePct}%
                   </span>
@@ -642,7 +642,7 @@ export default function WelfareChecksPage() {
                     className={cn(
                       "flex-1 text-center rounded-lg py-2 text-xs font-medium border",
                       done
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                        ? "bg-[--cs-success-bg] border-[--cs-success-soft] text-[--cs-success]"
                         : "bg-slate-50 border-[var(--cs-border)] text-[var(--cs-text-muted)]",
                     )}
                   >
