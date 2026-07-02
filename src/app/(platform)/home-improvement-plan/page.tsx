@@ -20,6 +20,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
@@ -45,26 +46,16 @@ const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
   org_risk: "bg-violet-50 text-violet-700 border-violet-200",
 };
 
-const PRIORITY_COLOUR: Record<ObjectivePriority, string> = {
-  high: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
-  medium: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
-  low: "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
-};
-
-const STATUS_COLOUR: Record<ObjectiveStatus, string> = {
-  planned: "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]",
-  in_progress: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
-  completed: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
-  overdue: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
-};
-
 const STATUS_LABELS = OBJECTIVE_STATUS_LABEL;
 
-const STATUS_CARD_BORDER: Record<ObjectiveStatus, string> = {
-  planned: "border-l-[--cs-info]",
-  in_progress: "border-l-[--cs-warning]",
-  completed: "border-l-[--cs-success]",
-  overdue: "border-l-[--cs-risk]",
+const STATUS_ROW: Record<ObjectiveStatus, RowSeverity> = {
+  planned: "info", in_progress: "warning", completed: "success", overdue: "risk",
+};
+const STATUS_TEXT: Record<ObjectiveStatus, string> = {
+  planned: "text-[--cs-info]", in_progress: "text-[--cs-warning]", completed: "text-[--cs-success]", overdue: "text-[--cs-risk]",
+};
+const PRIORITY_TEXT: Record<ObjectivePriority, string> = {
+  high: "text-[--cs-risk]", medium: "text-[--cs-warning]", low: "text-[var(--cs-text-secondary)]",
 };
 
 const PRIORITY_ORDER: Record<ObjectivePriority, number> = { high: 0, medium: 1, low: 2 };
@@ -280,45 +271,35 @@ export default function HomeImprovementPlanPage() {
         </div>
 
         {/* ── objective cards ─────────────────────────────────────── */}
-        <div className="space-y-3">
-          {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Target className="h-10 w-10 mx-auto mb-3 text-[var(--cs-text-gentle)]" />
-              No objectives match your filters.
-            </div>
-          )}
+        {filtered.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <Target className="h-10 w-10 mx-auto mb-3 text-[var(--cs-text-gentle)]" />
+            No objectives match your filters.
+          </div>
+        )}
+        <FlatList className={cn(filtered.length === 0 && "hidden")}>
           {filtered.map((obj) => {
             const isExpanded = expandedId === obj.id;
             return (
-              <div
-                key={obj.id}
-                className={cn(
-                  "rounded-xl border border-l-4 bg-white overflow-hidden",
-                  STATUS_CARD_BORDER[obj.status]
-                )}
-              >
+              <div key={obj.id}>
                 {/* collapsed header */}
-                <button
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
+                <FlatListRow
+                  severity={STATUS_ROW[obj.status]}
+                  className="items-center justify-between"
                   onClick={() => setExpandedId(isExpanded ? null : obj.id)}
+                  aria-expanded={isExpanded}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Target className={cn(
-                      "h-5 w-5 shrink-0",
-                      obj.status === "completed" ? "text-[--cs-success]"
-                        : obj.status === "overdue" ? "text-[--cs-risk]"
-                        : obj.status === "in_progress" ? "text-[--cs-warning]"
-                        : "text-[--cs-info]"
-                    )} />
+                    <Target className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">{obj.title}</p>
-                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", STATUS_COLOUR[obj.status])}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[obj.status])}>
                           {STATUS_LABELS[obj.status]}
-                        </Badge>
-                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", PRIORITY_COLOUR[obj.priority])}>
+                        </span>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", PRIORITY_TEXT[obj.priority])}>
                           {obj.priority.charAt(0).toUpperCase() + obj.priority.slice(1)}
-                        </Badge>
+                        </span>
                         <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", SOURCE_COLOUR[obj.source])}>
                           {SOURCE_LABELS[obj.source]}
                         </Badge>
@@ -351,11 +332,11 @@ export default function HomeImprovementPlanPage() {
                     )}
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
-                </button>
+                </FlatListRow>
 
                 {/* expanded detail */}
                 {isExpanded && (
-                  <div className="border-t bg-slate-50 p-4 space-y-4">
+                  <FlatListRowDetail className="space-y-4">
                     {/* notes */}
                     <Card>
                       <CardHeader className="pb-2">
@@ -459,12 +440,12 @@ export default function HomeImprovementPlanPage() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </FlatListRowDetail>
                 )}
               </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── regulatory note ──────────────────────────────────────── */}
         <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
