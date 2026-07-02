@@ -35,52 +35,52 @@ const STATUS_CONFIG = {
   given: {
     label: "Given",
     badgeVariant: "success" as const,
-    cellClass: "bg-emerald-500",
-    cellBorder: "border-emerald-600",
+    cellClass: "bg-[--cs-success]",
+    cellBorder: "border-[--cs-success]",
     icon: CheckCircle2,
-    iconClass: "text-emerald-600",
-    bgClass: "bg-emerald-50 border-emerald-200",
-    textClass: "text-emerald-700",
+    iconClass: "text-[--cs-success]",
+    bgClass: "bg-[--cs-success-bg] border-[--cs-success-soft]",
+    textClass: "text-[--cs-success]",
   },
   late: {
     label: "Late",
     badgeVariant: "warning" as const,
-    cellClass: "bg-amber-400",
-    cellBorder: "border-amber-500",
+    cellClass: "bg-[--cs-warning]",
+    cellBorder: "border-[--cs-warning]",
     icon: Clock,
-    iconClass: "text-amber-600",
-    bgClass: "bg-amber-50 border-amber-200",
-    textClass: "text-amber-700",
+    iconClass: "text-[--cs-warning]",
+    bgClass: "bg-[--cs-warning-bg] border-[--cs-warning-soft]",
+    textClass: "text-[--cs-warning]",
   },
   refused: {
     label: "Refused",
     badgeVariant: "destructive" as const,
-    cellClass: "bg-red-500",
-    cellBorder: "border-red-600",
+    cellClass: "bg-[--cs-risk]",
+    cellBorder: "border-[--cs-risk]",
     icon: X,
-    iconClass: "text-red-600",
-    bgClass: "bg-red-50 border-red-200",
-    textClass: "text-red-700",
+    iconClass: "text-[--cs-risk]",
+    bgClass: "bg-[--cs-risk-bg] border-[--cs-risk-soft]",
+    textClass: "text-[--cs-risk]",
   },
   missed: {
     label: "Missed",
     badgeVariant: "destructive" as const,
-    cellClass: "bg-red-400",
-    cellBorder: "border-red-500",
+    cellClass: "bg-[--cs-risk]",
+    cellBorder: "border-[--cs-risk]",
     icon: AlertTriangle,
-    iconClass: "text-red-600",
-    bgClass: "bg-red-50 border-red-200",
-    textClass: "text-red-700",
+    iconClass: "text-[--cs-risk]",
+    bgClass: "bg-[--cs-risk-bg] border-[--cs-risk-soft]",
+    textClass: "text-[--cs-risk]",
   },
   scheduled: {
     label: "Scheduled",
     badgeVariant: "info" as const,
-    cellClass: "bg-blue-400",
-    cellBorder: "border-blue-500",
+    cellClass: "bg-[--cs-info]",
+    cellBorder: "border-[--cs-info]",
     icon: Clock,
-    iconClass: "text-blue-500",
-    bgClass: "bg-blue-50 border-blue-200",
-    textClass: "text-blue-700",
+    iconClass: "text-[--cs-info]",
+    bgClass: "bg-[--cs-info-bg] border-[--cs-info-soft]",
+    textClass: "text-[--cs-info]",
   },
 };
 
@@ -175,8 +175,8 @@ function AdminForm({ admin, medication, onClose }: AdminFormProps) {
               "rounded-lg border py-2 text-xs font-medium capitalize transition-all",
               formData.status === s
                 ? s === "given"
-                  ? "bg-emerald-100 border-emerald-300 text-emerald-700"
-                  : "bg-red-100 border-red-300 text-red-700"
+                  ? "bg-[--cs-success-bg] border-[--cs-success-soft] text-[--cs-success]"
+                  : "bg-[--cs-risk-bg] border-[--cs-risk-soft] text-[--cs-risk]"
                 : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
             )}
           >
@@ -318,8 +318,8 @@ function MARCell({ admin, isScheduled, dateStr }: MARCellProps) {
   if (isFuture || (isScheduled && !admin)) {
     return (
       <div className="relative flex items-center justify-center">
-        <div className="h-8 w-8 rounded-full bg-blue-200 border-2 border-blue-300 mx-auto flex items-center justify-center" title="Scheduled">
-          <div className="h-2 w-2 rounded-full bg-blue-500" />
+        <div className="h-8 w-8 rounded-full bg-[--cs-info-soft] border-2 border-[--cs-info-soft] mx-auto flex items-center justify-center" title="Scheduled">
+          <div className="h-2 w-2 rounded-full bg-[--cs-info]" />
         </div>
       </div>
     );
@@ -338,22 +338,22 @@ function MARCell({ admin, isScheduled, dateStr }: MARCellProps) {
       onMouseLeave={() => setShowTooltip(false)}
     >
       {admin.status === "given" && (
-        <div className="h-8 w-8 rounded-full bg-emerald-500 border-2 border-emerald-600 mx-auto flex items-center justify-center shadow-sm">
+        <div className="h-8 w-8 rounded-full bg-[--cs-success] border-2 border-[--cs-success] mx-auto flex items-center justify-center shadow-sm">
           <CheckCircle2 className="h-4 w-4 text-white" />
         </div>
       )}
       {admin.status === "late" && (
-        <div className="h-8 w-8 rounded-full bg-amber-400 border-2 border-amber-500 mx-auto flex items-center justify-center shadow-sm">
+        <div className="h-8 w-8 rounded-full bg-[--cs-warning] border-2 border-[--cs-warning] mx-auto flex items-center justify-center shadow-sm">
           <Clock className="h-4 w-4 text-white" />
         </div>
       )}
       {(admin.status === "refused" || admin.status === "missed") && (
-        <div className="h-8 w-8 rounded-full bg-red-500 border-2 border-red-600 mx-auto flex items-center justify-center shadow-sm">
+        <div className="h-8 w-8 rounded-full bg-[--cs-risk] border-2 border-[--cs-risk] mx-auto flex items-center justify-center shadow-sm">
           <X className="h-4 w-4 text-white" />
         </div>
       )}
       {admin.status === "scheduled" && (
-        <div className="h-8 w-8 rounded-full bg-blue-400 border-2 border-blue-500 mx-auto flex items-center justify-center shadow-sm">
+        <div className="h-8 w-8 rounded-full bg-[--cs-info] border-2 border-[--cs-info] mx-auto flex items-center justify-center shadow-sm">
           <div className="h-2.5 w-2.5 rounded-full bg-white" />
         </div>
       )}
@@ -468,29 +468,29 @@ function TodayScheduleTab({
             label: "Scheduled Today",
             value: meta.scheduled_today ?? todaySchedule.length,
             sub: "doses due",
-            color: "text-blue-600",
-            bg: "bg-blue-50",
+            color: "text-[--cs-info]",
+            bg: "bg-[--cs-info-bg]",
           },
           {
             label: "Given Today",
             value: givenToday,
             sub: "administered",
-            color: "text-emerald-600",
-            bg: "bg-emerald-50",
+            color: "text-[--cs-success]",
+            bg: "bg-[--cs-success-bg]",
           },
           {
             label: "Exceptions This Week",
             value: meta.exceptions_this_week ?? exceptions.length,
             sub: "need review",
-            color: exceptions.length > 0 ? "text-red-600" : "text-slate-400",
-            bg: exceptions.length > 0 ? "bg-red-50" : "bg-slate-50",
+            color: exceptions.length > 0 ? "text-[--cs-risk]" : "text-slate-400",
+            bg: exceptions.length > 0 ? "bg-[--cs-risk-bg]" : "bg-slate-50",
           },
           {
             label: "Stock Alerts",
             value: stockAlerts.length,
             sub: "low stock",
-            color: stockAlerts.length > 0 ? "text-amber-600" : "text-slate-400",
-            bg: stockAlerts.length > 0 ? "bg-amber-50" : "bg-slate-50",
+            color: stockAlerts.length > 0 ? "text-[--cs-warning]" : "text-slate-400",
+            bg: stockAlerts.length > 0 ? "bg-[--cs-warning-bg]" : "bg-slate-50",
           },
         ].map(({ label, value, sub, color, bg }) => (
           <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
@@ -503,10 +503,10 @@ function TodayScheduleTab({
 
       {/* Exception alert banner */}
       {todayExceptions.length > 0 && (
-        <div className="rounded-2xl bg-red-50 border border-red-200 p-4">
+        <div className="rounded-2xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-4">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-red-600 shrink-0" />
-            <span className="text-sm font-bold text-red-800">
+            <AlertTriangle className="h-4 w-4 text-[--cs-risk] shrink-0" />
+            <span className="text-sm font-bold text-[--cs-risk]">
               {todayExceptions.length} exception{todayExceptions.length > 1 ? "s" : ""} today — require{todayExceptions.length === 1 ? "s" : ""} review
             </span>
           </div>
@@ -514,13 +514,13 @@ function TodayScheduleTab({
             {todayExceptions.map((ex) => {
               const med = medications.find((m) => m.id === ex.medication_id);
               return (
-                <div key={ex.id} className="text-xs text-red-700 flex items-center gap-2">
+                <div key={ex.id} className="text-xs text-[--cs-risk] flex items-center gap-2">
                   <span className="capitalize font-medium">{ex.status}</span>
                   <span>—</span>
                   <span>{getYPName(ex.child_id)}</span>
                   <span>·</span>
                   <span>{med?.name}</span>
-                  {ex.reason_not_given && <span className="text-red-500">({ex.reason_not_given})</span>}
+                  {ex.reason_not_given && <span className="text-[--cs-risk]">({ex.reason_not_given})</span>}
                 </div>
               );
             })}
@@ -587,7 +587,7 @@ function TodayScheduleTab({
                     key={`${med.id}-${idx}`}
                     className={cn(
                       "px-5 py-4",
-                      isException && "bg-red-50/30"
+                      isException && "bg-[--cs-risk-bg]/30"
                     )}
                   >
                     <div className="flex items-start gap-4">
@@ -616,7 +616,7 @@ function TodayScheduleTab({
                             <Link
                               href={`/care-events/${(admin as never as { care_event_id: string }).care_event_id}`}
                               onClick={(e) => e.stopPropagation()}
-                              className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                              className="inline-flex items-center gap-1 rounded-full bg-[--cs-info-bg] border border-[--cs-info-soft] px-2 py-0.5 text-[10px] font-medium text-[--cs-info] hover:bg-[--cs-info-soft] transition-colors"
                             >
                               <ArrowUpRight className="h-3 w-3" />
                               From Care Event
@@ -638,7 +638,7 @@ function TodayScheduleTab({
                           )}
                           {admin?.administered_by && (
                             <span className="flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+                              <CheckCircle2 className="h-3 w-3 text-[--cs-success]" />
                               {getStaffName(admin.administered_by)}
                               {admin.actual_time && <> · {formatTime(admin.actual_time)}</>}
                             </span>
@@ -665,7 +665,7 @@ function TodayScheduleTab({
 
                         {/* Special instructions */}
                         {med.special_instructions && (
-                          <div className="mt-2 rounded-lg bg-blue-50 border border-blue-100 px-3 py-1.5 text-[10px] text-blue-700 flex items-center gap-1.5">
+                          <div className="mt-2 rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] px-3 py-1.5 text-[10px] text-[--cs-info] flex items-center gap-1.5">
                             <Info className="h-3 w-3 shrink-0" />
                             {med.special_instructions}
                           </div>
@@ -873,10 +873,10 @@ function MARChartTab({
         <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Legend</div>
         <div className="flex flex-wrap items-center gap-5">
           {[
-            { el: <div className="h-6 w-6 rounded-full bg-emerald-500 border-2 border-emerald-600 flex items-center justify-center"><CheckCircle2 className="h-3.5 w-3.5 text-white" /></div>, label: "Given" },
-            { el: <div className="h-6 w-6 rounded-full bg-amber-400 border-2 border-amber-500 flex items-center justify-center"><Clock className="h-3.5 w-3.5 text-white" /></div>, label: "Late" },
-            { el: <div className="h-6 w-6 rounded-full bg-red-500 border-2 border-red-600 flex items-center justify-center"><X className="h-3.5 w-3.5 text-white" /></div>, label: "Refused / Missed" },
-            { el: <div className="h-6 w-6 rounded-full bg-blue-200 border-2 border-blue-300 flex items-center justify-center"><div className="h-2 w-2 rounded-full bg-blue-500" /></div>, label: "Scheduled (today)" },
+            { el: <div className="h-6 w-6 rounded-full bg-[--cs-success] border-2 border-[--cs-success] flex items-center justify-center"><CheckCircle2 className="h-3.5 w-3.5 text-white" /></div>, label: "Given" },
+            { el: <div className="h-6 w-6 rounded-full bg-[--cs-warning] border-2 border-[--cs-warning] flex items-center justify-center"><Clock className="h-3.5 w-3.5 text-white" /></div>, label: "Late" },
+            { el: <div className="h-6 w-6 rounded-full bg-[--cs-risk] border-2 border-[--cs-risk] flex items-center justify-center"><X className="h-3.5 w-3.5 text-white" /></div>, label: "Refused / Missed" },
+            { el: <div className="h-6 w-6 rounded-full bg-[--cs-info-soft] border-2 border-[--cs-info-soft] flex items-center justify-center"><div className="h-2 w-2 rounded-full bg-[--cs-info]" /></div>, label: "Scheduled (today)" },
             { el: <div className="h-6 w-6 rounded-full bg-slate-100 border border-slate-200" />, label: "Not scheduled" },
             { el: <div className="h-6 w-6 rounded-full border border-dashed border-slate-200" />, label: "PRN — not given" },
           ].map(({ el, label }) => (
@@ -1061,7 +1061,7 @@ function PRNLogTab({
                       {(admin as never as { care_event_id?: string }).care_event_id ? (
                         <Link
                           href={`/care-events/${(admin as never as { care_event_id: string }).care_event_id}`}
-                          className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-2 py-0.5 text-[10px] font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
+                          className="inline-flex items-center gap-1 rounded-full bg-[--cs-info-bg] border border-[--cs-info-soft] px-2 py-0.5 text-[10px] font-medium text-[--cs-info] hover:bg-[--cs-info-soft] transition-colors"
                         >
                           <ArrowUpRight className="h-3 w-3" />
                           Care Event
@@ -1103,9 +1103,9 @@ function StockOversightTab({
   // Traffic light for stock
   const stockLight = (count: number | null) => {
     if (count === null) return "bg-slate-100 text-slate-500";
-    if (count < 5) return "bg-red-100 text-red-700 font-bold";
-    if (count < 10) return "bg-amber-100 text-amber-700 font-bold";
-    return "bg-emerald-100 text-emerald-700";
+    if (count < 5) return "bg-[--cs-risk-bg] text-[--cs-risk] font-bold";
+    if (count < 10) return "bg-[--cs-warning-bg] text-[--cs-warning] font-bold";
+    return "bg-[--cs-success-bg] text-[--cs-success]";
   };
   const stockLabel = (count: number | null) => {
     if (count === null) return null;
@@ -1197,7 +1197,7 @@ function StockOversightTab({
                         <Button
                           size="sm"
                           variant="outline"
-                          className="text-xs h-7 text-amber-700 border-amber-200 hover:bg-amber-50"
+                          className="text-xs h-7 text-[--cs-warning] border-[--cs-warning-soft] hover:bg-[--cs-warning-bg]"
                           disabled
                           title="Contact your pharmacy directly to request a stock reorder."
                         >
@@ -1216,7 +1216,7 @@ function StockOversightTab({
       {/* Controlled Drugs */}
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <Shield className="h-4 w-4 text-red-600" />
+          <Shield className="h-4 w-4 text-[--cs-risk]" />
           <h3 className="text-sm font-bold text-slate-900">Controlled Drugs Register</h3>
         </div>
         {controlledMeds.length === 0 ? (
@@ -1230,11 +1230,11 @@ function StockOversightTab({
         ) : (
           <div className="space-y-3">
             {controlledMeds.map((med) => (
-              <div key={med.id} className="rounded-xl border border-red-200 bg-red-50/50 p-4">
+              <div key={med.id} className="rounded-xl border border-[--cs-risk-soft] bg-[--cs-risk-bg]/50 p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <div className="font-semibold text-sm text-red-900">{med.name} {med.dosage}</div>
-                    <div className="text-xs text-red-700">{getYPName(med.child_id)} · {med.prescriber}</div>
+                    <div className="font-semibold text-sm text-[--cs-risk]">{med.name} {med.dosage}</div>
+                    <div className="text-xs text-[--cs-risk]">{getYPName(med.child_id)} · {med.prescriber}</div>
                   </div>
                   <Badge variant="destructive">Controlled Drug</Badge>
                 </div>
@@ -1248,7 +1248,7 @@ function StockOversightTab({
       <div>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
+            <AlertTriangle className="h-4 w-4 text-[--cs-warning]" />
             <h3 className="text-sm font-bold text-slate-900">Medication Exceptions Audit</h3>
           </div>
           <Badge variant={exceptionAdmins.length > 0 ? "warning" : "success"}>
@@ -1257,10 +1257,10 @@ function StockOversightTab({
         </div>
 
         {exceptionAdmins.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-emerald-50 p-8 text-center">
-            <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
-            <div className="text-sm text-emerald-700 font-medium">No exceptions recorded</div>
-            <div className="text-xs text-emerald-600 mt-1">All medications administered as prescribed.</div>
+          <div className="rounded-2xl border border-dashed border-slate-200 bg-[--cs-success-bg] p-8 text-center">
+            <CheckCircle2 className="h-8 w-8 text-[--cs-success] mx-auto mb-2" />
+            <div className="text-sm text-[--cs-success] font-medium">No exceptions recorded</div>
+            <div className="text-xs text-[--cs-success] mt-1">All medications administered as prescribed.</div>
           </div>
         ) : (
           <div className="rounded-2xl border bg-white overflow-hidden">
@@ -1302,7 +1302,7 @@ function StockOversightTab({
                     </td>
                     <td className="px-4 py-3">
                       {needCreated.has(admin.id) ? (
-                        <span className="flex items-center gap-1 text-[10px] text-emerald-600 font-medium">
+                        <span className="flex items-center gap-1 text-[10px] text-[--cs-success] font-medium">
                           <CheckCircle2 className="h-3 w-3" />Need logged
                         </span>
                       ) : (
@@ -1355,7 +1355,7 @@ function StockOversightTab({
           </button>
         </div>
 
-        <div className="rounded-2xl border bg-amber-50/40 border-amber-200 p-5">
+        <div className="rounded-2xl border bg-[--cs-warning-bg]/40 border-[--cs-warning-soft] p-5">
           <div className="text-sm text-slate-700 mb-3">
             <span className="font-semibold text-slate-900">{unreviewedExceptions.length}</span> medication exception{unreviewedExceptions.length !== 1 ? "s" : ""} currently require RM oversight comment. Use Cara to draft your oversight narrative.
           </div>
@@ -1363,10 +1363,10 @@ function StockOversightTab({
           {unreviewedExceptions.length > 0 && (
             <div className="space-y-2 mb-4">
               {unreviewedExceptions.map(({ admin, med }) => (
-                <div key={admin.id} className="flex items-center gap-3 rounded-xl bg-white border border-amber-100 px-3 py-2.5">
+                <div key={admin.id} className="flex items-center gap-3 rounded-xl bg-white border border-[--cs-warning-soft] px-3 py-2.5">
                   <div className={cn(
                     "h-2 w-2 rounded-full shrink-0",
-                    admin.status === "late" ? "bg-amber-400" : "bg-red-500"
+                    admin.status === "late" ? "bg-[--cs-warning]" : "bg-[--cs-risk]"
                   )} />
                   <div className="flex-1 min-w-0">
                     <span className="text-xs font-medium text-slate-900">{med.name}</span>
@@ -1498,9 +1498,9 @@ export default function MedicationPage() {
         )}
 
         {isError && (
-          <div className="rounded-2xl bg-red-50 border border-red-200 p-6 text-center">
-            <AlertTriangle className="h-8 w-8 text-red-400 mx-auto mb-2" />
-            <div className="text-sm font-semibold text-red-800">Could not load medication data</div>
+          <div className="rounded-2xl bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-6 text-center">
+            <AlertTriangle className="h-8 w-8 text-[--cs-risk] mx-auto mb-2" />
+            <div className="text-sm font-semibold text-[--cs-risk]">Could not load medication data</div>
             <Button size="sm" variant="outline" className="mt-3" onClick={() => refetch()}>Try again</Button>
           </div>
         )}
@@ -1526,8 +1526,8 @@ export default function MedicationPage() {
                     <span className={cn(
                       "inline-flex items-center justify-center h-5 min-w-[20px] px-1 rounded-full text-[10px] font-bold",
                       id === "stock" || id === "schedule"
-                        ? "bg-blue-600 text-white"
-                        : "bg-amber-500 text-white"
+                        ? "bg-[--cs-info] text-white"
+                        : "bg-[--cs-warning] text-white"
                     )}>
                       {badge}
                     </span>
