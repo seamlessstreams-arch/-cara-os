@@ -4,8 +4,9 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -40,12 +41,12 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 /* ── local config (colours not serializable) ────────────────────────────── */
 
-const PRESENTED_CLR: Record<StatutoryVisitChildPresented, string> = {
-  settled: "bg-green-100 text-green-800",
-  engaged: "bg-emerald-100 text-emerald-800",
-  anxious: "bg-amber-100 text-amber-800",
-  withdrawn: "bg-slate-100 text-[var(--cs-text-secondary)]",
-  distressed: "bg-red-100 text-red-800",
+const PRESENTED_TEXT: Record<StatutoryVisitChildPresented, string> = {
+  settled: "text-[--cs-success]",
+  engaged: "text-[--cs-success]",
+  anxious: "text-[--cs-warning]",
+  withdrawn: "text-[var(--cs-text-secondary)]",
+  distressed: "text-[--cs-risk]",
 };
 
 const TYPE_CLR: Record<StatutoryVisitType, string> = {
@@ -205,13 +206,13 @@ export default function StatutoryVisitLogPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Visits This Month", value: visitsThisMonth, icon: Calendar, clr: "text-blue-600" },
-            { label: "Saw Child Alone", value: `${alonePct}%`, icon: UserCheck, clr: alonePct >= 80 ? "text-green-600" : "text-amber-600" },
-            { label: "Within Timeframe", value: `${onTimePct}%`, icon: CheckCircle2, clr: onTimePct >= 90 ? "text-green-600" : "text-amber-600" },
+            { label: "Saw Child Alone", value: `${alonePct}%`, icon: UserCheck, clr: alonePct >= 80 ? "text-[--cs-success]" : "text-[--cs-warning]" },
+            { label: "Within Timeframe", value: `${onTimePct}%`, icon: CheckCircle2, clr: onTimePct >= 90 ? "text-[--cs-success]" : "text-[--cs-warning]" },
             {
               label: "Next Visit Due",
               value: closestDue ? fmt(closestDue.due) : "—",
               icon: Clock,
-              clr: closestDue && closestDue.due < today ? "text-red-600" : "text-blue-600",
+              clr: closestDue && closestDue.due < today ? "text-[--cs-risk]" : "text-blue-600",
               sub: closestDue ? getYPName(closestDue.yp) : undefined,
             },
           ].map((s) => (
@@ -230,13 +231,13 @@ export default function StatutoryVisitLogPage() {
         {(overdueVisits.length > 0 || unfiledReports.length > 0 || declinedAlone.length > 0) && (
           <div className="space-y-2">
             {overdueVisits.length > 0 && (
-              <Card className="border-l-4 border-l-red-500 bg-red-50">
+              <Card className="border-l-4 border-l-[--cs-risk] bg-[--cs-risk-bg]">
                 <CardContent className="pt-3 pb-3">
-                  <p className="text-sm font-medium text-red-800 flex items-center gap-2">
+                  <p className="text-sm font-medium text-[--cs-risk] flex items-center gap-2">
                     <AlertTriangle className="h-4 w-4" />
                     {overdueVisits.length} child{overdueVisits.length !== 1 ? "ren have" : " has"} an overdue statutory visit
                   </p>
-                  <ul className="text-xs text-red-700 mt-1.5 space-y-0.5">
+                  <ul className="text-xs text-[--cs-risk] mt-1.5 space-y-0.5">
                     {overdueVisits.map((o) => (
                       <li key={o.yp}>· {getYPName(o.yp)} — was due {fmt(o.due)}</li>
                     ))}
@@ -245,13 +246,13 @@ export default function StatutoryVisitLogPage() {
               </Card>
             )}
             {unfiledReports.length > 0 && (
-              <Card className="border-l-4 border-l-amber-400 bg-amber-50">
+              <Card className="border-l-4 border-l-[--cs-warning] bg-[--cs-warning-bg]">
                 <CardContent className="pt-3 pb-3">
-                  <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
+                  <p className="text-sm font-medium text-[--cs-warning] flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     {unfiledReports.length} visit report{unfiledReports.length !== 1 ? "s" : ""} not yet filed by social worker
                   </p>
-                  <ul className="text-xs text-amber-700 mt-1.5 space-y-0.5">
+                  <ul className="text-xs text-[--cs-warning] mt-1.5 space-y-0.5">
                     {unfiledReports.map((u) => (
                       <li key={u.id}>· {getYPName(u.child_id)} — visit {fmt(u.date)} ({u.social_worker})</li>
                     ))}
@@ -260,13 +261,13 @@ export default function StatutoryVisitLogPage() {
               </Card>
             )}
             {declinedAlone.length > 0 && (
-              <Card className="border-l-4 border-l-amber-400 bg-amber-50">
+              <Card className="border-l-4 border-l-[--cs-warning] bg-[--cs-warning-bg]">
                 <CardContent className="pt-3 pb-3">
-                  <p className="text-sm font-medium text-amber-800 flex items-center gap-2">
+                  <p className="text-sm font-medium text-[--cs-warning] flex items-center gap-2">
                     <UserCheck className="h-4 w-4" />
                     {declinedAlone.length} visit{declinedAlone.length !== 1 ? "s" : ""} where SW did not see child alone
                   </p>
-                  <p className="text-xs text-amber-700 mt-1.5">
+                  <p className="text-xs text-[--cs-warning] mt-1.5">
                     Statutory expectation is that SW sees and speaks with the child alone unless the child refuses or it is contrary to their welfare.
                   </p>
                 </CardContent>
@@ -333,73 +334,70 @@ export default function StatutoryVisitLogPage() {
         </p>
 
         {/* ── Visit cards ───────────────────────────────────────────────── */}
-        <div className="space-y-3">
-          {processed.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Eye className="h-10 w-10 mx-auto mb-2 opacity-40" />
-              <p className="font-medium">No visits match your criteria</p>
-            </div>
-          )}
+        {processed.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <Eye className="h-10 w-10 mx-auto mb-2 opacity-40" />
+            <p className="font-medium">No visits match your criteria</p>
+          </div>
+        )}
 
+        <FlatList className={cn(processed.length === 0 && "hidden")}>
           {processed.map((visit) => {
             const isOpen = expandedId === visit.id;
-            const presentedClr = PRESENTED_CLR[visit.child_presented];
             const typeClr = TYPE_CLR[visit.visit_type];
             const isOverdue = visit.next_visit_due < today;
             const reportLate = !visit.report_filed_date;
 
-            const borderClr = !visit.within_timeframe || reportLate
-              ? "border-l-red-500"
+            const rowSev: RowSeverity = !visit.within_timeframe || reportLate
+              ? "risk"
               : !visit.saw_child_alone
-              ? "border-l-amber-400"
-              : "border-l-green-400";
+              ? "warning"
+              : "success";
 
             return (
-              <Card key={visit.id} className={cn("border-l-4", borderClr)}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(visit.id)}>
-                  <div className="flex items-start justify-between">
+              <div key={visit.id}>
+                <FlatListRow severity={rowSev} className="justify-between" onClick={() => toggle(visit.id)} aria-expanded={isOpen}>
                     <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                      <div className="text-base font-semibold flex items-center gap-2 flex-wrap">
                         {getYPName(visit.child_id)}
                         <span className="text-muted-foreground font-normal text-sm">·</span>
                         <span className="text-sm font-normal text-muted-foreground">{fmt(visit.date)}</span>
                         <Badge variant="outline" className={typeClr}>
                           {STATUTORY_VISIT_TYPE_LABEL[visit.visit_type]}
                         </Badge>
-                        <Badge variant="outline" className={presentedClr}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", PRESENTED_TEXT[visit.child_presented])}>
                           Presented: {STATUTORY_VISIT_CHILD_PRESENTED_LABEL[visit.child_presented]}
-                        </Badge>
+                        </span>
                         {visit.saw_child_alone ? (
-                          <Badge variant="outline" className="bg-green-100 text-green-800">
-                            <UserCheck className="h-3 w-3 mr-0.5" /> Saw alone {visit.alone_time}m
-                          </Badge>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success] inline-flex items-center gap-0.5">
+                            <UserCheck className="h-3 w-3" /> Saw alone {visit.alone_time}m
+                          </span>
                         ) : (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800">
-                            <AlertTriangle className="h-3 w-3 mr-0.5" /> Not seen alone
-                          </Badge>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning] inline-flex items-center gap-0.5">
+                            <AlertTriangle className="h-3 w-3" /> Not seen alone
+                          </span>
                         )}
                         {!visit.within_timeframe && (
-                          <Badge variant="outline" className="bg-red-100 text-red-800">
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">
                             Out of timeframe
-                          </Badge>
+                          </span>
                         )}
                         {reportLate && (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800">
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">
                             Report not filed
-                          </Badge>
+                          </span>
                         )}
-                      </CardTitle>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         SW: {visit.social_worker} · {visit.local_authority} · {visit.duration_minutes} mins
-                        {" · "}Next due: <span className={cn(isOverdue && "text-red-600 font-medium")}>{fmt(visit.next_visit_due)}</span>
+                        {" · "}Next due: <span className={cn(isOverdue && "text-[--cs-risk] font-medium")}>{fmt(visit.next_visit_due)}</span>
                       </p>
                     </div>
-                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-                  </div>
-                </CardHeader>
+                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="space-y-4 text-sm">
                     {/* Child's wishes & feelings */}
                     <div className="bg-purple-50 rounded-lg p-3">
                       <p className="font-medium text-purple-800 mb-1 flex items-center gap-1">
@@ -422,7 +420,7 @@ export default function StatutoryVisitLogPage() {
                           ))}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1">
-                          Bedroom seen: <span className={cn("font-medium", visit.bedrooms_seen ? "text-green-700" : "text-red-700")}>{visit.bedrooms_seen ? "Yes" : "No"}</span>
+                          Bedroom seen: <span className={cn("font-medium", visit.bedrooms_seen ? "text-[--cs-success]" : "text-[--cs-risk]")}>{visit.bedrooms_seen ? "Yes" : "No"}</span>
                         </p>
                       </div>
                       <div>
@@ -476,15 +474,15 @@ export default function StatutoryVisitLogPage() {
 
                     {/* Actions agreed */}
                     {visit.actions_agreed.length > 0 && (
-                      <div className="bg-emerald-50 rounded-lg p-3">
-                        <p className="font-medium text-emerald-800 mb-2 flex items-center gap-1">
+                      <div className="bg-[--cs-success-bg] rounded-lg p-3">
+                        <p className="font-medium text-[--cs-success] mb-2 flex items-center gap-1">
                           <ClipboardList className="h-3.5 w-3.5" /> Actions Agreed
                         </p>
                         <div className="space-y-2">
                           {visit.actions_agreed.map((a, i) => (
-                            <div key={i} className="text-xs bg-white rounded p-2 border border-emerald-100">
-                              <p className="text-emerald-900 font-medium">{a.action}</p>
-                              <p className="text-emerald-600 mt-1">
+                            <div key={i} className="text-xs bg-white rounded p-2 border border-[--cs-success-soft]">
+                              <p className="text-[--cs-success] font-medium">{a.action}</p>
+                              <p className="text-[--cs-success] mt-1">
                                 Owner: {a.owner.startsWith("staff_") ? getStaffName(a.owner) : a.owner}
                                 {" · "}Deadline: {fmt(a.deadline)}
                               </p>
@@ -498,15 +496,15 @@ export default function StatutoryVisitLogPage() {
                     <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pt-2 border-t flex-wrap">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3.5 w-3.5" />
-                        Next visit due: <span className={cn(isOverdue && "text-red-600 font-medium")}>{fmt(visit.next_visit_due)}</span>
+                        Next visit due: <span className={cn(isOverdue && "text-[--cs-risk] font-medium")}>{fmt(visit.next_visit_due)}</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <FileText className="h-3.5 w-3.5" />
-                        Report filed: {visit.report_filed_date ? fmt(visit.report_filed_date) : <span className="text-amber-600 font-medium">Not yet filed</span>}
+                        Report filed: {visit.report_filed_date ? fmt(visit.report_filed_date) : <span className="text-[--cs-warning] font-medium">Not yet filed</span>}
                       </span>
                       <span className="flex items-center gap-1">
                         <Shield className="h-3.5 w-3.5" />
-                        Within timeframe: <span className={cn("font-medium", visit.within_timeframe ? "text-green-700" : "text-red-700")}>{visit.within_timeframe ? "Yes" : "No"}</span>
+                        Within timeframe: <span className={cn("font-medium", visit.within_timeframe ? "text-[--cs-success]" : "text-[--cs-risk]")}>{visit.within_timeframe ? "Yes" : "No"}</span>
                       </span>
                     </div>
 
@@ -517,12 +515,12 @@ export default function StatutoryVisitLogPage() {
                       childId={visit.child_id}
                       compact
                     />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── Regulatory note ──────────────────────────────────────────── */}
         <Card className="bg-slate-50 border-[var(--cs-border)]">

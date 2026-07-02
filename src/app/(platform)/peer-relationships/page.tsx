@@ -18,6 +18,7 @@ import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { cn }           from "@/lib/utils";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
@@ -59,6 +60,8 @@ const RISK_CLR: Record<PeerRiskLevel, string> = {
   none: "bg-[--cs-success-bg] text-[--cs-success]", low: "bg-[--cs-info-bg] text-[--cs-info]",
   medium: "bg-[--cs-warning-bg] text-[--cs-warning]", high: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
+const RISK_ROW: Record<PeerRiskLevel, RowSeverity> = { none: "success", low: "info", medium: "warning", high: "risk" };
+const RISK_TEXT: Record<PeerRiskLevel, string> = { none: "text-[--cs-success]", low: "text-[--cs-info]", medium: "text-[--cs-warning]", high: "text-[--cs-risk]" };
 
 const ATMOS_CLR: Record<PeerGroupAtmosphere, string> = {
   calm: "bg-[--cs-success-bg] text-[--cs-success]", mixed: "bg-[--cs-warning-bg] text-[--cs-warning]",
@@ -292,25 +295,25 @@ export default function PeerRelationshipsPage() {
       </div>
 
       {/* ── pair cards ─────────────────────────────────────────────── */}
-      <div className="space-y-4 mb-8">
+      <FlatList className="mb-8">
         {filtered.map((pd) => {
           const open = expanded[pd.id] ?? false;
           return (
-            <div key={pd.id} className="rounded-lg border bg-white">
-              <button onClick={() => toggle(pd.id)} className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50">
+            <div key={pd.id}>
+              <FlatListRow severity={RISK_ROW[pd.risk_level]} className="items-center justify-between" onClick={() => toggle(pd.id)} aria-expanded={open}>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold">{getYPName(pd.child_id_1)} ↔ {getYPName(pd.child_id_2)}</h3>
                     <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", QUALITY_CLR[pd.quality])}>{PEER_RELATIONSHIP_QUALITY_LABEL[pd.quality]}</span>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", RISK_CLR[pd.risk_level])}>Risk: {PEER_RISK_LEVEL_LABEL[pd.risk_level]}</span>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", RISK_TEXT[pd.risk_level])}>Risk: {PEER_RISK_LEVEL_LABEL[pd.risk_level]}</span>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">{pd.entries.length} entries · Review {pd.next_review_due}</p>
                 </div>
-                {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
-              </button>
+                {open ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
+              </FlatListRow>
 
               {open && (
-                <div className="border-t px-4 pb-4 space-y-4">
+                <FlatListRowDetail className="space-y-4">
                   {/* strengths / concerns */}
                   <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="rounded-md bg-[--cs-success-bg] p-3">
@@ -370,12 +373,12 @@ export default function PeerRelationshipsPage() {
                       <p className="text-sm text-pink-800">{pd.notes}</p>
                     </div>
                   )}
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       {/* ── regulatory note ────────────────────────────────────────── */}
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 mb-6">
