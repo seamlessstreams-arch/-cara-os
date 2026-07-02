@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName, STAFF, YOUNG_PEOPLE } from "@/lib/seed-data";
 import { useNotifiableEvents, useCreateNotifiableEvent } from "@/hooks/use-notifiable-events";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import type { NotifiableEventType, NotifiableStatus, NotifiableNotification, NotifiableEvent } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { toast } from "sonner";
@@ -411,11 +412,11 @@ const EVENT_LABELS: Record<NotifiableEventType, string> = {
 };
 
 const NOTIFICATION_STATUS = ["pending", "notified_within_24h", "notified_late", "not_required"] as const;
-const STATUS_COLORS: Record<NotifiableStatus, string> = {
-  pending: "bg-[--cs-risk-bg] text-[--cs-risk]",
-  notified_within_24h: "bg-[--cs-success-bg] text-[--cs-success]",
-  notified_late: "bg-orange-100 text-orange-800",
-  not_required: "bg-slate-100 text-[var(--cs-navy)]",
+const STATUS_ROW: Record<NotifiableStatus, RowSeverity> = {
+  pending: "risk", notified_within_24h: "success", notified_late: "warning", not_required: "neutral",
+};
+const STATUS_TEXT: Record<NotifiableStatus, string> = {
+  pending: "text-[--cs-risk]", notified_within_24h: "text-[--cs-success]", notified_late: "text-orange-700", not_required: "text-slate-600",
 };
 const STATUS_LABELS: Record<NotifiableStatus, string> = {
   pending: "Pending Notification",
@@ -583,23 +584,18 @@ export default function NotifiableEventsPage() {
             <span className="text-sm">Loading events…</span>
           </div>
         ) : (
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">No events match your filters.</div>
           )}
           {filtered.map((evt) => {
             const isExpanded = expanded === evt.id;
             return (
-              <div key={evt.id} className="rounded-xl border bg-white overflow-hidden">
-                <button
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
-                  onClick={() => setExpanded(isExpanded ? null : evt.id)}
-                >
+              <div key={evt.id}>
+                <FlatListRow severity={STATUS_ROW[evt.ofsted_status]} onClick={() => setExpanded(isExpanded ? null : evt.id)} aria-expanded={isExpanded}>
+                  <div className="flex items-center justify-between flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Shield className={cn("h-5 w-5 shrink-0",
-                      evt.ofsted_status === "pending" ? "text-[--cs-risk]" :
-                      evt.ofsted_status === "notified_late" ? "text-orange-600" : "text-[--cs-info]"
-                    )} />
+                    <Shield className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <div className="min-w-0">
                       <p className="font-medium truncate">{EVENT_LABELS[evt.event_type]}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -607,16 +603,17 @@ export default function NotifiableEventsPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge className={cn("text-xs", STATUS_COLORS[evt.ofsted_status])}>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[evt.ofsted_status])}>
                       {STATUS_LABELS[evt.ofsted_status]}
-                    </Badge>
-                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </span>
+                    {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </div>
-                </button>
+                  </div>
+                </FlatListRow>
 
                 {isExpanded && (
-                  <div className="border-t bg-slate-50 p-4 space-y-4">
+                  <FlatListRowDetail>
                     <div className="rounded-lg bg-white border p-3">
                       <p className="text-xs text-muted-foreground mb-1 font-medium">Summary</p>
                       <p className="text-sm">{evt.summary}</p>
@@ -678,12 +675,12 @@ export default function NotifiableEventsPage() {
                     </div>
 
                     {evt.child_id && <SmartLinkPanel sourceType="notifiable_event" sourceId={evt.id} childId={evt.child_id} compact />}
-                  </div>
+                  </FlatListRowDetail>
                 )}
               </div>
             );
           })}
-        </div>
+        </FlatList>
         )}
 
         {/* ── reg note ──────────────────────────────────────────── */}
