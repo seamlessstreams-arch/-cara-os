@@ -47,9 +47,9 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 /* ── colour / border maps (kept local) ────────────────────────────────────── */
 
 const CONTEXT_CLR: Record<ContextualContextType, string> = { location: "bg-blue-100 text-blue-800", peer_group: "bg-purple-100 text-purple-800", online_space: "bg-indigo-100 text-indigo-800", transport_route: "bg-amber-100 text-amber-800", school: "bg-green-100 text-green-800", community_facility: "bg-teal-100 text-teal-800" };
-const RISK_CLR: Record<ContextualRiskLevel, string> = { low: "bg-green-100 text-green-800", medium: "bg-yellow-100 text-yellow-800", high: "bg-orange-100 text-orange-800", very_high: "bg-red-100 text-red-800" };
-const STATUS_CLR: Record<ContextualSafeguardingStatus, string> = { active: "bg-red-100 text-red-800", monitoring: "bg-amber-100 text-amber-800", resolved: "bg-green-100 text-green-800", escalated: "bg-purple-100 text-purple-800" };
-const BORDER_RISK: Record<ContextualRiskLevel, string> = { low: "border-l-green-400", medium: "border-l-yellow-400", high: "border-l-orange-500", very_high: "border-l-red-600" };
+const RISK_CLR: Record<ContextualRiskLevel, string> = { low: "bg-[--cs-success-bg] text-[--cs-success]", medium: "bg-yellow-100 text-yellow-800", high: "bg-orange-100 text-orange-800", very_high: "bg-[--cs-risk-bg] text-[--cs-risk]" };
+const STATUS_CLR: Record<ContextualSafeguardingStatus, string> = { active: "bg-[--cs-risk-bg] text-[--cs-risk]", monitoring: "bg-[--cs-warning-bg] text-[--cs-warning]", resolved: "bg-[--cs-success-bg] text-[--cs-success]", escalated: "bg-purple-100 text-purple-800" };
+const BORDER_RISK: Record<ContextualRiskLevel, string> = { low: "border-l-[--cs-success]", medium: "border-l-yellow-400", high: "border-l-orange-500", very_high: "border-l-[--cs-risk]" };
 
 /* ── empty form state ─────────────────────────────────────────────────────── */
 
@@ -167,9 +167,9 @@ export default function ContextualSafeguardingPage() {
         </div>
 
         {highVeryHigh > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="text-sm"><p className="font-semibold text-red-800">{highVeryHigh} high/very high contextual risk(s) active</p><p className="text-red-700">These locations or contexts pose significant risks to young people. Staff must be aware and follow protective measures.</p></div>
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
+            <div className="text-sm"><p className="font-semibold text-[--cs-risk]">{highVeryHigh} high/very high contextual risk(s) active</p><p className="text-[--cs-risk]">These locations or contexts pose significant risks to young people. Staff must be aware and follow protective measures.</p></div>
           </div>
         )}
 
@@ -203,8 +203,8 @@ export default function ContextualSafeguardingPage() {
                 {open && (
                   <CardContent className="pt-0 space-y-4 text-sm">
                     <div><p className="font-medium mb-1">Description</p><p className="text-muted-foreground">{r.description}</p></div>
-                    <div className="bg-red-50 rounded-lg p-3"><p className="font-medium text-red-800 mb-2">Risk Factors</p><ul className="space-y-1">{r.risk_factors.map((rf, i) => (<li key={i} className="text-xs text-red-700 flex items-start gap-1"><AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" /> {rf}</li>))}</ul></div>
-                    <div className="bg-green-50 rounded-lg p-3"><p className="font-medium text-green-800 mb-2">Protective Actions</p><ul className="space-y-1">{r.protective_actions.map((pa, i) => (<li key={i} className="text-xs text-green-700 flex items-start gap-1"><CheckCircle2 className="h-3 w-3 shrink-0 mt-0.5" /> {pa}</li>))}</ul></div>
+                    <div className="bg-[--cs-risk-bg] rounded-lg p-3"><p className="font-medium text-[--cs-risk] mb-2">Risk Factors</p><ul className="space-y-1">{r.risk_factors.map((rf, i) => (<li key={i} className="text-xs text-[--cs-risk] flex items-start gap-1"><AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" /> {rf}</li>))}</ul></div>
+                    <div className="bg-[--cs-success-bg] rounded-lg p-3"><p className="font-medium text-[--cs-success] mb-2">Protective Actions</p><ul className="space-y-1">{r.protective_actions.map((pa, i) => (<li key={i} className="text-xs text-[--cs-success] flex items-start gap-1"><CheckCircle2 className="h-3 w-3 shrink-0 mt-0.5" /> {pa}</li>))}</ul></div>
                     <div className="bg-indigo-50 rounded-lg p-3"><p className="font-medium text-indigo-800 mb-2">Multi-Agency Actions</p><ul className="space-y-1">{r.multi_agency_actions.map((ma, i) => (<li key={i} className="text-xs text-indigo-700 flex items-start gap-1"><Shield className="h-3 w-3 shrink-0 mt-0.5" /> {ma}</li>))}</ul></div>
                     {r.police_intelligence && <div className="bg-amber-50 rounded-lg p-3"><p className="font-medium text-amber-800 mb-1">Police Intelligence</p><p className="text-amber-700 text-xs">{r.police_intelligence}</p></div>}
                     <div><p className="font-medium mb-1">Community Mapping</p><p className="text-muted-foreground text-xs">{r.community_mapping}</p></div>
