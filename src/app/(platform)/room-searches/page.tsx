@@ -23,6 +23,7 @@ import {
 import { cn }                          from "@/lib/utils";
 import { getStaffName, getYPName }     from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { useRoomSearchRecords, useCreateRoomSearchRecord } from "@/hooks/use-room-search-records";
 import { toast } from "sonner";
 import { YOUNG_PEOPLE } from "@/lib/seed-data";
@@ -54,6 +55,13 @@ const STATUS_META: Record<RoomSearchStatus, { colour: string }> = {
   follow_up_required: { colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   escalated:          { colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
   closed:             { colour: "bg-gray-100 text-gray-700" },
+};
+
+const STATUS_ROW: Record<RoomSearchStatus, RowSeverity> = {
+  completed: "success", follow_up_required: "warning", escalated: "risk", closed: "neutral",
+};
+const STATUS_TEXT: Record<RoomSearchStatus, string> = {
+  completed: "text-[--cs-success]", follow_up_required: "text-[--cs-warning]", escalated: "text-[--cs-risk]", closed: "text-gray-600",
 };
 
 const DISTRESS_META: Record<RoomSearchDistressLevel, { colour: string }> = {
@@ -318,39 +326,39 @@ export default function RoomSearchesPage() {
           </div>
         </div>
 
+        <FlatList>
         {filtered.map((rs) => {
           const isOpen = expanded === rs.id;
           const today = d(0);
 
           return (
-            <div key={rs.id} className="rounded-lg border bg-white overflow-hidden">
-              <button
-                onClick={() => setExpanded(isOpen ? null : rs.id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50"
-              >
-                <div className="flex items-center gap-3">
-                  <Eye className="h-5 w-5 text-brand" />
-                  <div className="text-left">
+            <div key={rs.id}>
+              <FlatListRow severity={STATUS_ROW[rs.status]} onClick={() => setExpanded(isOpen ? null : rs.id)} aria-expanded={isOpen}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Eye className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="text-left min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{getYPName(rs.child_id)}</h3>
                       <span className="text-sm text-muted-foreground">{rs.date} at {rs.time}</span>
                       <Badge className={cn("text-xs", TYPE_COLOUR[rs.search_type])}>
                         {ROOM_SEARCH_TYPE_LABEL[rs.search_type]}
                       </Badge>
-                      <Badge className={cn("text-xs", STATUS_META[rs.status].colour)}>
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[rs.status])}>
                         {ROOM_SEARCH_STATUS_LABEL[rs.status]}
-                      </Badge>
+                      </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Conducted by {getStaffName(rs.conducted_by)} &middot; Witnessed by {getStaffName(rs.witnessed_by)}
                     </p>
                   </div>
                 </div>
-                {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-              </button>
+                {isOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
+                </div>
+              </FlatListRow>
 
               {isOpen && (
-                <div className="border-t p-4 space-y-4">
+                <FlatListRowDetail>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div><span className="text-muted-foreground">Conducted by:</span> {getStaffName(rs.conducted_by)}</div>
                     <div><span className="text-muted-foreground">Witnessed by:</span> {getStaffName(rs.witnessed_by)}</div>
@@ -516,17 +524,18 @@ export default function RoomSearchesPage() {
                   )}
 
                   <SmartLinkPanel sourceType="room-search" sourceId={rs.id} childId={rs.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border bg-white p-8 text-center text-sm text-muted-foreground">
+          <div className="p-8 text-center text-sm text-muted-foreground">
             No room searches match your filters.
           </div>
         )}
+        </FlatList>
 
         <div className="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
           <strong>Regulation 19 / Safeguarding / Data Protection</strong> — Room searches must
