@@ -32,6 +32,7 @@ import { HEALTH_ASSESSMENT_TYPE_LABEL, HEALTH_ASSESSMENT_STATUS_LABEL, SDQ_BAND_
 import { useHealthAssessments, useCreateHealthAssessment } from "@/hooks/use-health-assessments";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 
 /* ── constants ─────────────────────────────────────────────────────────── */
 
@@ -44,6 +45,13 @@ const STATUS_META: Record<HealthAssessmentStatus, { label: string; colour: strin
 
 const SDQ_BAND_COLOUR: Record<SdqBand, string> = {
   normal: "bg-[--cs-success-bg] text-[--cs-success]", borderline: "bg-[--cs-warning-bg] text-[--cs-warning]", abnormal: "bg-[--cs-risk-bg] text-[--cs-risk]",
+};
+
+const STATUS_ROW: Record<HealthAssessmentStatus, RowSeverity> = {
+  completed: "success", scheduled: "info", overdue: "risk", referred: "warning",
+};
+const STATUS_TEXT: Record<HealthAssessmentStatus, string> = {
+  completed: "text-[--cs-success]", scheduled: "text-[--cs-info]", overdue: "text-[--cs-risk]", referred: "text-[--cs-warning]",
 };
 
 /* ── component ─────────────────────────────────────────────────────────── */
@@ -212,26 +220,29 @@ export default function HealthAssessmentsPage() {
           </div>
         </div>
 
+        <FlatList>
         {filtered.map((assessment) => (
-          <div key={assessment.id} className={cn("rounded-lg border bg-white overflow-hidden", assessment.status === "overdue" ? "border-l-4 border-l-red-400" : "")}>
-            <button onClick={() => setExpanded(expanded === assessment.id ? null : assessment.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <Stethoscope className="h-5 w-5 text-brand" />
-                <div className="text-left">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{getYPName(assessment.child_id)}</h3>
-                    <span className="text-sm text-muted-foreground">— {HEALTH_ASSESSMENT_TYPE_LABEL[assessment.type]}</span>
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_META[assessment.status].colour)}>{STATUS_META[assessment.status].label}</span>
-                    {assessment.sdq_scores && <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", SDQ_BAND_COLOUR[assessment.sdq_scores.band])}>SDQ: {assessment.sdq_scores.total} ({SDQ_BAND_LABEL[assessment.sdq_scores.band]})</span>}
+          <div key={assessment.id}>
+            <FlatListRow severity={STATUS_ROW[assessment.status]} onClick={() => setExpanded(expanded === assessment.id ? null : assessment.id)} aria-expanded={expanded === assessment.id}>
+              <div className="flex items-center justify-between flex-1 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Stethoscope className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="text-left min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold">{getYPName(assessment.child_id)}</h3>
+                      <span className="text-sm text-muted-foreground">— {HEALTH_ASSESSMENT_TYPE_LABEL[assessment.type]}</span>
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[assessment.status])}>{STATUS_META[assessment.status].label}</span>
+                      {assessment.sdq_scores && <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", SDQ_BAND_COLOUR[assessment.sdq_scores.band])}>SDQ: {assessment.sdq_scores.total} ({SDQ_BAND_LABEL[assessment.sdq_scores.band]})</span>}
+                    </div>
+                    <p className="text-xs text-muted-foreground">{assessment.date} · {assessment.conducted_by} · Next due: {assessment.next_due}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">{assessment.date} · {assessment.conducted_by} · Next due: {assessment.next_due}</p>
                 </div>
+                {expanded === assessment.id ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
               </div>
-              {expanded === assessment.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-            </button>
+            </FlatListRow>
 
             {expanded === assessment.id && (
-              <div className="border-t p-4 space-y-4">
+              <FlatListRowDetail>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   <div><span className="text-muted-foreground">Location:</span> {assessment.location}</div>
                   <div><span className="text-muted-foreground">Conducted By:</span> {assessment.conducted_by}</div>
@@ -319,10 +330,11 @@ export default function HealthAssessmentsPage() {
                 )}
 
                 <SmartLinkPanel sourceType="health-assessments" sourceId={assessment.id} childId={assessment.child_id} compact />
-              </div>
+              </FlatListRowDetail>
             )}
           </div>
         ))}
+        </FlatList>
 
         <div className="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
           <strong>Promoting the Health of Looked After Children (2015) / Reg 10</strong> — Every looked-after child must receive an Initial Health Assessment within 20 working days of becoming looked after, and Review Health Assessments annually (6-monthly for under-5s). The SDQ must be completed alongside health assessments to monitor emotional wellbeing.

@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { useLACReviews, useCreateLACReview } from "@/hooks/use-lac-reviews";
@@ -41,6 +42,16 @@ const OUTCOME_META: Record<LACReviewOutcome, { label: string; color: string }> =
   actions_agreed:      { label: "Actions Agreed",       color: "bg-[--cs-info-bg] text-[--cs-info]" },
   return_home:         { label: "Return Home Plan",     color: "bg-purple-100 text-purple-700" },
 };
+
+const OUTCOME_TEXT: Record<LACReviewOutcome, string> = {
+  placement_continues: "text-[--cs-success]",
+  placement_change:    "text-[--cs-risk]",
+  care_plan_amended:   "text-[--cs-warning]",
+  actions_agreed:      "text-[--cs-info]",
+  return_home:         "text-purple-700",
+};
+
+const STABILITY_ROW: Record<string, RowSeverity> = { stable: "success", some_concerns: "warning" };
 
 const PARTICIPATION_META: Record<string, string> = {
   attended:           "Attended in person",
@@ -204,7 +215,7 @@ export default function LACReviewsPage() {
         </div>
 
         {/* ── Review list ──────────────────────────────────────────────────── */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No reviews match your filters.</p>}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
@@ -212,14 +223,14 @@ export default function LACReviewsPage() {
             const outcomeM = OUTCOME_META[r.outcome];
             const pendingActions = r.actions_agreed.filter((a) => !a.completed).length;
             return (
-              <Card key={r.id} className={cn("border-l-4", r.placement_stability === "stable" ? "border-l-green-500" : r.placement_stability === "some_concerns" ? "border-l-amber-400" : "border-l-red-500")}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(r.id)}>
+              <div key={r.id}>
+                <FlatListRow severity={STABILITY_ROW[r.placement_stability] ?? "risk"} onClick={() => toggle(r.id)} aria-expanded={open}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <Badge className={cn("text-xs", typeM.color)}>{typeM.label}</Badge>
-                        <Badge className={cn("text-xs", outcomeM.color)}>{outcomeM.label}</Badge>
-                        {pendingActions > 0 && <Badge variant="outline" className="text-xs text-amber-600 border-amber-300">{pendingActions} pending</Badge>}
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", OUTCOME_TEXT[r.outcome])}>{outcomeM.label}</span>
+                        {pendingActions > 0 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">{pendingActions} pending</span>}
                       </div>
                       <p className="font-semibold">{getYPName(r.child_id)} — LAC Review</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
@@ -229,11 +240,12 @@ export default function LACReviewsPage() {
                         <span>{PARTICIPATION_META[r.child_participation]}</span>
                       </div>
                     </div>
-                    {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
+                    {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />}
                   </div>
+                </FlatListRow>
 
-                  {open && (
-                    <div className="mt-4 space-y-4 border-t pt-3 text-sm">
+                {open && (
+                  <FlatListRowDetail className="text-sm">
                       {/* Attendees */}
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Attendees</p>
@@ -296,13 +308,12 @@ export default function LACReviewsPage() {
                         </div>
                       )}
                       <SmartLinkPanel sourceType="lac_review" sourceId={r.id} childId={r.child_id} compact />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </FlatListRowDetail>
+                )}
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── Guidance ─────────────────────────────────────────────────────── */}
         <Card className="bg-muted/40">
