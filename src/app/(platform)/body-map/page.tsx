@@ -78,8 +78,8 @@ const COLOUR_LABELS: Record<MarkColour, string> = {
 
 const STATUS_CONFIG: Record<BodyMapStatus, { label: string; colour: string }> = {
   draft:              { label: "Draft",              colour: "bg-yellow-100 text-yellow-700" },
-  completed:          { label: "Completed",          colour: "bg-blue-100 text-blue-700"     },
-  reviewed:           { label: "Reviewed",           colour: "bg-green-100 text-green-700"   },
+  completed:          { label: "Completed",          colour: "bg-[--cs-info-bg] text-[--cs-info]"     },
+  reviewed:           { label: "Reviewed",           colour: "bg-[--cs-success-bg] text-[--cs-success]"   },
   linked_to_incident: { label: "Linked to Incident", colour: "bg-purple-100 text-purple-700" },
 };
 
@@ -272,9 +272,9 @@ export default function BodyMapPage() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
           { label: "Total Records", value: stats.total, icon: FileText, colour: "text-blue-600" },
-          { label: "Needs Review",  value: stats.needsReview, icon: Eye, colour: "text-amber-600" },
+          { label: "Needs Review",  value: stats.needsReview, icon: Eye, colour: "text-[--cs-warning]" },
           { label: "Linked to PI",  value: stats.linked, icon: Link2, colour: "text-purple-600" },
-          { label: "Reviewed",      value: stats.reviewed, icon: CheckCircle2, colour: "text-green-600" },
+          { label: "Reviewed",      value: stats.reviewed, icon: CheckCircle2, colour: "text-[--cs-success]" },
           { label: "This Month",    value: stats.thisMonth, icon: Calendar, colour: "text-indigo-600" },
         ].map(s => (
           <div key={s.label} className="rounded-lg border bg-card p-3 flex items-center gap-3">
@@ -289,13 +289,13 @@ export default function BodyMapPage() {
 
       {/* ── Review Alert ─────────────────────────────────────────────────────── */}
       {stats.needsReview > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-950/30 p-3 mb-6 flex items-center gap-3">
-          <Eye className="h-5 w-5 text-amber-600 shrink-0" />
+        <div className="rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-3 mb-6 flex items-center gap-3">
+          <Eye className="h-5 w-5 text-[--cs-warning] shrink-0" />
           <div>
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+            <p className="text-sm font-medium text-[--cs-warning]">
               {stats.needsReview} body map {stats.needsReview === 1 ? "record requires" : "records require"} management review
             </p>
-            <p className="text-xs text-amber-600 dark:text-amber-400">
+            <p className="text-xs text-[--cs-warning]">
               All body map entries must be reviewed by the Registered Manager or deputy.
             </p>
           </div>
@@ -311,7 +311,7 @@ export default function BodyMapPage() {
               <div className="flex items-center justify-between mb-1">
                 <p className="font-medium text-sm">{getYPName(cid)}</p>
                 {s.unreviewed > 0 && (
-                  <Badge variant="outline" className="bg-amber-50 text-amber-700 text-xs">
+                  <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning] text-xs">
                     {s.unreviewed} unreviewed
                   </Badge>
                 )}
@@ -505,7 +505,7 @@ export default function BodyMapPage() {
                     </div>
                     {entry.reviewed_by && (
                       <div className="flex items-center gap-1.5 text-muted-foreground">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />
                         Reviewed by: <span className="font-medium text-foreground">{getStaffName(entry.reviewed_by)}</span>
                       </div>
                     )}
