@@ -6,7 +6,8 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,15 +33,15 @@ const CHECK_TYPE_CLR: Record<StockCheckType, string> = {
   monthly_audit: "bg-purple-100 text-purple-800",
 };
 
-const STATUS_CLR: Record<StockCheckStatus, string> = {
-  balanced: "bg-[--cs-success-bg] text-[--cs-success]",
-  discrepancy: "bg-[--cs-risk-bg] text-[--cs-risk]",
-  action_required: "bg-[--cs-warning-bg] text-[--cs-warning]",
+const STATUS_ROW: Record<StockCheckStatus, RowSeverity> = {
+  balanced: "success",
+  discrepancy: "risk",
+  action_required: "warning",
 };
-const BORDER_STATUS: Record<StockCheckStatus, string> = {
-  balanced: "border-l-[--cs-success]",
-  discrepancy: "border-l-[--cs-risk]",
-  action_required: "border-l-[--cs-warning]",
+const STATUS_TEXT: Record<StockCheckStatus, string> = {
+  balanced: "text-[--cs-success]",
+  discrepancy: "text-[--cs-risk]",
+  action_required: "text-[--cs-warning]",
 };
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
@@ -242,7 +243,7 @@ export default function MedicationStockCheckPage() {
           </select>
         </div>
 
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map((r) => {
             const open = expanded[r.id];
             const discrepancyCount = r.items.filter((i: StockCheckItem) => i.discrepancy).length;
@@ -251,31 +252,31 @@ export default function MedicationStockCheckPage() {
             );
 
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_STATUS[r.status])}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
+              <div key={r.id}>
+                <FlatListRow severity={STATUS_ROW[r.status]} onClick={() => toggle(r.id)} aria-expanded={!!open}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
                         {r.date}
                         <Badge variant="outline" className={CHECK_TYPE_CLR[r.check_type]}>
                           {STOCK_CHECK_TYPE_LABEL[r.check_type]}
                         </Badge>
-                        <Badge variant="outline" className={STATUS_CLR[r.status]}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[r.status])}>
                           {STOCK_CHECK_STATUS_LABEL[r.status]}
-                        </Badge>
-                      </CardTitle>
+                        </span>
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         Checked by {getStaffName(r.checked_by)} · Witnessed by {getStaffName(r.witnessed_by)} · {r.items.length} items
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       {discrepancyCount > 0 && (
-                        <Badge variant="destructive">{discrepancyCount} discrepancy</Badge>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">{discrepancyCount} discrepancy</span>
                       )}
                       {itemExpiryWarnings.length > 0 && (
-                        <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning]">
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">
                           {itemExpiryWarnings.length} expiry warning
-                        </Badge>
+                        </span>
                       )}
                       {open ? (
                         <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -284,10 +285,10 @@ export default function MedicationStockCheckPage() {
                       )}
                     </div>
                   </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {open && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     <div className="overflow-x-auto">
                       <table className="w-full text-sm">
                         <thead>
@@ -374,12 +375,12 @@ export default function MedicationStockCheckPage() {
                       <span>Checked by: {getStaffName(r.checked_by)} · Witnessed: {getStaffName(r.witnessed_by)}</span>
                       <span>{r.date}</span>
                     </div>
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
           <p className="font-semibold mb-1">Regulatory Framework</p>
