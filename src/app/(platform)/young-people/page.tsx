@@ -3,8 +3,8 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ProfileCard } from "@/components/ui/profile-card";
 import { Avatar } from "@/components/ui/avatar";
 import {
   AlertTriangle, User, Shield, Calendar, GraduationCap,
@@ -392,15 +392,13 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
   const hasRisk = (yp.risk_flags?.length ?? 0) > 0;
 
   return (
-    <Card
-      className={cn(
-        "hover:shadow-lg transition-all cursor-pointer group",
-        hasRisk && "ring-1 ring-amber-200",
-        isExpanded && "lg:col-span-3 ring-2 ring-blue-200 shadow-lg",
-      )}
+    <ProfileCard
+      severity={hasRisk ? "warning" : "neutral"}
+      className={cn("group", isExpanded && "lg:col-span-3")}
       onClick={onToggleExpand}
+      aria-expanded={isExpanded}
     >
-      <CardContent className="p-6">
+      <div className="p-6">
         {/* Header */}
         <div className="flex items-center gap-4 mb-4">
           <Avatar name={displayName} size="lg" />
@@ -419,24 +417,18 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
             >
               {yp.status}
             </Badge>
-            {hasRisk && (
-              <Badge variant="warning" className="rounded-full text-[9px] gap-0.5">
-                <AlertTriangle className="h-2.5 w-2.5" />
-                Risk
-              </Badge>
-            )}
             <YPIntelligenceScore childId={yp.id} />
           </div>
         </div>
 
         {/* Risk flags */}
         {hasRisk && (
-          <div className="flex flex-wrap gap-1 mb-3">
+          <div className="flex flex-wrap gap-x-2 gap-y-1 mb-3">
             {(yp.risk_flags ?? []).map((flag) => (
-              <Badge key={flag} variant="warning" className="text-[9px] rounded-full gap-0.5 px-2 py-0.5">
+              <span key={flag} className="inline-flex items-center gap-0.5 text-[10px] font-semibold uppercase tracking-wide text-[--cs-warning]">
                 <AlertTriangle className="h-2.5 w-2.5 shrink-0" />
                 {flag}
-              </Badge>
+              </span>
             ))}
           </div>
         )}
@@ -635,8 +627,8 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
             Collapse
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </ProfileCard>
   );
 }
 
