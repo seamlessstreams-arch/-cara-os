@@ -6,8 +6,9 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -27,13 +28,6 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const PROVISION_CLR: Record<EduProvision, string> = {
-  school: "bg-blue-100 text-blue-800",
-  college: "bg-indigo-100 text-indigo-800",
-  pru: "bg-amber-100 text-amber-800",
-  ap: "bg-purple-100 text-purple-800",
-  eotas: "bg-orange-100 text-orange-800",
-};
 
 const CODE_CLR: Record<EduAttendanceCode, string> = {
   "/": "bg-[--cs-success-bg] text-[--cs-success]",
@@ -59,16 +53,16 @@ const CODE_OPTIONS: { code: EduAttendanceCode; meaning: string }[] = [
   { code: "N", meaning: "Reason not yet provided" },
 ];
 
-const BORDER_CODE: Record<EduAttendanceCode, string> = {
-  "/": "border-l-[--cs-success]",
-  "\\": "border-l-[--cs-success]",
-  "L": "border-l-[--cs-warning]",
-  "I": "border-l-blue-400",
-  "M": "border-l-blue-400",
-  "E": "border-l-purple-500",
-  "O": "border-l-[--cs-risk]",
-  "U": "border-l-[--cs-risk]",
-  "N": "border-l-[--cs-risk]",
+const CODE_ROW: Record<EduAttendanceCode, RowSeverity> = {
+  "/": "success",
+  "\\": "success",
+  "L": "warning",
+  "I": "info",
+  "M": "info",
+  "E": "neutral",
+  "O": "risk",
+  "U": "risk",
+  "N": "risk",
 };
 
 const PRESENT_CODES: EduAttendanceCode[] = ["/", "\\", "L"];
@@ -292,27 +286,26 @@ export default function EducationAttendanceTrackerPage() {
         </div>
 
         {/* ── records ──────────────────────────────────────────────────────── */}
-        <div className="space-y-3">
+        <FlatList className={cn(filtered.length === 0 && "hidden")}>
           {filtered.map((r) => {
             const open = expandedId === r.id;
             const isUnauth = UNAUTH_CODES.includes(r.attendance_code);
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_CODE[r.attendance_code])}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
-                  <div className="flex items-start justify-between">
+              <div key={r.id}>
+                <FlatListRow severity={CODE_ROW[r.attendance_code]} className="justify-between" onClick={() => toggle(r.id)} aria-expanded={open}>
                     <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                      <div className="text-base font-semibold flex items-center gap-2 flex-wrap">
                         {getYPName(r.child_id)} — {r.date}
                         <Badge variant="outline" className={CODE_CLR[r.attendance_code]}>
                           {r.attendance_code} — {r.code_meaning}
                         </Badge>
-                        <Badge variant="outline" className={PROVISION_CLR[r.provision]}>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                           {EDU_PROVISION_LABEL[r.provision]}
-                        </Badge>
+                        </span>
                         {isUnauth && (
-                          <Badge variant="outline" className="bg-[--cs-risk-bg] text-[--cs-risk]">Unauthorised</Badge>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Unauthorised</span>
                         )}
-                      </CardTitle>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {EDU_SESSION_LABEL[r.session]}
                         {r.arrival_time && ` · Arrived ${r.arrival_time}`}
@@ -320,16 +313,15 @@ export default function EducationAttendanceTrackerPage() {
                         {" · Recorded by "}{getStaffName(r.recorded_by)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       {r.authorised_absence && (
-                        <Badge variant="outline" className="bg-blue-100 text-blue-800">Authorised</Badge>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Authorised</span>
                       )}
                       {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
-                  </div>
-                </CardHeader>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="space-y-4 text-sm">
                     {/* session detail */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="bg-muted/40 rounded p-2">
@@ -396,12 +388,12 @@ export default function EducationAttendanceTrackerPage() {
 
                     {/* smart link panel */}
                     <SmartLinkPanel sourceType="edu_attendance" sourceId={r.id} childId={r.child_id} compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── regulatory note ────────────────────────────────────────────── */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
