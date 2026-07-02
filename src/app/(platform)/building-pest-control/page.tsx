@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -188,27 +189,27 @@ export default function BuildingPestControlPage() {
         </Select>
       </div>
 
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((r) => {
           const isOpen = expandedId === r.id;
           const followUpSoon = r.follow_up_required && r.follow_up_date && r.follow_up_date >= today && r.follow_up_date <= thirtyDaysFromNow;
           const followUpOverdue = r.follow_up_required && r.follow_up_date && r.follow_up_date < today;
           return (
-            <div key={r.id} className="rounded-lg border border-[var(--cs-border)] bg-white overflow-hidden">
-              <button onClick={() => setExpandedId(isOpen ? null : r.id)} className="w-full p-4 flex items-start justify-between gap-3 hover:bg-[--cs-warning-bg] text-left">
+            <div key={r.id}>
+              <FlatListRow severity={followUpOverdue ? "risk" : followUpSoon ? "warning" : "neutral"} onClick={() => setExpandedId(isOpen ? null : r.id)} className="items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <Bug className="h-4 w-4 text-[--cs-warning]" />
+                    <Bug className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="font-semibold text-[var(--cs-navy)]">{r.record_date}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", typeColour[r.record_type])}>{PEST_RECORD_TYPE_LABEL[r.record_type]}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", pestColour[r.pest_category])}>{PEST_CATEGORY_LABEL[r.pest_category]}</span>
                     {r.follow_up_required ? (
                       followUpOverdue ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]">Follow-up overdue · {r.follow_up_date}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Follow-up overdue · {r.follow_up_date}</span>
                       ) : followUpSoon ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">Follow-up {r.follow_up_date}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Follow-up {r.follow_up_date}</span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-sky-100 text-sky-800 border-sky-200">Follow-up {r.follow_up_date}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-sky-700">Follow-up {r.follow_up_date}</span>
                       )
                     ) : null}
                   </div>
@@ -216,11 +217,11 @@ export default function BuildingPestControlPage() {
                     {r.affected_areas.slice(0, 2).join(" · ")}{r.affected_areas.length > 2 ? ` · +${r.affected_areas.length - 2} more` : ""} · {r.contractor}
                   </div>
                 </div>
-                {isOpen ? <ChevronUp className="h-5 w-5 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)]" />}
-              </button>
+                {isOpen ? <ChevronUp className="h-5 w-5 text-[var(--cs-text-muted)] shrink-0" /> : <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)] shrink-0" />}
+              </FlatListRow>
               {isOpen && (
-                <div className="px-4 pb-4 border-t border-[var(--cs-border-subtle)] bg-[--cs-warning-bg]">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
+                <FlatListRowDetail>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Affected areas</div>
                       <ul className="text-sm text-[var(--cs-text-secondary)] space-y-1">{r.affected_areas.map((a, i) => (<li key={i} className="flex gap-2"><span className="text-[--cs-warning]">·</span><span>{a}</span></li>))}</ul>
@@ -278,12 +279,12 @@ export default function BuildingPestControlPage() {
                       Recorded by {getStaffName(r.recorded_by)}
                     </div>
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-6 rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4 text-sm text-[--cs-warning]">
         <div className="font-semibold mb-1">Regulatory framework</div>
