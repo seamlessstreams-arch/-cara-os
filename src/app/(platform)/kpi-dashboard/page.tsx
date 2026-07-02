@@ -31,14 +31,14 @@ const CATEGORY_ICON: Record<KpiCategory, React.ReactNode> = {
 };
 
 const RAG_META: Record<KpiRag, { dotColor: string; bgColor: string; textColor: string }> = {
-  green: { dotColor: "bg-green-500", bgColor: "bg-green-50",  textColor: "text-green-700" },
-  amber: { dotColor: "bg-amber-500", bgColor: "bg-amber-50",  textColor: "text-amber-700" },
-  red:   { dotColor: "bg-red-500",   bgColor: "bg-red-50",    textColor: "text-red-700" },
+  green: { dotColor: "bg-[--cs-success]", bgColor: "bg-[--cs-success-bg]",  textColor: "text-[--cs-success]" },
+  amber: { dotColor: "bg-[--cs-warning]", bgColor: "bg-[--cs-warning-bg]",  textColor: "text-[--cs-warning]" },
+  red:   { dotColor: "bg-[--cs-risk]",   bgColor: "bg-[--cs-risk-bg]",    textColor: "text-[--cs-risk]" },
 };
 
 const TREND_ICON: Record<KpiTrend, React.ReactNode> = {
-  up:     <TrendingUp className="h-3.5 w-3.5 text-green-600" />,
-  down:   <TrendingDown className="h-3.5 w-3.5 text-red-600" />,
+  up:     <TrendingUp className="h-3.5 w-3.5 text-[--cs-success]" />,
+  down:   <TrendingDown className="h-3.5 w-3.5 text-[--cs-risk]" />,
   stable: <Minus className="h-3.5 w-3.5 text-muted-foreground" />,
 };
 
@@ -105,7 +105,7 @@ export default function KPIDashboardPage() {
         {/* Overall RAG Rating */}
         <Card className={cn(
           "border-l-4",
-          summary.overall === "green" ? "border-l-green-500" : summary.overall === "amber" ? "border-l-amber-500" : "border-l-red-500",
+          summary.overall === "green" ? "border-l-[--cs-success]" : summary.overall === "amber" ? "border-l-[--cs-warning]" : "border-l-[--cs-risk]",
         )}>
           <CardContent className="p-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -115,11 +115,11 @@ export default function KPIDashboardPage() {
                   RAG_META[summary.overall].bgColor,
                 )}>
                   {summary.overall === "green" ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600" />
+                    <CheckCircle2 className="h-5 w-5 text-[--cs-success]" />
                   ) : summary.overall === "amber" ? (
-                    <AlertTriangle className="h-5 w-5 text-amber-600" />
+                    <AlertTriangle className="h-5 w-5 text-[--cs-warning]" />
                   ) : (
-                    <XCircle className="h-5 w-5 text-red-600" />
+                    <XCircle className="h-5 w-5 text-[--cs-risk]" />
                   )}
                 </div>
                 <div>
@@ -131,17 +131,17 @@ export default function KPIDashboardPage() {
               </div>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-full bg-green-500" />
+                  <span className="h-3 w-3 rounded-full bg-[--cs-success]" />
                   <span className="text-sm font-semibold">{summary.green}</span>
                   <span className="text-xs text-muted-foreground">Green</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-full bg-amber-500" />
+                  <span className="h-3 w-3 rounded-full bg-[--cs-warning]" />
                   <span className="text-sm font-semibold">{summary.amber}</span>
                   <span className="text-xs text-muted-foreground">Amber</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-3 w-3 rounded-full bg-red-500" />
+                  <span className="h-3 w-3 rounded-full bg-[--cs-risk]" />
                   <span className="text-sm font-semibold">{summary.red}</span>
                   <span className="text-xs text-muted-foreground">Red</span>
                 </div>
