@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import type { PositiveHandlingPlan, PHPDeEscalation, PHPPhysicalResponse } from "@/types/extended";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -124,19 +125,17 @@ export default function PositiveHandlingPage() {
         </div>
 
         {/* ── plans ─────────────────────────────────────────────── */}
-        <div className="space-y-3">
+        <FlatList>
           {plans.map((plan) => {
             const isExpanded = expanded === plan.id;
             const overdue = plan.next_review < today;
 
             return (
-              <div key={plan.id} className="rounded-xl border bg-white overflow-hidden">
-                <button
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
-                  onClick={() => setExpanded(isExpanded ? null : plan.id)}
-                >
+              <div key={plan.id}>
+                <FlatListRow severity={overdue ? "warning" : "neutral"} onClick={() => setExpanded(isExpanded ? null : plan.id)} aria-expanded={isExpanded}>
+                  <div className="flex items-center justify-between flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <HandMetal className="h-5 w-5 text-[--cs-info] shrink-0" />
+                    <HandMetal className="h-5 w-5 text-muted-foreground shrink-0" />
                     <div className="min-w-0">
                       <p className="font-medium">{getYPName(plan.child_id)}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
@@ -144,14 +143,15 @@ export default function PositiveHandlingPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {overdue && <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">Review Due</Badge>}
-                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {overdue && <span className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">Review Due</span>}
+                    {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </div>
-                </button>
+                  </div>
+                </FlatListRow>
 
                 {isExpanded && (
-                  <div className="border-t bg-slate-50 p-4 space-y-4">
+                  <FlatListRowDetail>
                     {/* triggers */}
                     <div className="rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
                       <p className="text-xs font-medium text-[--cs-risk] mb-2">Known Triggers</p>
@@ -279,12 +279,12 @@ export default function PositiveHandlingPage() {
                       childId={plan.child_id}
                       compact
                     />
-                  </div>
+                  </FlatListRowDetail>
                 )}
               </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── reg note ──────────────────────────────────────────── */}
         <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-4 text-sm text-[--cs-info]">
