@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
@@ -50,6 +51,10 @@ const LEVEL_META: Record<RiskLevel, { label: string; color: string; bg: string }
   medium:    { label: "Medium",    color: "text-[--cs-warning]",  bg: "bg-[--cs-warning-bg]" },
   high:      { label: "High",      color: "text-orange-700", bg: "bg-orange-100" },
   very_high: { label: "Very High", color: "text-[--cs-risk]",    bg: "bg-[--cs-risk-bg]" },
+};
+
+const LEVEL_ROW: Record<RiskLevel, RowSeverity> = {
+  low: "success", medium: "warning", high: "risk", very_high: "risk",
 };
 
 const TREND_ICON: Record<RiskTrend, React.ReactNode> = {
@@ -227,7 +232,7 @@ export default function RiskAssessmentsPage() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No assessments match your filters.</p>}
           {filtered.map((a) => {
             const open = !!expanded[a.id];
@@ -235,15 +240,15 @@ export default function RiskAssessmentsPage() {
             const levelM = LEVEL_META[a.current_level];
             const reviewDue = a.review_date <= d(7);
             return (
-              <Card key={a.id} className={cn("border-l-4", a.current_level === "very_high" || a.current_level === "high" ? "border-l-red-500" : a.current_level === "medium" ? "border-l-amber-400" : "border-l-green-400")}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(a.id)}>
+              <div key={a.id}>
+                <FlatListRow severity={LEVEL_ROW[a.current_level]} onClick={() => toggle(a.id)} aria-expanded={open}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
                         <Badge className={cn("text-xs", domainM.color)}>{domainM.label}</Badge>
-                        <Badge className={cn("text-xs", levelM.bg, levelM.color)}>{levelM.label}</Badge>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", levelM.color)}>{levelM.label}</span>
                         <span className="flex items-center gap-0.5 text-xs">{TREND_ICON[a.trend]} <span className="text-muted-foreground">{a.trend}</span></span>
-                        {reviewDue && <Badge variant="destructive" className="text-xs">Review due</Badge>}
+                        {reviewDue && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Review due</span>}
                         {(a as never as { care_event_id?: string }).care_event_id && (
                           <Link
                             href={`/care-events/${(a as never as { care_event_id: string }).care_event_id}`}
@@ -262,11 +267,12 @@ export default function RiskAssessmentsPage() {
                         <span>Review: {a.review_date}</span>
                       </div>
                     </div>
-                    {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
+                    {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />}
                   </div>
+                </FlatListRow>
 
                   {open && (
-                    <div className="mt-4 space-y-3 border-t pt-3 text-sm">
+                    <FlatListRowDetail className="text-sm">
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Known Triggers</p>
                         <div className="flex flex-wrap gap-1">{(a.triggers ?? []).map((t, i) => <Badge key={i} variant="outline" className="text-xs text-[--cs-risk] border-[--cs-risk-soft]">{t}</Badge>)}</div>
@@ -310,13 +316,12 @@ export default function RiskAssessmentsPage() {
                         <span>→ Current: <span className={levelM.color}>{levelM.label}</span></span>
                       </div>
                       <SmartLinkPanel sourceType="risk_assessment" sourceId={a.id} childId={a.child_id} compact />
-                    </div>
+                    </FlatListRowDetail>
                   )}
-                </CardContent>
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         <Card className="bg-muted/40">
           <CardContent className="p-3 text-xs text-muted-foreground flex items-start gap-2">
