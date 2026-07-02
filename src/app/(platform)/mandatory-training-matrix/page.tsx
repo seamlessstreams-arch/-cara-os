@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -45,16 +46,16 @@ const STATUS_DOT: Record<TrainingCourseStatus, string> = {
   not_completed: "bg-slate-400",
 };
 
-const COMPLIANCE_CLR: Record<TrainingOverallCompliance, string> = {
-  fully_compliant: "bg-[--cs-success-bg] text-[--cs-success]",
-  action_required: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  non_compliant: "bg-[--cs-risk-bg] text-[--cs-risk]",
+const COMPLIANCE_ROW: Record<TrainingOverallCompliance, RowSeverity> = {
+  fully_compliant: "success",
+  action_required: "warning",
+  non_compliant: "risk",
 };
 
-const COMPLIANCE_BORDER: Record<TrainingOverallCompliance, string> = {
-  fully_compliant: "border-l-[--cs-success]",
-  action_required: "border-l-[--cs-warning]",
-  non_compliant: "border-l-[--cs-risk]",
+const COMPLIANCE_TEXT: Record<TrainingOverallCompliance, string> = {
+  fully_compliant: "text-[--cs-success]",
+  action_required: "text-[--cs-warning]",
+  non_compliant: "text-[--cs-risk]",
 };
 
 const CATEGORY_CLR: Record<TrainingCourseCategory, string> = {
@@ -216,43 +217,43 @@ export default function MandatoryTrainingMatrixPage() {
         </div>
 
         {/* matrix card list */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
             const compliancePct = r.total_courses > 0 ? Math.round((r.valid_count / r.total_courses) * 100) : 0;
             return (
-              <Card key={r.id} className={cn("border-l-4", COMPLIANCE_BORDER[r.overall_compliance])}>
-                <CardHeader
-                  className="pb-2 cursor-pointer"
+              <div key={r.id}>
+                <FlatListRow
+                  severity={COMPLIANCE_ROW[r.overall_compliance]}
+                  className="justify-between gap-3"
                   onClick={() => setExpandedId(isOpen ? null : r.id)}
+                  aria-expanded={isOpen}
                 >
-                  <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1 flex-1">
-                      <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                      <div className="text-base font-semibold flex items-center gap-2 flex-wrap">
                         <Users className="h-4 w-4 text-muted-foreground" />
                         {getStaffName(r.staff_id)}
                         <Badge variant="outline" className="bg-muted/50 text-xs">{r.role}</Badge>
-                        <Badge variant="outline" className={COMPLIANCE_CLR[r.overall_compliance]}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", COMPLIANCE_TEXT[r.overall_compliance])}>
                           {TRAINING_OVERALL_COMPLIANCE_LABEL[r.overall_compliance]}
-                        </Badge>
-                      </CardTitle>
+                        </span>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {r.valid_count}/{r.total_courses} valid · {compliancePct}% compliance · Next refresher {r.next_refresher_due}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 shrink-0">
                       <div className="hidden md:flex items-center gap-2 text-xs">
                         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[--cs-success]" />{r.valid_count}</span>
                         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[--cs-warning]" />{r.expiring_count}</span>
                         <span className="flex items-center gap-1"><span className="h-2 w-2 rounded-full bg-[--cs-risk]" />{r.expired_count}</span>
                       </div>
-                      {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
-                  </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-3 text-sm">
+                  <FlatListRowDetail className="space-y-3 text-sm">
                     {/* compliance bar */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       <div className="bg-muted/40 rounded p-2 text-center">
@@ -337,12 +338,12 @@ export default function MandatoryTrainingMatrixPage() {
                         Schedule refresher
                       </Button>
                     </div>
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
