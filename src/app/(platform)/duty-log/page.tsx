@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -33,8 +34,6 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
-const SHIFT_CLR: Record<DutyLogShift, string> = { morning: "bg-yellow-100 text-yellow-800", afternoon: "bg-orange-100 text-orange-800", evening: "bg-indigo-100 text-indigo-800", night: "bg-slate-100 text-[var(--cs-navy)]", sleep_in: "bg-purple-100 text-purple-800" };
-
 const CAT_CLR: Record<DutyLogCategory, string> = {
   incident: "bg-red-100 text-red-800", visitor: "bg-blue-100 text-blue-800",
   phone_call: "bg-indigo-100 text-indigo-800", maintenance: "bg-gray-100 text-gray-800",
@@ -44,8 +43,8 @@ const CAT_CLR: Record<DutyLogCategory, string> = {
   complaint: "bg-orange-100 text-orange-800", positive: "bg-green-100 text-green-800",
 };
 
-const PRI_CLR: Record<DutyLogPriority, string> = { routine: "border-gray-300", important: "border-[--cs-info]", urgent: "border-[--cs-warning]", critical: "border-[--cs-risk]" };
-const PRI_BADGE: Record<DutyLogPriority, string> = { routine: "bg-gray-100 text-gray-800", important: "bg-[--cs-info-bg] text-[--cs-info]", urgent: "bg-[--cs-warning-bg] text-[--cs-warning]", critical: "bg-[--cs-risk-bg] text-[--cs-risk]" };
+const PRI_SEVERITY: Record<DutyLogPriority, RowSeverity> = { routine: "neutral", important: "info", urgent: "warning", critical: "risk" };
+const PRI_TEXT: Record<DutyLogPriority, string> = { routine: "", important: "text-[--cs-info]", urgent: "text-[--cs-warning]", critical: "text-[--cs-risk]" };
 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
@@ -198,32 +197,33 @@ export default function DutyLogPage() {
         </Card>
 
         {/* timeline entries */}
-        <div className="space-y-2">
+        <FlatList>
           {filtered.map(r => {
             const open = expanded === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", PRI_CLR[r.priority])}>
-                <button className="w-full text-left" onClick={() => toggle(r.id)}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-mono text-muted-foreground w-12">{r.time}</span>
+              <div key={r.id}>
+                <FlatListRow severity={PRI_SEVERITY[r.priority]} onClick={() => toggle(r.id)} aria-expanded={open}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <span className="text-sm font-mono text-muted-foreground w-12 shrink-0">{r.time}</span>
                         <Badge className={cn("text-xs", CAT_CLR[r.category])}>{DUTY_LOG_CATEGORY_LABEL[r.category]}</Badge>
-                        <Badge className={cn("text-xs", SHIFT_CLR[r.shift])}>{DUTY_LOG_SHIFT_LABEL[r.shift]}</Badge>
-                        {r.priority !== "routine" && <Badge className={cn("text-xs", PRI_BADGE[r.priority])}>{r.priority}</Badge>}
-                        <span className="text-sm text-muted-foreground">— {getStaffName(r.recorded_by)}</span>
+                        {r.priority !== "routine" && (
+                          <span className={cn("text-[11px] font-semibold uppercase tracking-wide", PRI_TEXT[r.priority])}>{r.priority}</span>
+                        )}
+                        <span className="text-sm text-muted-foreground truncate">{DUTY_LOG_SHIFT_LABEL[r.shift]} · {getStaffName(r.recorded_by)}</span>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         {r.young_person_ids.length > 0 && <span className="text-xs text-muted-foreground">{r.young_person_ids.map(id => getYPName(id)).join(", ")}</span>}
                         {r.signed_off && <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />}
-                        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </div>
                     </div>
-                    <p className="text-sm mt-1 line-clamp-2">{r.description}</p>
-                  </CardHeader>
-                </button>
+                    <p className="text-sm mt-1 line-clamp-2 text-[var(--cs-text-secondary)]">{r.description}</p>
+                  </div>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="space-y-3 pt-0">
+                  <FlatListRowDetail>
                     <p className="text-sm">{r.description}</p>
 
                     <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-3">
@@ -247,13 +247,13 @@ export default function DutyLogPage() {
                     {r.linked_records.length > 0 && (
                       <div><p className="text-xs font-semibold mb-1">Linked Records</p><div className="flex gap-1 flex-wrap">{r.linked_records.map(lr => <Badge key={lr} variant="outline" className="text-xs">{lr}</Badge>)}</div></div>
                     )}
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
           {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No entries match filters.</p>}
-        </div>
+        </FlatList>
 
         {/* daily summary */}
         <Card>
