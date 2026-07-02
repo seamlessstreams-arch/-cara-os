@@ -25,6 +25,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { ExportButton, type ExportColumn } from "@/components/common/export-button";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { usePlacementObjectives, useCreatePlacementObjective } from "@/hooks/use-placement-objectives";
 import type { PlacementObjective, ObjectiveArea, PlacementObjectiveStatus } from "@/types/extended";
 import {
@@ -57,6 +58,13 @@ const STATUS_CONFIG: Record<PlacementObjectiveStatus, { label: string; colour: s
   achieved:      { label: "Achieved",      colour: "bg-[--cs-success-bg] text-[--cs-success]" },
   not_started:   { label: "Not Started",   colour: "bg-gray-100 text-gray-600" },
   at_risk:       { label: "At Risk",       colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
+};
+
+const STATUS_ROW: Record<PlacementObjectiveStatus, RowSeverity> = {
+  on_track: "success", some_progress: "warning", no_progress: "risk", achieved: "success", not_started: "neutral", at_risk: "risk",
+};
+const STATUS_TEXT: Record<PlacementObjectiveStatus, string> = {
+  on_track: "text-[--cs-success]", some_progress: "text-[--cs-warning]", no_progress: "text-[--cs-risk]", achieved: "text-[--cs-success]", not_started: "text-gray-600", at_risk: "text-[--cs-risk]",
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -330,13 +338,13 @@ export default function PlacementPlanPage() {
       </p>
 
       {/* ── Objective Cards ───────────────────────────────────────────────────── */}
-      <div className="space-y-3" id="placement-plans-print">
-        {filtered.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground">
-            <Target className="h-10 w-10 mx-auto mb-2 opacity-40" />
-            <p className="font-medium">No objectives found</p>
-          </div>
-        )}
+      {filtered.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          <Target className="h-10 w-10 mx-auto mb-2 opacity-40" />
+          <p className="font-medium">No objectives found</p>
+        </div>
+      )}
+      <FlatList id="placement-plans-print" className={cn(filtered.length === 0 && "hidden")}>
 
         {filtered.map(entry => {
           const isOpen = expandedId === entry.id;
@@ -345,33 +353,25 @@ export default function PlacementPlanPage() {
           const overdue = entry.review_date <= today;
 
           return (
-            <div key={entry.id} className={cn("rounded-lg border bg-card overflow-hidden",
-              entry.current_status === "at_risk" && "border-[--cs-risk-soft]",
-              overdue && "border-[--cs-warning-soft]",
-            )}>
-              <button
-                onClick={() => setExpandedId(isOpen ? null : entry.id)}
-                className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/50 transition-colors"
-              >
-                <div className={cn("rounded-full p-1.5 shrink-0", ac.colour)}>
-                  <Target className="h-4 w-4" />
-                </div>
+            <div key={entry.id}>
+              <FlatListRow severity={STATUS_ROW[entry.current_status]} onClick={() => setExpandedId(isOpen ? null : entry.id)} aria-expanded={isOpen}>
+                <Target className="h-4 w-4 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-sm">{entry.title}</span>
                     <Badge variant="outline" className={cn("text-xs", ac.colour)}>{ac.label}</Badge>
-                    <Badge variant="outline" className={cn("text-xs", sc.colour)}>{sc.label}</Badge>
-                    {overdue && <Badge variant="outline" className="text-xs bg-[--cs-warning-bg] text-[--cs-warning]">Review Due</Badge>}
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[entry.current_status])}>{sc.label}</span>
+                    {overdue && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Review Due</span>}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {getYPName(entry.child_id)} · {getStaffName(entry.responsible)} · Review: {formatDate(entry.review_date)}
                   </p>
                 </div>
-                {isOpen ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
-              </button>
+                {isOpen ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+              </FlatListRow>
 
               {isOpen && (
-                <div className="border-t px-4 py-3 space-y-3 bg-muted/30">
+                <FlatListRowDetail>
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Description</p>
                     <p className="text-sm">{entry.description}</p>
@@ -392,12 +392,12 @@ export default function PlacementPlanPage() {
                     <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Updated: {formatDate(entry.last_updated)}</span>
                   </div>
                   <SmartLinkPanel sourceType="placement-objective" sourceId={entry.id} childId={entry.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       {/* ── Regulatory Note ───────────────────────────────────────────────────── */}
       <div className="mt-8 rounded-lg border border-dashed p-4">
