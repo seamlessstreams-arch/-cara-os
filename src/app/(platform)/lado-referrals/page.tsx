@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -44,18 +45,12 @@ const ALLG_CLR: Record<LadoAllegationType, string> = {
   boundary_violation: "bg-blue-100 text-blue-800", other: "bg-slate-100 text-[var(--cs-navy)]",
 };
 
-const OUTCOME_CLR: Record<LadoOutcome, string> = { substantiated: "bg-red-100 text-red-800", unsubstantiated: "bg-amber-100 text-amber-800", unfounded: "bg-green-100 text-green-800", malicious: "bg-purple-100 text-purple-800", pending: "bg-blue-100 text-blue-800" };
+const OUTCOME_CLR: Record<LadoOutcome, string> = { substantiated: "bg-[--cs-risk-bg] text-[--cs-risk]", unsubstantiated: "bg-[--cs-warning-bg] text-[--cs-warning]", unfounded: "bg-[--cs-success-bg] text-[--cs-success]", malicious: "bg-purple-100 text-purple-800", pending: "bg-[--cs-info-bg] text-[--cs-info]" };
 
-const STATUS_CLR: Record<LadoReferralStatus, string> = {
-  initial_assessment: "bg-blue-100 text-blue-800", lado_contacted: "bg-indigo-100 text-indigo-800",
-  strategy_meeting: "bg-yellow-100 text-yellow-800", investigation: "bg-orange-100 text-orange-800",
-  outcome_reached: "bg-purple-100 text-purple-800", closed: "bg-slate-100 text-[var(--cs-navy)]",
-  nfa: "bg-green-100 text-green-800",
-};
-
-const STAFF_ACTION_CLR: Record<LadoStaffAction, string> = { suspended: "bg-red-100 text-red-800", restricted_duties: "bg-orange-100 text-orange-800", normal_duties: "bg-green-100 text-green-800", resigned: "bg-slate-100 text-[var(--cs-navy)]", dismissed: "bg-red-100 text-red-800", cleared: "bg-green-100 text-green-800" };
-
-const BORDER_OUTCOME: Record<LadoOutcome, string> = { substantiated: "border-l-red-600", unsubstantiated: "border-l-amber-400", unfounded: "border-l-green-400", malicious: "border-l-purple-500", pending: "border-l-blue-400" };
+const OUTCOME_ROW: Record<LadoOutcome, RowSeverity> = { substantiated: "risk", unsubstantiated: "warning", unfounded: "success", malicious: "neutral", pending: "info" };
+const OUTCOME_TEXT: Record<LadoOutcome, string> = { substantiated: "text-[--cs-risk]", unsubstantiated: "text-[--cs-warning]", unfounded: "text-[--cs-success]", malicious: "text-purple-700", pending: "text-[--cs-info]" };
+// Staff outcome is the safeguarding-critical readout: suspension/dismissal is the alarm.
+const STAFF_ACTION_TEXT: Record<LadoStaffAction, string> = { suspended: "text-[--cs-risk]", restricted_duties: "text-orange-700", normal_duties: "text-[--cs-success]", resigned: "text-slate-600", dismissed: "text-[--cs-risk]", cleared: "text-[--cs-success]" };
 
 /* ── page ─────────────────────────────────────────────────────────────────── */
 
@@ -138,11 +133,11 @@ export default function LADOReferralsPage() {
     >
       <div id="print-area">
         {/* confidentiality banner */}
-        <div className="bg-red-50 border border-red-300 rounded-lg p-3 mb-6 flex items-start gap-2">
-          <Lock className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+        <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+          <Lock className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
           <div className="text-sm">
-            <p className="font-semibold text-red-800">HIGHLY RESTRICTED — Confidential Personnel Information</p>
-            <p className="text-red-700">Access to LADO referral records is restricted to the Registered Manager, Responsible Individual, and authorised HR personnel. Do not discuss details with staff members not directly involved.</p>
+            <p className="font-semibold text-[--cs-risk]">HIGHLY RESTRICTED — Confidential Personnel Information</p>
+            <p className="text-[--cs-risk]">Access to LADO referral records is restricted to the Registered Manager, Responsible Individual, and authorised HR personnel. Do not discuss details with staff members not directly involved.</p>
           </div>
         </div>
 
@@ -166,11 +161,11 @@ export default function LADOReferralsPage() {
 
         {/* active alert */}
         {activeReferrals > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-amber-800">{activeReferrals} active LADO referral(s)</p>
-              <p className="text-amber-700">Ensure regular review meetings are scheduled and all actions are progressed in a timely manner.</p>
+              <p className="font-semibold text-[--cs-warning]">{activeReferrals} active LADO referral(s)</p>
+              <p className="text-[--cs-warning]">Ensure regular review meetings are scheduled and all actions are progressed in a timely manner.</p>
             </div>
           </div>
         )}
@@ -187,31 +182,31 @@ export default function LADOReferralsPage() {
         </div>
 
         {/* records */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map((r) => {
             const open = expanded[r.id];
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_OUTCOME[r.outcome])}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
+              <div key={r.id}>
+                <FlatListRow severity={OUTCOME_ROW[r.outcome]} onClick={() => toggle(r.id)} aria-expanded={!!open}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
                         {getStaffName(r.subject_staff_id)} — {r.subject_staff_role}
                         <Badge variant="outline" className={ALLG_CLR[r.allegation_type]}>{LADO_ALLEGATION_TYPE_LABEL[r.allegation_type]}</Badge>
-                        <Badge variant="outline" className={STATUS_CLR[r.status]}>{LADO_REFERRAL_STATUS_LABEL[r.status]}</Badge>
-                      </CardTitle>
+                        <span className="text-xs font-normal text-muted-foreground">{LADO_REFERRAL_STATUS_LABEL[r.status]}</span>
+                      </p>
                       <p className="text-sm text-muted-foreground">
-                        Referred: {r.date_referred} · Children: {r.child_ids.map(getYPName).join(", ")} · Outcome: <span className="font-medium">{LADO_OUTCOME_LABEL[r.outcome]}</span>
+                        Referred: {r.date_referred} · Children: {r.child_ids.map(getYPName).join(", ")} · Outcome: <span className={cn("font-medium", OUTCOME_TEXT[r.outcome])}>{LADO_OUTCOME_LABEL[r.outcome]}</span>
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className={STAFF_ACTION_CLR[r.staff_action]}>{LADO_STAFF_ACTION_LABEL[r.staff_action]}</Badge>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STAFF_ACTION_TEXT[r.staff_action])}>{LADO_STAFF_ACTION_LABEL[r.staff_action]}</span>
                       {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
                   </div>
-                </CardHeader>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <p className="font-medium mb-1">Allegation Summary</p>
@@ -294,12 +289,12 @@ export default function LADOReferralsPage() {
                       <span>Allegation date: {r.date_allegation}</span>
                       <span>{r.closed_date ? `Closed: ${r.closed_date} by ${getStaffName(r.closed_by!)}` : "⚠ Open"}</span>
                     </div>
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">

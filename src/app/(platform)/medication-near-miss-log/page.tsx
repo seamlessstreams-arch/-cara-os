@@ -8,6 +8,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -44,6 +45,10 @@ const RISK_CONFIG: Record<NearMissRiskGrade, { color: string; bg: string; border
   medium:   { color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]",   border: "border-[--cs-warning-soft]"   },
   high:     { color: "text-orange-700",  bg: "bg-orange-50",  border: "border-orange-200"  },
   critical: { color: "text-rose-700",    bg: "bg-rose-50",    border: "border-rose-200"    },
+};
+
+const RISK_ROW: Record<NearMissRiskGrade, RowSeverity> = {
+  low: "success", medium: "warning", high: "risk", critical: "risk",
 };
 
 function formatDate(s: string): string {
@@ -196,7 +201,7 @@ export default function MedicationNearMissLogPage() {
 
       <p className="text-[11px] text-[var(--cs-text-muted)] mb-3">Showing {filtered.length} of {records.length} record{records.length !== 1 ? "s" : ""}</p>
 
-      <div className="space-y-3">
+      <FlatList>
         {filtered.length === 0 && (<div className="text-center py-12 text-sm text-[var(--cs-text-muted)]">No near-misses match the current filters.</div>)}
 
         {filtered.map((r) => {
@@ -205,9 +210,9 @@ export default function MedicationNearMissLogPage() {
           const rCfg = RISK_CONFIG[r.risk_grade];
 
           return (
-            <div key={r.id} className={cn("rounded-lg border bg-white transition-all", r.risk_grade === "critical" && "ring-1 ring-rose-200 border-rose-200", r.risk_grade === "high" && "border-orange-200")}>
-              <button type="button" onClick={() => setExpandedId(isExpanded ? null : r.id)} className="w-full flex items-start gap-3 p-4 text-left">
-                <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-2 flex-shrink-0"><ShieldCheck className="h-4 w-4 text-[--cs-success]" /></div>
+            <div key={r.id}>
+              <FlatListRow severity={RISK_ROW[r.risk_grade]} onClick={() => setExpandedId(isExpanded ? null : r.id)} className="items-start gap-3">
+                <ShieldCheck className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
                     <span className="text-xs font-medium text-[var(--cs-text-muted)]">{formatDate(r.date)}</span>
@@ -217,20 +222,20 @@ export default function MedicationNearMissLogPage() {
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <Badge className={cn("text-[10px] px-2 py-0 border", tCfg.bg, tCfg.color, tCfg.border)}>{NEAR_MISS_TYPE_LABEL[r.near_miss_type]}</Badge>
-                    <Badge className={cn("text-[10px] px-2 py-0 border", rCfg.bg, rCfg.color, rCfg.border)}>Risk: {NEAR_MISS_RISK_GRADE_LABEL[r.risk_grade]}</Badge>
-                    {r.debrief_held && (<Badge className="text-[10px] px-2 py-0 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border border-[var(--cs-cara-gold-soft)]"><BookOpen className="h-2.5 w-2.5 mr-0.5" />Debriefed</Badge>)}
-                    {r.systemic_changes.length > 0 && (<Badge className="text-[10px] px-2 py-0 bg-[--cs-info-bg] text-[--cs-info] border border-[--cs-info-soft]">Systemic change</Badge>)}
-                    {r.shareable_anonymously && (<Badge className="text-[10px] px-2 py-0 bg-[--cs-success-bg] text-[--cs-success] border border-[--cs-success-soft]"><Users className="h-2.5 w-2.5 mr-0.5" />Shareable</Badge>)}
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", rCfg.color)}>Risk: {NEAR_MISS_RISK_GRADE_LABEL[r.risk_grade]}</span>
+                    {r.debrief_held && (<span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-cara-gold)]">Debriefed</span>)}
+                    {r.systemic_changes.length > 0 && (<span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-info]">Systemic change</span>)}
+                    {r.shareable_anonymously && (<span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Shareable</span>)}
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <span className="text-[10px] text-[var(--cs-text-muted)] hidden sm:inline">Reported by {getStaffName(r.reported_by)}</span>
                   {isExpanded ? <ChevronUp className="h-4 w-4 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted)]" />}
                 </div>
-              </button>
+              </FlatListRow>
 
               {isExpanded && (
-                <div className="border-t px-4 pb-4 pt-3 space-y-4">
+                <FlatListRowDetail>
                   <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3">
                     <h4 className="text-[11px] font-semibold text-[--cs-warning] uppercase tracking-wide mb-1 flex items-center gap-1"><AlertCircle className="h-3 w-3" />What nearly happened</h4>
                     <p className="text-xs text-[--cs-warning] leading-relaxed">{r.what_nearly_happened}</p>
@@ -285,12 +290,12 @@ export default function MedicationNearMissLogPage() {
                     {r.debrief_held && <span>Debrief: {formatDate(r.debrief_date)}</span>}
                   </div>
                   <SmartLinkPanel sourceType="medication-near-miss" sourceId={r.id} childId={r.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-6 rounded-lg border border-[var(--cs-border)] bg-slate-50 p-3">
         <p className="text-[10px] text-[var(--cs-text-muted)] leading-relaxed">
