@@ -39,10 +39,10 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 // ── config ──────────────────────────────────────────────────────────────────
 const outcomeColour: Record<string, string> = {
-  subject_to_cp_plan: "bg-red-100 text-red-800",
-  plan_continued: "bg-amber-100 text-amber-800",
-  plan_stepped_down: "bg-blue-100 text-blue-800",
-  no_cp_plan_required: "bg-green-100 text-green-800",
+  subject_to_cp_plan: "bg-[--cs-risk-bg] text-[--cs-risk]",
+  plan_continued: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  plan_stepped_down: "bg-[--cs-info-bg] text-[--cs-info]",
+  no_cp_plan_required: "bg-[--cs-success-bg] text-[--cs-success]",
   strategy_decision_made: "bg-purple-100 text-purple-800",
 };
 
@@ -132,7 +132,7 @@ export default function ChildProtectionConferencesPage() {
           <p className="text-xs text-muted-foreground">Total Conferences</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className="text-2xl font-bold text-red-600">{onCpPlan}</p>
+          <p className="text-2xl font-bold text-[--cs-risk]">{onCpPlan}</p>
           <p className="text-xs text-muted-foreground">On CP Plan</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
@@ -147,9 +147,9 @@ export default function ChildProtectionConferencesPage() {
 
       {/* ── alert banner ───────────────────────────────────────────────── */}
       {followUpPending > 0 && (
-        <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 mb-6 flex items-start gap-2">
-          <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-          <p className="text-sm text-amber-800">
+        <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3 mb-6 flex items-start gap-2">
+          <AlertTriangle className="h-4 w-4 text-[--cs-warning] mt-0.5 shrink-0" />
+          <p className="text-sm text-[--cs-warning]">
             <strong>{followUpPending} conference{followUpPending !== 1 ? "s" : ""}</strong> with outstanding follow-up actions. Review action tracker.
           </p>
         </div>
@@ -216,9 +216,9 @@ export default function ChildProtectionConferencesPage() {
                     {CP_CONFERENCE_OUTCOME_LABEL[conf.outcome]}
                   </span>
                   {conf.follow_up_complete ? (
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    <CheckCircle className="h-4 w-4 text-[--cs-success]" />
                   ) : (
-                    <Clock className="h-4 w-4 text-amber-500" />
+                    <Clock className="h-4 w-4 text-[--cs-warning]" />
                   )}
                   {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </div>
@@ -254,27 +254,27 @@ export default function ChildProtectionConferencesPage() {
 
                   {/* concerns vs protective */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="bg-amber-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
+                    <div className="bg-[--cs-warning-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-warning] uppercase tracking-wide mb-1">
                         <AlertTriangle className="h-3 w-3 inline mr-1" />Key Concerns
                       </p>
                       <ul className="space-y-1">
                         {conf.key_concerns.map((c, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
-                            <span className="text-amber-600 mt-0.5">•</span>
+                            <span className="text-[--cs-warning] mt-0.5">•</span>
                             <span>{c}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
-                    <div className="bg-green-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-green-800 uppercase tracking-wide mb-1">
+                    <div className="bg-[--cs-success-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-success] uppercase tracking-wide mb-1">
                         <Shield className="h-3 w-3 inline mr-1" />Protective Factors
                       </p>
                       <ul className="space-y-1">
                         {conf.protective_factors.map((p, i) => (
                           <li key={i} className="text-sm flex items-start gap-1">
-                            <span className="text-green-600 mt-0.5">•</span>
+                            <span className="text-[--cs-success] mt-0.5">•</span>
                             <span>{p}</span>
                           </li>
                         ))}
@@ -290,7 +290,7 @@ export default function ChildProtectionConferencesPage() {
                     <ul className="space-y-1">
                       {conf.decisions_agreed.map((dec, i) => (
                         <li key={i} className="text-sm flex items-start gap-2">
-                          <CheckCircle className="h-3 w-3 text-blue-500 mt-1 shrink-0" />
+                          <CheckCircle className="h-3 w-3 text-[--cs-info] mt-1 shrink-0" />
                           {dec}
                         </li>
                       ))}
