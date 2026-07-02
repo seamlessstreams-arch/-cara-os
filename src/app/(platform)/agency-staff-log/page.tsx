@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -33,8 +34,8 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const VETTING_LABEL: Record<AgencyVettingStatus, string> = { fully_vetted: "Fully Vetted", partially_vetted: "Partially Vetted", pending: "Pending", expired: "Expired" };
-const VETTING_CLR: Record<AgencyVettingStatus, string> = { fully_vetted: "bg-[--cs-success-bg] text-[--cs-success]", partially_vetted: "bg-[--cs-warning-bg] text-[--cs-warning]", pending: "bg-[--cs-risk-bg] text-[--cs-risk]", expired: "bg-red-200 text-red-900" };
-const VETTING_BORDER: Record<AgencyVettingStatus, string> = { fully_vetted: "border-l-[--cs-success]", partially_vetted: "border-l-[--cs-warning]", pending: "border-l-[--cs-risk]", expired: "border-l-red-700" };
+const VETTING_ROW: Record<AgencyVettingStatus, RowSeverity> = { fully_vetted: "success", partially_vetted: "warning", pending: "risk", expired: "risk" };
+const VETTING_TEXT: Record<AgencyVettingStatus, string> = { fully_vetted: "text-[--cs-success]", partially_vetted: "text-[--cs-warning]", pending: "text-[--cs-risk]", expired: "text-red-900" };
 
 const REASON_LABEL: Record<AgencyBookingReason, string> = {
   sickness_cover: "Sickness Cover", vacancy_cover: "Vacancy Cover", annual_leave: "Annual Leave Cover",
@@ -227,41 +228,41 @@ export default function AgencyStaffLogPage() {
         )}
 
         {/* shift cards */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", VETTING_BORDER[r.vetting_status])}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : r.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1 flex-1">
-                      <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+              <div key={r.id}>
+                <FlatListRow severity={r.concerns ? "risk" : VETTING_ROW[r.vetting_status]} onClick={() => setExpandedId(isOpen ? null : r.id)} aria-expanded={isOpen}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
                         {r.worker_name} ({r.worker_ref})
-                        <Badge variant="outline" className={VETTING_CLR[r.vetting_status]}>{VETTING_LABEL[r.vetting_status]}</Badge>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", VETTING_TEXT[r.vetting_status])}>{VETTING_LABEL[r.vetting_status]}</span>
                         <Badge variant="outline" className="bg-muted/50">{REASON_LABEL[r.booking_reason]}</Badge>
-                        {r.concerns && <Badge variant="outline" className="bg-[--cs-risk-bg] text-[--cs-risk]">Concern</Badge>}
-                      </CardTitle>
+                        {r.concerns && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Concern</span>}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {r.agency_name} · {r.date_of_shift} · {r.shift_type} · {r.shift_hours}hrs
                         {r.covering_for_id && ` · Covering: ${getStaffName(r.covering_for_id)}`}
                         {" "}· Auth: {getStaffName(r.authorised_by_id)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       {r.feedback_score !== null && (
-                        <Badge variant="outline" className={cn(
-                          r.feedback_score >= 4 ? "bg-[--cs-success-bg] text-[--cs-success]" :
-                          r.feedback_score >= 3 ? "bg-[--cs-warning-bg] text-[--cs-warning]" :
-                          "bg-[--cs-risk-bg] text-[--cs-risk]"
-                        )}>{r.feedback_score}/5</Badge>
+                        <span className={cn("text-xs font-semibold",
+                          r.feedback_score >= 4 ? "text-[--cs-success]" :
+                          r.feedback_score >= 3 ? "text-[--cs-warning]" :
+                          "text-[--cs-risk]"
+                        )}>{r.feedback_score}/5</span>
                       )}
-                      {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
                   </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-3 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     {/* compliance checklist */}
                     <div>
                       <p className="font-medium mb-1">Compliance Checklist</p>
@@ -335,12 +336,12 @@ export default function AgencyStaffLogPage() {
 
                     {/* smart links */}
                     <SmartLinkPanel sourceType="agency_staff_log" sourceId={r.id} compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
