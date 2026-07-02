@@ -7,7 +7,8 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -43,18 +44,11 @@ const AUDIT_TYPE_CLR: Record<MedAuditType, string> = {
   return_to_pharmacy: "bg-slate-100 text-[var(--cs-navy)]",
 };
 
-const RESULT_CLR: Record<MedAuditResult, string> = {
-  satisfactory: "bg-green-100 text-green-800",
-  discrepancy_found: "bg-red-100 text-red-800",
-  action_required: "bg-amber-100 text-amber-800",
-  completed: "bg-slate-100 text-[var(--cs-navy)]",
+const RESULT_ROW: Record<MedAuditResult, RowSeverity> = {
+  satisfactory: "success", discrepancy_found: "risk", action_required: "warning", completed: "neutral",
 };
-
-const BORDER_RES: Record<MedAuditResult, string> = {
-  satisfactory: "border-l-green-400",
-  discrepancy_found: "border-l-red-600",
-  action_required: "border-l-amber-400",
-  completed: "border-l-slate-400",
+const RESULT_TEXT: Record<MedAuditResult, string> = {
+  satisfactory: "text-[--cs-success]", discrepancy_found: "text-[--cs-risk]", action_required: "text-[--cs-warning]", completed: "text-[var(--cs-navy)]",
 };
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
@@ -210,16 +204,16 @@ export default function MedicationAuditPage() {
         </div>
 
         {discrepancies > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
-            <div className="text-sm"><p className="font-semibold text-red-800">{discrepancies} medication discrepancy(ies) found</p><p className="text-red-700">All discrepancies must be investigated, documented, and reported. Controlled drug discrepancies require notification to the Registered Manager immediately.</p></div>
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
+            <div className="text-sm"><p className="font-semibold text-[--cs-risk]">{discrepancies} medication discrepancy(ies) found</p><p className="text-[--cs-risk]">All discrepancies must be investigated, documented, and reported. Controlled drug discrepancies require notification to the Registered Manager immediately.</p></div>
           </div>
         )}
 
         {expiringMeds > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <Clock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-sm"><p className="font-semibold text-amber-800">{expiringMeds} medication(s) expiring within 30 days</p><p className="text-amber-700">Request repeat prescriptions and arrange return of near-expiry stock to pharmacy.</p></div>
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <Clock className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
+            <div className="text-sm"><p className="font-semibold text-[--cs-warning]">{expiringMeds} medication(s) expiring within 30 days</p><p className="text-[--cs-warning]">Request repeat prescriptions and arrange return of near-expiry stock to pharmacy.</p></div>
           </div>
         )}
 
@@ -231,48 +225,48 @@ export default function MedicationAuditPage() {
           <Select value={sortBy} onValueChange={setSortBy}><SelectTrigger className="w-[150px]"><ArrowUpDown className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="date-desc">Newest First</SelectItem><SelectItem value="date-asc">Oldest First</SelectItem><SelectItem value="result">By Result</SelectItem></SelectContent></Select>
         </div>
 
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map((r) => {
             const open = expanded[r.id];
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_RES[r.result])}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
+              <div key={r.id}>
+                <FlatListRow severity={r.discrepancy !== 0 ? "risk" : RESULT_ROW[r.result]} onClick={() => toggle(r.id)} aria-expanded={!!open}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
                         {r.medication_name}
                         <Badge variant="outline" className={AUDIT_TYPE_CLR[r.audit_type]}>{MED_AUDIT_TYPE_LABEL[r.audit_type]}</Badge>
-                        <Badge variant="outline" className={RESULT_CLR[r.result]}>{MED_AUDIT_RESULT_LABEL[r.result]}</Badge>
-                      </CardTitle>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", RESULT_TEXT[r.result])}>{MED_AUDIT_RESULT_LABEL[r.result]}</span>
+                      </p>
                       <p className="text-sm text-muted-foreground">{getYPName(r.child_id)} · {MED_AUDIT_MEDICATION_TYPE_LABEL[r.medication_type]} · {r.date} at {r.time}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {r.discrepancy !== 0 && <Badge variant="destructive">Discrepancy: {r.discrepancy}</Badge>}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {r.discrepancy !== 0 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Discrepancy: {r.discrepancy}</span>}
                       {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
                   </div>
-                </CardHeader>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     {(r.expected_count !== null || r.actual_count !== null) && (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Expected</p><p className="text-lg font-bold">{r.expected_count ?? "—"}</p></div>
                         <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Actual</p><p className="text-lg font-bold">{r.actual_count ?? "—"}</p></div>
-                        <div className={cn("rounded p-2 text-center", r.discrepancy !== 0 ? "bg-red-50" : "bg-green-50")}><p className="font-medium text-xs">Discrepancy</p><p className="text-lg font-bold">{r.discrepancy}</p></div>
+                        <div className={cn("rounded p-2 text-center", r.discrepancy !== 0 ? "bg-[--cs-risk-bg]" : "bg-[--cs-success-bg]")}><p className="font-medium text-xs">Discrepancy</p><p className="text-lg font-bold">{r.discrepancy}</p></div>
                         <div className="bg-muted/40 rounded p-2 text-center"><p className="font-medium text-xs">Batch</p><p className="text-xs font-mono">{r.batch_number}</p></div>
                       </div>
                     )}
 
                     <div className="grid grid-cols-3 gap-2">
-                      <div className={cn("rounded p-2 text-center text-xs", r.storage_correct ? "bg-green-50" : "bg-red-50")}><p className="font-medium">Storage</p><p>{r.storage_correct ? "✓ Correct" : "✗ Issue"}</p></div>
-                      <div className={cn("rounded p-2 text-center text-xs", r.temperature_ok ? "bg-green-50" : "bg-red-50")}><p className="font-medium">Temperature</p><p>{r.temperature_ok ? "✓ OK" : "✗ Issue"}</p></div>
-                      <div className={cn("rounded p-2 text-center text-xs", r.labelling_correct ? "bg-green-50" : "bg-red-50")}><p className="font-medium">Labelling</p><p>{r.labelling_correct ? "✓ Correct" : "✗ Issue"}</p></div>
+                      <div className={cn("rounded p-2 text-center text-xs", r.storage_correct ? "bg-[--cs-success-bg]" : "bg-[--cs-risk-bg]")}><p className="font-medium">Storage</p><p>{r.storage_correct ? "✓ Correct" : "✗ Issue"}</p></div>
+                      <div className={cn("rounded p-2 text-center text-xs", r.temperature_ok ? "bg-[--cs-success-bg]" : "bg-[--cs-risk-bg]")}><p className="font-medium">Temperature</p><p>{r.temperature_ok ? "✓ OK" : "✗ Issue"}</p></div>
+                      <div className={cn("rounded p-2 text-center text-xs", r.labelling_correct ? "bg-[--cs-success-bg]" : "bg-[--cs-risk-bg]")}><p className="font-medium">Labelling</p><p>{r.labelling_correct ? "✓ Correct" : "✗ Issue"}</p></div>
                     </div>
 
                     {r.expiry_date && (
-                      <div className={cn("rounded-lg p-2 text-xs", r.expiry_date <= d(30) ? "bg-amber-50" : "bg-muted/40")}>
+                      <div className={cn("rounded-lg p-2 text-xs", r.expiry_date <= d(30) ? "bg-[--cs-warning-bg]" : "bg-muted/40")}>
                         <span className="font-medium">Expiry: </span>{r.expiry_date}
-                        {r.expiry_date <= d(30) && <span className="text-amber-700 ml-2">⚠ Expires within 30 days</span>}
+                        {r.expiry_date <= d(30) && <span className="text-[--cs-warning] ml-2">⚠ Expires within 30 days</span>}
                       </div>
                     )}
 
@@ -297,12 +291,12 @@ export default function MedicationAuditPage() {
                     </div>
 
                     <SmartLinkPanel sourceType="medication-audit" sourceId={r.id} childId={r.child_id} compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
           <p className="font-semibold mb-1">Regulatory Framework</p>

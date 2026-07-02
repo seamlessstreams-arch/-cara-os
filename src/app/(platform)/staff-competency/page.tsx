@@ -23,6 +23,7 @@ import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Badge }        from "@/components/ui/badge";
 import { cn }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
@@ -43,10 +44,10 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── local config ─────────────────────────────────────────────────────── */
 
 const LEVEL_META: Record<StaffCompetencyLevel, { label: string; colour: string; icon: typeof CheckCircle2 }> = {
-  competent:    { label: "Competent",     colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
-  developing:   { label: "Developing",    colour: "bg-blue-100 text-blue-700",    icon: Clock },
+  competent:    { label: "Competent",     colour: "bg-[--cs-success-bg] text-[--cs-success]",  icon: CheckCircle2 },
+  developing:   { label: "Developing",    colour: "bg-[--cs-info-bg] text-[--cs-info]",    icon: Clock },
   not_assessed: { label: "Not Assessed",  colour: "bg-gray-100 text-gray-700",    icon: Circle },
-  expired:      { label: "Expired",       colour: "bg-red-100 text-red-700",      icon: XCircle },
+  expired:      { label: "Expired",       colour: "bg-[--cs-risk-bg] text-[--cs-risk]",      icon: XCircle },
 };
 
 const COMPETENCY_AREAS = [
@@ -217,14 +218,14 @@ export default function StaffCompetencyPage() {
 
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
           {[
-            { l: "Competencies",     v: stats.total, icon: ClipboardCheck, c: "text-blue-600" },
-            { l: "Competent",        v: stats.competent, icon: CheckCircle2, c: "text-green-600" },
-            { l: "Developing",       v: stats.developing, icon: Clock, c: "text-blue-600" },
+            { l: "Competencies",     v: stats.total, icon: ClipboardCheck, c: "text-[--cs-info]" },
+            { l: "Competent",        v: stats.competent, icon: CheckCircle2, c: "text-[--cs-success]" },
+            { l: "Developing",       v: stats.developing, icon: Clock, c: "text-[--cs-info]" },
             { l: "Not Assessed",     v: stats.notAssessed, icon: Circle, c: "text-gray-500" },
-            { l: "Expired",          v: stats.expired, icon: XCircle, c: stats.expired > 0 ? "text-red-600" : "text-gray-400" },
-            { l: "Expiring Soon",    v: stats.expiringSoon, icon: AlertTriangle, c: stats.expiringSoon > 0 ? "text-amber-600" : "text-gray-400" },
-            { l: "Fully Competent",  v: `${stats.fullyCompetent}/${records.length}`, icon: Award, c: "text-green-600" },
-            { l: "Compliance",       v: `${stats.compliancePct}%`, icon: BarChart3, c: stats.compliancePct >= 80 ? "text-green-600" : stats.compliancePct >= 60 ? "text-amber-600" : "text-red-600" },
+            { l: "Expired",          v: stats.expired, icon: XCircle, c: stats.expired > 0 ? "text-[--cs-risk]" : "text-gray-400" },
+            { l: "Expiring Soon",    v: stats.expiringSoon, icon: AlertTriangle, c: stats.expiringSoon > 0 ? "text-[--cs-warning]" : "text-gray-400" },
+            { l: "Fully Competent",  v: `${stats.fullyCompetent}/${records.length}`, icon: Award, c: "text-[--cs-success]" },
+            { l: "Compliance",       v: `${stats.compliancePct}%`, icon: BarChart3, c: stats.compliancePct >= 80 ? "text-[--cs-success]" : stats.compliancePct >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
               <s.icon className={cn("mx-auto h-5 w-5 mb-1", s.c)} />
@@ -243,7 +244,7 @@ export default function StaffCompetencyPage() {
             </span>
             <span className={cn(
               "font-bold tabular-nums",
-              stats.compliancePct >= 80 ? "text-green-600" : stats.compliancePct >= 60 ? "text-amber-600" : "text-red-600",
+              stats.compliancePct >= 80 ? "text-[--cs-success]" : stats.compliancePct >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {stats.compliancePct}%
             </span>
@@ -262,22 +263,22 @@ export default function StaffCompetencyPage() {
         {/* ── alerts ─────────────────────────────────────────────────────── */}
 
         {alerts.length > 0 && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 space-y-2">
-            <div className="flex items-center gap-2 text-sm font-semibold text-red-800">
+          <div className="rounded-lg border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4 space-y-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-[--cs-risk]">
               <AlertTriangle className="h-4 w-4" />
               {alerts.filter((a) => a.type === "expired").length > 0 && (
                 <span>{alerts.filter((a) => a.type === "expired").length} expired competenc{alerts.filter((a) => a.type === "expired").length === 1 ? "y" : "ies"}</span>
               )}
               {alerts.filter((a) => a.type === "expired").length > 0 && alerts.filter((a) => a.type === "expiring").length > 0 && <span>·</span>}
               {alerts.filter((a) => a.type === "expiring").length > 0 && (
-                <span className="text-amber-700">{alerts.filter((a) => a.type === "expiring").length} expiring within 90 days</span>
+                <span className="text-[--cs-warning]">{alerts.filter((a) => a.type === "expiring").length} expiring within 90 days</span>
               )}
             </div>
             <div className="space-y-1">
               {alerts.map((a, i) => (
                 <div key={i} className={cn(
                   "flex items-center gap-2 text-xs rounded px-2 py-1",
-                  a.type === "expired" ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-800",
+                  a.type === "expired" ? "bg-[--cs-risk-bg] text-[--cs-risk]" : "bg-[--cs-warning-bg] text-[--cs-warning]",
                 )}>
                   {a.type === "expired" ? <XCircle className="h-3 w-3 flex-shrink-0" /> : <Clock className="h-3 w-3 flex-shrink-0" />}
                   <span className="font-medium">{a.staffName}</span> — {a.area}
@@ -363,7 +364,7 @@ export default function StaffCompetencyPage() {
                         <td className="py-2 px-3 text-center">
                           <span className={cn(
                             "text-xs font-bold tabular-nums",
-                            pct === 100 ? "text-green-600" : pct >= 70 ? "text-amber-600" : "text-red-600",
+                            pct === 100 ? "text-[--cs-success]" : pct >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]",
                           )}>{pct}%</span>
                         </td>
                       </tr>
@@ -377,6 +378,7 @@ export default function StaffCompetencyPage() {
 
         {/* ── expandable staff cards ─────────────────────────────────────── */}
 
+        <FlatList>
         {filtered.map((staff) => {
           const comp = staff.entries.filter((e) => e.level === "competent").length;
           const total = staff.entries.length;
@@ -386,35 +388,34 @@ export default function StaffCompetencyPage() {
           const hasNotAssessed = staff.entries.some((e) => e.level === "not_assessed");
 
           return (
-            <div key={staff.id} className={cn(
-              "rounded-lg border bg-white overflow-hidden",
-              hasExpired ? "border-red-200" : "",
-            )}>
-              <button onClick={() => setExpanded(expanded === staff.id ? null : staff.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className={cn("h-5 w-5", pct === 100 ? "text-green-600" : pct >= 70 ? "text-amber-500" : "text-red-500")} />
-                  <div className="text-left">
+            <div key={staff.id}>
+              <FlatListRow severity={hasExpired ? "risk" : pct === 100 ? "success" : pct >= 70 ? "warning" : "risk"} onClick={() => setExpanded(expanded === staff.id ? null : staff.id)} aria-expanded={expanded === staff.id}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="text-left min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{staff.staff_name}</h3>
                       <span className="text-xs text-muted-foreground">{staff.role}</span>
-                      {hasExpired && <Badge variant="destructive" className="text-[10px] h-5">Expired</Badge>}
-                      {hasDeveloping && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-700">Developing</span>}
-                      {hasNotAssessed && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-gray-100 text-gray-600">Gaps</span>}
-                      {pct === 100 && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-green-100 text-green-700">Fully Competent</span>}
+                      {hasExpired && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Expired</span>}
+                      {hasDeveloping && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-info]">Developing</span>}
+                      {hasNotAssessed && <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-600">Gaps</span>}
+                      {pct === 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Fully Competent</span>}
                     </div>
                     <p className="text-xs text-muted-foreground">{comp}/{total} competencies ({pct}%) · Assessed by {getStaffName("staff_darren")}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden hidden sm:block">
                     <div className={cn("h-full rounded-full", pct === 100 ? "bg-green-400" : pct >= 70 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${pct}%` }} />
                   </div>
-                  {expanded === staff.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  {expanded === staff.id ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                 </div>
-              </button>
+                </div>
+              </FlatListRow>
 
               {expanded === staff.id && (
-                <div className="border-t p-4 space-y-2">
+                <FlatListRowDetail className="space-y-2">
                   {staff.entries.map((entry) => {
                     const meta = LEVEL_META[entry.level];
                     const Icon = meta.icon;
@@ -424,14 +425,14 @@ export default function StaffCompetencyPage() {
                     return (
                       <div key={entry.id} className={cn(
                         "rounded border p-3",
-                        isExpired ? "border-red-200 bg-red-50" : isExpiring ? "border-amber-200 bg-amber-50" : "",
+                        isExpired ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : isExpiring ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "",
                       )}>
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-start gap-2">
                             <Icon className={cn("h-4 w-4 mt-0.5 flex-shrink-0",
-                              isExpired ? "text-red-600" :
-                              entry.level === "competent" ? "text-green-600" :
-                              entry.level === "developing" ? "text-blue-600" :
+                              isExpired ? "text-[--cs-risk]" :
+                              entry.level === "competent" ? "text-[--cs-success]" :
+                              entry.level === "developing" ? "text-[--cs-info]" :
                               "text-gray-400"
                             )} />
                             <div>
@@ -445,7 +446,7 @@ export default function StaffCompetencyPage() {
                           <div className="text-right flex-shrink-0">
                             <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", meta.colour)}>{meta.label}</span>
                             {entry.expiry_date && (
-                              <p className={cn("text-xs mt-0.5", isExpired ? "text-red-600 font-medium" : isExpiring ? "text-amber-600" : "text-muted-foreground")}>
+                              <p className={cn("text-xs mt-0.5", isExpired ? "text-[--cs-risk] font-medium" : isExpiring ? "text-[--cs-warning]" : "text-muted-foreground")}>
                                 {isExpired ? "Expired" : "Expires"}: {entry.expiry_date}
                               </p>
                             )}
@@ -454,11 +455,12 @@ export default function StaffCompetencyPage() {
                       </div>
                     );
                   })}
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
+        </FlatList>
 
         {/* ── regulatory note ────────────────────────────────────────────── */}
 
