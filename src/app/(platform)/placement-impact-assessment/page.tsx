@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -85,21 +86,6 @@ export default function PlacementImpactAssessmentPage() {
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
-  const statusBadge = (status: string) => {
-    switch (status) {
-      case "approved":
-        return <Badge className="bg-[--cs-success-bg] text-[--cs-success]">Approved</Badge>;
-      case "approved_with_conditions":
-        return <Badge className="bg-[--cs-info-bg] text-[--cs-info]">Approved (Conditions)</Badge>;
-      case "declined":
-        return <Badge className="bg-[--cs-risk-bg] text-[--cs-risk]">Declined</Badge>;
-      case "pending":
-        return <Badge className="bg-[--cs-warning-bg] text-[--cs-warning]">Pending</Badge>;
-      default:
-        return <Badge variant="outline">{status}</Badge>;
-    }
-  };
-
   const riskBadge = (risk: string) => {
     switch (risk) {
       case "low":
@@ -111,6 +97,21 @@ export default function PlacementImpactAssessmentPage() {
       default:
         return null;
     }
+  };
+
+  const statusRow = (status: string): RowSeverity =>
+    status === "declined" ? "risk" : status === "pending" ? "warning" : status === "approved_with_conditions" ? "info" : "success";
+
+  const statusText = (status: string) => {
+    const cls = status === "approved" ? "text-[--cs-success]" : status === "approved_with_conditions" ? "text-[--cs-info]" : status === "declined" ? "text-[--cs-risk]" : status === "pending" ? "text-[--cs-warning]" : "text-muted-foreground";
+    const label = status === "approved" ? "Approved" : status === "approved_with_conditions" ? "Approved (Conditions)" : status === "declined" ? "Declined" : status === "pending" ? "Pending" : status;
+    return <span className={cn("text-[11px] font-semibold uppercase tracking-wide", cls)}>{label}</span>;
+  };
+
+  const riskText = (risk: string) => {
+    if (!["low", "medium", "high"].includes(risk)) return null;
+    const cls = risk === "low" ? "text-[--cs-success]" : risk === "medium" ? "text-[--cs-warning]" : "text-[--cs-risk]";
+    return <span className={cn("text-[11px] font-semibold uppercase tracking-wide", cls)}>{risk === "low" ? "Low Risk" : risk === "medium" ? "Medium Risk" : "High Risk"}</span>;
   };
 
   const compatRating = (rating: string) => {
@@ -222,47 +223,28 @@ export default function PlacementImpactAssessmentPage() {
       </div>
 
       {/* ─── assessment cards ─── */}
-      <div className="space-y-4">
+      <FlatList>
         {filtered.map((assessment) => {
           const expanded = expandedId === assessment.id;
 
           return (
-            <Card key={assessment.id} className={cn(
-              "overflow-hidden",
-              assessment.status === "declined" && "border-[--cs-risk-soft]",
-              assessment.status === "pending" && "border-[--cs-warning-soft]"
-            )}>
-              <CardHeader
-                className="cursor-pointer hover:bg-muted/40 transition-colors py-4"
-                onClick={() => toggle(assessment.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "p-2 rounded-full",
-                      assessment.status === "declined" ? "bg-[--cs-risk-bg]" :
-                      assessment.status === "pending" ? "bg-[--cs-warning-bg]" : "bg-[--cs-success-bg]"
-                    )}>
-                      {assessment.status === "declined" ? (
-                        <XCircle className="h-5 w-5 text-[--cs-risk]" />
-                      ) : assessment.status === "pending" ? (
-                        <Scale className="h-5 w-5 text-[--cs-warning]" />
-                      ) : (
-                        <CheckCircle2 className="h-5 w-5 text-[--cs-success]" />
-                      )}
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">
+            <div key={assessment.id}>
+              <FlatListRow severity={statusRow(assessment.status)} onClick={() => toggle(assessment.id)} aria-expanded={expanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Scale className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)]">
                         {assessment.referral_name} — Age {assessment.referral_age}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        {statusBadge(assessment.status)}
-                        {riskBadge(assessment.overall_risk)}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        {statusText(assessment.status)}
+                        {riskText(assessment.overall_risk)}
                         <span className="text-xs text-muted-foreground">{assessment.referral_la}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right hidden sm:block">
                       <p className="text-xs text-muted-foreground">Assessed</p>
                       <p className="text-sm">{assessment.assessment_date}</p>
@@ -274,10 +256,10 @@ export default function PlacementImpactAssessmentPage() {
                     )}
                   </div>
                 </div>
-              </CardHeader>
+              </FlatListRow>
 
               {expanded && (
-                <CardContent className="pt-0 pb-4 space-y-5">
+                <FlatListRowDetail className="pb-4 space-y-5">
                   {/* decision */}
                   <div className={cn(
                     "rounded-lg p-3 border",
@@ -424,12 +406,12 @@ export default function PlacementImpactAssessmentPage() {
                       <p className="text-sm font-medium">{assessment.review_date ?? "N/A"}</p>
                     </div>
                   </div>
-                </CardContent>
+                </FlatListRowDetail>
               )}
-            </Card>
+            </div>
           );
         })}
-      </div>
+      </FlatList>
 
       {/* ─── regulatory note ─── */}
       <div className="mt-8 bg-slate-50 border border-[var(--cs-border)] rounded-lg p-4">
