@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { useDisclosures } from "@/hooks/use-disclosures";
@@ -62,6 +63,13 @@ const questionsColour: Record<string, string> = {
   none_listened_only: "bg-[--cs-success-bg] text-[--cs-success]",
   open_clarifying: "bg-[--cs-info-bg] text-[--cs-info]",
   closed_leading_flagged: "bg-[--cs-warning-bg] text-[--cs-warning]",
+};
+
+const severityRow: Record<string, RowSeverity> = {
+  low: "info", medium: "warning", high: "risk", crisis: "risk",
+};
+const severityText: Record<string, string> = {
+  low: "text-[--cs-info]", medium: "text-[--cs-warning]", high: "text-orange-700", crisis: "text-[--cs-risk]",
 };
 
 // ── export columns ──────────────────────────────────────────────────────────
@@ -240,7 +248,7 @@ export default function DisclosureLogPage() {
       </div>
 
       {/* ── disclosure cards ──────────────────────────────────────────── */}
-      <div className="space-y-3">
+      <FlatList>
         {filtered.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">No disclosures match your filters.</div>
         )}
@@ -248,13 +256,11 @@ export default function DisclosureLogPage() {
           const isExpanded = expandedId === rec.id;
 
           return (
-            <div key={rec.id} className="rounded-xl border bg-white overflow-hidden">
-              <button
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
-                onClick={() => setExpandedId(isExpanded ? null : rec.id)}
-              >
+            <div key={rec.id}>
+              <FlatListRow severity={severityRow[rec.disclosure_severity] ?? "neutral"} onClick={() => setExpandedId(isExpanded ? null : rec.id)} aria-expanded={isExpanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Ear className="h-5 w-5 text-[--cs-risk] shrink-0" />
+                  <Ear className="h-5 w-5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">
                       {DISCLOSURE_TYPE_LABEL[rec.disclosure_type]} &middot; {getYPName(rec.child_id)}
@@ -268,8 +274,8 @@ export default function DisclosureLogPage() {
                 <div className="flex items-center gap-2 shrink-0 ml-3">
                   <span
                     className={cn(
-                      "text-xs px-2 py-0.5 rounded-full font-medium",
-                      severityColour[rec.disclosure_severity],
+                      "text-[11px] font-semibold uppercase tracking-wide",
+                      severityText[rec.disclosure_severity],
                     )}
                   >
                     {DISCLOSURE_SEVERITY_LABEL[rec.disclosure_severity]}
@@ -282,12 +288,13 @@ export default function DisclosureLogPage() {
                   >
                     {DISCLOSURE_STATUS_LABEL[rec.status]}
                   </span>
-                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                 </div>
-              </button>
+                </div>
+              </FlatListRow>
 
               {isExpanded && (
-                <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
+                <FlatListRowDetail>
                   {/* context */}
                   <div className="bg-white rounded-lg p-3 border">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
@@ -481,12 +488,12 @@ export default function DisclosureLogPage() {
 
                   {/* smart link panel */}
                   <SmartLinkPanel sourceType="disclosures" sourceId={rec.id} childId={rec.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       {/* ── regulatory note ────────────────────────────────────────────── */}
       <div className="mt-8 rounded-lg bg-muted/50 border p-4">
