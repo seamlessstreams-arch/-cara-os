@@ -23,6 +23,7 @@ import { PageShell }    from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Badge }        from "@/components/ui/badge";
 import { cn }           from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
@@ -377,6 +378,7 @@ export default function StaffCompetencyPage() {
 
         {/* ── expandable staff cards ─────────────────────────────────────── */}
 
+        <FlatList>
         {filtered.map((staff) => {
           const comp = staff.entries.filter((e) => e.level === "competent").length;
           const total = staff.entries.length;
@@ -386,35 +388,34 @@ export default function StaffCompetencyPage() {
           const hasNotAssessed = staff.entries.some((e) => e.level === "not_assessed");
 
           return (
-            <div key={staff.id} className={cn(
-              "rounded-lg border bg-white overflow-hidden",
-              hasExpired ? "border-[--cs-risk-soft]" : "",
-            )}>
-              <button onClick={() => setExpanded(expanded === staff.id ? null : staff.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className={cn("h-5 w-5", pct === 100 ? "text-[--cs-success]" : pct >= 70 ? "text-[--cs-warning]" : "text-[--cs-risk]")} />
-                  <div className="text-left">
+            <div key={staff.id}>
+              <FlatListRow severity={hasExpired ? "risk" : pct === 100 ? "success" : pct >= 70 ? "warning" : "risk"} onClick={() => setExpanded(expanded === staff.id ? null : staff.id)} aria-expanded={expanded === staff.id}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <ShieldCheck className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="text-left min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{staff.staff_name}</h3>
                       <span className="text-xs text-muted-foreground">{staff.role}</span>
-                      {hasExpired && <Badge variant="destructive" className="text-[10px] h-5">Expired</Badge>}
-                      {hasDeveloping && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-[--cs-info-bg] text-[--cs-info]">Developing</span>}
-                      {hasNotAssessed && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-gray-100 text-gray-600">Gaps</span>}
-                      {pct === 100 && <span className="rounded-full px-2 py-0.5 text-[10px] font-medium bg-[--cs-success-bg] text-[--cs-success]">Fully Competent</span>}
+                      {hasExpired && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Expired</span>}
+                      {hasDeveloping && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-info]">Developing</span>}
+                      {hasNotAssessed && <span className="text-[11px] font-semibold uppercase tracking-wide text-gray-600">Gaps</span>}
+                      {pct === 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Fully Competent</span>}
                     </div>
                     <p className="text-xs text-muted-foreground">{comp}/{total} competencies ({pct}%) · Assessed by {getStaffName("staff_darren")}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden hidden sm:block">
                     <div className={cn("h-full rounded-full", pct === 100 ? "bg-green-400" : pct >= 70 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${pct}%` }} />
                   </div>
-                  {expanded === staff.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  {expanded === staff.id ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                 </div>
-              </button>
+                </div>
+              </FlatListRow>
 
               {expanded === staff.id && (
-                <div className="border-t p-4 space-y-2">
+                <FlatListRowDetail className="space-y-2">
                   {staff.entries.map((entry) => {
                     const meta = LEVEL_META[entry.level];
                     const Icon = meta.icon;
@@ -454,11 +455,12 @@ export default function StaffCompetencyPage() {
                       </div>
                     );
                   })}
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
+        </FlatList>
 
         {/* ── regulatory note ────────────────────────────────────────────── */}
 
