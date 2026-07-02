@@ -5,7 +5,8 @@ import { CaraQuickActions } from "@/components/intelligence/cara-quick-actions";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1059,14 +1060,9 @@ export default function HandoverPage() {
         {/* ── Right column: contextual sidebar ── */}
         <div className="space-y-5">
           {/* Today's shifts */}
-          <Card className="rounded-2xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Users className="h-4 w-4 text-blue-500" />
-                On Shift Today
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card>
+            <CardContent className="pt-5">
+              <SectionHeader icon={Users}>On Shift Today</SectionHeader>
               {isLoading ? (
                 <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : todayShifts.length === 0 ? (
@@ -1089,14 +1085,9 @@ export default function HandoverPage() {
           </Card>
 
           {/* Pending tasks */}
-          <Card className="rounded-2xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <ClipboardList className="h-4 w-4 text-amber-500" />
-                Pending Tasks
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card>
+            <CardContent className="pt-5">
+              <SectionHeader icon={ClipboardList}>Pending Tasks</SectionHeader>
               {isLoading ? (
                 <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : pendingTasks.length === 0 ? (
@@ -1129,14 +1120,9 @@ export default function HandoverPage() {
           </Card>
 
           {/* Open incidents */}
-          <Card className="rounded-2xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-red-500" />
-                Open Incidents
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card>
+            <CardContent className="pt-5">
+              <SectionHeader icon={AlertTriangle}>Open Incidents</SectionHeader>
               {isLoading ? (
                 <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : openIncidents.length === 0 ? (
@@ -1166,14 +1152,9 @@ export default function HandoverPage() {
           </Card>
 
           {/* Medication summary */}
-          <Card className="rounded-2xl">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Pill className="h-4 w-4 text-violet-500" />
-                Medication Today
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+          <Card>
+            <CardContent className="pt-5">
+              <SectionHeader icon={Pill}>Medication Today</SectionHeader>
               {youngPeople.length === 0 ? (
                 <div className="text-xs text-slate-400 py-2">Loading...</div>
               ) : (
