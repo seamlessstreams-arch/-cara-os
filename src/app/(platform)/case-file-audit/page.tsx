@@ -5,7 +5,8 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -58,6 +59,9 @@ const ragDot = (r: RagRating) =>
     r === "amber" && "bg-[--cs-warning]",
     r === "red" && "bg-[--cs-risk]"
   );
+
+const ragSeverity: Record<RagRating, RowSeverity> = { green: "success", amber: "warning", red: "risk" };
+const ragText: Record<RagRating, string> = { green: "text-[--cs-success]", amber: "text-[--cs-warning]", red: "text-[--cs-risk]" };
 
 const actionStatusBadge = (s: CaseFileActionStatus) => {
   switch (s) {
@@ -233,24 +237,22 @@ export default function CaseFileAuditPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <FlatList>
         {filtered.map((audit) => {
           const isExpanded = expandedId === audit.id;
           const openActions = audit.priority_actions.filter((a) => a.status !== "complete").length;
 
           return (
-            <Card key={audit.id} className="overflow-hidden">
-              <CardHeader className="cursor-pointer hover:bg-muted/40 transition-colors py-4" onClick={() => toggle(audit.id)}>
-                <div className="flex items-center justify-between gap-4">
+            <div key={audit.id}>
+              <FlatListRow severity={ragSeverity[audit.overall_rag_rating]} onClick={() => toggle(audit.id)} aria-expanded={isExpanded}>
+                <div className="flex items-center justify-between gap-4 flex-1 min-w-0">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={cn("p-2 rounded-full shrink-0", audit.overall_rag_rating === "green" && "bg-[--cs-success-bg]", audit.overall_rag_rating === "amber" && "bg-[--cs-warning-bg]", audit.overall_rag_rating === "red" && "bg-[--cs-risk-bg]")}>
-                      <FileSearch className={cn("h-5 w-5", audit.overall_rag_rating === "green" && "text-[--cs-success]", audit.overall_rag_rating === "amber" && "text-[--cs-warning]", audit.overall_rag_rating === "red" && "text-[--cs-risk]")} />
-                    </div>
+                    <FileSearch className={cn("h-5 w-5 shrink-0", audit.overall_rag_rating === "green" && "text-[--cs-success]", audit.overall_rag_rating === "amber" && "text-[--cs-warning]", audit.overall_rag_rating === "red" && "text-[--cs-risk]")} />
                     <div className="min-w-0">
-                      <CardTitle className="text-base truncate">{getYPName(audit.child_id)}</CardTitle>
+                      <p className="text-base font-semibold text-[var(--cs-navy)] truncate">{getYPName(audit.child_id)}</p>
                       <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <Badge className={cn("border", ragClasses(audit.overall_rag_rating))}>{RAG_RATING_LABEL[audit.overall_rag_rating]}</Badge>
                         <Badge variant="outline">{CASE_FILE_AUDIT_TYPE_LABEL[audit.audit_type]}</Badge>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", ragText[audit.overall_rag_rating])}>{RAG_RATING_LABEL[audit.overall_rag_rating]}</span>
                         <span className="text-xs text-muted-foreground flex items-center gap-1"><CalendarClock className="h-3.5 w-3.5" />{audit.audit_date}</span>
                         <span className="text-xs text-muted-foreground">Auditor: {getStaffName(audit.auditor)}</span>
                       </div>
@@ -264,10 +266,10 @@ export default function CaseFileAuditPage() {
                     {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </div>
                 </div>
-              </CardHeader>
+              </FlatListRow>
 
               {isExpanded && (
-                <CardContent className="pt-0 pb-5 space-y-5">
+                <FlatListRowDetail className="pb-5 space-y-5">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5"><ClipboardList className="h-3.5 w-3.5" />Sections Audited</p>
                     <div className="space-y-2">
@@ -340,16 +342,16 @@ export default function CaseFileAuditPage() {
                   </div>
 
                   <SmartLinkPanel sourceType="case-file-audits" sourceId={audit.id} childId={audit.child_id} compact />
-                </CardContent>
+                </FlatListRowDetail>
               )}
-            </Card>
+            </div>
           );
         })}
 
         {filtered.length === 0 && (
-          <div className="text-center text-sm text-muted-foreground py-10 border rounded-md">No audits match the current filters.</div>
+          <div className="text-center text-sm text-muted-foreground py-10">No audits match the current filters.</div>
         )}
-      </div>
+      </FlatList>
 
       <div className="mt-8 rounded-lg border bg-muted/30 p-4 text-xs text-muted-foreground space-y-1">
         <p className="font-semibold text-foreground">Regulatory basis</p>
