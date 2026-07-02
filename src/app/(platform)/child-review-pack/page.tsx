@@ -13,18 +13,18 @@ import { useChildReviewPack } from "@/hooks/use-child-review-pack";
 import type { PackRag, ReviewSection, ReviewDomainScore } from "@/lib/engines/child-review-pack-engine";
 
 const RAG: Record<PackRag, { dot: string; badge: string; label: string; rag: string; pdot: string }> = {
-  green: { dot: "bg-green-500", badge: "bg-green-100 text-green-800 border-green-200", label: "Good", rag: "cs-rag-green", pdot: "cs-dot-green" },
-  amber: { dot: "bg-amber-400", badge: "bg-amber-100 text-amber-800 border-amber-200", label: "Attention", rag: "cs-rag-amber", pdot: "cs-dot-amber" },
-  red: { dot: "bg-red-500", badge: "bg-red-100 text-red-800 border-red-200", label: "Concern", rag: "cs-rag-red", pdot: "cs-dot-red" },
+  green: { dot: "bg-[--cs-success]", badge: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]", label: "Good", rag: "cs-rag-green", pdot: "cs-dot-green" },
+  amber: { dot: "bg-[--cs-warning]", badge: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]", label: "Attention", rag: "cs-rag-amber", pdot: "cs-dot-amber" },
+  red: { dot: "bg-[--cs-risk]", badge: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]", label: "Concern", rag: "cs-rag-red", pdot: "cs-dot-red" },
   no_data: { dot: "bg-slate-300", badge: "bg-slate-100 text-slate-600 border-slate-200", label: "No data", rag: "cs-rag-slate", pdot: "cs-dot-slate" },
 };
 
 const WELLBEING_TONE: Record<string, { tone: string; print: string }> = {
-  Thriving: { tone: "bg-green-50 text-green-800 ring-green-200", print: "cs-tone-green" },
-  Stable: { tone: "bg-blue-50 text-blue-800 ring-blue-200", print: "cs-tone-blue" },
-  "Needs attention": { tone: "bg-amber-50 text-amber-800 ring-amber-200", print: "cs-tone-amber" },
+  Thriving: { tone: "bg-[--cs-success-bg] text-[--cs-success] ring-[--cs-success-soft]", print: "cs-tone-green" },
+  Stable: { tone: "bg-[--cs-info-bg] text-[--cs-info] ring-[--cs-info-soft]", print: "cs-tone-blue" },
+  "Needs attention": { tone: "bg-[--cs-warning-bg] text-[--cs-warning] ring-[--cs-warning-soft]", print: "cs-tone-amber" },
   Concerning: { tone: "bg-orange-50 text-orange-800 ring-orange-200", print: "cs-tone-amber" },
-  Critical: { tone: "bg-red-50 text-red-800 ring-red-200", print: "cs-tone-red" },
+  Critical: { tone: "bg-[--cs-risk-bg] text-[--cs-risk] ring-[--cs-risk-soft]", print: "cs-tone-red" },
 };
 
 function DomainChip({ d }: { d: ReviewDomainScore }) {
@@ -198,10 +198,10 @@ export default function ChildReviewPackPage() {
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {pack.strengths.length > 0 && (
                 <Card className="break-inside-avoid">
-                  <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold text-green-700"><CheckCircle2 className="h-4 w-4" /> Strengths</CardTitle></CardHeader>
+                  <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm font-semibold text-[--cs-success]"><CheckCircle2 className="h-4 w-4" /> Strengths</CardTitle></CardHeader>
                   <CardContent className="space-y-1.5">
                     {pack.strengths.map((s, i) => (
-                      <div key={i} className="flex items-start gap-2 text-sm text-slate-700"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" /><span>{s}</span></div>
+                      <div key={i} className="flex items-start gap-2 text-sm text-slate-700"><CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[--cs-success]" /><span>{s}</span></div>
                     ))}
                   </CardContent>
                 </Card>
