@@ -20,6 +20,7 @@ import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { cn } from "@/lib/utils";
 import { getStaffName, STAFF } from "@/lib/seed-data";
 import { toast } from "sonner";
@@ -45,26 +46,16 @@ const SOURCE_COLOUR: Record<ObjectiveSource, string> = {
   org_risk: "bg-violet-50 text-violet-700 border-violet-200",
 };
 
-const PRIORITY_COLOUR: Record<ObjectivePriority, string> = {
-  high: "bg-red-50 text-red-700 border-red-200",
-  medium: "bg-amber-50 text-amber-700 border-amber-200",
-  low: "bg-slate-50 text-[var(--cs-text-secondary)] border-[var(--cs-border)]",
-};
-
-const STATUS_COLOUR: Record<ObjectiveStatus, string> = {
-  planned: "bg-blue-50 text-blue-700 border-blue-200",
-  in_progress: "bg-amber-50 text-amber-700 border-amber-200",
-  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  overdue: "bg-red-50 text-red-700 border-red-200",
-};
-
 const STATUS_LABELS = OBJECTIVE_STATUS_LABEL;
 
-const STATUS_CARD_BORDER: Record<ObjectiveStatus, string> = {
-  planned: "border-l-blue-400",
-  in_progress: "border-l-amber-400",
-  completed: "border-l-emerald-400",
-  overdue: "border-l-red-400",
+const STATUS_ROW: Record<ObjectiveStatus, RowSeverity> = {
+  planned: "info", in_progress: "warning", completed: "success", overdue: "risk",
+};
+const STATUS_TEXT: Record<ObjectiveStatus, string> = {
+  planned: "text-[--cs-info]", in_progress: "text-[--cs-warning]", completed: "text-[--cs-success]", overdue: "text-[--cs-risk]",
+};
+const PRIORITY_TEXT: Record<ObjectivePriority, string> = {
+  high: "text-[--cs-risk]", medium: "text-[--cs-warning]", low: "text-[var(--cs-text-secondary)]",
 };
 
 const PRIORITY_ORDER: Record<ObjectivePriority, number> = { high: 0, medium: 1, low: 2 };
@@ -176,15 +167,15 @@ export default function HomeImprovementPlanPage() {
       <div id="print-area" className="space-y-6">
         {/* ── overdue alert ─────────────────────────────────────────── */}
         {overdueCount > 0 && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 flex items-center gap-3">
-            <div className="rounded-full bg-red-100 p-1.5">
-              <AlertTriangle className="h-4 w-4 text-red-600" />
+          <div className="rounded-xl border border-[--cs-risk-soft] bg-[--cs-risk-bg] px-4 py-3 flex items-center gap-3">
+            <div className="rounded-full bg-[--cs-risk-bg] p-1.5">
+              <AlertTriangle className="h-4 w-4 text-[--cs-risk]" />
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-red-800">
+              <p className="text-sm font-semibold text-[--cs-risk]">
                 {overdueCount} objective{overdueCount !== 1 ? "s" : ""} overdue
               </p>
-              <p className="text-xs text-red-600 mt-0.5">
+              <p className="text-xs text-[--cs-risk] mt-0.5">
                 Overdue objectives require immediate attention. Review and update target dates or escalate as needed.
               </p>
             </div>
@@ -203,9 +194,9 @@ export default function HomeImprovementPlanPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Total Objectives", value: total, icon: Target, colour: "text-indigo-600" },
-            { label: "Completed", value: completedCount, icon: CheckCircle2, colour: "text-emerald-600" },
-            { label: "In Progress", value: inProgressCount, icon: TrendingUp, colour: "text-amber-600" },
-            { label: "Overdue", value: overdueCount, icon: AlertTriangle, colour: overdueCount > 0 ? "text-red-600" : "text-emerald-600" },
+            { label: "Completed", value: completedCount, icon: CheckCircle2, colour: "text-[--cs-success]" },
+            { label: "In Progress", value: inProgressCount, icon: TrendingUp, colour: "text-[--cs-warning]" },
+            { label: "Overdue", value: overdueCount, icon: AlertTriangle, colour: overdueCount > 0 ? "text-[--cs-risk]" : "text-[--cs-success]" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">
               <s.icon className={cn("h-5 w-5", s.colour)} />
@@ -280,45 +271,35 @@ export default function HomeImprovementPlanPage() {
         </div>
 
         {/* ── objective cards ─────────────────────────────────────── */}
-        <div className="space-y-3">
-          {filtered.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <Target className="h-10 w-10 mx-auto mb-3 text-[var(--cs-text-gentle)]" />
-              No objectives match your filters.
-            </div>
-          )}
+        {filtered.length === 0 && (
+          <div className="text-center py-12 text-muted-foreground">
+            <Target className="h-10 w-10 mx-auto mb-3 text-[var(--cs-text-gentle)]" />
+            No objectives match your filters.
+          </div>
+        )}
+        <FlatList className={cn(filtered.length === 0 && "hidden")}>
           {filtered.map((obj) => {
             const isExpanded = expandedId === obj.id;
             return (
-              <div
-                key={obj.id}
-                className={cn(
-                  "rounded-xl border border-l-4 bg-white overflow-hidden",
-                  STATUS_CARD_BORDER[obj.status]
-                )}
-              >
+              <div key={obj.id}>
                 {/* collapsed header */}
-                <button
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
+                <FlatListRow
+                  severity={STATUS_ROW[obj.status]}
+                  className="items-center justify-between"
                   onClick={() => setExpandedId(isExpanded ? null : obj.id)}
+                  aria-expanded={isExpanded}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Target className={cn(
-                      "h-5 w-5 shrink-0",
-                      obj.status === "completed" ? "text-emerald-600"
-                        : obj.status === "overdue" ? "text-red-600"
-                        : obj.status === "in_progress" ? "text-amber-600"
-                        : "text-blue-600"
-                    )} />
+                    <Target className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="font-medium">{obj.title}</p>
-                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", STATUS_COLOUR[obj.status])}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[obj.status])}>
                           {STATUS_LABELS[obj.status]}
-                        </Badge>
-                        <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", PRIORITY_COLOUR[obj.priority])}>
+                        </span>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", PRIORITY_TEXT[obj.priority])}>
                           {obj.priority.charAt(0).toUpperCase() + obj.priority.slice(1)}
-                        </Badge>
+                        </span>
                         <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", SOURCE_COLOUR[obj.source])}>
                           {SOURCE_LABELS[obj.source]}
                         </Badge>
@@ -347,15 +328,15 @@ export default function HomeImprovementPlanPage() {
                       </div>
                     )}
                     {obj.status === "completed" && (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                     )}
                     {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                   </div>
-                </button>
+                </FlatListRow>
 
                 {/* expanded detail */}
                 {isExpanded && (
-                  <div className="border-t bg-slate-50 p-4 space-y-4">
+                  <FlatListRowDetail className="space-y-4">
                     {/* notes */}
                     <Card>
                       <CardHeader className="pb-2">
@@ -384,7 +365,7 @@ export default function HomeImprovementPlanPage() {
                               className={cn(
                                 "h-full rounded-full transition-all",
                                 obj.progress === 100 ? "bg-emerald-500"
-                                  : obj.status === "overdue" ? "bg-red-500"
+                                  : obj.status === "overdue" ? "bg-[--cs-risk-bg]0"
                                   : obj.progress >= 50 ? "bg-amber-500"
                                   : "bg-blue-500"
                               )}
@@ -448,7 +429,7 @@ export default function HomeImprovementPlanPage() {
                       </div>
                       <div>
                         <span className="text-muted-foreground">Completed:</span>{" "}
-                        <span className={cn("font-medium", obj.completed_date ? "text-emerald-600" : "text-[var(--cs-text-muted)]")}>
+                        <span className={cn("font-medium", obj.completed_date ? "text-[--cs-success]" : "text-[var(--cs-text-muted)]")}>
                           {obj.completed_date ?? "Pending"}
                         </span>
                       </div>
@@ -459,12 +440,12 @@ export default function HomeImprovementPlanPage() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </FlatListRowDetail>
                 )}
               </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── regulatory note ──────────────────────────────────────── */}
         <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">

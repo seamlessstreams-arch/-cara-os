@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { getStaffName } from "@/lib/seed-data";
@@ -145,17 +146,17 @@ export default function BuildingPestControlPage() {
       }
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <div className="flex items-center gap-2 text-amber-800 text-sm mb-1"><Bug className="h-4 w-4" /><span>Treatments (12m)</span></div>
-          <div className="text-2xl font-semibold text-amber-900">{stats.treatmentsYTD}</div>
+        <div className="rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4">
+          <div className="flex items-center gap-2 text-[--cs-warning] text-sm mb-1"><Bug className="h-4 w-4" /><span>Treatments (12m)</span></div>
+          <div className="text-2xl font-semibold text-[--cs-warning]">{stats.treatmentsYTD}</div>
         </div>
         <div className="rounded-lg border border-teal-200 bg-teal-50 p-4">
           <div className="flex items-center gap-2 text-teal-800 text-sm mb-1"><Calendar className="h-4 w-4" /><span>Follow-ups open</span></div>
           <div className="text-2xl font-semibold text-teal-900">{stats.followUpsOpen}</div>
         </div>
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4">
-          <div className="flex items-center gap-2 text-emerald-800 text-sm mb-1"><CheckCircle className="h-4 w-4" /><span>Infestations resolved</span></div>
-          <div className="text-2xl font-semibold text-emerald-900">{stats.infestationsResolved}</div>
+        <div className="rounded-lg border border-[--cs-success-soft] bg-[--cs-success-bg] p-4">
+          <div className="flex items-center gap-2 text-[--cs-success] text-sm mb-1"><CheckCircle className="h-4 w-4" /><span>Infestations resolved</span></div>
+          <div className="text-2xl font-semibold text-[--cs-success]">{stats.infestationsResolved}</div>
         </div>
         <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
           <div className="flex items-center gap-2 text-stone-700 text-sm mb-1"><Shield className="h-4 w-4" /><span>Annual cost</span></div>
@@ -188,27 +189,27 @@ export default function BuildingPestControlPage() {
         </Select>
       </div>
 
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((r) => {
           const isOpen = expandedId === r.id;
           const followUpSoon = r.follow_up_required && r.follow_up_date && r.follow_up_date >= today && r.follow_up_date <= thirtyDaysFromNow;
           const followUpOverdue = r.follow_up_required && r.follow_up_date && r.follow_up_date < today;
           return (
-            <div key={r.id} className="rounded-lg border border-[var(--cs-border)] bg-white overflow-hidden">
-              <button onClick={() => setExpandedId(isOpen ? null : r.id)} className="w-full p-4 flex items-start justify-between gap-3 hover:bg-amber-50/40 text-left">
+            <div key={r.id}>
+              <FlatListRow severity={followUpOverdue ? "risk" : followUpSoon ? "warning" : "neutral"} onClick={() => setExpandedId(isOpen ? null : r.id)} className="items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <Bug className="h-4 w-4 text-amber-600" />
+                    <Bug className="h-4 w-4 text-muted-foreground shrink-0" />
                     <span className="font-semibold text-[var(--cs-navy)]">{r.record_date}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", typeColour[r.record_type])}>{PEST_RECORD_TYPE_LABEL[r.record_type]}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", pestColour[r.pest_category])}>{PEST_CATEGORY_LABEL[r.pest_category]}</span>
                     {r.follow_up_required ? (
                       followUpOverdue ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-red-100 text-red-800 border-red-200">Follow-up overdue · {r.follow_up_date}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Follow-up overdue · {r.follow_up_date}</span>
                       ) : followUpSoon ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-amber-100 text-amber-800 border-amber-200">Follow-up {r.follow_up_date}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Follow-up {r.follow_up_date}</span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-sky-100 text-sky-800 border-sky-200">Follow-up {r.follow_up_date}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-sky-700">Follow-up {r.follow_up_date}</span>
                       )
                     ) : null}
                   </div>
@@ -216,14 +217,14 @@ export default function BuildingPestControlPage() {
                     {r.affected_areas.slice(0, 2).join(" · ")}{r.affected_areas.length > 2 ? ` · +${r.affected_areas.length - 2} more` : ""} · {r.contractor}
                   </div>
                 </div>
-                {isOpen ? <ChevronUp className="h-5 w-5 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)]" />}
-              </button>
+                {isOpen ? <ChevronUp className="h-5 w-5 text-[var(--cs-text-muted)] shrink-0" /> : <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)] shrink-0" />}
+              </FlatListRow>
               {isOpen && (
-                <div className="px-4 pb-4 border-t border-[var(--cs-border-subtle)] bg-amber-50/20">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
+                <FlatListRowDetail>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Affected areas</div>
-                      <ul className="text-sm text-[var(--cs-text-secondary)] space-y-1">{r.affected_areas.map((a, i) => (<li key={i} className="flex gap-2"><span className="text-amber-600">·</span><span>{a}</span></li>))}</ul>
+                      <ul className="text-sm text-[var(--cs-text-secondary)] space-y-1">{r.affected_areas.map((a, i) => (<li key={i} className="flex gap-2"><span className="text-[--cs-warning]">·</span><span>{a}</span></li>))}</ul>
                     </div>
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Contractor</div>
@@ -240,19 +241,19 @@ export default function BuildingPestControlPage() {
                       <div className="text-xs font-semibold text-stone-700 uppercase mb-2">Chemicals used (COSHH)</div>
                       <ul className="text-sm text-stone-800 space-y-1">{r.chemicals_used.map((c, i) => (<li key={i} className="flex gap-2"><span>·</span><span>{c}</span></li>))}</ul>
                     </div>
-                    <div className="rounded-md border-2 border-emerald-300 bg-emerald-50 p-3 lg:col-span-2">
+                    <div className="rounded-md border-2 border-[--cs-success-soft] bg-[--cs-success-bg] p-3 lg:col-span-2">
                       <div className="flex items-center gap-2 mb-2">
-                        <Shield className="h-4 w-4 text-emerald-700" />
-                        <div className="text-xs font-semibold text-emerald-800 uppercase">
+                        <Shield className="h-4 w-4 text-[--cs-success]" />
+                        <div className="text-xs font-semibold text-[--cs-success] uppercase">
                           Child safety measures
-                          {r.child_informed_and_paced && <span className="ml-2 text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded-full normal-case">Children informed &amp; paced</span>}
+                          {r.child_informed_and_paced && <span className="ml-2 text-[10px] bg-[--cs-success-soft] text-[--cs-success] px-1.5 py-0.5 rounded-full normal-case">Children informed &amp; paced</span>}
                         </div>
                       </div>
-                      <ul className="text-sm text-emerald-900 space-y-1">{r.child_safety_measures.map((s, i) => (<li key={i} className="flex gap-2"><CheckCircle className="h-3.5 w-3.5 text-emerald-600 mt-0.5 shrink-0" /><span>{s}</span></li>))}</ul>
+                      <ul className="text-sm text-[--cs-success] space-y-1">{r.child_safety_measures.map((s, i) => (<li key={i} className="flex gap-2"><CheckCircle className="h-3.5 w-3.5 text-[--cs-success] mt-0.5 shrink-0" /><span>{s}</span></li>))}</ul>
                     </div>
-                    <div className="rounded-md border border-amber-200 bg-amber-50 p-3 lg:col-span-2">
-                      <div className="flex items-center gap-2 mb-2"><Sprout className="h-4 w-4 text-amber-700" /><div className="text-xs font-semibold text-amber-800 uppercase">Prevention advice</div></div>
-                      <ul className="text-sm text-amber-900 space-y-1">{r.prevention_advice.map((p, i) => (<li key={i} className="flex gap-2"><span>·</span><span>{p}</span></li>))}</ul>
+                    <div className="rounded-md border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-3 lg:col-span-2">
+                      <div className="flex items-center gap-2 mb-2"><Sprout className="h-4 w-4 text-[--cs-warning]" /><div className="text-xs font-semibold text-[--cs-warning] uppercase">Prevention advice</div></div>
+                      <ul className="text-sm text-[--cs-warning] space-y-1">{r.prevention_advice.map((p, i) => (<li key={i} className="flex gap-2"><span>·</span><span>{p}</span></li>))}</ul>
                     </div>
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Outcome / evidence trail</div>
@@ -261,7 +262,7 @@ export default function BuildingPestControlPage() {
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Follow-up</div>
                       <div className="text-sm text-[var(--cs-text-secondary)]">
-                        {r.follow_up_required ? <>Required by <span className="font-medium">{r.follow_up_date ?? "TBC"}</span></> : <span className="text-emerald-700">No follow-up required — closed</span>}
+                        {r.follow_up_required ? <>Required by <span className="font-medium">{r.follow_up_date ?? "TBC"}</span></> : <span className="text-[--cs-success]">No follow-up required — closed</span>}
                       </div>
                     </div>
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3">
@@ -269,23 +270,23 @@ export default function BuildingPestControlPage() {
                       <div className="text-sm text-[var(--cs-text-secondary)]">{r.cost_paid !== undefined ? `£${r.cost_paid.toFixed(2)}` : "—"}</div>
                     </div>
                     {r.flags_concerns.length > 0 && (
-                      <div className="rounded-md border border-red-200 bg-red-50 p-3 lg:col-span-2">
-                        <div className="flex items-center gap-2 mb-2"><AlertTriangle className="h-4 w-4 text-red-700" /><div className="text-xs font-semibold text-red-800 uppercase">Flags / concerns</div></div>
-                        <ul className="text-sm text-red-900 space-y-1">{r.flags_concerns.map((f, i) => (<li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>))}</ul>
+                      <div className="rounded-md border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-3 lg:col-span-2">
+                        <div className="flex items-center gap-2 mb-2"><AlertTriangle className="h-4 w-4 text-[--cs-risk]" /><div className="text-xs font-semibold text-[--cs-risk] uppercase">Flags / concerns</div></div>
+                        <ul className="text-sm text-[--cs-risk] space-y-1">{r.flags_concerns.map((f, i) => (<li key={i} className="flex gap-2"><span>!</span><span>{f}</span></li>))}</ul>
                       </div>
                     )}
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2 text-xs text-[var(--cs-text-muted)]">
                       Recorded by {getStaffName(r.recorded_by)}
                     </div>
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
-      <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+      <div className="mt-6 rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4 text-sm text-[--cs-warning]">
         <div className="font-semibold mb-1">Regulatory framework</div>
         <p>
           Children&rsquo;s Homes (England) Regulations 2015 Reg 12 (protection from harm), Reg 25 (premises and grounds)
