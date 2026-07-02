@@ -23,15 +23,15 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { toast } from "sonner";
 
 const severityColour: Record<MedInvSeverity, string> = {
-  no_harm: "bg-green-100 text-green-800",
-  minor_harm: "bg-amber-100 text-amber-800",
+  no_harm: "bg-[--cs-success-bg] text-[--cs-success]",
+  minor_harm: "bg-[--cs-warning-bg] text-[--cs-warning]",
   moderate_harm: "bg-orange-100 text-orange-800",
-  major_harm: "bg-red-100 text-red-800",
+  major_harm: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const statusColour: Record<MedInvStatus, string> = {
-  investigating: "bg-blue-100 text-blue-800",
-  closed_resolved: "bg-green-100 text-green-800",
+  investigating: "bg-[--cs-info-bg] text-[--cs-info]",
+  closed_resolved: "bg-[--cs-success-bg] text-[--cs-success]",
   reported_monitoring: "bg-purple-100 text-purple-800",
 };
 
@@ -153,9 +153,9 @@ export default function MedicationErrorInvestigationPage() {
       </Dialog>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold">{total}</p><p className="text-xs text-muted-foreground">Investigations</p></div>
-        <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-green-600">{noHarm}/{total}</p><p className="text-xs text-muted-foreground">No Harm</p></div>
-        <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-purple-600">{ofstedNotified}</p><p className="text-xs text-muted-foreground">Ofsted Notified</p></div>
-        <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-blue-600">{embedded}/{total}</p><p className="text-xs text-muted-foreground">Embedded Learning</p></div>
+        <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-[--cs-success]">{noHarm}/{total}</p><p className="text-xs text-muted-foreground">No Harm</p></div>
+        <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-[--cs-risk]">{ofstedNotified}</p><p className="text-xs text-muted-foreground">Ofsted Notified</p></div>
+        <div className="rounded-xl border bg-white p-4 text-center"><p className="text-2xl font-bold text-[--cs-success]">{embedded}/{total}</p><p className="text-xs text-muted-foreground">Embedded Learning</p></div>
       </div>
       <div className="rounded-lg bg-purple-50 border border-purple-200 p-3 mb-6 flex items-start gap-2">
         <Lightbulb className="h-4 w-4 text-purple-600 mt-0.5 shrink-0" />
@@ -177,18 +177,18 @@ export default function MedicationErrorInvestigationPage() {
               </button>
               {isExpanded && (
                 <div className="border-t px-4 py-4 bg-slate-50 space-y-3 text-sm">
-                  <div className="bg-amber-50 rounded-lg p-3"><p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1"><AlertTriangle className="h-3 w-3 inline mr-1" />Child Impact</p><p>{e.child_impact_observed}</p></div>
-                  <div className="bg-blue-50 rounded-lg p-3"><p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Immediate Actions Taken</p><ul className="space-y-1">{e.immediate_actions_taken.map((a, i) => <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-blue-500 mt-1 shrink-0" /><span>{a}</span></li>)}</ul></div>
+                  <div className="bg-[--cs-warning-bg] rounded-lg p-3"><p className="text-xs font-semibold text-[--cs-warning] uppercase tracking-wide mb-1"><AlertTriangle className="h-3 w-3 inline mr-1" />Child Impact</p><p>{e.child_impact_observed}</p></div>
+                  <div className="bg-[--cs-info-bg] rounded-lg p-3"><p className="text-xs font-semibold text-[--cs-info] uppercase tracking-wide mb-1">Immediate Actions Taken</p><ul className="space-y-1">{e.immediate_actions_taken.map((a, i) => <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-[--cs-info] mt-1 shrink-0" /><span>{a}</span></li>)}</ul></div>
                   <div className="bg-purple-50 rounded-lg p-3"><p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1"><Lightbulb className="h-3 w-3 inline mr-1" />Root Cause Analysis</p><p>{e.root_cause_analysis}</p></div>
-                  {(e.contributing_factors?.length ?? 0) > 0 && <div><p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Contributing Factors</p><ul className="space-y-1">{(e.contributing_factors ?? []).map((f, i) => <li key={i} className="flex items-start gap-1"><span className="text-amber-600 mt-0.5">•</span><span>{f}</span></li>)}</ul></div>}
-                  <div className="bg-emerald-50 rounded-lg p-3"><p className="text-xs font-semibold text-emerald-800 uppercase tracking-wide mb-1">Systemic Changes</p><ul className="space-y-1">{e.systemic_changes.map((c, i) => <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-emerald-500 mt-1 shrink-0" /><span>{c}</span></li>)}</ul></div>
+                  {(e.contributing_factors?.length ?? 0) > 0 && <div><p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Contributing Factors</p><ul className="space-y-1">{(e.contributing_factors ?? []).map((f, i) => <li key={i} className="flex items-start gap-1"><span className="text-[--cs-warning] mt-0.5">•</span><span>{f}</span></li>)}</ul></div>}
+                  <div className="bg-[--cs-success-bg] rounded-lg p-3"><p className="text-xs font-semibold text-[--cs-success] uppercase tracking-wide mb-1">Systemic Changes</p><ul className="space-y-1">{e.systemic_changes.map((c, i) => <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-[--cs-success] mt-1 shrink-0" /><span>{c}</span></li>)}</ul></div>
                   <div className="bg-pink-50 rounded-lg p-3"><p className="text-xs font-semibold text-pink-800 uppercase tracking-wide mb-1"><Heart className="h-3 w-3 inline mr-1" />Staff Emotional Impact &amp; Support</p><p>{e.staff_emotional_impact}</p></div>
                   {e.child_informed_age_appropriately && <div className="bg-blue-50 rounded-lg p-3"><p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Child&apos;s Response</p><p>{e.child_response}</p></div>}
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t">
                     <span>GP consulted: {e.gp_consulted ? "Yes" : "No"}</span>
                     <span>LA informed: {e.parent_la_informed ? "Yes" : "No"}</span>
-                    {e.ofsted_notification_required && <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-medium">Ofsted notified {e.ofsted_notification_date}</span>}
-                    {e.preventive_action_embedded && <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium">Embedded</span>}
+                    {e.ofsted_notification_required && <span className="px-2 py-0.5 rounded-full bg-[--cs-risk-bg] text-[--cs-risk] font-medium">Ofsted notified {e.ofsted_notification_date}</span>}
+                    {e.preventive_action_embedded && <span className="px-2 py-0.5 rounded-full bg-[--cs-success-bg] text-[--cs-success] font-medium">Embedded</span>}
                     <span>Reviewed: {getStaffName(e.reviewed_by)}</span>
                   </div>
                   {e.notes && <div className="bg-slate-50 rounded-lg p-3 border"><p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">Notes</p><p>{e.notes}</p></div>}
