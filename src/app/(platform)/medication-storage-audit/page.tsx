@@ -26,13 +26,20 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
-const verdictColour: Record<StorageAuditVerdict, string> = {
-  pass: "bg-[--cs-success-bg] text-[--cs-success]",
-  pass_with_minor_actions: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  fail_immediate_action: "bg-[--cs-risk-bg] text-[--cs-risk]",
+const verdictRow: Record<StorageAuditVerdict, RowSeverity> = {
+  pass: "success",
+  pass_with_minor_actions: "warning",
+  fail_immediate_action: "risk",
+};
+
+const verdictText: Record<StorageAuditVerdict, string> = {
+  pass: "text-[--cs-success]",
+  pass_with_minor_actions: "text-[--cs-warning]",
+  fail_immediate_action: "text-[--cs-risk]",
 };
 
 const cleanColour: Record<CleanlinessRating, string> = {
@@ -164,21 +171,17 @@ export default function MedicationStorageAuditPage() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((a) => {
           const isExpanded = expandedId === a.id;
           const passedChecks = a.checks.filter((c: StorageAuditCheckItem) => c.pass).length;
 
           return (
-            <div key={a.id} className={cn("rounded-xl border bg-white overflow-hidden",
-              a.overall_verdict === "fail_immediate_action" && "border-l-4 border-l-[--cs-risk]"
-            )}>
-              <button
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
-                onClick={() => setExpandedId(isExpanded ? null : a.id)}
-              >
+            <div key={a.id}>
+              <FlatListRow severity={verdictRow[a.overall_verdict]} onClick={() => setExpandedId(isExpanded ? null : a.id)} aria-expanded={isExpanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Lock className="h-5 w-5 text-blue-600 shrink-0" />
+                  <Lock className="h-5 w-5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">{a.cabinet_location}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -187,15 +190,16 @@ export default function MedicationStorageAuditPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", verdictColour[a.overall_verdict])}>
+                  <span className={cn("text-[11px] font-semibold uppercase tracking-wide", verdictText[a.overall_verdict])}>
                     {STORAGE_AUDIT_VERDICT_LABEL[a.overall_verdict]}
                   </span>
-                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                 </div>
-              </button>
+                </div>
+              </FlatListRow>
 
               {isExpanded && (
-                <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
+                <FlatListRowDetail>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <div className="bg-white rounded-lg p-2 border text-center">
                       <p className="text-xs text-muted-foreground">Cleanliness</p>
@@ -305,12 +309,12 @@ export default function MedicationStorageAuditPage() {
                     <span>Signed off: {getStaffName(a.signed_off_by)}</span>
                     <span>Next audit: {a.next_audit_due}</span>
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-8 rounded-lg bg-muted/50 border p-4">
         <p className="text-xs text-muted-foreground">
