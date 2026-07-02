@@ -7,7 +7,8 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -33,6 +34,14 @@ const ACTION_CLR: Record<ReturnInterviewActionStatus, string> = {
   completed: "bg-[--cs-success-bg] text-[--cs-success]",
   in_progress: "bg-[--cs-info-bg] text-[--cs-info]",
   pending: "bg-gray-100 text-gray-800",
+};
+
+// Bar: exploitation concern is the alarm tier; otherwise interview status.
+const STATUS_ROW: Record<ReturnInterviewStatus, RowSeverity> = {
+  completed: "success", offered_declined: "warning", pending: "info", not_yet_due: "neutral",
+};
+const STATUS_TEXT: Record<ReturnInterviewStatus, string> = {
+  completed: "text-[--cs-success]", offered_declined: "text-[--cs-warning]", pending: "text-[--cs-info]", not_yet_due: "text-gray-600",
 };
 
 export default function MissingReturnInterviewsPage() {
@@ -149,27 +158,26 @@ export default function MissingReturnInterviewsPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
+      <FlatList>
         {filtered.map((interview) => {
           const expanded = expandedId === interview.id;
+          const severity: RowSeverity = interview.exploitation_concerns ? "risk" : STATUS_ROW[interview.interview_status];
           return (
-            <Card key={interview.id} className={cn("overflow-hidden", interview.exploitation_concerns && "border-[--cs-risk-soft]")}>
-              <CardHeader className="cursor-pointer hover:bg-muted/40 transition-colors py-4" onClick={() => toggle(interview.id)}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn("p-2 rounded-full", interview.exploitation_concerns ? "bg-[--cs-risk-bg]" : interview.interview_status === "completed" ? "bg-[--cs-success-bg]" : "bg-[--cs-warning-bg]")}>
-                      <MapPin className={cn("h-5 w-5", interview.exploitation_concerns ? "text-[--cs-risk]" : interview.interview_status === "completed" ? "text-[--cs-success]" : "text-[--cs-warning]")} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{getYPName(interview.child_id)} — {interview.missing_episode_date}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge className={STATUS_CLR[interview.interview_status]}>{RETURN_INTERVIEW_STATUS_LABEL[interview.interview_status]}</Badge>
-                        {interview.exploitation_concerns && <Badge className="bg-[--cs-risk-bg] text-[--cs-risk]">Exploitation Concern</Badge>}
+            <div key={interview.id}>
+              <FlatListRow severity={severity} onClick={() => toggle(interview.id)} aria-expanded={expanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <MapPin className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)]">{getYPName(interview.child_id)} — {interview.missing_episode_date}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[interview.interview_status])}>{RETURN_INTERVIEW_STATUS_LABEL[interview.interview_status]}</span>
+                        {interview.exploitation_concerns && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Exploitation Concern</span>}
                         {interview.independent_of_home && <Badge variant="outline" className="text-xs">Independent</Badge>}
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right hidden sm:block">
                       <p className="text-xs text-muted-foreground">Interviewer</p>
                       <p className="text-sm">{getStaffName(interview.interviewed_by)}</p>
@@ -177,10 +185,10 @@ export default function MissingReturnInterviewsPage() {
                     {expanded ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                   </div>
                 </div>
-              </CardHeader>
+              </FlatListRow>
 
               {expanded && (
-                <CardContent className="pt-0 pb-4 space-y-5">
+                <FlatListRowDetail className="space-y-5">
                   {interview.declined_reason && (
                     <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-md p-3">
                       <p className="text-sm font-medium text-[--cs-warning]">Reason Declined</p>
@@ -273,12 +281,12 @@ export default function MissingReturnInterviewsPage() {
                   </div>
 
                   <SmartLinkPanel sourceType="missing-return-interviews" sourceId={interview.id} childId={interview.child_id} compact />
-                </CardContent>
+                </FlatListRowDetail>
               )}
-            </Card>
+            </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-8 bg-slate-50 border border-[var(--cs-border)] rounded-lg p-4">
         <p className="text-sm font-medium text-[var(--cs-text-secondary)] mb-1">Regulatory Context</p>
