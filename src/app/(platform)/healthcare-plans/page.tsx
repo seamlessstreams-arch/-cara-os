@@ -6,7 +6,8 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -236,7 +237,7 @@ export default function HealthcarePlansPage() {
         </div>
 
         {/* ─── plan cards ─── */}
-        <div className="space-y-3">
+        <FlatList>
           {sorted.map((plan) => {
             const isOpen = expandedId === plan.id;
             const hasCriticalAllergy = plan.allergies.some(
@@ -245,71 +246,44 @@ export default function HealthcarePlansPage() {
             const reviewSoon =
               (new Date(plan.next_review_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) <= 30;
 
+            const rowSev: RowSeverity = hasCriticalAllergy ? "risk" : reviewSoon ? "warning" : "success";
+
             return (
-              <Card
-                key={plan.id}
-                className={cn(
-                  "border-l-4",
-                  hasCriticalAllergy
-                    ? "border-l-[--cs-risk]"
-                    : reviewSoon
-                      ? "border-l-[--cs-warning]"
-                      : "border-l-[--cs-success]",
-                )}
-              >
-                <CardHeader
-                  className="pb-2 cursor-pointer hover:bg-muted/30 transition-colors"
-                  onClick={() => toggle(plan.id)}
-                >
-                  <div className="flex items-start justify-between gap-2">
+              <div key={plan.id}>
+                <FlatListRow severity={rowSev} className="justify-between gap-2" onClick={() => toggle(plan.id)} aria-expanded={isOpen}>
                     <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        <HeartPulse className="h-4 w-4 text-red-600" />
+                      <div className="text-base font-semibold flex items-center gap-2 flex-wrap">
+                        <HeartPulse className="h-4 w-4 text-muted-foreground" />
                         {getYPName(plan.child_id)}
-                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                        <span className="text-xs font-normal text-muted-foreground">
                           {plan.conditions.length} condition{plan.conditions.length === 1 ? "" : "s"}
-                        </Badge>
-                        {plan.allergies.length > 0 && (
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              hasCriticalAllergy
-                                ? "bg-[--cs-risk-bg] text-[--cs-risk]"
-                                : "bg-orange-100 text-orange-800",
-                            )}
-                          >
-                            {plan.allergies.length} allerg{plan.allergies.length === 1 ? "y" : "ies"}
-                          </Badge>
-                        )}
-                        <Badge variant="outline" className="bg-green-100 text-green-800">
-                          {plan.regular_medications.length} regular med
-                          {plan.regular_medications.length === 1 ? "" : "s"}
-                        </Badge>
+                          {plan.allergies.length > 0 && ` · ${plan.allergies.length} allerg${plan.allergies.length === 1 ? "y" : "ies"}`}
+                          {` · ${plan.regular_medications.length} regular med${plan.regular_medications.length === 1 ? "" : "s"}`}
+                        </span>
                         {plan.signed_off_by_gp ? (
-                          <Badge variant="outline" className="bg-[--cs-success-bg] text-[--cs-success]">
-                            <CheckCircle2 className="h-3 w-3 mr-1" /> GP signed
-                          </Badge>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success] inline-flex items-center gap-0.5">
+                            <CheckCircle2 className="h-3 w-3" /> GP signed
+                          </span>
                         ) : (
-                          <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning]">
-                            <XCircle className="h-3 w-3 mr-1" /> Awaiting GP
-                          </Badge>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning] inline-flex items-center gap-0.5">
+                            <XCircle className="h-3 w-3" /> Awaiting GP
+                          </span>
                         )}
-                      </CardTitle>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         Reviewed {plan.reviewed_date} by {getStaffName(plan.reviewed_by)} · Next review{" "}
                         {plan.next_review_date} · GP: {plan.gp_details.name} ({plan.gp_details.practice})
                       </p>
                     </div>
                     {isOpen ? (
-                      <ChevronUp className="h-4 w-4 shrink-0" />
+                      <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 shrink-0" />
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                     )}
-                  </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="space-y-4 text-sm">
                     {/* conditions */}
                     <div>
                       <p className="font-medium mb-1 flex items-center gap-1">
@@ -561,12 +535,12 @@ export default function HealthcarePlansPage() {
                     </div>
 
                     <SmartLinkPanel sourceType="healthcare-plans" sourceId={plan.id} childId={plan.child_id} compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ─── regulatory note ─── */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
