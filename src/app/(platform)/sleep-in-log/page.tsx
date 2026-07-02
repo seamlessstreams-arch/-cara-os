@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,8 +33,8 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
-const STATUS_CLR: Record<SleepInStatus, string> = { completed: "bg-[--cs-success-bg] text-[--cs-success]", disturbed: "bg-[--cs-warning-bg] text-[--cs-warning]", abandoned: "bg-[--cs-risk-bg] text-[--cs-risk]", in_progress: "bg-[--cs-info-bg] text-[--cs-info]" };
-const BORDER_CLR: Record<SleepInStatus, string> = { completed: "border-[--cs-success]", disturbed: "border-[--cs-warning]", abandoned: "border-[--cs-risk]", in_progress: "border-[--cs-info]" };
+const STATUS_ROW: Record<SleepInStatus, RowSeverity> = { completed: "success", disturbed: "warning", abandoned: "risk", in_progress: "info" };
+const STATUS_TEXT: Record<SleepInStatus, string> = { completed: "text-[--cs-success]", disturbed: "text-[--cs-warning]", abandoned: "text-[--cs-risk]", in_progress: "text-[--cs-info]" };
 const ROOM_CLR: Record<SleepInRoomCondition, string> = { clean: "bg-[--cs-success-bg] text-[--cs-success]", acceptable: "bg-yellow-100 text-yellow-800", needs_attention: "bg-[--cs-risk-bg] text-[--cs-risk]" };
 
 /* ── component ─────────────────────────────────────────────────────────── */
@@ -175,31 +176,29 @@ export default function SleepInLogPage() {
         </CardContent></Card>
 
         {/* sleep-in cards */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map(r => {
             const open = expanded === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_CLR[r.status])}>
-                <button className="w-full text-left" onClick={() => toggle(r.id)}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Moon className="h-4 w-4 text-indigo-500" />
-                        <CardTitle className="text-base">{r.date}</CardTitle>
+              <div key={r.id}>
+                <FlatListRow severity={!r.rest_achieved ? "risk" : STATUS_ROW[r.status]} onClick={() => toggle(r.id)} aria-expanded={open}>
+                    <div className="flex items-center justify-between flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <Moon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-base font-semibold text-[var(--cs-navy)]">{r.date}</span>
                         <span className="text-sm text-muted-foreground">{getStaffName(r.staff_member)}</span>
-                        <Badge className={cn("text-xs", STATUS_CLR[r.status])}>{SLEEP_IN_STATUS_LABEL[r.status]}</Badge>
-                        {r.disturbances.length > 0 && <Badge variant="outline" className="text-xs">{r.disturbances.length} disturbance{r.disturbances.length > 1 ? "s" : ""}</Badge>}
-                        {!r.rest_achieved && <Badge className="text-xs bg-[--cs-risk-bg] text-[--cs-risk]">Rest NOT achieved</Badge>}
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[r.status])}>{SLEEP_IN_STATUS_LABEL[r.status]}</span>
+                        {r.disturbances.length > 0 && <span className="text-xs text-muted-foreground">{r.disturbances.length} disturbance{r.disturbances.length > 1 ? "s" : ""}</span>}
+                        {!r.rest_achieved && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Rest NOT achieved</span>}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-muted-foreground">{r.start_time}–{r.end_time}</span>
-                        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </div>
                     </div>
-                  </CardHeader>
-                </button>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="space-y-4 pt-0">
+                  <FlatListRowDetail>
                     <div className="flex flex-wrap gap-4 text-sm">
                       <span><strong>Room:</strong> {r.room_used}</span>
                       <span><strong>Room Condition:</strong> <Badge className={cn("text-xs", ROOM_CLR[r.room_condition])}>{SLEEP_IN_ROOM_CONDITION_LABEL[r.room_condition]}</Badge></span>
@@ -262,12 +261,12 @@ export default function SleepInLogPage() {
                     </div>
 
                     {r.notes && <p className="text-xs text-muted-foreground italic">{r.notes}</p>}
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="rounded-lg bg-muted/40 border p-4 text-xs text-muted-foreground space-y-1">
