@@ -6,7 +6,8 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -43,10 +44,10 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 
 /* ─── severity helpers ─── */
 const SEVERITY_META: Record<string, { label: string; color: string }> = {
-  mild: { label: "Mild", color: "bg-green-100 text-green-800" },
-  moderate: { label: "Moderate", color: "bg-amber-100 text-amber-800" },
+  mild: { label: "Mild", color: "bg-[--cs-success-bg] text-[--cs-success]" },
+  moderate: { label: "Moderate", color: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   severe: { label: "Severe", color: "bg-orange-100 text-orange-800" },
-  life_threatening: { label: "Life-threatening", color: "bg-red-100 text-red-800" },
+  life_threatening: { label: "Life-threatening", color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
 };
 
 /* ─── export columns ─── */
@@ -153,7 +154,7 @@ export default function HealthcarePlansPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold text-red-700">{stats.allergiesCritical}</p>
+              <p className="text-2xl font-bold text-[--cs-risk]">{stats.allergiesCritical}</p>
               <p className="text-xs text-muted-foreground">Allergies — Severe / Life-threatening</p>
             </CardContent>
           </Card>
@@ -165,7 +166,7 @@ export default function HealthcarePlansPage() {
           </Card>
           <Card>
             <CardContent className="pt-4 pb-4 text-center">
-              <p className="text-2xl font-bold text-amber-700">{stats.reviewsDue}</p>
+              <p className="text-2xl font-bold text-[--cs-warning]">{stats.reviewsDue}</p>
               <p className="text-xs text-muted-foreground">Reviews Due ≤ 30 days</p>
             </CardContent>
           </Card>
@@ -173,11 +174,11 @@ export default function HealthcarePlansPage() {
 
         {/* ─── critical allergy alert ─── */}
         {criticalAllergyChildren.length > 0 && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex items-start gap-2">
-            <ShieldAlert className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-3 mb-4 flex items-start gap-2">
+            <ShieldAlert className="h-5 w-5 text-[--cs-risk] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-red-800">Critical Allergies — Immediate Action Required</p>
-              <p className="text-red-700">
+              <p className="font-semibold text-[--cs-risk]">Critical Allergies — Immediate Action Required</p>
+              <p className="text-[--cs-risk]">
                 {criticalAllergyChildren
                   .map(
                     (p) =>
@@ -195,11 +196,11 @@ export default function HealthcarePlansPage() {
 
         {/* ─── reviews due alert ─── */}
         {stats.reviewsDue > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <CalendarClock className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <CalendarClock className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-amber-800">Healthcare Plan Reviews Due</p>
-              <p className="text-amber-700">
+              <p className="font-semibold text-[--cs-warning]">Healthcare Plan Reviews Due</p>
+              <p className="text-[--cs-warning]">
                 {plans.filter((p) => {
                   const next = new Date(p.next_review_date);
                   const diff = (next.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24);
@@ -236,7 +237,7 @@ export default function HealthcarePlansPage() {
         </div>
 
         {/* ─── plan cards ─── */}
-        <div className="space-y-3">
+        <FlatList>
           {sorted.map((plan) => {
             const isOpen = expandedId === plan.id;
             const hasCriticalAllergy = plan.allergies.some(
@@ -245,71 +246,44 @@ export default function HealthcarePlansPage() {
             const reviewSoon =
               (new Date(plan.next_review_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24) <= 30;
 
+            const rowSev: RowSeverity = hasCriticalAllergy ? "risk" : reviewSoon ? "warning" : "success";
+
             return (
-              <Card
-                key={plan.id}
-                className={cn(
-                  "border-l-4",
-                  hasCriticalAllergy
-                    ? "border-l-red-500"
-                    : reviewSoon
-                      ? "border-l-amber-400"
-                      : "border-l-green-400",
-                )}
-              >
-                <CardHeader
-                  className="pb-2 cursor-pointer hover:bg-muted/30 transition-colors"
-                  onClick={() => toggle(plan.id)}
-                >
-                  <div className="flex items-start justify-between gap-2">
+              <div key={plan.id}>
+                <FlatListRow severity={rowSev} className="justify-between gap-2" onClick={() => toggle(plan.id)} aria-expanded={isOpen}>
                     <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2 flex-wrap">
-                        <HeartPulse className="h-4 w-4 text-red-600" />
+                      <div className="text-base font-semibold flex items-center gap-2 flex-wrap">
+                        <HeartPulse className="h-4 w-4 text-muted-foreground" />
                         {getYPName(plan.child_id)}
-                        <Badge variant="outline" className="bg-blue-100 text-blue-800">
+                        <span className="text-xs font-normal text-muted-foreground">
                           {plan.conditions.length} condition{plan.conditions.length === 1 ? "" : "s"}
-                        </Badge>
-                        {plan.allergies.length > 0 && (
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              hasCriticalAllergy
-                                ? "bg-red-100 text-red-800"
-                                : "bg-orange-100 text-orange-800",
-                            )}
-                          >
-                            {plan.allergies.length} allerg{plan.allergies.length === 1 ? "y" : "ies"}
-                          </Badge>
-                        )}
-                        <Badge variant="outline" className="bg-green-100 text-green-800">
-                          {plan.regular_medications.length} regular med
-                          {plan.regular_medications.length === 1 ? "" : "s"}
-                        </Badge>
+                          {plan.allergies.length > 0 && ` · ${plan.allergies.length} allerg${plan.allergies.length === 1 ? "y" : "ies"}`}
+                          {` · ${plan.regular_medications.length} regular med${plan.regular_medications.length === 1 ? "" : "s"}`}
+                        </span>
                         {plan.signed_off_by_gp ? (
-                          <Badge variant="outline" className="bg-emerald-100 text-emerald-800">
-                            <CheckCircle2 className="h-3 w-3 mr-1" /> GP signed
-                          </Badge>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success] inline-flex items-center gap-0.5">
+                            <CheckCircle2 className="h-3 w-3" /> GP signed
+                          </span>
                         ) : (
-                          <Badge variant="outline" className="bg-amber-100 text-amber-800">
-                            <XCircle className="h-3 w-3 mr-1" /> Awaiting GP
-                          </Badge>
+                          <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning] inline-flex items-center gap-0.5">
+                            <XCircle className="h-3 w-3" /> Awaiting GP
+                          </span>
                         )}
-                      </CardTitle>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         Reviewed {plan.reviewed_date} by {getStaffName(plan.reviewed_by)} · Next review{" "}
                         {plan.next_review_date} · GP: {plan.gp_details.name} ({plan.gp_details.practice})
                       </p>
                     </div>
                     {isOpen ? (
-                      <ChevronUp className="h-4 w-4 shrink-0" />
+                      <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
                     ) : (
-                      <ChevronDown className="h-4 w-4 shrink-0" />
+                      <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                     )}
-                  </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="space-y-4 text-sm">
                     {/* conditions */}
                     <div>
                       <p className="font-medium mb-1 flex items-center gap-1">
@@ -337,7 +311,7 @@ export default function HealthcarePlansPage() {
                         <ShieldAlert className="h-4 w-4 text-red-600" /> Allergies
                       </p>
                       {plan.allergies.length === 0 ? (
-                        <p className="text-xs text-green-700">No known allergies (NKA).</p>
+                        <p className="text-xs text-[--cs-success]">No known allergies (NKA).</p>
                       ) : (
                         <div className="space-y-1">
                           {plan.allergies.map((a, i) => (
@@ -346,7 +320,7 @@ export default function HealthcarePlansPage() {
                               className={cn(
                                 "rounded p-2 text-xs border",
                                 a.severity === "severe" || a.severity === "life_threatening"
-                                  ? "bg-red-50 border-red-200"
+                                  ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]"
                                   : "bg-orange-50 border-orange-200",
                               )}
                             >
@@ -462,17 +436,17 @@ export default function HealthcarePlansPage() {
 
                     {/* emergency protocols */}
                     <div>
-                      <p className="font-medium mb-1 flex items-center gap-1 text-red-700">
+                      <p className="font-medium mb-1 flex items-center gap-1 text-[--cs-risk]">
                         <AlertTriangle className="h-4 w-4" /> Emergency Protocols
                       </p>
                       <div className="space-y-1">
                         {plan.emergency_protocols.map((p, i) => (
                           <div
                             key={i}
-                            className="bg-red-50 border border-red-200 rounded p-2 text-xs"
+                            className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded p-2 text-xs"
                           >
-                            <p className="font-medium text-red-800 mb-0.5">{p.scenario}</p>
-                            <p className="text-red-700">{p.action}</p>
+                            <p className="font-medium text-[--cs-risk] mb-0.5">{p.scenario}</p>
+                            <p className="text-[--cs-risk]">{p.action}</p>
                           </div>
                         ))}
                       </div>
@@ -536,9 +510,9 @@ export default function HealthcarePlansPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 pt-2 border-t">
                       <div className="flex items-center gap-2 text-xs">
                         {plan.signed_off_by_gp ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                         ) : (
-                          <XCircle className="h-4 w-4 text-amber-600" />
+                          <XCircle className="h-4 w-4 text-[--cs-warning]" />
                         )}
                         <span>
                           {plan.signed_off_by_gp
@@ -548,9 +522,9 @@ export default function HealthcarePlansPage() {
                       </div>
                       <div className="flex items-center gap-2 text-xs">
                         {plan.child_informed_of_plan ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                         ) : (
-                          <XCircle className="h-4 w-4 text-amber-600" />
+                          <XCircle className="h-4 w-4 text-[--cs-warning]" />
                         )}
                         <span>
                           {plan.child_informed_of_plan
@@ -561,12 +535,12 @@ export default function HealthcarePlansPage() {
                     </div>
 
                     <SmartLinkPanel sourceType="healthcare-plans" sourceId={plan.id} childId={plan.child_id} compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ─── regulatory note ─── */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
