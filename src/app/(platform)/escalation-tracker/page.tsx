@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { getYPName, getStaffName } from "@/lib/seed-data";
@@ -83,16 +84,23 @@ export default function EscalationTrackerPage() {
 
   const toggle = (id: string) => setExpandedId(expandedId === id ? null : id);
 
-  const priorityBadge = (priority: string) => {
+  const priorityRow = (esc: { priority: string; status: string }): RowSeverity => {
+    if (esc.status === "resolved") return "success";
+    if (esc.priority === "urgent" || esc.priority === "high") return "risk";
+    if (esc.priority === "medium") return "warning";
+    return "neutral";
+  };
+
+  const priorityText = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return <Badge className="bg-[--cs-risk-bg] text-[--cs-risk]">Urgent</Badge>;
+        return <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Urgent</span>;
       case "high":
-        return <Badge className="bg-orange-100 text-orange-800">High</Badge>;
+        return <span className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">High</span>;
       case "medium":
-        return <Badge className="bg-[--cs-warning-bg] text-[--cs-warning]">Medium</Badge>;
+        return <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Medium</span>;
       default:
-        return <Badge variant="outline">{priority}</Badge>;
+        return <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-600">{priority}</span>;
     }
   };
 
@@ -219,42 +227,26 @@ export default function EscalationTrackerPage() {
       </div>
 
       {/* ─── escalation cards ─── */}
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((esc) => {
           const expanded = expandedId === esc.id;
 
           return (
-            <Card key={esc.id} className={cn(
-              "overflow-hidden",
-              esc.priority === "urgent" && esc.status !== "resolved" && "border-[--cs-risk-soft]"
-            )}>
-              <CardHeader
-                className="cursor-pointer hover:bg-muted/40 transition-colors py-4"
-                onClick={() => toggle(esc.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "p-2 rounded-full",
-                      esc.priority === "urgent" ? "bg-[--cs-risk-bg]" :
-                      esc.priority === "high" ? "bg-orange-100" : "bg-[--cs-warning-bg]"
-                    )}>
-                      <ArrowUp className={cn(
-                        "h-5 w-5",
-                        esc.priority === "urgent" ? "text-[--cs-risk]" :
-                        esc.priority === "high" ? "text-orange-600" : "text-[--cs-warning]"
-                      )} />
-                    </div>
-                    <div>
-                      <CardTitle className="text-base">{esc.title}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        {priorityBadge(esc.priority)}
+            <div key={esc.id}>
+              <FlatListRow severity={priorityRow(esc)} onClick={() => toggle(esc.id)} aria-expanded={expanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <ArrowUp className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)]">{esc.title}</p>
+                      <div className="flex items-center gap-2 mt-1 flex-wrap">
+                        {priorityText(esc.priority)}
                         {statusBadge(esc.status)}
-                        <Badge variant="outline" className="text-xs">{ESCALATION_CATEGORY_LABEL[esc.category]}</Badge>
+                        <span className="text-xs text-muted-foreground">{ESCALATION_CATEGORY_LABEL[esc.category]}</span>
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 shrink-0">
                     <div className="text-right hidden sm:block">
                       <p className="text-xs text-muted-foreground">{esc.date}</p>
                     </div>
@@ -265,10 +257,10 @@ export default function EscalationTrackerPage() {
                     )}
                   </div>
                 </div>
-              </CardHeader>
+              </FlatListRow>
 
               {expanded && (
-                <CardContent className="pt-0 pb-4 space-y-4">
+                <FlatListRowDetail>
                   <div>
                     <p className="text-sm font-medium mb-1">What Happened</p>
                     <p className="text-sm text-muted-foreground">{esc.description}</p>
@@ -338,12 +330,12 @@ export default function EscalationTrackerPage() {
                       <p className="text-sm font-medium">{esc.time_to_resolve ?? "—"}</p>
                     </div>
                   </div>
-                </CardContent>
+                </FlatListRowDetail>
               )}
-            </Card>
+            </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-8 bg-slate-50 border border-[var(--cs-border)] rounded-lg p-4">
         <p className="text-sm font-medium text-[var(--cs-text-secondary)] mb-1">Regulatory Context</p>
