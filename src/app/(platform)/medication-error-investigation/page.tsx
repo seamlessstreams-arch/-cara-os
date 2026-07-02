@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { getYPName, getStaffName, YOUNG_PEOPLE, STAFF } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, ArrowUpDown, Pill, AlertTriangle, CheckCircle, Heart, Lightbulb, Loader2, Plus } from "lucide-react";
@@ -22,17 +23,17 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { toast } from "sonner";
 
-const severityColour: Record<MedInvSeverity, string> = {
-  no_harm: "bg-[--cs-success-bg] text-[--cs-success]",
-  minor_harm: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  moderate_harm: "bg-orange-100 text-orange-800",
-  major_harm: "bg-[--cs-risk-bg] text-[--cs-risk]",
-};
-
 const statusColour: Record<MedInvStatus, string> = {
   investigating: "bg-[--cs-info-bg] text-[--cs-info]",
   closed_resolved: "bg-[--cs-success-bg] text-[--cs-success]",
   reported_monitoring: "bg-purple-100 text-purple-800",
+};
+
+const severityRow: Record<MedInvSeverity, RowSeverity> = {
+  no_harm: "success", minor_harm: "warning", moderate_harm: "risk", major_harm: "risk",
+};
+const severityText: Record<MedInvSeverity, string> = {
+  no_harm: "text-[--cs-success]", minor_harm: "text-[--cs-warning]", moderate_harm: "text-orange-700", major_harm: "text-[--cs-risk]",
 };
 
 export default function MedicationErrorInvestigationPage() {
@@ -166,17 +167,19 @@ export default function MedicationErrorInvestigationPage() {
         <Select value={filterStatus} onValueChange={setFilterStatus}><SelectTrigger className="w-[180px]"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="all">All Statuses</SelectItem>{(Object.keys(MED_INV_STATUS_LABEL) as MedInvStatus[]).map((s) => <SelectItem key={s} value={s}>{MED_INV_STATUS_LABEL[s]}</SelectItem>)}</SelectContent></Select>
         <div className="flex items-center gap-1"><ArrowUpDown className="h-4 w-4 text-muted-foreground" /><Select value={sortBy} onValueChange={setSortBy}><SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="date">Most Recent</SelectItem></SelectContent></Select></div>
       </div>
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((e) => {
           const isExpanded = expandedId === e.id;
           return (
-            <div key={e.id} className="rounded-xl border bg-white overflow-hidden">
-              <button className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors" onClick={() => setExpandedId(isExpanded ? null : e.id)}>
-                <div className="flex items-center gap-3 flex-1 min-w-0"><Pill className="h-5 w-5 text-purple-600 shrink-0" /><div className="min-w-0"><p className="font-medium truncate">{getYPName(e.child_id)} — {MED_INV_ERROR_TYPE_LABEL[e.error_type]}</p><p className="text-xs text-muted-foreground mt-0.5">{e.date_of_error} &middot; Staff: {getStaffName(e.staff_involved)}</p></div></div>
-                <div className="flex items-center gap-2 shrink-0 ml-3"><span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", severityColour[e.error_severity])}>{MED_INV_SEVERITY_LABEL[e.error_severity]}</span><span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusColour[e.status])}>{MED_INV_STATUS_LABEL[e.status]}</span>{isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</div>
-              </button>
+            <div key={e.id}>
+              <FlatListRow severity={severityRow[e.error_severity]} onClick={() => setExpandedId(isExpanded ? null : e.id)} aria-expanded={isExpanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                <div className="flex items-center gap-3 flex-1 min-w-0"><Pill className="h-5 w-5 text-muted-foreground shrink-0" /><div className="min-w-0"><p className="font-medium truncate">{getYPName(e.child_id)} — {MED_INV_ERROR_TYPE_LABEL[e.error_type]}</p><p className="text-xs text-muted-foreground mt-0.5">{e.date_of_error} &middot; Staff: {getStaffName(e.staff_involved)}</p></div></div>
+                <div className="flex items-center gap-2 shrink-0 ml-3"><span className={cn("text-[11px] font-semibold uppercase tracking-wide", severityText[e.error_severity])}>{MED_INV_SEVERITY_LABEL[e.error_severity]}</span><span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", statusColour[e.status])}>{MED_INV_STATUS_LABEL[e.status]}</span>{isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}</div>
+                </div>
+              </FlatListRow>
               {isExpanded && (
-                <div className="border-t px-4 py-4 bg-slate-50 space-y-3 text-sm">
+                <FlatListRowDetail className="text-sm">
                   <div className="bg-[--cs-warning-bg] rounded-lg p-3"><p className="text-xs font-semibold text-[--cs-warning] uppercase tracking-wide mb-1"><AlertTriangle className="h-3 w-3 inline mr-1" />Child Impact</p><p>{e.child_impact_observed}</p></div>
                   <div className="bg-[--cs-info-bg] rounded-lg p-3"><p className="text-xs font-semibold text-[--cs-info] uppercase tracking-wide mb-1">Immediate Actions Taken</p><ul className="space-y-1">{e.immediate_actions_taken.map((a, i) => <li key={i} className="flex items-start gap-1"><CheckCircle className="h-3 w-3 text-[--cs-info] mt-1 shrink-0" /><span>{a}</span></li>)}</ul></div>
                   <div className="bg-purple-50 rounded-lg p-3"><p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1"><Lightbulb className="h-3 w-3 inline mr-1" />Root Cause Analysis</p><p>{e.root_cause_analysis}</p></div>
@@ -193,12 +196,12 @@ export default function MedicationErrorInvestigationPage() {
                   </div>
                   {e.notes && <div className="bg-slate-50 rounded-lg p-3 border"><p className="text-xs font-semibold text-[var(--cs-navy)] uppercase tracking-wide mb-1">Notes</p><p>{e.notes}</p></div>}
                   <SmartLinkPanel sourceType="medication-error-investigation" sourceId={e.id} childId={e.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
       <div className="mt-8 rounded-lg bg-muted/50 border p-4"><p className="text-xs text-muted-foreground"><strong>Regulatory Context:</strong> Medication errors investigated per CQC standards, NICE NG5, and Reg 40 (notification where required). Just-culture lens. Linked to Medication Near-Miss Log, MAR Sheet, and Lessons Learned Register.</p></div>
       <CareEventsPanel
         title="Care Events — Medication"

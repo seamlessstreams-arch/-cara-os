@@ -29,6 +29,7 @@ import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { useBodyMap, useCreateBodyMapEntry, useUpdateBodyMapEntry } from "@/hooks/use-body-map";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -81,6 +82,14 @@ const STATUS_CONFIG: Record<BodyMapStatus, { label: string; colour: string }> = 
   completed:          { label: "Completed",          colour: "bg-[--cs-info-bg] text-[--cs-info]"     },
   reviewed:           { label: "Reviewed",           colour: "bg-[--cs-success-bg] text-[--cs-success]"   },
   linked_to_incident: { label: "Linked to Incident", colour: "bg-purple-100 text-purple-700" },
+};
+
+// Bar carries the assurance state: draft & completed still await management review.
+const STATUS_ROW: Record<BodyMapStatus, RowSeverity> = {
+  draft: "warning", completed: "warning", reviewed: "success", linked_to_incident: "neutral",
+};
+const STATUS_TEXT: Record<BodyMapStatus, string> = {
+  draft: "text-yellow-700", completed: "text-[--cs-info]", reviewed: "text-[--cs-success]", linked_to_incident: "text-purple-700",
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -414,7 +423,7 @@ export default function BodyMapPage() {
       </p>
 
       {/* ── Record Cards ──────────────────────────────────────────────────────── */}
-      <div className="space-y-3" id="body-map-print">
+      <FlatList id="body-map-print">
         {filtered.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             <PersonStanding className="h-10 w-10 mx-auto mb-2 opacity-40" />
@@ -429,16 +438,9 @@ export default function BodyMapPage() {
           const sc = STATUS_CONFIG[entry.status];
 
           return (
-            <div key={entry.id} className="rounded-lg border bg-card overflow-hidden">
-              {/* header */}
-              <button
-                onClick={() => setExpandedId(isOpen ? null : entry.id)}
-                className="w-full flex items-center gap-3 p-3 text-left hover:bg-muted/50 transition-colors"
-              >
-                {/* type indicator */}
-                <div className={cn("rounded-full p-1.5 shrink-0", mc.colour)}>
-                  <CircleDot className="h-4 w-4" />
-                </div>
+            <div key={entry.id}>
+              <FlatListRow severity={STATUS_ROW[entry.status]} onClick={() => setExpandedId(isOpen ? null : entry.id)} aria-expanded={isOpen} className="items-center gap-3 py-3">
+                <CircleDot className="h-4 w-4 shrink-0 text-muted-foreground" />
 
                 {/* main info */}
                 <div className="flex-1 min-w-0">
@@ -447,14 +449,14 @@ export default function BodyMapPage() {
                     <Badge variant="outline" className={cn("text-xs", mc.colour)}>
                       {mc.label}
                     </Badge>
-                    <Badge variant="outline" className={cn("text-xs", sc.colour)}>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[entry.status])}>
                       {sc.label}
-                    </Badge>
+                    </span>
                     {entry.linked_incident_id && (
-                      <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700">
+                      <span className="inline-flex items-center text-[11px] font-medium text-purple-700">
                         <Link2 className="h-3 w-3 mr-1" />
                         {entry.linked_incident_id.toUpperCase().replace("INC_", "INC-")}
-                      </Badge>
+                      </span>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">
@@ -464,17 +466,15 @@ export default function BodyMapPage() {
 
                 {/* photos indicator */}
                 {entry.photos_attached && (
-                  <Badge variant="outline" className="text-xs bg-blue-50 text-blue-600 shrink-0">
-                    📷 Photos
-                  </Badge>
+                  <span className="text-xs text-muted-foreground shrink-0">📷 Photos</span>
                 )}
 
-                {isOpen ? <ChevronUp className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
-              </button>
+                {isOpen ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+              </FlatListRow>
 
               {/* expanded detail */}
               {isOpen && (
-                <div className="border-t px-4 py-3 space-y-3 bg-muted/30">
+                <FlatListRowDetail>
                   {/* description */}
                   <div>
                     <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Description of Mark</p>
@@ -533,12 +533,12 @@ export default function BodyMapPage() {
                       </Button>
                     </div>
                   )}
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       {/* ── Regulatory Note ───────────────────────────────────────────────────── */}
       <div className="mt-8 rounded-lg border border-dashed p-4">

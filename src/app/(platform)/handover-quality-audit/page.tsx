@@ -42,15 +42,18 @@ import { getStaffName } from "@/lib/seed-data";
 import type { HandoverAudit, HandoverDomainScore, RagRating } from "@/types/extended";
 import { RAG_RATING_LABEL } from "@/types/extended";
 import { useHandoverAudits } from "@/hooks/use-handover-audits";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── RAG colour helpers ───────────────────────────────────────────────────────
-const ragColour = (rag: RagRating): string => {
-  if (rag === "green") return "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]";
-  if (rag === "amber") return "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]";
-  return "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]";
+const ragRow: Record<RagRating, RowSeverity> = { green: "success", amber: "warning", red: "risk" };
+
+const ragText = (rag: RagRating): string => {
+  if (rag === "green") return "text-[--cs-success]";
+  if (rag === "amber") return "text-[--cs-warning]";
+  return "text-[--cs-risk]";
 };
 
 const scoreColour = (score: number): string => {
@@ -335,21 +338,18 @@ export default function HandoverQualityAuditPage() {
       </div>
 
       {/* Audit list */}
-      <div className="space-y-3">
+      <FlatList>
         {visible.map((a) => {
           const isOpen = expandedId === a.id;
           return (
-            <div
-              key={a.id}
-              className="rounded-lg border border-[var(--cs-border)] bg-white shadow-sm"
-            >
-              {/* Card header */}
-              <button
-                type="button"
+            <div key={a.id}>
+              <FlatListRow
+                severity={ragRow[a.overall_rag_rating]}
                 onClick={() =>
                   setExpandedId((current) => (current === a.id ? null : a.id))
                 }
-                className="flex w-full items-start justify-between gap-4 p-4 text-left"
+                aria-expanded={isOpen}
+                className="items-start gap-4"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -358,8 +358,8 @@ export default function HandoverQualityAuditPage() {
                     </span>
                     <span
                       className={cn(
-                        "rounded-full border px-2 py-0.5 text-xs font-medium",
-                        ragColour(a.overall_rag_rating),
+                        "text-[11px] font-semibold uppercase tracking-wide",
+                        ragText(a.overall_rag_rating),
                       )}
                     >
                       {RAG_RATING_LABEL[a.overall_rag_rating]}
@@ -412,11 +412,11 @@ export default function HandoverQualityAuditPage() {
                     <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)]" />
                   )}
                 </div>
-              </button>
+              </FlatListRow>
 
               {/* Expanded body */}
               {isOpen && (
-                <div className="border-t border-[var(--cs-border)] p-4 space-y-5">
+                <FlatListRowDetail className="space-y-5">
                   {/* Headline blocks */}
                   <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                     <div className="rounded-md bg-slate-50 p-3">
@@ -644,18 +644,18 @@ export default function HandoverQualityAuditPage() {
                       Next audit due: {formatPretty(a.next_audit_date)}
                     </span>
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
 
         {visible.length === 0 && (
-          <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-[var(--cs-text-muted)]">
+          <div className="p-8 text-center text-sm text-[var(--cs-text-muted)]">
             No audits match the current filters.
           </div>
         )}
-      </div>
+      </FlatList>
 
       {/* Regulatory note */}
       <div className="mt-8 rounded-lg border border-[var(--cs-border)] bg-slate-50 p-4 text-sm text-[var(--cs-text-secondary)]">
