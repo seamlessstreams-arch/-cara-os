@@ -10,6 +10,7 @@
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -80,14 +81,9 @@ function RecordCard({ record }: { record: RelationalRecord }) {
   const confCfg = CONFIDENCE_CONFIG[record.confidence];
 
   return (
-    <div className={cn(
-      "rounded-2xl border bg-white overflow-hidden transition-all",
-      record.is_positive ? "border-[--cs-success-soft]" : "border-[--cs-risk-soft]",
-    )}>
-      <div className="flex items-start gap-3 p-4">
-        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", typeCfg?.bg ?? "bg-slate-50")}>
-          <TypeIcon className={cn("h-4 w-4", typeCfg?.color ?? "text-[var(--cs-text-muted)]")} />
-        </div>
+    <div>
+      <FlatListRow severity={record.is_positive ? "success" : "risk"} onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+        <TypeIcon className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -103,9 +99,9 @@ function RecordCard({ record }: { record: RelationalRecord }) {
             <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", typeCfg?.border, typeCfg?.bg, typeCfg?.color)}>
               {typeCfg?.label ?? record.record_type}
             </Badge>
-            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", confCfg?.cls)}>
-              {confCfg?.label ?? record.confidence}
-            </Badge>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {confCfg?.label ?? record.confidence} confidence
+            </span>
           </div>
 
           <div className="flex items-center gap-3 text-xs text-[var(--cs-text-muted)] flex-wrap">
@@ -127,13 +123,11 @@ function RecordCard({ record }: { record: RelationalRecord }) {
           </div>
         </div>
 
-        <button onClick={() => setExpanded(!expanded)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] shrink-0">
-          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </button>
-      </div>
+        {expanded ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </FlatListRow>
 
       {expanded && (
-        <div className="border-t border-[var(--cs-border-subtle)] px-4 pb-4 pt-3 space-y-3">
+        <FlatListRowDetail>
           <div className={cn(
             "rounded-xl border p-3",
             record.is_positive ? "border-[--cs-success-soft] bg-[--cs-success-bg]" : "border-[--cs-risk-soft] bg-[--cs-risk-bg]",
@@ -147,7 +141,7 @@ function RecordCard({ record }: { record: RelationalRecord }) {
               <span>Source: {record.source_ref_type.replace(/_/g, " ")}</span>
             )}
           </div>
-        </div>
+        </FlatListRowDetail>
       )}
     </div>
   );
@@ -520,11 +514,11 @@ export default function RelationalPracticePage() {
         )}
 
         {!isLoading && filtered.length > 0 && (
-          <div className="space-y-3">
+          <FlatList>
             {filtered.map((record) => (
               <RecordCard key={record.id} record={record} />
             ))}
-          </div>
+          </FlatList>
         )}
 
         {/* ── Regulatory note ──────────────────────────────────────────────── */}
