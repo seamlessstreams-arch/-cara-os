@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -40,10 +41,11 @@ const KT_CLR: Record<KeyType, string> = {
   gate: "bg-emerald-100 text-emerald-800",
 };
 
-const KS_CLR: Record<KeyholdingStatus, string> = {
-  in_use: "bg-[--cs-info-bg] text-[--cs-info]", all_accounted: "bg-[--cs-success-bg] text-[--cs-success]",
-  lost: "bg-[--cs-risk-bg] text-[--cs-risk]", replacement_ordered: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  decommissioned: "bg-gray-100 text-gray-800",
+const KS_ROW: Record<KeyholdingStatus, RowSeverity> = {
+  in_use: "info", all_accounted: "success", lost: "risk", replacement_ordered: "warning", decommissioned: "neutral",
+};
+const KS_TEXT: Record<KeyholdingStatus, string> = {
+  in_use: "text-[--cs-info]", all_accounted: "text-[--cs-success]", lost: "text-[--cs-risk]", replacement_ordered: "text-[--cs-warning]", decommissioned: "text-gray-600",
 };
 
 export default function KeyholdingRegisterPage() {
@@ -155,32 +157,30 @@ export default function KeyholdingRegisterPage() {
         </CardContent></Card>
 
         {/* key cards */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map(k => {
             const open = expanded === k.id;
             const currentlyOut = k.sign_out_log.filter(e => !e.signed_in);
             const auditDue = k.next_audit_due <= today;
             return (
-              <Card key={k.id} className={cn(auditDue && "border-amber-300", k.status === "lost" && "border-red-400")}>
-                <button className="w-full text-left" onClick={() => toggle(k.id)}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Key className="h-4 w-4 text-muted-foreground" />
-                        <CardTitle className="text-base">{k.key_name}</CardTitle>
+              <div key={k.id}>
+                <FlatListRow severity={k.status === "lost" ? "risk" : auditDue ? "warning" : KS_ROW[k.status]} onClick={() => toggle(k.id)} aria-expanded={open}>
+                    <div className="flex items-center justify-between flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <Key className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-base font-semibold text-[var(--cs-navy)]">{k.key_name}</span>
                         <Badge className={cn("text-xs", KT_CLR[k.key_type])}>{KEY_TYPE_LABEL[k.key_type]}</Badge>
-                        <Badge className={cn("text-xs", KS_CLR[k.status])}>{KEYHOLDING_STATUS_LABEL[k.status]}</Badge>
-                        {k.restricted_access && <Badge className="text-xs bg-red-900 text-white">Restricted</Badge>}
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", KS_TEXT[k.status])}>{KEYHOLDING_STATUS_LABEL[k.status]}</span>
+                        {k.restricted_access && <span className="text-[11px] font-semibold uppercase tracking-wide text-red-900">Restricted</span>}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-muted-foreground">{k.key_number} · {k.total_copies} copies</span>
-                        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </div>
                     </div>
-                  </CardHeader>
-                </button>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="space-y-4 pt-0">
+                  <FlatListRowDetail className="space-y-4">
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div><span className="text-muted-foreground">Location:</span> {k.location}</div>
                       <div><span className="text-muted-foreground">Total Copies:</span> {k.total_copies}</div>
@@ -245,12 +245,12 @@ export default function KeyholdingRegisterPage() {
                     </div>
 
                     {k.notes && <p className="text-xs text-muted-foreground italic">{k.notes}</p>}
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* audit summary */}
         <Card>
