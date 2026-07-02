@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -139,38 +140,35 @@ export default function NightLogPage() {
         </div>
 
         {/* night log entries */}
-        <div className="space-y-3">
+        <FlatList>
           {sorted.map((entry) => {
             const isOpen = expandedId === entry.id;
             const hasIncidents = entry.incidents.length > 0;
             const hasConcerns = !!entry.concerns;
             return (
-              <Card key={entry.id} className={cn(
-                "border-l-4",
-                hasConcerns ? "border-l-red-500" : hasIncidents ? "border-l-amber-400" : "border-l-green-400"
-              )}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : entry.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Moon className="h-4 w-4 text-[--cs-info]" />
+              <div key={entry.id}>
+                <FlatListRow severity={hasConcerns ? "risk" : hasIncidents ? "warning" : "success"} onClick={() => setExpandedId(isOpen ? null : entry.id)} aria-expanded={isOpen}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
+                        <Moon className="h-4 w-4 text-muted-foreground shrink-0" />
                         Night of {entry.date}
-                        {hasIncidents && <Badge variant="outline" className="bg-[--cs-warning-bg] text-[--cs-warning]">{entry.incidents.length} incident(s)</Badge>}
-                        {hasConcerns && <Badge variant="outline" className="bg-[--cs-risk-bg] text-[--cs-risk]">Concerns</Badge>}
-                        {!hasIncidents && !hasConcerns && <Badge variant="outline" className="bg-[--cs-success-bg] text-[--cs-success]">Uneventful</Badge>}
-                      </CardTitle>
+                        {hasIncidents && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">{entry.incidents.length} incident(s)</span>}
+                        {hasConcerns && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Concerns</span>}
+                        {!hasIncidents && !hasConcerns && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Uneventful</span>}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {entry.shift_start}–{entry.shift_end} · Waking night: {entry.waking_night_staff.map((s) => getStaffName(s)).join(", ")}
                         {entry.sleep_in_staff && ` · Sleep-in: ${getStaffName(entry.sleep_in_staff)}`}
                         · {entry.checks.length} checks
                       </p>
                     </div>
-                    {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
                   </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     {/* handover from day */}
                     <div className="bg-[--cs-info-bg] border border-[--cs-info-soft] rounded p-2">
                       <p className="font-medium text-xs text-[--cs-info] mb-1">Handover from Day Shift</p>
@@ -273,12 +271,12 @@ export default function NightLogPage() {
                     </div>
 
                     <SmartLinkPanel sourceType="night_log" sourceId={entry.id} childId="yp_alex" compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
