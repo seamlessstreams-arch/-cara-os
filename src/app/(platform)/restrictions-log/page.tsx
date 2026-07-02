@@ -27,6 +27,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { useRestrictionsLogRecords, useCreateRestrictionsLogRecord } from "@/hooks/use-restrictions-log-records";
 import type {
   RestrictionsLogRecord,
@@ -50,6 +51,13 @@ const STATUS_META: Record<RestrictionsLogStatus, { colour: string }> = {
   under_review: { colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   ended:        { colour: "bg-[--cs-success-bg] text-[--cs-success]" },
   appealed:     { colour: "bg-purple-100 text-purple-700" },
+};
+
+const STATUS_ROW: Record<RestrictionsLogStatus, RowSeverity> = {
+  active: "risk", under_review: "warning", ended: "success", appealed: "neutral",
+};
+const STATUS_TEXT: Record<RestrictionsLogStatus, string> = {
+  active: "text-[--cs-risk]", under_review: "text-[--cs-warning]", ended: "text-[--cs-success]", appealed: "text-purple-700",
 };
 
 /* ── page ──────────────────────────────────────────────────────────── */
@@ -232,25 +240,28 @@ export default function RestrictionsLogPage() {
           </div>
         </div>
 
+        <FlatList>
         {filtered.map((restriction) => (
-          <div key={restriction.id} className="rounded-lg border bg-white overflow-hidden">
-            <button onClick={() => setExpanded(expanded === restriction.id ? null : restriction.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
-              <div className="flex items-center gap-3">
-                <Lock className="h-5 w-5 text-red-500" />
-                <div className="text-left">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold">{getYPName(restriction.child_id)}</h3>
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{RESTRICTIONS_LOG_TYPE_LABEL[restriction.type]}</span>
-                    <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", STATUS_META[restriction.status].colour)}>{RESTRICTIONS_LOG_STATUS_LABEL[restriction.status]}</span>
+          <div key={restriction.id}>
+            <FlatListRow severity={STATUS_ROW[restriction.status]} onClick={() => setExpanded(expanded === restriction.id ? null : restriction.id)} aria-expanded={expanded === restriction.id}>
+              <div className="flex items-center justify-between flex-1 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Lock className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="text-left min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold">{getYPName(restriction.child_id)}</h3>
+                      <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">{RESTRICTIONS_LOG_TYPE_LABEL[restriction.type]}</span>
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[restriction.status])}>{RESTRICTIONS_LOG_STATUS_LABEL[restriction.status]}</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">{restriction.description} · Since {restriction.start_date}</p>
                   </div>
-                  <p className="text-xs text-muted-foreground">{restriction.description} · Since {restriction.start_date}</p>
                 </div>
+                {expanded === restriction.id ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
               </div>
-              {expanded === restriction.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-            </button>
+            </FlatListRow>
 
             {expanded === restriction.id && (
-              <div className="border-t p-4 space-y-4">
+              <FlatListRowDetail>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   <div><span className="text-muted-foreground">Authorised By:</span> {RESTRICTIONS_LOG_AUTHORISED_BY_LABEL[restriction.authorised_by]}</div>
                   <div><span className="text-muted-foreground">Authoriser:</span> {restriction.authoriser_name}</div>
@@ -307,10 +318,11 @@ export default function RestrictionsLogPage() {
                 </div>
 
                 <SmartLinkPanel sourceType="restrictions-log-record" sourceId={restriction.id} childId={restriction.child_id} compact />
-              </div>
+              </FlatListRowDetail>
             )}
           </div>
         ))}
+        </FlatList>
 
         <div className="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
           <strong>Reg 20 — Restraint and deprivation of liberty</strong> — Any restriction on a child&apos;s liberty must be necessary, proportionate, and the least restrictive option. Restrictions must be regularly reviewed, the child&apos;s views sought, and appropriate parties notified. All restrictions must be recorded and justified.

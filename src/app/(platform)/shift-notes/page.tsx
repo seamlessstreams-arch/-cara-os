@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -187,44 +188,48 @@ export default function ShiftNotesPage() {
         </div>
 
         {/* ── Shift notes list ─────────────────────────────────────────────── */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No shift notes match your filters.</p>}
           {filtered.map((n) => {
             const open = !!expanded[n.id];
             const shiftM = SHIFT_META[n.shift];
             const hasOutstanding = (n.outstanding_tasks?.length ?? 0) > 0;
             const hasConcerns = n.child_notes.some((cn) => cn.concerns);
+            const severity: RowSeverity = hasConcerns ? "risk" : hasOutstanding ? "warning" : "neutral";
             return (
-              <Card key={n.id} className={cn("border-l-4", n.shift === "night" || n.shift === "sleep_in" ? "border-l-indigo-400" : n.shift === "morning" ? "border-l-amber-400" : "border-l-orange-400")}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(n.id)}>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <Badge className={cn("text-xs", shiftM.color)}>{shiftM.icon}<span className="ml-1">{SHIFT_NOTE_SHIFT_TYPE_LABEL[n.shift]}</span></Badge>
-                        <Badge variant="outline" className="text-xs">{shiftM.times}</Badge>
-                        {hasOutstanding && <Badge variant="outline" className="text-xs text-[--cs-warning] border-[--cs-warning-soft]">{(n.outstanding_tasks?.length ?? 0)} outstanding</Badge>}
-                        {hasConcerns && <Badge variant="outline" className="text-xs text-[--cs-risk] border-[--cs-risk-soft]">Concerns</Badge>}
+              <div key={n.id}>
+                <FlatListRow severity={severity} onClick={() => toggle(n.id)} aria-expanded={open}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <Badge className={cn("text-xs", shiftM.color)}>{shiftM.icon}<span className="ml-1">{SHIFT_NOTE_SHIFT_TYPE_LABEL[n.shift]}</span></Badge>
+                          <span className="text-xs text-muted-foreground">{shiftM.times}</span>
+                          {hasConcerns && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Concerns</span>}
+                          {!hasConcerns && hasOutstanding && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">{(n.outstanding_tasks?.length ?? 0)} outstanding</span>}
+                        </div>
+                        <p className="font-semibold">{n.date} — {SHIFT_NOTE_SHIFT_TYPE_LABEL[n.shift]} Shift</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+                          <span>Staff: {n.staff_on_duty.map(getStaffName).join(", ")}</span>
+                          <span>By {getStaffName(n.recorded_by)}</span>
+                        </div>
+                        {/* Child mood overview */}
+                        <div className="flex items-center gap-3 mt-2">
+                          {(n.child_notes ?? []).map((cn) => (
+                            <span key={cn.child_id} className="flex items-center gap-1 text-xs">
+                              <span>{getYPName(cn.child_id)}</span>
+                              <span className={MOOD_META[cn.mood]?.color}>{MOOD_META[cn.mood]?.emoji}</span>
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                      <p className="font-semibold">{n.date} — {SHIFT_NOTE_SHIFT_TYPE_LABEL[n.shift]} Shift</p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                        <span>Staff: {n.staff_on_duty.map(getStaffName).join(", ")}</span>
-                        <span>By {getStaffName(n.recorded_by)}</span>
-                      </div>
-                      {/* Child mood overview */}
-                      <div className="flex items-center gap-3 mt-2">
-                        {(n.child_notes ?? []).map((cn) => (
-                          <span key={cn.child_id} className="flex items-center gap-1 text-xs">
-                            <span>{getYPName(cn.child_id)}</span>
-                            <span className={MOOD_META[cn.mood]?.color}>{MOOD_META[cn.mood]?.emoji}</span>
-                          </span>
-                        ))}
-                      </div>
+                      {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />}
                     </div>
-                    {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
                   </div>
+                </FlatListRow>
 
-                  {open && (
-                    <div className="mt-4 space-y-4 border-t pt-3 text-sm">
+                {open && (
+                  <FlatListRowDetail>
                       {/* Per-child notes */}
                       {(n.child_notes ?? []).map((childNote) => (
                         <div key={childNote.child_id} className="bg-muted/40 p-3 rounded-lg">
@@ -287,13 +292,12 @@ export default function ShiftNotesPage() {
                           ))}</ul>
                         </div>
                       )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </FlatListRowDetail>
+                )}
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── Guidance ─────────────────────────────────────────────────────── */}
         <Card className="bg-muted/40">
