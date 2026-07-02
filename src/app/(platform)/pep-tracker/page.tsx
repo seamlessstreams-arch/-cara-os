@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,9 @@ const STATUS_META: Record<PepStatus, { label: string; color: string }> = {
   review_due: { label: PEP_STATUS_LABEL.review_due, color: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   overdue: { label: PEP_STATUS_LABEL.overdue, color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
   draft: { label: PEP_STATUS_LABEL.draft, color: "bg-slate-100 text-[var(--cs-text-secondary)]" },
+};
+const STATUS_TEXT: Record<PepStatus, string> = {
+  current: "text-[--cs-success]", review_due: "text-[--cs-warning]", overdue: "text-[--cs-risk]", draft: "text-[var(--cs-text-secondary)]",
 };
 
 const ATT_META: Record<PepAttainmentLevel, { label: string; color: string }> = {
@@ -203,33 +207,33 @@ export default function PepTrackerPage() {
         </div>
 
         {/* PEP cards */}
-        <div className="space-y-3">
+        <FlatList>
           {sorted.map((p) => {
             const isOpen = expandedId === p.id;
             const ppPercent = p.pupil_premium.annual_allocation > 0 ? Math.round((p.pupil_premium.spent_to_date / p.pupil_premium.annual_allocation) * 100) : 0;
             return (
-              <Card key={p.id} className={cn("border-l-4", p.attendance >= 85 ? "border-l-green-400" : p.attendance >= 70 ? "border-l-amber-400" : "border-l-red-500")}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : p.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <GraduationCap className="h-4 w-4 text-blue-600" />
+              <div key={p.id}>
+                <FlatListRow severity={p.attendance >= 85 ? "success" : p.attendance >= 70 ? "warning" : "risk"} onClick={() => setExpandedId(isOpen ? null : p.id)} aria-expanded={isOpen}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
+                        <GraduationCap className="h-4 w-4 text-muted-foreground shrink-0" />
                         {getYPName(p.child_id)}
-                        <Badge variant="outline" className={STATUS_META[p.status].color}>{STATUS_META[p.status].label}</Badge>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[p.status])}>{STATUS_META[p.status].label}</span>
                         {p.sen_status !== "none" && (
                           <Badge variant="outline" className="bg-purple-100 text-purple-800">{PEP_SEN_STATUS_LABEL[p.sen_status]}</Badge>
                         )}
-                      </CardTitle>
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {p.school} · Year {p.year_group} ({p.key_stage}) · Attendance: {p.attendance}% · PP: £{p.pupil_premium.spent_to_date}/£{p.pupil_premium.annual_allocation} ({ppPercent}%)
                       </p>
                     </div>
-                    {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
                   </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     {/* school info */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                       <div className="bg-muted/40 rounded p-2">
@@ -396,12 +400,12 @@ export default function PepTrackerPage() {
 
                     {/* smart link panel */}
                     <SmartLinkPanel sourceType="pep_record" sourceId={p.id} childId={p.child_id} compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
