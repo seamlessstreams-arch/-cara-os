@@ -12,6 +12,7 @@
 import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useManagerPracticePatterns } from "@/hooks/use-manager-practice-patterns";
@@ -174,21 +175,15 @@ function ChildPatternCard({ child }: { child: ChildPatternSummary }) {
   const hasHighRisk = child.highRiskCount > 0;
 
   return (
-    <div
-      className={cn(
-        "rounded-xl border bg-white shadow-sm overflow-hidden",
-        hasHighRisk ? "border-[--cs-risk-soft]" : "border-slate-200",
-      )}
-    >
-      <button
-        type="button"
+    <div>
+      <FlatListRow
+        severity={hasHighRisk ? "risk" : "neutral"}
+        className="items-center justify-between"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors"
+        aria-expanded={open}
       >
         <div className="flex items-center gap-3">
-          <HeartHandshake
-            className={cn("h-5 w-5 shrink-0", hasHighRisk ? "text-[--cs-risk]" : "text-slate-400")}
-          />
+          <HeartHandshake className="h-5 w-5 shrink-0 text-muted-foreground" />
           <div>
             <p className="font-semibold text-slate-900 text-sm">{child.childName}</p>
             <p className="text-xs text-slate-500">
@@ -205,20 +200,20 @@ function ChildPatternCard({ child }: { child: ChildPatternSummary }) {
             </Badge>
           )}
           {child.highRiskCount > 0 && (
-            <Badge className="text-xs bg-[--cs-risk-bg] text-[--cs-risk] border border-[--cs-risk-soft] hover:bg-[--cs-risk-bg]">
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">
               {child.highRiskCount} high risk
-            </Badge>
+            </span>
           )}
-          {open ? <ChevronUp className="h-4 w-4 text-slate-400" /> : <ChevronDown className="h-4 w-4 text-slate-400" />}
+          {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
         </div>
-      </button>
+      </FlatListRow>
 
       {open && (
-        <div className="px-4 pb-4 space-y-2 border-t border-slate-100 pt-3">
+        <FlatListRowDetail className="space-y-2">
           {child.patternInsights.map((insight, i) => (
             <InsightCard key={i} insight={insight} />
           ))}
-        </div>
+        </FlatListRowDetail>
       )}
     </div>
   );
@@ -337,11 +332,11 @@ export default function ManagerPracticePatternsDashboard() {
                 <HeartHandshake className="h-4 w-4 text-slate-500" />
                 <h2 className="text-sm font-semibold text-slate-700">Children with pattern signals</h2>
               </div>
-              <div className="space-y-3">
+              <FlatList>
                 {result.childSummaries.map((child) => (
                   <ChildPatternCard key={child.childId} child={child} />
                 ))}
-              </div>
+              </FlatList>
             </div>
           ) : (
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-8 text-center">
