@@ -12,6 +12,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
@@ -523,22 +524,20 @@ function TargetCard({
   const reviewOverdue = new Date(target.review_date) < new Date();
   const isAchieved = target.status === "achieved";
 
+  const rowSev: RowSeverity = isAchieved
+    ? "success"
+    : target.direction === "declining"
+      ? "risk"
+      : reviewOverdue
+        ? "warning"
+        : "neutral";
+
   return (
     <>
-      <div className={cn(
-        "rounded-2xl border bg-white overflow-hidden transition-all",
-        target.direction === "declining" && "border-[--cs-risk-soft]",
-        reviewOverdue && !isAchieved && "border-[--cs-warning-soft]",
-        isAchieved && "border-[--cs-success-soft] opacity-70",
-      )}>
+      <div className={cn(isAchieved && "opacity-70")}>
         {/* Header row */}
-        <div
-          className="flex items-start gap-3 p-4 cursor-pointer hover:bg-[var(--cs-surface)]/50 transition-colors"
-          onClick={() => setExpanded((v) => !v)}
-        >
-          <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", domainCfg.bg)}>
-            <DomainIcon className={cn("h-4 w-4", domainCfg.text)} />
-          </div>
+        <FlatListRow severity={rowSev} onClick={() => setExpanded((v) => !v)} aria-expanded={expanded}>
+          <DomainIcon className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -546,9 +545,9 @@ function TargetCard({
                 {target.target_description}
               </span>
               {isAchieved && (
-                <Badge className="text-[9px] bg-[--cs-success-bg] text-[--cs-success] border-0 rounded-full">
-                  <CheckCircle2 className="h-2.5 w-2.5 mr-0.5" />Achieved
-                </Badge>
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-[--cs-success] inline-flex items-center gap-0.5">
+                  <CheckCircle2 className="h-2.5 w-2.5" />Achieved
+                </span>
               )}
             </div>
             <div className="flex items-center gap-3 flex-wrap">
@@ -584,22 +583,23 @@ function TargetCard({
 
           <div className="shrink-0 flex items-center gap-2">
             {!isAchieved && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+              <span
+                role="button"
+                tabIndex={0}
+                className="inline-flex h-7 items-center rounded-md border border-indigo-200 px-2 text-xs font-medium text-indigo-600 hover:bg-indigo-50"
                 onClick={(e) => { e.stopPropagation(); setShowReview(true); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); setShowReview(true); } }}
               >
                 <Plus className="h-3 w-3 mr-0.5" />Review
-              </Button>
+              </span>
             )}
             {expanded ? <ChevronUp className="h-4 w-4 text-[var(--cs-text-gentle)]" /> : <ChevronDown className="h-4 w-4 text-[var(--cs-text-gentle)]" />}
           </div>
-        </div>
+        </FlatListRow>
 
         {/* Expanded detail */}
         {expanded && (
-          <div className="border-t border-[var(--cs-border-subtle)] px-4 pb-4 pt-3 space-y-3">
+          <FlatListRowDetail>
             {/* Success criteria */}
             {target.success_criteria && (
               <div className="rounded-xl bg-slate-50 border border-[var(--cs-border-subtle)] p-3">
@@ -704,7 +704,7 @@ function TargetCard({
               homeId="home_oak"
               category={target.domain}
             />
-          </div>
+          </FlatListRowDetail>
         )}
       </div>
 
@@ -1104,20 +1104,20 @@ export default function OutcomesPage() {
                             {childTargets.length} targets
                           </Badge>
                         </h4>
-                        <div className="space-y-2 mb-4">
+                        <FlatList className="mb-4">
                           {childTargets.map((t) => (
                             <TargetCard key={t.id} target={t} reviews={reviews} />
                           ))}
-                        </div>
+                        </FlatList>
                       </div>
                     );
                   })
                 ) : (
-                  <div className="space-y-2">
+                  <FlatList>
                     {filtered.map((t) => (
                       <TargetCard key={t.id} target={t} reviews={reviews} />
                     ))}
-                  </div>
+                  </FlatList>
                 )}
               </>
             )}
