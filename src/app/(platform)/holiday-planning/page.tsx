@@ -15,6 +15,7 @@ import { PrintButton } from "@/components/common/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
 } from "@/components/ui/dialog";
@@ -113,21 +114,24 @@ function TripCard({ trip }: { trip: TripPlan }) {
   const allConsent = trip.young_people.every((yp) => yp.consent_obtained);
   const allSWApproved = trip.social_worker_approval.every((a) => a.approved);
 
+  const riskRow: RowSeverity =
+    trip.risk_assessment.overall_risk === "high" ? "risk"
+    : trip.risk_assessment.overall_risk === "medium" ? "warning"
+    : "success";
+
   return (
-    <div className="rounded-2xl border bg-white overflow-hidden border-[var(--cs-border)] transition-all hover:shadow-sm">
+    <div>
       {/* ── Card header ─────────────────────────────────────────────── */}
-      <div className="flex items-start gap-3 p-4">
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-slate-100">
-          <MapPin className="h-4 w-4 text-[var(--cs-text-secondary)]" />
-        </div>
+      <FlatListRow severity={riskRow} onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+        <MapPin className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-sm font-bold text-[var(--cs-navy)]">{trip.title}</span>
             {daysUntil > 0 && daysUntil <= 14 && trip.status !== "completed" && trip.status !== "cancelled" && (
-              <Badge variant="outline" className="text-[9px] px-1.5 py-0 bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">
-                <Clock className="h-2.5 w-2.5 mr-0.5 inline" />{daysUntil}d away
-              </Badge>
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-[--cs-warning] inline-flex items-center gap-0.5">
+                <Clock className="h-2.5 w-2.5" />{daysUntil}d away
+              </span>
             )}
           </div>
 
@@ -149,31 +153,29 @@ function TripCard({ trip }: { trip: TripPlan }) {
             <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", typeCfg.cls)}>
               {typeCfg.label}
             </Badge>
-            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", statusCfg.cls)}>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               {statusCfg.label}
-            </Badge>
-            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", riskCfg.cls)}>
+            </span>
+            <span className={cn("text-[10px] font-semibold uppercase tracking-wide",
+              trip.risk_assessment.overall_risk === "high" ? "text-[--cs-risk]"
+              : trip.risk_assessment.overall_risk === "medium" ? "text-[--cs-warning]"
+              : "text-[--cs-success]")}>
               Risk: {riskCfg.label}
-            </Badge>
+            </span>
             {!allConsent && (
-              <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]">
-                <AlertTriangle className="h-2.5 w-2.5 mr-0.5 inline" />Consent pending
-              </Badge>
+              <span className="text-[10px] font-semibold uppercase tracking-wide text-[--cs-risk] inline-flex items-center gap-0.5">
+                <AlertTriangle className="h-2.5 w-2.5" />Consent pending
+              </span>
             )}
           </div>
         </div>
 
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] shrink-0"
-        >
-          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </button>
-      </div>
+        {expanded ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </FlatListRow>
 
       {/* ── Expanded content ────────────────────────────────────────── */}
       {expanded && (
-        <div className="border-t border-[var(--cs-border-subtle)] px-4 pb-4 pt-3 space-y-4">
+        <FlatListRowDetail className="space-y-4">
 
           {/* Young People attending */}
           <div className="rounded-xl border border-[var(--cs-border)] bg-slate-50 p-3">
@@ -392,7 +394,7 @@ function TripCard({ trip }: { trip: TripPlan }) {
               <span className="font-semibold text-[var(--cs-text-muted)]">Notes: </span>{trip.notes}
             </div>
           )}
-        </div>
+        </FlatListRowDetail>
       )}
     </div>
   );
@@ -821,11 +823,11 @@ export default function HolidayPlanningPage() {
             <p className="text-xs text-[var(--cs-text-muted)] mt-1">Plan a trip to start building your enrichment evidence.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <FlatList>
             {filtered.map((trip) => (
               <TripCard key={trip.id} trip={trip} />
             ))}
-          </div>
+          </FlatList>
         )}
 
         {/* ── Budget overview card ───────────────────────────────────── */}
