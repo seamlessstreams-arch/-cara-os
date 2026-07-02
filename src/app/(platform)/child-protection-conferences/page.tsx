@@ -14,6 +14,7 @@ import {
 } from "@/types/extended";
 import { useCpConferences } from "@/hooks/use-cp-conferences";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import {
   ChevronDown,
   ChevronUp,
@@ -44,6 +45,15 @@ const outcomeColour: Record<string, string> = {
   plan_stepped_down: "bg-[--cs-info-bg] text-[--cs-info]",
   no_cp_plan_required: "bg-[--cs-success-bg] text-[--cs-success]",
   strategy_decision_made: "bg-purple-100 text-purple-800",
+};
+
+const outcomeRow: Record<string, RowSeverity> = {
+  subject_to_cp_plan: "risk", plan_continued: "warning", plan_stepped_down: "info",
+  no_cp_plan_required: "success", strategy_decision_made: "neutral",
+};
+const outcomeText: Record<string, string> = {
+  subject_to_cp_plan: "text-[--cs-risk]", plan_continued: "text-[--cs-warning]", plan_stepped_down: "text-[--cs-info]",
+  no_cp_plan_required: "text-[--cs-success]", strategy_decision_made: "text-purple-700",
 };
 
 // ── export columns ──────────────────────────────────────────────────────────
@@ -189,7 +199,7 @@ export default function ChildProtectionConferencesPage() {
       </div>
 
       {/* ── conference cards ───────────────────────────────────────────── */}
-      <div className="space-y-3">
+      <FlatList>
         {filtered.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">No conferences match your filters.</div>
         )}
@@ -197,35 +207,34 @@ export default function ChildProtectionConferencesPage() {
           const isExpanded = expandedId === conf.id;
 
           return (
-            <div key={conf.id} className="rounded-xl border bg-white overflow-hidden">
-              <button
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
-                onClick={() => setExpandedId(isExpanded ? null : conf.id)}
-              >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Shield className="h-5 w-5 text-red-600 shrink-0" />
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">{CP_CONFERENCE_TYPE_LABEL[conf.conference_type]}</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {formatDate(conf.date)} &middot; {getYPName(conf.child_id)} &middot; Chair: {conf.chairperson.split(" — ")[0]}
-                    </p>
+            <div key={conf.id}>
+              <FlatListRow severity={outcomeRow[conf.outcome]} onClick={() => setExpandedId(isExpanded ? null : conf.id)} aria-expanded={isExpanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Shield className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium truncate">{CP_CONFERENCE_TYPE_LABEL[conf.conference_type]}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {formatDate(conf.date)} &middot; {getYPName(conf.child_id)} &middot; Chair: {conf.chairperson.split(" — ")[0]}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-3">
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", outcomeText[conf.outcome])}>
+                      {CP_CONFERENCE_OUTCOME_LABEL[conf.outcome]}
+                    </span>
+                    {conf.follow_up_complete ? (
+                      <CheckCircle className="h-4 w-4 text-[--cs-success]" />
+                    ) : (
+                      <Clock className="h-4 w-4 text-[--cs-warning]" />
+                    )}
+                    {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", outcomeColour[conf.outcome])}>
-                    {CP_CONFERENCE_OUTCOME_LABEL[conf.outcome]}
-                  </span>
-                  {conf.follow_up_complete ? (
-                    <CheckCircle className="h-4 w-4 text-[--cs-success]" />
-                  ) : (
-                    <Clock className="h-4 w-4 text-[--cs-warning]" />
-                  )}
-                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </div>
-              </button>
+              </FlatListRow>
 
               {isExpanded && (
-                <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
+                <FlatListRowDetail>
                   {/* attendance summary */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="bg-white rounded-lg p-3 border">
@@ -322,12 +331,12 @@ export default function ChildProtectionConferencesPage() {
 
                   {/* smart links */}
                   <SmartLinkPanel sourceType="cp-conferences" sourceId={conf.id} childId={conf.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       {/* ── regulatory note ────────────────────────────────────────────── */}
       <div className="mt-8 rounded-lg bg-muted/50 border p-4">
