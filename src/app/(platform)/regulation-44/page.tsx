@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -27,6 +27,10 @@ const JUDGEMENT_CONFIG: Record<string, { label: string; colour: string; bg: stri
   good:         { label: "Good",           colour: "text-[--cs-info]",    bg: "bg-[--cs-info-bg] border-[--cs-info-soft]"       },
   requires_improvement: { label: "Requires Improvement", colour: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg] border-[--cs-warning-soft]" },
   inadequate:   { label: "Inadequate",     colour: "text-[--cs-risk]",     bg: "bg-[--cs-risk-bg] border-[--cs-risk-soft]"         },
+};
+
+const JUDGEMENT_ROW: Record<string, RowSeverity> = {
+  outstanding: "success", good: "info", requires_improvement: "warning", inadequate: "risk",
 };
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; colour: string }> = {
@@ -109,20 +113,22 @@ function VisitCard({ visit, onUpdate }: {
   const pctDone = recStats.total > 0 ? Math.round((recStats.completed / recStats.total) * 100) : 100;
 
   return (
-    <Card className="overflow-hidden">
-      <button className="w-full text-left" onClick={() => setExpanded((v) => !v)}>
-        <div className="px-5 py-4 flex items-center gap-4">
-          <div className="h-11 w-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-            <Eye className="h-5 w-5 text-slate-600" />
-          </div>
+    <div>
+      <FlatListRow
+        severity={JUDGEMENT_ROW[visit.overall_judgement] ?? "info"}
+        className="items-center gap-4"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+          <Eye className="h-5 w-5 text-muted-foreground shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-semibold text-slate-900">{formatDate(visit.visit_date)}</span>
-              <Badge className={cn("text-[10px] rounded-full border", jCfg.bg, jCfg.colour)}>
+              <span className={cn("text-[11px] font-semibold uppercase tracking-wide", jCfg.colour)}>
                 {jCfg.label}
-              </Badge>
+              </span>
               {visit.report_sent_to_ofsted && (
-                <Badge className="text-[10px] rounded-full bg-slate-100 text-slate-600">Sent to Ofsted</Badge>
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Sent to Ofsted</span>
               )}
             </div>
             <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
@@ -142,12 +148,11 @@ function VisitCard({ visit, onUpdate }: {
               <span className="text-[10px] text-slate-400 mt-0.5 block text-right">{pctDone}%</span>
             </div>
           )}
-          {expanded ? <ChevronUp className="h-4 w-4 text-slate-400 shrink-0" /> : <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />}
-        </div>
-      </button>
+          {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
+      </FlatListRow>
 
       {expanded && (
-        <CardContent className="pt-0 space-y-4 border-t border-slate-100">
+        <FlatListRowDetail className="space-y-4">
           {/* Visit summary */}
           <div className="grid grid-cols-2 gap-4 pt-4">
             {visit.children_spoken && (
@@ -237,9 +242,9 @@ function VisitCard({ visit, onUpdate }: {
               Report sent to Ofsted on {formatDate(visit.report_sent_date)}
             </div>
           )}
-        </CardContent>
+        </FlatListRowDetail>
       )}
-    </Card>
+    </div>
   );
 }
 
@@ -554,11 +559,11 @@ export default function Regulation44Page() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <FlatList>
           {visits.map((visit) => (
             <VisitCard key={visit.id} visit={visit} onUpdate={(args) => updateRec.mutate(args as Parameters<typeof updateRec.mutate>[0])} />
           ))}
-        </div>
+        </FlatList>
       )}
 
       {showCreate && <CreateVisitModal onClose={() => setShowCreate(false)} />}
