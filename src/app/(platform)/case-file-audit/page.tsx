@@ -45,26 +45,26 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 const ragClasses = (r: RagRating) => {
   switch (r) {
-    case "green": return "bg-green-100 text-green-800 border-green-200";
-    case "amber": return "bg-amber-100 text-amber-800 border-amber-200";
-    case "red": return "bg-red-100 text-red-800 border-red-200";
+    case "green": return "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]";
+    case "amber": return "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]";
+    case "red": return "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]";
   }
 };
 
 const ragDot = (r: RagRating) =>
   cn(
     "h-2.5 w-2.5 rounded-full inline-block",
-    r === "green" && "bg-green-500",
-    r === "amber" && "bg-amber-500",
-    r === "red" && "bg-red-500"
+    r === "green" && "bg-[--cs-success]",
+    r === "amber" && "bg-[--cs-warning]",
+    r === "red" && "bg-[--cs-risk]"
   );
 
 const actionStatusBadge = (s: CaseFileActionStatus) => {
   switch (s) {
     case "open": return <Badge variant="outline">Open</Badge>;
-    case "in_progress": return <Badge className="bg-blue-100 text-blue-800">In Progress</Badge>;
-    case "complete": return <Badge className="bg-green-100 text-green-800">Complete</Badge>;
-    case "overdue": return <Badge className="bg-red-100 text-red-800">Overdue</Badge>;
+    case "in_progress": return <Badge className="bg-[--cs-info-bg] text-[--cs-info]">In Progress</Badge>;
+    case "complete": return <Badge className="bg-[--cs-success-bg] text-[--cs-success]">Complete</Badge>;
+    case "overdue": return <Badge className="bg-[--cs-risk-bg] text-[--cs-risk]">Overdue</Badge>;
   }
 };
 
@@ -159,13 +159,13 @@ export default function CaseFileAuditPage() {
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-2xl font-bold text-green-700">{stats.green}</p>
+            <p className="text-2xl font-bold text-[--cs-success]">{stats.green}</p>
             <p className="text-xs text-muted-foreground">Green-rated files</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4 pb-4 text-center">
-            <p className="text-2xl font-bold text-amber-700">{stats.amberRed}</p>
+            <p className="text-2xl font-bold text-[--cs-warning]">{stats.amberRed}</p>
             <p className="text-xs text-muted-foreground">Amber / Red files</p>
           </CardContent>
         </Card>
@@ -178,17 +178,17 @@ export default function CaseFileAuditPage() {
       </div>
 
       {filesNeedingAttention.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded-lg p-4 mb-6">
           <div className="flex items-start gap-2">
-            <ShieldAlert className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+            <ShieldAlert className="h-5 w-5 text-[--cs-risk] mt-0.5 shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-red-800">Files requiring immediate attention</p>
-              <ul className="text-xs text-red-700 mt-1 space-y-0.5">
+              <p className="text-sm font-medium text-[--cs-risk]">Files requiring immediate attention</p>
+              <ul className="text-xs text-[--cs-risk] mt-1 space-y-0.5">
                 {filesNeedingAttention.map((a) => (
                   <li key={a.id} className="flex items-center gap-2">
                     <span className={ragDot(a.overall_rag_rating)} />
                     <span className="font-medium">{getYPName(a.child_id)}</span>
-                    <span className="text-red-600">
+                    <span className="text-[--cs-risk]">
                       — {RAG_RATING_LABEL[a.overall_rag_rating]} rating ({a.overall_score.toFixed(1)}/5), {(a.priority_actions ?? []).filter((p) => p.status !== "complete").length} open action(s)
                     </span>
                   </li>
@@ -243,8 +243,8 @@ export default function CaseFileAuditPage() {
               <CardHeader className="cursor-pointer hover:bg-muted/40 transition-colors py-4" onClick={() => toggle(audit.id)}>
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={cn("p-2 rounded-full shrink-0", audit.overall_rag_rating === "green" && "bg-green-100", audit.overall_rag_rating === "amber" && "bg-amber-100", audit.overall_rag_rating === "red" && "bg-red-100")}>
-                      <FileSearch className={cn("h-5 w-5", audit.overall_rag_rating === "green" && "text-green-600", audit.overall_rag_rating === "amber" && "text-amber-600", audit.overall_rag_rating === "red" && "text-red-600")} />
+                    <div className={cn("p-2 rounded-full shrink-0", audit.overall_rag_rating === "green" && "bg-[--cs-success-bg]", audit.overall_rag_rating === "amber" && "bg-[--cs-warning-bg]", audit.overall_rag_rating === "red" && "bg-[--cs-risk-bg]")}>
+                      <FileSearch className={cn("h-5 w-5", audit.overall_rag_rating === "green" && "text-[--cs-success]", audit.overall_rag_rating === "amber" && "text-[--cs-warning]", audit.overall_rag_rating === "red" && "text-[--cs-risk]")} />
                     </div>
                     <div className="min-w-0">
                       <CardTitle className="text-base truncate">{getYPName(audit.child_id)}</CardTitle>
@@ -294,11 +294,11 @@ export default function CaseFileAuditPage() {
 
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-green-600" />Strengths Identified</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" />Strengths Identified</p>
                       <ul className="text-sm list-disc pl-4 space-y-1">{audit.strengths_identified.map((str, i) => (<li key={i}>{str}</li>))}</ul>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5 text-amber-600" />Gaps Identified</p>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 flex items-center gap-1.5"><AlertTriangle className="h-3.5 w-3.5 text-[--cs-warning]" />Gaps Identified</p>
                       {audit.gaps_identified.length > 0 ? (
                         <ul className="text-sm list-disc pl-4 space-y-1">{audit.gaps_identified.map((g, i) => (<li key={i}>{g}</li>))}</ul>
                       ) : (
