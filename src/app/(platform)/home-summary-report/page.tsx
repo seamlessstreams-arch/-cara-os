@@ -14,16 +14,16 @@ import type {
 } from "@/lib/engines/home-summary-report-engine";
 
 const OVERALL_META: Record<OverallStatus, { label: string; tone: string; print: string; Icon: typeof FileText }> = {
-  good: { label: "Good", tone: "bg-green-50 text-green-800 ring-green-200", print: "cs-tone-green", Icon: ShieldCheck },
+  good: { label: "Good", tone: "bg-[--cs-success-bg] text-[--cs-success] ring-[--cs-success-soft]", print: "cs-tone-green", Icon: ShieldCheck },
   stable: { label: "Stable", tone: "bg-slate-50 text-slate-700 ring-slate-200", print: "cs-tone-slate", Icon: MinusCircle },
-  needs_attention: { label: "Needs attention", tone: "bg-amber-50 text-amber-800 ring-amber-200", print: "cs-tone-amber", Icon: AlertTriangle },
-  serious_concern: { label: "Serious concern", tone: "bg-red-50 text-red-800 ring-red-200", print: "cs-tone-red", Icon: AlertOctagon },
+  needs_attention: { label: "Needs attention", tone: "bg-[--cs-warning-bg] text-[--cs-warning] ring-[--cs-warning-soft]", print: "cs-tone-amber", Icon: AlertTriangle },
+  serious_concern: { label: "Serious concern", tone: "bg-[--cs-risk-bg] text-[--cs-risk] ring-[--cs-risk-soft]", print: "cs-tone-red", Icon: AlertOctagon },
 };
 
 const SECTION_META: Record<SectionStatus, { label: string; badge: string; dot: string; rag: string; pdot: string }> = {
-  green: { label: "Good", badge: "bg-green-100 text-green-800 border-green-200", dot: "bg-green-500", rag: "cs-rag-green", pdot: "cs-dot-green" },
-  amber: { label: "Needs attention", badge: "bg-amber-100 text-amber-800 border-amber-200", dot: "bg-amber-400", rag: "cs-rag-amber", pdot: "cs-dot-amber" },
-  red: { label: "Serious concern", badge: "bg-red-100 text-red-800 border-red-200", dot: "bg-red-500", rag: "cs-rag-red", pdot: "cs-dot-red" },
+  green: { label: "Good", badge: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]", dot: "bg-[--cs-success]", rag: "cs-rag-green", pdot: "cs-dot-green" },
+  amber: { label: "Needs attention", badge: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]", dot: "bg-[--cs-warning]", rag: "cs-rag-amber", pdot: "cs-dot-amber" },
+  red: { label: "Serious concern", badge: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]", dot: "bg-[--cs-risk]", rag: "cs-rag-red", pdot: "cs-dot-red" },
   no_data: { label: "No data", badge: "bg-slate-100 text-slate-600 border-slate-200", dot: "bg-slate-300", rag: "cs-rag-slate", pdot: "cs-dot-slate" },
 };
 
@@ -51,7 +51,7 @@ function SectionBlock({ s }: { s: ReportSection }) {
             <ul className="space-y-1">
               {s.highlights.map((h, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                  <AlertTriangle className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", s.status === "red" ? "text-red-500" : "text-amber-500")} />
+                  <AlertTriangle className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", s.status === "red" ? "text-[--cs-risk]" : "text-[--cs-warning]")} />
                   <span>{h}</span>
                 </li>
               ))}
@@ -64,7 +64,7 @@ function SectionBlock({ s }: { s: ReportSection }) {
             <ul className="space-y-1">
               {s.positives.map((p, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                  <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green-500" />
+                  <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[--cs-success]" />
                   <span>{p}</span>
                 </li>
               ))}
