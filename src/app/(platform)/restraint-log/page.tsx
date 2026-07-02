@@ -12,6 +12,7 @@ import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-
 import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,6 +50,14 @@ const REVIEW_META: Record<RestraintReviewStatus, { label: string; color: string 
   pending_ri:    { label: "Pending RI Review",   color: "bg-purple-100 text-purple-700" },
   reviewed:      { label: "Reviewed",            color: "bg-[--cs-success-bg] text-[--cs-success]" },
   referred_lado: { label: "Referred to LADO",   color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
+};
+
+// Bar carries the assurance state; a LADO referral or recorded injury is the alarm tier.
+const REVIEW_ROW: Record<RestraintReviewStatus, RowSeverity> = {
+  pending_rm: "warning", pending_ri: "warning", reviewed: "success", referred_lado: "risk",
+};
+const REVIEW_TEXT: Record<RestraintReviewStatus, string> = {
+  pending_rm: "text-[--cs-warning]", pending_ri: "text-purple-700", reviewed: "text-[--cs-success]", referred_lado: "text-[--cs-risk]",
 };
 
 
@@ -180,21 +189,21 @@ export default function RestraintLogPage() {
           </div>
         </div>
 
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No restraint records found.</p>}
           {filtered.map((r) => {
             const open = !!expanded[r.id];
             const reviewM = REVIEW_META[r.review_status] ?? { label: String(r.review_status ?? "Unknown"), color: "bg-slate-100 text-slate-700" };
+            const severity: RowSeverity = r.injuries.length > 0 ? "risk" : (REVIEW_ROW[r.review_status] ?? "warning");
             return (
-              <Card key={r.id} className="border-l-4 border-l-red-500">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(r.id)}>
+              <div key={r.id}>
+                <FlatListRow severity={severity} onClick={() => toggle(r.id)} aria-expanded={open}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <Badge className="bg-[--cs-risk-bg] text-[--cs-risk] text-xs">Physical Intervention</Badge>
                         <Badge variant="outline" className="text-xs">{TYPE_META[r.restraint_type]}</Badge>
-                        <Badge className={cn("text-xs", reviewM.color)}>{reviewM.label}</Badge>
-                        {r.injuries.length > 0 && <Badge variant="destructive" className="text-xs">Injury recorded</Badge>}
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", REVIEW_TEXT[r.review_status] ?? "text-slate-600")}>{reviewM.label}</span>
+                        {r.injuries.length > 0 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Injury recorded</span>}
                         {(r as never as { care_event_id?: string }).care_event_id && (
                           <Link
                             href={`/care-events/${(r as never as { care_event_id: string }).care_event_id}`}
@@ -213,11 +222,12 @@ export default function RestraintLogPage() {
                         <span>Staff: {r.staff_involved.map((s) => getStaffName(s.staff_id)).join(", ")}</span>
                       </div>
                     </div>
-                    {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
+                    {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />}
                   </div>
+                </FlatListRow>
 
                   {open && (
-                    <div className="mt-4 space-y-3 border-t pt-3 text-sm">
+                    <FlatListRowDetail className="text-sm">
                       <div><p className="font-medium text-muted-foreground mb-1">Antecedent</p><p className="text-xs">{r.antecedent}</p></div>
                       <div><p className="font-medium text-muted-foreground mb-1">Behaviour</p><p className="text-xs">{r.behaviour}</p></div>
                       <div>
@@ -276,13 +286,12 @@ export default function RestraintLogPage() {
                       )}
 
                       <SmartLinkPanel sourceType="restraint" sourceId={r.id} childId={r.child_id} compact />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </FlatListRowDetail>
+                )}
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         <Card className="bg-muted/40">
           <CardContent className="p-3 text-xs text-muted-foreground flex items-start gap-2">
