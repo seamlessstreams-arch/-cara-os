@@ -10,6 +10,7 @@
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,14 +50,6 @@ const STATUS_LABELS: Record<InterventionStatus, string> = {
   completed:    "Completed",
   stopped:      "Stopped",
   under_review: "Under Review",
-};
-
-const STATUS_COLOUR: Record<InterventionStatus, string> = {
-  active:       "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
-  paused:       "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
-  completed:    "bg-[--cs-info-bg] text-[--cs-info] border-[--cs-info-soft]",
-  stopped:      "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
-  under_review: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border-[var(--cs-cara-gold-soft)]",
 };
 
 const STATUS_ICONS: Record<InterventionStatus, React.ElementType> = {
@@ -151,42 +144,26 @@ function InterventionCard({
   const isActive = intervention.status === "active";
   const durationDays = daysSince(intervention.started_at);
 
+  const rowSev: RowSeverity = isActive && review && (daysUntil(intervention.review_date) ?? 99) < 0
+    ? "risk"
+    : isActive
+      ? "success"
+      : intervention.status === "paused"
+        ? "warning"
+        : "neutral";
+
   return (
-    <div className={cn(
-      "rounded-2xl border bg-white overflow-hidden transition-all",
-      isActive && review && (daysUntil(intervention.review_date) ?? 99) < 0
-        ? "border-[--cs-risk-soft]"
-        : isActive
-          ? "border-[--cs-success-soft]"
-          : intervention.status === "paused"
-            ? "border-[--cs-warning-soft]"
-            : "border-[var(--cs-border)]",
-    )}>
+    <div>
       {/* Header */}
-      <div className="flex items-start gap-3 p-4">
-        {/* Status indicator */}
-        <div className={cn(
-          "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
-          isActive ? "bg-[--cs-success-bg]" :
-          intervention.status === "paused" ? "bg-[--cs-warning-bg]" :
-          intervention.status === "completed" ? "bg-[--cs-info-bg]" :
-          "bg-slate-100",
-        )}>
-          <StatusIcon className={cn(
-            "h-4 w-4",
-            isActive ? "text-[--cs-success]" :
-            intervention.status === "paused" ? "text-[--cs-warning]" :
-            intervention.status === "completed" ? "text-[--cs-info]" :
-            "text-[var(--cs-text-muted)]",
-          )} />
-        </div>
+      <FlatListRow severity={rowSev} onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+        <StatusIcon className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-sm font-bold text-[var(--cs-navy)]">{intervention.title}</span>
-            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", STATUS_COLOUR[intervention.status])}>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               {STATUS_LABELS[intervention.status]}
-            </Badge>
+            </span>
             <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", OUTCOME_COLOUR[intervention.outcome])}>
               <OutcomeIcon className="h-2.5 w-2.5 mr-0.5 inline" />
               {OUTCOME_LABELS[intervention.outcome]}
@@ -218,16 +195,11 @@ function InterventionCard({
           </div>
         </div>
 
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] shrink-0"
-        >
-          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </button>
-      </div>
+        {expanded ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </FlatListRow>
 
       {expanded && (
-        <div className="border-t border-[var(--cs-border-subtle)] px-4 pb-4 pt-3 space-y-3">
+        <FlatListRowDetail>
           {/* Description */}
           <div className="rounded-xl border border-[var(--cs-border)] bg-slate-50 p-3">
             <p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-widest mb-1">What We Are Doing</p>
@@ -398,7 +370,7 @@ function InterventionCard({
               </div>
             </div>
           )}
-        </div>
+        </FlatListRowDetail>
       )}
     </div>
   );
@@ -845,7 +817,7 @@ export default function InterventionsPage() {
         )}
 
         {!isLoading && filtered.length > 0 && (
-          <div className="space-y-3">
+          <FlatList>
             {filtered.map((intervention) => (
               <InterventionCard
                 key={intervention.id}
@@ -855,7 +827,7 @@ export default function InterventionsPage() {
                 isBusy={updateIntervention.isPending}
               />
             ))}
-          </div>
+          </FlatList>
         )}
 
         {/* ── Regulatory note ──────────────────────────────────────────────── */}

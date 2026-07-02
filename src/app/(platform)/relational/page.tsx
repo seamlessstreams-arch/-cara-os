@@ -10,6 +10,7 @@
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,8 +56,8 @@ const TYPE_CONFIG: Record<RelationalRecordType, { label: string; icon: React.Ele
 
 const CONFIDENCE_CONFIG: Record<string, { label: string; cls: string }> = {
   low:    { label: "Low confidence",    cls: "bg-slate-50 text-[var(--cs-text-muted)] border-[var(--cs-border)]"     },
-  medium: { label: "Developing",        cls: "bg-amber-50 text-amber-700 border-amber-200"    },
-  high:   { label: "Well-evidenced",    cls: "bg-emerald-50 text-emerald-700 border-emerald-200" },
+  medium: { label: "Developing",        cls: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]"    },
+  high:   { label: "Well-evidenced",    cls: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" },
 };
 
 const RELATIONAL_EXPORT_COLS: ExportColumn<RelationalRecord>[] = [
@@ -80,22 +81,17 @@ function RecordCard({ record }: { record: RelationalRecord }) {
   const confCfg = CONFIDENCE_CONFIG[record.confidence];
 
   return (
-    <div className={cn(
-      "rounded-2xl border bg-white overflow-hidden transition-all",
-      record.is_positive ? "border-emerald-100" : "border-red-100",
-    )}>
-      <div className="flex items-start gap-3 p-4">
-        <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center shrink-0", typeCfg?.bg ?? "bg-slate-50")}>
-          <TypeIcon className={cn("h-4 w-4", typeCfg?.color ?? "text-[var(--cs-text-muted)]")} />
-        </div>
+    <div>
+      <FlatListRow severity={record.is_positive ? "success" : "risk"} onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>
+        <TypeIcon className="h-4 w-4 shrink-0 mt-0.5 text-muted-foreground" />
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <span className="text-sm font-bold text-[var(--cs-navy)]">{record.title}</span>
             {record.is_positive ? (
-              <ThumbsUp className="h-3.5 w-3.5 text-emerald-500" />
+              <ThumbsUp className="h-3.5 w-3.5 text-[--cs-success]" />
             ) : (
-              <ThumbsDown className="h-3.5 w-3.5 text-red-400" />
+              <ThumbsDown className="h-3.5 w-3.5 text-[--cs-risk]" />
             )}
           </div>
 
@@ -103,9 +99,9 @@ function RecordCard({ record }: { record: RelationalRecord }) {
             <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", typeCfg?.border, typeCfg?.bg, typeCfg?.color)}>
               {typeCfg?.label ?? record.record_type}
             </Badge>
-            <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 border", confCfg?.cls)}>
-              {confCfg?.label ?? record.confidence}
-            </Badge>
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {confCfg?.label ?? record.confidence} confidence
+            </span>
           </div>
 
           <div className="flex items-center gap-3 text-xs text-[var(--cs-text-muted)] flex-wrap">
@@ -127,16 +123,14 @@ function RecordCard({ record }: { record: RelationalRecord }) {
           </div>
         </div>
 
-        <button onClick={() => setExpanded(!expanded)} className="text-[var(--cs-text-muted)] hover:text-[var(--cs-text-secondary)] shrink-0">
-          {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-        </button>
-      </div>
+        {expanded ? <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />}
+      </FlatListRow>
 
       {expanded && (
-        <div className="border-t border-[var(--cs-border-subtle)] px-4 pb-4 pt-3 space-y-3">
+        <FlatListRowDetail>
           <div className={cn(
             "rounded-xl border p-3",
-            record.is_positive ? "border-emerald-100 bg-emerald-50/40" : "border-red-100 bg-red-50/30",
+            record.is_positive ? "border-[--cs-success-soft] bg-[--cs-success-bg]" : "border-[--cs-risk-soft] bg-[--cs-risk-bg]",
           )}>
             <p className="text-xs text-[var(--cs-text-secondary)] leading-relaxed">{record.description}</p>
           </div>
@@ -147,7 +141,7 @@ function RecordCard({ record }: { record: RelationalRecord }) {
               <span>Source: {record.source_ref_type.replace(/_/g, " ")}</span>
             )}
           </div>
-        </div>
+        </FlatListRowDetail>
       )}
     </div>
   );
@@ -387,9 +381,9 @@ export default function RelationalPracticePage() {
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
             { label: "Total Records", value: allRecords.length, icon: Heart, colour: "text-[var(--cs-text-secondary)]", bg: "bg-slate-50 border-[var(--cs-border-subtle)]" },
-            { label: "Positive", value: positiveCount, icon: ThumbsUp, colour: "text-emerald-600", bg: "bg-emerald-50 border-emerald-100" },
-            { label: "Caution", value: cautionCount, icon: AlertTriangle, colour: cautionCount > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]", bg: cautionCount > 0 ? "bg-red-50 border-red-100" : "bg-slate-50 border-[var(--cs-border-subtle)]" },
-            { label: "Well-Evidenced", value: highConfidenceCount, icon: CheckCircle2, colour: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
+            { label: "Positive", value: positiveCount, icon: ThumbsUp, colour: "text-[--cs-success]", bg: "bg-[--cs-success-bg] border-[--cs-success-soft]" },
+            { label: "Caution", value: cautionCount, icon: AlertTriangle, colour: cautionCount > 0 ? "text-[--cs-risk]" : "text-[var(--cs-text-muted)]", bg: cautionCount > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-slate-50 border-[var(--cs-border-subtle)]" },
+            { label: "Well-Evidenced", value: highConfidenceCount, icon: CheckCircle2, colour: "text-[--cs-info]", bg: "bg-[--cs-info-bg] border-[--cs-info-soft]" },
             { label: "Record Types", value: Object.keys(typeCounts).length, icon: Sparkles, colour: "text-[var(--cs-cara-gold)]", bg: "bg-[var(--cs-cara-gold-bg)] border-[var(--cs-cara-gold-soft)]" },
           ].map(({ label, value, icon: Icon, colour, bg }) => (
             <div key={label} className={cn("rounded-2xl border p-4 text-center", bg)}>
@@ -520,11 +514,11 @@ export default function RelationalPracticePage() {
         )}
 
         {!isLoading && filtered.length > 0 && (
-          <div className="space-y-3">
+          <FlatList>
             {filtered.map((record) => (
               <RecordCard key={record.id} record={record} />
             ))}
-          </div>
+          </FlatList>
         )}
 
         {/* ── Regulatory note ──────────────────────────────────────────────── */}
