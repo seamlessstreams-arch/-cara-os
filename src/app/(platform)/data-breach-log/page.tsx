@@ -14,6 +14,7 @@ import {
   Eye,
 } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -53,6 +54,16 @@ const STATUS_COLOURS: Record<DataBreachStatus, string> = {
   closed_resolved: "bg-[--cs-success-bg] text-[--cs-success]",
   reported_awaiting_ico: "bg-[--cs-info-bg] text-[--cs-info]",
   monitoring: "bg-purple-100 text-purple-800",
+};
+
+const SEVERITY_ROW: Record<DataBreachSeverity, RowSeverity> = {
+  low: "success", medium: "warning", high: "risk", critical: "risk",
+};
+const SEVERITY_TEXT: Record<DataBreachSeverity, string> = {
+  low: "text-[--cs-success]", medium: "text-[--cs-warning]", high: "text-orange-700", critical: "text-[--cs-risk]",
+};
+const STATUS_TEXT: Record<DataBreachStatus, string> = {
+  investigating: "text-[--cs-warning]", closed_resolved: "text-[--cs-success]", reported_awaiting_ico: "text-[--cs-info]", monitoring: "text-purple-700",
 };
 
 /* ── flat row for export ──────────────────────────────────────────────── */
@@ -255,44 +266,38 @@ export default function DataBreachLogPage() {
 
       {/* breach cards */}
       <div className="space-y-4 mb-8">
+        <FlatList>
         {filtered.map((b) => {
           const open = expandedId === b.id;
           return (
-            <div key={b.id} className="rounded-lg border bg-white">
-              <button
-                onClick={() => toggle(b.id)}
-                className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50"
-              >
-                <div className="flex-1">
+            <div key={b.id}>
+              <FlatListRow severity={SEVERITY_ROW[b.severity]} onClick={() => toggle(b.id)} aria-expanded={open}>
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <ShieldAlert className="h-4 w-4 text-gray-400" />
+                    <ShieldAlert className="h-4 w-4 text-muted-foreground shrink-0" />
                     <h3 className="font-semibold">{DATA_BREACH_TYPE_LABEL[b.breach_type]}</h3>
                     {b.near_miss && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[--cs-success-bg] text-[--cs-success]">
-                        Near-miss
-                      </span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Near-miss</span>
                     )}
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", SEVERITY_COLOURS[b.severity])}>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", SEVERITY_TEXT[b.severity])}>
                       {DATA_BREACH_SEVERITY_LABEL[b.severity]}
                     </span>
-                    <span className={cn("px-2 py-0.5 rounded-full text-xs font-medium", STATUS_COLOURS[b.status])}>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[b.status])}>
                       {DATA_BREACH_STATUS_LABEL[b.status]}
                     </span>
                     {b.special_category_data && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                        Special category
-                      </span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-purple-700">Special category</span>
                     )}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
                     Discovered {b.date_discovered} · Incident {b.date_incident} · {b.data_subjects} · Reviewed by {getStaffName(b.reviewed_by)}
                   </p>
                 </div>
-                {open ? <ChevronUp className="h-5 w-5 text-gray-400" /> : <ChevronDown className="h-5 w-5 text-gray-400" />}
-              </button>
+                {open ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
+              </FlatListRow>
 
               {open && (
-                <div className="border-t px-4 pb-4 space-y-4">
+                <FlatListRowDetail>
                   <p className="mt-3 text-sm">{b.summary_of_breach}</p>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
@@ -377,11 +382,12 @@ export default function DataBreachLogPage() {
                       <p className="text-gray-700">{getStaffName(b.reviewed_by)}</p>
                     </div>
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
+        </FlatList>
       </div>
 
       {/* regulatory note */}
