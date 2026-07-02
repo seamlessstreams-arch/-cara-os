@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { usePreventRecords, useCreatePreventRecord } from "@/hooks/use-prevent-records";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import type { PreventRecord, PreventReferralType, PreventRiskLevel, PreventStatus } from "@/types/extended";
 import {
   PREVENT_REFERRAL_TYPE_LABEL,
@@ -44,16 +45,16 @@ const REFERRAL_TYPE_COLOURS: Record<PreventReferralType, string> = {
   training_record: "bg-blue-100 text-blue-800",
 };
 
-const RISK_COLOURS: Record<PreventRiskLevel, string> = {
-  low: "bg-slate-100 text-[var(--cs-text-secondary)]",
-  medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  high: "bg-[--cs-risk-bg] text-[--cs-risk]",
+const RISK_ROW: Record<PreventRiskLevel, RowSeverity> = {
+  low: "neutral",
+  medium: "warning",
+  high: "risk",
 };
 
-const RISK_BORDER: Record<PreventRiskLevel, string> = {
-  low: "border-l-slate-300",
-  medium: "border-l-[--cs-warning]",
-  high: "border-l-[--cs-risk]",
+const RISK_TEXT: Record<PreventRiskLevel, string> = {
+  low: "text-[var(--cs-text-secondary)]",
+  medium: "text-[--cs-warning]",
+  high: "text-[--cs-risk]",
 };
 
 const STATUS_COLOURS: Record<PreventStatus, string> = {
@@ -259,27 +260,18 @@ export default function PreventDutyPage() {
         </div>
 
         {/* ── card list ──────────────────────────────────────────── */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && (
-            <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted-foreground">
+            <div className="p-8 text-center text-sm text-muted-foreground">
               No records match the current filters.
             </div>
           )}
           {filtered.map((rec) => {
             const isExpanded = expanded === rec.id;
             return (
-              <div
-                key={rec.id}
-                className={cn(
-                  "rounded-xl border bg-white border-l-4 overflow-hidden",
-                  RISK_BORDER[rec.risk_level],
-                )}
-              >
-                {/* collapsed header */}
-                <button
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
-                  onClick={() => setExpanded(isExpanded ? null : rec.id)}
-                >
+              <div key={rec.id}>
+                <FlatListRow severity={RISK_ROW[rec.risk_level]} onClick={() => setExpanded(isExpanded ? null : rec.id)} aria-expanded={isExpanded}>
+                  <div className="flex items-center justify-between flex-1 min-w-0">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
                     <Shield className="h-5 w-5 text-[var(--cs-text-muted)] shrink-0" />
                     <div className="min-w-0">
@@ -287,9 +279,9 @@ export default function PreventDutyPage() {
                         <span className="font-medium text-sm">
                           {PREVENT_REFERRAL_TYPE_LABEL[rec.referral_type]}
                         </span>
-                        <Badge className={cn("text-[10px]", RISK_COLOURS[rec.risk_level])}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", RISK_TEXT[rec.risk_level])}>
                           {PREVENT_RISK_LEVEL_LABEL[rec.risk_level]}
-                        </Badge>
+                        </span>
                         <Badge className={cn("text-[10px]", STATUS_COLOURS[rec.status])}>
                           {PREVENT_STATUS_LABEL[rec.status]}
                         </Badge>
@@ -302,23 +294,24 @@ export default function PreventDutyPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     {rec.review_date && rec.review_date <= d(0) && (
-                      <Badge variant="outline" className="text-xs bg-orange-50 text-orange-700">
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">
                         Review Due
-                      </Badge>
+                      </span>
                     )}
                     {isExpanded ? (
-                      <ChevronUp className="h-4 w-4" />
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
                     ) : (
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-4 w-4 text-muted-foreground" />
                     )}
                   </div>
-                </button>
+                  </div>
+                </FlatListRow>
 
                 {/* expanded detail */}
                 {isExpanded && (
-                  <div className="border-t bg-slate-50 p-4 space-y-4">
+                  <FlatListRowDetail>
                     {/* description */}
                     <div>
                       <p className="text-[10px] font-semibold text-[var(--cs-text-muted)] uppercase tracking-wider mb-1">
@@ -417,12 +410,12 @@ export default function PreventDutyPage() {
                     {rec.child_id && (
                       <SmartLinkPanel sourceType="prevent_record" sourceId={rec.id} childId={rec.child_id} compact />
                     )}
-                  </div>
+                  </FlatListRowDetail>
                 )}
               </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── regulatory note ────────────────────────────────────── */}
         <Card className="bg-slate-50 border-[var(--cs-border)]">
