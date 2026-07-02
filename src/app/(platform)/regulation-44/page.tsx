@@ -4,8 +4,8 @@ import React, { useState } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
@@ -23,16 +23,20 @@ import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const JUDGEMENT_CONFIG: Record<string, { label: string; colour: string; bg: string }> = {
-  outstanding: { label: "Outstanding",    colour: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
-  good:         { label: "Good",           colour: "text-blue-700",    bg: "bg-blue-50 border-blue-200"       },
-  requires_improvement: { label: "Requires Improvement", colour: "text-amber-700", bg: "bg-amber-50 border-amber-200" },
-  inadequate:   { label: "Inadequate",     colour: "text-red-700",     bg: "bg-red-50 border-red-200"         },
+  outstanding: { label: "Outstanding",    colour: "text-[--cs-success]", bg: "bg-[--cs-success-bg] border-[--cs-success-soft]" },
+  good:         { label: "Good",           colour: "text-[--cs-info]",    bg: "bg-[--cs-info-bg] border-[--cs-info-soft]"       },
+  requires_improvement: { label: "Requires Improvement", colour: "text-[--cs-warning]", bg: "bg-[--cs-warning-bg] border-[--cs-warning-soft]" },
+  inadequate:   { label: "Inadequate",     colour: "text-[--cs-risk]",     bg: "bg-[--cs-risk-bg] border-[--cs-risk-soft]"         },
+};
+
+const JUDGEMENT_ROW: Record<string, RowSeverity> = {
+  outstanding: "success", good: "info", requires_improvement: "warning", inadequate: "risk",
 };
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; colour: string }> = {
-  outstanding: { label: "Outstanding", icon: AlertCircle, colour: "text-red-600"    },
-  in_progress: { label: "In Progress", icon: CircleDot,   colour: "text-amber-600"  },
-  completed:   { label: "Completed",   icon: CheckCheck,  colour: "text-emerald-600" },
+  outstanding: { label: "Outstanding", icon: AlertCircle, colour: "text-[--cs-risk]"    },
+  in_progress: { label: "In Progress", icon: CircleDot,   colour: "text-[--cs-warning]"  },
+  completed:   { label: "Completed",   icon: CheckCheck,  colour: "text-[--cs-success]" },
 };
 
 function formatDate(d: string) {
@@ -73,9 +77,9 @@ function RecommendationRow({ rec, visitId, onUpdate }: {
       </div>
       <div className="flex items-center gap-1 shrink-0">
         <Badge className={cn("text-[10px] rounded-full", {
-          "bg-red-50 text-red-700 border border-red-200":     rec.status === "outstanding",
-          "bg-amber-50 text-amber-700 border border-amber-200": rec.status === "in_progress",
-          "bg-emerald-50 text-emerald-700 border border-emerald-200": rec.status === "completed",
+          "bg-[--cs-risk-bg] text-[--cs-risk] border border-[--cs-risk-soft]":     rec.status === "outstanding",
+          "bg-[--cs-warning-bg] text-[--cs-warning] border border-[--cs-warning-soft]": rec.status === "in_progress",
+          "bg-[--cs-success-bg] text-[--cs-success] border border-[--cs-success-soft]": rec.status === "completed",
         })}>
           {rec.priority === "high" && <Flag className="h-2.5 w-2.5 mr-1 inline" />}
           {cfg.label}
@@ -83,11 +87,11 @@ function RecommendationRow({ rec, visitId, onUpdate }: {
         {rec.status !== "completed" && (
           <div className="flex gap-1 ml-1">
             {rec.status === "outstanding" && (
-              <button title="Mark In Progress" onClick={() => onUpdate({ visit_id: visitId, recommendation_id: rec.id, status: "in_progress" })} className="rounded-lg p-1 text-amber-600 hover:bg-amber-50">
+              <button title="Mark In Progress" onClick={() => onUpdate({ visit_id: visitId, recommendation_id: rec.id, status: "in_progress" })} className="rounded-lg p-1 text-[--cs-warning] hover:bg-[--cs-warning-bg]">
                 <CircleDot className="h-3.5 w-3.5" />
               </button>
             )}
-            <button title="Mark Completed" onClick={() => onUpdate({ visit_id: visitId, recommendation_id: rec.id, status: "completed" })} className="rounded-lg p-1 text-emerald-600 hover:bg-emerald-50">
+            <button title="Mark Completed" onClick={() => onUpdate({ visit_id: visitId, recommendation_id: rec.id, status: "completed" })} className="rounded-lg p-1 text-[--cs-success] hover:bg-[--cs-success-bg]">
               <CheckCheck className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -109,20 +113,22 @@ function VisitCard({ visit, onUpdate }: {
   const pctDone = recStats.total > 0 ? Math.round((recStats.completed / recStats.total) * 100) : 100;
 
   return (
-    <Card className="overflow-hidden">
-      <button className="w-full text-left" onClick={() => setExpanded((v) => !v)}>
-        <div className="px-5 py-4 flex items-center gap-4">
-          <div className="h-11 w-11 rounded-xl bg-slate-100 flex items-center justify-center shrink-0">
-            <Eye className="h-5 w-5 text-slate-600" />
-          </div>
+    <div>
+      <FlatListRow
+        severity={JUDGEMENT_ROW[visit.overall_judgement] ?? "info"}
+        className="items-center gap-4"
+        onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
+      >
+          <Eye className="h-5 w-5 text-muted-foreground shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-semibold text-slate-900">{formatDate(visit.visit_date)}</span>
-              <Badge className={cn("text-[10px] rounded-full border", jCfg.bg, jCfg.colour)}>
+              <span className={cn("text-[11px] font-semibold uppercase tracking-wide", jCfg.colour)}>
                 {jCfg.label}
-              </Badge>
+              </span>
               {visit.report_sent_to_ofsted && (
-                <Badge className="text-[10px] rounded-full bg-slate-100 text-slate-600">Sent to Ofsted</Badge>
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Sent to Ofsted</span>
               )}
             </div>
             <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
@@ -142,12 +148,11 @@ function VisitCard({ visit, onUpdate }: {
               <span className="text-[10px] text-slate-400 mt-0.5 block text-right">{pctDone}%</span>
             </div>
           )}
-          {expanded ? <ChevronUp className="h-4 w-4 text-slate-400 shrink-0" /> : <ChevronDown className="h-4 w-4 text-slate-400 shrink-0" />}
-        </div>
-      </button>
+          {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
+      </FlatListRow>
 
       {expanded && (
-        <CardContent className="pt-0 space-y-4 border-t border-slate-100">
+        <FlatListRowDetail className="space-y-4">
           {/* Visit summary */}
           <div className="grid grid-cols-2 gap-4 pt-4">
             {visit.children_spoken && (
@@ -189,7 +194,7 @@ function VisitCard({ visit, onUpdate }: {
               <ul className="space-y-1">
                 {(visit.strengths ?? []).map((s, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />{s}
+                    <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success] shrink-0 mt-0.5" />{s}
                   </li>
                 ))}
               </ul>
@@ -203,7 +208,7 @@ function VisitCard({ visit, onUpdate }: {
               <ul className="space-y-1">
                 {visit.areas_for_development.map((a, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm text-slate-700">
-                    <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0 mt-0.5" />{a}
+                    <AlertCircle className="h-3.5 w-3.5 text-[--cs-warning] shrink-0 mt-0.5" />{a}
                   </li>
                 ))}
               </ul>
@@ -232,14 +237,14 @@ function VisitCard({ visit, onUpdate }: {
 
           {/* Ofsted send info */}
           {visit.report_sent_to_ofsted && visit.report_sent_date && (
-            <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 flex items-center gap-2 text-sm text-emerald-800">
+            <div className="rounded-xl bg-[--cs-success-bg] border border-[--cs-success-soft] px-4 py-2.5 flex items-center gap-2 text-sm text-[--cs-success]">
               <CheckCheck className="h-4 w-4 shrink-0" />
               Report sent to Ofsted on {formatDate(visit.report_sent_date)}
             </div>
           )}
-        </CardContent>
+        </FlatListRowDetail>
       )}
-    </Card>
+    </div>
   );
 }
 
@@ -471,34 +476,34 @@ export default function Regulation44Page() {
             <div className="text-xs text-slate-500">Total visits</div>
           </div>
         </div>
-        <div className={cn("rounded-2xl border px-4 py-3 flex items-center gap-3", visitDue ? "bg-amber-50 border-amber-200" : "bg-white border-slate-200")}>
-          <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center", visitDue ? "bg-amber-100" : "bg-slate-100")}>
-            <Calendar className={cn("h-4 w-4", visitDue ? "text-amber-600" : "text-slate-600")} />
+        <div className={cn("rounded-2xl border px-4 py-3 flex items-center gap-3", visitDue ? "bg-[--cs-warning-bg] border-[--cs-warning-soft]" : "bg-white border-slate-200")}>
+          <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center", visitDue ? "bg-[--cs-warning-bg]" : "bg-slate-100")}>
+            <Calendar className={cn("h-4 w-4", visitDue ? "text-[--cs-warning]" : "text-slate-600")} />
           </div>
           <div>
-            <div className={cn("text-lg font-bold", visitDue ? "text-amber-700" : "text-slate-900")}>
+            <div className={cn("text-lg font-bold", visitDue ? "text-[--cs-warning]" : "text-slate-900")}>
               {daysSinceLastVisit !== null ? `${daysSinceLastVisit}d ago` : "—"}
             </div>
-            <div className={cn("text-xs", visitDue ? "text-amber-600" : "text-slate-500")}>
+            <div className={cn("text-xs", visitDue ? "text-[--cs-warning]" : "text-slate-500")}>
               {visitDue ? "Visit overdue" : "Last visit"}
             </div>
           </div>
         </div>
-        <div className={cn("rounded-2xl border px-4 py-3 flex items-center gap-3", outstanding > 0 ? "bg-red-50 border-red-200" : "bg-white border-slate-200")}>
-          <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center", outstanding > 0 ? "bg-red-100" : "bg-slate-100")}>
-            <AlertCircle className={cn("h-4 w-4", outstanding > 0 ? "text-red-600" : "text-slate-600")} />
+        <div className={cn("rounded-2xl border px-4 py-3 flex items-center gap-3", outstanding > 0 ? "bg-[--cs-risk-bg] border-[--cs-risk-soft]" : "bg-white border-slate-200")}>
+          <div className={cn("h-9 w-9 rounded-xl flex items-center justify-center", outstanding > 0 ? "bg-[--cs-risk-bg]" : "bg-slate-100")}>
+            <AlertCircle className={cn("h-4 w-4", outstanding > 0 ? "text-[--cs-risk]" : "text-slate-600")} />
           </div>
           <div>
-            <div className={cn("text-lg font-bold", outstanding > 0 ? "text-red-700" : "text-slate-900")}>{outstanding}</div>
-            <div className={cn("text-xs", outstanding > 0 ? "text-red-600" : "text-slate-500")}>Outstanding</div>
+            <div className={cn("text-lg font-bold", outstanding > 0 ? "text-[--cs-risk]" : "text-slate-900")}>{outstanding}</div>
+            <div className={cn("text-xs", outstanding > 0 ? "text-[--cs-risk]" : "text-slate-500")}>Outstanding</div>
           </div>
         </div>
         <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 flex items-center gap-3">
-          <div className="h-9 w-9 rounded-xl bg-emerald-100 flex items-center justify-center">
-            <CheckCheck className="h-4 w-4 text-emerald-600" />
+          <div className="h-9 w-9 rounded-xl bg-[--cs-success-bg] flex items-center justify-center">
+            <CheckCheck className="h-4 w-4 text-[--cs-success]" />
           </div>
           <div>
-            <div className="text-lg font-bold text-emerald-700">{completed}</div>
+            <div className="text-lg font-bold text-[--cs-success]">{completed}</div>
             <div className="text-xs text-slate-500">Completed</div>
           </div>
         </div>
@@ -506,15 +511,15 @@ export default function Regulation44Page() {
 
       {/* Outstanding recommendations summary */}
       {outstanding + inProgress > 0 && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 mb-5">
+        <div className="rounded-2xl border border-[--cs-warning-soft] bg-[--cs-warning-bg] px-5 py-4 mb-5">
           <div className="flex items-center gap-2 mb-3">
-            <Flag className="h-4 w-4 text-amber-700" />
-            <span className="text-sm font-semibold text-amber-800">Open Recommendations</span>
+            <Flag className="h-4 w-4 text-[--cs-warning]" />
+            <span className="text-sm font-semibold text-[--cs-warning]">Open Recommendations</span>
           </div>
           <div className="flex gap-4 text-sm">
-            {outstanding > 0 && <span className="text-red-700 font-medium">{outstanding} outstanding</span>}
-            {inProgress  > 0 && <span className="text-amber-700 font-medium">{inProgress} in progress</span>}
-            {completed   > 0 && <span className="text-emerald-700">{completed} completed</span>}
+            {outstanding > 0 && <span className="text-[--cs-risk] font-medium">{outstanding} outstanding</span>}
+            {inProgress  > 0 && <span className="text-[--cs-warning] font-medium">{inProgress} in progress</span>}
+            {completed   > 0 && <span className="text-[--cs-success]">{completed} completed</span>}
           </div>
         </div>
       )}
@@ -554,11 +559,11 @@ export default function Regulation44Page() {
           </Button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <FlatList>
           {visits.map((visit) => (
             <VisitCard key={visit.id} visit={visit} onUpdate={(args) => updateRec.mutate(args as Parameters<typeof updateRec.mutate>[0])} />
           ))}
-        </div>
+        </FlatList>
       )}
 
       {showCreate && <CreateVisitModal onClose={() => setShowCreate(false)} />}
