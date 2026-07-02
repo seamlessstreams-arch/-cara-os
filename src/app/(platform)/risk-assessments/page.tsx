@@ -46,16 +46,16 @@ const DOMAIN_META: Record<RiskDomain, { label: string; color: string }> = {
 };
 
 const LEVEL_META: Record<RiskLevel, { label: string; color: string; bg: string }> = {
-  low:       { label: "Low",       color: "text-green-700",  bg: "bg-green-100" },
-  medium:    { label: "Medium",    color: "text-amber-700",  bg: "bg-amber-100" },
+  low:       { label: "Low",       color: "text-[--cs-success]",  bg: "bg-[--cs-success-bg]" },
+  medium:    { label: "Medium",    color: "text-[--cs-warning]",  bg: "bg-[--cs-warning-bg]" },
   high:      { label: "High",      color: "text-orange-700", bg: "bg-orange-100" },
-  very_high: { label: "Very High", color: "text-red-700",    bg: "bg-red-100" },
+  very_high: { label: "Very High", color: "text-[--cs-risk]",    bg: "bg-[--cs-risk-bg]" },
 };
 
 const TREND_ICON: Record<RiskTrend, React.ReactNode> = {
-  increasing: <ArrowUp className="h-3.5 w-3.5 text-red-600" />,
+  increasing: <ArrowUp className="h-3.5 w-3.5 text-[--cs-risk]" />,
   stable:     <Minus className="h-3.5 w-3.5 text-amber-600" />,
-  decreasing: <ArrowDown className="h-3.5 w-3.5 text-green-600" />,
+  decreasing: <ArrowDown className="h-3.5 w-3.5 text-[--cs-success]" />,
 };
 
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
@@ -269,7 +269,7 @@ export default function RiskAssessmentsPage() {
                     <div className="mt-4 space-y-3 border-t pt-3 text-sm">
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Known Triggers</p>
-                        <div className="flex flex-wrap gap-1">{(a.triggers ?? []).map((t, i) => <Badge key={i} variant="outline" className="text-xs text-red-600 border-red-200">{t}</Badge>)}</div>
+                        <div className="flex flex-wrap gap-1">{(a.triggers ?? []).map((t, i) => <Badge key={i} variant="outline" className="text-xs text-[--cs-risk] border-[--cs-risk-soft]">{t}</Badge>)}</div>
                       </div>
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Warning Indicators</p>
@@ -280,7 +280,7 @@ export default function RiskAssessmentsPage() {
                         <div className="space-y-1">
                           {a.mitigations.map((m, i) => (
                             <div key={i} className="flex items-start gap-2 text-xs bg-muted/40 p-2 rounded">
-                              {m.effectiveness === "effective" ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600 mt-0.5" /> : m.effectiveness === "partially_effective" ? <Clock className="h-3.5 w-3.5 text-amber-600 mt-0.5" /> : <AlertTriangle className="h-3.5 w-3.5 text-gray-400 mt-0.5" />}
+                              {m.effectiveness === "effective" ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success] mt-0.5" /> : m.effectiveness === "partially_effective" ? <Clock className="h-3.5 w-3.5 text-amber-600 mt-0.5" /> : <AlertTriangle className="h-3.5 w-3.5 text-gray-400 mt-0.5" />}
                               <div>
                                 <p>{m.strategy}</p>
                                 <p className="text-muted-foreground">Owner: {m.responsible}</p>
@@ -291,7 +291,7 @@ export default function RiskAssessmentsPage() {
                       </div>
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Contingency Plan</p>
-                        <p className="bg-red-50 p-2 rounded text-xs text-red-900 border border-red-200">{a.contingency_plan}</p>
+                        <p className="bg-[--cs-risk-bg] p-2 rounded text-xs text-[--cs-risk] border border-[--cs-risk-soft]">{a.contingency_plan}</p>
                       </div>
                       {a.child_views && (
                         <div>
