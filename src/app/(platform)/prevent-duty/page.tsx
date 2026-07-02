@@ -46,23 +46,23 @@ const REFERRAL_TYPE_COLOURS: Record<PreventReferralType, string> = {
 
 const RISK_COLOURS: Record<PreventRiskLevel, string> = {
   low: "bg-slate-100 text-[var(--cs-text-secondary)]",
-  medium: "bg-amber-100 text-amber-800",
-  high: "bg-red-100 text-red-800",
+  medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  high: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const RISK_BORDER: Record<PreventRiskLevel, string> = {
   low: "border-l-slate-300",
-  medium: "border-l-amber-400",
-  high: "border-l-red-500",
+  medium: "border-l-[--cs-warning]",
+  high: "border-l-[--cs-risk]",
 };
 
 const STATUS_COLOURS: Record<PreventStatus, string> = {
-  open: "bg-blue-100 text-blue-800",
+  open: "bg-[--cs-info-bg] text-[--cs-info]",
   referred: "bg-orange-100 text-orange-800",
   channel_active: "bg-[var(--cs-cara-gold-bg)] text-[var(--cs-navy)]",
-  channel_closed: "bg-green-100 text-green-800",
+  channel_closed: "bg-[--cs-success-bg] text-[--cs-success]",
   nfa: "bg-slate-100 text-[var(--cs-text-secondary)]",
-  monitoring: "bg-amber-100 text-amber-800",
+  monitoring: "bg-[--cs-warning-bg] text-[--cs-warning]",
 };
 
 const d = (n: number) => {
@@ -201,9 +201,9 @@ export default function PreventDutyPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Total Records", value: totalRecords, icon: FileText, colour: "text-blue-600" },
-            { label: "Referrals", value: referralCount, icon: Shield, colour: referralCount > 0 ? "text-red-600" : "text-[var(--cs-text-muted)]" },
-            { label: "Active Monitoring", value: activeMonitoring, icon: Eye, colour: activeMonitoring > 0 ? "text-orange-600" : "text-green-600" },
-            { label: "Training Compliance", value: `${trainingCompliance}%`, icon: BookOpen, colour: trainingCompliance === 100 ? "text-green-600" : "text-amber-600" },
+            { label: "Referrals", value: referralCount, icon: Shield, colour: referralCount > 0 ? "text-[--cs-risk]" : "text-[var(--cs-text-muted)]" },
+            { label: "Active Monitoring", value: activeMonitoring, icon: Eye, colour: activeMonitoring > 0 ? "text-orange-600" : "text-[--cs-success]" },
+            { label: "Training Compliance", value: `${trainingCompliance}%`, icon: BookOpen, colour: trainingCompliance === 100 ? "text-[--cs-success]" : "text-amber-600" },
           ].map((s) => (
             <div key={s.label} className="rounded-xl border bg-white p-4 flex items-center gap-3">
               <s.icon className={cn("h-5 w-5", s.colour)} />
@@ -339,7 +339,7 @@ export default function PreventDutyPage() {
                           {rec.indicators.map((ind, i) => (
                             <span
                               key={i}
-                              className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[11px] font-medium text-red-700"
+                              className="inline-flex items-center gap-1 rounded-full bg-[--cs-risk-bg] border border-[--cs-risk-soft] px-2 py-0.5 text-[11px] font-medium text-[--cs-risk]"
                             >
                               <AlertTriangle className="h-2.5 w-2.5" />
                               {ind}
@@ -395,7 +395,7 @@ export default function PreventDutyPage() {
                         <span className={cn(
                           "inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium",
                           rec.training_completed
-                            ? "bg-green-50 text-green-700"
+                            ? "bg-[--cs-success-bg] text-[--cs-success]"
                             : "bg-amber-50 text-amber-700",
                         )}>
                           {rec.training_completed ? (
