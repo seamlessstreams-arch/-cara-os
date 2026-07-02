@@ -12,6 +12,7 @@ import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import {
   Select,
   SelectContent,
@@ -378,23 +379,22 @@ export default function EndOfShiftChecklistPage() {
       </div>
 
       {/* List */}
-      <div className="space-y-3">
+      <FlatList>
         {visible.map((r) => {
           const isOpen = expandedId === r.id;
           const pct = completionPct(r);
           const totalDone = r.checks.filter((c) => c.completed).length;
+          const rowSev: RowSeverity = r.any_escalations.length > 0 ? "risk" : r.all_tasks_complete ? "success" : "warning";
           return (
-            <div
-              key={r.id}
-              className="rounded-lg border border-[var(--cs-border)] bg-white shadow-sm"
-            >
+            <div key={r.id}>
               {/* Header */}
-              <button
-                type="button"
+              <FlatListRow
+                severity={rowSev}
+                className="justify-between gap-4"
                 onClick={() =>
                   setExpandedId((current) => (current === r.id ? null : r.id))
                 }
-                className="flex w-full items-start justify-between gap-4 p-4 text-left"
+                aria-expanded={isOpen}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
@@ -410,18 +410,18 @@ export default function EndOfShiftChecklistPage() {
                       {END_OF_SHIFT_TYPE_LABEL[r.shift_type]}
                     </span>
                     {r.all_tasks_complete ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[--cs-success-soft] bg-[--cs-success-bg] px-2 py-0.5 text-xs font-medium text-[--cs-success]">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         All complete
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[--cs-warning-soft] bg-[--cs-warning-bg] px-2 py-0.5 text-xs font-medium text-[--cs-warning]">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">
                         <AlertTriangle className="h-3.5 w-3.5" />
                         Outstanding
                       </span>
                     )}
                     {r.any_escalations.length > 0 && (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-[--cs-risk-soft] bg-[--cs-risk-bg] px-2 py-0.5 text-xs font-medium text-[--cs-risk]">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">
                         <AlertTriangle className="h-3.5 w-3.5" />
                         Escalation
                       </span>
@@ -452,11 +452,11 @@ export default function EndOfShiftChecklistPage() {
                     <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)]" />
                   )}
                 </div>
-              </button>
+              </FlatListRow>
 
               {/* Body */}
               {isOpen && (
-                <div className="border-t border-[var(--cs-border)] p-4 space-y-5">
+                <FlatListRowDetail className="space-y-5">
                   {/* Closing-down summary */}
                   <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                     <div
@@ -685,7 +685,7 @@ export default function EndOfShiftChecklistPage() {
                       </span>
                     </span>
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
@@ -696,7 +696,7 @@ export default function EndOfShiftChecklistPage() {
             No checklists match the current filters.
           </div>
         )}
-      </div>
+      </FlatList>
 
       {/* Regulatory note */}
       <div className="mt-8 rounded-lg border border-[var(--cs-border)] bg-slate-50 p-4 text-sm text-[var(--cs-text-secondary)]">
