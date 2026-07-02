@@ -7,6 +7,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -47,9 +48,9 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 /* ── colour / border maps (kept local) ────────────────────────────────────── */
 
 const CONTEXT_CLR: Record<ContextualContextType, string> = { location: "bg-blue-100 text-blue-800", peer_group: "bg-purple-100 text-purple-800", online_space: "bg-indigo-100 text-indigo-800", transport_route: "bg-amber-100 text-amber-800", school: "bg-green-100 text-green-800", community_facility: "bg-teal-100 text-teal-800" };
-const RISK_CLR: Record<ContextualRiskLevel, string> = { low: "bg-[--cs-success-bg] text-[--cs-success]", medium: "bg-yellow-100 text-yellow-800", high: "bg-orange-100 text-orange-800", very_high: "bg-[--cs-risk-bg] text-[--cs-risk]" };
-const STATUS_CLR: Record<ContextualSafeguardingStatus, string> = { active: "bg-[--cs-risk-bg] text-[--cs-risk]", monitoring: "bg-[--cs-warning-bg] text-[--cs-warning]", resolved: "bg-[--cs-success-bg] text-[--cs-success]", escalated: "bg-purple-100 text-purple-800" };
-const BORDER_RISK: Record<ContextualRiskLevel, string> = { low: "border-l-[--cs-success]", medium: "border-l-yellow-400", high: "border-l-orange-500", very_high: "border-l-[--cs-risk]" };
+const RISK_ROW: Record<ContextualRiskLevel, RowSeverity> = { low: "success", medium: "warning", high: "risk", very_high: "risk" };
+const RISK_TEXT: Record<ContextualRiskLevel, string> = { low: "text-[--cs-success]", medium: "text-yellow-700", high: "text-orange-700", very_high: "text-[--cs-risk]" };
+const STATUS_TEXT: Record<ContextualSafeguardingStatus, string> = { active: "text-[--cs-risk]", monitoring: "text-[--cs-warning]", resolved: "text-[--cs-success]", escalated: "text-purple-700" };
 
 /* ── empty form state ─────────────────────────────────────────────────────── */
 
@@ -180,28 +181,28 @@ export default function ContextualSafeguardingPage() {
           <Select value={sortBy} onValueChange={setSortBy}><SelectTrigger className="w-[150px]"><ArrowUpDown className="h-4 w-4 mr-1" /><SelectValue /></SelectTrigger><SelectContent><SelectItem value="risk">By Risk Level</SelectItem><SelectItem value="date-desc">Newest First</SelectItem></SelectContent></Select>
         </div>
 
-        <div className="space-y-4">
+        <FlatList>
           {filtered.map((r) => {
             const open = expanded[r.id];
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_RISK[r.risk_level])}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-blue-600" />
+              <div key={r.id}>
+                <FlatListRow severity={RISK_ROW[r.risk_level]} onClick={() => toggle(r.id)} aria-expanded={!!open}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
+                        <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
                         {r.location_or_context}
                         <Badge variant="outline" className={CONTEXT_CLR[r.context_type]}>{CONTEXTUAL_CONTEXT_TYPE_LABEL[r.context_type]}</Badge>
-                        <Badge variant="outline" className={RISK_CLR[r.risk_level]}>{CONTEXTUAL_RISK_LEVEL_LABEL[r.risk_level]}</Badge>
-                        <Badge variant="outline" className={STATUS_CLR[r.status]}>{CONTEXTUAL_SAFEGUARDING_STATUS_LABEL[r.status]}</Badge>
-                      </CardTitle>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", RISK_TEXT[r.risk_level])}>{CONTEXTUAL_RISK_LEVEL_LABEL[r.risk_level]}</span>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[r.status])}>{CONTEXTUAL_SAFEGUARDING_STATUS_LABEL[r.status]}</span>
+                      </p>
                       <p className="text-sm text-muted-foreground">Children: {r.children_affected.map(getYPName).join(", ")} · Identified: {r.date_identified} · Review: {r.review_date}</p>
                     </div>
-                    {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                    {open ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
                   </div>
-                </CardHeader>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     <div><p className="font-medium mb-1">Description</p><p className="text-muted-foreground">{r.description}</p></div>
                     <div className="bg-[--cs-risk-bg] rounded-lg p-3"><p className="font-medium text-[--cs-risk] mb-2">Risk Factors</p><ul className="space-y-1">{r.risk_factors.map((rf, i) => (<li key={i} className="text-xs text-[--cs-risk] flex items-start gap-1"><AlertTriangle className="h-3 w-3 shrink-0 mt-0.5" /> {rf}</li>))}</ul></div>
                     <div className="bg-[--cs-success-bg] rounded-lg p-3"><p className="font-medium text-[--cs-success] mb-2">Protective Actions</p><ul className="space-y-1">{r.protective_actions.map((pa, i) => (<li key={i} className="text-xs text-[--cs-success] flex items-start gap-1"><CheckCircle2 className="h-3 w-3 shrink-0 mt-0.5" /> {pa}</li>))}</ul></div>
@@ -209,12 +210,12 @@ export default function ContextualSafeguardingPage() {
                     {r.police_intelligence && <div className="bg-amber-50 rounded-lg p-3"><p className="font-medium text-amber-800 mb-1">Police Intelligence</p><p className="text-amber-700 text-xs">{r.police_intelligence}</p></div>}
                     <div><p className="font-medium mb-1">Community Mapping</p><p className="text-muted-foreground text-xs">{r.community_mapping}</p></div>
                     <div className="flex justify-between items-center pt-2 border-t text-xs text-muted-foreground"><span>Identified by: {getStaffName(r.identified_by)}</span><span>Last reviewed: {r.last_reviewed}</span><span>Next review: {r.review_date}</span></div>
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
           <p className="font-semibold mb-1">Regulatory Framework</p>
