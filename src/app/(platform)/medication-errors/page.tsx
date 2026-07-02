@@ -32,6 +32,7 @@ import { cn, formatDate, todayStr } from "@/lib/utils";
 import { getStaffName, getYPName } from "@/lib/seed-data";
 import { toast } from "sonner";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { useMedicationErrors, useCreateMedicationError } from "@/hooks/use-medication-errors";
 import type {
   MedErrorType,
@@ -78,6 +79,11 @@ const REMEDIAL_STATUS_CONFIG: Record<MedRemedialStatus, { label: string; color: 
   pending:     { label: "Pending",     color: "text-[--cs-warning]",   bg: "bg-[--cs-warning-bg]"   },
   in_progress: { label: "In Progress", color: "text-[--cs-info]",    bg: "bg-[--cs-info-bg]"    },
   completed:   { label: "Completed",   color: "text-[--cs-success]", bg: "bg-[--cs-success-bg]" },
+};
+
+// Bar carries clinical harm level; escalation/overdue bumps to the alarm tier.
+const SEVERITY_ROW: Record<MedErrorSeverity, RowSeverity> = {
+  no_harm: "success", low: "info", moderate: "warning", severe: "risk", death: "risk",
 };
 
 const PERSONS_OPTIONS = ["Manager", "GP", "Parent", "Social Worker", "Pharmacist", "LADO", "Ofsted", "IRO"];
@@ -405,7 +411,7 @@ export default function MedicationErrorsPage() {
       </p>
 
       {/* ── Error Cards ───────────────────────────────────────────────────── */}
-      <div className="space-y-3">
+      <FlatList>
         {filtered.length === 0 && (
           <div className="text-center py-12 text-sm text-[var(--cs-text-muted)]">
             No medication errors match the current filters.
@@ -423,19 +429,12 @@ export default function MedicationErrorsPage() {
           );
 
           return (
-            <div
-              key={error.id}
-              className={cn(
-                "rounded-lg border bg-white transition-all",
-                error.status === "escalated" && "ring-2 ring-rose-300 border-rose-200",
-                error.status === "under_investigation" && "border-amber-300",
-                hasOverdueActions && "border-orange-300",
-              )}
-            >
+            <div key={error.id}>
               {/* Card Header */}
-              <div
-                className="flex items-start gap-3 p-4 cursor-pointer"
+              <FlatListRow
+                severity={hasOverdueActions || error.status === "escalated" ? "risk" : SEVERITY_ROW[error.severity]}
                 onClick={() => setExpandedId(isExpanded ? null : error.id)}
+                className="items-start gap-3"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -448,21 +447,13 @@ export default function MedicationErrorsPage() {
                     <Badge className={cn("text-[10px] px-2 py-0 border", etCfg.bg, etCfg.color, etCfg.border)}>
                       {etCfg.label}
                     </Badge>
-                    <Badge className={cn("text-[10px] px-2 py-0 border", sevCfg.bg, sevCfg.color, sevCfg.border)}>
-                      {sevCfg.label}
-                    </Badge>
-                    <Badge className={cn("text-[10px] px-2 py-0 border", stCfg.bg, stCfg.color, stCfg.border)}>
-                      {stCfg.label}
-                    </Badge>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", sevCfg.color)}>{sevCfg.label}</span>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", stCfg.color)}>{stCfg.label}</span>
                     {hasOverdueActions && (
-                      <Badge className="text-[9px] px-1.5 py-0 bg-orange-100 text-orange-700 border border-orange-200">
-                        Overdue actions
-                      </Badge>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">Overdue actions</span>
                     )}
                     {error.duty_of_candour && (
-                      <Badge className="text-[9px] px-1.5 py-0 bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)] border border-[var(--cs-cara-gold-soft)]">
-                        Duty of Candour
-                      </Badge>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-cara-gold)]">Duty of Candour</span>
                     )}
                   </div>
                 </div>
@@ -475,11 +466,11 @@ export default function MedicationErrorsPage() {
                     : <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted)]" />
                   }
                 </div>
-              </div>
+              </FlatListRow>
 
               {/* Expanded Body */}
               {isExpanded && (
-                <div className="border-t px-4 pb-4 pt-3 space-y-4">
+                <FlatListRowDetail>
                   {/* What happened — red panel */}
                   <div className="rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3">
                     <h4 className="text-[11px] font-semibold text-[--cs-risk] uppercase tracking-wide mb-1">What Happened</h4>
@@ -621,12 +612,12 @@ export default function MedicationErrorsPage() {
                     <span>Reported: {formatDate(error.reported_date)} by {getStaffName(error.reported_by)}</span>
                     {error.review_date && <span>Review date: {formatDate(error.review_date)}</span>}
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       {/* ── Regulatory Note ───────────────────────────────────────────────── */}
       <div className="mt-6 rounded-lg border border-[var(--cs-border)] bg-slate-50 p-3">
