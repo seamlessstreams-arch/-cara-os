@@ -41,11 +41,11 @@ const CATEGORY_META: Record<SigEventCategory, { label: string; icon: React.React
 };
 
 const SEVERITY_META: Record<SigEventSeverity, { label: string; color: string }> = {
-  positive:   { label: "Positive",    color: "bg-green-100 text-green-700" },
-  routine:    { label: "Routine",     color: "bg-blue-100 text-blue-700" },
-  concerning: { label: "Concerning",  color: "bg-amber-100 text-amber-700" },
+  positive:   { label: "Positive",    color: "bg-[--cs-success-bg] text-[--cs-success]" },
+  routine:    { label: "Routine",     color: "bg-[--cs-info-bg] text-[--cs-info]" },
+  concerning: { label: "Concerning",  color: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   serious:    { label: "Serious",     color: "bg-orange-100 text-orange-700" },
-  critical:   { label: "Critical",    color: "bg-red-100 text-red-700" },
+  critical:   { label: "Critical",    color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
 };
 
 
@@ -163,8 +163,8 @@ export default function SignificantEventsPage() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           {[
             { label: "Total Events",        value: stats.total,                icon: <Flag className="h-4 w-4" />,          color: "text-blue-600" },
-            { label: "Positive",            value: stats.positive,             icon: <Star className="h-4 w-4" />,          color: "text-green-600" },
-            { label: "Serious / Critical",  value: stats.serious,              icon: <AlertTriangle className="h-4 w-4" />, color: "text-red-600" },
+            { label: "Positive",            value: stats.positive,             icon: <Star className="h-4 w-4" />,          color: "text-[--cs-success]" },
+            { label: "Serious / Critical",  value: stats.serious,              icon: <AlertTriangle className="h-4 w-4" />, color: "text-[--cs-risk]" },
             { label: "Follow-Up Due",       value: stats.pendingFollowUp,      icon: <Clock className="h-4 w-4" />,         color: "text-amber-600" },
             { label: "Pending Notifications",value: stats.pendingNotifications,icon: <Bell className="h-4 w-4" />,          color: "text-purple-600" },
           ].map((s) => (
@@ -182,8 +182,8 @@ export default function SignificantEventsPage() {
 
         {/* ── Alert banner ─────────────────────────────────────────────────── */}
         {(stats.pendingNotifications > 0 || stats.pendingFollowUp > 0) && (
-          <Card className="border-amber-200 bg-amber-50">
-            <CardContent className="p-3 flex items-center gap-2 text-sm text-amber-800">
+          <Card className="border-[--cs-warning-soft] bg-[--cs-warning-bg]">
+            <CardContent className="p-3 flex items-center gap-2 text-sm text-[--cs-warning]">
               <AlertTriangle className="h-4 w-4 flex-shrink-0" />
               <span>
                 {stats.pendingNotifications > 0 && <><strong>{stats.pendingNotifications}</strong> notification{stats.pendingNotifications !== 1 && "s"} pending. </>}
@@ -242,7 +242,7 @@ export default function SignificantEventsPage() {
             const catM = CATEGORY_META[e.category];
             const sevM = SEVERITY_META[e.severity];
             return (
-              <Card key={e.id} className={cn("border-l-4", e.severity === "positive" ? "border-l-green-500" : e.severity === "critical" || e.severity === "serious" ? "border-l-red-500" : e.severity === "concerning" ? "border-l-amber-400" : "border-l-blue-400")}>
+              <Card key={e.id} className={cn("border-l-4", e.severity === "positive" ? "border-l-[--cs-success]" : e.severity === "critical" || e.severity === "serious" ? "border-l-[--cs-risk]" : e.severity === "concerning" ? "border-l-[--cs-warning]" : "border-l-[--cs-info]")}>
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(e.id)}>
                     <div className="flex-1 min-w-0">
@@ -302,9 +302,9 @@ export default function SignificantEventsPage() {
                           <div className="space-y-1">
                             {e.notifications.map((n, i) => (
                               <div key={i} className="flex items-center gap-2 text-xs">
-                                {n.status === "notified" ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <Clock className="h-3.5 w-3.5 text-amber-600" />}
+                                {n.status === "notified" ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" /> : <Clock className="h-3.5 w-3.5 text-[--cs-warning]" />}
                                 <span>{n.party}</span>
-                                <Badge variant="outline" className={cn("text-xs", n.status === "notified" ? "text-green-600" : "text-amber-600")}>{n.status}</Badge>
+                                <Badge variant="outline" className={cn("text-xs", n.status === "notified" ? "text-[--cs-success]" : "text-[--cs-warning]")}>{n.status}</Badge>
                                 {n.date && <span className="text-muted-foreground">{n.date}</span>}
                               </div>
                             ))}
@@ -312,7 +312,7 @@ export default function SignificantEventsPage() {
                         </div>
                       )}
                       {e.follow_up_required && (
-                        <div className="bg-blue-50 p-2 rounded text-xs text-blue-900">
+                        <div className="bg-[--cs-info-bg] p-2 rounded text-xs text-[--cs-info]">
                           <p className="font-medium mb-1">Follow-Up Required</p>
                           <p>{e.follow_up_actions}</p>
                           {e.follow_up_date && <p className="mt-1 text-muted-foreground">Due: {e.follow_up_date}</p>}
