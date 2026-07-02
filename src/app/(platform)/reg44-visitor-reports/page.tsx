@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { PrintButton } from "@/components/ui/print-button";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,11 +58,11 @@ const STATUS_LABEL: Record<RecommendationStatus, string> = {
   outstanding: "Outstanding",
 };
 
-const JUDGEMENT_CLR: Record<string, string> = {
-  "Good — no immediate concerns.": "bg-[--cs-success-bg] text-[--cs-success]",
-  "Good.": "bg-[--cs-success-bg] text-[--cs-success]",
-  "Good with notable practice.": "bg-[--cs-success-bg] text-[--cs-success]",
-  "Requires improvement in one area.": "bg-[--cs-warning-bg] text-[--cs-warning]",
+const JUDGEMENT_TEXT: Record<string, string> = {
+  "Good — no immediate concerns.": "text-[--cs-success]",
+  "Good.": "text-[--cs-success]",
+  "Good with notable practice.": "text-[--cs-success]",
+  "Requires improvement in one area.": "text-[--cs-warning]",
 };
 
 /* ── New Visit Form ────────────────────────────────────────────────────────── */
@@ -503,7 +504,7 @@ export default function Reg44VisitorReportsPage() {
         </p>
 
         {/* -- Visit cards ---------------------------------------------------- */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               <FileText className="h-10 w-10 mx-auto mb-2 opacity-40" />
@@ -513,30 +514,29 @@ export default function Reg44VisitorReportsPage() {
 
           {filtered.map((visit) => {
             const isOpen = expandedId === visit.id;
-            const judgementClr = JUDGEMENT_CLR[visit.overall_judgement] || "bg-gray-100 text-gray-800";
             const hasOutstanding = visit.recommendations.some((r) => r.status === "outstanding" || r.status === "in_progress");
 
             return (
-              <Card key={visit.id} className={cn("border-l-4", hasOutstanding ? "border-l-amber-400" : "border-l-green-400")}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(visit.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
+              <div key={visit.id}>
+                <FlatListRow severity={hasOutstanding ? "warning" : "success"} onClick={() => toggle(visit.id)} aria-expanded={isOpen}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
                         {fmt(visit.visit_date)}
-                        <Badge variant="outline" className={judgementClr}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", JUDGEMENT_TEXT[visit.overall_judgement] ?? "text-gray-600")}>
                           {visit.overall_judgement}
-                        </Badge>
-                      </CardTitle>
+                        </span>
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {visit.visitor} &middot; {visit.duration} &middot; Children: {visit.children_spoken} &middot; Staff: {visit.staff_spoken}
                       </p>
                     </div>
-                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
                   </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-4 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     {/* Records reviewed */}
                     <div>
                       <p className="font-medium mb-1 flex items-center gap-1">
@@ -643,12 +643,12 @@ export default function Reg44VisitorReportsPage() {
                         compact
                       />
                     </div>
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* -- Regulatory note ------------------------------------------------ */}
         <div className="rounded-lg border border-dashed p-4">
