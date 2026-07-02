@@ -25,6 +25,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge }        from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { cn }           from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useReg40StaffEntries } from "@/hooks/use-reg40-staff-entries";
@@ -391,43 +392,42 @@ export default function Reg40StaffingPlanPage() {
 
         {/* ── expandable staff cards ─────────────────────────────────────── */}
 
+        <FlatList>
         {filtered.map((staff) => {
           const name = getStaffName(staff.staff_id);
           const completeCount = staff.qualifications.filter((q) => q.status === "complete" || q.status === "current").length;
           const totalQuals = staff.qualifications.length;
           const pct = totalQuals > 0 ? Math.round((completeCount / totalQuals) * 100) : 0;
           const hasIssues = staff.qualifications.some((q) => q.status === "in_progress" || q.status === "due_renewal");
+          const rowSev: RowSeverity = pct === 100 ? "success" : pct >= 75 ? "warning" : "risk";
 
           return (
-            <div key={staff.id} className={cn(
-              "rounded-lg border bg-white overflow-hidden",
-              staff.qualifications.some((q) => q.status === "due_renewal") ? "border-[--cs-warning-soft]" : "",
-            )}>
-              <button onClick={() => setExpandedId(expandedId === staff.id ? null : staff.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+            <div key={staff.id}>
+              <FlatListRow severity={rowSev} className="items-center justify-between" onClick={() => setExpandedId(expandedId === staff.id ? null : staff.id)} aria-expanded={expandedId === staff.id}>
                 <div className="flex items-center gap-3">
-                  <GraduationCap className={cn("h-5 w-5", pct === 100 ? "text-[--cs-success]" : pct >= 75 ? "text-[--cs-warning]" : "text-[--cs-risk]")} />
+                  <GraduationCap className="h-5 w-5 text-muted-foreground" />
                   <div className="text-left">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{name}</h3>
                       <span className="text-xs text-muted-foreground">{staff.role}</span>
-                      {pct === 100 && <Badge className="text-[10px] h-5 bg-[--cs-success-bg] text-[--cs-success]">Fully Qualified</Badge>}
-                      {hasIssues && pct < 100 && <Badge className="text-[10px] h-5 bg-[--cs-warning-bg] text-[--cs-warning]">Gaps</Badge>}
+                      {pct === 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Fully Qualified</span>}
+                      {hasIssues && pct < 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Gaps</span>}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {completeCount}/{totalQuals} qualifications complete · {staff.contract_hours}h/week · {staff.shift_pattern}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden hidden sm:block">
                     <div className={cn("h-full rounded-full", pct === 100 ? "bg-green-400" : pct >= 75 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${pct}%` }} />
                   </div>
-                  {expandedId === staff.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  {expandedId === staff.id ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                 </div>
-              </button>
+              </FlatListRow>
 
               {expandedId === staff.id && (
-                <div className="border-t p-4 space-y-3">
+                <FlatListRowDetail className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div className="rounded border p-2">
                       <p className="text-muted-foreground font-medium">Contract</p>
@@ -475,11 +475,12 @@ export default function Reg40StaffingPlanPage() {
                       First Aid certificate expires: <span className="font-medium">{staff.first_aid_expiry}</span>
                     </div>
                   )}
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
+        </FlatList>
 
         {/* ── regulatory note ────────────────────────────────────────────── */}
 
