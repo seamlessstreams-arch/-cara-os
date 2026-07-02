@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
@@ -36,12 +37,11 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
-const prepStatusColour: Record<LacPrepStatus, string> = {
-  not_started: "bg-slate-100 text-[var(--cs-navy)]",
-  in_progress: "bg-[--cs-warning-bg] text-[--cs-warning]",
-  ready_for_review: "bg-[--cs-info-bg] text-[--cs-info]",
-  review_held: "bg-[--cs-success-bg] text-[--cs-success]",
-  post_review_actions: "bg-purple-100 text-purple-800",
+const prepStatusRow: Record<LacPrepStatus, RowSeverity> = {
+  not_started: "neutral", in_progress: "warning", ready_for_review: "info", review_held: "success", post_review_actions: "neutral",
+};
+const prepStatusText: Record<LacPrepStatus, string> = {
+  not_started: "text-slate-600", in_progress: "text-[--cs-warning]", ready_for_review: "text-[--cs-info]", review_held: "text-[--cs-success]", post_review_actions: "text-purple-700",
 };
 
 export default function LacReviewPrepPage() {
@@ -155,7 +155,7 @@ export default function LacReviewPrepPage() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((prep) => {
           const isExpanded = expandedId === prep.id;
           const collected = prep.multi_agency_reports_collected.filter((r) => r.received).length;
@@ -163,13 +163,11 @@ export default function LacReviewPrepPage() {
           const openActions = prep.outstanding_actions.filter((a) => a.status !== "done").length;
 
           return (
-            <div key={prep.id} className="rounded-xl border bg-white overflow-hidden">
-              <button
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
-                onClick={() => setExpandedId(isExpanded ? null : prep.id)}
-              >
+            <div key={prep.id}>
+              <FlatListRow severity={prepStatusRow[prep.prep_status]} onClick={() => setExpandedId(isExpanded ? null : prep.id)} aria-expanded={isExpanded}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Calendar className="h-5 w-5 text-[--cs-info] shrink-0" />
+                  <Calendar className="h-5 w-5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">{getYPName(prep.child_id)} &middot; {LAC_REVIEW_TYPE_LABEL[prep.review_type]}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -178,15 +176,16 @@ export default function LacReviewPrepPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", prepStatusColour[prep.prep_status])}>
+                  <span className={cn("text-[11px] font-semibold uppercase tracking-wide", prepStatusText[prep.prep_status])}>
                     {LAC_PREP_STATUS_LABEL[prep.prep_status]}
                   </span>
-                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                 </div>
-              </button>
+                </div>
+              </FlatListRow>
 
               {isExpanded && (
-                <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
+                <FlatListRowDetail>
                   {/* child voice prep */}
                   <div className="bg-purple-50 rounded-lg p-3">
                     <p className="text-xs font-semibold text-purple-800 uppercase tracking-wide mb-1">
@@ -351,12 +350,12 @@ export default function LacReviewPrepPage() {
                   <div className="mt-4">
                     <SmartLinkPanel sourceType="lac-review-preps" sourceId={prep.id} childId={prep.child_id} compact />
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-8 rounded-lg bg-muted/50 border p-4">
         <p className="text-xs text-muted-foreground">
