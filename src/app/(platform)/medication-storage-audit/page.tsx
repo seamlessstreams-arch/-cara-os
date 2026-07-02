@@ -30,16 +30,16 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 const d = (n: number) => { const dt = new Date(); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); };
 
 const verdictColour: Record<StorageAuditVerdict, string> = {
-  pass: "bg-green-100 text-green-800",
-  pass_with_minor_actions: "bg-amber-100 text-amber-800",
-  fail_immediate_action: "bg-red-100 text-red-800",
+  pass: "bg-[--cs-success-bg] text-[--cs-success]",
+  pass_with_minor_actions: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  fail_immediate_action: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 const cleanColour: Record<CleanlinessRating, string> = {
-  excellent: "bg-emerald-100 text-emerald-800",
-  good: "bg-blue-100 text-blue-800",
-  adequate: "bg-amber-100 text-amber-800",
-  needs_attention: "bg-red-100 text-red-800",
+  excellent: "bg-[--cs-success-bg] text-[--cs-success]",
+  good: "bg-[--cs-info-bg] text-[--cs-info]",
+  adequate: "bg-[--cs-warning-bg] text-[--cs-warning]",
+  needs_attention: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
 
 export default function MedicationStorageAuditPage() {
@@ -114,11 +114,11 @@ export default function MedicationStorageAuditPage() {
           <p className="text-xs text-muted-foreground">Full Pass Rate</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className={cn("text-2xl font-bold", expiredFound > 0 ? "text-amber-600" : "text-green-600")}>{expiredFound}</p>
+          <p className={cn("text-2xl font-bold", expiredFound > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{expiredFound}</p>
           <p className="text-xs text-muted-foreground">Expired Items Caught</p>
         </div>
         <div className="rounded-xl border bg-white p-4 text-center">
-          <p className={cn("text-2xl font-bold", overdueAudits > 0 ? "text-red-600" : "text-green-600")}>{overdueAudits}</p>
+          <p className={cn("text-2xl font-bold", overdueAudits > 0 ? "text-[--cs-risk]" : "text-[--cs-success]")}>{overdueAudits}</p>
           <p className="text-xs text-muted-foreground">Audits Overdue</p>
         </div>
       </div>
@@ -171,7 +171,7 @@ export default function MedicationStorageAuditPage() {
 
           return (
             <div key={a.id} className={cn("rounded-xl border bg-white overflow-hidden",
-              a.overall_verdict === "fail_immediate_action" && "border-l-4 border-l-red-500"
+              a.overall_verdict === "fail_immediate_action" && "border-l-4 border-l-[--cs-risk]"
             )}>
               <button
                 className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
@@ -203,7 +203,7 @@ export default function MedicationStorageAuditPage() {
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center">
                       <p className="text-xs text-muted-foreground">Security</p>
-                      <p className="text-sm font-medium text-green-600">{a.security_check_pass ? "Pass" : "Fail"}</p>
+                      <p className={cn("text-sm font-medium", a.security_check_pass ? "text-[--cs-success]" : "text-[--cs-risk]")}>{a.security_check_pass ? "Pass" : "Fail"}</p>
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center">
                       <p className="text-xs text-muted-foreground">Temperature</p>
@@ -211,7 +211,7 @@ export default function MedicationStorageAuditPage() {
                     </div>
                     <div className="bg-white rounded-lg p-2 border text-center">
                       <p className="text-xs text-muted-foreground">CD Balance</p>
-                      <p className="text-sm font-medium text-green-600">{a.controlled_drugs_balance_correct ? "Correct" : "Discrepancy"}</p>
+                      <p className={cn("text-sm font-medium", a.controlled_drugs_balance_correct ? "text-[--cs-success]" : "text-[--cs-risk]")}>{a.controlled_drugs_balance_correct ? "Correct" : "Discrepancy"}</p>
                     </div>
                   </div>
 
@@ -220,11 +220,11 @@ export default function MedicationStorageAuditPage() {
                     <div className="space-y-1">
                       {a.checks.map((c: StorageAuditCheckItem, i: number) => (
                         <div key={i} className="bg-white rounded-lg p-2 border text-sm flex items-start gap-2">
-                          {c.pass ? <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 shrink-0" /> : <AlertTriangle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />}
+                          {c.pass ? <CheckCircle className="h-4 w-4 text-[--cs-success] mt-0.5 shrink-0" /> : <AlertTriangle className="h-4 w-4 text-[--cs-warning] mt-0.5 shrink-0" />}
                           <div className="flex-1">
                             <p className="font-medium">{c.item}</p>
                             <p className="text-xs text-muted-foreground">{c.observation}</p>
-                            {c.action_required && <p className="text-xs text-amber-700 mt-1"><strong>Action:</strong> {c.action_required}</p>}
+                            {c.action_required && <p className="text-xs text-[--cs-warning] mt-1"><strong>Action:</strong> {c.action_required}</p>}
                           </div>
                         </div>
                       ))}
@@ -232,14 +232,14 @@ export default function MedicationStorageAuditPage() {
                   </div>
 
                   {a.expiring_soon.length > 0 && (
-                    <div className="bg-amber-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
+                    <div className="bg-[--cs-warning-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-warning] uppercase tracking-wide mb-1">
                         <Clock className="h-3 w-3 inline mr-1" />Expiring Soon (within 60 days)
                       </p>
                       <ul className="space-y-1">
                         {a.expiring_soon.map((e: StorageAuditExpiringItem, i: number) => (
                           <li key={i} className="text-sm flex items-start gap-1">
-                            <span className="text-amber-600 mt-0.5">•</span>
+                            <span className="text-[--cs-warning] mt-0.5">•</span>
                             <span><strong>{e.medication}</strong> — expires {e.expiry_date}</span>
                           </li>
                         ))}
@@ -248,8 +248,8 @@ export default function MedicationStorageAuditPage() {
                   )}
 
                   {a.expired_found.length > 0 && (
-                    <div className="bg-red-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-red-800 uppercase tracking-wide mb-1">
+                    <div className="bg-[--cs-risk-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-risk] uppercase tracking-wide mb-1">
                         <AlertTriangle className="h-3 w-3 inline mr-1" />Expired Items Found &amp; Disposed
                       </p>
                       <ul className="space-y-1">
@@ -263,12 +263,12 @@ export default function MedicationStorageAuditPage() {
                   )}
 
                   {a.immediate_actions_taken.length > 0 && (
-                    <div className="bg-blue-50 rounded-lg p-3">
-                      <p className="text-xs font-semibold text-blue-800 uppercase tracking-wide mb-1">Immediate Actions Taken</p>
+                    <div className="bg-[--cs-info-bg] rounded-lg p-3">
+                      <p className="text-xs font-semibold text-[--cs-info] uppercase tracking-wide mb-1">Immediate Actions Taken</p>
                       <ul className="space-y-1">
                         {a.immediate_actions_taken.map((act: string, i: number) => (
                           <li key={i} className="text-sm flex items-start gap-1">
-                            <CheckCircle className="h-3 w-3 text-blue-500 mt-1 shrink-0" />
+                            <CheckCircle className="h-3 w-3 text-[--cs-info] mt-1 shrink-0" />
                             <span>{act}</span>
                           </li>
                         ))}
@@ -287,9 +287,9 @@ export default function MedicationStorageAuditPage() {
                               {getStaffName(f.owner)} &middot; {f.deadline}
                             </span>
                             <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium shrink-0",
-                              f.status === "done" ? "bg-green-100 text-green-800" :
-                              f.status === "in_progress" ? "bg-blue-100 text-blue-800" :
-                              "bg-amber-100 text-amber-800"
+                              f.status === "done" ? "bg-[--cs-success-bg] text-[--cs-success]" :
+                              f.status === "in_progress" ? "bg-[--cs-info-bg] text-[--cs-info]" :
+                              "bg-[--cs-warning-bg] text-[--cs-warning]"
                             )}>
                               {FOLLOW_UP_STATUS_LABEL[f.status]}
                             </span>
