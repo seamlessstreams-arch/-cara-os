@@ -46,9 +46,9 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── local colour maps ────────────────────────────────────────────── */
 
 const STATUS_META: Record<RestrictionsLogStatus, { colour: string }> = {
-  active:       { colour: "bg-red-100 text-red-700" },
-  under_review: { colour: "bg-amber-100 text-amber-700" },
-  ended:        { colour: "bg-green-100 text-green-700" },
+  active:       { colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
+  under_review: { colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
+  ended:        { colour: "bg-[--cs-success-bg] text-[--cs-success]" },
   appealed:     { colour: "bg-purple-100 text-purple-700" },
 };
 
@@ -181,9 +181,9 @@ export default function RestrictionsLogPage() {
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
             { l: "Total",        v: stats.total, icon: Lock, c: "text-blue-600" },
-            { l: "Active",       v: stats.active, icon: ShieldAlert, c: "text-red-600" },
-            { l: "Under Review", v: stats.underReview, icon: Clock, c: "text-amber-600" },
-            { l: "Ended",        v: stats.ended, icon: CheckCircle2, c: "text-green-600" },
+            { l: "Active",       v: stats.active, icon: ShieldAlert, c: "text-[--cs-risk]" },
+            { l: "Under Review", v: stats.underReview, icon: Clock, c: "text-[--cs-warning]" },
+            { l: "Ended",        v: stats.ended, icon: CheckCircle2, c: "text-[--cs-success]" },
             { l: "Court Ordered", v: stats.courtOrdered, icon: Lock, c: "text-purple-600" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
@@ -195,9 +195,9 @@ export default function RestrictionsLogPage() {
         </div>
 
         {stats.active > 0 && (
-          <div className="rounded-lg border-l-4 border-red-400 bg-red-50 p-3 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-800"><strong>{stats.active} active restriction{stats.active > 1 ? "s" : ""}</strong> — each must be regularly reviewed for proportionality and necessity.</p>
+          <div className="rounded-lg border-l-4 border-[--cs-risk] bg-[--cs-risk-bg] p-3 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] flex-shrink-0" />
+            <p className="text-sm text-[--cs-risk]"><strong>{stats.active} active restriction{stats.active > 1 ? "s" : ""}</strong> — each must be regularly reviewed for proportionality and necessity.</p>
           </div>
         )}
 
@@ -292,7 +292,7 @@ export default function RestrictionsLogPage() {
                         <div key={i} className="rounded border p-3">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-sm font-medium">{rv.date} — {getStaffName(rv.reviewer)}</span>
-                            <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", rv.continued ? "bg-red-100 text-red-700" : "bg-green-100 text-green-700")}>{rv.continued ? "Continued" : "Ended"}</span>
+                            <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", rv.continued ? "bg-[--cs-risk-bg] text-[--cs-risk]" : "bg-[--cs-success-bg] text-[--cs-success]")}>{rv.continued ? "Continued" : "Ended"}</span>
                           </div>
                           <p className="text-xs text-muted-foreground">{rv.outcome}</p>
                         </div>
