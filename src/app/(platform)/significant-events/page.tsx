@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,6 +47,14 @@ const SEVERITY_META: Record<SigEventSeverity, { label: string; color: string }> 
   concerning: { label: "Concerning",  color: "bg-[--cs-warning-bg] text-[--cs-warning]" },
   serious:    { label: "Serious",     color: "bg-orange-100 text-orange-700" },
   critical:   { label: "Critical",    color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
+};
+
+const SEVERITY_ROW: Record<SigEventSeverity, RowSeverity> = {
+  positive: "success", routine: "info", concerning: "warning", serious: "risk", critical: "risk",
+};
+const SEVERITY_TEXT: Record<SigEventSeverity, string> = {
+  positive: "text-[--cs-success]", routine: "text-[--cs-info]", concerning: "text-[--cs-warning]",
+  serious: "text-orange-700", critical: "text-[--cs-risk]",
 };
 
 
@@ -235,36 +244,37 @@ export default function SignificantEventsPage() {
         </div>
 
         {/* ── Event list ───────────────────────────────────────────────────── */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No events match your filters.</p>}
           {filtered.map((e) => {
             const open = !!expanded[e.id];
             const catM = CATEGORY_META[e.category];
-            const sevM = SEVERITY_META[e.severity];
+            const followUpDue = e.follow_up_required && e.follow_up_date && e.follow_up_date <= threeDaysOut;
             return (
-              <Card key={e.id} className={cn("border-l-4", e.severity === "positive" ? "border-l-[--cs-success]" : e.severity === "critical" || e.severity === "serious" ? "border-l-[--cs-risk]" : e.severity === "concerning" ? "border-l-[--cs-warning]" : "border-l-[--cs-info]")}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between cursor-pointer" onClick={() => toggle(e.id)}>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <Badge className={cn("text-xs", catM.color)}>{catM.icon}<span className="ml-1">{catM.label}</span></Badge>
-                        <Badge className={cn("text-xs", sevM.color)}>{sevM.label}</Badge>
-                        {e.follow_up_required && e.follow_up_date && e.follow_up_date <= threeDaysOut && (
-                          <Badge variant="destructive" className="text-xs">Follow-up due</Badge>
-                        )}
+              <div key={e.id}>
+                <FlatListRow severity={SEVERITY_ROW[e.severity]} onClick={() => toggle(e.id)} aria-expanded={open}>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <Badge className={cn("text-xs", catM.color)}>{catM.icon}<span className="ml-1">{catM.label}</span></Badge>
+                          <span className={cn("text-[11px] font-semibold uppercase tracking-wide", SEVERITY_TEXT[e.severity])}>{SEVERITY_META[e.severity].label}</span>
+                          {followUpDue && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Follow-up due</span>}
+                        </div>
+                        <p className="font-semibold">{e.title}</p>
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
+                          <span>{getYPName(e.child_id)}</span>
+                          <span>{e.date} at {e.time}</span>
+                          <span>By {getStaffName(e.recorded_by)}</span>
+                        </div>
                       </div>
-                      <p className="font-semibold">{e.title}</p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground mt-1">
-                        <span>{getYPName(e.child_id)}</span>
-                        <span>{e.date} at {e.time}</span>
-                        <span>By {getStaffName(e.recorded_by)}</span>
-                      </div>
+                      {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground shrink-0" />}
                     </div>
-                    {open ? <ChevronUp className="h-4 w-4 mt-1 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 mt-1 text-muted-foreground" />}
                   </div>
+                </FlatListRow>
 
-                  {open && (
-                    <div className="mt-4 space-y-3 border-t pt-3 text-sm">
+                {open && (
+                  <FlatListRowDetail>
                       <div>
                         <p className="font-medium text-muted-foreground mb-1">Description</p>
                         <p>{e.description}</p>
@@ -324,13 +334,12 @@ export default function SignificantEventsPage() {
                         </div>
                       )}
                       <SmartLinkPanel sourceType="significant_event" sourceId={e.id} childId={e.child_id} compact />
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                  </FlatListRowDetail>
+                )}
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* ── Guidance ─────────────────────────────────────────────────────── */}
         <Card className="bg-muted/40">
