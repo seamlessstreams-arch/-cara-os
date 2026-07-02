@@ -150,7 +150,7 @@ export default function SeriousIncidentReviewsPage() {
                         <Badge className={cn("text-xs", CONF_CLR[r.confidentiality])}>{r.confidentiality.replace("_", " ")}</Badge>
                       </div>
                       <div className="flex items-center gap-2">
-                        {pendAct > 0 && <Badge className="text-xs bg-red-100 text-red-800">{pendAct} actions pending</Badge>}
+                        {pendAct > 0 && <Badge className="text-xs bg-[--cs-risk-bg] text-[--cs-risk]">{pendAct} actions pending</Badge>}
                         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </div>
                     </div>
@@ -177,7 +177,7 @@ export default function SeriousIncidentReviewsPage() {
                       <p className="text-xs font-semibold text-purple-800 mb-1">Lessons Learned</p>
                       {r.lessons_learned.map((l, i) => (
                         <div key={i} className="flex items-start gap-2 mb-1 last:mb-0">
-                          <Badge className={cn("text-xs shrink-0", l.impact_level === "high" ? "bg-red-100 text-red-800" : l.impact_level === "medium" ? "bg-amber-100 text-amber-800" : "bg-green-100 text-green-800")}>{l.impact_level}</Badge>
+                          <Badge className={cn("text-xs shrink-0", l.impact_level === "high" ? "bg-[--cs-risk-bg] text-[--cs-risk]" : l.impact_level === "medium" ? "bg-[--cs-warning-bg] text-[--cs-warning]" : "bg-[--cs-success-bg] text-[--cs-success]")}>{l.impact_level}</Badge>
                           <span className="text-sm text-purple-900">{l.lesson} <span className="text-xs text-muted-foreground">({l.category})</span></span>
                         </div>
                       ))}
@@ -188,10 +188,10 @@ export default function SeriousIncidentReviewsPage() {
                         <tbody>{r.actions.map((a, i) => {
                           const od = a.status !== "completed" && a.due_date < today;
                           return (
-                            <tr key={i} className={cn("border-t", od && "bg-red-50")}>
+                            <tr key={i} className={cn("border-t", od && "bg-[--cs-risk-bg]")}>
                               <td className="p-2">{a.action}</td><td className="p-2">{getStaffName(a.owner)}</td>
-                              <td className={cn("p-2", od && "text-red-600 font-medium")}>{a.due_date}</td>
-                              <td className="p-2"><Badge className={cn("text-xs", a.status === "completed" ? "bg-green-100 text-green-800" : a.status === "in_progress" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800")}>{a.status.replace("_", " ")}</Badge></td>
+                              <td className={cn("p-2", od && "text-[--cs-risk] font-medium")}>{a.due_date}</td>
+                              <td className="p-2"><Badge className={cn("text-xs", a.status === "completed" ? "bg-[--cs-success-bg] text-[--cs-success]" : a.status === "in_progress" ? "bg-[--cs-info-bg] text-[--cs-info]" : "bg-gray-100 text-gray-800")}>{a.status.replace("_", " ")}</Badge></td>
                             </tr>
                           );
                         })}</tbody>
