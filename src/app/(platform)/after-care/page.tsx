@@ -7,6 +7,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -52,6 +53,8 @@ const EET_CLR: Record<AfterCareEETStatus, string> = { education: "bg-blue-100 te
 
 const RAG_CLR: Record<AfterCareRAG, string> = { green: "border-[--cs-success] bg-[--cs-success-bg]", amber: "border-[--cs-warning] bg-[--cs-warning-bg]", red: "border-[--cs-risk] bg-[--cs-risk-bg]" };
 const RAG_BADGE: Record<AfterCareRAG, string> = { green: "bg-[--cs-success-bg] text-[--cs-success]", amber: "bg-[--cs-warning-bg] text-[--cs-warning]", red: "bg-[--cs-risk-bg] text-[--cs-risk]" };
+const RAG_ROW: Record<AfterCareRAG, RowSeverity> = { green: "success", amber: "warning", red: "risk" };
+const RAG_TEXT: Record<AfterCareRAG, string> = { green: "text-[--cs-success]", amber: "text-[--cs-warning]", red: "text-[--cs-risk]" };
 
 const WB_CLR: Record<AfterCareWellbeing, string> = { good: "text-[--cs-success]", fair: "text-[--cs-info]", poor: "text-[--cs-warning]", concern: "text-[--cs-risk]" };
 
@@ -223,29 +226,27 @@ export default function AfterCarePage() {
         </CardContent></Card>
 
         {/* case cards */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map(r => {
             const open = expanded === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", RAG_CLR[r.overall_rag])}>
-                <button className="w-full text-left" onClick={() => toggle(r.id)}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-base">{getYPName(r.child_id)}</CardTitle>
-                        <Badge className={cn("text-xs", RAG_BADGE[r.overall_rag])}>{r.overall_rag.toUpperCase()}</Badge>
+              <div key={r.id}>
+                <FlatListRow severity={RAG_ROW[r.overall_rag]} onClick={() => toggle(r.id)} aria-expanded={open}>
+                    <div className="flex items-center justify-between flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <span className="text-base font-semibold text-[var(--cs-navy)]">{getYPName(r.child_id)}</span>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", RAG_TEXT[r.overall_rag])}>{r.overall_rag.toUpperCase()}</span>
                         <Badge className={cn("text-xs", LR_CLR[r.left_reason])}>{LR_LABEL[r.left_reason]}</Badge>
                         {r.staying_close_eligible && <Badge className="text-xs bg-teal-100 text-teal-800">Staying Close</Badge>}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-muted-foreground">Left: {r.left_date}</span>
-                        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </div>
                     </div>
-                  </CardHeader>
-                </button>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="space-y-4 pt-0">
+                  <FlatListRowDetail className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="text-xs font-semibold mb-1 flex items-center gap-1"><Home className="h-3 w-3" />Accommodation</p>
@@ -323,12 +324,12 @@ export default function AfterCarePage() {
                     {r.notes && <p className="text-xs text-muted-foreground italic">{r.notes}</p>}
 
                     <SmartLinkPanel sourceType="after_care" sourceId={r.id} childId={r.child_id} compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* outcomes */}
         <Card>
