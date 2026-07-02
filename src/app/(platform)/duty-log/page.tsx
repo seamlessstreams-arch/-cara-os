@@ -44,8 +44,8 @@ const CAT_CLR: Record<DutyLogCategory, string> = {
   complaint: "bg-orange-100 text-orange-800", positive: "bg-green-100 text-green-800",
 };
 
-const PRI_CLR: Record<DutyLogPriority, string> = { routine: "border-gray-300", important: "border-blue-400", urgent: "border-amber-400", critical: "border-red-500" };
-const PRI_BADGE: Record<DutyLogPriority, string> = { routine: "bg-gray-100 text-gray-800", important: "bg-blue-100 text-blue-800", urgent: "bg-amber-100 text-amber-800", critical: "bg-red-100 text-red-800" };
+const PRI_CLR: Record<DutyLogPriority, string> = { routine: "border-gray-300", important: "border-[--cs-info]", urgent: "border-[--cs-warning]", critical: "border-[--cs-risk]" };
+const PRI_BADGE: Record<DutyLogPriority, string> = { routine: "bg-gray-100 text-gray-800", important: "bg-[--cs-info-bg] text-[--cs-info]", urgent: "bg-[--cs-warning-bg] text-[--cs-warning]", critical: "bg-[--cs-risk-bg] text-[--cs-risk]" };
 
 /* ── component ─────────────────────────────────────────────────────────────── */
 
@@ -144,7 +144,7 @@ export default function DutyLogPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: "Entries Today", value: todayEntries.length, icon: BookOpen, colour: "text-blue-600" },
-            { label: "Urgent / Critical", value: urgentCritical.length, icon: AlertTriangle, colour: "text-red-600" },
+            { label: "Urgent / Critical", value: urgentCritical.length, icon: AlertTriangle, colour: "text-[--cs-risk]" },
             { label: "Follow-Ups Pending", value: data.filter(r => r.follow_up_required).length, icon: Clock, colour: "text-amber-600" },
             { label: "Signed Off", value: `${data.filter(r => r.signed_off).length}/${data.length}`, icon: CheckCircle2, colour: "text-green-600" },
           ].map(s => (
@@ -215,7 +215,7 @@ export default function DutyLogPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {r.young_person_ids.length > 0 && <span className="text-xs text-muted-foreground">{r.young_person_ids.map(id => getYPName(id)).join(", ")}</span>}
-                        {r.signed_off && <CheckCircle2 className="h-4 w-4 text-green-500" />}
+                        {r.signed_off && <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />}
                         {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                       </div>
                     </div>
@@ -226,22 +226,22 @@ export default function DutyLogPage() {
                   <CardContent className="space-y-3 pt-0">
                     <p className="text-sm">{r.description}</p>
 
-                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                      <p className="text-xs font-semibold text-blue-800 mb-1">Action Taken</p>
-                      <p className="text-sm text-blue-900">{r.action_taken}</p>
+                    <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-3">
+                      <p className="text-xs font-semibold text-[--cs-info] mb-1">Action Taken</p>
+                      <p className="text-sm text-[--cs-info]">{r.action_taken}</p>
                     </div>
 
                     {r.follow_up_required && (
-                      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                        <p className="text-xs font-semibold text-amber-800 mb-1">Follow-Up Required</p>
-                        <p className="text-sm text-amber-900">{r.follow_up_notes}</p>
+                      <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3">
+                        <p className="text-xs font-semibold text-[--cs-warning] mb-1">Follow-Up Required</p>
+                        <p className="text-sm text-[--cs-warning]">{r.follow_up_notes}</p>
                       </div>
                     )}
 
                     <div className="flex flex-wrap gap-4 text-xs">
-                      {r.manager_notified && <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-blue-500" />Manager notified</span>}
+                      {r.manager_notified && <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[--cs-info]" />Manager notified</span>}
                       {r.witnessed_by && <span>Witnessed by: {getStaffName(r.witnessed_by)}</span>}
-                      {r.signed_off && <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-green-500" />Signed off: {getStaffName(r.signed_off_by ?? "")}</span>}
+                      {r.signed_off && <span className="flex items-center gap-1"><CheckCircle2 className="h-3 w-3 text-[--cs-success]" />Signed off: {getStaffName(r.signed_off_by ?? "")}</span>}
                     </div>
 
                     {r.linked_records.length > 0 && (
