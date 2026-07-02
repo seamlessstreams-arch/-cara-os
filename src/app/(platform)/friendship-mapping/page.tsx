@@ -39,6 +39,7 @@ import {
 } from "@/types/extended";
 import { useFriendshipMaps } from "@/hooks/use-friendship-maps";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
@@ -58,6 +59,8 @@ const RISK_COLOURS: Record<IsolationRisk, string> = {
   medium: "bg-[--cs-warning-bg] text-[--cs-warning]",
   high: "bg-[--cs-risk-bg] text-[--cs-risk]",
 };
+const RISK_ROW: Record<IsolationRisk, RowSeverity> = { low: "success", medium: "warning", high: "risk" };
+const RISK_TEXT: Record<IsolationRisk, string> = { low: "text-[--cs-success]", medium: "text-[--cs-warning]", high: "text-[--cs-risk]" };
 
 const CONTEXT_COLOURS: Record<FriendContextType, string> = {
   school: "bg-blue-50 text-blue-700",
@@ -237,7 +240,7 @@ export default function FriendshipMappingPage() {
       </div>
 
       {/* ── cards ──────────────────────────────────────────────────── */}
-      <div className="space-y-4 mb-8">
+      <FlatList className="mb-8">
         {filtered.map((m) => {
           const open = expandedId === m.id;
           const strong = m.friends.filter((f) => f.quality_of_relationship === "strong_positive").length;
@@ -245,33 +248,26 @@ export default function FriendshipMappingPage() {
             (f) => f.quality_of_relationship === "some_concerns" || f.quality_of_relationship === "significant_concerns"
           ).length;
           return (
-            <div key={m.id} className="rounded-lg border bg-white">
-              <button
+            <div key={m.id}>
+              <FlatListRow
+                severity={RISK_ROW[m.isolation_risk]}
+                className="items-center justify-between"
                 onClick={() => toggle(m.id)}
-                className="flex w-full items-center justify-between p-4 text-left hover:bg-gray-50"
+                aria-expanded={open}
               >
                 <div className="flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Users className="h-4 w-4 text-gray-400" />
+                    <Users className="h-4 w-4 text-muted-foreground" />
                     <h3 className="font-semibold">{getYPName(m.child_id)}</h3>
-                    <span
-                      className={cn(
-                        "px-2 py-0.5 rounded-full text-xs font-medium",
-                        RISK_COLOURS[m.isolation_risk]
-                      )}
-                    >
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", RISK_TEXT[m.isolation_risk])}>
                       Isolation: {ISOLATION_RISK_LABEL[m.isolation_risk]}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
-                      {m.friends.length} friends
-                    </span>
+                    <span className="text-xs text-muted-foreground">{m.friends.length} friends</span>
                     {strong > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[--cs-success-bg] text-[--cs-success]">
-                        {strong} strong
-                      </span>
+                      <span className="text-xs font-medium text-[--cs-success]">{strong} strong</span>
                     )}
                     {concerns > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[--cs-warning-bg] text-[--cs-warning]">
+                      <span className="text-xs font-medium text-[--cs-warning]">
                         {concerns} concern{concerns === 1 ? "" : "s"}
                       </span>
                     )}
@@ -281,14 +277,14 @@ export default function FriendshipMappingPage() {
                   </p>
                 </div>
                 {open ? (
-                  <ChevronUp className="h-5 w-5 text-gray-400" />
+                  <ChevronUp className="h-5 w-5 text-muted-foreground" />
                 ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-400" />
+                  <ChevronDown className="h-5 w-5 text-muted-foreground" />
                 )}
-              </button>
+              </FlatListRow>
 
               {open && (
-                <div className="border-t px-4 pb-4 space-y-4">
+                <FlatListRowDetail className="space-y-4">
                   {/* friends list */}
                   <div className="mt-3">
                     <h4 className="text-xs font-semibold text-gray-500 mb-2">Friendship Network</h4>
@@ -416,12 +412,12 @@ export default function FriendshipMappingPage() {
 
                   {/* smart links */}
                   <SmartLinkPanel sourceType="friendship-map" sourceId={m.id} childId={m.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       {/* ── regulatory note ────────────────────────────────────────── */}
       <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800 mb-6">
