@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Badge } from "@/components/ui/badge";
 import {
   Heart, ChevronDown, ChevronUp, AlertTriangle, CheckCircle2, Clock,
@@ -30,27 +31,18 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
-const TYPE_META: Record<StaffDebriefType, { color: string }> = {
-  post_incident: { color: "bg-amber-100 text-amber-800" },
-  post_restraint: { color: "bg-red-100 text-red-800" },
-  post_missing: { color: "bg-orange-100 text-orange-800" },
-  critical_event: { color: "bg-red-100 text-red-800" },
-  emotional_support: { color: "bg-blue-100 text-blue-800" },
-  tci_reflection: { color: "bg-purple-100 text-purple-800" },
-};
-
-const STATUS_META: Record<StaffDebriefStatus, { color: string }> = {
-  completed: { color: "bg-[--cs-success-bg] text-[--cs-success]" },
-  scheduled: { color: "bg-[--cs-info-bg] text-[--cs-info]" },
-  overdue: { color: "bg-[--cs-risk-bg] text-[--cs-risk]" },
-  declined: { color: "bg-slate-100 text-[var(--cs-text-secondary)]" },
-};
-
 const IMPACT_META: Record<StaffDebriefEmotionalImpact, { color: string }> = {
   low: { color: "text-[--cs-success]" },
   moderate: { color: "text-[--cs-warning]" },
   high: { color: "text-orange-700" },
   significant: { color: "text-[--cs-risk]" },
+};
+
+const IMPACT_ROW: Record<StaffDebriefEmotionalImpact, RowSeverity> = {
+  low: "success", moderate: "warning", high: "risk", significant: "risk",
+};
+const STATUS_TEXT: Record<StaffDebriefStatus, string> = {
+  completed: "text-[--cs-success]", scheduled: "text-[--cs-info]", overdue: "text-[--cs-risk]", declined: "text-slate-600",
 };
 
 /* ── component ─────────────────────────────────────────────────────────── */
@@ -178,37 +170,33 @@ export default function StaffDebriefLogPage() {
         </div>
 
         {/* debrief cards */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map((debrief) => {
             const isOpen = expandedId === debrief.id;
             return (
-              <Card key={debrief.id} className={cn(
-                "border-l-4",
-                debrief.emotional_impact === "significant" || debrief.emotional_impact === "high" ? "border-l-red-500" :
-                debrief.emotional_impact === "moderate" ? "border-l-amber-400" : "border-l-green-400"
-              )}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : debrief.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base flex items-center gap-2">
-                        <Brain className="h-4 w-4 text-purple-600" />
+              <div key={debrief.id}>
+                <FlatListRow severity={IMPACT_ROW[debrief.emotional_impact]} onClick={() => setExpandedId(isOpen ? null : debrief.id)} aria-expanded={isOpen}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
+                        <Brain className="h-4 w-4 text-muted-foreground shrink-0" />
                         {STAFF_DEBRIEF_TYPE_LABEL[debrief.type]}
-                        <Badge variant="outline" className={STATUS_META[debrief.status].color}>{STAFF_DEBRIEF_STATUS_LABEL[debrief.status]}</Badge>
-                        <Badge variant="outline" className={cn("text-xs", debrief.emotional_impact === "significant" || debrief.emotional_impact === "high" ? "bg-[--cs-risk-bg] text-[--cs-risk]" : debrief.emotional_impact === "moderate" ? "bg-[--cs-warning-bg] text-[--cs-warning]" : "bg-[--cs-success-bg] text-[--cs-success]")}>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[debrief.status])}>{STAFF_DEBRIEF_STATUS_LABEL[debrief.status]}</span>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", IMPACT_META[debrief.emotional_impact].color)}>
                           {STAFF_DEBRIEF_EMOTIONAL_IMPACT_LABEL[debrief.emotional_impact]} Impact
-                        </Badge>
-                        {debrief.confidential && <Badge variant="outline" className="bg-slate-100 text-[var(--cs-text-secondary)]">Confidential</Badge>}
-                      </CardTitle>
+                        </span>
+                        {debrief.confidential && <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-secondary)]">Confidential</span>}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {debrief.date} · Staff: {debrief.staff_involved.map((s) => getStaffName(s)).join(", ")} · Facilitated by: {getStaffName(debrief.facilitated_by)}
                       </p>
                     </div>
-                    {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground shrink-0" /> : <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />}
                   </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-3 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     {/* trigger event */}
                     <div className="bg-muted/40 rounded p-2">
                       <p className="font-medium text-xs mb-1">Trigger Event ({debrief.trigger_date})</p>
@@ -300,12 +288,12 @@ export default function StaffDebriefLogPage() {
                         <p className="text-xs text-muted-foreground">{debrief.notes}</p>
                       </div>
                     )}
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">
