@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail } from "@/components/ui/list-row";
 import { getYPName, getStaffName } from "@/lib/seed-data";
 import { cn } from "@/lib/utils";
 import { useDietaryPlans } from "@/hooks/use-dietary-plans";
@@ -155,21 +156,21 @@ export default function DietaryRequirementsPage() {
         </div>
       </div>
 
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((plan) => {
           const isExpanded = expandedId === plan.id;
           const hasCritical = plan.allergies.some((a) => a.severity === "life_threatening" || a.severity === "severe");
 
           return (
-            <div key={plan.id} className={cn("rounded-xl border bg-white overflow-hidden",
-              hasCritical && "border-l-4 border-l-[--cs-risk]"
-            )}>
-              <button
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--cs-surface)] transition-colors"
+            <div key={plan.id}>
+              <FlatListRow
+                severity={hasCritical ? "risk" : "neutral"}
+                className="items-center justify-between"
                 onClick={() => setExpandedId(isExpanded ? null : plan.id)}
+                aria-expanded={isExpanded}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Utensils className="h-5 w-5 text-amber-600 shrink-0" />
+                  <Utensils className="h-5 w-5 text-muted-foreground shrink-0" />
                   <div className="min-w-0">
                     <p className="font-medium truncate">{getYPName(plan.child_id)}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
@@ -178,17 +179,16 @@ export default function DietaryRequirementsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0 ml-3">
-                  {hasCritical && <AlertTriangle className="h-4 w-4 text-[--cs-risk]" />}
                   {plan.signed_off_by_dietitian && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[--cs-success-bg] text-[--cs-success] font-medium">Dietitian</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Dietitian</span>
                   )}
                   {plan.child_agreed && <CheckCircle className="h-4 w-4 text-[--cs-success]" />}
-                  {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                  {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                 </div>
-              </button>
+              </FlatListRow>
 
               {isExpanded && (
-                <div className="border-t px-4 py-4 bg-slate-50 space-y-4">
+                <FlatListRowDetail className="space-y-4">
                   {/* allergies */}
                   {plan.allergies.length > 0 && (
                     <div>
@@ -344,12 +344,12 @@ export default function DietaryRequirementsPage() {
                   </div>
 
                   <SmartLinkPanel sourceType="dietary-plans" sourceId={plan.id} childId={plan.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-8 rounded-lg bg-muted/50 border p-4">
         <p className="text-xs text-muted-foreground">
