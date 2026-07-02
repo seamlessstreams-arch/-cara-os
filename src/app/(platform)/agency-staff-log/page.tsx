@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -33,8 +34,8 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
 const VETTING_LABEL: Record<AgencyVettingStatus, string> = { fully_vetted: "Fully Vetted", partially_vetted: "Partially Vetted", pending: "Pending", expired: "Expired" };
-const VETTING_CLR: Record<AgencyVettingStatus, string> = { fully_vetted: "bg-green-100 text-green-800", partially_vetted: "bg-amber-100 text-amber-800", pending: "bg-red-100 text-red-800", expired: "bg-red-200 text-red-900" };
-const VETTING_BORDER: Record<AgencyVettingStatus, string> = { fully_vetted: "border-l-green-400", partially_vetted: "border-l-amber-400", pending: "border-l-red-500", expired: "border-l-red-700" };
+const VETTING_ROW: Record<AgencyVettingStatus, RowSeverity> = { fully_vetted: "success", partially_vetted: "warning", pending: "risk", expired: "risk" };
+const VETTING_TEXT: Record<AgencyVettingStatus, string> = { fully_vetted: "text-[--cs-success]", partially_vetted: "text-[--cs-warning]", pending: "text-[--cs-risk]", expired: "text-red-900" };
 
 const REASON_LABEL: Record<AgencyBookingReason, string> = {
   sickness_cover: "Sickness Cover", vacancy_cover: "Vacancy Cover", annual_leave: "Annual Leave Cover",
@@ -217,51 +218,51 @@ export default function AgencyStaffLogPage() {
 
         {/* concerns alert */}
         {withConcerns > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6 flex items-start gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="bg-[--cs-warning-bg] border border-[--cs-warning-soft] rounded-lg p-3 mb-6 flex items-start gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-warning] shrink-0 mt-0.5" />
             <div className="text-sm">
-              <p className="font-semibold text-amber-800">{withConcerns} shift(s) with concerns recorded</p>
-              <p className="text-amber-700">All concerns about agency staff must be fed back to the supplying agency in writing. Concerns about safeguarding must be escalated to the LADO. Persistent concerns should result in the worker being removed from the preferred list.</p>
+              <p className="font-semibold text-[--cs-warning]">{withConcerns} shift(s) with concerns recorded</p>
+              <p className="text-[--cs-warning]">All concerns about agency staff must be fed back to the supplying agency in writing. Concerns about safeguarding must be escalated to the LADO. Persistent concerns should result in the worker being removed from the preferred list.</p>
             </div>
           </div>
         )}
 
         {/* shift cards */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map((r) => {
             const isOpen = expandedId === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", VETTING_BORDER[r.vetting_status])}>
-                <CardHeader className="pb-2 cursor-pointer" onClick={() => setExpandedId(isOpen ? null : r.id)}>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1 flex-1">
-                      <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+              <div key={r.id}>
+                <FlatListRow severity={r.concerns ? "risk" : VETTING_ROW[r.vetting_status]} onClick={() => setExpandedId(isOpen ? null : r.id)} aria-expanded={isOpen}>
+                  <div className="flex items-start justify-between flex-1 min-w-0">
+                    <div className="space-y-1 flex-1 min-w-0">
+                      <p className="text-base font-semibold text-[var(--cs-navy)] flex items-center gap-2 flex-wrap">
                         {r.worker_name} ({r.worker_ref})
-                        <Badge variant="outline" className={VETTING_CLR[r.vetting_status]}>{VETTING_LABEL[r.vetting_status]}</Badge>
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", VETTING_TEXT[r.vetting_status])}>{VETTING_LABEL[r.vetting_status]}</span>
                         <Badge variant="outline" className="bg-muted/50">{REASON_LABEL[r.booking_reason]}</Badge>
-                        {r.concerns && <Badge variant="outline" className="bg-red-100 text-red-800">Concern</Badge>}
-                      </CardTitle>
+                        {r.concerns && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Concern</span>}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         {r.agency_name} · {r.date_of_shift} · {r.shift_type} · {r.shift_hours}hrs
                         {r.covering_for_id && ` · Covering: ${getStaffName(r.covering_for_id)}`}
                         {" "}· Auth: {getStaffName(r.authorised_by_id)}
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                       {r.feedback_score !== null && (
-                        <Badge variant="outline" className={cn(
-                          r.feedback_score >= 4 ? "bg-green-100 text-green-800" :
-                          r.feedback_score >= 3 ? "bg-amber-100 text-amber-800" :
-                          "bg-red-100 text-red-800"
-                        )}>{r.feedback_score}/5</Badge>
+                        <span className={cn("text-xs font-semibold",
+                          r.feedback_score >= 4 ? "text-[--cs-success]" :
+                          r.feedback_score >= 3 ? "text-[--cs-warning]" :
+                          "text-[--cs-risk]"
+                        )}>{r.feedback_score}/5</span>
                       )}
-                      {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      {isOpen ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                     </div>
                   </div>
-                </CardHeader>
+                </FlatListRow>
 
                 {isOpen && (
-                  <CardContent className="pt-0 space-y-3 text-sm">
+                  <FlatListRowDetail className="text-sm">
                     {/* compliance checklist */}
                     <div>
                       <p className="font-medium mb-1">Compliance Checklist</p>
@@ -275,8 +276,8 @@ export default function AgencyStaffLogPage() {
                           { label: "PRICE Trained", ok: !!r.price_trained_level },
                         ].map((c) => (
                           <div key={c.label} className="flex items-center gap-1.5 text-xs">
-                            {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-green-600" /> : <AlertTriangle className="h-3.5 w-3.5 text-red-500" />}
-                            <span className={c.ok ? "" : "text-red-700 font-medium"}>{c.label}</span>
+                            {c.ok ? <CheckCircle2 className="h-3.5 w-3.5 text-[--cs-success]" /> : <AlertTriangle className="h-3.5 w-3.5 text-[--cs-risk]" />}
+                            <span className={c.ok ? "" : "text-[--cs-risk] font-medium"}>{c.label}</span>
                           </div>
                         ))}
                       </div>
@@ -304,13 +305,13 @@ export default function AgencyStaffLogPage() {
 
                     {/* induction */}
                     {r.induction_completed && r.induction_date && r.induction_by && (
-                      <div className="bg-green-50 border border-green-200 rounded p-2">
-                        <p className="text-xs"><span className="font-medium text-green-800">Induction completed:</span> <span className="text-green-700">{r.induction_date} by {getStaffName(r.induction_by)}</span></p>
+                      <div className="bg-[--cs-success-bg] border border-[--cs-success-soft] rounded p-2">
+                        <p className="text-xs"><span className="font-medium text-[--cs-success]">Induction completed:</span> <span className="text-[--cs-success]">{r.induction_date} by {getStaffName(r.induction_by)}</span></p>
                       </div>
                     )}
                     {!r.induction_completed && (
-                      <div className="bg-red-50 border border-red-200 rounded p-2">
-                        <p className="text-xs font-medium text-red-800">⚠ Full induction NOT completed — verbal briefing only</p>
+                      <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded p-2">
+                        <p className="text-xs font-medium text-[--cs-risk]">⚠ Full induction NOT completed — verbal briefing only</p>
                       </div>
                     )}
 
@@ -324,9 +325,9 @@ export default function AgencyStaffLogPage() {
 
                     {/* concerns */}
                     {r.concerns && (
-                      <div className="bg-red-50 border border-red-200 rounded p-2">
-                        <p className="font-medium text-xs text-red-800 mb-1">Concerns</p>
-                        <p className="text-xs text-red-700">{r.concerns}</p>
+                      <div className="bg-[--cs-risk-bg] border border-[--cs-risk-soft] rounded p-2">
+                        <p className="font-medium text-xs text-[--cs-risk] mb-1">Concerns</p>
+                        <p className="text-xs text-[--cs-risk]">{r.concerns}</p>
                       </div>
                     )}
 
@@ -335,12 +336,12 @@ export default function AgencyStaffLogPage() {
 
                     {/* smart links */}
                     <SmartLinkPanel sourceType="agency_staff_log" sourceId={r.id} compact />
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="mt-6 bg-muted/30 rounded-lg p-4 text-xs text-muted-foreground">

@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,9 +33,9 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 
 /* ── local config ─────────────────────────────────────────────────────── */
 
-const STATUS_CLR: Record<SleepInStatus, string> = { completed: "bg-green-100 text-green-800", disturbed: "bg-amber-100 text-amber-800", abandoned: "bg-red-100 text-red-800", in_progress: "bg-blue-100 text-blue-800" };
-const BORDER_CLR: Record<SleepInStatus, string> = { completed: "border-green-400", disturbed: "border-amber-400", abandoned: "border-red-400", in_progress: "border-blue-400" };
-const ROOM_CLR: Record<SleepInRoomCondition, string> = { clean: "bg-green-100 text-green-800", acceptable: "bg-yellow-100 text-yellow-800", needs_attention: "bg-red-100 text-red-800" };
+const STATUS_ROW: Record<SleepInStatus, RowSeverity> = { completed: "success", disturbed: "warning", abandoned: "risk", in_progress: "info" };
+const STATUS_TEXT: Record<SleepInStatus, string> = { completed: "text-[--cs-success]", disturbed: "text-[--cs-warning]", abandoned: "text-[--cs-risk]", in_progress: "text-[--cs-info]" };
+const ROOM_CLR: Record<SleepInRoomCondition, string> = { clean: "bg-[--cs-success-bg] text-[--cs-success]", acceptable: "bg-yellow-100 text-yellow-800", needs_attention: "bg-[--cs-risk-bg] text-[--cs-risk]" };
 
 /* ── component ─────────────────────────────────────────────────────────── */
 
@@ -149,8 +150,8 @@ export default function SleepInLogPage() {
               <CardHeader className="pb-2"><CardTitle className="text-sm">{getStaffName(ss.id)}</CardTitle></CardHeader>
               <CardContent className="space-y-1 text-xs">
                 <div className="flex justify-between"><span className="text-muted-foreground">Total Sleep-Ins</span><span className="font-medium">{ss.total}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Disturbed</span><span className={cn("font-medium", ss.disturbedPct > 50 ? "text-red-600" : "")}>{ss.disturbedPct}%</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Comp Rest Owed</span><Badge className={cn("text-xs", ss.compOwed > 0 ? "bg-red-100 text-red-800" : "bg-green-100 text-green-800")}>{ss.compOwed}</Badge></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Disturbed</span><span className={cn("font-medium", ss.disturbedPct > 50 ? "text-[--cs-risk]" : "")}>{ss.disturbedPct}%</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Comp Rest Owed</span><Badge className={cn("text-xs", ss.compOwed > 0 ? "bg-[--cs-risk-bg] text-[--cs-risk]" : "bg-[--cs-success-bg] text-[--cs-success]")}>{ss.compOwed}</Badge></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Last Sleep-In</span><span>{ss.last}</span></div>
               </CardContent>
             </Card>
@@ -159,9 +160,9 @@ export default function SleepInLogPage() {
 
         {/* alerts */}
         {compRestOwed > 0 && (
-          <div className="rounded-lg border border-red-300 bg-red-50 p-4 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
-            <div><p className="font-semibold text-red-900">Compensatory rest owed to {compRestOwed} staff member{compRestOwed > 1 ? "s" : ""}</p><p className="text-sm text-red-800">Working Time Regulations require compensatory rest within a reasonable period.</p></div>
+          <div className="rounded-lg border border-[--cs-risk-soft] bg-[--cs-risk-bg] p-4 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] mt-0.5" />
+            <div><p className="font-semibold text-[--cs-risk]">Compensatory rest owed to {compRestOwed} staff member{compRestOwed > 1 ? "s" : ""}</p><p className="text-sm text-[--cs-risk]">Working Time Regulations require compensatory rest within a reasonable period.</p></div>
           </div>
         )}
 
@@ -175,35 +176,33 @@ export default function SleepInLogPage() {
         </CardContent></Card>
 
         {/* sleep-in cards */}
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map(r => {
             const open = expanded === r.id;
             return (
-              <Card key={r.id} className={cn("border-l-4", BORDER_CLR[r.status])}>
-                <button className="w-full text-left" onClick={() => toggle(r.id)}>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <Moon className="h-4 w-4 text-indigo-500" />
-                        <CardTitle className="text-base">{r.date}</CardTitle>
+              <div key={r.id}>
+                <FlatListRow severity={!r.rest_achieved ? "risk" : STATUS_ROW[r.status]} onClick={() => toggle(r.id)} aria-expanded={open}>
+                    <div className="flex items-center justify-between flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <Moon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-base font-semibold text-[var(--cs-navy)]">{r.date}</span>
                         <span className="text-sm text-muted-foreground">{getStaffName(r.staff_member)}</span>
-                        <Badge className={cn("text-xs", STATUS_CLR[r.status])}>{SLEEP_IN_STATUS_LABEL[r.status]}</Badge>
-                        {r.disturbances.length > 0 && <Badge variant="outline" className="text-xs">{r.disturbances.length} disturbance{r.disturbances.length > 1 ? "s" : ""}</Badge>}
-                        {!r.rest_achieved && <Badge className="text-xs bg-red-100 text-red-800">Rest NOT achieved</Badge>}
+                        <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[r.status])}>{SLEEP_IN_STATUS_LABEL[r.status]}</span>
+                        {r.disturbances.length > 0 && <span className="text-xs text-muted-foreground">{r.disturbances.length} disturbance{r.disturbances.length > 1 ? "s" : ""}</span>}
+                        {!r.rest_achieved && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Rest NOT achieved</span>}
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         <span className="text-xs text-muted-foreground">{r.start_time}–{r.end_time}</span>
-                        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </div>
                     </div>
-                  </CardHeader>
-                </button>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="space-y-4 pt-0">
+                  <FlatListRowDetail>
                     <div className="flex flex-wrap gap-4 text-sm">
                       <span><strong>Room:</strong> {r.room_used}</span>
                       <span><strong>Room Condition:</strong> <Badge className={cn("text-xs", ROOM_CLR[r.room_condition])}>{SLEEP_IN_ROOM_CONDITION_LABEL[r.room_condition]}</Badge></span>
-                      <span><strong>Rest Achieved:</strong> {r.rest_achieved ? <CheckCircle2 className="inline h-4 w-4 text-green-600" /> : <XCircle className="inline h-4 w-4 text-red-600" />}</span>
+                      <span><strong>Rest Achieved:</strong> {r.rest_achieved ? <CheckCircle2 className="inline h-4 w-4 text-[--cs-success]" /> : <XCircle className="inline h-4 w-4 text-[--cs-risk]" />}</span>
                     </div>
 
                     {/* disturbance timeline */}
@@ -233,41 +232,41 @@ export default function SleepInLogPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+                      <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-3 text-sm text-[--cs-success]">
                         <CheckCircle2 className="inline h-4 w-4 mr-1" />No disturbances — peaceful night
                       </div>
                     )}
 
                     {/* safety checks */}
                     <div className="flex gap-4 text-xs">
-                      <span className="flex items-center gap-1">{r.safety_check_completed ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}Safety check</span>
-                      <span className="flex items-center gap-1">{r.alarms_working ? <CheckCircle2 className="h-3 w-3 text-green-500" /> : <XCircle className="h-3 w-3 text-red-500" />}Alarms working</span>
+                      <span className="flex items-center gap-1">{r.safety_check_completed ? <CheckCircle2 className="h-3 w-3 text-[--cs-success]" /> : <XCircle className="h-3 w-3 text-[--cs-risk]" />}Safety check</span>
+                      <span className="flex items-center gap-1">{r.alarms_working ? <CheckCircle2 className="h-3 w-3 text-[--cs-success]" /> : <XCircle className="h-3 w-3 text-[--cs-risk]" />}Alarms working</span>
                     </div>
 
                     {r.issues_reported.length > 0 && (
-                      <div><p className="text-xs font-semibold mb-1">Issues Reported</p><div className="flex gap-1 flex-wrap">{r.issues_reported.map(iss => <Badge key={iss} className="text-xs bg-amber-100 text-amber-800">{iss}</Badge>)}</div></div>
+                      <div><p className="text-xs font-semibold mb-1">Issues Reported</p><div className="flex gap-1 flex-wrap">{r.issues_reported.map(iss => <Badge key={iss} className="text-xs bg-[--cs-warning-bg] text-[--cs-warning]">{iss}</Badge>)}</div></div>
                     )}
 
                     {r.compensatory_rest && (
-                      <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm">
-                        <p className="font-semibold text-red-800">Compensatory Rest Required</p>
-                        {r.compensatory_rest_date ? <p className="text-red-700">Taken: {r.compensatory_rest_date}</p> : <p className="text-red-700 font-medium">Not yet taken — action required</p>}
+                      <div className="rounded-lg bg-[--cs-risk-bg] border border-[--cs-risk-soft] p-3 text-sm">
+                        <p className="font-semibold text-[--cs-risk]">Compensatory Rest Required</p>
+                        {r.compensatory_rest_date ? <p className="text-[--cs-risk]">Taken: {r.compensatory_rest_date}</p> : <p className="text-[--cs-risk] font-medium">Not yet taken — action required</p>}
                       </div>
                     )}
 
                     {/* handover */}
-                    <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
-                      <p className="text-xs font-semibold text-blue-800 mb-1">Handover Notes → {getStaffName(r.handover_to)}</p>
-                      <p className="text-sm text-blue-900">{r.handover_notes}</p>
+                    <div className="rounded-lg bg-[--cs-info-bg] border border-[--cs-info-soft] p-3">
+                      <p className="text-xs font-semibold text-[--cs-info] mb-1">Handover Notes → {getStaffName(r.handover_to)}</p>
+                      <p className="text-sm text-[--cs-info]">{r.handover_notes}</p>
                     </div>
 
                     {r.notes && <p className="text-xs text-muted-foreground italic">{r.notes}</p>}
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         {/* regulatory note */}
         <div className="rounded-lg bg-muted/40 border p-4 text-xs text-muted-foreground space-y-1">

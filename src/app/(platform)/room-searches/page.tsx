@@ -23,6 +23,7 @@ import {
 import { cn }                          from "@/lib/utils";
 import { getStaffName, getYPName }     from "@/lib/seed-data";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { useRoomSearchRecords, useCreateRoomSearchRecord } from "@/hooks/use-room-search-records";
 import { toast } from "sonner";
 import { YOUNG_PEOPLE } from "@/lib/seed-data";
@@ -50,23 +51,30 @@ const TYPE_COLOUR: Record<RoomSearchType, string> = {
 };
 
 const STATUS_META: Record<RoomSearchStatus, { colour: string }> = {
-  completed:          { colour: "bg-green-100 text-green-700" },
-  follow_up_required: { colour: "bg-amber-100 text-amber-700" },
-  escalated:          { colour: "bg-red-100 text-red-700" },
+  completed:          { colour: "bg-[--cs-success-bg] text-[--cs-success]" },
+  follow_up_required: { colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
+  escalated:          { colour: "bg-[--cs-risk-bg] text-[--cs-risk]" },
   closed:             { colour: "bg-gray-100 text-gray-700" },
 };
 
+const STATUS_ROW: Record<RoomSearchStatus, RowSeverity> = {
+  completed: "success", follow_up_required: "warning", escalated: "risk", closed: "neutral",
+};
+const STATUS_TEXT: Record<RoomSearchStatus, string> = {
+  completed: "text-[--cs-success]", follow_up_required: "text-[--cs-warning]", escalated: "text-[--cs-risk]", closed: "text-gray-600",
+};
+
 const DISTRESS_META: Record<RoomSearchDistressLevel, { colour: string }> = {
-  none:        { colour: "text-green-600 bg-green-50" },
+  none:        { colour: "text-[--cs-success] bg-[--cs-success-bg]" },
   mild:        { colour: "text-yellow-600 bg-yellow-50" },
-  moderate:    { colour: "text-amber-600 bg-amber-50" },
-  significant: { colour: "text-red-600 bg-red-50" },
+  moderate:    { colour: "text-[--cs-warning] bg-[--cs-warning-bg]" },
+  significant: { colour: "text-[--cs-risk] bg-[--cs-risk-bg]" },
 };
 
 const ACTION_STATUS_META: Record<RoomSearchActionStatus, { colour: string }> = {
-  pending:     { colour: "bg-amber-100 text-amber-700" },
-  in_progress: { colour: "bg-blue-100 text-blue-700" },
-  completed:   { colour: "bg-green-100 text-green-700" },
+  pending:     { colour: "bg-[--cs-warning-bg] text-[--cs-warning]" },
+  in_progress: { colour: "bg-[--cs-info-bg] text-[--cs-info]" },
+  completed:   { colour: "bg-[--cs-success-bg] text-[--cs-success]" },
 };
 
 const AREA_OPTIONS = [
@@ -213,9 +221,9 @@ export default function RoomSearchesPage() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { l: "Total Searches",    v: stats.totalSearches,  icon: Search,        c: "text-blue-600" },
-            { l: "Items Found",       v: stats.itemsFoundCount, icon: Eye,           c: "text-amber-600" },
-            { l: "Follow-Ups Pending",v: stats.pendingFollowUps, icon: Clock,        c: stats.pendingFollowUps > 0 ? "text-amber-600" : "text-gray-400" },
-            { l: "Escalated Cases",   v: stats.escalatedCases,  icon: AlertTriangle, c: stats.escalatedCases > 0 ? "text-red-600" : "text-gray-400" },
+            { l: "Items Found",       v: stats.itemsFoundCount, icon: Eye,           c: "text-[--cs-warning]" },
+            { l: "Follow-Ups Pending",v: stats.pendingFollowUps, icon: Clock,        c: stats.pendingFollowUps > 0 ? "text-[--cs-warning]" : "text-gray-400" },
+            { l: "Escalated Cases",   v: stats.escalatedCases,  icon: AlertTriangle, c: stats.escalatedCases > 0 ? "text-[--cs-risk]" : "text-gray-400" },
           ].map((s) => (
             <div key={s.l} className="rounded-lg border bg-white p-3 text-center">
               <s.icon className={cn("mx-auto h-5 w-5 mb-1", s.c)} />
@@ -226,9 +234,9 @@ export default function RoomSearchesPage() {
         </div>
 
         {(hasOverdue || stats.escalatedCases > 0) && (
-          <div className="rounded-lg border-l-4 border-red-400 bg-red-50 p-3 flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
-            <p className="text-sm text-red-800">
+          <div className="rounded-lg border-l-4 border-[--cs-risk-soft] bg-[--cs-risk-bg] p-3 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-[--cs-risk] flex-shrink-0" />
+            <p className="text-sm text-[--cs-risk]">
               {hasOverdue && (
                 <><strong>Overdue follow-up actions</strong> require immediate attention. </>
               )}
@@ -261,7 +269,7 @@ export default function RoomSearchesPage() {
                   </div>
                   <div>
                     <span className="text-muted-foreground">Pending:</span>{" "}
-                    <span className={cn("font-semibold", cs.pendingActions > 0 ? "text-amber-600" : "text-green-600")}>
+                    <span className={cn("font-semibold", cs.pendingActions > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>
                       {cs.pendingActions > 0 ? cs.pendingActions : "None"}
                     </span>
                   </div>
@@ -318,39 +326,39 @@ export default function RoomSearchesPage() {
           </div>
         </div>
 
+        <FlatList>
         {filtered.map((rs) => {
           const isOpen = expanded === rs.id;
           const today = d(0);
 
           return (
-            <div key={rs.id} className="rounded-lg border bg-white overflow-hidden">
-              <button
-                onClick={() => setExpanded(isOpen ? null : rs.id)}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50"
-              >
-                <div className="flex items-center gap-3">
-                  <Eye className="h-5 w-5 text-brand" />
-                  <div className="text-left">
+            <div key={rs.id}>
+              <FlatListRow severity={STATUS_ROW[rs.status]} onClick={() => setExpanded(isOpen ? null : rs.id)} aria-expanded={isOpen}>
+                <div className="flex items-center justify-between flex-1 min-w-0">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Eye className="h-5 w-5 text-muted-foreground shrink-0" />
+                  <div className="text-left min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{getYPName(rs.child_id)}</h3>
                       <span className="text-sm text-muted-foreground">{rs.date} at {rs.time}</span>
                       <Badge className={cn("text-xs", TYPE_COLOUR[rs.search_type])}>
                         {ROOM_SEARCH_TYPE_LABEL[rs.search_type]}
                       </Badge>
-                      <Badge className={cn("text-xs", STATUS_META[rs.status].colour)}>
+                      <span className={cn("text-[11px] font-semibold uppercase tracking-wide", STATUS_TEXT[rs.status])}>
                         {ROOM_SEARCH_STATUS_LABEL[rs.status]}
-                      </Badge>
+                      </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Conducted by {getStaffName(rs.conducted_by)} &middot; Witnessed by {getStaffName(rs.witnessed_by)}
                     </p>
                   </div>
                 </div>
-                {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-              </button>
+                {isOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
+                </div>
+              </FlatListRow>
 
               {isOpen && (
-                <div className="border-t p-4 space-y-4">
+                <FlatListRowDetail>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                     <div><span className="text-muted-foreground">Conducted by:</span> {getStaffName(rs.conducted_by)}</div>
                     <div><span className="text-muted-foreground">Witnessed by:</span> {getStaffName(rs.witnessed_by)}</div>
@@ -358,9 +366,9 @@ export default function RoomSearchesPage() {
                     <div><span className="text-muted-foreground">Child informed:</span> {rs.child_informed ? "Yes" : "No"}</div>
                   </div>
 
-                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                    <h4 className="text-sm font-semibold text-amber-800 mb-1">Reason for Search</h4>
-                    <p className="text-sm text-amber-900">{rs.reason}</p>
+                  <div className="rounded-lg bg-[--cs-warning-bg] border border-[--cs-warning-soft] p-3">
+                    <h4 className="text-sm font-semibold text-[--cs-warning] mb-1">Reason for Search</h4>
+                    <p className="text-sm text-[--cs-warning]">{rs.reason}</p>
                   </div>
 
                   <div>
@@ -375,9 +383,9 @@ export default function RoomSearchesPage() {
                   </div>
 
                   {rs.nothing_found ? (
-                    <div className="rounded-lg bg-green-50 border border-green-200 p-3 flex items-center gap-2">
-                      <CheckCircle2 className="h-5 w-5 text-green-600 flex-shrink-0" />
-                      <p className="text-sm text-green-800 font-medium">Nothing of concern found</p>
+                    <div className="rounded-lg bg-[--cs-success-bg] border border-[--cs-success-soft] p-3 flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 text-[--cs-success] flex-shrink-0" />
+                      <p className="text-sm text-[--cs-success] font-medium">Nothing of concern found</p>
                     </div>
                   ) : (
                     <div>
@@ -401,7 +409,7 @@ export default function RoomSearchesPage() {
                                 <td className="py-2 pr-3 text-xs">{item.action_taken}</td>
                                 <td className="py-2 pr-3">
                                   <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium",
-                                    item.retained ? "bg-red-100 text-red-700" : "bg-gray-100 text-gray-700"
+                                    item.retained ? "bg-[--cs-risk-bg] text-[--cs-risk]" : "bg-gray-100 text-gray-700"
                                   )}>
                                     {item.retained ? "Yes" : "No"}
                                   </span>
@@ -436,7 +444,7 @@ export default function RoomSearchesPage() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
                       <div className="flex items-center gap-2">
                         {rs.social_worker_notified ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                         ) : (
                           <span className="h-4 w-4 rounded-full border-2 border-gray-300 inline-block" />
                         )}
@@ -446,7 +454,7 @@ export default function RoomSearchesPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         {rs.parent_notified ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600" />
+                          <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                         ) : (
                           <span className="h-4 w-4 rounded-full border-2 border-gray-300 inline-block" />
                         )}
@@ -455,7 +463,7 @@ export default function RoomSearchesPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <CheckCircle2 className="h-4 w-4 text-[--cs-success]" />
                         <span className="font-medium">Manager ({getStaffName(rs.manager_approval)})</span>
                       </div>
                     </div>
@@ -478,12 +486,12 @@ export default function RoomSearchesPage() {
                             {(rs.follow_up_actions ?? []).map((fa, idx) => {
                               const overdue = fa.status !== "completed" && fa.due_date < today;
                               return (
-                                <tr key={idx} className={cn("border-b last:border-0", overdue && "bg-red-50")}>
+                                <tr key={idx} className={cn("border-b last:border-0", overdue && "bg-[--cs-risk-bg]")}>
                                   <td className="py-2 pr-3">{fa.action}</td>
                                   <td className="py-2 pr-3 whitespace-nowrap">{getStaffName(fa.owner)}</td>
-                                  <td className={cn("py-2 pr-3 whitespace-nowrap", overdue && "text-red-600 font-medium")}>
+                                  <td className={cn("py-2 pr-3 whitespace-nowrap", overdue && "text-[--cs-risk] font-medium")}>
                                     {fa.due_date}
-                                    {overdue && <span className="ml-1 text-xs text-red-600">(overdue)</span>}
+                                    {overdue && <span className="ml-1 text-xs text-[--cs-risk]">(overdue)</span>}
                                   </td>
                                   <td className="py-2">
                                     <span className={cn("rounded-full px-2 py-0.5 text-xs font-medium", ACTION_STATUS_META[fa.status].colour)}>
@@ -516,17 +524,18 @@ export default function RoomSearchesPage() {
                   )}
 
                   <SmartLinkPanel sourceType="room-search" sourceId={rs.id} childId={rs.child_id} compact />
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
 
         {filtered.length === 0 && (
-          <div className="rounded-lg border bg-white p-8 text-center text-sm text-muted-foreground">
+          <div className="p-8 text-center text-sm text-muted-foreground">
             No room searches match your filters.
           </div>
         )}
+        </FlatList>
 
         <div className="rounded-lg border-l-4 border-blue-400 bg-blue-50 p-4 text-sm text-blue-900">
           <strong>Regulation 19 / Safeguarding / Data Protection</strong> — Room searches must
