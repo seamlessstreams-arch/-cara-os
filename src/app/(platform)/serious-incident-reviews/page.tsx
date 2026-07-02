@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -25,6 +25,7 @@ import {
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 
 /* ── local config ─────────────────────────────────────────────────────────── */
 
@@ -134,31 +135,32 @@ export default function SeriousIncidentReviewsPage() {
           </div>
         </CardContent></Card>
 
-        <div className="space-y-3">
+        <FlatList>
           {filtered.map(r => {
             const open = expanded === r.id;
             const pendAct = r.actions.filter(a => a.status !== "completed").length;
+            const severity: RowSeverity = (pendAct > 0 || r.confidentiality === "highly_restricted") ? "risk" : "neutral";
             return (
-              <Card key={r.id} className={cn(r.confidentiality === "highly_restricted" && "border-red-400")}>
-                <button className="w-full text-left" onClick={() => toggle(r.id)}>
-                  <CardHeader className="pb-2">
+              <div key={r.id}>
+                <FlatListRow severity={severity} onClick={() => toggle(r.id)} aria-expanded={open}>
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <CardTitle className="text-base">{r.title}</CardTitle>
-                        <Badge className={cn("text-xs", RT_CLR[r.review_type])}>{SERIOUS_INCIDENT_REVIEW_TYPE_LABEL[r.review_type]}</Badge>
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
+                        <p className="text-base font-semibold text-[var(--cs-navy)]">{r.title}</p>
                         <Badge className={cn("text-xs", RS_CLR[r.status])}>{SERIOUS_INCIDENT_REVIEW_STATUS_LABEL[r.status]}</Badge>
-                        <Badge className={cn("text-xs", CONF_CLR[r.confidentiality])}>{r.confidentiality.replace("_", " ")}</Badge>
+                        <span className="text-xs text-muted-foreground">{SERIOUS_INCIDENT_REVIEW_TYPE_LABEL[r.review_type]}</span>
+                        {r.confidentiality === "highly_restricted" && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Highly restricted</span>}
+                        {pendAct > 0 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">{pendAct} actions pending</span>}
                       </div>
-                      <div className="flex items-center gap-2">
-                        {pendAct > 0 && <Badge className="text-xs bg-[--cs-risk-bg] text-[--cs-risk]">{pendAct} actions pending</Badge>}
-                        {open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                      <div className="flex items-center gap-2 shrink-0">
+                        {open ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">Incident: {r.incident_date} · Lead: {getStaffName(r.review_lead)} · YP: {r.young_people_involved.map(id => getYPName(id)).join(", ")}</p>
-                  </CardHeader>
-                </button>
+                    <p className="text-xs text-muted-foreground mt-1">Incident: {r.incident_date} · Lead: {getStaffName(r.review_lead)} · YP: {r.young_people_involved.map(id => getYPName(id)).join(", ")}</p>
+                  </div>
+                </FlatListRow>
                 {open && (
-                  <CardContent className="space-y-4 pt-0">
+                  <FlatListRowDetail>
                     <div className="rounded-lg bg-blue-50 border border-blue-200 p-3">
                       <p className="text-xs font-semibold text-blue-800 mb-1">Background Summary</p>
                       <p className="text-sm text-blue-900">{r.background_summary}</p>
@@ -226,12 +228,12 @@ export default function SeriousIncidentReviewsPage() {
                     </div>
 
                     {r.next_review_date && <p className="text-xs text-muted-foreground">Next review: <strong>{r.next_review_date}</strong></p>}
-                  </CardContent>
+                  </FlatListRowDetail>
                 )}
-              </Card>
+              </div>
             );
           })}
-        </div>
+        </FlatList>
 
         <div className="rounded-lg bg-muted/40 border p-4 text-xs text-muted-foreground space-y-1">
           <p className="font-semibold">Regulatory Framework</p>
