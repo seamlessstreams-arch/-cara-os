@@ -2,6 +2,7 @@
 import React, { useState, useRef, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionHeader } from "@/components/ui/section-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -955,12 +956,8 @@ export default function InspectionPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           {/* Readiness breakdown */}
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-500" />Inspection Readiness
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-5">
+              <SectionHeader icon={TrendingUp}>Inspection Readiness</SectionHeader>
               <div className="space-y-3">
                 {readinessAreas.map(({ area, score, status }) => (
                   <div key={area} className="space-y-1">
@@ -981,12 +978,8 @@ export default function InspectionPage() {
 
           {/* Inspection history */}
           <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Award className="h-4 w-4 text-amber-500" />Inspection History
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-5">
+              <SectionHeader icon={Award}>Inspection History</SectionHeader>
               <div className="space-y-3">
                 {inspHistoryQuery.isLoading ? (
                   <div className="flex items-center gap-2 text-slate-400 py-4">
