@@ -45,4 +45,19 @@ describe("CheckTile", () => {
     expect(html).toContain("border-[--cs-border]");
     expect(html).not.toContain("bg-[--cs-risk-bg]");
   });
+
+  it("renders detail prose muted below the value when children are given", () => {
+    const html = renderToStaticMarkup(
+      <CheckTile ok={false} label="100mm rule" value="Non-compliant">
+        Maximum opening measured: 14.0 cm
+      </CheckTile>,
+    );
+    expect(html).toContain("Maximum opening measured: 14.0 cm");
+    expect(html).toContain("text-[var(--cs-text-secondary)]");
+  });
+
+  it("renders no detail region without children", () => {
+    const html = renderToStaticMarkup(<CheckTile ok label="x" value="Yes" />);
+    expect(html).not.toContain("mt-1.5");
+  });
 });
