@@ -72,6 +72,19 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "microphone=(self), camera=(self), geolocation=(self)",
           },
+          // Clickjacking / frame-embedding: deny embedding the app in any
+          // third-party frame. Directly protects the capture-deterrence
+          // watermark (an embedded frame would otherwise render without it).
+          { key: "X-Frame-Options", value: "DENY" },
+          // MIME-sniffing: force declared content types (defence-in-depth vs
+          // reflected-content attacks on record/export routes).
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Referrer: never leak record URLs (which can carry child ids) to
+          // third parties; send only the origin cross-site.
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // NOTE: Content-Security-Policy intentionally omitted here — a blanket
+          // CSP breaks Next's inline runtime/styles; it must be rolled out
+          // report-only first with a nonce strategy (tracked as an audit item).
         ],
       },
     ];
