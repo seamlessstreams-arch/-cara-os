@@ -151,7 +151,7 @@ function IncidentCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border bg-white border-l-4 p-5 transition-all hover:shadow-md",
+        "rounded-2xl border bg-white border-l-4 p-5 transition-all hover:bg-[var(--cs-surface)]",
         onCardClick && "cursor-pointer",
         sev.border,
       )}

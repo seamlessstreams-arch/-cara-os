@@ -273,7 +273,7 @@ export default function BehaviourSupportPlansPage() {
             return (
               <Card
                 key={c.id}
-                className="cursor-pointer hover:shadow-md transition-shadow"
+                className="cursor-pointer hover:bg-[var(--cs-surface)] transition-shadow"
                 onClick={() => setChildFilter(childFilter === c.id ? "all" : c.id)}
               >
                 <CardContent className="p-4">

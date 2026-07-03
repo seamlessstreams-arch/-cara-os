@@ -105,7 +105,7 @@ function MaintenanceCard({
 
   return (
     <div className={cn(
-      "rounded-2xl border p-4 flex items-center gap-4 transition-all hover:shadow-md",
+      "rounded-2xl border p-4 flex items-center gap-4 transition-all hover:bg-[var(--cs-surface)]",
       item.priority === "urgent" && item.status !== "completed"
         ? "border-red-200 bg-red-50"
         : isOverdue

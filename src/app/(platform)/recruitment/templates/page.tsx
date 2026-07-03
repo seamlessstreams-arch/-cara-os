@@ -636,7 +636,7 @@ function TemplateModal({ template, onClose }: { template: Template; onClose: () 
 function TemplateCard({ template, onOpen }: { template: Template; onOpen: () => void }) {
   return (
     <div
-      className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all"
+      className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 cursor-pointer hover:bg-[var(--cs-surface)] hover:border-blue-200 transition-all"
       onClick={onOpen}
     >
       <div className="flex items-start justify-between gap-2">

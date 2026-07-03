@@ -160,7 +160,7 @@ function StaffCard({
   const sc = statusConfig(profile.status);
 
   return (
-    <Card className="rounded-2xl shadow-sm hover:shadow-md transition-shadow">
+    <Card className="rounded-2xl shadow-sm hover:bg-[var(--cs-surface)] transition-shadow">
       <CardContent className="p-5 space-y-4">
         {/* Header row */}
         <div className="flex items-start justify-between gap-3">

@@ -1020,7 +1020,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                     tabIndex={0}
                     onClick={() => router.push(`/forms/${form.id}`)}
                     onKeyDown={(e) => e.key === "Enter" && router.push(`/forms/${form.id}`)}
-                    className="rounded-2xl border bg-white p-4 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group"
+                    className="rounded-2xl border bg-white p-4 hover:bg-[var(--cs-surface)] transition-all cursor-pointer group"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -1380,7 +1380,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                   role="button" tabIndex={0}
                   onClick={() => router.push(`/incidents/${inc.id}`)}
                   onKeyDown={(e) => e.key === "Enter" && router.push(`/incidents/${inc.id}`)}
-                  className="rounded-2xl border bg-white p-4 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group"
+                  className="rounded-2xl border bg-white p-4 hover:bg-[var(--cs-surface)] transition-all cursor-pointer group"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div>
@@ -1428,7 +1428,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
                   <div key={form.id} role="button" tabIndex={0}
                     onClick={() => router.push(`/forms/${form.id}`)}
                     onKeyDown={(e) => e.key === "Enter" && router.push(`/forms/${form.id}`)}
-                    className="rounded-2xl border bg-white p-4 hover:shadow-md transition-all cursor-pointer group"
+                    className="rounded-2xl border bg-white p-4 hover:bg-[var(--cs-surface)] transition-all cursor-pointer group"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div>

@@ -91,7 +91,7 @@ export default function HomeRelationshipsPage() {
                 const priority = c.priority >= 3;
                 return (
                   <Link key={c.childId} href={`/intelligence/cara/relationship-intelligence?child=${c.childId}`} className="block">
-                  <Card className={cn("transition-shadow hover:shadow-md", priority && "border-l-4 border-l-red-400")}>
+                  <Card className={cn("transition-shadow hover:bg-[var(--cs-surface)]", priority && "border-l-4 border-l-red-400")}>
                     <CardContent className="p-4">
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-2">

@@ -617,7 +617,7 @@ function RecentInterventionsSection() {
               {allInterventions.map((intervention) => (
                 <div
                   key={intervention.id}
-                  className="flex items-center gap-3 rounded-xl border border-[var(--cs-border-subtle)] bg-white px-3 py-2.5 hover:shadow-sm hover:-translate-y-0.5 transition-all group"
+                  className="flex items-center gap-3 rounded-xl border border-[var(--cs-border-subtle)] bg-white px-3 py-2.5 hover:shadow-sm transition-all group"
                 >
                   <Link
                     href={`/young-people/${intervention.child_id}?tab=intelligence`}

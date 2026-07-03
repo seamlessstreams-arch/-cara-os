@@ -76,7 +76,7 @@ export default function CaraGovernancePage() {
           <Link
             key={mod.href}
             href={mod.href}
-            className="group rounded-lg border border-border bg-card p-5 hover:shadow-md transition-shadow"
+            className="group rounded-lg border border-border bg-card p-5 hover:bg-[var(--cs-surface)] transition-shadow"
           >
             <div className="flex items-start gap-3">
               <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${mod.colour} flex items-center justify-center shrink-0`}>

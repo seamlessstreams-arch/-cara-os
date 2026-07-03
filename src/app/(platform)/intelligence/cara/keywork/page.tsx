@@ -89,7 +89,7 @@ function SessionCard({ session }: { session: KeyWorkSession }) {
   const childName = getYPName(session.child_id) || session.child_id;
   return (
     <Link href={`/intelligence/cara/keywork/${session.id}`} className="group block">
-      <div className="rounded-xl border border-[var(--cs-border-subtle)] bg-white p-4 hover:shadow-sm hover:-translate-y-0.5 transition-all space-y-2">
+      <div className="rounded-xl border border-[var(--cs-border-subtle)] bg-white p-4 hover:shadow-sm transition-all space-y-2">
         <div className="flex items-start justify-between gap-2">
           <div className="space-y-1 flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">

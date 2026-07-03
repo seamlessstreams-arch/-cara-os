@@ -228,7 +228,7 @@ export default function AdmissionWorkflowPage() {
               return (
                 <Card
                   key={wf.id}
-                  className="cursor-pointer hover:shadow-md transition-shadow border-l-4"
+                  className="cursor-pointer hover:bg-[var(--cs-surface)] transition-shadow border-l-4"
                   style={{ borderLeftColor: wf.current_phase === "completed" ? "#10b981" : (wf.risk_factors?.length ?? 0) > 2 ? "#ef4444" : "#6366f1" }}
                   onClick={() => { setSelectedId(wf.id); setViewMode("detail"); }}
                 >

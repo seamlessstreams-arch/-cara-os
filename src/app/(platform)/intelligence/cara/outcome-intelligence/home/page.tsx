@@ -60,7 +60,7 @@ function ChildRow({ child }: { child: HomeOutcomeChild }) {
       href={`/intelligence/cara/outcome-intelligence?child=${child.childId}`}
       className="block"
     >
-      <Card className={cn("transition-shadow hover:shadow-md", priority && "border-l-4 border-l-red-400")}>
+      <Card className={cn("transition-shadow hover:bg-[var(--cs-surface)]", priority && "border-l-4 border-l-red-400")}>
         <CardContent className="p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap items-center gap-2">

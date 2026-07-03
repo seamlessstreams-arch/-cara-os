@@ -322,7 +322,7 @@ function SupervisionCard({ sup }: { sup: Supervision }) {
   return (
     <>
       {recording && <RecordSupervisionDialog sup={sup} onClose={() => setRecording(false)} />}
-      <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-3 hover:shadow-md transition-all">
+      <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 space-y-3 hover:bg-[var(--cs-surface)] transition-all">
         <div className="flex items-start gap-3">
           <Avatar name={staff?.full_name || "?"} size="sm" />
           <div className="flex-1 min-w-0">
@@ -1004,7 +1004,7 @@ export default function SupervisionPage() {
 
               return (
                 <div key={staff.id} className={cn(
-                  "rounded-2xl border p-4 flex items-center gap-5 hover:shadow-md transition-all",
+                  "rounded-2xl border p-4 flex items-center gap-5 hover:bg-[var(--cs-surface)] transition-all",
                   isOverdue ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : isDueSoon ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "border-[var(--cs-border)] bg-white"
                 )}>
                   <Avatar name={staff.full_name} size="md" />

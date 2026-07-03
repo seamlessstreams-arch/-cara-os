@@ -157,7 +157,7 @@ function YPPracticeBankCard({ yp }: { yp: YPEnriched }) {
   return (
     <Link
       href={`/young-people/${yp.id}?tab=intelligence`}
-      className="block rounded-2xl border border-[var(--cs-border)] bg-white p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
+      className="block rounded-2xl border border-[var(--cs-border)] bg-white p-5 hover:bg-[var(--cs-surface)] transition-all group focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]"
     >
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">

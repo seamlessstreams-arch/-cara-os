@@ -67,7 +67,7 @@ export default function WorkforceCommandPage() {
                 const Icon = CARD_ICON[c.key] ?? LayoutDashboard;
                 const m = STATUS_META[c.status];
                 return (
-                  <Link key={c.key} href={c.href} className="group rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)] transition-transform hover:-translate-y-0.5">
+                  <Link key={c.key} href={c.href} className="group rounded-2xl border border-[var(--cs-border)] bg-white p-5 shadow-[var(--cs-shadow-card)] transition-transform">
                     <div className="flex items-center justify-between">
                       <span className={cn("inline-flex h-9 w-9 items-center justify-center rounded-xl", m.ring)}><Icon className="h-5 w-5" /></span>
                       <ArrowRight className="h-4 w-4 text-[var(--cs-text-gentle)] transition-transform group-hover:translate-x-0.5" />
