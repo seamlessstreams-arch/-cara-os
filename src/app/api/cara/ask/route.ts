@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { runCaraIntelligence } from "@/lib/cara/engine";
 import { isAiGloballyEnabled } from "@/lib/cara/ai-availability";
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthenticated request." }, { status: 401 });
     }
 
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const result = await runCaraIntelligence(body, userId);
 
     return NextResponse.json(result);

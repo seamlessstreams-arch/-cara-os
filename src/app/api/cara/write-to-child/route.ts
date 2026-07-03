@@ -8,6 +8,7 @@
 // Full audit trail for Reg 44, Reg 45, and internal QA.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
@@ -138,7 +139,7 @@ export function computeChildLensScore(childText: string): {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { source, sourceText, sourceRecordId, childName, childAge, childVersion, managementVersion, status } = body;
 
     if (!validateSource(source)) {

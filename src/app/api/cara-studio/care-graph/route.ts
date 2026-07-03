@@ -2,6 +2,7 @@
 // API: /api/cara-studio/care-graph — Care knowledge graph
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import {
   getChildKnowledgeGraph,
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     if (!body.child_id) {
       return NextResponse.json({ error: "child_id is required" }, { status: 400 });
     }

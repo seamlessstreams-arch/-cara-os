@@ -8,6 +8,7 @@
 // corresponding db collection name. Unknown slugs return 404.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { dal } from "@/lib/db/dal";
@@ -721,7 +722,7 @@ export async function POST(req: NextRequest, ctx: RouteContext) {
     const collection = resolveAccessor(slugKey);
     if (!collection) return notFound(slugKey);
 
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
     // If body has an id and the collection supports update, treat as upsert
     if (body.id && collection.update && collection.findById) {
@@ -764,7 +765,7 @@ export async function PUT(req: NextRequest, ctx: RouteContext) {
       return json({ error: `Collection "${slugKey}" does not support update` }, 405);
     }
 
-    const body = await req.json();
+    const __jb1 = await readJsonBody(req); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
     const { id, ...rest } = body;
 
     if (!id) {
@@ -793,7 +794,7 @@ export async function PATCH(req: NextRequest, ctx: RouteContext) {
     const collection = resolveAccessor(slugKey);
     if (!collection) return notFound(slugKey);
 
-    const body = await req.json();
+    const __jb2 = await readJsonBody(req); if (!__jb2.ok) return __jb2.response; const body = __jb2.data;
     const { id, ...data } = body;
 
     if (!id) {

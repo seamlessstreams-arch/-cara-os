@@ -5,6 +5,7 @@
 // Respects role permissions and organisation boundaries.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraEvidenceEngine } from "@/lib/cara/evidence/evidence-engine";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
@@ -14,7 +15,7 @@ const evidenceEngine = new CaraEvidenceEngine();
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
     if (!body.query || !body.userId || !body.userRole || !body.organisationId) {
       return NextResponse.json(

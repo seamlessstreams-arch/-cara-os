@@ -2,6 +2,7 @@
 //   GET  → deterministic plan from the store + today's calendar
 //   POST → same, plus ad-hoc items the manager pasted/dictated ({ notes })
 // An optional AI narrative sits on top; the plan stands alone without it.
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { getCalendarFeed } from "@/lib/calendar/calendar-service";
@@ -119,7 +120,7 @@ export async function GET() {
 export async function POST(req: Request) {
   let addedItems: PlanMyDayInput["addedItems"] = [];
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     if (typeof body?.notes === "string" && body.notes.trim()) {
       addedItems = parsePlanNotes(body.notes).map((p) => ({ title: p.title, time: p.time, duration_min: p.duration_min }));
     } else if (Array.isArray(body?.addedItems)) {

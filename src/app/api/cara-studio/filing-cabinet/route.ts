@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { fileCommittedArtifact, listFiledArtifacts, getFilingStructure } from "@/lib/cara-studio/filing-cabinet.service";
 
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { artifactId } = body;
 
     if (!artifactId) {

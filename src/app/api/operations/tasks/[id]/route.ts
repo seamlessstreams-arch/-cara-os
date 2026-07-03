@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -41,7 +42,7 @@ export async function PATCH(
   const { id } = await params;
 
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
     if (!isSupabaseEnabled()) {
       return NextResponse.json({ ok: true, persisted: false });
@@ -69,7 +70,7 @@ export async function POST(
   const { id } = await params;
 
   try {
-    const body = await request.json();
+    const __jb1 = await readJsonBody(request); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
     const { userId, content } = body;
 
     if (!userId || !content) {

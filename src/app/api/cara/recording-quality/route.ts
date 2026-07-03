@@ -5,6 +5,7 @@
 // GET  — Score a batch of recent recordings for a home/child
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { scoreRecordingQuality, scoreBatch, type RecordingInput } from "@/lib/cara/recording-quality";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
@@ -16,7 +17,7 @@ type SB = any;
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { content, entryType, moodScore, isSignificant, childName } = body;
 
     if (!content || typeof content !== "string") {

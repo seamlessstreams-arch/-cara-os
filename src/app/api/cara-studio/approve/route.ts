@@ -5,6 +5,7 @@
 // Statutory content requires Registered Manager sign-off.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { approvalRequestSchema } from "@/lib/cara-studio/schemas";
 import { getUserIdFromRequest, getUserRoleFromRequest } from "@/lib/auth-guard";
@@ -30,7 +31,7 @@ const STATUTORY_TYPES = [
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const userId = getUserIdFromRequest(req);
     const role = getUserRoleFromRequest(req);
     const homeId = process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";

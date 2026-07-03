@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { homeId, visitId, title, description, priority, assignedTo, dueDate, actorUserId } = body;
 
     if (!homeId || !visitId || !title) {
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const body = await request.json();
+    const __jb1 = await readJsonBody(request); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
     const { id, ...updates } = body as { id: string } & Partial<IntelligenceReg44ActionRow>;
     if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
 

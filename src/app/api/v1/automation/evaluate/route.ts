@@ -7,13 +7,14 @@
 
 export const dynamic = "force-dynamic";
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { evaluateRules } from "@/lib/automation/automation-engine";
 import type { AutomationTrigger } from "@/lib/automation/types";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { trigger, triggerData } = body as {
       trigger: AutomationTrigger;
       triggerData: Record<string, any>;

@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { homeId, templateCode, title, linked_child_id, linked_incident_id, due_date, metadata, initiated_by } = body;
 
     if (!homeId || !templateCode || !initiated_by) {

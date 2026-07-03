@@ -6,6 +6,7 @@
 // PUT  { sessionId, action }→ approve or record delivery
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import {
   generateSession,
@@ -38,7 +39,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { sessionType, childId, framework, tone, additionalContext, createdBy } = body;
 
     if (!sessionType) {
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb1 = await readJsonBody(req); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
     const { sessionId, action, approvedBy, deliveredBy, notes, followUpActions } = body;
 
     if (!sessionId) {

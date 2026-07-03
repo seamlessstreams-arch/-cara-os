@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { getStore, db } from "@/lib/db/store";
@@ -82,7 +83,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const store = getStore();
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     if (!body?.incident_id) {
       return NextResponse.json({ error: "incident_id is required" }, { status: 400 });
     }
@@ -165,7 +166,7 @@ export async function POST(req: NextRequest) {
  */
 export async function PATCH(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb1 = await readJsonBody(req); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
     if (!body?.id) return NextResponse.json({ error: "id is required" }, { status: 400 });
     const actor = String(req.headers.get("x-user-id") ?? body.updated_by ?? "staff_unknown");
     const now = new Date().toISOString();
