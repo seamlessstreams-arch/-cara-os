@@ -35,7 +35,9 @@ interface CheckTileProps extends React.ComponentProps<"div"> {
 }
 
 /** Calm check tile. `<CheckTile ok={r.building_security_checked} icon={Lock}
- * label="Building secured" value={r.building_security_checked ? "Yes" : "No"} />` */
+ * label="Building secured" value={r.building_security_checked ? "Yes" : "No"} />`
+ * Longer assessments pass prose as children — it renders muted below the value,
+ * so the state stays in the dot + value and the detail never shouts. */
 function CheckTile({
   ok,
   state,
@@ -43,6 +45,7 @@ function CheckTile({
   label,
   value,
   className,
+  children,
   ...props
 }: CheckTileProps) {
   const resolved: RowSeverity = state ?? (ok === undefined ? "neutral" : ok ? "success" : "risk");
@@ -62,6 +65,9 @@ function CheckTile({
         <span aria-hidden className={cn("h-1.5 w-1.5 rounded-full shrink-0", STATE_DOT[resolved])} />
         {value}
       </div>
+      {children && (
+        <div className="mt-1.5 text-xs text-[var(--cs-text-secondary)]">{children}</div>
+      )}
     </div>
   );
 }
