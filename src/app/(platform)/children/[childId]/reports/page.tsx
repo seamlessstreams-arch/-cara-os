@@ -171,7 +171,7 @@ export default function ChildReportsPage({
       <div className="space-y-3">
         {reports.map((report) => (
           <Link key={report.id} href={`/cara/reports/${report.id}`}>
-            <Card className="transition-shadow hover:shadow-md cursor-pointer mb-3">
+            <Card className="transition-shadow hover:bg-[var(--cs-surface)] cursor-pointer mb-3">
               <CardContent className="py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1 min-w-0">

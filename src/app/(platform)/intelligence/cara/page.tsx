@@ -271,7 +271,7 @@ export default function CaraHubPage() {
               const Icon = feature.icon;
               return (
                 <Link key={feature.href} href={feature.href} className="group">
-                  <Card className={cn("border transition-all hover:shadow-md hover:-translate-y-0.5", feature.border)}>
+                  <Card className={cn("border transition-all hover:bg-[var(--cs-surface)]", feature.border)}>
                     <CardContent className="p-4">
                       <div className="flex items-start gap-3">
                         <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", feature.bg)}>

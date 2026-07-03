@@ -327,7 +327,7 @@ export default function CaraDashboardPage() {
               <Link
                 key={report.id}
                 href={`/cara/reports/${report.id}`}
-                className="block rounded-xl border border-[var(--cs-border)] bg-white hover:shadow-md transition-all group"
+                className="block rounded-xl border border-[var(--cs-border)] bg-white hover:bg-[var(--cs-surface)] transition-all group"
               >
                 <div className="px-4 py-3.5">
                   <div className="flex items-start justify-between gap-3">
@@ -401,7 +401,7 @@ export default function CaraDashboardPage() {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Link href="/cara/reports/new">
-            <Card className="hover:shadow-md transition-all cursor-pointer group h-full">
+            <Card className="hover:bg-[var(--cs-surface)] transition-all cursor-pointer group h-full">
               <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
                 <div className="rounded-xl bg-[var(--cs-cara-gold-bg)] p-3">
                   <Plus className="h-5 w-5 text-[var(--cs-cara-gold)]" />
@@ -419,7 +419,7 @@ export default function CaraDashboardPage() {
           </Link>
 
           <Link href="/cara/reports">
-            <Card className="hover:shadow-md transition-all cursor-pointer group h-full">
+            <Card className="hover:bg-[var(--cs-surface)] transition-all cursor-pointer group h-full">
               <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
                 <div className="rounded-xl bg-blue-50 p-3">
                   <List className="h-5 w-5 text-blue-600" />
@@ -437,7 +437,7 @@ export default function CaraDashboardPage() {
           </Link>
 
           <Link href="/cara/reg45">
-            <Card className="hover:shadow-md transition-all cursor-pointer group h-full">
+            <Card className="hover:bg-[var(--cs-surface)] transition-all cursor-pointer group h-full">
               <CardContent className="pt-6 flex flex-col items-center text-center gap-3">
                 <div className="rounded-xl bg-violet-50 p-3">
                   <Scale className="h-5 w-5 text-violet-600" />

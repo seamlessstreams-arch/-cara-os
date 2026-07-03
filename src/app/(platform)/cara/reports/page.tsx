@@ -223,7 +223,7 @@ export default function CaraReportsListPage() {
             <Link
               key={report.id}
               href={`/cara/reports/${report.id}`}
-              className="block rounded-xl border border-[var(--cs-border)] bg-white hover:shadow-md transition-all group"
+              className="block rounded-xl border border-[var(--cs-border)] bg-white hover:bg-[var(--cs-surface)] transition-all group"
             >
               <div className="px-5 py-4">
                 <div className="flex items-start justify-between gap-4">

@@ -119,7 +119,7 @@ function EventRow({ item }: { item: KeyDateItem }) {
   return (
     <Link href={item.href} className="group">
       <div className={cn(
-        "flex items-start gap-3 rounded-2xl border bg-white p-4 transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer",
+        "flex items-start gap-3 rounded-2xl border bg-white p-4 transition-all hover:bg-[var(--cs-surface)] cursor-pointer",
         item.overdue ? "border-l-4 border-l-red-500" : "",
       )}>
         {/* Category icon */}

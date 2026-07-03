@@ -77,7 +77,7 @@ function FeatureCard({
 }) {
   return (
     <Link href={href} className="group">
-      <Card className="border border-[var(--cs-border-subtle)] transition-all hover:shadow-md hover:-translate-y-0.5 h-full">
+      <Card className="border border-[var(--cs-border-subtle)] transition-all hover:bg-[var(--cs-surface)] h-full">
         <CardContent className="p-4">
           <div className="flex items-start gap-3">
             <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", bg)}>

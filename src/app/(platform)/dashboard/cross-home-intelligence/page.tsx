@@ -657,7 +657,7 @@ function OverviewTab({
           <Card
             key={home.home_id}
             className={cn(
-              "transition-shadow hover:shadow-md",
+              "transition-shadow hover:bg-[var(--cs-surface)]",
               home.risk_level_overall === "high" && "border-red-200",
               home.risk_level_overall === "critical" && "border-red-400",
               home.risk_level_overall === "low" && "border-green-200",

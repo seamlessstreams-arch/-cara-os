@@ -552,7 +552,7 @@ function CareEventCard({ event, onAction }: {
   const categoryLabel = CARE_EVENT_CATEGORY_LABEL[event.category] ?? event.category;
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className="hover:bg-[var(--cs-surface)] transition-shadow">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">

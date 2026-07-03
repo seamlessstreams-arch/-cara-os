@@ -210,7 +210,7 @@ function KanbanCard({ candidate }: { candidate: CandidateDetail }) {
   return (
     <Link href={`/recruitment/candidates/${candidate.id}`}>
       <div className={cn(
-        "rounded-xl border bg-white border-l-4 p-3 space-y-2 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5",
+        "rounded-xl border bg-white border-l-4 p-3 space-y-2 cursor-pointer transition-all hover:bg-[var(--cs-surface)]",
         stageBorderColor(cardStatus)
       )}>
         <div className="flex items-start gap-2.5">

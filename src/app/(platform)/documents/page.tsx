@@ -96,7 +96,7 @@ function DocumentCard({
   const isExpired = doc.expiry_date && doc.expiry_date < todayStr();
 
   return (
-    <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 hover:shadow-md transition-all hover:-translate-y-0.5 space-y-3">
+    <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4 hover:bg-[var(--cs-surface)] transition-all space-y-3">
       <div className="flex items-start gap-3">
         <div className={cn("h-10 w-10 rounded-xl flex items-center justify-center shrink-0", colorClass)}>
           <Icon className="h-5 w-5" />

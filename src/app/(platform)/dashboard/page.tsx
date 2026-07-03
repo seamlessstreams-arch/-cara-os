@@ -595,7 +595,7 @@ function StatCard({
     return (
       <Link
         href={href}
-        className="block rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-5 transition-all hover:shadow-[var(--cs-shadow-card)] hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
+        className="block rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-5 transition-all hover:shadow-[var(--cs-shadow-card)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
       >
         {inner}
       </Link>

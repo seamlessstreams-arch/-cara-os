@@ -168,7 +168,7 @@ export default function LACReviewsPage() {
             const latest = cr[0];
             const pending = latest ? latest.actions_agreed.filter((a) => !a.completed).length : 0;
             return (
-              <Card key={c.id} className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => setChildFilter(childFilter === c.id ? "all" : c.id)}>
+              <Card key={c.id} className="cursor-pointer hover:bg-[var(--cs-surface)] transition-shadow" onClick={() => setChildFilter(childFilter === c.id ? "all" : c.id)}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-2">
                     <p className="font-semibold">{c.name}</p>

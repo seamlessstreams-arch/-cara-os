@@ -255,7 +255,7 @@ export default function CaraReg45Page() {
           </Card>
         )}
         {filtered.map((item) => (
-          <Card key={item.id} className="transition-shadow hover:shadow-md">
+          <Card key={item.id} className="transition-shadow hover:bg-[var(--cs-surface)]">
             <CardContent className="py-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">

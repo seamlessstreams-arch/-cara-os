@@ -119,7 +119,7 @@ function FormCard({ form, today, canApprove, onClick }: {
       onClick={onClick}
       onKeyDown={(e) => e.key === "Enter" && onClick()}
       className={cn(
-        "rounded-2xl border bg-white border-l-4 p-4 transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer group",
+        "rounded-2xl border bg-white border-l-4 p-4 transition-all hover:bg-[var(--cs-surface)] cursor-pointer group",
         prio.border,
         isOverdue && "ring-1 ring-red-200",
       )}

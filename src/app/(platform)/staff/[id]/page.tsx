@@ -565,7 +565,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                     tabIndex={0}
                     onClick={() => router.push(`/tasks/${t.id}`)}
                     onKeyDown={(e) => e.key === "Enter" && router.push(`/tasks/${t.id}`)}
-                    className="rounded-2xl border bg-white p-4 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group"
+                    className="rounded-2xl border bg-white p-4 hover:bg-[var(--cs-surface)] transition-all cursor-pointer group"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div>
@@ -623,7 +623,7 @@ export default function StaffProfilePage({ params }: { params: Promise<{ id: str
                     onClick={() => router.push("/learning/training-needs")}
                     onKeyDown={(e) => e.key === "Enter" && router.push("/learning/training-needs")}
                     className={cn(
-                      "rounded-2xl border bg-white p-4 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer group",
+                      "rounded-2xl border bg-white p-4 hover:bg-[var(--cs-surface)] transition-all cursor-pointer group",
                       n.priority === "urgent" ? "border-red-200" : n.priority === "high" ? "border-orange-200" : "border-[var(--cs-border-subtle)]"
                     )}
                   >

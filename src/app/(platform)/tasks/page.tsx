@@ -365,7 +365,7 @@ export default function TasksPage() {
                   onClick={() => router.push(`/tasks/${task.id}`)}
                   onKeyDown={(e) => e.key === "Enter" && router.push(`/tasks/${task.id}`)}
                   className={cn(
-                    "rounded-2xl border bg-white border-l-4 p-4 transition-all hover:shadow-md hover:-translate-y-0.5 cursor-pointer group",
+                    "rounded-2xl border bg-white border-l-4 p-4 transition-all hover:bg-[var(--cs-surface)] cursor-pointer group",
                     prio.border,
                     overdue && "ring-1 ring-red-200",
                     isComplete && "opacity-60",
@@ -502,7 +502,7 @@ export default function TasksPage() {
                           onClick={() => router.push(`/tasks/${task.id}`)}
                           onKeyDown={(e) => e.key === "Enter" && router.push(`/tasks/${task.id}`)}
                           className={cn(
-                            "rounded-xl border bg-white p-3 border-l-4 hover:shadow-md cursor-pointer transition-all",
+                            "rounded-xl border bg-white p-3 border-l-4 hover:bg-[var(--cs-surface)] cursor-pointer transition-all",
                             prio.border,
                             overdue && "ring-1 ring-red-200",
                           )}

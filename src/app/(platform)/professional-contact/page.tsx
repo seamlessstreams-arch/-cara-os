@@ -191,7 +191,7 @@ export default function ProfessionalContactPage() {
             const meta = CATEGORY_META[contact.category];
             const Icon = meta.icon;
             return (
-              <Card key={contact.id} className="hover:shadow-md transition-shadow">
+              <Card key={contact.id} className="hover:bg-[var(--cs-surface)] transition-shadow">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
