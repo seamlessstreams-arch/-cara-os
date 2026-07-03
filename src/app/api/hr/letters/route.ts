@@ -265,7 +265,7 @@ export async function GET(req: NextRequest) {
       .select("*")
       .eq("id", id)
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+    if (error) { console.error("[api] not-found:", error); return NextResponse.json({ error: "Not found." }, { status: 404 }); }
     return NextResponse.json({ data });
   }
   if (caseId) {
@@ -274,7 +274,7 @@ export async function GET(req: NextRequest) {
       .select("*")
       .eq("case_id", caseId)
       .order("created_at", { ascending: false });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
     return NextResponse.json({ data });
   }
 

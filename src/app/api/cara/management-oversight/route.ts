@@ -240,7 +240,7 @@ export async function GET(req: NextRequest) {
       .select("*, oversight_actions(*)")
       .eq("id", id)
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+    if (error) { console.error("[api] not-found:", error); return NextResponse.json({ error: "Not found." }, { status: 404 }); }
     return NextResponse.json({ data });
   }
 
@@ -250,7 +250,7 @@ export async function GET(req: NextRequest) {
       .select("*, oversight_actions(*)")
       .eq("record_id", recordId)
       .order("generated_at", { ascending: false });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
     return NextResponse.json({ data });
   }
 

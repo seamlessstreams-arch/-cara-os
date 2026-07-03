@@ -240,7 +240,7 @@ export async function PATCH(req: NextRequest) {
       .eq("id", recordId)
       .select()
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
     row = data as DbRow;
   } else if (staffId) {
     // Find existing or create new.
@@ -259,7 +259,7 @@ export async function PATCH(req: NextRequest) {
         .eq("id", (existing as DbRow).id)
         .select()
         .single();
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
       row = data as DbRow;
     } else {
       // Bootstrap a new record with whatever fields were supplied.
@@ -269,7 +269,7 @@ export async function PATCH(req: NextRequest) {
         .insert({ id, staff_id: staffId, ...updates })
         .select()
         .single();
-      if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+      if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
       row = data as DbRow;
     }
   }

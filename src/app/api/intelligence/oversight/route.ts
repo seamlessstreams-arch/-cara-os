@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   if (providerId) query = query.eq("provider_id", providerId);
 
   const { data, error } = await query.limit(50);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
 
   return NextResponse.json({ ok: true, summaries: data ?? [], persisted: true });
 }
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
 
     await writeIntelligenceAudit({
       homeId,

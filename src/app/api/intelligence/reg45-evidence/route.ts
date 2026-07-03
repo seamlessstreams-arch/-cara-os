@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   if (homeId) query = query.eq("home_id", homeId);
 
   const { data, error } = await query.limit(100);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
 
   return NextResponse.json({ ok: true, evidence: data ?? [], persisted: true });
 }

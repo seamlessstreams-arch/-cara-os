@@ -209,7 +209,7 @@ export async function GET(req: NextRequest) {
       .select("*, hr_case_actions(*), hr_case_chronology(*)")
       .eq("id", id)
       .single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 404 });
+    if (error) { console.error("[api] not-found:", error); return NextResponse.json({ error: "Not found." }, { status: 404 }); }
 
     const access = checkHrAccess(
       { role: actorRole, userId: actorUserId },
@@ -254,7 +254,7 @@ export async function GET(req: NextRequest) {
       .select("id, case_type, status, risk_level, safeguarding_status, opened_at, closed_at")
       .eq("staff_id", staffId)
       .order("opened_at", { ascending: false });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
     return NextResponse.json({ data });
   }
 
@@ -264,7 +264,7 @@ export async function GET(req: NextRequest) {
       .select("id, staff_id, case_type, status, risk_level, safeguarding_status, opened_at, closed_at")
       .eq("home_id", homeId)
       .order("opened_at", { ascending: false });
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
     return NextResponse.json({ data });
   }
 
