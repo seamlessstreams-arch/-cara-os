@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, todayStr } from "@/lib/utils";
 import { useAsbestosRecords } from "@/hooks/use-asbestos-records";
@@ -44,12 +45,19 @@ const surveyTypeColour: Record<string, string> = {
   removal_record: "bg-emerald-100 text-emerald-800 border-emerald-200",
 };
 
-const conditionColour: Record<string, string> = {
-  no_acm_identified: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
-  good_condition_sealed: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
-  minor_damage_encapsulated: "bg-orange-100 text-orange-900 border-orange-200",
-  significant_damage_action_required: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
-  removed: "bg-slate-100 text-[var(--cs-navy)] border-[var(--cs-border)]",
+const CONDITION_ROW: Record<string, RowSeverity> = {
+  no_acm_identified: "success",
+  good_condition_sealed: "warning",
+  minor_damage_encapsulated: "warning",
+  significant_damage_action_required: "risk",
+  removed: "neutral",
+};
+const CONDITION_TEXT: Record<string, string> = {
+  no_acm_identified: "text-[--cs-success]",
+  good_condition_sealed: "text-[--cs-warning]",
+  minor_damage_encapsulated: "text-orange-800",
+  significant_damage_action_required: "text-[--cs-risk]",
+  removed: "text-[var(--cs-text-secondary)]",
 };
 
 const exportCols: ExportColumn<AsbestosRecord>[] = [
@@ -223,39 +231,42 @@ export default function BuildingAsbestosRegisterPage() {
         </Select>
       </div>
 
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((r) => {
           const isOpen = expandedId === r.id;
           const inspectionSoon = r.next_inspection_due && r.next_inspection_due >= today && r.next_inspection_due <= sixtyDaysFromNow;
           const inspectionOverdue = r.next_inspection_due && r.next_inspection_due < today;
+          const rowSev: RowSeverity = inspectionOverdue ? "risk" : (CONDITION_ROW[r.condition_rating] ?? "neutral");
           return (
-            <div key={r.id} className="rounded-lg border border-[var(--cs-border)] bg-white overflow-hidden">
-              <button
+            <div key={r.id}>
+              <FlatListRow
+                severity={rowSev}
+                className="justify-between gap-3"
                 onClick={() => setExpandedId(isOpen ? null : r.id)}
-                className="w-full p-4 flex items-start justify-between gap-3 hover:bg-[--cs-warning-bg] text-left"
+                aria-expanded={isOpen}
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <Shield className="h-4 w-4 text-[--cs-warning]" />
+                    <Shield className="h-4 w-4 text-muted-foreground" />
                     <span className="font-semibold text-[var(--cs-navy)]">{r.survey_date}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", surveyTypeColour[r.survey_type])}>
                       {ASBESTOS_SURVEY_TYPE_LABEL[r.survey_type]}
                     </span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", conditionColour[r.condition_rating])}>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", CONDITION_TEXT[r.condition_rating])}>
                       {ASBESTOS_CONDITION_RATING_LABEL[r.condition_rating]}
                     </span>
                     {r.acm_identified ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">ACM present</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">ACM present</span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]">No ACM</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">No ACM</span>
                     )}
                     {r.next_inspection_due ? (
                       inspectionOverdue ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]">Inspection overdue · {r.next_inspection_due}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Inspection overdue · {r.next_inspection_due}</span>
                       ) : inspectionSoon ? (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">Next inspection {r.next_inspection_due}</span>
+                        <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Next inspection {r.next_inspection_due}</span>
                       ) : (
-                        <span className="text-xs px-2 py-0.5 rounded-full border bg-sky-100 text-sky-800 border-sky-200">Next inspection {r.next_inspection_due}</span>
+                        <span className="text-xs text-muted-foreground">Next inspection {r.next_inspection_due}</span>
                       )
                     ) : null}
                   </div>
@@ -263,10 +274,10 @@ export default function BuildingAsbestosRegisterPage() {
                     {r.building_area.length > 110 ? `${r.building_area.slice(0, 110)}…` : r.building_area}
                   </div>
                 </div>
-                {isOpen ? <ChevronUp className="h-5 w-5 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)]" />}
-              </button>
+                {isOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
+              </FlatListRow>
               {isOpen && (
-                <div className="px-4 pb-4 border-t border-[var(--cs-border-subtle)] bg-[--cs-warning-bg]">
+                <FlatListRowDetail>
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Surveyor</div>
@@ -367,12 +378,12 @@ export default function BuildingAsbestosRegisterPage() {
                       Recorded by {getStaffName(r.recorded_by)}
                     </div>
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-6 rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-4 text-sm text-[--cs-warning]">
         <div className="font-semibold mb-1">Regulatory framework</div>

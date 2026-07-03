@@ -25,6 +25,7 @@ import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton }  from "@/components/ui/print-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge }        from "@/components/ui/badge";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { cn }           from "@/lib/utils";
 import { getStaffName } from "@/lib/seed-data";
 import { useReg40StaffEntries } from "@/hooks/use-reg40-staff-entries";
@@ -37,16 +38,16 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 /* ── local config ─────────────────────────────────────────────────────── */
 
 const STATUS_META: Record<Reg40QualStatus, { colour: string; icon: typeof CheckCircle2 }> = {
-  complete:     { colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
-  in_progress:  { colour: "bg-blue-100 text-blue-700",    icon: Clock },
-  current:      { colour: "bg-green-100 text-green-700",  icon: CheckCircle2 },
-  due_renewal:  { colour: "bg-amber-100 text-amber-700",  icon: AlertTriangle },
+  complete:     { colour: "bg-[--cs-success-bg] text-[--cs-success]",  icon: CheckCircle2 },
+  in_progress:  { colour: "bg-[--cs-info-bg] text-[--cs-info]",    icon: Clock },
+  current:      { colour: "bg-[--cs-success-bg] text-[--cs-success]",  icon: CheckCircle2 },
+  due_renewal:  { colour: "bg-[--cs-warning-bg] text-[--cs-warning]",  icon: AlertTriangle },
 };
 
 const SEVERITY_META: Record<string, { colour: string }> = {
-  high:   { colour: "bg-red-100 text-red-700 border-red-200" },
-  medium: { colour: "bg-amber-100 text-amber-700 border-amber-200" },
-  low:    { colour: "bg-green-100 text-green-700 border-green-200" },
+  high:   { colour: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]" },
+  medium: { colour: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]" },
+  low:    { colour: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" },
 };
 
 /* ── reference data (kept local — not dynamic records) ─────────────── */
@@ -213,7 +214,7 @@ export default function Reg40StaffingPlanPage() {
             </span>
             <span className={cn(
               "font-bold tabular-nums",
-              stats.level3Pct >= 80 ? "text-green-600" : stats.level3Pct >= 60 ? "text-amber-600" : "text-red-600",
+              stats.level3Pct >= 80 ? "text-[--cs-success]" : stats.level3Pct >= 60 ? "text-[--cs-warning]" : "text-[--cs-risk]",
             )}>
               {stats.level3Pct}%
             </span>
@@ -297,9 +298,9 @@ export default function Reg40StaffingPlanPage() {
                       <td className="py-2 px-4 text-center text-sm font-medium">{row.current}</td>
                       <td className="py-2 px-4 text-center">
                         {row.adequate ? (
-                          <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
+                          <CheckCircle2 className="h-4 w-4 text-[--cs-success] mx-auto" />
                         ) : (
-                          <XCircle className="h-4 w-4 text-red-600 mx-auto" />
+                          <XCircle className="h-4 w-4 text-[--cs-risk] mx-auto" />
                         )}
                       </td>
                       <td className="py-2 px-4 text-xs text-muted-foreground">{row.note || "—"}</td>
@@ -391,43 +392,42 @@ export default function Reg40StaffingPlanPage() {
 
         {/* ── expandable staff cards ─────────────────────────────────────── */}
 
+        <FlatList>
         {filtered.map((staff) => {
           const name = getStaffName(staff.staff_id);
           const completeCount = staff.qualifications.filter((q) => q.status === "complete" || q.status === "current").length;
           const totalQuals = staff.qualifications.length;
           const pct = totalQuals > 0 ? Math.round((completeCount / totalQuals) * 100) : 0;
           const hasIssues = staff.qualifications.some((q) => q.status === "in_progress" || q.status === "due_renewal");
+          const rowSev: RowSeverity = pct === 100 ? "success" : pct >= 75 ? "warning" : "risk";
 
           return (
-            <div key={staff.id} className={cn(
-              "rounded-lg border bg-white overflow-hidden",
-              staff.qualifications.some((q) => q.status === "due_renewal") ? "border-amber-200" : "",
-            )}>
-              <button onClick={() => setExpandedId(expandedId === staff.id ? null : staff.id)} className="w-full flex items-center justify-between p-4 hover:bg-gray-50">
+            <div key={staff.id}>
+              <FlatListRow severity={rowSev} className="items-center justify-between" onClick={() => setExpandedId(expandedId === staff.id ? null : staff.id)} aria-expanded={expandedId === staff.id}>
                 <div className="flex items-center gap-3">
-                  <GraduationCap className={cn("h-5 w-5", pct === 100 ? "text-green-600" : pct >= 75 ? "text-amber-500" : "text-red-500")} />
+                  <GraduationCap className="h-5 w-5 text-muted-foreground" />
                   <div className="text-left">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold">{name}</h3>
                       <span className="text-xs text-muted-foreground">{staff.role}</span>
-                      {pct === 100 && <Badge className="text-[10px] h-5 bg-green-100 text-green-700">Fully Qualified</Badge>}
-                      {hasIssues && pct < 100 && <Badge className="text-[10px] h-5 bg-amber-100 text-amber-700">Gaps</Badge>}
+                      {pct === 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-success]">Fully Qualified</span>}
+                      {hasIssues && pct < 100 && <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Gaps</span>}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {completeCount}/{totalQuals} qualifications complete · {staff.contract_hours}h/week · {staff.shift_pattern}
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                   <div className="w-24 h-2 rounded-full bg-gray-100 overflow-hidden hidden sm:block">
                     <div className={cn("h-full rounded-full", pct === 100 ? "bg-green-400" : pct >= 75 ? "bg-amber-400" : "bg-red-400")} style={{ width: `${pct}%` }} />
                   </div>
-                  {expandedId === staff.id ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                  {expandedId === staff.id ? <ChevronUp className="h-5 w-5 text-muted-foreground" /> : <ChevronDown className="h-5 w-5 text-muted-foreground" />}
                 </div>
-              </button>
+              </FlatListRow>
 
               {expandedId === staff.id && (
-                <div className="border-t p-4 space-y-3">
+                <FlatListRowDetail className="space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                     <div className="rounded border p-2">
                       <p className="text-muted-foreground font-medium">Contract</p>
@@ -451,13 +451,13 @@ export default function Reg40StaffingPlanPage() {
                       return (
                         <div key={i} className={cn(
                           "flex items-center justify-between rounded border p-2.5",
-                          qual.status === "due_renewal" ? "border-amber-200 bg-amber-50" : "",
+                          qual.status === "due_renewal" ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "",
                         )}>
                           <div className="flex items-center gap-2">
                             <Icon className={cn("h-4 w-4",
-                              qual.status === "complete" || qual.status === "current" ? "text-green-600" :
-                              qual.status === "in_progress" ? "text-blue-600" :
-                              "text-amber-600"
+                              qual.status === "complete" || qual.status === "current" ? "text-[--cs-success]" :
+                              qual.status === "in_progress" ? "text-[--cs-info]" :
+                              "text-[--cs-warning]"
                             )} />
                             <span className="text-sm">{qual.name}</span>
                           </div>
@@ -475,11 +475,12 @@ export default function Reg40StaffingPlanPage() {
                       First Aid certificate expires: <span className="font-medium">{staff.first_aid_expiry}</span>
                     </div>
                   )}
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
+        </FlatList>
 
         {/* ── regulatory note ────────────────────────────────────────────── */}
 

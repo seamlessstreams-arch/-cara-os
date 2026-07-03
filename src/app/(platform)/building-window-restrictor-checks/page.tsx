@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
+import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, todayStr } from "@/lib/utils";
 import { useWindowChecks } from "@/hooks/use-window-checks";
@@ -36,11 +37,11 @@ import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
-const outcomeColour: Record<string, string> = {
-  pass: "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]",
-  pass_with_advisory: "bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]",
-  remedial_required: "bg-orange-100 text-orange-900 border-orange-200",
-  failed_restrict_immediately: "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]",
+const OUTCOME_TEXT: Record<string, string> = {
+  pass: "text-[--cs-success]",
+  pass_with_advisory: "text-[--cs-warning]",
+  remedial_required: "text-orange-800",
+  failed_restrict_immediately: "text-[--cs-risk]",
 };
 
 const restrictorColour: Record<string, string> = {
@@ -179,42 +180,46 @@ export default function BuildingWindowRestrictorChecksPage() {
         </Select>
       </div>
 
-      <div className="space-y-3">
+      <FlatList>
         {filtered.map((r) => {
           const isOpen = expandedId === r.id;
           const failed = r.outcome === "failed_restrict_immediately";
           const dueSoon = r.next_due_date >= today && r.next_due_date <= thirtyDaysFromNow;
           const overdue = r.next_due_date < today;
+          const rowSev: RowSeverity =
+            failed || overdue || !r.opening_compliance_with_100mm_rule ? "risk"
+            : r.outcome === "remedial_required" || r.outcome === "pass_with_advisory" || dueSoon ? "warning"
+            : "success";
           return (
-            <div key={r.id} className={cn("rounded-lg border bg-white overflow-hidden", failed ? "border-[--cs-risk-soft] ring-1 ring-[--cs-risk-soft]" : "border-[var(--cs-border)]")}>
-              <button onClick={() => setExpandedId(isOpen ? null : r.id)} className={cn("w-full p-4 flex items-start justify-between gap-3 text-left", failed ? "hover:bg-[--cs-risk-bg]/40" : "hover:bg-sky-50/40")}>
+            <div key={r.id}>
+              <FlatListRow severity={rowSev} className="justify-between gap-3" onClick={() => setExpandedId(isOpen ? null : r.id)} aria-expanded={isOpen}>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                    {failed ? <AlertTriangle className="h-4 w-4 text-[--cs-risk]" /> : <ShieldCheck className="h-4 w-4 text-sky-600" />}
+                    {failed ? <AlertTriangle className="h-4 w-4 text-[--cs-risk]" /> : <ShieldCheck className="h-4 w-4 text-muted-foreground" />}
                     <span className="font-semibold text-[var(--cs-navy)]">{r.inspection_date}</span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", outcomeColour[r.outcome])}>{WINDOW_CHECK_OUTCOME_LABEL[r.outcome]}</span>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", OUTCOME_TEXT[r.outcome])}>{WINDOW_CHECK_OUTCOME_LABEL[r.outcome]}</span>
                     <span className={cn("text-xs px-2 py-0.5 rounded-full border", restrictorColour[r.restrictor_type])}>{RESTRICTOR_TYPE_LABEL[r.restrictor_type]}</span>
-                    <span className={cn("text-xs px-2 py-0.5 rounded-full border", r.opening_compliance_with_100mm_rule ? "bg-[--cs-success-bg] text-[--cs-success] border-[--cs-success-soft]" : "bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]")}>
+                    <span className={cn("text-[11px] font-semibold uppercase tracking-wide", r.opening_compliance_with_100mm_rule ? "text-[--cs-success]" : "text-[--cs-risk]")}>
                       Opening {r.opening_maximum_cm.toFixed(1)} cm
                     </span>
                     {r.child_aware ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-teal-100 text-teal-800 border-teal-200">Child aware</span>
+                      <span className="text-xs text-muted-foreground">Child aware</span>
                     ) : (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">Child not yet briefed</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Child not yet briefed</span>
                     )}
                     {overdue ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-risk-bg] text-[--cs-risk] border-[--cs-risk-soft]">Re-check overdue · {r.next_due_date}</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-risk]">Re-check overdue · {r.next_due_date}</span>
                     ) : dueSoon ? (
-                      <span className="text-xs px-2 py-0.5 rounded-full border bg-[--cs-warning-bg] text-[--cs-warning] border-[--cs-warning-soft]">Re-check {r.next_due_date}</span>
+                      <span className="text-[11px] font-semibold uppercase tracking-wide text-[--cs-warning]">Re-check {r.next_due_date}</span>
                     ) : null}
                   </div>
                   <div className="text-sm text-[var(--cs-text-secondary)]">{r.window_location} · {WINDOW_TYPE_LABEL[r.window_type]} · {WINDOW_FLOOR_LEVEL_LABEL[r.floor_level]} floor</div>
                 </div>
-                {isOpen ? <ChevronUp className="h-5 w-5 text-[var(--cs-text-muted)]" /> : <ChevronDown className="h-5 w-5 text-[var(--cs-text-muted)]" />}
-              </button>
+                {isOpen ? <ChevronUp className="h-5 w-5 text-muted-foreground shrink-0" /> : <ChevronDown className="h-5 w-5 text-muted-foreground shrink-0" />}
+              </FlatListRow>
               {isOpen && (
-                <div className={cn("px-4 pb-4 border-t", failed ? "border-[--cs-risk-soft] bg-[--cs-risk-bg]" : "border-[var(--cs-border-subtle)] bg-sky-50/20")}>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-4">
+                <FlatListRowDetail>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1">
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3 lg:col-span-2">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Inspection details</div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm text-[var(--cs-text-secondary)]">
@@ -306,12 +311,12 @@ export default function BuildingWindowRestrictorChecksPage() {
                       Inspected by {getStaffName(r.inspected_by)}
                     </div>
                   </div>
-                </div>
+                </FlatListRowDetail>
               )}
             </div>
           );
         })}
-      </div>
+      </FlatList>
 
       <div className="mt-6 rounded-lg border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
         <div className="font-semibold mb-1">Regulatory framework</div>
