@@ -5,6 +5,7 @@ import { Info } from "lucide-react";
 import { PageShell } from "@/components/layout/page-shell";
 import { CommsCentre } from "@/components/comms/comms-centre";
 import { StaffTrustNoticePanel } from "@/components/comms/staff-trust-notice-panel";
+import { SensitiveSurface } from "@/components/security/capture-deterrence";
 import { useTrustNotice } from "@/hooks/use-comms";
 
 export default function CommsCentrePage() {
@@ -37,7 +38,9 @@ export default function CommsCentrePage() {
           <StaffTrustNoticePanel compact />
         </div>
       ) : (
-        <CommsCentre />
+        <SensitiveSurface>
+          <CommsCentre />
+        </SensitiveSurface>
       )}
     </PageShell>
   );

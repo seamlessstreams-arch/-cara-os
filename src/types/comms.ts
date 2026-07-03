@@ -169,7 +169,7 @@ export interface StaffTrustNoticeAck {
 }
 
 /** The current Staff Trust Notice version — bump to require re-acknowledgement. */
-export const STAFF_TRUST_NOTICE_VERSION = "2026-06-v1";
+export const STAFF_TRUST_NOTICE_VERSION = "2026-07-v2";
 
 // ── Enriched read shapes (returned by the API) ────────────────────────────────
 
