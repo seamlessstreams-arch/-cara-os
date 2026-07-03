@@ -7,6 +7,7 @@
 // Body: { outputId, commandId, rating, note?, tags? }
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
@@ -30,7 +31,7 @@ export function sanitiseNote(note: unknown): string | null {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { outputId, commandId, rating, note, tags } = body;
 
     // Validate required fields

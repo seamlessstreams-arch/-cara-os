@@ -2,6 +2,7 @@
 // API: /api/cara-studio/safeguarding-patterns — Safeguarding pattern engine
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { scanSafeguardingPatterns, listSafeguardingPatterns } from "@/lib/cara-studio/safeguarding-patterns.service";
 
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const patterns = await scanSafeguardingPatterns(hId(), body.child_id);
     return NextResponse.json({ data: patterns }, { status: 201 });
   } catch (err) {

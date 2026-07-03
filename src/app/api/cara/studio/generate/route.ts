@@ -4,6 +4,7 @@
 // Creates child-centred session plans, therapeutic activities, and resources.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraStudioEngine } from "@/lib/cara/studio/studio-engine";
 import { CaraAuditLogger } from "@/lib/cara/audit/audit-logger";
@@ -15,7 +16,7 @@ const auditLogger = new CaraAuditLogger();
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
     if (!body.type || !body.childId || !body.userId || !body.userRole || !body.organisationId || !body.homeId) {
       return NextResponse.json(

@@ -5,6 +5,7 @@
 // Useful for UI to preview routing before committing.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraModelRouter } from "@/lib/cara/router/model-router";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
@@ -14,7 +15,7 @@ const router = new CaraModelRouter();
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
     if (!body.taskType || !body.prompt || !body.userId || !body.userRole || !body.organisationId) {
       return NextResponse.json(

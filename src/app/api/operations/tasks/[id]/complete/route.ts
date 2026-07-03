@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 import { completeTask, signOffTask } from "@/lib/services/task-service";
@@ -9,7 +10,7 @@ export async function POST(
   const { id } = await params;
 
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { userId, evidenceNote, action } = body;
 
     if (!userId) {

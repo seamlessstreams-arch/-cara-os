@@ -2,6 +2,7 @@
 // API: /api/cara-studio/artifacts/[id] — Get, update, workflow, delete
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { getUserIdFromRequest } from "@/lib/auth-guard";
@@ -46,7 +47,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const userId = getUserIdFromRequest(req);
     const sb = createServerClient();
 

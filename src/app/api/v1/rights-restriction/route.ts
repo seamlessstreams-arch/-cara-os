@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { getStore, db } from "@/lib/db/store";
 import { getRequestIdentity, assertHomeAccess } from "@/lib/auth-guard";
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
   try {
     const identity = await getRequestIdentity(req);
     if (identity instanceof NextResponse) return identity; // 401 in activated mode without a session
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     if (!body?.child_id || !str(body.restriction_description).trim() || !str(body.reason).trim()) {
       return NextResponse.json(
         { error: "child_id, restriction_description and reason are required" },

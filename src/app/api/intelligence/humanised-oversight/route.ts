@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { generateHumanisedOversight } from "@/lib/intelligence/humanised-oversight";
 import { writeIntelligenceAudit } from "@/lib/intelligence/audit";
@@ -5,7 +6,7 @@ import type { HumanisedOversightInput } from "@/types/intelligence.layer";
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { recordType, recordId, recordSummary, childName, context, actorUserId, actorRole, homeId } = body as
       HumanisedOversightInput & { actorUserId?: string; actorRole?: string; homeId?: string };
 

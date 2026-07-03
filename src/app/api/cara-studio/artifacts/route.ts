@@ -2,6 +2,7 @@
 // API: /api/cara-studio/artifacts — List and create artifacts
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { getUserIdFromRequest } from "@/lib/auth-guard";
@@ -51,7 +52,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const sb = createServerClient();
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const userId = getUserIdFromRequest(req);
 
     if (!body.title || !body.artifact_type) {

@@ -4,6 +4,7 @@
 // Reviews records for quality, identifies gaps, and generates QA feedback.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { CaraQualityAssuranceEngine } from "@/lib/cara/qa/qa-engine";
 import { sanitiseErrorForClient } from "@/lib/cara/core/errors";
@@ -13,7 +14,7 @@ const qaEngine = new CaraQualityAssuranceEngine();
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
     if (!body.recordId || !body.recordType || !body.recordContent || !body.userId || !body.userRole || !body.organisationId || !body.homeId) {
       return NextResponse.json(

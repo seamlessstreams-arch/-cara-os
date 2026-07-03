@@ -5,6 +5,7 @@
 // POST → accepts custom RiScoreInputs for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextResponse } from "next/server";
 import { computeRiScores } from "@/lib/ri/compute-scores";
 import type { RiScoreInputs } from "@/lib/ri/compute-scores";
@@ -436,7 +437,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
     // Validate required fields
     const requiredArrays = [

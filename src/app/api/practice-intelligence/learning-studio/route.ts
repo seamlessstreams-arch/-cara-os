@@ -6,6 +6,7 @@
 // PUT  { resourceId, action }→ publish resource
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import {
   generateLearningResource,
@@ -37,7 +38,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { resourceType, topic, framework, tone, targetAudience, readingLevel, additionalContext, createdBy } = body;
 
     if (!resourceType || !topic) {
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb1 = await readJsonBody(req); if (!__jb1.ok) return __jb1.response; const body = __jb1.data;
     const { resourceId, action } = body;
 
     if (!resourceId) {

@@ -5,6 +5,7 @@
 // POST — Analyse patterns from provided event data (for testing/preview)
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { analysePatterns, type TimelineEvent } from "@/lib/cara/pattern-detection";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
@@ -161,7 +162,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { events, childId, days } = body;
 
     if (!events || !Array.isArray(events) || events.length === 0) {

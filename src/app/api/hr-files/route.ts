@@ -5,6 +5,7 @@
 // POST -> accepts custom data for any home
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextResponse } from "next/server";
 import {
   calculateWorkforceMetrics,
@@ -249,7 +250,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { staff, establishedPosts, leaversInPeriod, now } = body;
 
     if (!staff || !Array.isArray(staff) || typeof establishedPosts !== "number") {

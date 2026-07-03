@@ -1,3 +1,4 @@
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
@@ -25,7 +26,7 @@ async function patchEpisode(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const body = await req.json();
+  const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
 
   const existing = db.missingEpisodes.findById(id);
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });

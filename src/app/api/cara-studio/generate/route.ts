@@ -5,6 +5,7 @@
 // Cara drafts. Humans decide. Only authorised humans approve and commit.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { generate } from "@/lib/cara-studio/generator";
 import { generateRequestSchema } from "@/lib/cara-studio/schemas";
@@ -69,7 +70,7 @@ function resolveGenerationType(raw: unknown): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const rawBody = await req.json();
+    const __jb0 = await readJsonBody(req); if (!__jb0.ok) return __jb0.response; const rawBody = __jb0.data;
     const userId = getUserIdFromRequest(req);
     const role = getUserRoleFromRequest(req);
     void role;
