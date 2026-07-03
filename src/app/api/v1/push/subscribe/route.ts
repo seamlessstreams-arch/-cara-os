@@ -8,13 +8,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { isPushConfigured } from "@/lib/push/web-push";
+import { getRequestIdentity } from "@/lib/auth-guard";
 
 export const dynamic = "force-dynamic";
-
-const DEFAULT_USER = "staff_darren";
-function userId(req: NextRequest): string {
-  return req.headers.get("x-user-id") || DEFAULT_USER;
-}
 
 export async function GET() {
   return NextResponse.json({
@@ -24,12 +20,16 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // A device may only register a subscription for the authenticated user —
+  // the recipient comes from the session (activated mode), never a client header.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
   const sub = await req.json().catch(() => null);
   if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
     return NextResponse.json({ error: "Invalid subscription" }, { status: 400 });
   }
   const rec = db.pushSubscriptions.upsert({
-    recipient_id: userId(req),
+    recipient_id: identity.userId,
     endpoint: sub.endpoint,
     keys: { p256dh: sub.keys.p256dh, auth: sub.keys.auth },
   });

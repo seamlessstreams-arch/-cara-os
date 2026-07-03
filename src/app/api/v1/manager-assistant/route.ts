@@ -13,8 +13,9 @@
 
 export const dynamic = "force-dynamic";
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import {
@@ -52,9 +53,13 @@ export async function GET() {
   });
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  // Authenticate: identity from the session in activated mode (401 if none),
+  // header in demo. The audit trail is keyed on this, never a client header.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+  const user_id = identity.userId;
   const body = (await req.json().catch(() => ({}))) as any;
-  const user_id = req.headers.get("x-user-id")?.trim() || "staff_darren";
   const store = getStore() as any;
   const employer: EmployerValuesProfile | null = (store.employerValuesProfiles ?? [])[0] ?? null;
   const tool = String(body.tool ?? "");

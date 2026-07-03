@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { getRequestIdentity } from "@/lib/auth-guard";
 import { todayStr, daysFromNow } from "@/lib/utils";
 
 export interface StaffHandoverContext {
@@ -138,6 +139,11 @@ function buildCaraSummary(
 
 // GET /api/v1/handover/staff-context?staff_ids=staff_anna,staff_mirela
 export async function GET(req: NextRequest) {
+  // Authenticate: a valid session is required in activated mode (401 if none),
+  // header in demo. Closes unauthenticated enumeration of staff operational context.
+  const identity = await getRequestIdentity(req);
+  if (identity instanceof NextResponse) return identity;
+
   const { searchParams } = new URL(req.url);
   const staffIdsParam = searchParams.get("staff_ids") || "";
   const staffIds = staffIdsParam.split(",").filter(Boolean);
