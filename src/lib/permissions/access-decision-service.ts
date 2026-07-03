@@ -57,7 +57,29 @@ export interface AccessCheckRequest {
 
 // ── Main Decision Function ──────────────────────────────────────────────────
 
+/** Child/staff-confidential record types where EVERY allowed access (incl. a
+ * routine role-based view) must be logged — insider-threat detection + the
+ * Ofsted ILACS "who accessed this child's record, when" trail. */
+const AUDIT_ON_ACCESS: ReadonlySet<ResourceType> = new Set<ResourceType>([
+  "child_record", "safeguarding", "incident", "medication",
+  "missing_episode", "physical_intervention", "daily_log", "hr_file",
+]);
+
+/**
+ * Access decision + regulatory audit-on-view. The inner computation decides
+ * allow/deny + grant source; this wrapper additionally forces auditEventRequired
+ * for any ALLOWED access to a confidential record, so legitimate views leave a
+ * trail (the inner rule only audited exceptional grants — an insider-threat gap).
+ */
 export function checkAccess(req: AccessCheckRequest): AccessDecision {
+  const decision = computeAccessDecision(req);
+  if (decision.allowed && AUDIT_ON_ACCESS.has(req.resourceType)) {
+    return { ...decision, auditEventRequired: true };
+  }
+  return decision;
+}
+
+function computeAccessDecision(req: AccessCheckRequest): AccessDecision {
   const { user, resourceType, action } = req;
   const now = req.now ? new Date(req.now) : new Date();
 

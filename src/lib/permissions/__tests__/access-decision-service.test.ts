@@ -755,4 +755,20 @@ describe("AccessDecision metadata", () => {
     const result = checkAccess({ user: rsw, resourceType: "dashboard", action: "view" });
     expect(result.auditEventRequired).toBe(false);
   });
+
+  it("requires audit for a normal role-based VIEW of a child record (audit-on-view)", () => {
+    const mgr = makeManager();
+    const result = checkAccess({ user: mgr, resourceType: "child_record", action: "view" });
+    expect(result.allowed).toBe(true);
+    expect(result.grantSource).toBe("role"); // routine allow, not an exceptional grant
+    expect(result.auditEventRequired).toBe(true); // ...yet still logged
+  });
+
+  it("audit-on-view covers the other confidential record types", () => {
+    const mgr = makeManager();
+    for (const rt of ["safeguarding", "incident", "medication", "daily_log"] as const) {
+      const result = checkAccess({ user: mgr, resourceType: rt, action: "view" });
+      if (result.allowed) expect(result.auditEventRequired).toBe(true);
+    }
+  });
 });
