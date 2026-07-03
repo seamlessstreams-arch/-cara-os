@@ -204,20 +204,63 @@ export function classifyBehaviourCategory(entry: BehaviourEntryInput): Behaviour
   if (entry.direction === "positive") return "positive";
 
   const text = (entry.behaviour + " " + entry.title + " " + entry.antecedent).toLowerCase();
+  const has = (re: RegExp) => re.test(text);
 
-  if (text.includes("self-harm") || text.includes("self harm") || /\b(cut|cuts|cutting)\b/i.test(text) || text.includes("scratch")) {
+  // Word-boundary + idiom-guarded matching. Bare `.includes()` previously misfired on
+  // substrings and idioms — "from scratch"→self-harm, "panic attack"→aggression, "broke
+  // down in tears"/"threw up"→property damage, "smashing day"→property damage, an "assault
+  // course" trip→aggression. Each guard only removes a false positive; every genuine signal
+  // the old substring matched (scratched, kicked, smashed, …) is preserved. Verified against
+  // a false/true-positive matrix in node. See project_keyword_matching_bugs.
+
+  // self-harm — scratch-family, but not the idiom "from scratch"
+  if (
+    has(/\bself[-\s]?harm/) ||
+    has(/\b(cut|cuts|cutting)\b/) ||
+    (has(/\bscratch(ed|ing|es)?\b/) && !has(/\bfrom scratch\b/))
+  ) {
     return "self_harm";
   }
-  if (text.includes("abscond") || text.includes("ran away") || text.includes("left without")) {
+  // absconding — safeguarding-critical, so keep broad recall; only drop "left without <object>"
+  if (
+    has(/\babscond/) ||
+    has(/\bran away\b/) ||
+    (has(/\bleft without\b/) &&
+      !has(/\bleft without\s+(his|her|their|my|the|a|an|any)?\s*(coat|jacket|shoes|bag|breakfast|lunch|dinner|tea|food|eating|drink|phone|money|homework|belongings|umbrella)\b/))
+  ) {
     return "absconding";
   }
-  if (/\b(hit|hits|hitting)\b/i.test(text) || text.includes("kick") || text.includes("punch") || text.includes("assault") || text.includes("attack") || text.includes("violent")) {
+  // aggression — exclude clinical "* attack", the "assault course", one-word substrings
+  // (kickstart, punchline) and the scheduling idiom "kick(s) off" (keeps outbursts "kicked/kicking off")
+  if (
+    has(/\b(hit|hits|hitting)\b/) ||
+    (has(/\bkick(ed|ing|s)?\b/) && !has(/\bkicks? off\b/)) ||
+    has(/\bpunch(ed|ing|es)?\b/) ||
+    (has(/\bassault(ed|ing|s)?\b/) && !has(/\bassault course\b/)) ||
+    (has(/\battack(ed|ing|s)?\b/) && !has(/\b(panic|anxiety|asthma|heart|migraine) attack\b/)) ||
+    has(/\bviolent(ly)?\b/) || has(/\bviolence\b/)
+  ) {
     return "aggression";
   }
-  if (text.includes("property") || text.includes("smash") || text.includes("broke") || text.includes("damage") || text.includes("threw") || text.includes("throw")) {
+  // property damage — exclude "broke down/up" (distress/relationship), "threw/throwing up"
+  // (vomiting) and "smashing <time|day>" (positive slang)
+  if (
+    has(/\bproperty\b/) ||
+    (has(/\bsmash(ed|es|ing)?\b/) && !has(/\bsmashing (time|day|days|success|weekend|game|match|result)\b/)) ||
+    (has(/\bbroke(n)?\b/) && !has(/\bbroke(n)? (down|up)\b/)) ||
+    has(/\bdamage(d|s|ing)?\b/) ||
+    (has(/\bthrew\b/) && !has(/\bthrew up\b/)) ||
+    (has(/\bthrow(s|ing|n)?\b/) && !has(/\bthrow(ing)? up\b/))
+  ) {
     return "property_damage";
   }
-  if (text.includes("shout") || text.includes("swear") || text.includes("verbal") || text.includes("threat") || text.includes("abuse")) {
+  if (
+    has(/\bshout(ed|ing|s)?\b/) ||
+    has(/\bswear(ing|s)?\b/) || has(/\bswore\b/) ||
+    has(/\bverbal(ly)?\b/) ||
+    has(/\bthreat(en|ened|ening|s)?\b/) ||
+    has(/\babus(e|es|ed|ive|ing)\b/)
+  ) {
     return "verbal_aggression";
   }
   if (entry.intensity === "high" || entry.intensity === "severe") {

@@ -154,6 +154,36 @@ describe("classifyBehaviourCategory", () => {
       behaviour: "Refused to engage with group activity",
     }))).toBe("concerning");
   });
+
+  // Regression: bare `.includes()` used to misfire on substrings and idioms, wrongly
+  // labelling distress/illness/benign notes as self-harm/aggression/property damage.
+  // See project_keyword_matching_bugs. Each of these must NOT hit a concern category.
+  it.each([
+    ["from scratch idiom is not self-harm", "We rebuilt his routine from scratch together."],
+    ["panic attack is not aggression", "He had a panic attack during the fire drill."],
+    ["broke down in tears is not property damage", "She broke down in tears when her mum cancelled."],
+    ["threw up (vomiting) is not property damage", "He threw up after taking his medication."],
+    ["smashing day (positive) is not property damage", "We had a smashing day out at the beach."],
+    ["left without an object is not absconding", "He left without his coat again this morning."],
+    ["throwaway comment is not property damage", "Made a throwaway comment about school."],
+    ["assault course (activity) is not aggression", "Completed the assault course on the trip."],
+  ])("does not false-positive: %s", (_label, behaviour) => {
+    const cat = classifyBehaviourCategory(makeBehaviourEntry({ direction: "concerning", behaviour }));
+    expect(["self_harm", "absconding", "aggression", "property_damage", "verbal_aggression"]).not.toContain(cat);
+  });
+
+  // Regression: the word-boundary rewrite must PRESERVE every genuine signal the old
+  // substring match caught (including UK-care vernacular "kicked off" = outburst).
+  it.each([
+    ["scratched self", "He scratched his arms with a paperclip.", "self_harm"],
+    ["kicked and punched", "He kicked and punched a staff member.", "aggression"],
+    ["kicked off (outburst)", "He kicked off and had to be supported to calm.", "aggression"],
+    ["attacked a resident", "He attacked another resident in the lounge.", "aggression"],
+    ["smashed and broke", "She smashed the window and broke a chair.", "property_damage"],
+    ["absconded overnight", "He absconded and went missing overnight.", "absconding"],
+  ])("still classifies genuine signal: %s", (_label, behaviour, expected) => {
+    expect(classifyBehaviourCategory(makeBehaviourEntry({ direction: "concerning", behaviour }))).toBe(expected);
+  });
 });
 
 // ── classifyIncidentAsBehaviour ─────────────────────────────────────────────
