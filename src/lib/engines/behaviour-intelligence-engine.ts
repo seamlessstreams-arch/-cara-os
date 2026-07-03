@@ -18,6 +18,8 @@
 //   Children's Homes Regulations 2015
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { mentionsAny } from "@/lib/text/keyword-match";
+
 // ── Types ───────────────────────────────────────────────────────────────────
 
 export type BehaviourCategory =
@@ -260,15 +262,17 @@ export function wasDeEscalationSuccessful(entry: BehaviourEntryInput): boolean {
 
   // If a strategy was used and the outcome was positive/resolved
   if (strategy.length > 0 && strategy !== "none" && strategy !== "n/a") {
+    // Word-boundary match — a substring `.includes` inverts the meaning of a
+    // failed de-escalation ("unsettled" contains "settled", "dysregulated"
+    // contains "regulated", "disengaged"→"engaged", "uncooperative"→"cooperat"),
+    // wrongly scoring a de-escalation that FAILED as a success. Precise word
+    // forms also keep "de-escalation attempted" (an attempt) out of the success
+    // set — only "de-escalated" (it happened) counts.
     if (
-      outcome.includes("settled") ||
-      outcome.includes("calm") ||
-      outcome.includes("resolved") ||
-      outcome.includes("de-escalat") ||
-      outcome.includes("regulated") ||
-      outcome.includes("redirected") ||
-      outcome.includes("engaged") ||
-      outcome.includes("cooperat")
+      mentionsAny(outcome, [
+        "settled", "calm", "resolved", "de-escalated",
+        "regulated", "redirected", "engaged", "cooperative", "cooperated",
+      ])
     ) {
       return true;
     }
