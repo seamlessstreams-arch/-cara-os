@@ -413,6 +413,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
 
   return (
     <PageShell
+      sensitive
       title={`${displayName} ${yp.last_name}`}
       subtitle={`${yp.legal_status} · ${yp.local_authority} · Age ${yp.age}`}
       showQuickCreate={false}

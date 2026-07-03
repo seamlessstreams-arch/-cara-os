@@ -119,6 +119,7 @@ export default function LADOReferralsPage() {
 
   return (
     <PageShell
+      sensitive
       title="LADO Referrals"
       subtitle="Working Together to Safeguard Children 2023 · Reg 33 · Allegations Management"
       caraContext={{ pageTitle: "LADO Referrals", sourceType: "general" }}

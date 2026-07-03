@@ -124,6 +124,7 @@ export default function ChildProtectionConferencesPage() {
 
   return (
     <PageShell
+      sensitive
       title="Child Protection Conferences"
       subtitle="Statutory conference attendance, decisions, and follow-up — multi-agency safeguarding records"
       caraContext={{ pageTitle: "Child Protection Conferences", sourceType: "child_record" }}

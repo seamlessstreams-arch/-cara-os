@@ -1302,6 +1302,7 @@ export default function IncidentsPage() {
 
   return (
     <PageShell
+      sensitive
       title="Incidents"
       subtitle="Log, review, and oversee all incident records"
       caraContext={{ pageTitle: "Care Events — Behaviour &amp; Safeguarding", sourceType: "incident" }}
