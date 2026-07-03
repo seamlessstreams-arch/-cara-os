@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { PageShell } from "@/components/layout/page-shell";
-import { Card, CardContent } from "@/components/ui/card";
+import { ProfileCard } from "@/components/ui/profile-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -237,12 +237,13 @@ export default function StaffPage() {
         {!isLoading && !isError && (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((staff) => (
-              <Card
+              <ProfileCard
                 key={staff.id}
-                className="hover:shadow-md transition-all hover:-translate-y-0.5 cursor-pointer group"
+                severity={staff.overdue_tasks > 0 || staff.training_expired_count > 0 ? "risk" : staff.supervision_overdue ? "warning" : "neutral"}
+                className="group"
                 onClick={() => setSelectedStaff(staff)}
               >
-                <CardContent className="p-5">
+                <div className="p-5">
                   {/* Header */}
                   <div className="flex items-start gap-3">
                     <div className="relative">
@@ -258,7 +259,7 @@ export default function StaffPage() {
                       <div className="text-sm font-semibold text-[var(--cs-navy)] truncate">{staff.full_name}</div>
                       <div className="text-xs text-[var(--cs-text-muted)]">{staff.job_title}</div>
                       {staff.probation_end_date && staff.probation_end_date > today && (
-                        <Badge variant="warning" className="text-[9px] mt-1 rounded-full">Probation</Badge>
+                        <span className="mt-1 inline-block text-[10px] font-semibold uppercase tracking-wide text-[--cs-warning]">Probation</span>
                       )}
                     </div>
                     <ChevronRight className="h-4 w-4 text-[var(--cs-text-gentle)] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
@@ -285,17 +286,17 @@ export default function StaffPage() {
                   </div>
 
                   {/* Status badges */}
-                  <div className="mt-3 flex flex-wrap gap-1">
+                  <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
                     {staff.is_on_shift_today && (
                       <Badge variant="success" className="text-[9px] rounded-full gap-0.5">
                         <div className="h-1.5 w-1.5 rounded-full bg-[--cs-success] animate-pulse-dot" />
                         {staff.today_shift_type === "day" ? "Day shift" : staff.today_shift_type === "sleep_in" ? "Sleep-in" : staff.today_shift_type ?? "On shift"}
                       </Badge>
                     )}
-                    {staff.is_on_leave_today && <Badge variant="warning" className="text-[9px] rounded-full">On leave</Badge>}
-                    {staff.overdue_tasks > 0 && <Badge variant="destructive" className="text-[9px] rounded-full">{staff.overdue_tasks} overdue</Badge>}
-                    {staff.training_expired_count > 0 && <Badge variant="destructive" className="text-[9px] rounded-full">{staff.training_expired_count} training expired</Badge>}
-                    {staff.supervision_overdue && <Badge variant="warning" className="text-[9px] rounded-full">Supervision due</Badge>}
+                    {staff.is_on_leave_today && <span className="text-[10px] font-semibold uppercase tracking-wide text-[--cs-warning]">On leave</span>}
+                    {staff.overdue_tasks > 0 && <span className="text-[10px] font-semibold uppercase tracking-wide text-[--cs-risk]">{staff.overdue_tasks} overdue</span>}
+                    {staff.training_expired_count > 0 && <span className="text-[10px] font-semibold uppercase tracking-wide text-[--cs-risk]">{staff.training_expired_count} training expired</span>}
+                    {staff.supervision_overdue && <span className="text-[10px] font-semibold uppercase tracking-wide text-[--cs-warning]">Supervision due</span>}
                   </div>
 
                   {/* Contact */}
@@ -303,8 +304,8 @@ export default function StaffPage() {
                     {staff.email && <span className="flex items-center gap-0.5 truncate"><Mail className="h-3 w-3" />{staff.email}</span>}
                     {staff.phone && <span className="flex items-center gap-0.5 shrink-0"><Phone className="h-3 w-3" />{staff.phone}</span>}
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </ProfileCard>
             ))}
 
             {filtered.length === 0 && !isLoading && (
