@@ -379,3 +379,42 @@ describe("Cara Studio guard — fallback role behaviour", () => {
     expect([200, 201]).toContain(res.status);
   });
 });
+
+// SECURITY REGRESSION: in activated mode (Supabase configured) a client-supplied
+// actor role/id is forgeable and must NOT be trusted. The guard fails CLOSED
+// (role "none" → 401) until it is migrated to full session resolution. Demo mode
+// (above) is unchanged.
+describe("Cara Studio guard — activated-mode fails closed", () => {
+  const ORIG_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const ORIG_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  beforeEach(() => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://real-project.supabase.co";
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "real-service-role-key-abcdef123456";
+  });
+  afterEach(() => {
+    if (ORIG_URL === undefined) delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    else process.env.NEXT_PUBLIC_SUPABASE_URL = ORIG_URL;
+    if (ORIG_KEY === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    else process.env.SUPABASE_SERVICE_ROLE_KEY = ORIG_KEY;
+  });
+
+  it("refuses a forged body actor_role (registered_manager) → 401", () => {
+    const result = requireCaraStudioPermission(
+      makeReq("http://test/x", { method: "POST" }),
+      { actor_role: "registered_manager", actor_id: "attacker" },
+      { permission: "cara.generate_drafts", homeId: "home_oak", intent: "test" },
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.response.status).toBe(401);
+  });
+
+  it("ignores a forged x-cara-actor-role header too → 401", () => {
+    const result = requireCaraStudioPermission(
+      makeReq("http://test/x", { method: "POST", headers: { "x-cara-actor-role": "registered_manager" } }),
+      null,
+      { permission: "cara.commit_to_records", homeId: "home_oak", intent: "test" },
+    );
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.response.status).toBe(401);
+  });
+});

@@ -20,6 +20,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
+import { isSupabaseEnabled } from "@/lib/supabase/server";
 import {
   checkCaraAccess,
   appRoleToCaraRole,
@@ -52,6 +53,16 @@ export interface CaraStudioGuardDenied {
  * Resolve the acting user from body / header / env fallback.
  */
 function resolveActor(req: NextRequest, body: Record<string, unknown> | null): CaraActor {
+  // SECURITY (activated mode): the acting role/id must come from a validated
+  // session — a client-supplied actor_role / x-cara-actor-role header is
+  // forgeable and must NOT be trusted. Until this guard is migrated to full
+  // async session resolution (its own PR — 138 call sites), fail CLOSED: refuse
+  // the mutation (role "none" → 401) rather than trust a forgeable role. This is
+  // a no-op in demo mode (Supabase off), where the header/body convention stands.
+  if (isSupabaseEnabled()) {
+    return { userId: "actor_unknown", role: "none" };
+  }
+
   const headerRole = req.headers.get("x-cara-actor-role");
   const headerId = req.headers.get("x-cara-actor-id");
 
