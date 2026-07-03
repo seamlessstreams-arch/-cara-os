@@ -12,6 +12,7 @@ import type {
   CaraRole,
 } from "../core/types";
 import { getProvider } from "../providers";
+import { redactSensitiveData } from "../safety/data-protection";
 import type { ProviderEmbeddingResponse, ProviderRerankResponse } from "../providers/base-provider";
 
 // ── Evidence Source Types ──────────────────────────────────────────────────
@@ -141,8 +142,8 @@ export class CaraEvidenceEngine {
     let rankedResults: { index: number; score: number }[] = [];
 
     if (voyageProvider.isAvailable() && candidates.some(c => c.embedding.length > 0)) {
-      // Embed query
-      const queryEmb = await voyageProvider.embed({ texts: [query.query] });
+      // Embed query — redact PII before it leaves for the external provider.
+      const queryEmb = await voyageProvider.embed({ texts: [redactSensitiveData(query.query).redactedText] });
       const queryVector = queryEmb.embeddings[0];
 
       // Cosine similarity
@@ -169,9 +170,12 @@ export class CaraEvidenceEngine {
     const cohereProvider = getProvider("cohere");
     if (cohereProvider.isAvailable() && rankedResults.length > 3) {
       try {
-        const documents = rankedResults.map(r => candidates[r.index].title + ": " + candidates[r.index].content.slice(0, 500));
+        // Redact PII before documents + query leave for the external reranker.
+        const documents = rankedResults.map(r =>
+          redactSensitiveData(candidates[r.index].title + ": " + candidates[r.index].content.slice(0, 500)).redactedText,
+        );
         const rerankResponse: ProviderRerankResponse = await cohereProvider.rerank({
-          query: query.query,
+          query: redactSensitiveData(query.query).redactedText,
           documents,
           topK: query.limit ?? 10,
         });
@@ -219,8 +223,12 @@ export class CaraEvidenceEngine {
   // ── Private Methods ─────────────────────────────────────────────────────
 
   private prepareForEmbedding(title: string, content: string): string {
-    // Combine title and content, truncate for embedding limits
-    return `${title}\n\n${content}`.slice(0, 8000);
+    // Combine title and content, truncate for embedding limits. Redact PII
+    // FIRST — the embedding provider (Voyage) is external and not on the AI
+    // gateway's approved-provider register, so no child-identifying data leaves
+    // the system for indexing.
+    const combined = `${title}\n\n${content}`.slice(0, 8000);
+    return redactSensitiveData(combined).redactedText;
   }
 
   private filterByPermissions(query: CaraEvidenceQuery): EvidenceEmbedding[] {
