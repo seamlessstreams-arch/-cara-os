@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
   });
 
   if (insertError) {
-    return NextResponse.json({ error: insertError.message }, { status: 500 });
+    console.error("[api] server error:", insertError); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
   }
 
   // Seed the chronology with the opening event.
@@ -356,7 +356,7 @@ export async function PATCH(req: NextRequest) {
     .select()
     .single();
   if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    console.error("[api] server error:", updateError); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
   }
 
   await supabase.from("hr_audit_log").insert({

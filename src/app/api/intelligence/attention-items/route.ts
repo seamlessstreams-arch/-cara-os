@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await query.limit(100);
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true, items: data ?? [], persisted: true });
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
     }).select().single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
     }
 
     await writeIntelligenceAudit({
@@ -156,7 +156,7 @@ export async function PATCH(request: NextRequest) {
 
     const { data, error } = await supabase.from("manager_attention_items").update(updates).eq("id", id).select().single();
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
     }
 
     const auditAction = status === "escalated" ? "attention_item_escalated" : "attention_item_reviewed";

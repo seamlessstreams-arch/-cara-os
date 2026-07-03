@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await query.limit(50);
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true, links: data ?? [], persisted: true });
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     }).select().single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
     }
 
     await writeIntelligenceAudit({
