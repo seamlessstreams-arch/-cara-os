@@ -13,6 +13,32 @@ function homeId(): string {
   return process.env.SUPABASE_HOME_ID ?? "a0000000-0000-0000-0000-000000000001";
 }
 
+// ── Presentation sentiment (word-boundary + negation aware) ──────────────────
+// Bare `.includes()` inverted these checks: "unsettled" contains "settled" (read
+// as positive), "no concerns" contains "concerns" (read as negative) — so a
+// genuinely-negative record paired with a genuinely-positive one produced a FALSE
+// "conflicting presentation" contradiction. Word boundaries + negation guards fix
+// it while still catching real settled-vs-distressed conflicts. Exported for tests.
+// See project_keyword_matching_bugs.
+
+export function readsAsPositivePresentation(content: string): boolean {
+  const c = content.toLowerCase();
+  return (
+    /\bno concerns?\b/.test(c) ||
+    /\bsettled\b/.test(c) || // \b excludes "unsettled"
+    (/\bpositive\b/.test(c) && !/\b(not|no|never|isn't|wasn't|n't) positive\b/.test(c))
+  );
+}
+
+export function readsAsNegativePresentation(content: string): boolean {
+  const c = content.toLowerCase();
+  return (
+    /\bunsettled\b/.test(c) ||
+    /\bdistressed\b/.test(c) ||
+    (/\bconcerns?\b/.test(c) && !/\b(no|without|zero|any|not) concerns?\b/.test(c)) // exclude "no concerns"
+  );
+}
+
 interface SourceRow {
   id: string;
   source_type: string;
@@ -80,10 +106,8 @@ export async function detectContradictions(
       const a = datedSources[i];
       const b = datedSources[j];
       if (a.source_date && b.source_date && a.source_date === b.source_date && a.source_type !== b.source_type) {
-        const aContent = (a.content ?? "").toLowerCase();
-        const bContent = (b.content ?? "").toLowerCase();
-        const aHasPositive = aContent.includes("no concerns") || aContent.includes("settled") || aContent.includes("positive");
-        const bHasNegative = bContent.includes("unsettled") || bContent.includes("distressed") || bContent.includes("concerns");
+        const aHasPositive = readsAsPositivePresentation(a.content ?? "");
+        const bHasNegative = readsAsNegativePresentation(b.content ?? "");
 
         if (aHasPositive && bHasNegative) {
           contradictions.push(buildContradiction({
