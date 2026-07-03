@@ -72,7 +72,12 @@ function classifyPracticeValue(record: CaraPracticeRecord, context: LifeSpaceCon
   if (context === "activity") return "identity";
   if (context === "morning_routine" || context === "bedtime" || context === "hygiene" || context === "meal_time") return "routine";
 
-  if (lower.includes("calm") || lower.includes("regulat") || lower.includes("co-") || lower.includes("breathe")) return "co_regulation";
+  // Word-boundary helper (as line 56 does): raw `.includes("regulat")` also matched
+  // "dysregulated" — the OPPOSITE of co-regulation. Leading-\b keeps "regulated"/
+  // "co-regulated"/"self-regulation" but excludes "dysregulated". "regulat" already
+  // covers the "co-"/"self-" prefixes, so the old bare "co-" cue (which caught
+  // "co-produced" etc.) is dropped. See project_keyword_matching_bugs.
+  if (containsAnyKeyword(lower, ["calm", "regulat", "breathe"])) return "co_regulation";
   if (lower.includes("feeling") || lower.includes("emotion") || lower.includes("expressed")) return "emotional_literacy";
   if (lower.includes("choice") || /\brights?\b/.test(lower) || /\bvoice\b/.test(lower)) return "rights";
   if (lower.includes("independen") || lower.includes("life skill") || lower.includes("cooked") || lower.includes("managed alone")) return "independence";
