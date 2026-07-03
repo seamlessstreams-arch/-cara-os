@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
+import { CheckTile } from "@/components/ui/check-tile";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, todayStr } from "@/lib/utils";
 import { useWindowChecks } from "@/hooks/use-window-checks";
@@ -251,34 +252,25 @@ export default function BuildingWindowRestrictorChecksPage() {
                       <div className="text-sm text-indigo-900">{r.key_location ?? "—"}</div>
                       <div className="text-xs text-indigo-700 mt-2">Keys held only by manager and deputy. Never on the window, frame or accessible to children.</div>
                     </div>
-                    <div className={cn("rounded-md border p-3 lg:col-span-2", r.opening_compliance_with_100mm_rule ? "border-[--cs-success-soft] bg-[--cs-success-bg]" : "border-[--cs-risk-soft] bg-[--cs-risk-bg]")}>
-                      <div className={cn("text-xs font-semibold uppercase mb-2", r.opening_compliance_with_100mm_rule ? "text-[--cs-success]" : "text-[--cs-risk]")}>Opening aperture vs 100mm rule</div>
-                      <div className={cn("text-sm", r.opening_compliance_with_100mm_rule ? "text-[--cs-success]" : "text-[--cs-risk]")}>
-                        Maximum opening measured: <span className="font-semibold">{r.opening_maximum_cm.toFixed(1)} cm</span>{" "}
-                        ({r.opening_maximum_cm <= 10 ? "within" : "exceeds"} the 100mm / 10cm industry standard for children&rsquo;s settings).{" "}
-                        {r.opening_compliance_with_100mm_rule ? "Compliant." : "NON-COMPLIANT — restrict immediately."}
-                      </div>
-                    </div>
-                    <div className="rounded-md border border-[var(--cs-border)] bg-white p-3">
-                      <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Signage in place</div>
-                      <div className="text-sm text-[var(--cs-text-secondary)]">
-                        {r.signage_in_place ? (
-                          <span className="inline-flex items-center gap-1 text-[--cs-success]"><CheckCircle className="h-3.5 w-3.5" /> Yes — &lsquo;Do not tamper&rsquo; notice present</span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[--cs-warning]"><AlertTriangle className="h-3.5 w-3.5" /> No — to be added</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="rounded-md border border-[var(--cs-border)] bg-white p-3">
-                      <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Child awareness</div>
-                      <div className="text-sm text-[var(--cs-text-secondary)]">
-                        {r.child_aware ? (
-                          <span className="inline-flex items-center gap-1 text-[--cs-success]"><CheckCircle className="h-3.5 w-3.5" /> Briefed age-appropriately — knows not to tamper</span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[--cs-warning]"><AlertTriangle className="h-3.5 w-3.5" /> Brief outstanding</span>
-                        )}
-                      </div>
-                    </div>
+                    <CheckTile
+                      ok={r.opening_compliance_with_100mm_rule}
+                      label="Opening aperture vs 100mm rule"
+                      value={r.opening_compliance_with_100mm_rule ? "Compliant" : "Non-compliant — restrict immediately"}
+                      className="lg:col-span-2"
+                    >
+                      Maximum opening measured: <span className="font-semibold">{r.opening_maximum_cm.toFixed(1)} cm</span>{" "}
+                      ({r.opening_maximum_cm <= 10 ? "within" : "exceeds"} the 100mm / 10cm industry standard for children&rsquo;s settings).
+                    </CheckTile>
+                    <CheckTile
+                      state={r.signage_in_place ? "success" : "warning"}
+                      label="Signage in place"
+                      value={r.signage_in_place ? "Yes — 'Do not tamper' notice present" : "No — to be added"}
+                    />
+                    <CheckTile
+                      state={r.child_aware ? "success" : "warning"}
+                      label="Child awareness"
+                      value={r.child_aware ? "Briefed age-appropriately — knows not to tamper" : "Brief outstanding"}
+                    />
                     {r.damage_noted.length > 0 && (
                       <div className="rounded-md border border-[--cs-warning-soft] bg-[--cs-warning-bg] p-3 lg:col-span-2">
                         <div className="text-xs font-semibold text-[--cs-warning] uppercase mb-2">Damage noted</div>

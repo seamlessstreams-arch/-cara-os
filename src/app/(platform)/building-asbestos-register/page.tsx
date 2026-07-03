@@ -5,6 +5,7 @@ import { PageShell } from "@/components/layout/page-shell";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
+import { CheckTile } from "@/components/ui/check-tile";
 import { getStaffName } from "@/lib/seed-data";
 import { cn, todayStr } from "@/lib/utils";
 import { useAsbestosRecords } from "@/hooks/use-asbestos-records";
@@ -293,15 +294,13 @@ export default function BuildingAsbestosRegisterPage() {
                       <p className="text-sm text-[var(--cs-text-secondary)]">{r.building_area}</p>
                     </div>
 
-                    <div className={cn("rounded-md border p-3", r.acm_identified ? "border-[--cs-warning-soft] bg-[--cs-warning-bg]" : "border-[--cs-success-soft] bg-[--cs-success-bg]")}>
-                      <div className="flex items-center gap-2 mb-2">
-                        {r.acm_identified ? <AlertTriangle className="h-4 w-4 text-[--cs-warning]" /> : <CheckCircle className="h-4 w-4 text-[--cs-success]" />}
-                        <div className={cn("text-xs font-semibold uppercase", r.acm_identified ? "text-[--cs-warning]" : "text-[--cs-success]")}>ACM details</div>
-                      </div>
-                      <div className={cn("text-sm", r.acm_identified ? "text-[--cs-warning]" : "text-[--cs-success]")}>
-                        {r.acm_identified ? r.acm_type ?? "ACM identified — see register entry" : "No asbestos-containing materials identified in this scope."}
-                      </div>
-                    </div>
+                    <CheckTile
+                      state={r.acm_identified ? "warning" : "success"}
+                      label="ACM details"
+                      value={r.acm_identified ? "ACM present" : "No ACM identified"}
+                    >
+                      {r.acm_identified ? r.acm_type ?? "ACM identified — see register entry" : "No asbestos-containing materials identified in this scope."}
+                    </CheckTile>
 
                     <div className="rounded-md border border-[var(--cs-border)] bg-white p-3">
                       <div className="text-xs font-semibold text-[var(--cs-text-muted)] uppercase mb-2">Condition rating</div>
