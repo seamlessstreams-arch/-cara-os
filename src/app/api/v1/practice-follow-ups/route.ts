@@ -54,6 +54,6 @@ export async function GET() {
       data: { generated_at: now, total: followUps.length, follow_ups: followUps },
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err?.message ?? "Internal server error" }, { status: 500 });
+    console.error("[api] server error:", err); return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

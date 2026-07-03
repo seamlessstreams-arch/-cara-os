@@ -140,7 +140,7 @@ export async function GET(req: NextRequest) {
     .maybeSingle();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
   }
   if (!data) {
     return NextResponse.json({
@@ -382,7 +382,7 @@ export async function POST(req: NextRequest) {
     .select()
     .single();
   if (updateError) {
-    return NextResponse.json({ error: updateError.message }, { status: 500 });
+    console.error("[api] server error:", updateError); return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
   }
 
   const record = rowToRecord(updated as DbRow);
