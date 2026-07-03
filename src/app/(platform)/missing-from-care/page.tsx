@@ -890,6 +890,7 @@ export default function MissingFromCarePage() {
 
   return (
     <PageShell
+      sensitive
       title="Missing from Care"
       subtitle="Track missing episodes, return home interviews, and contextual safeguarding risks"
       caraContext={{ pageTitle: "Missing from Care", sourceType: "incident" }}

@@ -4,6 +4,7 @@ import React from "react";
 import { Header } from "./header";
 import { QuickCreateActions } from "@/components/common/quick-create-actions";
 import { RecordAnythingButton } from "@/components/forms/record-anything-button";
+import { SensitiveSurface } from "@/components/security/capture-deterrence";
 import type { QuickCreateContext } from "@/components/common/quick-create-modal";
 import type { CaraDrawerContext } from "@/components/cara/cara-drawer";
 
@@ -26,6 +27,9 @@ export interface PageShellProps {
   recordChildId?:    string;
   /** Cara context — passed to the Cara drawer for contextual suggestions */
   caraContext?:      CaraDrawerContext;
+  /** Wrap the page body in a SensitiveSurface (attribution watermark +
+   * blur-when-inactive). Use for child-confidential screens. */
+  sensitive?:        boolean;
   children:          React.ReactNode;
   fullWidth?:        boolean;
 }
@@ -41,6 +45,7 @@ export function PageShell({
   recordAnything = false,
   recordChildId,
   caraContext,
+  sensitive = false,
   children,
   fullWidth = false,
 }: PageShellProps) {
@@ -70,7 +75,7 @@ export function PageShell({
         caraContext={caraContext}
       />
       <main className={`relative flex-1 px-4 py-6 sm:px-7 sm:py-8 ${fullWidth ? "" : "max-w-[1440px] mx-auto w-full"}`}>
-        {children}
+        {sensitive ? <SensitiveSurface>{children}</SensitiveSurface> : children}
       </main>
     </div>
   );
