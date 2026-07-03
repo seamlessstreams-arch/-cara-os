@@ -75,6 +75,13 @@ export async function resolveCommsUser(req: NextRequest): Promise<CommsUser> {
     .filter((yp: { key_worker_id?: string | null }) => yp.key_worker_id === userId)
     .map((yp: { id: string }) => yp.id);
 
+  // Seed the home's channels at the chokepoint every comms route passes through.
+  // Seeding only inside the channels-list read leaves any other serverless
+  // instance (messages/receipt/hold/convert) with an empty store — a channel id
+  // from the list then 404s on open/send. Deterministic ids fixed half of that
+  // class; this fixes the other half.
+  if (home_id) db.commsChannels.seedDefaults(home_id);
+
   return {
     id: userId,
     role,
