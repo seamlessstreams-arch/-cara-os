@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
   if (status) query = query.eq("status", status);
 
   const { data, error } = await query.limit(200);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
 
   return NextResponse.json({ ok: true, actions: data ?? [], persisted: true });
 }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
     return NextResponse.json({ ok: true, action: data, persisted: true });
   } catch (err) {
     console.error("[api/intelligence/reg44-actions] POST error:", err);
@@ -108,7 +108,7 @@ export async function PATCH(request: NextRequest) {
       ...updates,
       updated_at: new Date().toISOString(),
     }).eq("id", id).select().single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
     return NextResponse.json({ ok: true, action: data, persisted: true });
   } catch (err) {
     console.error("[api/intelligence/reg44-actions] PATCH error:", err);

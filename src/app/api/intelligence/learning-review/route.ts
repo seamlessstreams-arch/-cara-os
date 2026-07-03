@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   if (status) query = query.eq("review_status", status);
 
   const { data, error } = await query.limit(50);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
 
   return NextResponse.json({ ok: true, reviews: data ?? [], persisted: true });
 }
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       created_by: actorUserId ?? null,
     }).select().single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
 
     await writeIntelligenceAudit({
       homeId,
@@ -136,7 +136,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const { data, error } = await supabase.from("incident_learning_reviews").update(dbUpdates).eq("id", id).select().single();
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) { console.error("[api] server error:", error); return NextResponse.json({ error: "A server error occurred." }, { status: 500 }); }
 
     const action = updates.reviewStatus === "completed" ? "learning_review_completed" : "record_updated";
     await writeIntelligenceAudit({
