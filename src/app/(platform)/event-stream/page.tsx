@@ -18,8 +18,8 @@ import { eventTypeIcon, eventTypeIconClass } from "@/lib/event-stream/event-type
 const RISK_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
   low: { bg: "bg-gray-100", text: "text-gray-600", ring: "ring-gray-200" },
   medium: { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200" },
-  high: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200" },
-  critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200" },
+  high: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-[var(--cs-warning-soft)]" },
+  critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]" },
 };
 
 export default function EventStreamPage() {

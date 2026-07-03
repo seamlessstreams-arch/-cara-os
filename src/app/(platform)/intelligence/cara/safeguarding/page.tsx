@@ -278,7 +278,7 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
             <select
               value={childId}
               onChange={(e) => setChildId(e.target.value)}
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-red-300"
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk-soft)]"
             >
               <option value="">Select young person</option>
               {youngPeople.map((yp) => (
@@ -315,7 +315,7 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
           <select
             value={flagType}
             onChange={(e) => setFlagType(e.target.value as SafeguardingFlagType)}
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk-soft)]"
           >
             {FLAG_TYPES.map((t) => (
               <option key={t} value={t}>{formatFlagType(t)}</option>
@@ -330,7 +330,7 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             placeholder="Describe the concern in detail — what was observed, said, or identified…"
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-red-300 resize-none"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk-soft)] resize-none"
           />
         </div>
 
@@ -341,7 +341,7 @@ function RaiseFlagForm({ onClose }: { onClose: () => void }) {
             onChange={(e) => setRecommendedAction(e.target.value)}
             rows={3}
             placeholder="What action should be taken in response to this flag?"
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-red-300 resize-none"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk-soft)] resize-none"
           />
         </div>
 

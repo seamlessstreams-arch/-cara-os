@@ -28,8 +28,8 @@ const INSIGHT_STYLES: Record<string, string> = {
 const BAND_STYLES: Record<string, { bg: string; text: string; ring: string; bar: string }> = {
   strong: { bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200", bar: "bg-green-400" },
   adequate: { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200", bar: "bg-blue-400" },
-  fragmented: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200", bar: "bg-amber-400" },
-  critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200", bar: "bg-red-400" },
+  fragmented: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-[var(--cs-warning-soft)]", bar: "bg-amber-400" },
+  critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]", bar: "bg-red-400" },
 };
 const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
   urgent: { bg: "bg-red-100", text: "text-red-700" },

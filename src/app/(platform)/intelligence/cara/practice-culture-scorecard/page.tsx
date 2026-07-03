@@ -80,7 +80,7 @@ function ScoreDial({ score, status }: { score: number; status: RAGStatus }) {
 
 function DimensionCard({ dim, priority }: { dim: ScorecardDimension; priority: boolean }) {
   return (
-    <div className={`rounded-lg border p-4 ${RAG_BG[dim.status]} ${priority ? "ring-2 ring-red-400 ring-offset-1" : ""}`}>
+    <div className={`rounded-lg border p-4 ${RAG_BG[dim.status]} ${priority ? "ring-2 ring-[var(--cs-risk)] ring-offset-1" : ""}`}>
       <div className="flex items-start justify-between gap-2 mb-2">
         <div>
           {priority && (

@@ -266,7 +266,7 @@ export default function StatutoryChecksSummaryPage() {
                 className={cn(
                   "border-l-4",
                   STATUS_BORDER[r.compliance_status],
-                  isOverdue && "ring-2 ring-red-200 shadow-sm"
+                  isOverdue && "ring-2 ring-[var(--cs-risk-soft)] shadow-sm"
                 )}
               >
                 <button className="w-full text-left" onClick={() => toggle(r.id)}>

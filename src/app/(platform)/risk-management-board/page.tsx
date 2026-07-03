@@ -271,7 +271,7 @@ export default function RiskManagementBoardPage() {
           const isExpanded = expandedId === r.id;
 
           return (
-            <div key={r.id} className={cn("rounded-lg border bg-white transition-all", r.risk_appetite_alignment === "above_appetite" && "ring-2 ring-red-300 border-red-200")}>
+            <div key={r.id} className={cn("rounded-lg border bg-white transition-all", r.risk_appetite_alignment === "above_appetite" && "ring-2 ring-[var(--cs-risk-soft)] border-[var(--cs-risk-soft)]")}>
               <div className="flex items-start gap-3 p-4 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : r.id)}>
                 <div className={cn("mt-0.5 rounded-md p-1.5 border flex-shrink-0", cat.bg, cat.border)}>
                   <CatIcon className={cn("h-4 w-4", cat.color)} />

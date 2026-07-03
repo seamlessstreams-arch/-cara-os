@@ -1336,7 +1336,7 @@ function ManagerActionsTab() {
                       onChange={(e) => setOversightNote((prev) => ({ ...prev, [inc.id]: e.target.value }))}
                       rows={2}
                       placeholder="Record oversight note…"
-                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-400"
+                      className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)] placeholder:text-slate-400"
                     />
                     <Button
                       size="sm"

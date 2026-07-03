@@ -294,7 +294,7 @@ export default function AssessmentOfNeedPage() {
                 className={cn(
                   "border-l-4",
                   COMPLEXITY_BORDER[r.overall_need_complexity],
-                  !r.signed_off_by_rm && "ring-1 ring-amber-300",
+                  !r.signed_off_by_rm && "ring-1 ring-[var(--cs-warning-soft)]",
                 )}
               >
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>

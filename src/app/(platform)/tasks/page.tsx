@@ -367,7 +367,7 @@ export default function TasksPage() {
                   className={cn(
                     "rounded-2xl border bg-white border-l-4 p-4 transition-all hover:bg-[var(--cs-surface)] cursor-pointer group",
                     prio.border,
-                    overdue && "ring-1 ring-red-200",
+                    overdue && "ring-1 ring-[var(--cs-risk-soft)]",
                     isComplete && "opacity-60",
                   )}
                 >
@@ -504,7 +504,7 @@ export default function TasksPage() {
                           className={cn(
                             "rounded-xl border bg-white p-3 border-l-4 hover:bg-[var(--cs-surface)] cursor-pointer transition-all",
                             prio.border,
-                            overdue && "ring-1 ring-red-200",
+                            overdue && "ring-1 ring-[var(--cs-risk-soft)]",
                           )}
                         >
                           <div className="text-xs font-semibold text-slate-900 leading-snug">{task.title}</div>

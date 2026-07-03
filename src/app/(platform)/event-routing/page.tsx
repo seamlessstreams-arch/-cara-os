@@ -80,7 +80,7 @@ export default function EventRoutingPage() {
 
           {/* External notification queue */}
           {Object.keys(intel.overview.external_api_counts ?? {}).length > 0 && (
-            <Card className="overflow-hidden ring-1 ring-red-200">
+            <Card className="overflow-hidden ring-1 ring-[var(--cs-risk-soft)]">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2 text-red-700"><Send className="h-4 w-4" /> External notifications — awaiting human approval</CardTitle>
               </CardHeader>

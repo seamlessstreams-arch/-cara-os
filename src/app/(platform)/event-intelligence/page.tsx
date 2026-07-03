@@ -33,8 +33,8 @@ const TREND_META: Record<string, { icon: React.ReactNode; cls: string }> = {
   stable: { icon: <Minus className="h-4 w-4" />, cls: "text-gray-500" },
 };
 function riskTone(score: number): { bg: string; text: string; ring: string } {
-  if (score >= 70) return { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200" };
-  if (score >= 45) return { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200" };
+  if (score >= 70) return { bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]" };
+  if (score >= 45) return { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-[var(--cs-warning-soft)]" };
   if (score >= 20) return { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200" };
   return { bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200" };
 }

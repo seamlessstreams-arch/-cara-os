@@ -32,8 +32,8 @@ const PRIORITY_STYLES: Record<string, { bg: string; text: string }> = {
   routine: { bg: "bg-gray-100", text: "text-gray-600" },
 };
 const TYPE_META: Record<string, { label: string; bg: string; text: string; ring: string }> = {
-  leading_indicator: { label: "Leading indicator", bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200" },
-  convergent: { label: "Convergent", bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200" },
+  leading_indicator: { label: "Leading indicator", bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]" },
+  convergent: { label: "Convergent", bg: "bg-amber-100", text: "text-amber-700", ring: "ring-[var(--cs-warning-soft)]" },
   emerging_watch: { label: "Emerging watch", bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200" },
   incidents_only: { label: "Voice gap", bg: "bg-indigo-100", text: "text-indigo-700", ring: "ring-indigo-200" },
   complaints_only: { label: "Handled", bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200" },

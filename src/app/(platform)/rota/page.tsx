@@ -315,7 +315,7 @@ export default function RotaPage() {
             { label: "On Leave",          value: meta?.on_leave_today    ?? "—", color: "text-blue-600" },
             { label: "Late Arrivals",     value: meta?.late_arrivals     ?? "—", color: meta?.late_arrivals ? "text-red-600" : "text-emerald-600" },
           ].map(({ label, value, color, ring }) => (
-            <div key={label} className={cn("rounded-2xl border bg-white p-4 text-center", ring && "ring-1 ring-amber-200")}>
+            <div key={label} className={cn("rounded-2xl border bg-white p-4 text-center", ring && "ring-1 ring-[var(--cs-warning-soft)]")}>
               <div className={cn("text-2xl font-bold tabular-nums", color)}>{value}</div>
               <div className="text-xs text-[var(--cs-text-muted)]">{label}</div>
             </div>
@@ -910,7 +910,7 @@ export default function RotaPage() {
               <select
                 value={absenceReason}
                 onChange={(e) => setAbsenceReason(e.target.value as "sick" | "emergency" | "no-show" | "other")}
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk)]"
               >
                 <option value="sick">Sick</option>
                 <option value="emergency">Emergency</option>
@@ -926,7 +926,7 @@ export default function RotaPage() {
                 value={absenceNotes}
                 onChange={(e) => setAbsenceNotes(e.target.value)}
                 placeholder="e.g. Called in at 7am, feeling unwell"
-                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+                className="w-full rounded-lg border border-[var(--cs-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk)]"
               />
             </div>
           </div>

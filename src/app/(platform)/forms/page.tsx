@@ -121,7 +121,7 @@ function FormCard({ form, today, canApprove, onClick }: {
       className={cn(
         "rounded-2xl border bg-white border-l-4 p-4 transition-all hover:bg-[var(--cs-surface)] cursor-pointer group",
         prio.border,
-        isOverdue && "ring-1 ring-red-200",
+        isOverdue && "ring-1 ring-[var(--cs-risk-soft)]",
       )}
     >
       <div className="flex items-start gap-3">

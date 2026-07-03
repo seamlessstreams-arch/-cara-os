@@ -99,7 +99,7 @@ export default function WorkflowOrchestrationPage() {
           <div className="space-y-2">
             {actions.length === 0 && <p className="text-sm text-[var(--cs-text-muted)]">No actions match this filter.</p>}
             {actions.slice(0, 80).map((a) => (
-              <div key={a.id} className={cn("rounded-lg border p-3 text-xs", a.overdue ? "ring-1 ring-red-200" : "")}>
+              <div key={a.id} className={cn("rounded-lg border p-3 text-xs", a.overdue ? "ring-1 ring-[var(--cs-risk-soft)]" : "")}>
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-1.5 min-w-0">
                     {a.notification_draft && <Send className="h-3 w-3 text-red-500 shrink-0" />}

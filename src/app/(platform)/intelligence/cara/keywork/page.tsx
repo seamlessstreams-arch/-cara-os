@@ -221,7 +221,7 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
             <select
               value={childId}
               onChange={(e) => setChildId(e.target.value)}
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]"
             >
               <option value="">Select young person</option>
               {youngPeople.map((yp) => (
@@ -238,7 +238,7 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
               placeholder="e.g. 14"
               min={5}
               max={25}
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]"
             />
           </div>
         </div>
@@ -249,7 +249,7 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
           <select
             value={theme}
             onChange={(e) => setTheme(e.target.value as KeyWorkTheme)}
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-amber-300"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]"
           >
             {THEMES.map((t) => (
               <option key={t} value={t}>{formatTheme(t)}</option>
@@ -268,7 +268,7 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
             onChange={(e) => setReason(e.target.value)}
             rows={3}
             placeholder="Why is this session needed? What has prompted it?"
-            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+            className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)] resize-none"
           />
         </div>
 
@@ -281,7 +281,7 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
               onChange={(e) => setAims(e.target.value)}
               rows={3}
               placeholder="What do you want to achieve?"
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)] resize-none"
             />
           </div>
           <div className="space-y-1.5">
@@ -291,7 +291,7 @@ function BuilderForm({ onClose, initialChildId = "" }: { onClose: () => void; in
               onChange={(e) => setDesiredOutcomes(e.target.value)}
               rows={3}
               placeholder="What do you want the child to take away?"
-              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-amber-300 resize-none"
+              className="w-full rounded-lg border border-[var(--cs-border)] bg-white px-3 py-2 text-sm text-[var(--cs-navy)] placeholder:text-[var(--cs-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)] resize-none"
             />
           </div>
         </div>

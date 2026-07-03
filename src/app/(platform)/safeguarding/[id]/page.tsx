@@ -45,9 +45,9 @@ const SEV_CONFIG: Record<string, {
   label: string; color: string; bg: string; badge: string; border: string; ring: string;
 }> = {
   low:      { label: "Low",      color: "text-[var(--cs-text-secondary)]",  bg: "bg-slate-100",  badge: "bg-slate-100 text-[var(--cs-text-secondary)]",   border: "border-l-slate-400",  ring: "ring-slate-200"  },
-  medium:   { label: "Medium",   color: "text-amber-700",  bg: "bg-amber-50",   badge: "bg-amber-100 text-amber-800",   border: "border-l-amber-500",  ring: "ring-amber-200"  },
+  medium:   { label: "Medium",   color: "text-amber-700",  bg: "bg-amber-50",   badge: "bg-amber-100 text-amber-800",   border: "border-l-amber-500",  ring: "ring-[var(--cs-warning-soft)]"  },
   high:     { label: "High",     color: "text-orange-700", bg: "bg-orange-50",  badge: "bg-orange-100 text-orange-800", border: "border-l-orange-500", ring: "ring-orange-200" },
-  critical: { label: "Critical", color: "text-red-700",    bg: "bg-red-50",     badge: "bg-red-100 text-red-800",       border: "border-l-red-600",    ring: "ring-red-200"    },
+  critical: { label: "Critical", color: "text-red-700",    bg: "bg-red-50",     badge: "bg-red-100 text-red-800",       border: "border-l-red-600",    ring: "ring-[var(--cs-risk-soft)]"    },
 };
 
 const SG_SEV_PRIORITY: Record<string, "urgent" | "high" | "medium" | "low"> = {

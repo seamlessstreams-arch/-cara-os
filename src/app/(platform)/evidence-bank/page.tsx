@@ -14,8 +14,8 @@ import { useEvidenceBank } from "@/hooks/use-evidence-bank";
 
 const STATUS_META: Record<string, { label: string; bg: string; text: string; ring: string; icon: React.ReactNode }> = {
   well_evidenced: { label: "well evidenced", bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200", icon: <CheckCircle2 className="h-4 w-4 text-green-600" /> },
-  thin: { label: "thin", bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200", icon: <CircleDashed className="h-4 w-4 text-amber-600" /> },
-  gap: { label: "gap", bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200", icon: <AlertTriangle className="h-4 w-4 text-red-600" /> },
+  thin: { label: "thin", bg: "bg-amber-100", text: "text-amber-700", ring: "ring-[var(--cs-warning-soft)]", icon: <CircleDashed className="h-4 w-4 text-amber-600" /> },
+  gap: { label: "gap", bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]", icon: <AlertTriangle className="h-4 w-4 text-red-600" /> },
 };
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800", warning: "border-amber-200 bg-amber-50 text-amber-800", positive: "border-green-200 bg-green-50 text-green-800",

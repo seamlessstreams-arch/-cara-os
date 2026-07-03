@@ -69,7 +69,7 @@ function StatusCell({
         className={cn(
           "inline-flex items-center justify-center rounded-md px-2 py-1 text-[9px] font-semibold min-w-[32px] transition-all hover:opacity-80",
           s.color,
-          check.concern_flag && "ring-1 ring-red-400"
+          check.concern_flag && "ring-1 ring-[var(--cs-risk)]"
         )}
       >
         {check.concern_flag ? "!" : s.short}

@@ -538,7 +538,7 @@ export default function TrainingMatrixPage() {
                               className={cn(
                                 "inline-flex flex-col items-center justify-center w-10 h-10 rounded-lg border",
                                 STATUS_CELL[status],
-                                expiringsSoon && status === "completed" && "ring-1 ring-amber-300",
+                                expiringsSoon && status === "completed" && "ring-1 ring-[var(--cs-warning-soft)]",
                               )}
                               title={`${STATUS_LABEL[status]}${expiry ? ` · Expires: ${expiry}` : ""}`}
                             >
