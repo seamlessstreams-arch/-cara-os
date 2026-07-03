@@ -229,6 +229,25 @@ describe("wasDeEscalationSuccessful", () => {
     }))).toBe(true);
   });
 
+  // Regression: word-boundary match must NOT read success out of a FAILED
+  // outcome via substring inversion (unsettled⊃settled, dysregulated⊃regulated,
+  // disengaged⊃engaged, uncooperative⊃cooperat) — the old `.includes` did.
+  it("returns false for a failed outcome whose words merely CONTAIN success terms", () => {
+    expect(wasDeEscalationSuccessful(makeBehaviourEntry({
+      direction: "concerning",
+      strategy_used: "Verbal reassurance",
+      outcome: "Child remained unsettled and dysregulated, stayed disengaged and uncooperative",
+    }))).toBe(false);
+  });
+
+  it("does not count a de-escalation ATTEMPT (no success) as success", () => {
+    expect(wasDeEscalationSuccessful(makeBehaviourEntry({
+      direction: "concerning",
+      strategy_used: "Low-arousal approach",
+      outcome: "De-escalation attempted but physical intervention was still required",
+    }))).toBe(false);
+  });
+
   it("returns false when no strategy used", () => {
     expect(wasDeEscalationSuccessful(makeBehaviourEntry({
       direction: "concerning",
