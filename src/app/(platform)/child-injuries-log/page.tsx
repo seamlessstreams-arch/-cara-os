@@ -273,7 +273,7 @@ export default function ChildInjuriesLogPage() {
                 className={cn(
                   "border-l-4",
                   BORDER_SEV[r.severity],
-                  r.safeguarding_flag && "ring-1 ring-amber-300",
+                  r.safeguarding_flag && "ring-1 ring-[var(--cs-warning-soft)]",
                 )}
               >
                 <CardHeader className="pb-2 cursor-pointer" onClick={() => toggle(r.id)}>

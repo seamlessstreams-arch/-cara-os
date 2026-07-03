@@ -385,7 +385,7 @@ export default function DocumentWizardPage() {
                       <span className="font-semibold">Text extraction note:</span> Server-side PDF/DOCX parsing isn&apos;t configured yet.
                       Please paste the text from your document below, or use the "Paste text instead" option.
                       <textarea
-                        className="mt-2 w-full rounded-lg border border-amber-200 bg-white p-2.5 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-[var(--cs-text-muted)]"
+                        className="mt-2 w-full rounded-lg border border-[var(--cs-warning-soft)] bg-white p-2.5 text-xs resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)] placeholder:text-[var(--cs-text-muted)]"
                         rows={4}
                         placeholder="Paste the document text here..."
                         value={documentText}

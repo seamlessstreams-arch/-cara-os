@@ -17,8 +17,8 @@ import { useRecordingQuality } from "@/hooks/use-recording-quality";
 const BAND_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
   strong: { bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200" },
   good: { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200" },
-  needs_improvement: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200" },
-  poor: { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200" },
+  needs_improvement: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-[var(--cs-warning-soft)]" },
+  poor: { bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]" },
 };
 const INSIGHT_STYLES: Record<string, string> = {
   critical: "border-red-200 bg-red-50 text-red-800",

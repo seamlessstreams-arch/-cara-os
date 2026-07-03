@@ -43,7 +43,7 @@ const FLAG_TONE: Record<RelationshipFlag["severity"], { icon: React.ElementType;
   advisory: { icon: Lightbulb, cls: "text-amber-700 bg-amber-50 border-amber-100" },
   info: { icon: Info, cls: "text-slate-600 bg-slate-50 border-slate-200" },
 };
-const inputCls = "w-full rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-white px-3 py-2 text-sm text-[var(--cs-navy,#1e293b)] focus:outline-none focus:ring-2 focus:ring-amber-300";
+const inputCls = "w-full rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-white px-3 py-2 text-sm text-[var(--cs-navy,#1e293b)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]";
 
 function Labelled({ label, children }: { label: string; children: React.ReactNode }) {
   return <label className="block space-y-1"><span className="text-xs font-semibold text-[var(--cs-navy,#1e293b)]">{label}</span>{children}</label>;

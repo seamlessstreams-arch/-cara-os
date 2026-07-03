@@ -431,7 +431,7 @@ export default function CompetencyFrameworkPage() {
                               className={cn(
                                 "inline-flex items-center justify-center w-7 h-7 rounded-lg text-xs font-bold",
                                 LEVEL_COLOUR[score],
-                                isBelowMin && "ring-2 ring-red-400 ring-offset-1",
+                                isBelowMin && "ring-2 ring-[var(--cs-risk)] ring-offset-1",
                               )}
                               title={isBelowMin ? `Below threshold (needs ${minRequired})` : COMPETENCY_LEVEL_LABELS[score]}
                             >

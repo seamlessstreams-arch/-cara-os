@@ -221,7 +221,7 @@ export default function DentalRecordsPage() {
               key={rec.id}
               className={cn(
                 "rounded-lg border bg-card overflow-hidden",
-                overdue && "border-red-200 ring-1 ring-red-100"
+                overdue && "border-[var(--cs-risk-soft)] ring-1 ring-[var(--cs-risk-soft)]"
               )}
             >
               <button

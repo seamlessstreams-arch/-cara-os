@@ -79,7 +79,7 @@ function DocumentCard({ doc }: { doc: UploadedDocument }) {
     <div className={cn(
       "rounded-2xl border bg-white overflow-hidden transition-shadow hover:shadow-sm border-l-4",
       risk?.border ?? "border-l-slate-200",
-      doc.ai_result?.prompt_injection_detected && "ring-2 ring-red-400",
+      doc.ai_result?.prompt_injection_detected && "ring-2 ring-[var(--cs-risk)]",
     )}>
       {/* Header */}
       <div className="flex items-start gap-4 p-5">

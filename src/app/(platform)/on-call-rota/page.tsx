@@ -154,7 +154,7 @@ export default function OnCallRotaPage() {
             const open = expandedId === r.id;
             const hasCritical = r.critical_incidents_handled > 0;
             return (
-              <Card key={r.id} className={cn(hasCritical && "border-amber-300 ring-1 ring-amber-200")}>
+              <Card key={r.id} className={cn(hasCritical && "border-[var(--cs-warning-soft)] ring-1 ring-[var(--cs-warning-soft)]")}>
                 <button className="w-full text-left" onClick={() => toggle(r.id)}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between gap-3">

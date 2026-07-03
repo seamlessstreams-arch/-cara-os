@@ -840,7 +840,7 @@ function OversightQueueTab() {
                   onChange={(e) => setNotesById((prev) => ({ ...prev, [inc.id]: e.target.value }))}
                   rows={4}
                   placeholder="Record your oversight — considerations, actions agreed, lessons identified, follow-up required…"
-                  className="w-full rounded-xl border border-amber-200 bg-white px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-[var(--cs-text-muted)] leading-relaxed"
+                  className="w-full rounded-xl border border-[var(--cs-warning-soft)] bg-white px-3.5 py-3 text-xs text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)] placeholder:text-[var(--cs-text-muted)] leading-relaxed"
                 />
                 <Button
                   onClick={() => handleSubmit(inc)}

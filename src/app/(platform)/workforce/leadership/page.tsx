@@ -185,7 +185,7 @@ export default function LeadershipReadinessPage() {
           placeholder="Search by staff name..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-xs text-slate-700 placeholder:text-slate-400 focus:border-amber-300 focus:ring-1 focus:ring-amber-200 outline-none transition-all"
+          className="w-full rounded-lg border border-slate-200 bg-white py-1.5 pl-9 pr-3 text-xs text-slate-700 placeholder:text-slate-400 focus:border-[var(--cs-warning-soft)] focus:ring-1 focus:ring-[var(--cs-warning-soft)] outline-none transition-all"
         />
       </div>
 

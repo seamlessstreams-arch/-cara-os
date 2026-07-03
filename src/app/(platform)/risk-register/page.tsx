@@ -92,7 +92,7 @@ function RiskCard({ risk }: { risk: RiskRegisterEntry }) {
   return (
     <div className={cn(
       "rounded-lg border bg-white transition-all",
-      risk.risk_level === "critical" && risk.status !== "closed" && "ring-2 ring-red-400 border-red-300",
+      risk.risk_level === "critical" && risk.status !== "closed" && "ring-2 ring-[var(--cs-risk)] border-[var(--cs-risk-soft)]",
       isOverdue && "border-amber-300",
     )}>
       <div

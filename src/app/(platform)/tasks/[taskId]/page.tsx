@@ -144,7 +144,7 @@ function EscalatePanel({
         <select
           value={to}
           onChange={(e) => setTo(e.target.value)}
-          className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-amber-400"
+          className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm text-[var(--cs-text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]"
         >
           <option value="">Select person…</option>
           {seniors.map((s) => (
@@ -159,7 +159,7 @@ function EscalatePanel({
           onChange={(e) => setReason(e.target.value)}
           rows={2}
           placeholder="Why is this being escalated?"
-          className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-[var(--cs-text-muted)]"
+          className="w-full rounded-xl border border-[var(--cs-border)] bg-white px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)] placeholder:text-[var(--cs-text-muted)]"
         />
       </div>
       {error && <p className="text-xs text-red-600 font-medium">{error}</p>}

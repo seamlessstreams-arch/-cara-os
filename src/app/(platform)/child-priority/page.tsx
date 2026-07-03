@@ -15,8 +15,8 @@ import { cn } from "@/lib/utils";
 import { useChildPriority } from "@/hooks/use-child-priority";
 
 const BAND_STYLES: Record<string, { bg: string; text: string; ring: string }> = {
-  critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-red-200" },
-  high: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-amber-200" },
+  critical: { bg: "bg-red-100", text: "text-red-700", ring: "ring-[var(--cs-risk-soft)]" },
+  high: { bg: "bg-amber-100", text: "text-amber-700", ring: "ring-[var(--cs-warning-soft)]" },
   medium: { bg: "bg-blue-100", text: "text-blue-700", ring: "ring-blue-200" },
   low: { bg: "bg-green-100", text: "text-green-700", ring: "ring-green-200" },
 };

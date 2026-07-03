@@ -91,7 +91,7 @@ function OversightPanel({ incidentId, onSaved }: OversightPanelProps) {
         onChange={(e) => setNote(e.target.value)}
         rows={3}
         placeholder="Record your oversight comments — review of response, lessons, any further actions required…"
-        className="w-full rounded-xl border border-amber-200 bg-white px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-amber-300 placeholder:text-[var(--cs-text-muted)]"
+        className="w-full rounded-xl border border-[var(--cs-warning-soft)] bg-white px-3.5 py-3 text-sm text-[var(--cs-text-secondary)] resize-none focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)] placeholder:text-[var(--cs-text-muted)]"
       />
       {error && (
         <p className="text-xs text-red-600 font-medium flex items-center gap-1.5">

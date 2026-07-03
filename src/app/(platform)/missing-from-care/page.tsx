@@ -145,7 +145,7 @@ function EpisodeCard({
       className={cn(
         "rounded-2xl border bg-white transition-all",
         RISK_BORDER[episode.risk_level] ?? "border-[var(--cs-border)]",
-        episode.status === "active" && "ring-1 ring-red-300"
+        episode.status === "active" && "ring-1 ring-[var(--cs-risk-soft)]"
       )}
     >
       {/* Header row */}

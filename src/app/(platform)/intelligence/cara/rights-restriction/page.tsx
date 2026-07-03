@@ -85,7 +85,7 @@ function Labelled({ label, hint, children }: { label: string; hint?: string; chi
 }
 
 const inputCls =
-  "w-full rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-white px-3 py-2 text-sm text-[var(--cs-navy,#1e293b)] focus:outline-none focus:ring-2 focus:ring-amber-300";
+  "w-full rounded-lg border border-[var(--cs-border,#e2e8f0)] bg-white px-3 py-2 text-sm text-[var(--cs-navy,#1e293b)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]";
 
 type FormState = Record<string, string>;
 

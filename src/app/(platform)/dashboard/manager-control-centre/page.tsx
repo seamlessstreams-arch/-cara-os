@@ -930,7 +930,7 @@ export default function ManagerControlCentrePage() {
                 className={cn(
                   "border-l-4 transition-shadow",
                   urgStyle.border,
-                  item.urgency === "critical" && "ring-1 ring-red-200",
+                  item.urgency === "critical" && "ring-1 ring-[var(--cs-risk-soft)]",
                   open && "shadow-md",
                 )}
               >

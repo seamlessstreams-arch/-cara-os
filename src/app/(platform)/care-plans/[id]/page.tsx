@@ -44,11 +44,11 @@ const DOMAIN_CONFIG: Record<CarePlanDomain, {
   health:                { label: "Health",                icon: Heart,         colour: "text-rose-600",    bg: "bg-rose-50",    border: "border-rose-200",   ring: "ring-rose-200"   },
   education:             { label: "Education",             icon: GraduationCap, colour: "text-blue-600",    bg: "bg-blue-50",    border: "border-blue-200",   ring: "ring-blue-200"   },
   emotional_behavioural: { label: "Emotional & Behavioural", icon: Brain,       colour: "text-[var(--cs-cara-gold)]",  bg: "bg-[var(--cs-cara-gold-bg)]",  border: "border-[var(--cs-cara-gold-soft)]", ring: "ring-[var(--cs-cara-gold-soft)]" },
-  identity:              { label: "Identity & Culture",    icon: Fingerprint,   colour: "text-amber-600",   bg: "bg-amber-50",   border: "border-amber-200",  ring: "ring-amber-200"  },
+  identity:              { label: "Identity & Culture",    icon: Fingerprint,   colour: "text-amber-600",   bg: "bg-amber-50",   border: "border-[var(--cs-warning-soft)]",  ring: "ring-[var(--cs-warning-soft)]"  },
   family_social:         { label: "Family & Social",       icon: Users,         colour: "text-emerald-600", bg: "bg-emerald-50", border: "border-emerald-200",ring: "ring-emerald-200"},
   independence:          { label: "Independence",          icon: Zap,           colour: "text-sky-600",     bg: "bg-sky-50",     border: "border-sky-200",    ring: "ring-sky-200"    },
   placement_stability:   { label: "Placement Stability",   icon: Home,          colour: "text-[var(--cs-text-secondary)]",   bg: "bg-slate-100",  border: "border-slate-300",  ring: "ring-slate-300"  },
-  safety:                { label: "Safety",                icon: Shield,        colour: "text-red-600",     bg: "bg-red-50",     border: "border-red-200",    ring: "ring-red-200"    },
+  safety:                { label: "Safety",                icon: Shield,        colour: "text-red-600",     bg: "bg-red-50",     border: "border-[var(--cs-risk-soft)]",    ring: "ring-[var(--cs-risk-soft)]"    },
 };
 
 const ALL_DOMAINS = Object.keys(DOMAIN_CONFIG) as CarePlanDomain[];

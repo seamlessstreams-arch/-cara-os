@@ -255,7 +255,7 @@ export default function IroCorrespondencePage() {
               className={cn(
                 "rounded-lg border bg-card overflow-hidden",
                 fromIro ? "border-l-4 border-l-purple-400" : "border-l-4 border-l-blue-400",
-                r.formal_dispute && "ring-1 ring-red-200"
+                r.formal_dispute && "ring-1 ring-[var(--cs-risk-soft)]"
               )}
             >
               <button

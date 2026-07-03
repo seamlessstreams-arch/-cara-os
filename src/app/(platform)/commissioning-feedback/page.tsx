@@ -264,7 +264,7 @@ export default function CommissioningFeedbackPage() {
                 key={entry.id}
                 className={cn(
                   "rounded-xl border bg-white overflow-hidden",
-                  unresolved && "border-red-300 ring-1 ring-red-200",
+                  unresolved && "border-[var(--cs-risk-soft)] ring-1 ring-[var(--cs-risk-soft)]",
                 )}
               >
                 <button

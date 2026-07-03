@@ -238,7 +238,7 @@ function NewCheckForm({
                       ...prev,
                       [child.id]: { ...prev[child.id], concern_details: e.target.value },
                     }))}
-                    className="w-full rounded-lg border border-[--cs-risk-soft] bg-white px-3 py-2 text-xs placeholder:text-red-300 resize-none h-20 focus:outline-none focus:ring-1 focus:ring-red-300"
+                    className="w-full rounded-lg border border-[--cs-risk-soft] bg-white px-3 py-2 text-xs placeholder:text-red-300 resize-none h-20 focus:outline-none focus:ring-1 focus:ring-[var(--cs-risk-soft)]"
                   />
                 </div>
               )}
@@ -264,7 +264,7 @@ function NewCheckForm({
                     ...prev,
                     [child.id]: { ...prev[child.id], marks_desc: e.target.value },
                   }))}
-                  className="w-full mt-1 rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] px-3 py-2 text-xs placeholder:text-amber-400 resize-none h-16 focus:outline-none focus:ring-1 focus:ring-amber-300"
+                  className="w-full mt-1 rounded-lg border border-[--cs-warning-soft] bg-[--cs-warning-bg] px-3 py-2 text-xs placeholder:text-amber-400 resize-none h-16 focus:outline-none focus:ring-1 focus:ring-[var(--cs-warning-soft)]"
                 />
               )}
             </div>

@@ -66,9 +66,9 @@ const CHECK_STATUS_DISPLAY: Record<string, { label: string; color: string; ring:
   not_started: { label: "Not Started", color: "bg-slate-100 text-[var(--cs-text-muted)]", ring: "ring-slate-200" },
   requested: { label: "Requested", color: "bg-blue-100 text-blue-700", ring: "ring-blue-200" },
   in_progress: { label: "In Progress", color: "bg-blue-100 text-blue-700", ring: "ring-blue-300" },
-  received: { label: "Received", color: "bg-amber-100 text-amber-700", ring: "ring-amber-200" },
+  received: { label: "Received", color: "bg-amber-100 text-amber-700", ring: "ring-[var(--cs-warning-soft)]" },
   verified: { label: "Verified", color: "bg-emerald-100 text-emerald-700", ring: "ring-emerald-300" },
-  concern_flagged: { label: "Concern Flagged", color: "bg-red-100 text-red-700", ring: "ring-red-300" },
+  concern_flagged: { label: "Concern Flagged", color: "bg-red-100 text-red-700", ring: "ring-[var(--cs-risk-soft)]" },
   override_approved: { label: "Override Approved", color: "bg-purple-100 text-purple-700", ring: "ring-purple-300" },
   not_required: { label: "Not Required", color: "bg-slate-100 text-[var(--cs-text-muted)]", ring: "ring-slate-100" },
 };
@@ -1087,7 +1087,7 @@ export default function CandidateDetailPage() {
             value={flagConcern.notes}
             onChange={(e) => setFlagConcern({ ...flagConcern, notes: e.target.value })}
             placeholder="Describe the concern in detail…"
-            className="w-full rounded-xl border border-[var(--cs-border)] p-3 text-sm resize-none h-28 focus:outline-none focus:ring-2 focus:ring-red-300"
+            className="w-full rounded-xl border border-[var(--cs-border)] p-3 text-sm resize-none h-28 focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk-soft)]"
             autoFocus
           />
           <div className="flex justify-end gap-2">

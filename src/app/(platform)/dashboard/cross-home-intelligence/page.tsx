@@ -1180,7 +1180,7 @@ function CaraAnalysisTab({
                 if (e.key === "Enter" && query.trim()) onSubmit(query);
               }}
               placeholder="e.g. Which home needs the most support right now?"
-              className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-amber-300"
+              className="flex-1 px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-[var(--cs-warning-soft)]"
               style={{ borderColor: "var(--cs-border)" }}
             />
             <Button

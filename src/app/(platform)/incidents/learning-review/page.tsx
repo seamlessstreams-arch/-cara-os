@@ -373,7 +373,7 @@ export default function IncidentLearningReviewPage() {
                         </div>
                         <input
                           type="text"
-                          className="w-full p-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-red-200"
+                          className="w-full p-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--cs-risk-soft)]"
                           placeholder="Rationale for no further action (minimum 30 characters)..."
                           value={currentNfa}
                           onChange={(e) =>
