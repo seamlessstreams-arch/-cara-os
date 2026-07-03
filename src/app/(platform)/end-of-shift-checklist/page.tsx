@@ -13,6 +13,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { FlatList, FlatListRow, FlatListRowDetail, type RowSeverity } from "@/components/ui/list-row";
+import { CheckTile } from "@/components/ui/check-tile";
 import {
   Select,
   SelectContent,
@@ -459,94 +460,30 @@ export default function EndOfShiftChecklistPage() {
                 <FlatListRowDetail className="space-y-5">
                   {/* Closing-down summary */}
                   <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div
-                      className={cn(
-                        "rounded-md border p-3",
-                        r.building_security_checked
-                          ? "border-[--cs-success-soft] bg-[--cs-success-bg]"
-                          : "border-[--cs-risk-soft] bg-[--cs-risk-bg]",
-                      )}
-                    >
-                      <div className="flex items-center gap-2 text-xs font-medium text-[var(--cs-text-secondary)]">
-                        <Lock className="h-4 w-4" /> Building secured
-                      </div>
-                      <div
-                        className={cn(
-                          "mt-1 text-sm font-semibold",
-                          r.building_security_checked
-                            ? "text-[--cs-success]"
-                            : "text-[--cs-risk]",
-                        )}
-                      >
-                        {r.building_security_checked ? "Yes" : "No"}
-                      </div>
-                    </div>
-                    <div
-                      className={cn(
-                        "rounded-md border p-3",
-                        r.medication_cabinet_locked
-                          ? "border-[--cs-success-soft] bg-[--cs-success-bg]"
-                          : "border-[--cs-risk-soft] bg-[--cs-risk-bg]",
-                      )}
-                    >
-                      <div className="flex items-center gap-2 text-xs font-medium text-[var(--cs-text-secondary)]">
-                        <Pill className="h-4 w-4" /> Med cabinet locked
-                      </div>
-                      <div
-                        className={cn(
-                          "mt-1 text-sm font-semibold",
-                          r.medication_cabinet_locked
-                            ? "text-[--cs-success]"
-                            : "text-[--cs-risk]",
-                        )}
-                      >
-                        {r.medication_cabinet_locked ? "Yes" : "No"}
-                      </div>
-                    </div>
-                    <div
-                      className={cn(
-                        "rounded-md border p-3",
-                        r.kitchen_closed
-                          ? "border-[--cs-success-soft] bg-[--cs-success-bg]"
-                          : "border-[--cs-risk-soft] bg-[--cs-risk-bg]",
-                      )}
-                    >
-                      <div className="flex items-center gap-2 text-xs font-medium text-[var(--cs-text-secondary)]">
-                        <ChefHat className="h-4 w-4" /> Kitchen closed
-                      </div>
-                      <div
-                        className={cn(
-                          "mt-1 text-sm font-semibold",
-                          r.kitchen_closed
-                            ? "text-[--cs-success]"
-                            : "text-[--cs-risk]",
-                        )}
-                      >
-                        {r.kitchen_closed ? "Yes" : "No"}
-                      </div>
-                    </div>
-                    <div
-                      className={cn(
-                        "rounded-md border p-3",
-                        r.pets_cared_for
-                          ? "border-[--cs-success-soft] bg-[--cs-success-bg]"
-                          : "border-[--cs-risk-soft] bg-[--cs-risk-bg]",
-                      )}
-                    >
-                      <div className="flex items-center gap-2 text-xs font-medium text-[var(--cs-text-secondary)]">
-                        <PawPrint className="h-4 w-4" /> Pets cared for
-                      </div>
-                      <div
-                        className={cn(
-                          "mt-1 text-sm font-semibold",
-                          r.pets_cared_for
-                            ? "text-[--cs-success]"
-                            : "text-[--cs-risk]",
-                        )}
-                      >
-                        {r.pets_cared_for ? "Yes" : "No"}
-                      </div>
-                    </div>
+                    <CheckTile
+                      ok={r.building_security_checked}
+                      icon={Lock}
+                      label="Building secured"
+                      value={r.building_security_checked ? "Yes" : "No"}
+                    />
+                    <CheckTile
+                      ok={r.medication_cabinet_locked}
+                      icon={Pill}
+                      label="Med cabinet locked"
+                      value={r.medication_cabinet_locked ? "Yes" : "No"}
+                    />
+                    <CheckTile
+                      ok={r.kitchen_closed}
+                      icon={ChefHat}
+                      label="Kitchen closed"
+                      value={r.kitchen_closed ? "Yes" : "No"}
+                    />
+                    <CheckTile
+                      ok={r.pets_cared_for}
+                      icon={PawPrint}
+                      label="Pets cared for"
+                      value={r.pets_cared_for ? "Yes" : "No"}
+                    />
                   </div>
 
                   {/* Checks grouped by category */}
