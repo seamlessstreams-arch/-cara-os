@@ -76,6 +76,33 @@ const beh = (
 
 export const PRACTICE_OS_BEHAVIOUR_LOG: BehaviourEntry[] = [
   // ── Alex: evening cluster, family-contact trigger, RISING intensity ────────
+  // The classic escalation signature: 5–8 weeks ago the evenings rumbled often
+  // but at moderate level; the recent month is fewer episodes at higher
+  // intensity. Both halves are recorded — the arc is the evidence.
+  beh("beh_alex_00a", ALEX, 59, "20:10", "concern", "moderate", "Evening restlessness", {
+    antecedent: "Quiet evening; Alex asked twice when his next family call would be.",
+    behaviour: "Paced between lounge and kitchen, short with staff and peers.",
+    consequence: "Key worker offered a game of pool; declined, took himself to bed early.",
+    trigger: "family contact",
+    strategy_used: "Named the waiting, offered company without demand.",
+    outcome: "Settled overnight; raised the call himself at breakfast.",
+  }),
+  beh("beh_alex_00b", ALEX, 52, "19:20", "concern", "moderate", "Tension before the call slot", {
+    antecedent: "Family call scheduled for 19:30; Alex hovering by the office from 19:00.",
+    behaviour: "Snapped at a peer over the TV remote, kicked a beanbag across the lounge.",
+    consequence: "Peer moved to the snug; staff sat with Alex until the call connected.",
+    trigger: "family contact",
+    strategy_used: "Side-by-side waiting, no demands until the call.",
+    outcome: "The call went well and Alex apologised to the peer unprompted — settled evening after.",
+  }),
+  beh("beh_alex_00c", ALEX, 47, "21:30", "concern", "moderate", "Late-evening agitation", {
+    antecedent: "Overheard staff handover mention 'court' in an unrelated context.",
+    behaviour: "Demanded to know what was said about him; refused the bedtime routine.",
+    consequence: "Senior explained the misunderstanding honestly; routine restarted at 22:00.",
+    trigger: "court proceedings",
+    strategy_used: "Honesty about what was and wasn't said; routine restarted without penalty.",
+    outcome: "Alex accepted the explanation and settled, later than usual.",
+  }),
   beh("beh_alex_01", ALEX, 84, "19:40", "concern", "moderate", "Unsettled after family call", {
     antecedent: "Scheduled phone contact with mother overran and ended abruptly.",
     behaviour: "Paced the communal lounge, raised voice, slammed the kitchen door.",
@@ -182,6 +209,14 @@ export const PRACTICE_OS_BEHAVIOUR_LOG: BehaviourEntry[] = [
     trigger: "morning routine",
     strategy_used: "Casey's own words used: she asked for no rushing — staff matched her pace.",
     outcome: "Casey counted her breathing with staff and settled quickly — she boarded the bus on time.",
+  }),
+  beh("beh_casey_03b", CASEY, 40, "08:20", "concern", "moderate", "Wobble while the routine bedded in", {
+    antecedent: "Agency staff on shift didn't know the private-routine plan and offered medication at the hatch.",
+    behaviour: "Casey refused loudly and went back upstairs; late for the school bus.",
+    consequence: "Plan shared with agency staff at handover; laminated card added to the med room.",
+    trigger: "morning routine",
+    strategy_used: "Regular staff took over; private routine restored the same morning.",
+    outcome: "Took the medication once the routine was hers again — the plan, not the person, is what works.",
   }),
   beh("beh_casey_04", CASEY, 28, "08:00", "positive", "low", "Two settled weeks of mornings", {
     antecedent: "Private, unhurried medication routine now standard.",
