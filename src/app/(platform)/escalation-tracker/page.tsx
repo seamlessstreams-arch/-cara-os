@@ -26,6 +26,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { EscalationDecisionPanel } from "@/components/risk-escalation/escalation-decision-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
@@ -140,6 +141,12 @@ export default function EscalationTrackerPage() {
         </div>
       }
     >
+      {/* Risk escalation decision workflow — Cara suggests a level from the
+          evidence; a named manager confirms/amends/rejects. Logged + traced. */}
+      <div className="mb-6">
+        <EscalationDecisionPanel />
+      </div>
+
       {/* ─── summary stats ─── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <Card>
