@@ -1087,14 +1087,19 @@ const store = {
   visitors: [] as VisitorEntry[],
   fireDrills: [] as FireDrill[],
   significantEvents: [] as SignificantEvent[],
-  // Demo-seeded: three restraints matching incidents inc_005/006/007 — the
-  // latest (rst_007) deliberately lacks a child debrief (open repair gap).
-  restraints: [...PRACTICE_OS_RESTRAINTS] as RestraintRecord[],
+  // NOTE: reassigned later in this file (`store.restraints = [...]`) — the
+  // dead-cells seed block owns rst_001-003, then the Practice OS demo arc
+  // (rst_005/6/7, matching inc_005/6/7) is push()ed after it. Any value set
+  // here does not survive; keep [] to avoid implying otherwise.
+  restraints: [] as RestraintRecord[],
   notifiableEvents: [] as NotifiableEvent[],
   nightLogs: [] as NightLogEntry[],
-  // Demo-seeded: the capability-showcase arc (Alex escalating-evening cluster,
-  // Casey improvement story, Jordan voice-rich entries). See seed-practice-os.ts.
-  behaviourLog: [...PRACTICE_OS_BEHAVIOUR_LOG] as BehaviourEntry[],
+  // NOTE: reassigned later in this file (`store.behaviourLog = [...]`) — the
+  // dead-cells seed block owns beh_001+, then the Practice OS demo arc
+  // (Alex escalating-evening cluster, Casey improvement, Jordan voice-rich;
+  // see seed-practice-os.ts) is push()ed after it. Any value set here does
+  // not survive; keep [] to avoid implying otherwise.
+  behaviourLog: [] as BehaviourEntry[],
   accidentBook: [] as AccidentRecord[],
   absenceTracking: [] as AbsenceRecord[],
   positiveHandling: [] as PositiveHandlingPlan[],
@@ -5934,6 +5939,15 @@ store.restraints = [
     recorded_by: "staff_ryan", created_at: daysFromNow(-10),
   },
 ] as RestraintRecord[];
+
+// Practice OS demo arc — APPENDED to the blocks above (which REASSIGN the
+// collections, so the literal spreads earlier in this file never survive).
+// The designed narrative (Alex escalating-evening cluster, Casey improvement,
+// Jordan voice-rich, rst_005/6/7 matching inc_005/6/7) lives in
+// seed-practice-os.ts; the quality gate asserts on the MERGED store exactly
+// as the API routes read it.
+store.behaviourLog.push(...PRACTICE_OS_BEHAVIOUR_LOG);
+store.restraints.push(...PRACTICE_OS_RESTRAINTS);
 
 // ── Visitors Seed Data ────────────────────────────────────────────────────────
 

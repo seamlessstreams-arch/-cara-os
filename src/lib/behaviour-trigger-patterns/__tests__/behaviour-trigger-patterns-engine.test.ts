@@ -35,6 +35,10 @@ describe("normalisation helpers", () => {
     expect(intensityRank("high")).toBe(3);
     expect(intensityRank("critical")).toBe(4);
   });
+  it("ranks the legacy 'severe' vocabulary at the top — regression: it fell through to 1 (below 'low'), silently flattening genuine escalation in trajectory math", () => {
+    expect(intensityRank("severe")).toBe(4);
+    expect(intensityRank("SEVERE")).toBe(4);
+  });
   it("normalises triggers for grouping", () => {
     expect(normaliseTrigger("  Family   Contact ")).toBe("family contact");
   });

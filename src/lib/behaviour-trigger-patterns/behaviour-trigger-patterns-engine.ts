@@ -111,7 +111,10 @@ export const ANALYSIS_WINDOW_DAYS = 90;
 export const RECENT_WINDOW_DAYS = 30;
 
 export const INTENSITY_RANK: Record<string, number> = {
-  low: 1, moderate: 2, medium: 2, high: 3, critical: 4,
+  // "severe" is the legacy/BehaviourMap vocabulary's top rank — without it a
+  // severe entry fell through to the fallback (1) and counted BELOW "low" in
+  // trajectory math, silently flattening genuine escalation.
+  low: 1, moderate: 2, medium: 2, high: 3, severe: 4, critical: 4,
 };
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
