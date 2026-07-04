@@ -21,6 +21,7 @@ import type {
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type { EthicalIntelligenceEvent } from "@/lib/ethical-intelligence/types";
 import type { EscalationDecision } from "@/lib/risk-escalation/types";
+import type { TapSession } from "@/lib/tap-thinking/types";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
@@ -841,6 +842,8 @@ const store = {
   // Risk-escalation decision workflow — Cara suggests, a named manager decides.
   // Never seeded; every assessment is traced to its source records.
   escalationDecisions: [] as EscalationDecision[],
+  // TAP thinking sessions (See Clearly → … → Sustain Practice). Never seeded.
+  tapSessions: [] as TapSession[],
   // ── Writing Assistant ─────────────────────────────────────────────────────
   writingAssistantSettings: {} as Record<string, WritingAssistantSettings>,
   writingAssistantAuditEvents: [...WA_AUDIT_SEED] as WritingAuditEvent[],
@@ -11327,6 +11330,16 @@ export const db = {
     append: (decision: EscalationDecision): EscalationDecision => {
       store.escalationDecisions.push(decision);
       return decision;
+    },
+  },
+
+  // ── TAP thinking sessions (structured thinking at decision points) ─────
+  tapSessions: {
+    findAll: (): TapSession[] => store.tapSessions,
+    findById: (id: string): TapSession | undefined => store.tapSessions.find((s) => s.id === id),
+    append: (session: TapSession): TapSession => {
+      store.tapSessions.push(session);
+      return session;
     },
   },
 
