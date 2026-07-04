@@ -21,6 +21,7 @@ import {
 import { OversightWorkflowPanel } from "@/components/oversight/oversight-workflow-panel";
 import { OversightRecordPicker } from "@/components/oversight/oversight-record-picker";
 import { EthicalCyclePanel } from "@/components/ethical-intelligence/ethical-cycle-panel";
+import { TapThinkingPanel } from "@/components/tap-thinking/tap-thinking-panel";
 
 export default function OversightWorkflowPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -142,6 +143,15 @@ export default function OversightWorkflowPage() {
           {/* Ethical Intelligence spine — where this child's learning cycles sit
               (Experience→…→Integration), each traced to its source records. */}
           {recordMeta?.childId && <EthicalCyclePanel childId={recordMeta.childId} />}
+          {/* TAP thinking at the oversight decision point — traced to the record under review. */}
+          {recordMeta?.childId && (
+            <TapThinkingPanel
+              childId={recordMeta.childId}
+              childName={recordMeta.childName}
+              defaultContext="management_oversight"
+              sourceRecord={{ recordType: recordMeta.type, recordId: recordMeta.id }}
+            />
+          )}
         </div>
       )}
     </PageShell>
