@@ -64,6 +64,27 @@ const nextConfig: NextConfig = {
   // default-deny these features unless the page opts in. `self` keeps them
   // off-limits to any third-party frame, so it grants access without widening it.
   async headers() {
+    // Report-ONLY CSP: browsers evaluate this policy and POST any violation to
+    // /api/v1/security/csp-report, but NOTHING is blocked/enforced — so it cannot
+    // break the app. It surfaces what an enforced CSP would block (especially
+    // unexpected connect-src / img-src egress) before we turn it on with a nonce
+    // strategy. script-src/style-src keep 'unsafe-inline' because Next's inline
+    // runtime needs it until nonces land; the high-value directives (default /
+    // object / base-uri / frame-ancestors / form-action / connect) are already
+    // locked to 'self'/'none', so any reported violation is actionable signal.
+    const cspReportOnly = [
+      "default-src 'self'",
+      "base-uri 'self'",
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "form-action 'self'",
+      "img-src 'self' data: blob:",
+      "font-src 'self' data:",
+      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "connect-src 'self'",
+      "report-uri /api/v1/security/csp-report",
+    ].join("; ");
     return [
       {
         source: "/:path*",
@@ -82,9 +103,11 @@ const nextConfig: NextConfig = {
           // Referrer: never leak record URLs (which can carry child ids) to
           // third parties; send only the origin cross-site.
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          // NOTE: Content-Security-Policy intentionally omitted here — a blanket
-          // CSP breaks Next's inline runtime/styles; it must be rolled out
-          // report-only first with a nonce strategy (tracked as an audit item).
+          // Report-only CSP (policy + rationale defined above). Enforces nothing —
+          // it only reports what an enforced policy would block, to the report-uri
+          // sink. The enforced Content-Security-Policy + nonce rollout is the next
+          // step once these reports show what needs allow-listing.
+          { key: "Content-Security-Policy-Report-Only", value: cspReportOnly },
         ],
       },
     ];
