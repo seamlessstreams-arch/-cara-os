@@ -19,6 +19,7 @@ import type {
   TrainingRecord, Home, CareForm, Supervision,
 } from "@/types";
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
+import type { EthicalIntelligenceEvent } from "@/lib/ethical-intelligence/types";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
@@ -832,6 +833,10 @@ const store = {
   // Canonical persisted event spine (forms-as-views write path). Empty by default —
   // the read-only projection of domain collections is unchanged until events are captured here.
   cornerstoneEvents: [] as CornerstoneEvent[],
+  // Ethical Intelligence spine — persisted, source-linked learning events on the
+  // Experience→Insight→Decision→Impact→Learning→Integration cycle. Empty by
+  // default; populated at points of work (never seeded — every entry is traced).
+  ethicalIntelligenceEvents: [] as EthicalIntelligenceEvent[],
   // ── Writing Assistant ─────────────────────────────────────────────────────
   writingAssistantSettings: {} as Record<string, WritingAssistantSettings>,
   writingAssistantAuditEvents: [...WA_AUDIT_SEED] as WritingAuditEvent[],
@@ -11295,6 +11300,17 @@ export const db = {
     findById: (id: string): CornerstoneEvent | undefined => store.cornerstoneEvents.find((e) => e.id === id),
     append: (event: CornerstoneEvent): CornerstoneEvent => {
       store.cornerstoneEvents.push(event);
+      return event;
+    },
+  },
+
+  // ── Ethical Intelligence spine (source-linked learning events) ─────────
+  ethicalIntelligenceEvents: {
+    findAll: (): EthicalIntelligenceEvent[] => store.ethicalIntelligenceEvents,
+    findById: (id: string): EthicalIntelligenceEvent | undefined =>
+      store.ethicalIntelligenceEvents.find((e) => e.id === id),
+    append: (event: EthicalIntelligenceEvent): EthicalIntelligenceEvent => {
+      store.ethicalIntelligenceEvents.push(event);
       return event;
     },
   },

@@ -16,6 +16,8 @@ import {
   buildDefensibleDecision,
   type DefensibleDecisionInput,
 } from "@/lib/cara-reasoning/defensible-decision-engine";
+import { recordDecision } from "@/lib/ethical-intelligence/capture-service";
+import type { EthicalSourceRef } from "@/lib/ethical-intelligence/types";
 
 export const dynamic = "force-dynamic";
 
@@ -63,8 +65,30 @@ export async function POST(req: NextRequest) {
   const today = new Date().toISOString().slice(0, 10);
   try {
     const decision = buildDefensibleDecision(body as DefensibleDecisionInput, today);
-    return NextResponse.json({ data: { decision } });
+
+    // Ethical Intelligence spine: when the caller anchors this decision to a
+    // learning event, PERSIST it as the event's Decision stage (previously the
+    // 14-point record was computed and discarded — untraceable). Refused unless
+    // it cites source records; the decision maker must be a named human.
+    let persisted: { eventId: string; decisionId: string } | { refused: string } | null = null;
+    const persistTo = (body as { persistTo?: { eventId?: string; decisionMaker?: string; decisionMakerRole?: string; sourceRecords?: EthicalSourceRef[] } }).persistTo;
+    if (persistTo?.eventId) {
+      const result = recordDecision(persistTo.eventId, {
+        decisionSummary: body.decisionSummary!,
+        decisionMaker: persistTo.decisionMaker ?? "",
+        decisionMakerRole: persistTo.decisionMakerRole,
+        evidence: (body.informationConsidered ?? []).filter((s) => typeof s === "string" && s.trim().length > 0),
+        defensibleDecision: decision,
+        sourceRecords: persistTo.sourceRecords ?? [],
+      });
+      persisted = result.ok
+        ? { eventId: persistTo.eventId, decisionId: result.value.id }
+        : { refused: result.reason };
+    }
+
+    return NextResponse.json({ data: { decision, persisted } });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to build defensible decision", details: String(error) }, { status: 500 });
+    console.error("[api] server error:", error);
+    return NextResponse.json({ error: "Failed to build defensible decision" }, { status: 500 });
   }
 }

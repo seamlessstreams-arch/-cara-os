@@ -25,6 +25,7 @@ import {
   generateWorkflowSignOff,
   buildSignOffNote,
 } from "@/lib/oversight/management-oversight-engine";
+import { markOversightCompleted } from "@/lib/ethical-intelligence/capture-service";
 import type {
   OversightInput,
   OversightResult,
@@ -62,6 +63,9 @@ interface SignOffBody extends Partial<WorkflowSignOffInput> {
   /** When present, a successful sign-off is recorded against this source record. */
   recordId?: string;
   recordType?: string;
+  /** When present, a successful sign-off stamps the linked Ethical Intelligence
+   *  cycle (managementOversightCompleted → true). */
+  ethicalEventId?: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -124,13 +128,20 @@ export async function POST(req: NextRequest) {
       persistedToRecord = !!updated;
     }
 
+    // Ethical Intelligence spine: a signed workflow stamps the linked learning
+    // event's cycle — management oversight is now COMPLETED, evidenced by this
+    // very sign-off. (Integration stage, one of the cycle's closure questions.)
+    let ethicalCycleStamped = false;
+    if (result.signed && body.ethicalEventId) {
+      const stamped = markOversightCompleted(body.ethicalEventId, auth.userId);
+      ethicalCycleStamped = stamped.ok;
+    }
+
     // Always 200: a blocked-but-evaluated sign-off is a valid result (signed:false
     // + blockers), not a transport error. Genuine failures use 400/403/500.
-    return NextResponse.json({ data: { ...result, persistedToRecord } });
+    return NextResponse.json({ data: { ...result, persistedToRecord, ethicalCycleStamped } });
   } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to process workflow sign-off", details: String(error) },
-      { status: 500 },
-    );
+    console.error("[api] server error:", error);
+    return NextResponse.json({ error: "Failed to process workflow sign-off" }, { status: 500 });
   }
 }

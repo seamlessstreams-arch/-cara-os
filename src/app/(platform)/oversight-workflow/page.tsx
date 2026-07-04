@@ -20,6 +20,7 @@ import {
 } from "@/hooks/use-oversight-workflow";
 import { OversightWorkflowPanel } from "@/components/oversight/oversight-workflow-panel";
 import { OversightRecordPicker } from "@/components/oversight/oversight-record-picker";
+import { EthicalCyclePanel } from "@/components/ethical-intelligence/ethical-cycle-panel";
 
 export default function OversightWorkflowPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -138,6 +139,9 @@ export default function OversightWorkflowPage() {
             recordId={recordMeta?.id}
             childId={recordMeta?.childId}
           />
+          {/* Ethical Intelligence spine — where this child's learning cycles sit
+              (Experience→…→Integration), each traced to its source records. */}
+          {recordMeta?.childId && <EthicalCyclePanel childId={recordMeta.childId} />}
         </div>
       )}
     </PageShell>
