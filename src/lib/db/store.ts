@@ -20,6 +20,7 @@ import type {
 } from "@/types";
 import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type { EthicalIntelligenceEvent } from "@/lib/ethical-intelligence/types";
+import type { EscalationDecision } from "@/lib/risk-escalation/types";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
@@ -837,6 +838,9 @@ const store = {
   // Experience→Insight→Decision→Impact→Learning→Integration cycle. Empty by
   // default; populated at points of work (never seeded — every entry is traced).
   ethicalIntelligenceEvents: [] as EthicalIntelligenceEvent[],
+  // Risk-escalation decision workflow — Cara suggests, a named manager decides.
+  // Never seeded; every assessment is traced to its source records.
+  escalationDecisions: [] as EscalationDecision[],
   // ── Writing Assistant ─────────────────────────────────────────────────────
   writingAssistantSettings: {} as Record<string, WritingAssistantSettings>,
   writingAssistantAuditEvents: [...WA_AUDIT_SEED] as WritingAuditEvent[],
@@ -11312,6 +11316,17 @@ export const db = {
     append: (event: EthicalIntelligenceEvent): EthicalIntelligenceEvent => {
       store.ethicalIntelligenceEvents.push(event);
       return event;
+    },
+  },
+
+  // ── Risk-escalation decisions (suggest → manager confirm/amend/reject) ─
+  escalationDecisions: {
+    findAll: (): EscalationDecision[] => store.escalationDecisions,
+    findById: (id: string): EscalationDecision | undefined =>
+      store.escalationDecisions.find((d) => d.id === id),
+    append: (decision: EscalationDecision): EscalationDecision => {
+      store.escalationDecisions.push(decision);
+      return decision;
     },
   },
 
