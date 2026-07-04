@@ -42,3 +42,7 @@ next-env.d.ts
 
 # build/test scratch dir (TMPDIR for next build, probe scripts, build logs)
 .tmp/
+
+# playwright
+/playwright-report/
+/test-results/
