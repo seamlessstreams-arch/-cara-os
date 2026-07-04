@@ -22,6 +22,14 @@ import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type { EthicalIntelligenceEvent } from "@/lib/ethical-intelligence/types";
 import type { EscalationDecision } from "@/lib/risk-escalation/types";
 import type { TapSession } from "@/lib/tap-thinking/types";
+import {
+  PRACTICE_OS_BEHAVIOUR_LOG,
+  PRACTICE_OS_DEBRIEFS,
+  PRACTICE_OS_ESCALATION_DECISIONS,
+  PRACTICE_OS_ETHICAL_EVENTS,
+  PRACTICE_OS_RESTRAINTS,
+  PRACTICE_OS_TAP_SESSIONS,
+} from "@/lib/seed-practice-os";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
@@ -836,14 +844,16 @@ const store = {
   // the read-only projection of domain collections is unchanged until events are captured here.
   cornerstoneEvents: [] as CornerstoneEvent[],
   // Ethical Intelligence spine — persisted, source-linked learning events on the
-  // Experience→Insight→Decision→Impact→Learning→Integration cycle. Empty by
-  // default; populated at points of work (never seeded — every entry is traced).
-  ethicalIntelligenceEvents: [] as EthicalIntelligenceEvent[],
+  // Experience→Insight→Decision→Impact→Learning→Integration cycle. Demo-seeded
+  // with cycles TRACED to seeded records (see seed-practice-os.ts) — one complete
+  // loop, one open; real deployments start empty. Every entry cites its sources.
+  ethicalIntelligenceEvents: [...PRACTICE_OS_ETHICAL_EVENTS] as EthicalIntelligenceEvent[],
   // Risk-escalation decision workflow — Cara suggests, a named manager decides.
-  // Never seeded; every assessment is traced to its source records.
-  escalationDecisions: [] as EscalationDecision[],
-  // TAP thinking sessions (See Clearly → … → Sustain Practice). Never seeded.
-  tapSessions: [] as TapSession[],
+  // Demo-seeded (one decided, one awaiting), traced to seeded records.
+  escalationDecisions: [...PRACTICE_OS_ESCALATION_DECISIONS] as EscalationDecision[],
+  // TAP thinking sessions (See Clearly → … → Sustain Practice). Demo-seeded
+  // with one in-progress oversight session traced to inc_007/rst_007.
+  tapSessions: [...PRACTICE_OS_TAP_SESSIONS] as TapSession[],
   // ── Writing Assistant ─────────────────────────────────────────────────────
   writingAssistantSettings: {} as Record<string, WritingAssistantSettings>,
   writingAssistantAuditEvents: [...WA_AUDIT_SEED] as WritingAuditEvent[],
@@ -1077,10 +1087,14 @@ const store = {
   visitors: [] as VisitorEntry[],
   fireDrills: [] as FireDrill[],
   significantEvents: [] as SignificantEvent[],
-  restraints: [] as RestraintRecord[],
+  // Demo-seeded: three restraints matching incidents inc_005/006/007 — the
+  // latest (rst_007) deliberately lacks a child debrief (open repair gap).
+  restraints: [...PRACTICE_OS_RESTRAINTS] as RestraintRecord[],
   notifiableEvents: [] as NotifiableEvent[],
   nightLogs: [] as NightLogEntry[],
-  behaviourLog: [] as BehaviourEntry[],
+  // Demo-seeded: the capability-showcase arc (Alex escalating-evening cluster,
+  // Casey improvement story, Jordan voice-rich entries). See seed-practice-os.ts.
+  behaviourLog: [...PRACTICE_OS_BEHAVIOUR_LOG] as BehaviourEntry[],
   accidentBook: [] as AccidentRecord[],
   absenceTracking: [] as AbsenceRecord[],
   positiveHandling: [] as PositiveHandlingPlan[],
@@ -1441,7 +1455,10 @@ const store = {
   culturalIdentityPlans: [] as CulturalIdentityPlan[],
   dataBreachRecords: [] as DataBreachRecord[],
   dataProtectionRecords: [] as DataProtectionRecord[],
-  debriefRecords: [] as DebriefRecord[],
+  // Demo-seeded: a complete post-restraint debrief for inc_005 (repair cycle
+  // closed); inc_007's debrief is deliberately ABSENT — the open gap the
+  // repair/reflection engines should surface. See seed-practice-os.ts.
+  debriefRecords: [...PRACTICE_OS_DEBRIEFS] as DebriefRecord[],
   dentalRecords: [] as DentalRecord[],
   dolRecords: [
     {
