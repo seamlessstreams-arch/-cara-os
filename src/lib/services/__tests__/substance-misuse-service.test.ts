@@ -42,6 +42,18 @@ function daysAgo(n: number): string {
   return d.toISOString().split("T")[0];
 }
 
+/** Like daysAgo but clamped to no earlier than the start of the current calendar
+ *  quarter — so "current quarter" fixtures stay in-quarter even in the first days
+ *  of a new quarter (otherwise the quarter counts flip to 0 at the boundary). */
+function daysAgoInQuarter(n: number): string {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3);
+  const target = new Date();
+  target.setDate(target.getDate() - n);
+  const sameQuarter = target.getFullYear() === now.getFullYear() && Math.floor(target.getMonth() / 3) === q;
+  return (sameQuarter ? target : now).toISOString().split("T")[0];
+}
+
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
   const d = new Date();
@@ -623,8 +635,8 @@ describe("computeSubstanceMisuseMetrics", () => {
 
   it("counts incidents within the current quarter", () => {
     const incidents = [
-      makeIncident({ id: "i1", incident_date: daysAgo(5) }),
-      makeIncident({ id: "i2", incident_date: daysAgo(10) }),
+      makeIncident({ id: "i1", incident_date: daysAgoInQuarter(5) }),
+      makeIncident({ id: "i2", incident_date: daysAgoInQuarter(10) }),
     ];
     const result = computeSubstanceMisuseMetrics([], incidents);
     expect(result.incidents_this_quarter).toBeGreaterThanOrEqual(2);
@@ -645,7 +657,7 @@ describe("computeSubstanceMisuseMetrics", () => {
 
   it("counts only current quarter incidents in mixed set", () => {
     const incidents = [
-      makeIncident({ id: "i1", incident_date: daysAgo(5) }),
+      makeIncident({ id: "i1", incident_date: daysAgoInQuarter(5) }),
       makeIncident({ id: "i2", incident_date: "2024-01-15" }),
       makeIncident({ id: "i3", incident_date: "2023-06-01" }),
     ];

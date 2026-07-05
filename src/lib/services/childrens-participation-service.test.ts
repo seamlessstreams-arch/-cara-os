@@ -63,6 +63,18 @@ function makeConsultation(overrides: Partial<ChildConsultation> = {}): ChildCons
 
 const NOW = new Date("2026-05-21T12:00:00Z");
 
+/** A date n days ago, but returns today if that would leave the current calendar
+ *  quarter — so "this quarter" fixtures stay in-quarter at a quarter boundary.
+ *  (computeParticipationMetrics uses the real current date for its quarter maths.) */
+function daysAgoInQuarter(n: number): string {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3);
+  const target = new Date();
+  target.setDate(target.getDate() - n);
+  const sameQuarter = target.getFullYear() === now.getFullYear() && Math.floor(target.getMonth() / 3) === q;
+  return (sameQuarter ? target : now).toISOString().split("T")[0];
+}
+
 // -- computeParticipationMetrics ----------------------------------------------
 
 describe("computeParticipationMetrics", () => {
@@ -109,7 +121,7 @@ describe("computeParticipationMetrics", () => {
 
   it("counts consultations this quarter", () => {
     const consultations = [
-      makeConsultation({ consultation_date: "2026-05-01" }),
+      makeConsultation({ consultation_date: daysAgoInQuarter(1) }),
       makeConsultation({ id: "con-2", consultation_date: "2025-01-01", child_id: "c2" }),
     ];
     const m = computeParticipationMetrics([], consultations, 4);

@@ -8,6 +8,18 @@ import {
 
 const NOW = new Date("2026-05-21T12:00:00Z");
 
+/** A date n days ago, but returns today if that would leave the current calendar
+ *  quarter — so "this quarter" fixtures stay in-quarter at a quarter boundary.
+ *  (computeIdentityMetrics uses the real current date for its quarter maths.) */
+function daysAgoInQuarter(n: number): string {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3);
+  const target = new Date();
+  target.setDate(target.getDate() - n);
+  const sameQuarter = target.getFullYear() === now.getFullYear() && Math.floor(target.getMonth() / 3) === q;
+  return (sameQuarter ? target : now).toISOString().split("T")[0];
+}
+
 function makeProfile(overrides: Partial<IdentityProfile> = {}): IdentityProfile {
   return {
     id: "prof-1",
@@ -77,9 +89,9 @@ describe("cultural-identity-service", () => {
         makeProfile({ id: "p3", child_id: "c3", status: "archived" }),
       ];
       const actions = [
-        makeAction({ id: "a1", child_id: "c1", action_type: "cultural_activity", child_satisfaction: "positive", action_date: "2026-05-01" }),
-        makeAction({ id: "a2", child_id: "c1", action_type: "language_support", child_satisfaction: "very_positive", action_date: "2026-05-10" }),
-        makeAction({ id: "a3", child_id: "c2", action_type: "dietary_provision", child_satisfaction: "negative", action_date: "2026-04-01" }),
+        makeAction({ id: "a1", child_id: "c1", action_type: "cultural_activity", child_satisfaction: "positive", action_date: daysAgoInQuarter(1) }),
+        makeAction({ id: "a2", child_id: "c1", action_type: "language_support", child_satisfaction: "very_positive", action_date: daysAgoInQuarter(2) }),
+        makeAction({ id: "a3", child_id: "c2", action_type: "dietary_provision", child_satisfaction: "negative", action_date: daysAgoInQuarter(3) }),
       ];
       const m = computeIdentityMetrics(profiles, actions);
       expect(m.children_with_profiles).toBe(2); // only active
