@@ -12,6 +12,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { CaraChat } from "./cara-chat";
 import {
   X, Sparkles, Loader2, CheckCircle2, XCircle, ChevronDown, ChevronUp,
   ClipboardList, ShieldAlert, Eye, ListChecks, MessageSquare, FileText,
@@ -410,8 +411,12 @@ export function CaraDrawer({ open, onClose, context = {} }: CaraDrawerProps) {
           </button>
         </div>
 
-        {/* Body */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+        {/* Body — Ask Cara deterministic chat is the primary surface */}
+        <div className="flex-1 min-h-0 flex flex-col px-5 py-3">
+          <CaraChat context={context ?? {}} />
+        </div>
+        {/* Legacy quick-action tools — kept intact but hidden (generative, credit-dependent) */}
+        <div className="hidden">
           {/* Approved output */}
           {approved && (
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 space-y-2 animate-fade-in">
@@ -547,8 +552,8 @@ export function CaraDrawer({ open, onClose, context = {} }: CaraDrawerProps) {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-slate-100 px-5 py-3">
+        {/* Footer — hidden; CaraChat carries its own disclaimer */}
+        <div className="hidden border-t border-slate-100 px-5 py-3">
           <p className="text-[10px] text-slate-400 leading-relaxed">
             Cara suggestions are AI-generated. All outputs require human review before saving to the official record. Every action is audit logged.
           </p>
