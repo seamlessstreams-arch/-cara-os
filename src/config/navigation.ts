@@ -648,6 +648,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Health Check",        href: "/system-health",                        icon: "Activity",    module: "dashboard"    },
       { label: "Self-Healing",        href: "/self-healing",                         icon: "Wrench",      module: "dashboard"    },
       { label: "Quality Gates",       href: "/quality-gates",                        icon: "Lock",        module: "dashboard"    },
+      { label: "Redaction Tool",      href: "/redaction-tool",                       icon: "Fingerprint", module: "dashboard"    },
       { label: "Cara Studio",         href: "/cara-studio",                          icon: "Palette",     module: "dashboard"    },
       { label: "Studio Review Centre",href: "/cara-studio/review",                   icon: "ClipboardCheck",module: "dashboard"  },
       { label: "Voice of the Child",  href: "/intelligence/cara/voice-of-child",     icon: "Quote",       module: "young-people" },
