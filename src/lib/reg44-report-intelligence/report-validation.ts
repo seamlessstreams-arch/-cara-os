@@ -160,7 +160,7 @@ export function applySignOffDecision(draft: Reg44ReportDraft, input: SignOffInpu
   if (asserting && !validation.canSubmit && isBlank(input.overrideReason)) {
     return {
       ok: false,
-      refusedReason: `Cannot ${input.decision.replace(/_/g, " ")} — ${validation.blocks.length} unresolved block(s). Record an override reason or return the report for amendment.`,
+      refusedReason: `Cannot sign off (${input.decision.replace(/_/g, " ")}) — ${validation.blocks.length} unresolved block(s). Record an override reason or return the report for amendment.`,
     };
   }
 
