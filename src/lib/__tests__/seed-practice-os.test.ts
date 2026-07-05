@@ -26,6 +26,8 @@ import { ESCALATION_LEVEL_DEFINITIONS } from "../risk-escalation/risk-escalation
 import { computeTapStatus, isKnownTapQuestion } from "../tap-thinking/tap-engine";
 import { computeBehaviourTriggerPatterns } from "../behaviour-trigger-patterns/behaviour-trigger-patterns-engine";
 import { TAP_STAGES } from "../tap-thinking/types";
+import { computeChildVoiceDimensions } from "../child-voice-dimensions/dimensions-engine";
+import type { ChildVoiceDimensionInput } from "../child-voice-dimensions/types";
 
 // ── Referential integrity: every trace points at a record that exists ─────────
 
@@ -196,6 +198,69 @@ describe("behaviour-trigger-patterns engine fires on the arc (merged store)", ()
       (b) => b.child_id === "yp_alex" && b.direction === "concern",
     );
     for (const entry of concerning) expect(entry.strategy_used.trim().length).toBeGreaterThan(0);
+  });
+});
+
+// ── Child Voice Intelligence must fire on the MERGED store ───────────────────
+// Maps getStore() exactly as /api/v1/child-voice-dimensions does, so this gate
+// fails if the voice arc (or the merge) stops telling the story.
+
+describe("child voice dimensions fire on the arc (merged store)", () => {
+  const asOf = new Date().toISOString().slice(0, 10);
+  const day = (v: unknown) => (typeof v === "string" ? v.slice(0, 10) : "");
+  const voiceInput = (childId: string, childName: string): ChildVoiceDimensionInput => {
+    const s = getStore();
+    return {
+      childId,
+      childName,
+      asOf,
+      windowDays: 90,
+      feedback: (s.ypFeedback as Array<Record<string, unknown>>)
+        .filter((f) => f.child_id === childId)
+        .map((f) => ({ id: String(f.id), child_id: String(f.child_id), date: day(f.date), category: String(f.category ?? ""), sentiment: String(f.sentiment ?? ""), response_given_to_child: !!f.response_given_to_child, child_satisfied: (f.child_satisfied ?? null) as boolean | null })),
+      keyWork: (s.keyWorkingSessions as Array<Record<string, unknown>>)
+        .filter((k) => k.child_id === childId)
+        .map((k) => ({ id: String(k.id), child_id: String(k.child_id), date: day(k.date), child_voice: String(k.child_voice ?? "") })),
+      lacReviews: (s.lacReviews as Array<Record<string, unknown>>)
+        .filter((l) => l.child_id === childId)
+        .map((l) => ({ id: String(l.id), child_id: String(l.child_id), date: day(l.date), child_participation: String(l.child_participation ?? "did_not_participate"), child_views: String(l.child_views ?? "") })),
+      feedbackLoops: (s.childFeedbackLoops as Array<Record<string, unknown>>)
+        .filter((f) => f.child_id === childId)
+        .map((f) => ({ id: String(f.id), child_id: String(f.child_id), feedback_date: day(f.feedback_date), child_words: String(f.child_words ?? ""), decision_made: String(f.decision_made ?? "pending_consideration"), child_accepts: !!f.child_accepts })),
+      advocacy: (s.advocacyRecords as Array<Record<string, unknown>>)
+        .filter((a) => a.child_id === childId)
+        .map((a) => ({ id: String(a.id), child_id: String(a.child_id), status: String(a.status ?? ""), referral_date: day(a.referral_date), visits: Array.isArray(a.visits) ? (a.visits as Array<{ date?: string }>).map((v) => ({ date: day(v?.date) })) : [], home_response: String(a.home_response ?? "") })),
+      houseMeetings: [],
+    };
+  };
+
+  it("ALEX shows the flagship dissonance — voice recorded but not heard, declining, open loops", () => {
+    const p = computeChildVoiceDimensions(voiceInput("yp_alex", "Alex"));
+    const captured = p.dimensions.find((d) => d.key === "voice_captured")!;
+    const listened = p.dimensions.find((d) => d.key === "feeling_listened_to")!;
+    expect(captured.status).toBe("strong"); // his voice IS being recorded
+    expect(listened.status).toBe("needs_attention"); // …but he doesn't feel heard
+    expect(listened.trend).toBe("declining");
+    expect(p.highlights.some((h) => h.id === "listened_to_gap")).toBe(true);
+    expect(p.highlights.some((h) => h.id === "safety_voice_concern")).toBe(true);
+    expect(p.highlights.some((h) => h.id === "influence_gap")).toBe(true);
+    expect(p.highlights[0].severity).toBe("priority");
+  });
+
+  it("CASEY is the improvement story — loops closing, feeling more heard, no priority", () => {
+    const p = computeChildVoiceDimensions(voiceInput("yp_casey", "Casey"));
+    const influence = p.dimensions.find((d) => d.key === "voice_influence")!;
+    expect(influence.status).toBe("strong");
+    expect(p.highlights.some((h) => h.id === "loops_closing_strength")).toBe(true);
+    expect(p.highlights.some((h) => h.severity === "priority")).toBe(false);
+  });
+
+  it("JORDAN is the exemplar — broad capture with an active advocate", () => {
+    const p = computeChildVoiceDimensions(voiceInput("yp_jordan", "Jordan"));
+    expect(p.hasData).toBe(true);
+    expect(p.dimensions.find((d) => d.key === "advocacy_access")!.status).toBe("strong");
+    expect(p.dimensions.find((d) => d.key === "voice_captured")!.status).toBe("strong");
+    expect(p.highlights.some((h) => h.severity === "priority")).toBe(false);
   });
 });
 

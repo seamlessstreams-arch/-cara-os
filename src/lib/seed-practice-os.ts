@@ -24,7 +24,16 @@
 // arc keeps lighting the engines it was designed for as they evolve.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import type { BehaviourEntry, DebriefRecord, RestraintRecord } from "@/types/extended";
+import type {
+  AdvocacyRecord,
+  BehaviourEntry,
+  ChildFeedbackLoop,
+  DebriefRecord,
+  KeyWorkingSession,
+  LACReview,
+  RestraintRecord,
+  YPFeedbackEntry,
+} from "@/types/extended";
 import type { EthicalIntelligenceEvent } from "@/lib/ethical-intelligence/types";
 import type { EscalationDecision } from "@/lib/risk-escalation/types";
 import type { TapSession } from "@/lib/tap-thinking/types";
@@ -644,4 +653,196 @@ export const PRACTICE_OS_TAP_SESSIONS: TapSession[] = [
       { at: iso(2, "10:40"), actor: "staff_darren", action: "answers_recorded", detail: "Think Deeply: 2 answer(s)" },
     ],
   },
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// VOICE ARC — powers Child Voice Intelligence (dimensions, trends, highlights).
+//
+//   ALEX  — his voice is RECORDED widely (key work, reviews, feedback loops) but
+//           he tells us he doesn't feel listened to, and it's getting worse; two
+//           feedback loops sit open; his safety sentiment is low; no advocate.
+//           → the flagship dissonance: captured ≠ heard.
+//   CASEY — feedback loops closing and he's telling us he feels more heard.
+//   JORDAN— voice-rich across every channel, an active advocate: the exemplar.
+//
+// Dates are relative (daysAgo) so the arc always sits inside the 90-day window.
+// ══════════════════════════════════════════════════════════════════════════════
+
+const ypfb = (
+  id: string,
+  child_id: string,
+  agoDays: number,
+  category: YPFeedbackEntry["category"],
+  sentiment: YPFeedbackEntry["sentiment"],
+  feedback: string,
+  responded: boolean,
+): YPFeedbackEntry => ({
+  id,
+  child_id,
+  date: daysAgo(agoDays),
+  category,
+  method: "verbal",
+  sentiment,
+  feedback,
+  action_taken: responded ? "Discussed in key work and fed back to the child." : "",
+  action_by: responded ? "staff_darren" : "",
+  response_given_to_child: responded,
+  response_date: responded ? daysAgo(Math.max(0, agoDays - 2)) : null,
+  response_details: responded ? "We told them what we changed and why." : "",
+  child_satisfied: responded ? true : null,
+  collected_by: "staff_edward",
+  notes: "",
+});
+
+const kw = (id: string, child_id: string, agoDays: number, child_voice: string): KeyWorkingSession => ({
+  id,
+  child_id,
+  staff_id: "staff_edward",
+  date: daysAgo(agoDays),
+  type: "one_to_one",
+  duration: 45,
+  location: "Quiet lounge",
+  topics: ["wishes_and_feelings"],
+  child_voice,
+  worker_observations: "",
+  actions_agreed: [],
+  mood_before: 3,
+  mood_after: 4,
+  follow_up: "",
+  follow_up_date: daysAgo(agoDays - 7),
+  follow_up_completed: false,
+  linked_goals: [],
+  confidential: false,
+  home_id: "home_oak",
+  created_at: iso(agoDays),
+});
+
+const loop = (
+  id: string,
+  child_id: string,
+  agoDays: number,
+  topic: string,
+  child_words: string,
+  decision: ChildFeedbackLoop["decision_made"],
+  accepts: boolean,
+): ChildFeedbackLoop => {
+  const open = decision === "pending_consideration";
+  return {
+    id,
+    child_id,
+    feedback_date: daysAgo(agoDays),
+    feedback_channel: "key_working_session",
+    feedback_topic: topic,
+    child_words,
+    feedback_type: "suggestion",
+    acknowledged_by: "staff_edward",
+    acknowledged_date: daysAgo(Math.max(0, agoDays - 1)),
+    considered_at: open ? "" : daysAgo(Math.max(0, agoDays - 3)),
+    decision_made: decision,
+    decision_maker: open ? "" : "staff_darren",
+    decision_rationale: open ? "" : "Weighed against the other children and the house routine.",
+    actions_taken: decision.startsWith("acted") ? ["Change made and explained to the child."] : [],
+    when_child_was_told: open ? "" : daysAgo(Math.max(0, agoDays - 4)),
+    how_child_was_told: open ? "" : "In their key-work session",
+    child_response_to_outcome: open ? "" : "Pleased it was taken seriously.",
+    child_accepts: accepts,
+    visible_change: decision.startsWith("acted") ? "Yes" : "",
+    duration_days_to_close: open ? 0 : 4,
+    follow_up_date: "",
+    recorded_by: "staff_edward",
+    created_at: iso(agoDays),
+  };
+};
+
+const lac = (id: string, child_id: string, agoDays: number, participation: LACReview["child_participation"], views: string): LACReview => ({
+  id,
+  child_id,
+  date: daysAgo(agoDays),
+  review_type: "subsequent",
+  iro: "R. Okafor",
+  venue: "Oak House",
+  attendees: [{ name: "R. Okafor", role: "IRO" }],
+  child_participation: participation,
+  child_views: views,
+  key_discussions: [],
+  recommendations: [],
+  outcome: "placement_continues",
+  actions_agreed: [],
+  next_review_date: daysAgo(agoDays - 180),
+  placement_stability: "some_concerns",
+  care_plan_updated: true,
+  notes: "",
+  recorded_by: "staff_darren",
+  home_id: "home_oak",
+  created_at: iso(agoDays),
+});
+
+const adv = (id: string, child_id: string, agoRef: number, status: AdvocacyRecord["status"], visitAgo: number | null): AdvocacyRecord => ({
+  id,
+  child_id,
+  advocacy_type: "independent",
+  status,
+  provider: "Coram Voice",
+  advocate_name: "J. Adeyemi",
+  referral_date: daysAgo(agoRef),
+  start_date: daysAgo(Math.max(0, agoRef - 3)),
+  reason: "Independent support for wishes and feelings.",
+  issues_raised: ["Contact arrangements", "Being listened to about the routine"],
+  visits:
+    visitAgo != null
+      ? [{ date: daysAgo(visitAgo), visit_type: "face_to_face", summary: "Private session; issues raised with the home.", private_session: true, actions_raised: ["Contact review"] }]
+      : [],
+  child_view: "",
+  home_response: status === "active" ? "Home responded to the issues the advocate raised." : "",
+  review_date: daysAgo(agoRef - 30),
+  notes: "",
+  created_at: iso(agoRef),
+});
+
+// ── ALEX: recorded but not heard; declining; open loops; no advocate ──────────
+export const PRACTICE_OS_YP_FEEDBACK: YPFeedbackEntry[] = [
+  ypfb("ypf_alex_1", ALEX, 68, "being_listened_to", "happy", "Felt staff really heard him about bedtimes.", true),
+  ypfb("ypf_alex_2", ALEX, 52, "being_listened_to", "ok", "Not sure his contact worries were taken on board.", true),
+  ypfb("ypf_alex_3", ALEX, 19, "being_listened_to", "unhappy", "Says nobody acts on what he tells them about court days.", false),
+  ypfb("ypf_alex_4", ALEX, 7, "being_listened_to", "very_unhappy", "Feels ignored — stopped bothering to say what he needs.", false),
+  ypfb("ypf_alex_5", ALEX, 26, "feeling_safe", "ok", "Evenings on call nights feel hard.", false),
+  ypfb("ypf_alex_6", ALEX, 11, "feeling_safe", "unhappy", "Doesn't feel safe in the house after 7pm.", false),
+  // CASEY: feeling more heard over time; responses given
+  ypfb("ypf_casey_1", CASEY, 58, "being_listened_to", "ok", "Morning routine still felt rushed.", true),
+  ypfb("ypf_casey_2", CASEY, 20, "being_listened_to", "happy", "Liked that staff changed the med timing after he asked.", true),
+  ypfb("ypf_casey_3", CASEY, 6, "being_listened_to", "very_happy", "Feels the staff actually listen now.", true),
+  ypfb("ypf_casey_4", CASEY, 15, "feeling_safe", "happy", "Feels settled in the mornings now.", true),
+  // JORDAN: positive across channels
+  ypfb("ypf_jordan_0", JORDAN, 50, "being_listened_to", "ok", "Wanted more say in activities.", true),
+  ypfb("ypf_jordan_1", JORDAN, 16, "feeling_safe", "happy", "Feels safe and knows who to go to.", true),
+  ypfb("ypf_jordan_2", JORDAN, 24, "being_listened_to", "happy", "Staff acted on his activity idea.", true),
+  ypfb("ypf_jordan_3", JORDAN, 10, "being_listened_to", "happy", "Felt listened to at the house meeting.", true),
+  ypfb("ypf_jordan_4", JORDAN, 5, "activities", "very_happy", "Loved the climbing trip he suggested.", true),
+];
+
+export const PRACTICE_OS_KEYWORK: KeyWorkingSession[] = [
+  kw("kws_alex_1", ALEX, 30, "Alex: 'I just want someone to warn me before the court stuff comes up.'"),
+  kw("kws_alex_2", ALEX, 17, "Alex asked for a quiet check-in before call nights."),
+  kw("kws_alex_3", ALEX, 8, "Alex: 'What's the point telling you, nothing changes.'"),
+  kw("kws_casey_1", CASEY, 25, "Casey talked through what makes mornings go well."),
+  kw("kws_casey_2", CASEY, 10, "Casey: 'The new med time really helps.'"),
+  kw("kws_jordan_1", JORDAN, 20, "Jordan: 'I'd like to do more climbing and cook on Fridays.'"),
+  kw("kws_jordan_2", JORDAN, 8, "Jordan shared how settled he feels with his key worker."),
+];
+
+export const PRACTICE_OS_FEEDBACK_LOOPS: ChildFeedbackLoop[] = [
+  loop("cfl_alex_1", ALEX, 22, "Contact timing", "Asks to move his sister call off court days.", "pending_consideration", false),
+  loop("cfl_alex_2", ALEX, 9, "Evening support", "Wants a named person to check in after 7pm.", "pending_consideration", false),
+  loop("cfl_casey_1", CASEY, 30, "Medication timing", "Asked for his morning meds 30 mins later.", "acted_on_in_full", true),
+  loop("cfl_casey_2", CASEY, 12, "Breakfast choice", "Wanted more breakfast options.", "acted_on_in_part", true),
+  loop("cfl_jordan_1", JORDAN, 18, "Weekend activities", "Suggested a monthly climbing trip.", "discussed_and_explored", true),
+];
+
+export const PRACTICE_OS_LAC_REVIEWS: LACReview[] = [
+  lac("lac_alex_1", ALEX, 44, "attended", "Alex spoke about wanting court days handled differently."),
+  lac("lac_jordan_1", JORDAN, 35, "attended", "Jordan led on his activity goals and contact wishes."),
+];
+
+export const PRACTICE_OS_ADVOCACY: AdvocacyRecord[] = [
+  adv("adv_jordan_1", JORDAN, 40, "active", 22),
 ];

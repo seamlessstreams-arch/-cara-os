@@ -36,6 +36,7 @@ import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { ChildVoiceDimensionsPanel } from "@/components/child-voice/child-voice-dimensions-panel";
 
 const decisionColour: Record<string, string> = {
   acted_on_in_full: "bg-green-100 text-green-800",
@@ -167,6 +168,12 @@ export default function ChildFeedbackLoopsPage() {
           </Select>
         </div>
       </div>
+
+      {filterYP !== "all" && (
+        <div className="mb-6">
+          <ChildVoiceDimensionsPanel childId={filterYP} childName={getYPName(filterYP)} />
+        </div>
+      )}
 
       <div className="space-y-3">
         {filtered.map((f) => {
