@@ -24,12 +24,17 @@ import type { EscalationDecision } from "@/lib/risk-escalation/types";
 import type { TapSession } from "@/lib/tap-thinking/types";
 import type { StrategyDiscussionRequest } from "@/lib/strategy-discussion/types";
 import {
+  PRACTICE_OS_ADVOCACY,
   PRACTICE_OS_BEHAVIOUR_LOG,
   PRACTICE_OS_DEBRIEFS,
   PRACTICE_OS_ESCALATION_DECISIONS,
   PRACTICE_OS_ETHICAL_EVENTS,
+  PRACTICE_OS_FEEDBACK_LOOPS,
+  PRACTICE_OS_KEYWORK,
+  PRACTICE_OS_LAC_REVIEWS,
   PRACTICE_OS_RESTRAINTS,
   PRACTICE_OS_TAP_SESSIONS,
+  PRACTICE_OS_YP_FEEDBACK,
 } from "@/lib/seed-practice-os";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
@@ -5952,6 +5957,16 @@ store.restraints = [
 // as the API routes read it.
 store.behaviourLog.push(...PRACTICE_OS_BEHAVIOUR_LOG);
 store.restraints.push(...PRACTICE_OS_RESTRAINTS);
+
+// Voice arc — powers Child Voice Intelligence (dimensions/trends/highlights).
+// keyWorkingSessions (reassigned ~L3124) and lacReviews (reassigned ~L5659) are
+// both reassigned ABOVE this line, so pushing here survives; ypFeedback,
+// childFeedbackLoops and advocacyRecords are never reassigned.
+store.ypFeedback.push(...PRACTICE_OS_YP_FEEDBACK);
+store.childFeedbackLoops.push(...PRACTICE_OS_FEEDBACK_LOOPS);
+store.keyWorkingSessions.push(...PRACTICE_OS_KEYWORK);
+store.lacReviews.push(...PRACTICE_OS_LAC_REVIEWS);
+store.advocacyRecords.push(...PRACTICE_OS_ADVOCACY);
 
 // ── Visitors Seed Data ────────────────────────────────────────────────────────
 
