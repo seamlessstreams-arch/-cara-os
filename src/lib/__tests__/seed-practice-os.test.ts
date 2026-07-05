@@ -32,6 +32,9 @@ import { unifyNeuroProfile, deriveRecordingPrompts } from "../neurodiversity-pro
 import type { UnifyNeuroInput } from "../neurodiversity-profile/types";
 import { synthesiseStaffPracticeSkills } from "../staff-practice-skills/skills-engine";
 import type { StaffPracticeSkillsInput } from "../staff-practice-skills/types";
+import { buildOrgLearningReport } from "../org-learning-report/report-engine";
+import { computeEthicalCycleStatus } from "../ethical-intelligence/ethical-intelligence-engine";
+import type { OrgLearningReportInput } from "../org-learning-report/types";
 
 // ── Referential integrity: every trace points at a record that exists ─────────
 
@@ -354,6 +357,57 @@ describe("staff practice skills fire on the arc (merged store)", () => {
     const p = synthesiseStaffPracticeSkills(staffInput("staff_edward", "Edward"));
     const text = p.supervisionPrompts.map((s) => s.prompt).join(" ").toLowerCase();
     expect(text).not.toMatch(/underperform|failing|incompeten|disciplin|worst|rank/);
+  });
+});
+
+// ── Organisational Learning report synthesises the WHOLE arc (merged store) ──
+// This is the payoff of the joined-up seed: the report should pull the arc's
+// restraint-repair gap, pending child feedback, child-voice worry and closed
+// loops into one leadership picture. Maps getStore() as the route does.
+
+describe("org learning report fires on the arc (merged store)", () => {
+  const asOf = new Date().toISOString().slice(0, 10);
+  const day = (v: unknown) => (typeof v === "string" ? v.slice(0, 10) : "");
+  const reportInput = (): OrgLearningReportInput => {
+    const s = getStore();
+    const debriefs = (s.debriefRecords as Array<{ linked_incident_id?: string }>) ?? [];
+    return {
+      homeId: "home_oak",
+      asOf,
+      period: "quarter",
+      incidents: (s.incidents as Array<Record<string, unknown>>).map((i) => ({ id: String(i.id), date: day(i.date), type: String(i.type ?? "other"), severity: String(i.severity ?? "") })),
+      behaviour: (s.behaviourLog as Array<Record<string, unknown>>).map((b) => ({ id: String(b.id), date: day(b.date), direction: String(b.direction ?? ""), trigger: String(b.trigger ?? "") })),
+      escalations: (s.escalationDecisions as Array<Record<string, unknown>>).map((e) => ({ id: String(e.id), createdAt: day(e.createdAt), status: String(e.status ?? ""), confirmedLevel: e.confirmedLevel ? String(e.confirmedLevel) : undefined })),
+      ethical: (s.ethicalIntelligenceEvents as Array<Record<string, unknown>>).map((e) => ({ id: String(e.id), createdAt: day(e.createdAt), cycleComplete: computeEthicalCycleStatus(e as never).cycleComplete, hasLearning: Array.isArray(e.learning) && (e.learning as unknown[]).length > 0, summary: "" })),
+      feedbackLoops: (s.childFeedbackLoops as Array<Record<string, unknown>>).map((f) => ({ id: String(f.id), feedbackDate: day(f.feedback_date), decisionMade: String(f.decision_made ?? "pending_consideration") })),
+      voice: (s.ypFeedback as Array<Record<string, unknown>>).map((v) => ({ id: String(v.id), date: day(v.date), category: String(v.category ?? ""), sentiment: String(v.sentiment ?? "") })),
+      restraints: (s.restraints as Array<Record<string, unknown>>).map((r) => {
+        const incId = String(r.linked_incident_id ?? "") || String(r.id ?? "").replace("rst_", "inc_");
+        return { id: String(r.id), date: day(r.date ?? r.created_at), childDebriefed: !!r.child_debriefed, hasDebriefRecord: debriefs.some((d) => d.linked_incident_id === incId) };
+      }),
+    };
+  };
+  const report = buildOrgLearningReport(reportInput());
+  const sect = (k: string) => report.sections.find((s) => s.key === k)!;
+
+  it("produces an evidenced leadership picture, not an empty one", () => {
+    expect(report.totalEvidence).toBeGreaterThan(0);
+    expect(report.headline).not.toMatch(/not enough activity/i);
+  });
+
+  it("carries the arc's unresolved learning (pending feedback and/or the un-debriefed restraint)", () => {
+    const unr = sect("unresolved_learning");
+    expect(unr.themes.some((t) => t.id === "unr_loops" || t.id === "unr_debrief")).toBe(true);
+  });
+
+  it("surfaces Alex's repeated 'being listened to' worry as a child-voice theme", () => {
+    // The arc concentrates the worry in being_listened_to (2 negative sentiments);
+    // feeling_safe has only one, which correctly stays below the ≥2 threshold.
+    expect(sect("child_voice_theme").themes.some((t) => /listened to/i.test(t.title))).toBe(true);
+  });
+
+  it("credits Casey's acted-on feedback loops as a strength", () => {
+    expect(sect("practice_strength").themes.some((t) => t.id === "str_loops")).toBe(true);
   });
 });
 

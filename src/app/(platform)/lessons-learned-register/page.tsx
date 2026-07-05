@@ -24,6 +24,7 @@ import { LESSON_SOURCE_LABEL, LESSON_THEME_AREA_LABEL, LESSON_STATUS_LABEL } fro
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { OrgLearningReportPanel } from "@/components/org-learning/org-learning-report-panel";
 
 /* ── UI metadata ─────────────────────────────────────────────────────────── */
 
@@ -138,6 +139,9 @@ export default function LessonsLearnedRegisterPage() {
       }
     >
       <div id="print-area">
+        <div className="mb-6">
+          <OrgLearningReportPanel />
+        </div>
         {/* banner */}
         <div className="mb-6 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 to-yellow-50 p-4 flex items-start gap-3">
           <Lightbulb className="h-6 w-6 text-amber-600 shrink-0 mt-0.5" />
