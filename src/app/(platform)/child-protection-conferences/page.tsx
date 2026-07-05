@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
+import { StrategyDiscussionPanel } from "@/components/strategy-discussion/strategy-discussion-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
 // ── config ──────────────────────────────────────────────────────────────────
@@ -361,6 +362,15 @@ export default function ChildProtectionConferencesPage() {
         recordType="safeguarding"
         className="mt-6"
       />
+      {/* Strategy-discussion reasoning — assemble the threshold case from a
+          child's records; the manager judges the threshold either way. Bound to
+          the page's young-person filter when one is selected. */}
+      <div className="mt-6">
+        <StrategyDiscussionPanel
+          childId={filterYP !== "all" ? filterYP : undefined}
+          childName={filterYP !== "all" ? getYPName(filterYP) : undefined}
+        />
+      </div>
     </PageShell>
   );
 }

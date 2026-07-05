@@ -22,6 +22,7 @@ import type { CornerstoneEvent } from "@/types/cornerstone-event";
 import type { EthicalIntelligenceEvent } from "@/lib/ethical-intelligence/types";
 import type { EscalationDecision } from "@/lib/risk-escalation/types";
 import type { TapSession } from "@/lib/tap-thinking/types";
+import type { StrategyDiscussionRequest } from "@/lib/strategy-discussion/types";
 import {
   PRACTICE_OS_BEHAVIOUR_LOG,
   PRACTICE_OS_DEBRIEFS,
@@ -854,6 +855,9 @@ const store = {
   // TAP thinking sessions (See Clearly → … → Sustain Practice). Demo-seeded
   // with one in-progress oversight session traced to inc_007/rst_007.
   tapSessions: [...PRACTICE_OS_TAP_SESSIONS] as TapSession[],
+  // Strategy-discussion reasoning requests — assembled from records, judged by
+  // a named manager. Never seeded; every request is traced to its sources.
+  strategyDiscussionRequests: [] as StrategyDiscussionRequest[],
   // ── Writing Assistant ─────────────────────────────────────────────────────
   writingAssistantSettings: {} as Record<string, WritingAssistantSettings>,
   writingAssistantAuditEvents: [...WA_AUDIT_SEED] as WritingAuditEvent[],
@@ -11371,6 +11375,17 @@ export const db = {
     append: (session: TapSession): TapSession => {
       store.tapSessions.push(session);
       return session;
+    },
+  },
+
+  // ── Strategy-discussion requests (assembled from records, manager-judged) ─
+  strategyDiscussionRequests: {
+    findAll: (): StrategyDiscussionRequest[] => store.strategyDiscussionRequests,
+    findById: (id: string): StrategyDiscussionRequest | undefined =>
+      store.strategyDiscussionRequests.find((r) => r.id === id),
+    append: (request: StrategyDiscussionRequest): StrategyDiscussionRequest => {
+      store.strategyDiscussionRequests.push(request);
+      return request;
     },
   },
 
