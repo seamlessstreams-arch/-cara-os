@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { PersistedReg44Report } from "@/lib/reg44-report-intelligence/report-lifecycle";
+import type { HealEvent as IntegrityHealEvent } from "@/lib/self-healing/types";
 import {
   STAFF, YOUNG_PEOPLE, TASKS, INCIDENTS, SHIFTS, MEDICATIONS,
   DAILY_LOG, LEAVE_REQUESTS, TRAINING_RECORDS, HOME,
@@ -2841,6 +2842,7 @@ const store = {
   // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
   reg44Packs: [] as PersistedReg44Pack[],
   reg44Reports: [] as PersistedReg44Report[], // persisted A–Q reports (sign-off/lock/audit)
+  integrityHealEvents: [] as IntegrityHealEvent[], // §25 self-healing: append-only log of applied safe repairs
   // Demo trajectory for home_oak: inspection readiness regressing 82 → 73 → 57
   // over ~6 weeks. The latest (6-day-old) bundle is BOTH a large single-step drop
   // (−16) and a net regression (−25) → two critical trajectory alerts. Left
