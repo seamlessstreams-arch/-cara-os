@@ -390,14 +390,14 @@ export function CaraDrawer({ open, onClose, context = {} }: CaraDrawerProps) {
       />
 
       {/* Drawer */}
-      <aside className="fixed right-0 top-0 z-50 h-full w-[420px] max-w-[100vw] bg-white shadow-2xl flex flex-col animate-drawer">
+      <aside className="fixed right-0 top-0 z-50 h-full w-[420px] max-w-[100vw] bg-[#05060a] shadow-2xl flex flex-col animate-drawer">
         {/* Header */}
-        <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-100">
-            <Sparkles className="h-4 w-4 text-indigo-600" />
+        <div className="flex items-center gap-3 border-b border-white/10 px-5 py-4">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
+            <Sparkles className="h-4 w-4 text-teal-300" />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-900">Cara</p>
+            <p className="text-sm font-semibold text-slate-100">Cara</p>
             <p className="text-[11px] text-slate-500 truncate">
               {context.pageTitle ?? "Intelligent assistance"}
               {context.childName ? ` · ${context.childName}` : ""}
@@ -405,14 +405,14 @@ export function CaraDrawer({ open, onClose, context = {} }: CaraDrawerProps) {
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+            className="rounded-lg p-1.5 text-slate-500 hover:bg-white/10 hover:text-slate-200 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Body — Ask Cara deterministic chat is the primary surface */}
-        <div className="flex-1 min-h-0 flex flex-col px-5 py-3">
+        {/* Body — Ask Cara deterministic chat is the primary surface (edge-to-edge) */}
+        <div className="flex-1 min-h-0 flex flex-col">
           <CaraChat context={context ?? {}} />
         </div>
         {/* Legacy quick-action tools — kept intact but hidden (generative, credit-dependent) */}

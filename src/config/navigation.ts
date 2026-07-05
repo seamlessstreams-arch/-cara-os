@@ -601,6 +601,7 @@ export const NAV_GROUPS: NavGroup[] = [
     href:   "/intelligence",
     module: "dashboard",
     children: [
+      { label: "Ask Cara",            href: "/ask-cara",                             icon: "Sparkles",    module: "dashboard"    },
       { label: "Intelligence Hub",    href: "/intelligence",                         icon: "Brain",       module: "dashboard"    },
       { label: "Incident Mode",       href: "/cara/incident-mode",                   icon: "Zap",         module: "dashboard"    },
       { label: "Manager Oversight",   href: "/cara/manager-oversight",               icon: "Eye",         module: "dashboard"    },
