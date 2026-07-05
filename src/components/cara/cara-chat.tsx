@@ -3,15 +3,17 @@
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — Ask Cara chat (deterministic, record-based)
 //
-// A real AI-platform-style chat: greets the user by name, takes a question, and
-// answers it straight from the home's records — no LLM, no external call, so it
-// works with zero AI credit. Every answer comes from the deterministic engine via
+// A real AI-platform surface: full-bleed dark gradient, a centred greeting
+// ("Hi <name> — ready when you are"), and a floating pill composer with + / mic /
+// send — the Gemini/Claude visual language. Underneath it stays PURELY
+// DETERMINISTIC: every answer comes from the record engine via
 // POST /api/v1/cara/chat { mode: "ask" }; Cara never invents a fact.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useEffect, useRef, useState } from "react";
-import { Sparkles, Loader2, ArrowUp, User } from "lucide-react";
+import { Loader2, ArrowUp, Plus } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
+import { DictationButton } from "@/components/common/dictation-button";
 import type { CaraDrawerContext } from "./cara-drawer";
 import type { AskCaraAnswer, AskCaraSource, AskCaraSuggestion } from "@/lib/ask-cara/types";
 
@@ -27,11 +29,30 @@ interface ChatMessage {
 let counter = 0;
 const nextId = () => `m${++counter}`;
 
+/** Cara's four-point spark — gradient, Gemini-style. */
+function CaraStar({ size = 40, className }: { size?: number; className?: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <defs>
+        <linearGradient id="cara-star-g" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#2dd4bf" />
+          <stop offset="45%" stopColor="#60a5fa" />
+          <stop offset="100%" stopColor="#a78bfa" />
+        </linearGradient>
+      </defs>
+      <path
+        d="M12 0 C13.4 6.9 17.1 10.6 24 12 C17.1 13.4 13.4 17.1 12 24 C10.6 17.1 6.9 13.4 0 12 C6.9 10.6 10.6 6.9 12 0 Z"
+        fill="url(#cara-star-g)"
+      />
+    </svg>
+  );
+}
+
 function starterQuestions(ctx: CaraDrawerContext): string[] {
   if (ctx.childName) {
     return [
       `Tell me about ${ctx.childName}`,
-      `Does ${ctx.childName} have restraints without a debrief?`,
+      `Help me reflect on ${ctx.childName}`,
       `How many incidents for ${ctx.childName} this month?`,
     ];
   }
@@ -46,19 +67,7 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const starters = starterQuestions(context);
-
-  // Personalised greeting once, on open.
-  useEffect(() => {
-    setMessages([
-      {
-        id: nextId(),
-        role: "cara",
-        text: `Hi ${firstName} — I'm Cara. I can answer questions straight from this home's records: incidents, the children placed here, what needs your attention, restraints and debriefs, missing episodes, medication and overdue actions. What can I help you with today?`,
-        suggestions: starters.map((label) => ({ label })),
-      },
-    ]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [firstName, context.childName]);
+  const empty = messages.length === 0;
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -98,74 +107,101 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
     }
   }
 
-  return (
-    <div className="flex h-full flex-col">
-      {/* Thread */}
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-1 py-2">
-        {messages.map((m) =>
-          m.role === "user" ? (
-            <div key={m.id} className="flex justify-end">
-              <div className="max-w-[85%] rounded-2xl rounded-br-md bg-indigo-600 px-3.5 py-2 text-sm text-white">{m.text}</div>
-              <div className="ml-2 mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500">
-                <User className="h-3.5 w-3.5" />
-              </div>
-            </div>
-          ) : (
-            <div key={m.id} className="flex gap-2">
-              <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100">
-                <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-800">{m.text}</p>
-                {m.sources && m.sources.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {m.sources.map((sce, i) => (
-                      <span key={i} className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-500">
-                        {sce.label}: <span className="font-semibold text-slate-700">{sce.count}</span>
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {m.suggestions && m.suggestions.length > 0 && (
-                  <div className="mt-2.5 flex flex-wrap gap-1.5">
-                    {m.suggestions.map((sg, i) => (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() => send(sg.label)}
-                        disabled={loading}
-                        className="rounded-full border border-indigo-200 bg-indigo-50 px-2.5 py-1 text-[12px] font-medium text-indigo-700 transition-colors hover:bg-indigo-100 disabled:opacity-50"
-                      >
-                        {sg.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          )
-        )}
-        {loading && (
-          <div className="flex gap-2">
-            <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100">
-              <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-            </div>
-            <div className="flex items-center gap-2 text-sm text-slate-400">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking the records…
-            </div>
-          </div>
-        )}
-      </div>
+  const chip = (label: string, i: number) => (
+    <button
+      key={i}
+      type="button"
+      onClick={() => send(label)}
+      disabled={loading}
+      className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-[12.5px] font-medium text-slate-200 backdrop-blur transition-colors hover:bg-white/10 disabled:opacity-50"
+    >
+      {label}
+    </button>
+  );
 
-      {/* Composer */}
-      <div className="border-t border-slate-100 pt-3">
+  return (
+    <div
+      className="relative flex h-full min-h-0 flex-col"
+      style={{ background: "linear-gradient(180deg, #05060a 0%, #070b15 55%, #0e1733 100%)" }}
+    >
+      {/* Hero — empty state, Gemini-style centred greeting */}
+      {empty && !loading && (
+        <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 pb-24 text-center">
+          <CaraStar size={44} className="drop-shadow-[0_0_18px_rgba(96,165,250,0.45)]" />
+          <div>
+            <h2 className="text-[26px] font-light leading-snug text-slate-100">
+              Hi {firstName} — ready when you are
+            </h2>
+            <p className="mt-2 text-[13px] leading-relaxed text-slate-400">
+              Ask me anything from this home&apos;s records. I answer deterministically — never a guess.
+            </p>
+          </div>
+          <div className="flex flex-wrap justify-center gap-2">{starters.map(chip)}</div>
+        </div>
+      )}
+
+      {/* Thread */}
+      {!empty && (
+        <div ref={scrollRef} className="flex-1 space-y-5 overflow-y-auto px-4 pb-28 pt-4">
+          {messages.map((m) =>
+            m.role === "user" ? (
+              <div key={m.id} className="flex justify-end">
+                <div className="max-w-[85%] rounded-3xl rounded-br-lg bg-indigo-500/90 px-4 py-2 text-sm leading-relaxed text-white shadow-lg shadow-indigo-950/40">
+                  {m.text}
+                </div>
+              </div>
+            ) : (
+              <div key={m.id} className="flex gap-2.5">
+                <CaraStar size={18} className="mt-1 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200">{m.text}</p>
+                  {m.sources && m.sources.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {m.sources.map((sce, i) => (
+                        <span key={i} className="rounded-full bg-white/[0.07] px-2 py-0.5 text-[11px] text-slate-400">
+                          {sce.label}: <span className="font-semibold text-slate-200">{sce.count}</span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {m.suggestions && m.suggestions.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">{m.suggestions.map((sg, i) => chip(sg.label, i))}</div>
+                  )}
+                </div>
+              </div>
+            )
+          )}
+          {loading && (
+            <div className="flex items-center gap-2.5">
+              <CaraStar size={18} className="animate-pulse" />
+              <span className="flex items-center gap-2 text-sm text-slate-400">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Checking the records…
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Floating pill composer */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 px-3 pb-3 pt-8" style={{ background: "linear-gradient(180deg, transparent 0%, rgba(8,11,21,0.9) 55%)" }}>
         <form
           onSubmit={(e) => {
             e.preventDefault();
             send(input);
           }}
-          className="flex items-end gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100"
+          className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/10 bg-[#161b2b]/95 px-1.5 py-1.5 shadow-2xl shadow-black/50 backdrop-blur focus-within:border-indigo-400/40"
         >
+          <button
+            type="button"
+            onClick={() => {
+              setMessages([]);
+              setInput("");
+            }}
+            title="New conversation"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-white/10 hover:text-slate-200"
+          >
+            <Plus className="h-4.5 w-4.5" />
+          </button>
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -176,20 +212,31 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
               }
             }}
             rows={1}
-            placeholder="Ask Cara about your records…"
-            className="max-h-28 flex-1 resize-none bg-transparent text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none"
+            placeholder="Ask Cara"
+            className="max-h-24 flex-1 resize-none bg-transparent px-1 py-1.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
           />
+          {/* Local --cs-* overrides re-theme the shared mic for the dark pill without touching it */}
+          <span
+            className="shrink-0"
+            style={{ "--cs-border": "rgba(255,255,255,0.12)", "--cs-surface": "rgba(255,255,255,0.06)", "--cs-text-gentle": "#94a3b8", "--cs-navy": "#1e293b" } as React.CSSProperties}
+          >
+            <DictationButton
+              size="sm"
+              mode="append"
+              onTranscript={(t) => setInput((v) => (v ? `${v.trimEnd()} ${t}` : t))}
+            />
+          </span>
           <button
             type="submit"
             disabled={!input.trim() || loading}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition-colors hover:bg-indigo-700 disabled:opacity-40"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white shadow-lg shadow-indigo-900/50 transition-colors hover:bg-indigo-400 disabled:opacity-40"
             aria-label="Send"
           >
             <ArrowUp className="h-4 w-4" />
           </button>
         </form>
-        <p className="mt-1.5 px-1 text-[10px] leading-relaxed text-slate-400">
-          Cara answers from your live records to support your judgement — it never makes a safeguarding decision for you.
+        <p className="pointer-events-auto mt-1.5 text-center text-[10px] leading-relaxed text-slate-500">
+          Cara answers from your live records to support your judgement — never a safeguarding decision.
         </p>
       </div>
     </div>
