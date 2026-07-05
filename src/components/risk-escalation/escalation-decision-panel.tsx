@@ -21,6 +21,7 @@ import {
   useEscalationDecisions,
   useSuggestEscalation,
 } from "@/hooks/use-escalation-decisions";
+import { BiasReflectionPanel } from "@/components/cognitive-bias/bias-reflection-panel";
 import type { EscalationDecision, EscalationLevel } from "@/lib/risk-escalation/types";
 import { cn } from "@/lib/utils";
 
@@ -104,6 +105,17 @@ function DecisionRow({ decision }: { decision: EscalationDecision }) {
 
           {awaiting && (
             <div className="space-y-2 rounded-md bg-white/60 p-3">
+              {/* Reflective bias-checks from THIS record's own facts, before the
+                  decision is recorded. Suggestion evidence = Cara's; a decision
+                  this fresh after the concern invites the recency check. */}
+              <BiasReflectionPanel
+                compact
+                signal={{
+                  context: "risk_escalation",
+                  evidenceItemsCited: decision.suggestionEvidence.length,
+                  decisionWithinDaysOfIncident: 0,
+                }}
+              />
               <p className="text-xs font-semibold uppercase tracking-wide opacity-70">Manager decision</p>
               <input
                 value={decisionMaker}
