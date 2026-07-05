@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { requireOnShift } from "@/lib/permissions/require-on-shift";
 import { auditFromRequest } from "@/lib/audit/audit-recorder";
+import { evaluateTransition } from "@/lib/quality-gates/quality-gate-engine";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,38 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   // General update — strip audit fields (dal merges + stamps updated_at, dual-mode)
   const { id: _id, created_at: _c, created_by: _cb, reference: _ref, ...safe } = rest;
+
+  // §30 Quality gate — an oversight-required incident cannot be CLOSED until
+  // management oversight is recorded. Refuse the unsafe finalising transition
+  // (the gate never blocks routine edits, and clears the moment oversight lands).
+  if (typeof safe.status === "string") {
+    const inc = incident as {
+      status?: string;
+      requires_oversight?: boolean;
+      oversight_note?: unknown;
+      oversight_by?: unknown;
+      oversight_at?: unknown;
+      child_id?: string;
+    };
+    const gate = evaluateTransition({
+      recordType: "incidents",
+      targetStatus: safe.status,
+      incident: {
+        id,
+        status: inc.status ?? "",
+        requires_oversight: !!inc.requires_oversight,
+        has_oversight: !!(inc.oversight_note || inc.oversight_by || inc.oversight_at),
+        child_id: inc.child_id,
+      },
+    });
+    if (!gate.allowed) {
+      return NextResponse.json(
+        { error: "Quality gate — this transition is blocked until the required elements are recorded.", gate: gate.gate, blocks: gate.blocks },
+        { status: 422 }
+      );
+    }
+  }
+
   const updated = await dal.incidents.update(id, { ...safe, updated_by: auth.userId });
   if (!updated) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

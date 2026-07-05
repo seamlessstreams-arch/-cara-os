@@ -32,7 +32,7 @@ import {
   Calendar, MessageSquare, GraduationCap, UserCheck, Fingerprint, TrendingUp,
   Network, Milestone, CalendarDays, CalendarClock, CalendarRange, Clock,
   // Home icons
-  Car, Wrench, Receipt,
+  Car, Wrench, Receipt, Lock,
   // Compliance icons
   Gavel, Eye, Flag, ClipboardCheck, Award,
   // Reports icons
@@ -54,7 +54,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   MapPin, Shield, Pill, PhoneCall, ScrollText, FileText, FileCheck, FileSignature,
   Calendar, MessageSquare, GraduationCap, UserCheck, Fingerprint, TrendingUp,
   Network, Milestone, CalendarDays, CalendarClock, CalendarRange, Clock,
-  Car, Wrench, Receipt,
+  Car, Wrench, Receipt, Lock,
   Gavel, Eye, Flag, ClipboardCheck, Award,
   BarChart2,
   Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity,
