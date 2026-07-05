@@ -9,6 +9,7 @@
 // Supabase queries. The API route signatures stay identical.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import type { PersistedReg44Report } from "@/lib/reg44-report-intelligence/report-lifecycle";
 import {
   STAFF, YOUNG_PEOPLE, TASKS, INCIDENTS, SHIFTS, MEDICATIONS,
   DAILY_LOG, LEAVE_REQUESTS, TRAINING_RECORDS, HOME,
@@ -2839,6 +2840,7 @@ const store = {
 
   // ── Persisted Reg 44 Packs (M35) ────────────────────────────────────────
   reg44Packs: [] as PersistedReg44Pack[],
+  reg44Reports: [] as PersistedReg44Report[], // persisted A–Q reports (sign-off/lock/audit)
   // Demo trajectory for home_oak: inspection readiness regressing 82 → 73 → 57
   // over ~6 weeks. The latest (6-day-old) bundle is BOTH a large single-step drop
   // (−16) and a net regression (−25) → two critical trajectory alerts. Left
@@ -19267,6 +19269,23 @@ export const db = {
       if (store.reg44Packs.some((p) => p.id === pack.id)) return pack;
       store.reg44Packs.push(pack);
       return pack;
+    },
+  },
+
+  // ── Persisted Reg 44 A–Q reports (sign-off / lock / audit) ──────────────
+  reg44Reports: {
+    findAll: (homeId?: string) => (homeId ? store.reg44Reports.filter((r) => r.homeId === homeId) : store.reg44Reports),
+    findById: (id: string) => store.reg44Reports.find((r) => r.id === id) ?? null,
+    findByHomeMonth: (homeId: string, month: string) => store.reg44Reports.find((r) => r.homeId === homeId && r.month === month) ?? null,
+    create: (report: PersistedReg44Report): PersistedReg44Report => {
+      store.reg44Reports.push(report);
+      return report;
+    },
+    update: (id: string, next: PersistedReg44Report): PersistedReg44Report | null => {
+      const idx = store.reg44Reports.findIndex((r) => r.id === id);
+      if (idx < 0) return null;
+      store.reg44Reports[idx] = next;
+      return next;
     },
   },
 
