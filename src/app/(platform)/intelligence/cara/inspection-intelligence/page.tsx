@@ -20,7 +20,33 @@ import {
   CircleDot,
   ShieldAlert,
   FileText,
+  Download,
+  FileDown,
 } from "lucide-react";
+
+const EXPORT_BASE = "/api/v1/inspection-intelligence/export";
+
+/** Per-scope export links (HTML opens for print/save-as-PDF; DOCX downloads). */
+function ExportLinks({ scope, compact }: { scope: string; compact?: boolean }) {
+  return (
+    <div className={cn("flex items-center gap-2", compact ? "text-[11px]" : "text-xs")}>
+      <a
+        href={`${EXPORT_BASE}?area=${scope}&format=html`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 rounded-full border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 font-medium text-[var(--cs-navy,#1e293b)] transition-colors hover:bg-slate-50"
+      >
+        <FileText className="h-3 w-3" /> HTML
+      </a>
+      <a
+        href={`${EXPORT_BASE}?area=${scope}&format=docx`}
+        className="inline-flex items-center gap-1 rounded-full border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 font-medium text-[var(--cs-navy,#1e293b)] transition-colors hover:bg-slate-50"
+      >
+        <FileDown className="h-3 w-3" /> Word
+      </a>
+    </div>
+  );
+}
 
 const STRENGTH_CONFIG: Record<EvidenceStrength, { label: string; badge: string; icon: React.ElementType; bar: string }> = {
   strong: { label: "Strong evidence", badge: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: CheckCircle2, bar: "bg-emerald-400" },
@@ -58,7 +84,10 @@ function AreaCard({ area }: { area: SccifArea }) {
             <StrengthIcon className="h-3 w-3" /> {s.label}
           </span>
         </div>
-        <p className="mb-3 text-sm text-[var(--cs-text-secondary,#475569)]">{area.summary}</p>
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <p className="text-sm text-[var(--cs-text-secondary,#475569)]">{area.summary}</p>
+          <div className="shrink-0"><ExportLinks scope={area.key} compact /></div>
+        </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
           {/* Evidence the home can show */}
@@ -145,6 +174,13 @@ export default function InspectionIntelligencePage() {
                       {data.areasLimited} limited
                     </span>
                   )}
+                </div>
+                <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[var(--cs-border,#e2e8ec)] pt-3">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text-secondary,#475569)]">
+                    <Download className="h-3.5 w-3.5" /> Export the whole pack
+                  </span>
+                  <ExportLinks scope="all" />
+                  <span className="text-[11px] text-[var(--cs-text-muted,#94a3b8)]">Evidence and gaps only — no Ofsted grade is predicted.</span>
                 </div>
               </CardContent>
             </Card>
