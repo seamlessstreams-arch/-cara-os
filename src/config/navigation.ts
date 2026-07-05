@@ -700,6 +700,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Bedroom Temperature", href: "/intelligence/cara/bedroom-temperature-ventilation-intelligence", icon: "Thermometer", module: "staff" },
       { label: "Bedwetting & Enuresis", href: "/intelligence/cara/bedwetting-enuresis-support-intelligence", icon: "Heart", module: "young-people" },
       { label: "Behaviour Intelligence", href: "/intelligence/cara/behaviour-intelligence", icon: "Activity", module: "staff" },
+      { label: "ABC Patterns",           href: "/intelligence/cara/abc-behaviour", icon: "Network", module: "young-people" },
       { label: "Behaviour Support Plans",      href: "/intelligence/cara/behaviour-support-intelligence",   icon: "Brain",    module: "young-people" },
       { label: "BSP Effectiveness", href: "/intelligence/cara/behaviour-support-plan-effectiveness-intelligence", icon: "FileText", module: "staff" },
       { label: "Behaviour Support Plans", href: "/intelligence/cara/behaviour-support-plan-intelligence", icon: "FileText", module: "young-people" },
