@@ -127,6 +127,20 @@ export function Reg44ReportIntelligencePanel({ homeId = "home_oak", month }: { h
 
         {a && (
           <>
+            {(() => {
+              const q = `home_id=${encodeURIComponent(homeId)}${month ? `&month=${encodeURIComponent(month)}` : ""}`;
+              const base = `/api/v1/reg44-report/export?${q}`;
+              return (
+                <div className="flex flex-wrap items-center gap-2 rounded-lg bg-[var(--cs-surface-subtle,#f6f8f9)] px-3 py-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted,#6c7a83)]">Export draft:</span>
+                  <a href={`${base}&format=docx`} className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white">Word (.docx)</a>
+                  <a href={`${base}&format=html`} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white">Print / PDF</a>
+                  <a href={`${base}&format=reg45`} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white">Reg 45 extract</a>
+                  <a href={`${base}&format=json`} className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-text-muted,#6c7a83)] hover:bg-white">JSON</a>
+                </div>
+              );
+            })()}
+
             {a.validationFlags.length > 0 && (
               <div className="space-y-1.5">
                 {a.validationFlags.map((f) => (
