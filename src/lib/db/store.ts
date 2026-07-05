@@ -28,8 +28,10 @@ import {
   PRACTICE_OS_ADVOCACY,
   PRACTICE_OS_AUTISM_PLANS,
   PRACTICE_OS_BEHAVIOUR_LOG,
+  PRACTICE_OS_COMPETENCY_SCORES,
   PRACTICE_OS_DEBRIEFS,
   PRACTICE_OS_EHCP_RECORDS,
+  PRACTICE_OS_PRACTICE_OBSERVATIONS,
   PRACTICE_OS_ESCALATION_DECISIONS,
   PRACTICE_OS_ETHICAL_EVENTS,
   PRACTICE_OS_FEEDBACK_LOOPS,
@@ -5976,6 +5978,11 @@ store.advocacyRecords.push(...PRACTICE_OS_ADVOCACY);
 store.autismPlans.push(...PRACTICE_OS_AUTISM_PLANS);
 store.adhdPlans.push(...PRACTICE_OS_ADHD_PLANS);
 store.ehcpRecords.push(...PRACTICE_OS_EHCP_RECORDS);
+
+// Staff-skills arc — competencyScores never reassigned; practiceObservations
+// reassigned ~L4902 (above this line), so pushing here survives.
+store.competencyScores.push(...PRACTICE_OS_COMPETENCY_SCORES);
+store.practiceObservations.push(...PRACTICE_OS_PRACTICE_OBSERVATIONS);
 
 // ── Visitors Seed Data ────────────────────────────────────────────────────────
 

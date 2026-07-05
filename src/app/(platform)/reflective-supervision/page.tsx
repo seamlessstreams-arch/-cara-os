@@ -10,6 +10,7 @@ import {
   HeartPulse, GraduationCap, Sparkles, Plus, Save, ShieldAlert,
 } from "lucide-react";
 import { useReflectiveSupervision, useCreateSupervision } from "@/hooks/use-reflective-supervision";
+import { StaffPracticeSkillsPanel } from "@/components/staff-skills/staff-practice-skills-panel";
 import type { SupervisionStatus, ReflectiveSupervisionRecord } from "@/lib/engines/supervision-engine";
 
 const STATUS_META: Record<SupervisionStatus, { label: string; chip: string; dot: string }> = {
@@ -135,6 +136,7 @@ export default function ReflectiveSupervisionPage() {
                     <label className="block"><span className="text-xs font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">Confidence (1–5)</span>
                       <select className={cn(inputCls, "mt-1")} value={form.confidence_level} onChange={(e) => set("confidence_level", e.target.value)}>{[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}</option>)}</select></label>
                   </div>
+                  {form.staff_id && <StaffPracticeSkillsPanel staffId={form.staff_id} />}
                   {SECTION_FIELDS.map((f) => (
                     <label key={f.key} className="block"><span className="text-xs font-bold uppercase tracking-wide text-[var(--cs-text-muted)]">{f.label}</span>
                       <textarea className={cn(inputCls, "mt-1 min-h-[60px]")} value={form[f.key] ?? ""} onChange={(e) => set(f.key as string, e.target.value)} /></label>
