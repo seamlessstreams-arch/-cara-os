@@ -24,9 +24,12 @@ import type { EscalationDecision } from "@/lib/risk-escalation/types";
 import type { TapSession } from "@/lib/tap-thinking/types";
 import type { StrategyDiscussionRequest } from "@/lib/strategy-discussion/types";
 import {
+  PRACTICE_OS_ADHD_PLANS,
   PRACTICE_OS_ADVOCACY,
+  PRACTICE_OS_AUTISM_PLANS,
   PRACTICE_OS_BEHAVIOUR_LOG,
   PRACTICE_OS_DEBRIEFS,
+  PRACTICE_OS_EHCP_RECORDS,
   PRACTICE_OS_ESCALATION_DECISIONS,
   PRACTICE_OS_ETHICAL_EVENTS,
   PRACTICE_OS_FEEDBACK_LOOPS,
@@ -5967,6 +5970,12 @@ store.childFeedbackLoops.push(...PRACTICE_OS_FEEDBACK_LOOPS);
 store.keyWorkingSessions.push(...PRACTICE_OS_KEYWORK);
 store.lacReviews.push(...PRACTICE_OS_LAC_REVIEWS);
 store.advocacyRecords.push(...PRACTICE_OS_ADVOCACY);
+
+// Neurodiversity arc — powers the Unified Neurodiversity Profile. These
+// collections are never reassigned, so a push here is safe.
+store.autismPlans.push(...PRACTICE_OS_AUTISM_PLANS);
+store.adhdPlans.push(...PRACTICE_OS_ADHD_PLANS);
+store.ehcpRecords.push(...PRACTICE_OS_EHCP_RECORDS);
 
 // ── Visitors Seed Data ────────────────────────────────────────────────────────
 

@@ -32,6 +32,7 @@ import { WritingAssistantInline } from "@/components/writing-assistant/writing-a
 import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-practice-reasoning";
 import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
+import { InlineNeuroProfilePanel } from "@/components/neurodiversity/inline-neuro-profile-panel";
 import type { CaraPracticeRecord } from "@/lib/cara-heart/types";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import type { BehaviourEntry, BehaviourDirection, BehaviourIntensity } from "@/types/extended";
@@ -466,6 +467,7 @@ export default function BehaviourLogPage() {
               </div>
             </div>
             {nChild && <InlinePracticeReasoning childId={nChild} childName={getYPName(nChild)} />}
+            {nChild && <InlineNeuroProfilePanel childId={nChild} context="behaviour" />}
             {nChild && <InlinePracticeModules childId={nChild} modules={["relationships"]} />}
             <div>
               <label className="text-sm font-medium mb-1 block">Intensity</label>

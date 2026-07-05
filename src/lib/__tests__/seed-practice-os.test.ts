@@ -28,6 +28,8 @@ import { computeBehaviourTriggerPatterns } from "../behaviour-trigger-patterns/b
 import { TAP_STAGES } from "../tap-thinking/types";
 import { computeChildVoiceDimensions } from "../child-voice-dimensions/dimensions-engine";
 import type { ChildVoiceDimensionInput } from "../child-voice-dimensions/types";
+import { unifyNeuroProfile, deriveRecordingPrompts } from "../neurodiversity-profile/unification-engine";
+import type { UnifyNeuroInput } from "../neurodiversity-profile/types";
 
 // ── Referential integrity: every trace points at a record that exists ─────────
 
@@ -261,6 +263,54 @@ describe("child voice dimensions fire on the arc (merged store)", () => {
     expect(p.dimensions.find((d) => d.key === "advocacy_access")!.status).toBe("strong");
     expect(p.dimensions.find((d) => d.key === "voice_captured")!.status).toBe("strong");
     expect(p.highlights.some((h) => h.severity === "priority")).toBe(false);
+  });
+});
+
+// ── Unified Neurodiversity Profile must fire on the MERGED store ─────────────
+// Alex's autism profile is joined to his incident arc: at a restraint the
+// point-of-work prompts must lead with what makes it worse. Maps getStore()
+// exactly as /api/v1/neurodiversity-profile does.
+
+describe("neurodiversity profile fires on the arc (merged store)", () => {
+  const asOf = new Date().toISOString().slice(0, 10);
+  const neuroInput = (childId: string, childName: string): UnifyNeuroInput => {
+    const s = getStore();
+    const byChild = (x: { child_id?: string }) => x.child_id === childId;
+    return {
+      childId,
+      childName,
+      asOf,
+      autismPlans: (s.autismPlans as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["autismPlans"],
+      adhdPlans: (s.adhdPlans as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["adhdPlans"],
+      sensoryProfiles: (s.sensoryProfileRecords as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["sensoryProfiles"],
+      ehcps: (s.ehcpRecords as Array<Record<string, unknown>>).filter(byChild) as unknown as UnifyNeuroInput["ehcps"],
+    };
+  };
+
+  it("ALEX has a unified autism profile that EXPLAINS his arc, and a restraint leads with 'what makes it worse'", () => {
+    const p = unifyNeuroProfile(neuroInput("yp_alex", "Alex"));
+    expect(p.hasProfile).toBe(true);
+    expect(p.conditions.some((c) => c.kind === "autism" && c.status === "diagnosed")).toBe(true);
+    expect(p.behaviour.staffDoNot.join(" ")).toMatch(/spring information on him/i);
+    // his EHCP + its outstanding SALT referral come through
+    expect(p.ehcp?.outstandingActions.join(" ")).toMatch(/SALT/i);
+    // Cara catches the lapsed autism review
+    expect(p.reviewGaps.some((g) => g.id === "autism_review" && g.severity === "overdue")).toBe(true);
+    const prompts = deriveRecordingPrompts(p, "restraint");
+    expect(prompts[0].id).toBe("avoid");
+    expect(prompts[0].priority).toBe("critical");
+  });
+
+  it("CASEY has an ADHD profile mirroring his morning improvement", () => {
+    const p = unifyNeuroProfile(neuroInput("yp_casey", "Casey"));
+    expect(p.conditions.some((c) => c.kind === "adhd")).toBe(true);
+    expect(p.behaviour.staffDo.length).toBeGreaterThan(0);
+  });
+
+  it("JORDAN has no profile — the honest empty state, not a fabricated one", () => {
+    const p = unifyNeuroProfile(neuroInput("yp_jordan", "Jordan"));
+    expect(p.hasProfile).toBe(false);
+    expect(deriveRecordingPrompts(p, "incident")).toEqual([]);
   });
 });
 
