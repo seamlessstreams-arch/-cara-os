@@ -145,6 +145,21 @@ export function DictationButton({
   // pause or a ~60s cap, but for "record everything" we want continuous capture
   // until the user actually presses Stop.
   const beginRecognition = () => {
+    // Tear down any existing recogniser FIRST so we never run two at once — two
+    // live sessions deliver every phrase twice, which is the "doubled words" bug.
+    // Detach its handlers so its onend can't auto-restart the orphan.
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.abort();
+      } catch {
+        /* already dead */
+      }
+      recognitionRef.current = null;
+    }
+
     const SpeechRecognitionCtor: SpeechRecognitionConstructor =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -199,7 +214,11 @@ export function DictationButton({
     };
 
     recognition.onend = () => {
-      // Auto-restart while the user still wants to dictate (continuous capture).
+      // Only the CURRENT recogniser may auto-restart. An orphaned instance (after
+      // Stop, or replaced by a newer session on a quick Stop→Start) must die —
+      // otherwise it resurrects itself alongside the new one and every phrase is
+      // captured twice ("doubled words").
+      if (recognitionRef.current !== recognition) return;
       if (wantListeningRef.current) {
         try {
           recognition.start();
@@ -223,6 +242,9 @@ export function DictationButton({
   // ── Start listening ──────────────────────────────────────────────────────────
   const startListening = () => {
     if (!isSupported || disabled) return;
+    // Guard against a second concurrent session (double-click / fast re-render
+    // before onstart flips the button to "Stop"). Two sessions = doubled words.
+    if (wantListeningRef.current) return;
     setError(null);
     setInterim("");
     wantListeningRef.current = true;
