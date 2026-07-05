@@ -1,5 +1,5 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// CORNERSTONE — HOME SUMMARY REPORT API ROUTE
+// CARA — HOME SUMMARY REPORT API ROUTE
 // GET /api/v1/home-summary-report
 //
 // Builds a single shareable, print-ready summary of the home's standing across
