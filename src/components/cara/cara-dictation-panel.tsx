@@ -229,6 +229,19 @@ export function CaraDictationPanel(props: CaraDictationPanelProps) {
     const Ctor = getSpeechCtor();
     if (!Ctor) return;
 
+    // Never run two recognisers at once — a second live session delivers every
+    // phrase twice ("doubled words"). Tear down any existing one first.
+    if (recognitionRef.current) {
+      try {
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.abort();
+      } catch {
+        /* already dead */
+      }
+      recognitionRef.current = null;
+    }
+
     const recognition = new Ctor();
     recognition.continuous = true;
     recognition.interimResults = true;
