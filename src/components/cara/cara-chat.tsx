@@ -35,11 +35,11 @@ function starterQuestions(ctx: CaraDrawerContext): string[] {
       `How many incidents for ${ctx.childName} this month?`,
     ];
   }
-  return ["What needs my attention today?", "How many incidents this week?", "Which restraints have no debrief?", "Who is placed here?"];
+  return ["What needs my attention today?", "Brief me for my shift", "Help me reflect on a child", "What's due this week?"];
 }
 
 export function CaraChat({ context }: { context: CaraDrawerContext }) {
-  const { currentUser } = useAuthContext();
+  const { currentUser, currentRole } = useAuthContext();
   const firstName = currentUser?.first_name || (currentUser?.full_name ? currentUser.full_name.split(/\s+/)[0] : "") || "there";
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -78,6 +78,7 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
           mode: "ask",
           prompt: q,
           userName: currentUser?.full_name || firstName,
+          role: currentRole,
           pageTitle: context.pageTitle,
           childId: context.childId,
         }),

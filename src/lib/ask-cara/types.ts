@@ -28,7 +28,15 @@ export type AskCaraIntent =
   | "staffing"
   | "key_work"
   | "events"
+  | "reflector"
+  | "shift_brief"
+  | "whats_due"
+  | "home_overview"
+  | "access_denied"
   | "unknown";
+
+/** Access tiers — answers are gated by the requester's role. */
+export type AccessTier = "everyone" | "care_team" | "management";
 
 export interface AskCaraSource {
   label: string;
@@ -142,6 +150,7 @@ export interface AskCaraSnapshot {
   reviews: AskCaraReview[];
   shifts: AskCaraShift[];
   keyWork: AskCaraKeyWork[];
+  home?: { name?: string; maxBeds?: number; currentOccupancy?: number };
 }
 
 export interface AskCaraContext {
@@ -153,6 +162,8 @@ export interface AskCaraQuery {
   question: string;
   asOf: string; // ISO date (YYYY-MM-DD) — injected for determinism
   userName?: string;
+  /** The requester's role (AppRole) — gates which answers Cara will give. */
+  role?: string;
   snapshot: AskCaraSnapshot;
   context?: AskCaraContext;
 }

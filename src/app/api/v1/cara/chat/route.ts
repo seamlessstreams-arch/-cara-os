@@ -127,6 +127,10 @@ function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
     ].filter((r) => r.nextReviewDate),
     shifts: rec((store as Record<string, unknown>).shifts).map((sh) => ({ id: String(sh.id), staffId: String(sh.staff_id), date: day(sh.date), shiftType: s(sh.shift_type) || undefined })),
     keyWork: rec((store as Record<string, unknown>).keyWorkingSessions).map((k) => ({ childId: String(k.child_id), date: day(k.date ?? k.session_date) })),
+    home: (() => {
+      const h = (store as Record<string, unknown>).home as Record<string, unknown> | undefined;
+      return h ? { name: s(h.name) || undefined, maxBeds: typeof h.max_beds === "number" ? h.max_beds : undefined, currentOccupancy: typeof h.current_occupancy === "number" ? h.current_occupancy : undefined } : undefined;
+    })(),
   };
 }
 
@@ -156,6 +160,7 @@ export async function POST(req: NextRequest) {
         question: prompt,
         asOf: new Date().toISOString().slice(0, 10),
         userName: typeof body.userName === "string" ? body.userName : undefined,
+        role: typeof body.role === "string" ? body.role : undefined,
         snapshot,
         context: { pageTitle: typeof body.pageTitle === "string" ? body.pageTitle : undefined, childId: typeof body.childId === "string" ? body.childId : undefined },
       });

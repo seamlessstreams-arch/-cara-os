@@ -9,6 +9,7 @@
 import { mentionsAny } from "@/lib/text/keyword-match";
 import {
   ASK_CARA_VERSION,
+  type AccessTier,
   type AskCaraAnswer,
   type AskCaraChild,
   type AskCaraQuery,
@@ -18,6 +19,23 @@ import {
 } from "./types";
 
 const DISCLAIMER = "Cara answers from your live records to support your judgement — it never makes a safeguarding decision for you.";
+
+// ── Role-based access ─────────────────────────────────────────────────────────
+// Answers are scoped to who's asking. Care staff get everything about the children
+// and the day's work; staff-management and governance data is management-only.
+const MANAGEMENT_ROLES = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
+const CARE_ROLES = new Set([...MANAGEMENT_ROLES, "residential_care_worker", "senior_residential_care_worker", "senior_residential_worker", "team_leader", "bank_worker", "support_worker", "waking_night_worker"]);
+const TIER_RANK: Record<AccessTier, number> = { everyone: 0, care_team: 1, management: 2 };
+
+function roleTier(role?: string): AccessTier {
+  const r = (role ?? "").toLowerCase();
+  if (!r) return "care_team"; // demo default — operational Q&A works; management still gated
+  if (MANAGEMENT_ROLES.has(r)) return "management";
+  if (CARE_ROLES.has(r)) return "care_team";
+  return "everyone";
+}
+
+const TIER_LABEL: Record<AccessTier, string> = { everyone: "general", care_team: "care-team", management: "management" };
 
 // Space-form so they match a type whose underscores have been normalised to spaces.
 const SAFEGUARDING_TYPES = ["missing from care", "allegation", "disclosure", "self harm", "self-harm", "safeguarding", "exploitation", "cse", "cce", "online", "abuse"];
@@ -296,6 +314,100 @@ function skillEvents(snap: AskCaraSnapshot, asOf: string, child: AskCaraChild | 
   return answer({ intent: "events", answered: true, text, sources: [{ label: "Significant logs (7d)", count: logs.length }], suggestions: sug(child ? [`Tell me about ${childLabel(child)}`, "What needs my attention?"] : ["What needs my attention?", "How many incidents this week?"]) });
 }
 
+function denied(needed: AccessTier): AskCaraAnswer {
+  return answer({
+    intent: "access_denied",
+    answered: false,
+    text: `That's ${TIER_LABEL[needed]}-level information, so I can't share it at your access level — please ask your manager. I can still help you with the children you work with, the day's actions, and reflection.`,
+    sources: [],
+    suggestions: sug(["What needs my attention?", "Help me reflect on a child", "Who is placed here?"]),
+  });
+}
+
+function skillReflector(snap: AskCaraSnapshot, asOf: string, child: AskCaraChild | null): AskCaraAnswer {
+  if (child) {
+    const inc = snap.incidents.filter((i) => i.childId === child.id && withinDays(i.date, asOf, 30));
+    const restraints = snap.restraints.filter((r) => r.childId === child.id && withinDays(r.date, asOf, 30));
+    const name = childLabel(child);
+    const context = `${name} has had ${inc.length} incident${inc.length === 1 ? "" : "s"}${restraints.length ? ` and ${restraints.length} restraint${restraints.length === 1 ? "" : "s"}` : ""} in the last 30 days.`;
+    const lines = [
+      `Let's reflect on your practice with ${name}. ${inc.length + restraints.length > 0 ? context : `There's little on record for ${name} recently — that itself is worth noticing.`}`,
+      "",
+      `- What do you think sits underneath ${name}'s behaviour — what might they be trying to tell us?`,
+      `- What would ${name} say helps them feel safe and settled? Is their voice in the record?`,
+      "- Whose perspective is missing here — the child's, a colleague's, a family member's?",
+      "- What went well that you could do more of, deliberately?",
+      "- What's one thing you'd do differently, and what would you need to do it?",
+    ];
+    return answer({ intent: "reflector", answered: true, text: lines.join("\n"), sources: [{ label: "Incidents (30d)", count: inc.length }, { label: "Restraints (30d)", count: restraints.length }], suggestions: sug([`Tell me about ${name}`, `What triggers ${name}?`, "What needs my attention?"]), disclaimer: "These are reflective prompts to think alongside — not judgements. There are no wrong answers; the point is to notice." });
+  }
+  const lines = [
+    "Let's reflect together. Take a moment with these — there are no wrong answers:",
+    "",
+    "- What happened, and what were you feeling at the time?",
+    "- What went well? What was hardest?",
+    "- Whose voice is missing from how this has been recorded?",
+    "- What might you be assuming that you haven't checked?",
+    "- What does the child need next — and what do you need to do it well?",
+    "- What's one thing you'll carry into your next shift?",
+  ];
+  return answer({ intent: "reflector", answered: true, text: lines.join("\n"), sources: [], suggestions: sug(["Help me reflect on Alex", "What needs my attention?"]), disclaimer: "Reflective prompts to think alongside — not judgements. Good reflection is a strength, not a sign anything went wrong." });
+}
+
+function skillShiftBrief(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+  const onShift = [...new Set(snap.shifts.filter((sh) => sh.date === asOf).map((sh) => snap.staff.find((st) => st.id === sh.staffId)?.name ?? sh.staffId))];
+  const restraintGaps = snap.restraints.filter((r) => !r.childDebriefed);
+  const oversight = snap.incidents.filter((i) => i.requiresOversight && !i.hasOversight && i.status !== "closed");
+  const rhiGaps = snap.missingEpisodes.filter((m) => !m.hasReturnInterview);
+  const overdue = snap.tasks.filter((t) => t.dueDate && daysBetween(t.dueDate, asOf) > 0 && t.status !== "completed" && t.status !== "cancelled");
+  const sig = snap.dailyLogs.filter((l) => l.significant && withinDays(l.date, asOf, 2));
+
+  const lines: string[] = ["Here's your shift brief from the records:"];
+  lines.push(onShift.length ? `- On shift today: ${onShift.join(", ")}.` : "- No staff recorded on shift today — check the rota.");
+  if (restraintGaps.length) lines.push(`- Watch: ${restraintGaps.length} restraint${restraintGaps.length === 1 ? "" : "s"} still need${restraintGaps.length === 1 ? "s" : ""} a child debrief.`);
+  if (oversight.length) lines.push(`- ${oversight.length} incident${oversight.length === 1 ? "" : "s"} awaiting manager oversight.`);
+  if (rhiGaps.length) lines.push(`- ${rhiGaps.length} missing episode${rhiGaps.length === 1 ? "" : "s"} still need a return home interview.`);
+  if (sig.length) lines.push(`- Recent significant event${sig.length === 1 ? "" : "s"}: ${sig.slice(0, 3).map((l) => l.content.slice(0, 80)).join(" · ")}`);
+  if (overdue.length) lines.push(`- ${overdue.length} action${overdue.length === 1 ? "" : "s"} overdue.`);
+  if (lines.length === 1) lines.push("- Nothing outstanding flagged. Have a good shift.");
+
+  return answer({ intent: "shift_brief", answered: true, text: lines.join("\n"), sources: [{ label: "On shift", count: onShift.length }, { label: "To watch", count: restraintGaps.length + oversight.length + rhiGaps.length }], suggestions: sug(["What needs my attention?", "Anything significant happen this week?", "Who is placed here?"]) });
+}
+
+function skillWhatsDue(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+  const overdueTasks = snap.tasks.filter((t) => t.dueDate && daysBetween(t.dueDate, asOf) > 0 && t.status !== "completed" && t.status !== "cancelled");
+  const dueSoonTasks = snap.tasks.filter((t) => t.dueDate && daysBetween(asOf, t.dueDate) >= 0 && daysBetween(asOf, t.dueDate) <= 7 && t.status !== "completed" && t.status !== "cancelled");
+  const overdueReviews = snap.reviews.filter((r) => daysBetween(r.nextReviewDate, asOf) > 0);
+  const dueSoonReviews = snap.reviews.filter((r) => daysBetween(asOf, r.nextReviewDate) >= 0 && daysBetween(asOf, r.nextReviewDate) <= 14);
+
+  const lines: string[] = [];
+  if (overdueTasks.length) lines.push(`- ${overdueTasks.length} action${overdueTasks.length === 1 ? "" : "s"} overdue.`);
+  if (dueSoonTasks.length) lines.push(`- ${dueSoonTasks.length} action${dueSoonTasks.length === 1 ? "" : "s"} due within 7 days.`);
+  if (overdueReviews.length) lines.push(`- ${overdueReviews.length} review${overdueReviews.length === 1 ? "" : "s"} overdue (${overdueReviews.map((r) => r.kind.toLowerCase()).slice(0, 3).join(", ")}).`);
+  if (dueSoonReviews.length) lines.push(`- ${dueSoonReviews.length} review${dueSoonReviews.length === 1 ? "" : "s"} due within a fortnight.`);
+  const text = lines.length === 0 ? "Nothing is due or overdue in the next couple of weeks — you're on top of it." : `Here's what's due:\n${lines.join("\n")}`;
+  return answer({ intent: "whats_due", answered: true, text, sources: [{ label: "Overdue", count: overdueTasks.length + overdueReviews.length }, { label: "Due soon", count: dueSoonTasks.length + dueSoonReviews.length }], suggestions: sug(["What's overdue?", "What needs my attention?"]) });
+}
+
+function skillHomeOverview(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+  const current = snap.children.filter((c) => (c.status ?? "current") === "current").length;
+  const beds = snap.home?.maxBeds;
+  const occ = snap.home?.currentOccupancy ?? current;
+  const incMonth = snap.incidents.filter((i) => withinDays(i.date, asOf, 30)).length;
+  const restraintGaps = snap.restraints.filter((r) => !r.childDebriefed).length;
+  const restraintsMonth = snap.restraints.filter((r) => withinDays(r.date, asOf, 30)).length;
+  const rhiGaps = snap.missingEpisodes.filter((m) => !m.hasReturnInterview).length;
+  const oversight = snap.incidents.filter((i) => i.requiresOversight && !i.hasOversight && i.status !== "closed").length;
+  const overdue = snap.tasks.filter((t) => t.dueDate && daysBetween(t.dueDate, asOf) > 0 && t.status !== "completed" && t.status !== "cancelled").length;
+
+  const text = [
+    `${snap.home?.name || "The home"} — ${occ}${beds ? `/${beds}` : ""} place${occ === 1 ? "" : "s"} filled.`,
+    `Last 30 days: ${incMonth} incident${incMonth === 1 ? "" : "s"}, ${restraintsMonth} restraint${restraintsMonth === 1 ? "" : "s"} (${restraintGaps} without a debrief).`,
+    `Outstanding: ${oversight} incident${oversight === 1 ? "" : "s"} awaiting oversight, ${rhiGaps} missing return interview${rhiGaps === 1 ? "" : "s"}, ${overdue} overdue action${overdue === 1 ? "" : "s"}.`,
+  ].join("\n");
+  return answer({ intent: "home_overview", answered: true, text, sources: [{ label: "Occupancy", count: occ }, { label: "Incidents (30d)", count: incMonth }, { label: "Awaiting oversight", count: oversight }], suggestions: sug(["What needs my attention?", "Who's overdue supervision?", "How many incidents this week?"]) });
+}
+
 function skillUnknown(): AskCaraAnswer {
   return answer({
     intent: "unknown",
@@ -315,26 +427,39 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   const asOf = query.asOf;
   const child = resolveChild(q, snap, query.context?.childId);
 
+  // Role-based access: answers are scoped to who is asking.
+  const tier = roleTier(query.role);
+  const gate = (need: AccessTier, fn: () => AskCaraAnswer): AskCaraAnswer => (TIER_RANK[tier] >= TIER_RANK[need] ? fn() : denied(need));
+
+  // Reflector first — before greeting ("help me reflect" contains "help") and
+  // before missing-from-care ("what am I missing").
+  if (mentionsAny(q, ["reflect", "reflection", "reflective", "what am i missing", "what might i be missing", "am i missing", "missing anything", "help me think", "challenge me", "supervise me", "what should i consider", "make me think"])) return gate("everyone", () => skillReflector(snap, asOf, child));
+
   if (!q || (q.length <= 24 && mentionsAny(q, ["hi", "hello", "hey", "help", "what can you do", "who are you", "start"]))) {
     return skillGreeting(query.userName);
   }
 
+  // Handover before attention (so "brief me" isn't caught by "briefing").
+  if (mentionsAny(q, ["brief me", "shift brief", "handover", "hand over", "coming on shift", "start of shift", "my shift", "start of my shift", "coming on duty"])) return gate("care_team", () => skillShiftBrief(snap, asOf));
+
   // Most specific → least. Restraint & missing before generic "incident".
-  if (mentionsAny(q, ["restraint", "physical intervention", "physical hold", "hold"])) return skillRestraints(q, snap, asOf, child);
-  if (mentionsAny(q, ["missing", "ran away", "absconded", "absent without", "awol"])) return skillMissing(q, snap, asOf, child);
-  if (mentionsAny(q, ["overdue", "late action", "past due", "outstanding task"])) return skillOverdue(snap, asOf);
-  if (mentionsAny(q, ["medication", "meds", "medicine", "mar sheet", "prescribed"])) return skillMedication(snap, asOf, child);
-  if (mentionsAny(q, ["safeguarding", "protection concern", "at risk", "disclosure"])) return skillSafeguarding(snap, asOf);
-  if (mentionsAny(q, ["on shift", "who's working", "who is working", "who's on", "who is on", "staff on", "on duty", "on tonight", "rota today", "working today", "working tonight"])) return skillStaffing(snap, asOf);
-  if (mentionsAny(q, ["key work", "keywork", "key-work", "one to one", "one-to-one", "1:1"])) return skillKeyWork(snap, asOf, child);
-  if (mentionsAny(q, ["significant", "anything happen", "how was the day", "how was today", "how did today", "events today", "notable", "any events"])) return skillEvents(snap, asOf, child);
-  if (mentionsAny(q, ["attention", "priority", "urgent", "what needs", "what should i", "briefing", "focus on", "worry"])) return skillAttention(snap, asOf);
-  if (mentionsAny(q, ["how many children", "how many young people", "who lives", "who is placed", "who's placed", "list the children", "list young people", "how many kids"])) return skillChildrenList(snap);
-  if (mentionsAny(q, ["incident", "incidents", "what happened"])) return skillIncidents(q, snap, asOf, child);
+  if (mentionsAny(q, ["restraint", "physical intervention", "physical hold", "hold"])) return gate("care_team", () => skillRestraints(q, snap, asOf, child));
+  if (mentionsAny(q, ["missing", "ran away", "absconded", "absent without", "awol"])) return gate("care_team", () => skillMissing(q, snap, asOf, child));
+  if (mentionsAny(q, ["what's due", "whats due", "what is due", "due this week", "due soon", "deadlines", "coming up", "upcoming"])) return gate("care_team", () => skillWhatsDue(snap, asOf));
+  if (mentionsAny(q, ["overdue", "late action", "past due", "outstanding task"])) return gate("care_team", () => skillOverdue(snap, asOf));
+  if (mentionsAny(q, ["medication", "meds", "medicine", "mar sheet", "prescribed"])) return gate("care_team", () => skillMedication(snap, asOf, child));
+  if (mentionsAny(q, ["safeguarding", "protection concern", "at risk", "disclosure"])) return gate("care_team", () => skillSafeguarding(snap, asOf));
+  if (mentionsAny(q, ["on shift", "who's working", "who is working", "who's on", "who is on", "staff on", "on duty", "on tonight", "rota today", "working today", "working tonight"])) return gate("everyone", () => skillStaffing(snap, asOf));
+  if (mentionsAny(q, ["key work", "keywork", "key-work", "one to one", "one-to-one", "1:1"])) return gate("care_team", () => skillKeyWork(snap, asOf, child));
+  if (mentionsAny(q, ["significant", "anything happen", "how was the day", "how was today", "how did today", "events today", "notable", "any events"])) return gate("care_team", () => skillEvents(snap, asOf, child));
+  if (mentionsAny(q, ["home overview", "how is the home", "how's the home", "management overview", "whole home", "home summary", "state of the home", "how are we doing"])) return gate("management", () => skillHomeOverview(snap, asOf));
+  if (mentionsAny(q, ["attention", "priority", "urgent", "what needs", "what should i", "briefing", "focus on", "worry"])) return gate("care_team", () => skillAttention(snap, asOf));
+  if (mentionsAny(q, ["how many children", "how many young people", "who lives", "who is placed", "who's placed", "list the children", "list young people", "how many kids"])) return gate("everyone", () => skillChildrenList(snap));
+  if (mentionsAny(q, ["incident", "incidents", "what happened"])) return gate("care_team", () => skillIncidents(q, snap, asOf, child));
 
   // A child named with a summary-style verb, or just a child name → summary.
   if (child && (mentionsAny(q, ["tell me about", "summary", "summarise", "how is", "how's", "update on", "overview", "about"]) || raw.split(/\s+/).length <= 3)) {
-    return skillChildSummary(child, snap, asOf);
+    return gate("care_team", () => skillChildSummary(child, snap, asOf));
   }
 
   return skillUnknown();
