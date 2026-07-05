@@ -254,6 +254,48 @@ function skillChildrenList(snap: AskCaraSnapshot): AskCaraAnswer {
   return answer({ intent: "children_list", answered: true, text, sources: [{ label: "Current young people", count: current.length }], suggestions: sug(names[0] ? [`Tell me about ${names[0]}`, "What needs my attention?"] : ["What needs my attention?"]) });
 }
 
+function skillStaffing(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+  const today = snap.shifts.filter((sh) => sh.date === asOf);
+  const names = today.map((sh) => snap.staff.find((st) => st.id === sh.staffId)?.name ?? sh.staffId);
+  const uniq = [...new Set(names)];
+  const text = today.length === 0
+    ? "No shifts are recorded for today. Check the rota if that looks wrong."
+    : `${uniq.length} staff member${uniq.length === 1 ? "" : "s"} on shift today: ${uniq.join(", ")}.`;
+  return answer({ intent: "staffing", answered: true, text, sources: [{ label: "Shifts today", count: today.length }], suggestions: sug(["What needs my attention?", "Who is placed here?"]) });
+}
+
+function skillKeyWork(snap: AskCaraSnapshot, asOf: string, child: AskCaraChild | null): AskCaraAnswer {
+  if (child) {
+    const sessions = snap.keyWork.filter((k) => k.childId === child.id).sort((a, b) => (a.date < b.date ? 1 : -1));
+    const recent = sessions.filter((k) => withinDays(k.date, asOf, 30));
+    const last = sessions[0];
+    const text = sessions.length === 0
+      ? `No key-work sessions on record for ${childLabel(child)}.`
+      : `${childLabel(child)} has had ${recent.length} key-work session${recent.length === 1 ? "" : "s"} in the last 30 days. Most recent: ${last.date} (${daysBetween(last.date, asOf)} day${daysBetween(last.date, asOf) === 1 ? "" : "s"} ago).`;
+    return answer({ intent: "key_work", answered: true, text, sources: [{ label: "Key-work (30d)", count: recent.length }], suggestions: sug([`Tell me about ${childLabel(child)}`, "What needs my attention?"]) });
+  }
+  // Home rollup — who hasn't had key work recently.
+  const overdue = snap.children
+    .filter((c) => (c.status ?? "current") === "current")
+    .map((c) => ({ c, last: snap.keyWork.filter((k) => k.childId === c.id).map((k) => k.date).sort().slice(-1)[0] }))
+    .filter((x) => !x.last || daysBetween(x.last, asOf) > 14);
+  const text = overdue.length === 0
+    ? "Every child has had a key-work session in the last two weeks."
+    : `${overdue.length} child${overdue.length === 1 ? "" : "ren"} ${overdue.length === 1 ? "hasn't" : "haven't"} had a key-work session in over two weeks: ${overdue.map((x) => childLabel(x.c)).join(", ")}.`;
+  return answer({ intent: "key_work", answered: true, text, sources: [{ label: "Key-work gaps (>14d)", count: overdue.length }], suggestions: sug(["What needs my attention?", "Who is placed here?"]) });
+}
+
+function skillEvents(snap: AskCaraSnapshot, asOf: string, child: AskCaraChild | null): AskCaraAnswer {
+  let logs = snap.dailyLogs.filter((l) => l.significant);
+  if (child) logs = logs.filter((l) => l.childId === child.id);
+  logs = logs.filter((l) => withinDays(l.date, asOf, 7)).sort((a, b) => (a.date < b.date ? 1 : -1));
+  const nameFor = (id: string) => childLabel(snap.children.find((c) => c.id === id) ?? ({ id } as AskCaraChild));
+  const text = logs.length === 0
+    ? `Nothing flagged as significant in the daily logs${child ? ` for ${childLabel(child)}` : ""} in the last 7 days.`
+    : `${logs.length} significant daily-log entr${logs.length === 1 ? "y" : "ies"} in the last 7 days:\n${logs.slice(0, 5).map((l) => `- ${child ? l.date : `${nameFor(l.childId)}, ${l.date}`}: ${l.content.slice(0, 120)}${l.content.length > 120 ? "…" : ""}`).join("\n")}`;
+  return answer({ intent: "events", answered: true, text, sources: [{ label: "Significant logs (7d)", count: logs.length }], suggestions: sug(child ? [`Tell me about ${childLabel(child)}`, "What needs my attention?"] : ["What needs my attention?", "How many incidents this week?"]) });
+}
+
 function skillUnknown(): AskCaraAnswer {
   return answer({
     intent: "unknown",
@@ -283,6 +325,9 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   if (mentionsAny(q, ["overdue", "late action", "past due", "outstanding task"])) return skillOverdue(snap, asOf);
   if (mentionsAny(q, ["medication", "meds", "medicine", "mar sheet", "prescribed"])) return skillMedication(snap, asOf, child);
   if (mentionsAny(q, ["safeguarding", "protection concern", "at risk", "disclosure"])) return skillSafeguarding(snap, asOf);
+  if (mentionsAny(q, ["on shift", "who's working", "who is working", "who's on", "who is on", "staff on", "on duty", "on tonight", "rota today", "working today", "working tonight"])) return skillStaffing(snap, asOf);
+  if (mentionsAny(q, ["key work", "keywork", "key-work", "one to one", "one-to-one", "1:1"])) return skillKeyWork(snap, asOf, child);
+  if (mentionsAny(q, ["significant", "anything happen", "how was the day", "how was today", "how did today", "events today", "notable", "any events"])) return skillEvents(snap, asOf, child);
   if (mentionsAny(q, ["attention", "priority", "urgent", "what needs", "what should i", "briefing", "focus on", "worry"])) return skillAttention(snap, asOf);
   if (mentionsAny(q, ["how many children", "how many young people", "who lives", "who is placed", "who's placed", "list the children", "list young people", "how many kids"])) return skillChildrenList(snap);
   if (mentionsAny(q, ["incident", "incidents", "what happened"])) return skillIncidents(q, snap, asOf, child);

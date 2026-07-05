@@ -25,6 +25,9 @@ export type AskCaraIntent =
   | "medication"
   | "safeguarding"
   | "children_list"
+  | "staffing"
+  | "key_work"
+  | "events"
   | "unknown";
 
 export interface AskCaraSource {
@@ -99,6 +102,19 @@ export interface AskCaraDailyLog {
   childId: string;
   date: string;
   content: string;
+  significant?: boolean;
+}
+
+export interface AskCaraShift {
+  id: string;
+  staffId: string;
+  date: string;
+  shiftType?: string;
+}
+
+export interface AskCaraKeyWork {
+  childId: string;
+  date: string;
 }
 
 export interface AskCaraMedication {
@@ -124,6 +140,8 @@ export interface AskCaraSnapshot {
   dailyLogs: AskCaraDailyLog[];
   medications: AskCaraMedication[];
   reviews: AskCaraReview[];
+  shifts: AskCaraShift[];
+  keyWork: AskCaraKeyWork[];
 }
 
 export interface AskCaraContext {
