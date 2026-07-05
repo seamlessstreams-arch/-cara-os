@@ -73,9 +73,39 @@ function OpinionCard({ o }: { o: StatutoryOpinion }) {
   );
 }
 
+function AssembledDraft({ assembly }: { assembly: NonNullable<ReturnType<typeof useReg44ReportIntelligence>["data"]>["data"]["assembly"] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-lg border border-[var(--cs-border,#e2e8ec)]">
+      <button type="button" onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left">
+        <span className="text-sm font-medium text-[var(--cs-text,#14202a)]">
+          Assembled draft report (A–Q) · {assembly.sectionsDrafted} drafted, {assembly.sectionsNeedingVisitor} for you
+        </span>
+        {open ? <ChevronUp className="h-4 w-4 text-[var(--cs-text-muted,#6c7a83)]" /> : <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted,#6c7a83)]" />}
+      </button>
+      {open && (
+        <div className="space-y-1 border-t border-[var(--cs-border,#e2e8ec)] px-3 py-2">
+          {assembly.sections.map((s) => (
+            <div key={s.key} className="py-1">
+              <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text,#14202a)]">
+                <span className="text-[var(--cs-text-muted,#6c7a83)]">{s.key}.</span> {s.label}
+                {s.visitorMustComplete && <span className="rounded-full bg-[#fdf4e3] px-1.5 py-0.5 text-[10px]" style={{ color: "#b7791f" }}>for you</span>}
+                {s.status === "insufficient_evidence" && <span className="rounded-full bg-[#eef1f3] px-1.5 py-0.5 text-[10px]" style={{ color: "#6c7a83" }}>needs evidence</span>}
+              </p>
+              <p className="whitespace-pre-line text-[11px] leading-relaxed text-[var(--cs-text-muted,#6c7a83)]">{s.content}</p>
+            </div>
+          ))}
+          <p className="pt-1 text-[11px] italic text-[var(--cs-text-muted,#6c7a83)]">{assembly.disclaimer}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Reg44ReportIntelligencePanel({ homeId = "home_oak", month }: { homeId?: string; month?: string }) {
   const { data, isLoading, isError } = useReg44ReportIntelligence(homeId, month);
   const a = data?.data?.assessment;
+  const assembly = data?.data?.assembly;
 
   return (
     <Card className="border-[var(--cs-border,#e2e8ec)]">
@@ -117,6 +147,8 @@ export function Reg44ReportIntelligencePanel({ homeId = "home_oak", month }: { h
                 <StandardRow key={s.key} s={s} />
               ))}
             </div>
+
+            {assembly && <AssembledDraft assembly={assembly} />}
 
             <p className="text-[11px] italic leading-relaxed text-[var(--cs-text-muted,#6c7a83)]">{a.disclaimer}</p>
           </>

@@ -14,6 +14,7 @@ import { getRequestIdentity } from "@/lib/auth-guard";
 import { getStore } from "@/lib/db/store";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
+import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
 import type { Reg44AssessmentInput } from "@/lib/reg44-report-intelligence/types";
 
 export const dynamic = "force-dynamic";
@@ -89,7 +90,38 @@ export async function GET(req: NextRequest) {
     };
 
     const assessment = assessReg44QualityStandards(input);
-    return NextResponse.json({ data: { assessment, pack: { id: pack.id, window: pack.window, headline: pack.headline } } });
+
+    // ── Assemble the A–Q report draft (deterministic; no AI). Child voice is
+    //    anonymised to initials/reference codes before it enters the report. ──
+    const initialsOf = (name: string, i: number): string => {
+      const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return `C${String(i + 1).padStart(3, "0")}`;
+      return parts.map((p) => p[0]!.toUpperCase()).join(".") + ".";
+    };
+    const childName = new Map<string, string>();
+    (pack.children ?? []).forEach((c: Record<string, unknown>, i: number) => childName.set(String(c.child_id ?? c.id), initialsOf(String(c.preferred_name ?? c.name ?? ""), i)));
+    const childVoiceEntries = keywork
+      .filter((k) => k.childVoice.trim().length > 0)
+      .slice(0, 8)
+      .map((k) => {
+        const cid = (pack.keywork_sessions ?? []).find((s: Record<string, unknown>) => String(s.id) === k.id) as { child_id?: string } | undefined;
+        return { ref: (cid && childName.get(String(cid.child_id))) || "Child", summary: k.childVoice.trim().slice(0, 160) };
+      });
+    const previousRecommendations = ((pack.previous_visit?.outstanding_recommendations ?? []) as Array<Record<string, unknown>>).map((r) => ({ text: String(r.recommendation ?? ""), status: String(r.status ?? "outstanding"), priority: r.priority ? String(r.priority) : undefined }));
+
+    const assembly = assembleReg44ReportDraft({
+      homeId,
+      homeName: "Oak House",
+      month: win.month,
+      asOf,
+      qs: assessment,
+      headline: pack.headline,
+      childVoiceEntries,
+      previousRecommendations,
+      reg45EvidenceCount: pack.headline.verified_reg45_evidence ?? 0,
+    });
+
+    return NextResponse.json({ data: { assessment, assembly, pack: { id: pack.id, window: pack.window, headline: pack.headline } } });
   } catch (error: unknown) {
     console.error("[api] reg44-report-intelligence error:", error);
     return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
