@@ -119,12 +119,14 @@ function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
     tasks: rec(store.tasks).map((t) => ({ id: String(t.id), title: s(t.title) || "Action", dueDate: day(t.due_date), status: s(t.status), childId: t.linked_child_id ? String(t.linked_child_id) : undefined })),
     restraints: rec(store.restraints).map((r) => ({ id: String(r.id), date: day(r.date ?? r.created_at), childId: r.child_id ? String(r.child_id) : undefined, childDebriefed: !!r.child_debriefed })),
     missingEpisodes: rec(store.missingEpisodes).map((m) => ({ id: String(m.id), date: day(m.date ?? m.reported_at), childId: m.child_id ? String(m.child_id) : undefined, status: s(m.status) || "active", hasReturnInterview: returnInterviews.some((ri) => ri.episode_id === m.id || ri.missing_episode_id === m.id || (!!m.child_id && ri.child_id === m.child_id)) })),
-    dailyLogs: rec(store.dailyLog).map((l) => ({ childId: String(l.child_id), date: day(l.date), content: s(l.content) })),
+    dailyLogs: rec(store.dailyLog).map((l) => ({ childId: String(l.child_id), date: day(l.date), content: s(l.content), significant: !!l.is_significant })),
     medications: rec(store.medications).map((m) => ({ id: String(m.id), childId: m.child_id ? String(m.child_id) : undefined, name: s(m.name) })),
     reviews: [
       ...rec(store.riskAssessments).map((r) => ({ id: String(r.id), kind: "Risk assessment", childId: r.child_id ? String(r.child_id) : undefined, nextReviewDate: day(r.next_review_date ?? r.review_date) })),
       ...rec(store.lacReviews).map((r) => ({ id: String(r.id), kind: "LAC review", childId: r.child_id ? String(r.child_id) : undefined, nextReviewDate: day(r.next_review_date ?? r.next_review) })),
     ].filter((r) => r.nextReviewDate),
+    shifts: rec((store as Record<string, unknown>).shifts).map((sh) => ({ id: String(sh.id), staffId: String(sh.staff_id), date: day(sh.date), shiftType: s(sh.shift_type) || undefined })),
+    keyWork: rec((store as Record<string, unknown>).keyWorkingSessions).map((k) => ({ childId: String(k.child_id), date: day(k.date ?? k.session_date) })),
   };
 }
 

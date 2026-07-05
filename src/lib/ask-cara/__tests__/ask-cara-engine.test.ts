@@ -22,6 +22,8 @@ const emptySnap = (o: Partial<AskCaraSnapshot> = {}): AskCaraSnapshot => ({
   dailyLogs: [],
   medications: [],
   reviews: [],
+  shifts: [],
+  keyWork: [],
   ...o,
 });
 
@@ -43,6 +45,18 @@ const SNAP = emptySnap({
   missingEpisodes: [{ id: "m1", date: "2026-07-03", childId: "yp_alex", hasReturnInterview: false, status: "closed" }],
   medications: [{ id: "med1", childId: "yp_casey", name: "Melatonin" }],
   reviews: [{ id: "rev1", kind: "Risk assessment", childId: "yp_alex", nextReviewDate: "2026-06-01" }],
+  shifts: [
+    { id: "sh1", staffId: "staff_ed", date: "2026-07-05", shiftType: "day" },
+    { id: "sh2", staffId: "staff_ed", date: "2026-07-04", shiftType: "night" },
+  ],
+  keyWork: [
+    { childId: "yp_alex", date: "2026-07-01" },
+    { childId: "yp_casey", date: "2026-05-01" }, // >14d before 07-05 → a gap
+  ],
+  dailyLogs: [
+    { childId: "yp_alex", date: "2026-07-04", content: "Alex became distressed after a phone call and was supported to regulate.", significant: true },
+    { childId: "yp_casey", date: "2026-07-02", content: "Ordinary settled day.", significant: false },
+  ],
 });
 
 const ask = (question: string, extra: Partial<AskCaraQuery> = {}) =>
@@ -140,6 +154,32 @@ describe("attention", () => {
     expect(a.intent).toBe("attention");
     expect(a.text).toMatch(/restraint/i);
     expect(a.text).toMatch(/oversight/i);
+  });
+});
+
+describe("staffing / key work / events", () => {
+  it("answers who is on shift today", () => {
+    const a = ask("who's on shift?");
+    expect(a.intent).toBe("staffing");
+    expect(a.text).toMatch(/Edward Bright/); // only today's (07-05) shift, deduped
+    expect(a.text).toMatch(/1 staff member on shift today/);
+  });
+  it("reports a child's key-work recency", () => {
+    const a = ask("when did Alex last have key work?");
+    expect(a.intent).toBe("key_work");
+    expect(a.text).toMatch(/2026-07-01/);
+  });
+  it("flags key-work gaps across the home", () => {
+    const a = ask("show me key work sessions");
+    expect(a.intent).toBe("key_work");
+    // Casey's last was 05-01 (>14d before 07-05) → a gap; Alex's 07-01 is recent.
+    expect(a.text).toMatch(/Casey/);
+  });
+  it("summarises significant events", () => {
+    const a = ask("anything significant happen this week?");
+    expect(a.intent).toBe("events");
+    expect(a.text).toMatch(/Alex/);
+    expect(a.text).toMatch(/distressed after a phone call/);
   });
 });
 
