@@ -183,6 +183,59 @@ describe("staffing / key work / events", () => {
   });
 });
 
+describe("reflector", () => {
+  it("gives child-grounded reflective questions", () => {
+    const a = ask("help me reflect on Alex");
+    expect(a.intent).toBe("reflector");
+    expect(a.text).toMatch(/reflect on your practice with Alex/i);
+    expect(a.text).toMatch(/whose perspective is missing/i);
+  });
+  it("does not fall to missing-from-care for 'what am I missing'", () => {
+    expect(ask("what am I missing about Alex?").intent).toBe("reflector");
+  });
+  it("gives generic reflective prompts with no child", () => {
+    expect(ask("help me reflect").intent).toBe("reflector");
+  });
+});
+
+describe("shift brief / what's due", () => {
+  it("composes a shift handover", () => {
+    const a = ask("brief me for my shift");
+    expect(a.intent).toBe("shift_brief");
+    expect(a.text).toMatch(/shift brief/i);
+  });
+  it("lists what's due", () => {
+    const a = ask("what's due this week?");
+    expect(a.intent).toBe("whats_due");
+  });
+});
+
+describe("role-based access (RBAC)", () => {
+  it("lets a manager see the home overview", () => {
+    const a = ask("how is the home doing?", { role: "registered_manager", snapshot: { ...SNAP, home: { name: "Oak House", maxBeds: 4, currentOccupancy: 3 } } });
+    expect(a.intent).toBe("home_overview");
+    expect(a.text).toMatch(/Oak House/);
+    expect(a.text).toMatch(/3\/4/);
+  });
+  it("denies a care worker the management-only home overview", () => {
+    const a = ask("how is the home doing?", { role: "residential_care_worker" });
+    expect(a.intent).toBe("access_denied");
+    expect(a.answered).toBe(false);
+    expect(a.text).toMatch(/management-level information/i);
+  });
+  it("denies an everyone-tier role (candidate) care-team data", () => {
+    const a = ask("how many incidents this week?", { role: "candidate" });
+    expect(a.intent).toBe("access_denied");
+  });
+  it("still lets everyone-tier roles ask general things (who's placed, reflect)", () => {
+    expect(ask("who is placed here?", { role: "candidate" }).intent).toBe("children_list");
+    expect(ask("help me reflect", { role: "candidate" }).intent).toBe("reflector");
+  });
+  it("defaults (no role) to care-team so operational Q&A works", () => {
+    expect(ask("how many incidents this week?").intent).toBe("incidents");
+  });
+});
+
 describe("honesty — no fabrication", () => {
   it("gives an honest fallback (answered:false) for an unmappable question", () => {
     const a = ask("what is the meaning of life?");
