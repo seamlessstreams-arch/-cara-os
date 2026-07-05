@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { invokeAiGateway, invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
+import { getStore } from "@/lib/db/store";
+import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
+import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/v1/cara/chat
@@ -90,6 +93,41 @@ function streamViaGateway(userMessage: string): Response {
   return new Response(body, sseHeaders());
 }
 
+// ── Deterministic "Ask Cara" (no LLM) ──────────────────────────────────────────
+// The chat surface asks questions that are answered straight from the home's
+// records — no model call, so it works with zero AI credit. The engine is pure;
+// this maps the store into its snapshot.
+
+const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
+const s = (v: unknown): string => (typeof v === "string" ? v : "");
+
+function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
+  const returnInterviews = (store.returnInterviews ?? []) as Array<{ episode_id?: string; missing_episode_id?: string; child_id?: string }>;
+  const rec = (c: unknown) => (c ?? []) as Array<Record<string, unknown>>;
+  return {
+    children: rec(store.youngPeople).map((c) => ({
+      id: String(c.id),
+      firstName: s(c.preferred_name) || s(c.first_name) || s(c.full_name) || String(c.id),
+      name: s(c.full_name) || [c.first_name, c.last_name].filter(Boolean).join(" ") || String(c.id),
+      dob: day(c.date_of_birth),
+      status: s(c.status) || "current",
+      keyWorkerId: s(c.key_worker_id) || s(c.keyWorkerId) || s(c.key_worker) || undefined,
+      legalStatus: s(c.legal_status) || undefined,
+    })),
+    staff: rec(store.staff).map((st) => ({ id: String(st.id), name: s(st.full_name) || [st.first_name, st.last_name].filter(Boolean).join(" ") || String(st.id) })),
+    incidents: rec(store.incidents).map((i) => ({ id: String(i.id), type: s(i.type) || "other", severity: s(i.severity), childId: i.child_id ? String(i.child_id) : undefined, date: day(i.date), status: s(i.status) || "open", requiresOversight: !!i.requires_oversight, hasOversight: !!(i.oversight_note || i.oversight_by || i.oversight_at) })),
+    tasks: rec(store.tasks).map((t) => ({ id: String(t.id), title: s(t.title) || "Action", dueDate: day(t.due_date), status: s(t.status), childId: t.linked_child_id ? String(t.linked_child_id) : undefined })),
+    restraints: rec(store.restraints).map((r) => ({ id: String(r.id), date: day(r.date ?? r.created_at), childId: r.child_id ? String(r.child_id) : undefined, childDebriefed: !!r.child_debriefed })),
+    missingEpisodes: rec(store.missingEpisodes).map((m) => ({ id: String(m.id), date: day(m.date ?? m.reported_at), childId: m.child_id ? String(m.child_id) : undefined, status: s(m.status) || "active", hasReturnInterview: returnInterviews.some((ri) => ri.episode_id === m.id || ri.missing_episode_id === m.id || (!!m.child_id && ri.child_id === m.child_id)) })),
+    dailyLogs: rec(store.dailyLog).map((l) => ({ childId: String(l.child_id), date: day(l.date), content: s(l.content) })),
+    medications: rec(store.medications).map((m) => ({ id: String(m.id), childId: m.child_id ? String(m.child_id) : undefined, name: s(m.name) })),
+    reviews: [
+      ...rec(store.riskAssessments).map((r) => ({ id: String(r.id), kind: "Risk assessment", childId: r.child_id ? String(r.child_id) : undefined, nextReviewDate: day(r.next_review_date ?? r.review_date) })),
+      ...rec(store.lacReviews).map((r) => ({ id: String(r.id), kind: "LAC review", childId: r.child_id ? String(r.child_id) : undefined, nextReviewDate: day(r.next_review_date ?? r.next_review) })),
+    ].filter((r) => r.nextReviewDate),
+  };
+}
+
 // ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: NextRequest) {
@@ -106,6 +144,24 @@ export async function POST(req: NextRequest) {
 
   if (!prompt) {
     return NextResponse.json({ error: "prompt is required" }, { status: 400 });
+  }
+
+  // Deterministic Ask-Cara path — record-based Q&A, no model, works with no credit.
+  if (body.mode === "ask") {
+    try {
+      const snapshot = buildAskSnapshot(getStore());
+      const answer = answerQuestion({
+        question: prompt,
+        asOf: new Date().toISOString().slice(0, 10),
+        userName: typeof body.userName === "string" ? body.userName : undefined,
+        snapshot,
+        context: { pageTitle: typeof body.pageTitle === "string" ? body.pageTitle : undefined, childId: typeof body.childId === "string" ? body.childId : undefined },
+      });
+      return NextResponse.json({ answer });
+    } catch (err) {
+      console.error("[cara/chat] ask failed", err);
+      return NextResponse.json({ error: "Ask Cara failed" }, { status: 500 });
+    }
   }
 
   const userMessage = context ? `Context: ${context}\n\n${prompt}` : prompt;
