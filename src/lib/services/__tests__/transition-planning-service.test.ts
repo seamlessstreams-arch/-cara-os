@@ -38,6 +38,17 @@ function daysAgo(n: number): string {
   return d.toISOString().split("T")[0];
 }
 
+/** Like daysAgo but clamped to no earlier than the start of the current calendar
+ *  quarter — keeps "current quarter" fixtures in-quarter at a quarter boundary. */
+function daysAgoInQuarter(n: number): string {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3);
+  const target = new Date();
+  target.setDate(target.getDate() - n);
+  const sameQuarter = target.getFullYear() === now.getFullYear() && Math.floor(target.getMonth() / 3) === q;
+  return (sameQuarter ? target : now).toISOString().split("T")[0];
+}
+
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
   const d = new Date();
@@ -98,7 +109,7 @@ function makeReview(
     plan_id: "plan-1",
     child_id: "child-1",
     child_name: "Alex",
-    review_date: daysAgo(3),
+    review_date: daysAgoInQuarter(3),
     reviewer: "Manager Jones",
     progress_summary: "Good progress overall",
     goals_reviewed: 3,
@@ -705,8 +716,8 @@ describe("computeTransitionMetrics", () => {
 
   it("counts reviews with review_date in current quarter", () => {
     const reviews = [
-      makeReview({ id: "r1", review_date: daysAgo(5) }),
-      makeReview({ id: "r2", review_date: daysAgo(10) }),
+      makeReview({ id: "r1", review_date: daysAgoInQuarter(5) }),
+      makeReview({ id: "r2", review_date: daysAgoInQuarter(10) }),
     ];
     const m = computeTransitionMetrics([], reviews);
     expect(m.reviews_this_quarter).toBe(2);
@@ -768,7 +779,7 @@ describe("computeTransitionMetrics", () => {
       }),
     ];
     const reviews = [
-      makeReview({ id: "r1", review_date: daysAgo(5) }),
+      makeReview({ id: "r1", review_date: daysAgoInQuarter(5) }),
     ];
     const m = computeTransitionMetrics(plans, reviews);
 
@@ -1461,7 +1472,7 @@ describe("identifyTransitionAlerts", () => {
       }),
     ];
     const reviews = [
-      makeReview({ plan_id: "plan-1", review_date: daysAgo(10) }),
+      makeReview({ plan_id: "plan-1", review_date: daysAgoInQuarter(10) }),
     ];
     const alerts = identifyTransitionAlerts(plans, reviews, now);
     expect(alerts.find((a) => a.type === "no_review")).toBeUndefined();
@@ -1518,7 +1529,7 @@ describe("identifyTransitionAlerts", () => {
       }),
     ];
     const reviews = [
-      makeReview({ plan_id: "plan-B", review_date: daysAgo(10) }),
+      makeReview({ plan_id: "plan-B", review_date: daysAgoInQuarter(10) }),
     ];
     const alerts = identifyTransitionAlerts(plans, reviews, now);
     expect(alerts.find((a) => a.type === "no_review")).toBeDefined();
@@ -1838,10 +1849,10 @@ describe("computeTransitionMetrics — edge cases", () => {
 
   it("counts multiple reviews in current quarter", () => {
     const reviews = [
-      makeReview({ id: "r1", review_date: daysAgo(1) }),
-      makeReview({ id: "r2", review_date: daysAgo(5) }),
-      makeReview({ id: "r3", review_date: daysAgo(10) }),
-      makeReview({ id: "r4", review_date: daysAgo(15) }),
+      makeReview({ id: "r1", review_date: daysAgoInQuarter(1) }),
+      makeReview({ id: "r2", review_date: daysAgoInQuarter(5) }),
+      makeReview({ id: "r3", review_date: daysAgoInQuarter(10) }),
+      makeReview({ id: "r4", review_date: daysAgoInQuarter(15) }),
     ];
     const m = computeTransitionMetrics([], reviews);
     expect(m.reviews_this_quarter).toBe(4);
@@ -2066,8 +2077,8 @@ describe("identifyTransitionAlerts — edge cases", () => {
       }),
     ];
     const reviews = [
-      makeReview({ plan_id: "plan-Y", review_date: daysAgo(5) }),
-      makeReview({ id: "r2", plan_id: "plan-Z", review_date: daysAgo(10) }),
+      makeReview({ plan_id: "plan-Y", review_date: daysAgoInQuarter(5) }),
+      makeReview({ id: "r2", plan_id: "plan-Z", review_date: daysAgoInQuarter(10) }),
     ];
     const alerts = identifyTransitionAlerts(plans, reviews, now);
     expect(alerts.find((a) => a.type === "no_review")).toBeDefined();
@@ -2114,7 +2125,7 @@ describe("identifyTransitionAlerts — edge cases", () => {
       }),
     ];
     const reviews = [
-      makeReview({ plan_id: "plan-good", review_date: daysAgo(10) }),
+      makeReview({ plan_id: "plan-good", review_date: daysAgoInQuarter(10) }),
     ];
     const alerts = identifyTransitionAlerts(plans, reviews, now);
     expect(alerts).toHaveLength(0);
@@ -2466,7 +2477,7 @@ describe("Integration scenarios", () => {
       }),
     ];
     const reviews = [
-      makeReview({ plan_id: "plan-sd", review_date: daysAgo(7) }),
+      makeReview({ plan_id: "plan-sd", review_date: daysAgoInQuarter(7) }),
     ];
     const metrics = computeTransitionMetrics(plans, reviews);
     expect(metrics.active_transitions).toBe(1);
@@ -2583,7 +2594,7 @@ describe("Integration scenarios", () => {
       }),
     ];
     const reviews = [
-      makeReview({ plan_id: "p2", review_date: daysAgo(3) }),
+      makeReview({ plan_id: "p2", review_date: daysAgoInQuarter(3) }),
     ];
     const metrics = computeTransitionMetrics(plans, reviews);
     expect(metrics.active_transitions).toBe(1);

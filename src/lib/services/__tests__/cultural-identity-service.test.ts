@@ -40,6 +40,17 @@ function daysAgo(n: number): string {
   return d.toISOString().split("T")[0];
 }
 
+/** Like daysAgo but clamped to no earlier than the start of the current calendar
+ *  quarter — keeps "current quarter" fixtures in-quarter at a quarter boundary. */
+function daysAgoInQuarter(n: number): string {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3);
+  const target = new Date();
+  target.setDate(target.getDate() - n);
+  const sameQuarter = target.getFullYear() === now.getFullYear() && Math.floor(target.getMonth() / 3) === q;
+  return (sameQuarter ? target : now).toISOString().split("T")[0];
+}
+
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
   const d = new Date();
@@ -470,8 +481,8 @@ describe("computeIdentityMetrics", () => {
 
   it("counts actions within the current quarter", () => {
     const actions = [
-      makeAction({ id: "a1", action_date: daysAgo(5) }),
-      makeAction({ id: "a2", action_date: daysAgo(10) }),
+      makeAction({ id: "a1", action_date: daysAgoInQuarter(5) }),
+      makeAction({ id: "a2", action_date: daysAgoInQuarter(10) }),
     ];
     const result = computeIdentityMetrics([], actions);
     expect(result.actions_this_quarter).toBeGreaterThanOrEqual(2);

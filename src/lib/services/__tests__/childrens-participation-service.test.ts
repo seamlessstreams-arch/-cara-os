@@ -41,6 +41,17 @@ function daysAgo(n: number): string {
   return d.toISOString().split("T")[0];
 }
 
+/** Like daysAgo but returns today when going back n days would leave the current
+ *  calendar quarter — keeps "current quarter" fixtures in-quarter at a boundary. */
+function daysAgoInQuarter(n: number): string {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3);
+  const target = new Date();
+  target.setDate(target.getDate() - n);
+  const sameQuarter = target.getFullYear() === now.getFullYear() && Math.floor(target.getMonth() / 3) === q;
+  return (sameQuarter ? target : now).toISOString().split("T")[0];
+}
+
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
   const d = new Date();
@@ -107,7 +118,7 @@ function makeConsultation(
     home_id: "home-1",
     child_id: "child-1",
     child_name: "Alice Smith",
-    consultation_date: daysAgo(3),
+    consultation_date: daysAgoInQuarter(3),
     consulted_by: "staff-1",
     topic: "individual_needs",
     context: "Care plan review",
@@ -313,7 +324,7 @@ describe("computeParticipationMetrics", () => {
 
   describe("meetings_this_quarter", () => {
     it("counts completed meetings in current quarter", () => {
-      const m = makeMeeting({ id: "m-1", meeting_date: daysAgo(1) });
+      const m = makeMeeting({ id: "m-1", meeting_date: daysAgoInQuarter(1) });
       const result = computeParticipationMetrics([m], [], 3);
       expect(result.meetings_this_quarter).toBeGreaterThanOrEqual(1);
     });
@@ -331,9 +342,9 @@ describe("computeParticipationMetrics", () => {
     });
 
     it("counts multiple completed meetings correctly", () => {
-      const m1 = makeMeeting({ id: "m-1", meeting_date: daysAgo(1) });
-      const m2 = makeMeeting({ id: "m-2", meeting_date: daysAgo(3) });
-      const m3 = makeMeeting({ id: "m-3", meeting_date: daysAgo(5) });
+      const m1 = makeMeeting({ id: "m-1", meeting_date: daysAgoInQuarter(1) });
+      const m2 = makeMeeting({ id: "m-2", meeting_date: daysAgoInQuarter(3) });
+      const m3 = makeMeeting({ id: "m-3", meeting_date: daysAgoInQuarter(5) });
       const result = computeParticipationMetrics([m1, m2, m3], [], 3);
       expect(result.meetings_this_quarter).toBeGreaterThanOrEqual(3);
     });
@@ -699,7 +710,7 @@ describe("computeParticipationMetrics", () => {
 
   describe("consultations_this_quarter", () => {
     it("counts recent consultations", () => {
-      const c = makeConsultation({ consultation_date: daysAgo(1) });
+      const c = makeConsultation({ consultation_date: daysAgoInQuarter(1) });
       const result = computeParticipationMetrics([], [c], 3);
       expect(result.consultations_this_quarter).toBeGreaterThanOrEqual(1);
     });
@@ -710,8 +721,8 @@ describe("computeParticipationMetrics", () => {
     });
 
     it("counts multiple consultations in quarter", () => {
-      const c1 = makeConsultation({ id: "c-1", consultation_date: daysAgo(1) });
-      const c2 = makeConsultation({ id: "c-2", consultation_date: daysAgo(5) });
+      const c1 = makeConsultation({ id: "c-1", consultation_date: daysAgoInQuarter(1) });
+      const c2 = makeConsultation({ id: "c-2", consultation_date: daysAgoInQuarter(5) });
       const result = computeParticipationMetrics([], [c1, c2], 3);
       expect(result.consultations_this_quarter).toBeGreaterThanOrEqual(2);
     });

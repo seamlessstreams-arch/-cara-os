@@ -46,6 +46,17 @@ function daysAgo(n: number): string {
   return d.toISOString().split("T")[0];
 }
 
+/** Like daysAgo but clamped to no earlier than the start of the current calendar
+ *  quarter — keeps "current quarter" fixtures in-quarter at a quarter boundary. */
+function daysAgoInQuarter(n: number): string {
+  const now = new Date();
+  const q = Math.floor(now.getMonth() / 3);
+  const target = new Date();
+  target.setDate(target.getDate() - n);
+  const sameQuarter = target.getFullYear() === now.getFullYear() && Math.floor(target.getMonth() / 3) === q;
+  return (sameQuarter ? target : now).toISOString().split("T")[0];
+}
+
 /** Date string N days in the future from now. */
 function daysFromNow(n: number): string {
   const d = new Date();
@@ -758,9 +769,9 @@ describe("computeMultiAgencyMetrics", () => {
 
   it("counts completed meetings this quarter", () => {
     const meetings = [
-      makeMeeting({ id: "m1", status: "completed", meeting_date: daysAgo(5) }),
-      makeMeeting({ id: "m2", status: "completed", meeting_date: daysAgo(10) }),
-      makeMeeting({ id: "m3", status: "scheduled", meeting_date: daysAgo(3) }),
+      makeMeeting({ id: "m1", status: "completed", meeting_date: daysAgoInQuarter(5) }),
+      makeMeeting({ id: "m2", status: "completed", meeting_date: daysAgoInQuarter(10) }),
+      makeMeeting({ id: "m3", status: "scheduled", meeting_date: daysAgoInQuarter(3) }),
     ];
     const result = computeMultiAgencyMetrics([], [], meetings);
     expect(result.meetings_this_quarter).toBe(2);
