@@ -9,6 +9,11 @@ import {
   buildReflectionOverview,
 } from "@/lib/post-incident-reflection/post-incident-reflection-engine";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
+import {
+  assembleReflectionPack,
+  applyAssemblySuggestions,
+  type ReflectionAssemblyInput,
+} from "@/lib/post-incident-reflection/reflection-assembly";
 
 export const dynamic = "force-dynamic";
 
@@ -149,14 +154,86 @@ export async function POST(req: NextRequest) {
       updated_by: actor,
     };
 
+    // ── Auto-population: pre-fill the reflection from the incident's
+    //    surrounding records (previous related incidents, time/location
+    //    patterns, recurring triggers, the linked restraint + debrief, child
+    //    voice, escalation). Only EMPTY fields are filled — never overwrites
+    //    what the raiser already typed — and provenance is returned. ──────────
+    let assembly: ReturnType<typeof assembleReflectionPack> | null = null;
+    let prefilled: string[] = [];
+    if (incident) {
+      const cutoff = new Date(now);
+      cutoff.setDate(cutoff.getDate() - 120);
+      const cutoffIso = cutoff.toISOString().slice(0, 10);
+      const incAny = incident as Record<string, string>;
+
+      const previousIncidents = (store.incidents as Array<Record<string, string>>)
+        .filter((i) => i.child_id === childId && i.id !== String(body.incident_id) && (i.date ?? "") >= cutoffIso)
+        .map((i) => ({ id: i.id, date: i.date, time: i.time, type: i.type, severity: i.severity, location: i.location ?? undefined, description: i.description }));
+
+      const behaviourEntries = (store.behaviourLog as Array<Record<string, string>>)
+        .filter((b) => b.child_id === childId && (b.date ?? "") >= cutoffIso)
+        .map((b) => ({ id: b.id, date: b.date, time: b.time, direction: b.direction ?? "", intensity: b.intensity ?? "", trigger: b.trigger ?? "", behaviour: b.behaviour ?? "", strategy_used: b.strategy_used, outcome: b.outcome }));
+
+      const rst = (store.restraints as Array<Record<string, unknown>>).find(
+        (r) => String((r as { linked_incident_id?: string }).linked_incident_id ?? "") === String(body.incident_id) || String(r.id).replace("rst_", "inc_") === String(body.incident_id),
+      );
+      const linkedRestraint = rst
+        ? { id: String(rst.id), duration: Number(rst.duration ?? 0), restraint_type: String(rst.restraint_type ?? ""), child_debriefed: !!rst.child_debriefed, de_escalation_attempts: Array.isArray(rst.de_escalation_attempts) ? (rst.de_escalation_attempts as string[]) : [], injuries: Array.isArray(rst.injuries) ? rst.injuries : [] }
+        : undefined;
+
+      const dbf = (store.debriefRecords as Array<Record<string, string>>).find((d) => d.linked_incident_id === String(body.incident_id));
+      const linkedDebrief = dbf ? { id: dbf.id, child_perspective: dbf.child_perspective, lessons_learned: Array.isArray((dbf as { lessons_learned?: string[] }).lessons_learned) ? (dbf as { lessons_learned?: string[] }).lessons_learned : [] } : undefined;
+
+      const escalationDecisions = store.escalationDecisions
+        .filter((d) => d.childId === childId)
+        .map((d) => ({ id: d.id, suggestedLevel: d.suggestedLevel, confirmedLevel: d.confirmedLevel, status: d.status }));
+
+      const QUOTE = /(?:said|told (?:staff|us|me))[^"“]{0,40}["“]([^"”]{5,200})["”]/i;
+      const childQuotes: ReflectionAssemblyInput["childQuotes"] = [];
+      for (const b of behaviourEntries) {
+        const m = QUOTE.exec(b.behaviour ?? "") || (b.outcome ? QUOTE.exec(b.outcome) : null);
+        if (m) childQuotes.push({ recordId: b.id, recordType: "behaviourLog", quote: m[1] });
+      }
+
+      assembly = assembleReflectionPack({
+        incident: {
+          id: String(body.incident_id),
+          date: incAny.date ?? reflection.incident_date,
+          time: incAny.time,
+          type: incAny.type ?? "",
+          severity: incAny.severity ?? reflection.severity,
+          location: incAny.location ?? undefined,
+          description: incAny.description,
+          immediateAction: incAny.immediate_action,
+          childId,
+        },
+        previousIncidents,
+        behaviourEntries,
+        linkedRestraint,
+        linkedDebrief,
+        escalationDecisions,
+        childQuotes,
+        medicationContext: [],
+      });
+      ({ prefilled } = applyAssemblySuggestions(reflection, assembly));
+    }
+
     db.postIncidentReflections.append(reflection);
     return NextResponse.json(
-      { data: { reflection, analysis: analysePostIncidentReflection(reflection, now) } },
+      {
+        data: {
+          reflection,
+          analysis: analysePostIncidentReflection(reflection, now),
+          assembly,
+          prefilled,
+        },
+      },
       { status: 201 },
     );
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[api] server error:", error);
+    return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
   }
 }
 
