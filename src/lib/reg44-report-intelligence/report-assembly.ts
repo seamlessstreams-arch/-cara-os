@@ -65,6 +65,8 @@ export interface Reg44AssemblyInput {
   childVoiceEntries: Array<{ ref: string; summary: string }>;
   previousRecommendations: Array<{ text: string; status: string; priority?: string }>;
   reg45EvidenceCount: number;
+  /** Section-H building safety, projected from the building checks (optional). */
+  buildingSafety?: { sectionContent: string; summary: { inDate: number; overdue: number; failed: number; notEvidenced: number } };
 }
 
 const J_MAP: Array<{ key: string; label: string; qsKey: QualityStandardAssessment["key"] }> = [
@@ -125,8 +127,20 @@ export function assembleReg44ReportDraft(input: Reg44AssemblyInput): Reg44Report
   // G. Statement of Purpose ──────────────────────────────────────────────────
   add("G", "Statement of Purpose", "Visitor to confirm the home is operating in line with its current Statement of Purpose and that placements match it.", "needs_visitor_input", true);
 
-  // H. Building safety & compliance ──────────────────────────────────────────
-  add("H", "Building safety and compliance checklist", "Building and fire-safety checklist — to be completed against the home's fire log, risk assessments and testing records.", "needs_visitor_input", true);
+  // H. Building safety & compliance (projected from the building checks) ──────
+  if (input.buildingSafety) {
+    const bs = input.buildingSafety;
+    const clean = bs.summary.overdue === 0 && bs.summary.failed === 0;
+    add(
+      "H",
+      "Building safety and compliance checklist",
+      bs.sectionContent,
+      bs.summary.notEvidenced > 0 && bs.summary.inDate === 0 ? "insufficient_evidence" : "drafted_from_evidence",
+      !clean, // if all in date, the visitor just confirms; otherwise it needs their attention
+    );
+  } else {
+    add("H", "Building safety and compliance checklist", "Building and fire-safety checklist — to be completed against the home's fire log, risk assessments and testing records.", "needs_visitor_input", true);
+  }
 
   // I. Assessment against the Quality Standards ──────────────────────────────
   add("I", "Assessment against the Quality Standards", qs.standards.map((s) => `${s.regulation} ${s.label}: ${s.suggestedStatus.replace(/_/g, " ")}${s.concerns.length ? ` (${s.concerns.join("; ")})` : ""}`).join("\n"), "drafted_from_evidence", false, qs.evidenceCount);
