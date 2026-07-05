@@ -30,6 +30,8 @@ import { computeChildVoiceDimensions } from "../child-voice-dimensions/dimension
 import type { ChildVoiceDimensionInput } from "../child-voice-dimensions/types";
 import { unifyNeuroProfile, deriveRecordingPrompts } from "../neurodiversity-profile/unification-engine";
 import type { UnifyNeuroInput } from "../neurodiversity-profile/types";
+import { synthesiseStaffPracticeSkills } from "../staff-practice-skills/skills-engine";
+import type { StaffPracticeSkillsInput } from "../staff-practice-skills/types";
 
 // ── Referential integrity: every trace points at a record that exists ─────────
 
@@ -311,6 +313,47 @@ describe("neurodiversity profile fires on the arc (merged store)", () => {
     const p = unifyNeuroProfile(neuroInput("yp_jordan", "Jordan"));
     expect(p.hasProfile).toBe(false);
     expect(deriveRecordingPrompts(p, "incident")).toEqual([]);
+  });
+});
+
+// ── Staff Practice Skills must fire on the MERGED store ─────────────────────
+// Edward (the demo key worker) should read as a rounded practitioner with a
+// clear growing edge in recording. Maps getStore() as the route does.
+
+describe("staff practice skills fire on the arc (merged store)", () => {
+  const asOf = new Date().toISOString().slice(0, 10);
+  const staffInput = (staffId: string, staffName: string): StaffPracticeSkillsInput => {
+    const s = getStore();
+    const by = (x: { staff_id?: string }) => x.staff_id === staffId;
+    return {
+      staffId,
+      staffName,
+      asOf,
+      windowDays: 180,
+      competencyScores: (s.competencyScores as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["competencyScores"],
+      observations: (s.practiceObservations as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["observations"],
+      supervisions: (s.reflectiveSupervisions as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["supervisions"],
+      recordingAudits: (s.writingAssistantAuditEvents as Array<Record<string, unknown>>).filter((a) => (a.user_id ?? a.staff_id) === staffId).map((a) => ({ id: String(a.id), staff_id: staffId, action: String(a.action ?? ""), created_at: String(a.created_at ?? "") })),
+      keyWork: (s.keyWorkingSessions as Array<Record<string, unknown>>).filter(by) as unknown as StaffPracticeSkillsInput["keyWork"],
+    };
+  };
+
+  it("EDWARD reads as a rounded practitioner with recording as the growing edge", () => {
+    const p = synthesiseStaffPracticeSkills(staffInput("staff_edward", "Edward"));
+    expect(p.hasData).toBe(true);
+    // his strongest competency domain is named
+    expect(p.lenses.find((l) => l.key === "competency")!.detail).toMatch(/Therapeutic Relationships/);
+    // recording is the honest growing edge
+    expect(p.developmentAreas.join(" ")).toMatch(/recording/i);
+    // relational key-work with the child's voice is a strength
+    expect(p.lenses.find((l) => l.key === "relational_practice")!.signal).toBe("strong");
+    expect(p.overallPicture).not.toBe("insufficient_data");
+  });
+
+  it("never frames a practitioner punitively", () => {
+    const p = synthesiseStaffPracticeSkills(staffInput("staff_edward", "Edward"));
+    const text = p.supervisionPrompts.map((s) => s.prompt).join(" ").toLowerCase();
+    expect(text).not.toMatch(/underperform|failing|incompeten|disciplin|worst|rank/);
   });
 });
 

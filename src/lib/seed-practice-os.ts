@@ -30,10 +30,12 @@ import type {
   AutismPlan,
   BehaviourEntry,
   ChildFeedbackLoop,
+  CompetencyScore,
   DebriefRecord,
   EhcpRecord,
   KeyWorkingSession,
   LACReview,
+  PracticeObservation,
   RestraintRecord,
   YPFeedbackEntry,
 } from "@/types/extended";
@@ -961,5 +963,43 @@ export const PRACTICE_OS_EHCP_RECORDS: EhcpRecord[] = [
     reviewed_by: "IRO R. Okafor",
     outstanding_actions: ["SALT referral not yet actioned", "Update the court-day protocol in Section F"],
     created_at: iso(320),
+  },
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STAFF-SKILLS ARC — gives the demo key worker (Edward, who holds Alex/Casey/
+// Jordan's key-work) a rich practice picture for the Staff Practice Skills
+// synthesis: strong therapeutic relationships, a real growing edge in statutory
+// recording, and a recent observation that meets the standard. Combined with his
+// seeded key-work (relational) and reflective supervision, four lenses light up.
+// ══════════════════════════════════════════════════════════════════════════════
+
+const EDWARD = "staff_edward";
+
+export const PRACTICE_OS_COMPETENCY_SCORES: CompetencyScore[] = [
+  { id: "cs_edw_1", staff_id: EDWARD, home_id: "home_oak", domain: "therapeutic_relationships", score: 5, evidence_notes: "Consistently attuned; the children seek him out.", linked_observation_ids: ["po_edw_1"], assessed_by: "staff_darren", assessed_at: daysAgo(40), created_at: iso(40), updated_at: iso(40) },
+  { id: "cs_edw_2", staff_id: EDWARD, home_id: "home_oak", domain: "trauma_informed_practice", score: 4, evidence_notes: "Uses PACE well under pressure.", linked_observation_ids: [], assessed_by: "staff_darren", assessed_at: daysAgo(40), created_at: iso(40), updated_at: iso(40) },
+  { id: "cs_edw_3", staff_id: EDWARD, home_id: "home_oak", domain: "communication_and_recording", score: 2, evidence_notes: "Records are warm but often late and light on detail — the growing edge.", linked_observation_ids: ["po_edw_1"], assessed_by: "staff_darren", assessed_at: daysAgo(40), next_review_date: daysAgo(-50), created_at: iso(40), updated_at: iso(40) },
+];
+
+export const PRACTICE_OS_PRACTICE_OBSERVATIONS: PracticeObservation[] = [
+  {
+    id: "po_edw_1",
+    staff_id: EDWARD,
+    home_id: "home_oak",
+    observer_id: "staff_darren",
+    observation_date: daysAgo(30),
+    context: "Evening shift — supporting Alex before a family call.",
+    domains_observed: ["therapeutic_relationships", "trauma_informed_practice", "communication_and_recording"],
+    narrative: "Edward prepared Alex calmly and gave him processing time; the call went well. The written record afterwards was brief.",
+    strengths_noted: ["warm, attuned relationships with the children", "reads dysregulation early"],
+    areas_for_development: ["fuller, more timely recording"],
+    outcome: "meets_standard",
+    score_adjustments: [{ domain: "communication_and_recording", delta: 0 }],
+    staff_response: "Agrees recording is his growing edge; wants to try voice-to-text.",
+    signed_off_by_staff: true,
+    signed_off_at: iso(29),
+    created_at: iso(30),
+    updated_at: iso(30),
   },
 ];
