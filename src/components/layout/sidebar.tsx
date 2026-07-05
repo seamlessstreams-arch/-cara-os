@@ -38,7 +38,7 @@ import {
   // Reports icons
   BarChart2,
   // Cara icons
-  Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity,
+  Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity, BookMarked,
   Wand2,
   // Other
   Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
@@ -57,7 +57,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Car, Wrench, Receipt, Lock,
   Gavel, Eye, Flag, ClipboardCheck, Award,
   BarChart2,
-  Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity,
+  Brain, Radar, ListChecks, Layers, Puzzle, PlayCircle, Lightbulb, Activity, BookMarked,
   Wand2,
   Target, ArrowRightLeft, CheckSquare, User, Moon, Share2, FolderArchive, GitCompare, LineChart,
   Zap, CalendarCheck, Sunrise,

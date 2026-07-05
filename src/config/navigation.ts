@@ -902,6 +902,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "SOP Reality Check", href: "/intelligence/cara/sop-reality-check", icon: "FileCheck", module: "dashboard" },
       { label: "Practice Culture Scorecard", href: "/intelligence/cara/practice-culture-scorecard", icon: "BarChart3", module: "dashboard" },
       { label: "Framework Usage",     href: "/intelligence/cara/practice-framework-usage", icon: "BookOpen", module: "dashboard" },
+      { label: "Knowledge Evolution", href: "/intelligence/cara/knowledge-evolution", icon: "BookMarked", module: "dashboard" },
       { label: "Practice Observation", href: "/intelligence/cara/practice-observation-competency-intelligence", icon: "Eye", module: "staff" },
       { label: "Practice Observations",       href: "/intelligence/cara/practice-observation-intelligence",  icon: "Eye",           module: "staff"        },
       { label: "Practice Quality",    href: "/intelligence/cara/practice-quality-intelligence", icon: "BarChart3",   module: "dashboard"    },
