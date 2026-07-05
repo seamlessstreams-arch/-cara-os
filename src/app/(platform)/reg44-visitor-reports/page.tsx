@@ -28,6 +28,7 @@ import type { Reg44VisitReport, Reg44Recommendation } from "@/types/extended";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
+import { Reg44ReportIntelligencePanel } from "@/components/reg44/reg44-report-intelligence-panel";
 
 /* ── helpers ───────────────────────────────────────────────────────────────── */
 
@@ -462,6 +463,8 @@ export default function Reg44VisitorReportsPage() {
       }
     >
       <div id="print-area" className="space-y-6">
+
+        <Reg44ReportIntelligencePanel homeId="home_oak" />
 
         {/* -- Summary stats -------------------------------------------------- */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
