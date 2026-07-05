@@ -15,6 +15,7 @@ import { getStore } from "@/lib/db/store";
 import { generateReg44Pack } from "@/lib/care-events/reg44-pack";
 import { assessReg44QualityStandards } from "@/lib/reg44-report-intelligence/qs-assessment-engine";
 import { assembleReg44ReportDraft } from "@/lib/reg44-report-intelligence/report-assembly";
+import { buildReg44BuildingSafety, type Reg44BuildingCheckInput } from "@/lib/reg44-report-intelligence/building-safety";
 import type { Reg44AssessmentInput } from "@/lib/reg44-report-intelligence/types";
 
 export const dynamic = "force-dynamic";
@@ -109,6 +110,12 @@ export async function GET(req: NextRequest) {
       });
     const previousRecommendations = ((pack.previous_visit?.outstanding_recommendations ?? []) as Array<Record<string, unknown>>).map((r) => ({ text: String(r.recommendation ?? ""), status: String(r.status ?? "outstanding"), priority: r.priority ? String(r.priority) : undefined }));
 
+    // Section H — project the home's building checks into the Reg 44 checklist.
+    const buildingChecksInput: Reg44BuildingCheckInput[] = ((store.buildingChecks ?? []) as Array<Record<string, unknown>>)
+      .filter((c) => c.home_id === homeId || !c.home_id)
+      .map((c) => ({ id: String(c.id), check_type: String(c.check_type ?? ""), check_date: day(c.check_date), due_date: day(c.due_date), status: String(c.status ?? ""), result: (c.result ?? null) as string | null, risk_level: (c.risk_level ?? null) as string | null }));
+    const buildingSafety = buildReg44BuildingSafety(buildingChecksInput, asOf);
+
     const assembly = assembleReg44ReportDraft({
       homeId,
       homeName: "Oak House",
@@ -119,9 +126,10 @@ export async function GET(req: NextRequest) {
       childVoiceEntries,
       previousRecommendations,
       reg45EvidenceCount: pack.headline.verified_reg45_evidence ?? 0,
+      buildingSafety: { sectionContent: buildingSafety.sectionContent, summary: buildingSafety.summary },
     });
 
-    return NextResponse.json({ data: { assessment, assembly, pack: { id: pack.id, window: pack.window, headline: pack.headline } } });
+    return NextResponse.json({ data: { assessment, assembly, buildingSafety, pack: { id: pack.id, window: pack.window, headline: pack.headline } } });
   } catch (error: unknown) {
     console.error("[api] reg44-report-intelligence error:", error);
     return NextResponse.json({ error: "A server error occurred." }, { status: 500 });
