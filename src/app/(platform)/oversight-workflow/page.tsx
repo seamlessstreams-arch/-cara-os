@@ -22,6 +22,7 @@ import { OversightWorkflowPanel } from "@/components/oversight/oversight-workflo
 import { OversightRecordPicker } from "@/components/oversight/oversight-record-picker";
 import { EthicalCyclePanel } from "@/components/ethical-intelligence/ethical-cycle-panel";
 import { TapThinkingPanel } from "@/components/tap-thinking/tap-thinking-panel";
+import { BiasReflectionPanel } from "@/components/cognitive-bias/bias-reflection-panel";
 
 export default function OversightWorkflowPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -133,6 +134,14 @@ export default function OversightWorkflowPage() {
               <p className="text-xs leading-relaxed text-[var(--cs-text-muted)]">{payload.disclaimer}</p>
             </div>
           </div>
+          {/* Reflective bias-checks from the record's own facts, before sign-off. */}
+          <BiasReflectionPanel
+            compact
+            signal={{
+              context: "management_oversight",
+              childVoiceQuoted: payload.input.childVoiceCaptured,
+            }}
+          />
           <OversightWorkflowPanel
             key={selectedId ?? "example"}
             input={payload.input}
