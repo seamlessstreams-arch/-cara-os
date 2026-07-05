@@ -699,10 +699,10 @@ const ypfb = (
   notes: "",
 });
 
-const kw = (id: string, child_id: string, agoDays: number, child_voice: string): KeyWorkingSession => ({
+const kw = (id: string, child_id: string, agoDays: number, child_voice: string, staff_id = "staff_edward"): KeyWorkingSession => ({
   id,
   child_id,
-  staff_id: "staff_edward",
+  staff_id,
   date: daysAgo(agoDays),
   type: "one_to_one",
   duration: 45,
@@ -826,13 +826,18 @@ export const PRACTICE_OS_YP_FEEDBACK: YPFeedbackEntry[] = [
 ];
 
 export const PRACTICE_OS_KEYWORK: KeyWorkingSession[] = [
-  kw("kws_alex_1", ALEX, 30, "Alex: 'I just want someone to warn me before the court stuff comes up.'"),
-  kw("kws_alex_2", ALEX, 17, "Alex asked for a quiet check-in before call nights."),
-  kw("kws_alex_3", ALEX, 8, "Alex: 'What's the point telling you, nothing changes.'"),
-  kw("kws_casey_1", CASEY, 25, "Casey talked through what makes mornings go well."),
-  kw("kws_casey_2", CASEY, 10, "Casey: 'The new med time really helps.'"),
+  // Alex's key worker (staff_edward) UNDER-delivers — his secondary (staff_lackson)
+  // covers most sessions: a real continuity gap for his assigned worker.
+  kw("kws_alex_1", ALEX, 30, "Alex: 'I just want someone to warn me before the court stuff comes up.'", "staff_edward"),
+  kw("kws_alex_2", ALEX, 17, "Alex asked for a quiet check-in before call nights.", "staff_lackson"),
+  kw("kws_alex_3", ALEX, 8, "Alex: 'What's the point telling you, nothing changes.'", "staff_lackson"),
+  // Casey's key worker (staff_chervelle) delivers her sessions — strong continuity.
+  kw("kws_casey_1", CASEY, 25, "Casey talked through what makes mornings go well.", "staff_chervelle"),
+  kw("kws_casey_2", CASEY, 10, "Casey: 'The new med time really helps.'", "staff_chervelle"),
+  // Jordan's relational sessions with Edward (also gives Edward a strong key-work base).
   kw("kws_jordan_1", JORDAN, 20, "Jordan: 'I'd like to do more climbing and cook on Fridays.'"),
   kw("kws_jordan_2", JORDAN, 8, "Jordan shared how settled he feels with his key worker."),
+  kw("kws_jordan_3", JORDAN, 4, "Jordan: 'Cooking on Fridays is the best bit of my week.'"),
 ];
 
 export const PRACTICE_OS_FEEDBACK_LOOPS: ChildFeedbackLoop[] = [
