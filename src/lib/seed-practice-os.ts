@@ -25,10 +25,13 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type {
+  ADHDPlan,
   AdvocacyRecord,
+  AutismPlan,
   BehaviourEntry,
   ChildFeedbackLoop,
   DebriefRecord,
+  EhcpRecord,
   KeyWorkingSession,
   LACReview,
   RestraintRecord,
@@ -845,4 +848,118 @@ export const PRACTICE_OS_LAC_REVIEWS: LACReview[] = [
 
 export const PRACTICE_OS_ADVOCACY: AdvocacyRecord[] = [
   adv("adv_jordan_1", JORDAN, 40, "active", 22),
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// NEURODIVERSITY ARC — powers the Unified Neurodiversity Profile + its
+// point-of-work prompts. Deliberately joined to the incident arc: ALEX's autism
+// profile EXPLAINS the escalation cluster — every serious incident this quarter
+// followed unplanned news landing without preparation, which is exactly what his
+// plan says to avoid. So the recording forms surface the knowledge that would
+// have helped. CASEY's ADHD plan mirrors his morning-medication improvement.
+// review dates are relative so gaps stay live (Alex's autism review is overdue,
+// his EHCP annual is due soon — Cara catches both). JORDAN has no profile: the
+// honest empty state + "consider an assessment" pointer.
+// ══════════════════════════════════════════════════════════════════════════════
+
+export const PRACTICE_OS_AUTISM_PLANS: AutismPlan[] = [
+  {
+    id: "autism_alex",
+    child_id: ALEX,
+    plan_date: daysAgo(120),
+    diagnosis_status: "diagnosed",
+    diagnosis_date: "2023-09-15",
+    diagnosing_clinician: "Dr Priya Anand, CAMHS",
+    special_interests: ["cooking for the house", "trains and railway maps"],
+    communication_preferences: ["short, direct sentences", "extra processing time before he answers", "a warning before any change"],
+    processing_time: "Needs 10–20 seconds to process a question — don't fill the silence or repeat it.",
+    sensory_profile: [
+      { sense: "auditory", seeking_or_avoiding: "avoiding", specific_notes: "Busy, loud evenings overwhelm him — the lounge after 7pm is his hardest environment." },
+      { sense: "proprioceptive", seeking_or_avoiding: "seeking", specific_notes: "Cooking and deep-pressure activity help him regulate." },
+    ],
+    predictability_needs: ["a visual timetable for the day", "knowing who is on shift", "advance notice of any court or contact news"],
+    routine_anchors: ["cooking the evening meal", "a settled bedtime routine"],
+    meltdown_triggers: ["unexpected news about court proceedings", "overhearing staff talk about his case", "sudden changes to family contact", "noisy, crowded evenings"],
+    meltdown_support: ["move to the quiet lounge", "one calm voice, no crowding", "no demands until he is regulated", "offer cooking or a walk"],
+    shutdown_indicators: ["goes silent and very still", "covers his ears", "stops making eye contact", "gives one-word answers"],
+    shutdown_support: ["give physical space", "stay nearby without talking", "let him lead when he is ready"],
+    masking_awareness: "Alex masks heavily with new staff and at school — a calm presentation can hide real distress.",
+    unmasking_permissions: ["he doesn't have to make eye contact", "he can leave a room without explaining"],
+    transition_support: ["five-minute warnings before any change", "a written plan for court days agreed in advance"],
+    social_preferences: ["small groups", "one trusted adult rather than a whole team"],
+    staff_do_strategies: ["warn him before raising court or family topics", "give him processing time", "offer the quiet lounge before call nights", "let him cook to regulate"],
+    staff_do_not_strategies: ["spring information on him", "raise court topics in communal areas after 7pm", "crowd him when he is escalating", "insist on eye contact"],
+    external_support: [
+      { agency: "CAMHS", role: "Autism & wellbeing", frequency: "Monthly" },
+      { agency: "Local Authority SEND", role: "EHCP oversight", frequency: "Annual review" },
+    ],
+    child_voice: "I need to know what's happening before it happens. When people spring things on me, that's when it all goes wrong.",
+    staff_observation: "Every serious incident this quarter followed unplanned news landing without preparation — the plan holds when we prepare him.",
+    next_step: "Agree a written court-day protocol with Alex and his social worker.",
+    review_date: daysAgo(8), // OVERDUE — Cara flags the lapsed review
+    key_worker: "Edward Nkemelu",
+    created_at: iso(120),
+  },
+];
+
+export const PRACTICE_OS_ADHD_PLANS: ADHDPlan[] = [
+  {
+    id: "adhd_casey",
+    child_id: CASEY,
+    plan_date: daysAgo(90),
+    diagnosis_status: "diagnosed",
+    presentation: "combined",
+    diagnosis_date: "2024-06-01",
+    diagnosing_clinician: "Dr S. Mensah, CAMHS",
+    strengths: ["energetic and creative", "great with the younger residents"],
+    challenges: ["mornings and transitions", "time blindness", "medication timing"],
+    executive_function_support: ["a morning checklist on his door", "one instruction at a time"],
+    time_blindness_strategies: ["visual timers for the morning routine"],
+    hyperfocus_management: ["let him finish a task before transitioning where possible"],
+    rsd_awareness: "Casey feels criticism very intensely — tone matters more than the words.",
+    rsd_support: ["separate the behaviour from the person", "repair quickly after any telling-off"],
+    school_adjustments: ["movement breaks"],
+    home_adjustments: ["morning meds moved 30 minutes later at his request — this helped"],
+    external_support: [{ agency: "CAMHS", role: "ADHD review", frequency: "Quarterly" }],
+    staff_do_strategies: ["give one step at a time", "use the visual timer", "repair quickly after conflict"],
+    staff_do_not_strategies: ["pile on instructions in the morning", "criticise him in front of peers"],
+    child_voice: "The new med time really helps. Mornings are better when you don't rush me.",
+    staff_observation: "Since the medication timing changed and mornings slowed down, morning incidents have dropped.",
+    next_step: "Keep the morning checklist; review medication timing at the next CAMHS appointment.",
+    review_date: daysAgo(-60),
+    key_worker: "Edward Nkemelu",
+    created_at: iso(90),
+  },
+];
+
+export const PRACTICE_OS_EHCP_RECORDS: EhcpRecord[] = [
+  {
+    id: "ehcp_alex",
+    child_id: ALEX,
+    plan_status: "final_plan_in_place",
+    plan_version: "3.0",
+    date_of_plan: daysAgo(320),
+    last_annual_review_date: daysAgo(340),
+    next_annual_review_due: daysAgo(-18), // due soon — Cara flags it
+    primary_need: "Social, Emotional and Mental Health (SEMH)",
+    secondary_needs: ["Communication and Interaction (ASD)"],
+    placement: "Oak House Children's Home",
+    section_a: "Alex is a creative young person who cooks for the house and knows what he needs when adults prepare him.",
+    section_b: "Anxiety around court and family contact; sensory sensitivity to noise; needs predictability.",
+    section_d: "SEMH and autism-related needs.",
+    section_e: "Feel safe and prepared; regulate with trusted adults; progress towards independence.",
+    provisions_listed: [
+      { section: "F", provision: "Weekly therapeutic key-work", frequency: "Weekly", provider: "Oak House" },
+      { section: "F", provision: "SALT assessment", frequency: "One-off", provider: "NHS SALT" },
+    ],
+    funding: "Top-up agreed",
+    local_authority: "Meadowford Council",
+    sendo_officer: "P. Rai",
+    transition_planning: "Prepare for post-16 with a phased independence plan.",
+    child_contribution: "Alex wants staff to warn him before court news and to keep cooking as his regulation.",
+    parental_involvement: "Mother contributes via contact; social worker coordinates.",
+    reviewed_by: "IRO R. Okafor",
+    outstanding_actions: ["SALT referral not yet actioned", "Update the court-day protocol in Section F"],
+    created_at: iso(320),
+  },
 ];

@@ -27,6 +27,7 @@ import { InlinePracticeReasoning } from "@/components/cara-reasoning/inline-prac
 import { InlinePracticeModules } from "@/components/intelligence/practice-module-panels";
 import { WritingAssistantInline } from "@/components/writing-assistant/writing-assistant-inline";
 import { InlineCaraHeartPanel } from "@/components/cara-heart/inline-cara-heart-panel";
+import { InlineNeuroProfilePanel } from "@/components/neurodiversity/inline-neuro-profile-panel";
 import type { CaraPracticeRecord, CaraPracticeRecordType, ImmediateRisk, RecordSeverity } from "@/lib/cara-heart/types";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useYoungPeople } from "@/hooks/use-young-people";
@@ -1097,6 +1098,7 @@ function LogIncidentTab({ onSuccess }: { onSuccess?: () => void }) {
 
       {/* Practice reasoning for the selected child — the engine heart at the point of recording */}
       {form.child_id && <InlinePracticeReasoning childId={form.child_id} childName={getYPName(form.child_id)} />}
+      {form.child_id && <InlineNeuroProfilePanel childId={form.child_id} context="incident" />}
       {form.child_id && <InlinePracticeModules childId={form.child_id} modules={["reflection", "safe"]} />}
 
       {/* Description */}
