@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Star, CheckCircle, AlertTriangle, Clock } from "lucide-react";
 import { useHomeOfstedReadinessComposite } from "@/hooks/use-home-ofsted-readiness-composite";
 import type { HomeOfstedReadinessResult, OfstedGrade } from "@/lib/engines/home-ofsted-readiness-composite-engine";
+import { InspectionVulnerabilitiesCard } from "@/components/ofsted-readiness/inspection-vulnerabilities-card";
 
 const GRADE_META: Record<OfstedGrade, { label: string; color: string; bg: string; border: string }> = {
   outstanding:          { label: "Outstanding",           color: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" },
@@ -157,6 +158,9 @@ export default function OfstedReadinessIntelligencePage() {
             })}
           </div>
         </div>
+
+        {/* Live §26 vulnerability alerts mapped to SCCIF areas */}
+        <InspectionVulnerabilitiesCard />
 
         {d.insights.length > 0 && (
           <div className="space-y-2">
