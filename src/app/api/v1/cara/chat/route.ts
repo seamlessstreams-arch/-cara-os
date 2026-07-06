@@ -153,6 +153,18 @@ function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
       ...rec((store as Record<string, unknown>).reflectiveSupervisions).map((sv) => ({ staffId: String(sv.staff_id), date: day(sv.date), nextDate: day(sv.follow_up_date) || undefined, status: "reflective" })),
     ].filter((sv) => sv.staffId && sv.date),
     training: rec(store.trainingRecords).map((t) => ({ staffId: String(t.staff_id), course: s(t.course_name) || "Training", expiryDate: day(t.expiry_date) || undefined, status: s(t.status) || undefined, mandatory: !!t.is_mandatory })),
+    policies: rec((store as Record<string, unknown>).homePolicies).map((p) => ({
+      id: String(p.id),
+      title: s(p.title) || s(p.name) || String(p.id),
+      category: s(p.category) || "general",
+      description: s(p.description) || undefined,
+      keyPoints: Array.isArray(p.key_points) ? (p.key_points as unknown[]).map(String) : undefined,
+      statutoryBasis: s(p.statutory_basis) || undefined,
+      linkedStandard: s(p.linked_standard) || undefined,
+      status: s(p.status) || undefined,
+      lastReviewed: day(p.last_reviewed) || undefined,
+      nextReviewDate: day(p.next_review_date) || undefined,
+    })),
   };
 }
 

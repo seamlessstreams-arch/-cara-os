@@ -9,6 +9,7 @@
 import { mentionsAny } from "@/lib/text/keyword-match";
 import { classifyProhibited } from "./prohibited-request-classifier";
 import { findSubstitution } from "./shadow-ai-substitution-matrix";
+import { answerPolicyQuestion } from "./policy-guidance-engine";
 import {
   ASK_CARA_VERSION,
   type AccessTier,
@@ -474,6 +475,24 @@ function skillTraining(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
   return answer({ intent: "training", answered: true, text, sources: [{ label: "Expired", count: expired.length }, { label: "Expiring soon", count: expiring.length }], suggestions: sug(["Who's overdue supervision?", "How is the home doing?"]) });
 }
 
+function skillPolicy(q: string, snap: AskCaraSnapshot): AskCaraAnswer {
+  const res = answerPolicyQuestion(q, snap.policies ?? []);
+  const lines = [res.answer];
+  if (res.steps.length) lines.push("", ...res.steps.map((s) => `- ${s}`));
+  if (res.source?.statutoryBasis || res.source?.lastReviewed) {
+    lines.push("", `Source: ${res.source.title}${res.source.statutoryBasis ? ` · ${res.source.statutoryBasis}` : ""}${res.source.lastReviewed ? ` · last reviewed ${res.source.lastReviewed}` : ""}.`);
+  }
+  const sources: AskCaraSource[] = res.source ? [{ label: res.source.title, count: 1 }] : [];
+  return answer({
+    intent: "policy_guidance",
+    answered: res.status !== "none",
+    text: lines.join("\n"),
+    sources,
+    suggestions: sug(["What needs my attention?", "Help me record what happened"]),
+    disclaimer: "CARA answers policy questions only from your approved internal policies — never the web or an external AI. If there's no approved answer, check with a manager or policy owner.",
+  });
+}
+
 function skillUnknown(): AskCaraAnswer {
   return answer({
     intent: "unknown",
@@ -541,6 +560,7 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   if (mentionsAny(q, ["how many children", "how many young people", "who lives", "who is placed", "who's placed", "list the children", "list young people", "how many kids"])) return gate("everyone", () => skillChildrenList(snap));
   if (mentionsAny(q, ["incident", "incidents", "what happened"])) return gate("care_team", () => skillIncidents(q, snap, asOf, child));
   if (mentionsAny(q, ["social worker", "iro", "independent reviewing", "contact for", "who is the gp", "professional network", "who do i contact", "contact details"])) return gate("care_team", () => skillContacts(q, snap, child));
+  if (mentionsAny(q, ["policy", "policies", "procedure", "what does our policy", "which policy", "what's the procedure", "our guidance says", "guidance on"])) return gate("care_team", () => skillPolicy(raw, snap));
 
   // A child named with a summary-style verb, or just a child name → summary.
   if (child && (mentionsAny(q, ["tell me about", "summary", "summarise", "how is", "how's", "update on", "overview", "about"]) || raw.split(/\s+/).length <= 3)) {

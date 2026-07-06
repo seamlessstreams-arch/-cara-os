@@ -35,6 +35,7 @@ export type AskCaraIntent =
   | "contacts"
   | "supervision"
   | "training"
+  | "policy_guidance"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -190,6 +191,8 @@ export interface AskCaraSnapshot {
   contacts: AskCaraContactRec[];
   supervisions: AskCaraSupervision[];
   training: AskCaraTraining[];
+  /** Approved home policies for deterministic policy-guidance (optional). */
+  policies?: import("./policy-guidance-engine").PolicyDoc[];
 }
 
 export interface AskCaraContext {
