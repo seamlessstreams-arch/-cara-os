@@ -35,6 +35,8 @@ export type AskCaraIntent =
   | "contacts"
   | "supervision"
   | "training"
+  | "prohibited"
+  | "shadow_ai_route"
   | "access_denied"
   | "unknown";
 

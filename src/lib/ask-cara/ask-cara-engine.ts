@@ -7,6 +7,8 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { mentionsAny } from "@/lib/text/keyword-match";
+import { classifyProhibited } from "./prohibited-request-classifier";
+import { findSubstitution } from "./shadow-ai-substitution-matrix";
 import {
   ASK_CARA_VERSION,
   type AccessTier,
@@ -491,6 +493,20 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   const asOf = query.asOf;
   const child = resolveChild(q, snap, query.context?.childId);
 
+  // Safety first: refuse/escalate a request that asks CARA to decide, diagnose,
+  // minimise, protect reputation, fabricate or manipulate a child's account.
+  const banned = classifyProhibited(raw);
+  if (banned.prohibited) {
+    return answer({
+      intent: "prohibited",
+      answered: false,
+      text: banned.safeResponse!,
+      sources: [],
+      suggestions: sug(["What needs my attention?", "Help me record what happened", "Who do I contact about this?"]),
+      disclaimer: "CARA supports your practice — it does not make safeguarding, risk or regulatory decisions. Those stay with you and your manager.",
+    });
+  }
+
   // Role-based access: answers are scoped to who is asking.
   const tier = roleTier(query.role);
   const gate = (need: AccessTier, fn: () => AskCaraAnswer): AskCaraAnswer => (TIER_RANK[tier] >= TIER_RANK[need] ? fn() : denied(need));
@@ -529,6 +545,21 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // A child named with a summary-style verb, or just a child name → summary.
   if (child && (mentionsAny(q, ["tell me about", "summary", "summarise", "how is", "how's", "update on", "overview", "about"]) || raw.split(/\s+/).length <= 3)) {
     return gate("care_team", () => skillChildSummary(child, snap, asOf));
+  }
+
+  // Shadow-AI substitution: this looks like something people paste into ChatGPT.
+  // Route them to the safe CARA engine instead of the generic fallback.
+  const sub = findSubstitution(raw);
+  if (sub.matched && sub.substitution) {
+    const s = sub.substitution;
+    return answer({
+      intent: "shadow_ai_route",
+      answered: true,
+      text: `${s.saferMessage}\n\nThe safe CARA route for this:`,
+      sources: [],
+      suggestions: s.caraRoutes.map((r) => ({ label: r.label })),
+      disclaimer: "Please don't paste child, staff, family, safeguarding, health or placement information into external AI tools — CARA does this safely and keeps a record.",
+    });
   }
 
   return skillUnknown();
