@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
+      data-slot="card"
       className={cn(
         "rounded-2xl border bg-[var(--cs-surface-elevated)] border-[var(--cs-border-subtle)]",
         "shadow-[var(--cs-shadow-soft)] transition-shadow duration-200",

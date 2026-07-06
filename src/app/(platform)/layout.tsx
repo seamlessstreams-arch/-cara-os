@@ -15,6 +15,7 @@ import { PrivacyScreenOverlay } from "@/components/privacy/privacy-screen-overla
 import { PrivacyToggle } from "@/components/privacy/privacy-toggle";
 import { GlobalEmergencyBanner } from "@/components/staffing/global-emergency-banner";
 import { GlobalStaffingBanner } from "@/components/staffing/global-staffing-banner";
+import { PageTransition } from "@/components/layout/page-transition";
 
 function RealtimeSubscriptions() {
   const { currentUser } = useAuthContext();
@@ -33,7 +34,7 @@ function PlatformContent({ children }: { children: React.ReactNode }) {
         <GlobalEmergencyBanner />
         <GlobalStaffingBanner />
       </div>
-      {children}
+      <PageTransition>{children}</PageTransition>
     </div>
   );
 }
