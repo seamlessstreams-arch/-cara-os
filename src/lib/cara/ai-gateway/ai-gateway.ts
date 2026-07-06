@@ -52,8 +52,9 @@ import { isCacheableCommand, lookupLearnedAnswer, learnAnswer } from "../resolut
 import { classifyInputSensitivity, redactSensitiveData, detectChildIdentifiers, detectNames, detectStaffIdentifiers, validateProviderAllowedForSensitivity } from "../safety/data-protection";
 import { guardUntrustedText, type PromptGuardResult } from "../safety/prompt-injection-guard";
 import { scanAiResponse, type ResponseSafetyResult } from "../safety/response-safety-scanner";
-import { getCaraProviderConfig, generateText, type CaraTextGenerationResult } from "../cara-provider";
-import { streamCaraText, type CaraStreamInput, type CaraStreamHandlers, type CaraStreamResult } from "../cara-provider-stream";
+import { getCaraProviderConfig, type CaraTextGenerationResult } from "../cara-provider";
+import { type CaraStreamInput, type CaraStreamHandlers, type CaraStreamResult } from "../cara-provider-stream";
+import { generateViaProvider, streamViaProvider, providerConfiguredOrLocal, localProviderActive } from "./generate-via-provider";
 import { DEFAULT_COST_LIMITS } from "../core/constants";
 import { estimateCostGbp, recordDecision } from "@/lib/hq/usage-meter";
 import { isAiKillSwitchOn, canRoleUseAi } from "../ai-availability";
@@ -615,18 +616,25 @@ function defaultDeps(): AiGatewayDeps {
     cacheStore: (commandId, text, output) => { learnAnswer({ commandId, inputText: text, output }); },
     classify: classifyInputSensitivity,
     redact: (text) => { const r = redactSensitiveData(text); return { redactedText: r.redactedText, sensitiveItemsDetected: r.sensitiveItemsDetected }; },
-    providerConfigured: () => getCaraProviderConfig().configured,
+    // A local model counts as "configured" too — so the gateway proceeds to
+    // generation on-premises even without an external API key.
+    providerConfigured: providerConfiguredOrLocal,
     aiKillSwitchOn: isAiKillSwitchOn,
     permitAi: (identity) => canRoleUseAi(identity?.role),
     isProviderAllowedForSensitivity: (sensitivity) => {
+      // A local, on-premises provider isn't subject to the external-provider risk
+      // register (data stays in the home); the safeguarding BLOCK gate still applies.
+      if (localProviderActive()) return true;
       const { providerId } = getCaraProviderConfig();
       if (providerId === "none") return false; // defensive — step 3 already refuses before this runs
       return validateProviderAllowedForSensitivity(providerId as CaraProviderName, sensitivity);
     },
     guardPrompt: guardUntrustedText,
     scanResponse: scanAiResponse,
-    generate: generateText,
-    streamGenerate: streamCaraText,
+    // Generation runs through the provider layer: local model if configured &
+    // reachable, else the external path — both inherit redaction + guard + scan.
+    generate: generateViaProvider,
+    streamGenerate: streamViaProvider,
     spentTodayGbp: () => {
       try {
         // Sum today's metered AI cost from the in-memory ring (best-effort).
