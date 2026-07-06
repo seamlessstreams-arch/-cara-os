@@ -21,7 +21,8 @@ export type TaskCardCategory =
   | "Management & Oversight"
   | "Evidence, Audit & Inspection"
   | "Professional Communication"
-  | "Reflection & Supervision";
+  | "Reflection & Supervision"
+  | "Shadow-AI Governance";
 
 /** ask = send this prompt to the deterministic engine · route = open a feature. */
 export type TaskCardAction = { type: "ask"; prompt: string } | { type: "route"; href: string };
@@ -71,6 +72,9 @@ export const ASK_CARA_TASK_CARDS: AskCaraTaskCard[] = [
   // H. Reflection & Supervision
   { id: "reflect_incident", category: "Reflection & Supervision", label: "Reflect after an incident", description: "Structured, non-judgemental reflective prompts.", tier: "everyone", action: { type: "ask", prompt: "help me reflect after an incident" } },
   { id: "supervision_prep", category: "Reflection & Supervision", label: "Prepare for supervision", description: "Prompts to bring your practice to supervision.", tier: "everyone", action: { type: "ask", prompt: "help me reflect and prepare for supervision" } },
+
+  // I. Shadow-AI Governance
+  { id: "declare_ai", category: "Shadow-AI Governance", label: "Declare external AI use", description: "Used ChatGPT or similar? Declare it safely and get the CARA route.", tier: "everyone", action: { type: "route", href: "/ask-cara/declare" } },
 ];
 
 const TIER_RANK: Record<AccessTier, number> = { everyone: 0, care_team: 1, management: 2 };
@@ -89,7 +93,7 @@ export function roleTierForCards(role?: string): AccessTier {
 export function taskCardsForRole(role?: string): { category: TaskCardCategory; cards: AskCaraTaskCard[] }[] {
   const tier = roleTierForCards(role);
   const allowed = ASK_CARA_TASK_CARDS.filter((c) => TIER_RANK[tier] >= TIER_RANK[c.tier]);
-  const order: TaskCardCategory[] = ["Workflow Support", "Recording & Writing", "Child-Centred Practice", "Reflection & Supervision", "Professional Communication", "Management & Oversight", "Evidence, Audit & Inspection"];
+  const order: TaskCardCategory[] = ["Workflow Support", "Recording & Writing", "Child-Centred Practice", "Reflection & Supervision", "Professional Communication", "Management & Oversight", "Evidence, Audit & Inspection", "Shadow-AI Governance"];
   return order
     .map((category) => ({ category, cards: allowed.filter((c) => c.category === category) }))
     .filter((g) => g.cards.length > 0);
