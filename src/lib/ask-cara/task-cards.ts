@@ -21,6 +21,7 @@ export type TaskCardCategory =
   | "Management & Oversight"
   | "Evidence, Audit & Inspection"
   | "Professional Communication"
+  | "Policy & Guidance"
   | "Reflection & Supervision"
   | "Shadow-AI Governance";
 
@@ -69,6 +70,9 @@ export const ASK_CARA_TASK_CARDS: AskCaraTaskCard[] = [
   { id: "contacts", category: "Professional Communication", label: "Who do I contact?", description: "A child's social worker, IRO, GP and professional network.", tier: "care_team", action: { type: "ask", prompt: "who do I contact about a child?" } },
   { id: "redact", category: "Professional Communication", label: "Redact before sharing", description: "Stable Child A / Staff 1 codes before anything leaves the home.", tier: "care_team", action: { type: "route", href: "/redaction-tool" } },
 
+  // G. Policy & Guidance
+  { id: "policy_lookup", category: "Policy & Guidance", label: "What does our policy say?", description: "Answered only from your approved internal policies — never the web.", tier: "care_team", action: { type: "ask", prompt: "what does our policy say about missing from care?" } },
+
   // H. Reflection & Supervision
   { id: "reflect_incident", category: "Reflection & Supervision", label: "Reflect after an incident", description: "Structured, non-judgemental reflective prompts.", tier: "everyone", action: { type: "ask", prompt: "help me reflect after an incident" } },
   { id: "supervision_prep", category: "Reflection & Supervision", label: "Prepare for supervision", description: "Prompts to bring your practice to supervision.", tier: "everyone", action: { type: "ask", prompt: "help me reflect and prepare for supervision" } },
@@ -93,7 +97,7 @@ export function roleTierForCards(role?: string): AccessTier {
 export function taskCardsForRole(role?: string): { category: TaskCardCategory; cards: AskCaraTaskCard[] }[] {
   const tier = roleTierForCards(role);
   const allowed = ASK_CARA_TASK_CARDS.filter((c) => TIER_RANK[tier] >= TIER_RANK[c.tier]);
-  const order: TaskCardCategory[] = ["Workflow Support", "Recording & Writing", "Child-Centred Practice", "Reflection & Supervision", "Professional Communication", "Management & Oversight", "Evidence, Audit & Inspection", "Shadow-AI Governance"];
+  const order: TaskCardCategory[] = ["Workflow Support", "Recording & Writing", "Child-Centred Practice", "Reflection & Supervision", "Professional Communication", "Policy & Guidance", "Management & Oversight", "Evidence, Audit & Inspection", "Shadow-AI Governance"];
   return order
     .map((category) => ({ category, cards: allowed.filter((c) => c.category === category) }))
     .filter((g) => g.cards.length > 0);
