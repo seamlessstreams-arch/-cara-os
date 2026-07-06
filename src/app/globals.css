@@ -762,3 +762,71 @@ body::before {
   .cs-print-color .cs-tone-blue { background: #eff6ff !important; color: #1e40af !important; }
   .cs-print-color .cs-tone-slate { background: #f8fafc !important; color: #334155 !important; }
 }
+/* ══════════════════════════════════════════════════════════════════════════════
+   CARA PREMIUM MOTION — a deliberate, high-class feel, in CARA's own palette.
+   All effects respect prefers-reduced-motion (disabled at the bottom).
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* Route transition — every page change fades and rises softly. */
+@keyframes csPageEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cs-page-enter {
+  animation: csPageEnter var(--cs-duration-slow, 350ms) var(--cs-ease-out, cubic-bezier(0, 0.55, 0.45, 1)) both;
+  will-change: opacity, transform;
+}
+
+/* Premium hover lift — for cards and interactive surfaces. */
+.cs-lift {
+  transition: transform var(--cs-duration-normal, 200ms) var(--cs-ease-default, cubic-bezier(0.16, 1, 0.3, 1)),
+              box-shadow var(--cs-duration-normal, 200ms) var(--cs-ease-default, cubic-bezier(0.16, 1, 0.3, 1));
+  will-change: transform;
+}
+.cs-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--cs-shadow-elevated);
+}
+
+/* Staggered entrance for a grid/list of children — cascade the rise. */
+.cs-stagger > * {
+  animation: csPageEnter 0.45s var(--cs-ease-out, ease-out) both;
+}
+.cs-stagger > *:nth-child(1)  { animation-delay: 0.02s; }
+.cs-stagger > *:nth-child(2)  { animation-delay: 0.06s; }
+.cs-stagger > *:nth-child(3)  { animation-delay: 0.10s; }
+.cs-stagger > *:nth-child(4)  { animation-delay: 0.14s; }
+.cs-stagger > *:nth-child(5)  { animation-delay: 0.18s; }
+.cs-stagger > *:nth-child(6)  { animation-delay: 0.22s; }
+.cs-stagger > *:nth-child(7)  { animation-delay: 0.26s; }
+.cs-stagger > *:nth-child(8)  { animation-delay: 0.30s; }
+.cs-stagger > *:nth-child(n+9){ animation-delay: 0.34s; }
+
+/* The shared <Card> lifts a touch on hover — subtle, premium (not bouncy). */
+[data-slot="card"] {
+  transition: transform var(--cs-duration-normal, 200ms) var(--cs-ease-default, cubic-bezier(0.16, 1, 0.3, 1)),
+              box-shadow var(--cs-duration-normal, 200ms) var(--cs-ease-default, cubic-bezier(0.16, 1, 0.3, 1));
+}
+[data-slot="card"]:hover {
+  transform: translateY(-2px);
+}
+
+/* Interactive surfaces settle smoothly. */
+button, a, [role="button"] {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: var(--cs-duration-fast, 120ms);
+  transition-timing-function: var(--cs-ease-default, cubic-bezier(0.16, 1, 0.3, 1));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cs-page-enter,
+  .cs-stagger > *,
+  .animate-fade-in,
+  .animate-gentle-fade-up {
+    animation: none !important;
+  }
+  .cs-lift:hover,
+  [data-slot="card"]:hover {
+    transform: none;
+  }
+}
