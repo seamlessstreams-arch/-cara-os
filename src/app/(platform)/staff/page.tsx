@@ -235,7 +235,7 @@ export default function StaffPage() {
 
         {/* Staff Grid */}
         {!isLoading && !isError && (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="cs-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map((staff) => (
               <ProfileCard
                 key={staff.id}

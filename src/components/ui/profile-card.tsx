@@ -37,7 +37,7 @@ function ProfileCard({
     <div
       className={cn(
         "relative overflow-hidden rounded-lg border border-[--cs-border] bg-[var(--cs-surface-elevated)] transition-colors",
-        interactive && "cursor-pointer hover:bg-[var(--cs-surface)]",
+        interactive && "cursor-pointer cs-lift hover:bg-[var(--cs-surface)]",
         className,
       )}
       {...props}
