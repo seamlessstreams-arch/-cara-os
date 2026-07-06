@@ -449,7 +449,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
 
         {/* ── Profile header ─────────────────────────────────────────────────── */}
         <div className={cn(
-          "rounded-2xl border bg-white p-5",
+          "rounded-2xl border p-5 shadow-[var(--cs-shadow-card)] bg-gradient-to-br from-white via-white to-teal-50/40",
           hasRisk && "border-l-4 border-l-amber-400",
           (missingEpisodes.some((e) => !e.date_returned)) && "border-l-4 border-l-red-500",
         )}>
@@ -468,7 +468,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
           )}
 
           <div className="flex items-start gap-4">
-            <Avatar name={displayName} size="lg" className="shrink-0" />
+            <Avatar name={displayName} size="lg" className="shrink-0 ring-2 ring-[var(--cs-teal)]/15 ring-offset-2 ring-offset-white shadow-sm" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl font-bold text-slate-900">{displayName} {yp.last_name}</h2>
@@ -484,7 +484,7 @@ export default function YoungPersonPage({ params }: { params: Promise<{ id: stri
               <div className="text-sm text-slate-500 mt-0.5">{yp.placement_type} · {yp.local_authority}</div>
 
               {/* Stats row */}
-              <div className="mt-3 flex flex-wrap gap-5">
+              <div className="cs-stagger mt-3 flex flex-wrap gap-5">
                 {[
                   { label: "Incidents",  value: meta?.open_incidents ?? 0,       color: meta?.open_incidents ? "text-red-600" : "text-emerald-600" },
                   { label: "Tasks",      value: meta?.active_tasks ?? 0,         color: meta?.active_tasks ? "text-amber-600" : "text-slate-700" },
