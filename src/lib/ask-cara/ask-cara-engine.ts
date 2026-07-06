@@ -16,6 +16,7 @@ import {
   type AskCaraSnapshot,
   type AskCaraSource,
   type AskCaraSuggestion,
+  type AskCaraTraining,
 } from "./types";
 
 const DISCLAIMER = "Cara answers from your live records to support your judgement — it never makes a safeguarding decision for you.";
@@ -126,9 +127,16 @@ function skillChildSummary(child: AskCaraChild, snap: AskCaraSnapshot, asOf: str
   const lines: string[] = [];
   const bio = [age !== null ? `${age} years old` : null, child.legalStatus ? child.legalStatus : null].filter(Boolean).join(", ");
   lines.push(`${name}${bio ? ` — ${bio}` : ""}. Key worker: ${staffName(snap, child.keyWorkerId)}.`);
+  const network = [child.socialWorker ? `social worker ${child.socialWorker}` : null, child.iro ? `IRO ${child.iro}` : null, child.school ? `school ${child.school}` : null].filter(Boolean);
+  if (network.length) lines.push(`Around ${name}: ${network.join("; ")}.`);
+  if (child.allergies && child.allergies.length) lines.push(`⚠ Allergies: ${child.allergies.join(", ")}.`);
   lines.push(`In the last 30 days: ${recentInc.length} incident${recentInc.length === 1 ? "" : "s"} (${openInc.length} still open), ${restraints.length} restraint${restraints.length === 1 ? "" : "s"}, ${missing.length} missing episode${missing.length === 1 ? "" : "s"}.`);
   if (restraintsNoDebrief.length > 0) lines.push(`⚠ ${restraintsNoDebrief.length} restraint${restraintsNoDebrief.length === 1 ? " has" : "s have"} no recorded child debrief — the repair conversation is outstanding.`);
   if (openTasks.length > 0) lines.push(`${openTasks.length} open action${openTasks.length === 1 ? "" : "s"} linked to ${name}.`);
+  if (child.nextReviewDate) {
+    const d = daysBetween(asOf, child.nextReviewDate);
+    lines.push(d >= 0 ? `Next LAC review: ${child.nextReviewDate}${d <= 14 ? " (within a fortnight)" : ""}.` : `⚠ LAC review overdue (was due ${child.nextReviewDate}).`);
+  }
   lines.push(logs[0] ? `Latest daily log: ${logs[0].date}.` : `No daily log on record for ${name}.`);
 
   return answer({
@@ -408,6 +416,62 @@ function skillHomeOverview(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
   return answer({ intent: "home_overview", answered: true, text, sources: [{ label: "Occupancy", count: occ }, { label: "Incidents (30d)", count: incMonth }, { label: "Awaiting oversight", count: oversight }], suggestions: sug(["What needs my attention?", "Who's overdue supervision?", "How many incidents this week?"]) });
 }
 
+const ROLE_LABEL: Record<string, string> = { social_worker: "Social worker", iro: "IRO", camhs: "CAMHS", education: "Education", police: "Police", yot: "YOT / youth justice", gp: "GP", advocate: "Advocate" };
+const roleLabel = (r: string): string => ROLE_LABEL[r.toLowerCase()] ?? (r.charAt(0).toUpperCase() + r.slice(1).replace(/_/g, " "));
+
+function skillContacts(q: string, snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  if (!child) {
+    return answer({ intent: "contacts", answered: false, text: "Tell me which child, and I'll give you their professional contacts — e.g. \"who is Alex's social worker?\"", sources: [], suggestions: sug(snap.children.slice(0, 3).map((c) => `Who is ${childLabel(c)}'s social worker?`)) });
+  }
+  const name = childLabel(child);
+  const network = snap.contacts.filter((c) => c.childId === child.id);
+  // Also fold in the profile-level social worker / IRO if not already in the network list.
+  const lines: string[] = [];
+  if (child.socialWorker) lines.push(`- Social worker: ${child.socialWorker}`);
+  if (child.iro) lines.push(`- IRO: ${child.iro}`);
+  if (child.gp) lines.push(`- GP: ${child.gp}`);
+  for (const c of network) {
+    if (child.socialWorker && c.role.toLowerCase() === "social_worker") continue;
+    if (child.iro && c.role.toLowerCase() === "iro") continue;
+    lines.push(`- ${roleLabel(c.role)}: ${c.name}${c.organisation ? ` (${c.organisation})` : ""}${c.phone ? ` · ${c.phone}` : ""}`);
+  }
+  const text = lines.length === 0 ? `No professional contacts on record for ${name} yet.` : `${name}'s professional network:\n${lines.join("\n")}`;
+  return answer({ intent: "contacts", answered: true, text, sources: [{ label: "Contacts", count: lines.length }], suggestions: sug([`Tell me about ${name}`, `What needs my attention?`]) });
+}
+
+function skillSupervision(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+  const byStaff = new Map<string, string>(); // staffId → latest supervision date
+  for (const s of snap.supervisions) {
+    const prev = byStaff.get(s.staffId);
+    if (!prev || s.date > prev) byStaff.set(s.staffId, s.date);
+  }
+  // Overdue = an explicit next date in the past, OR no supervision in 6 weeks (42d).
+  const overdueByNext = snap.supervisions.filter((s) => s.nextDate && daysBetween(s.nextDate, asOf) > 0);
+  const staleStaff = snap.staff.filter((st) => {
+    const last = byStaff.get(st.id);
+    return !last || daysBetween(last, asOf) > 42;
+  });
+  const names = [...new Set([...overdueByNext.map((s) => staffName(snap, s.staffId)), ...staleStaff.map((s) => s.name)])].filter((n) => n && n !== "not recorded");
+  const text = names.length === 0
+    ? "Everyone's supervision looks up to date — no one is overdue or without a recent session."
+    : `${names.length} staff member${names.length === 1 ? " is" : "s are"} due or overdue supervision: ${names.slice(0, 8).join(", ")}. Supervision is a support, not a tick-box — worth prioritising.`;
+  return answer({ intent: "supervision", answered: true, text, sources: [{ label: "Due/overdue supervision", count: names.length }], suggestions: sug(["Who's overdue training?", "How is the home doing?"]) });
+}
+
+function skillTraining(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+  const expired = snap.training.filter((t) => t.status === "expired" || (t.expiryDate && daysBetween(t.expiryDate, asOf) > 0 && t.status !== "not_started"));
+  const expiring = snap.training.filter((t) => t.status === "expiring_soon");
+  const notStarted = snap.training.filter((t) => t.status === "not_started" && t.mandatory);
+  const staffFor = (recs: AskCaraTraining[]) => [...new Set(recs.map((t) => `${staffName(snap, t.staffId)} (${t.course})`))];
+
+  const lines: string[] = [];
+  if (expired.length) lines.push(`- ${expired.length} expired: ${staffFor(expired).slice(0, 5).join("; ")}`);
+  if (expiring.length) lines.push(`- ${expiring.length} expiring soon: ${staffFor(expiring).slice(0, 5).join("; ")}`);
+  if (notStarted.length) lines.push(`- ${notStarted.length} mandatory not started: ${staffFor(notStarted).slice(0, 5).join("; ")}`);
+  const text = lines.length === 0 ? "Training compliance looks good — nothing expired, expiring, or mandatory-not-started on record." : `Training that needs attention:\n${lines.join("\n")}`;
+  return answer({ intent: "training", answered: true, text, sources: [{ label: "Expired", count: expired.length }, { label: "Expiring soon", count: expiring.length }], suggestions: sug(["Who's overdue supervision?", "How is the home doing?"]) });
+}
+
 function skillUnknown(): AskCaraAnswer {
   return answer({
     intent: "unknown",
@@ -442,6 +506,10 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // Handover before attention (so "brief me" isn't caught by "briefing").
   if (mentionsAny(q, ["brief me", "shift brief", "handover", "hand over", "coming on shift", "start of shift", "my shift", "start of my shift", "coming on duty"])) return gate("care_team", () => skillShiftBrief(snap, asOf));
 
+  // Staff supervision / training (management) — before the generic "overdue".
+  if (mentionsAny(q, ["supervision", "overdue supervision", "due supervision", "supervisions"])) return gate("management", () => skillSupervision(snap, asOf));
+  if (mentionsAny(q, ["training", "certificate", "certificates", "mandatory training", "training compliance", "qualifications overdue"])) return gate("management", () => skillTraining(snap, asOf));
+
   // Most specific → least. Restraint & missing before generic "incident".
   if (mentionsAny(q, ["restraint", "physical intervention", "physical hold", "hold"])) return gate("care_team", () => skillRestraints(q, snap, asOf, child));
   if (mentionsAny(q, ["missing", "ran away", "absconded", "absent without", "awol"])) return gate("care_team", () => skillMissing(q, snap, asOf, child));
@@ -456,6 +524,7 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   if (mentionsAny(q, ["attention", "priority", "urgent", "what needs", "what should i", "briefing", "focus on", "worry"])) return gate("care_team", () => skillAttention(snap, asOf));
   if (mentionsAny(q, ["how many children", "how many young people", "who lives", "who is placed", "who's placed", "list the children", "list young people", "how many kids"])) return gate("everyone", () => skillChildrenList(snap));
   if (mentionsAny(q, ["incident", "incidents", "what happened"])) return gate("care_team", () => skillIncidents(q, snap, asOf, child));
+  if (mentionsAny(q, ["social worker", "iro", "independent reviewing", "contact for", "who is the gp", "professional network", "who do i contact", "contact details"])) return gate("care_team", () => skillContacts(q, snap, child));
 
   // A child named with a summary-style verb, or just a child name → summary.
   if (child && (mentionsAny(q, ["tell me about", "summary", "summarise", "how is", "how's", "update on", "overview", "about"]) || raw.split(/\s+/).length <= 3)) {

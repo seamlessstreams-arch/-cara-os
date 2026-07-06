@@ -24,15 +24,18 @@ const emptySnap = (o: Partial<AskCaraSnapshot> = {}): AskCaraSnapshot => ({
   reviews: [],
   shifts: [],
   keyWork: [],
+  contacts: [],
+  supervisions: [],
+  training: [],
   ...o,
 });
 
 const SNAP = emptySnap({
   children: [
-    { id: "yp_alex", firstName: "Alex", name: "Alex W", dob: "2010-03-14", status: "current", keyWorkerId: "staff_ed", legalStatus: "Section 20" },
+    { id: "yp_alex", firstName: "Alex", name: "Alex W", dob: "2010-03-14", status: "current", keyWorkerId: "staff_ed", legalStatus: "Section 20", socialWorker: "Priya Shah", iro: "Tom Reed", school: "Oak Academy", allergies: ["peanuts"], nextReviewDate: "2026-07-30" },
     { id: "yp_casey", firstName: "Casey", name: "Casey J", status: "current" },
   ],
-  staff: [{ id: "staff_ed", name: "Edward Bright" }],
+  staff: [{ id: "staff_ed", name: "Edward Bright" }, { id: "staff_late", name: "Nina Roy" }],
   incidents: [
     { id: "inc1", type: "missing_from_care", severity: "high", childId: "yp_alex", date: "2026-07-03", status: "open", requiresOversight: true, hasOversight: false },
     { id: "inc2", type: "medication_error", severity: "medium", childId: "yp_casey", date: "2026-07-01", status: "closed", requiresOversight: true, hasOversight: true },
@@ -56,6 +59,17 @@ const SNAP = emptySnap({
   dailyLogs: [
     { childId: "yp_alex", date: "2026-07-04", content: "Alex became distressed after a phone call and was supported to regulate.", significant: true },
     { childId: "yp_casey", date: "2026-07-02", content: "Ordinary settled day.", significant: false },
+  ],
+  contacts: [
+    { childId: "yp_alex", role: "camhs", name: "Dr Owens", organisation: "CAMHS North", phone: "01234 555111" },
+  ],
+  supervisions: [
+    { staffId: "staff_ed", date: "2026-06-30", status: "completed" }, // recent → not overdue
+    { staffId: "staff_late", date: "2026-04-01", status: "completed" }, // >42d before 07-05 → overdue
+  ],
+  training: [
+    { staffId: "staff_ed", course: "Safeguarding", expiryDate: "2026-01-01", status: "expired", mandatory: true },
+    { staffId: "staff_ed", course: "First Aid", expiryDate: "2026-08-01", status: "expiring_soon", mandatory: true },
   ],
 });
 
@@ -233,6 +247,41 @@ describe("role-based access (RBAC)", () => {
   });
   it("defaults (no role) to care-team so operational Q&A works", () => {
     expect(ask("how many incidents this week?").intent).toBe("incidents");
+  });
+});
+
+describe("deep child / contacts", () => {
+  it("enriches the child summary with social worker, IRO, allergies, next review", () => {
+    const a = ask("tell me about Alex");
+    expect(a.text).toMatch(/social worker Priya Shah/);
+    expect(a.text).toMatch(/IRO Tom Reed/);
+    expect(a.text).toMatch(/Allergies: peanuts/);
+    expect(a.text).toMatch(/Next LAC review: 2026-07-30/);
+  });
+  it("answers who a child's social worker is", () => {
+    const a = ask("who is Alex's social worker?");
+    expect(a.intent).toBe("contacts");
+    expect(a.text).toMatch(/Social worker: Priya Shah/);
+    expect(a.text).toMatch(/CAMHS/); // network contact folded in
+  });
+});
+
+describe("team: supervision / training (management)", () => {
+  it("flags staff overdue supervision for a manager", () => {
+    const a = ask("who's overdue supervision?", { role: "registered_manager" });
+    expect(a.intent).toBe("supervision");
+    expect(a.text).toMatch(/Nina Roy/); // last supervised 04-01, >42d
+    expect(a.text).not.toMatch(/Edward Bright/); // supervised 06-30, recent
+  });
+  it("denies a care worker the supervision list", () => {
+    const a = ask("who's overdue supervision?", { role: "residential_care_worker" });
+    expect(a.intent).toBe("access_denied");
+  });
+  it("flags expired and expiring training for a manager", () => {
+    const a = ask("who's overdue training?", { role: "registered_manager" });
+    expect(a.intent).toBe("training");
+    expect(a.text).toMatch(/expired/);
+    expect(a.text).toMatch(/Safeguarding/);
   });
 });
 

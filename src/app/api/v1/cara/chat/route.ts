@@ -104,6 +104,13 @@ const s = (v: unknown): string => (typeof v === "string" ? v : "");
 function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
   const returnInterviews = (store.returnInterviews ?? []) as Array<{ episode_id?: string; missing_episode_id?: string; child_id?: string }>;
   const rec = (c: unknown) => (c ?? []) as Array<Record<string, unknown>>;
+  // Earliest upcoming (or most recent) LAC review per child.
+  const lacNext = new Map<string, string>();
+  for (const r of rec(store.lacReviews)) {
+    const cid = r.child_id ? String(r.child_id) : "";
+    const d = day(r.next_review_date ?? r.next_review);
+    if (cid && d && (!lacNext.has(cid) || d > lacNext.get(cid)!)) lacNext.set(cid, d);
+  }
   return {
     children: rec(store.youngPeople).map((c) => ({
       id: String(c.id),
@@ -113,6 +120,14 @@ function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
       status: s(c.status) || "current",
       keyWorkerId: s(c.key_worker_id) || s(c.keyWorkerId) || s(c.key_worker) || undefined,
       legalStatus: s(c.legal_status) || undefined,
+      socialWorker: s(c.social_worker_name) || undefined,
+      iro: s(c.iro_name) || undefined,
+      school: s(c.school_name) || undefined,
+      gp: s(c.gp_name) || undefined,
+      allergies: Array.isArray(c.allergies) ? (c.allergies as unknown[]).map(String) : undefined,
+      dietary: s(c.dietary_requirements) || undefined,
+      placementStart: day(c.placement_start),
+      nextReviewDate: lacNext.get(String(c.id)) || undefined,
     })),
     staff: rec(store.staff).map((st) => ({ id: String(st.id), name: s(st.full_name) || [st.first_name, st.last_name].filter(Boolean).join(" ") || String(st.id) })),
     incidents: rec(store.incidents).map((i) => ({ id: String(i.id), type: s(i.type) || "other", severity: s(i.severity), childId: i.child_id ? String(i.child_id) : undefined, date: day(i.date), status: s(i.status) || "open", requiresOversight: !!i.requires_oversight, hasOversight: !!(i.oversight_note || i.oversight_by || i.oversight_at) })),
@@ -131,6 +146,12 @@ function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
       const h = (store as Record<string, unknown>).home as Record<string, unknown> | undefined;
       return h ? { name: s(h.name) || undefined, maxBeds: typeof h.max_beds === "number" ? h.max_beds : undefined, currentOccupancy: typeof h.current_occupancy === "number" ? h.current_occupancy : undefined } : undefined;
     })(),
+    contacts: rec((store as Record<string, unknown>).professionalNetworkContacts).map((c) => ({ childId: String(c.child_id), role: s(c.role), name: s(c.name), organisation: s(c.organisation) || undefined, phone: s(c.phone) || undefined })),
+    supervisions: [
+      ...rec(store.supervisions).map((sv) => ({ staffId: String(sv.staff_id), date: day(sv.actual_date ?? sv.scheduled_date), nextDate: day(sv.next_date) || undefined, status: s(sv.status) || undefined })),
+      ...rec((store as Record<string, unknown>).reflectiveSupervisions).map((sv) => ({ staffId: String(sv.staff_id), date: day(sv.date), nextDate: day(sv.follow_up_date) || undefined, status: "reflective" })),
+    ].filter((sv) => sv.staffId && sv.date),
+    training: rec(store.trainingRecords).map((t) => ({ staffId: String(t.staff_id), course: s(t.course_name) || "Training", expiryDate: day(t.expiry_date) || undefined, status: s(t.status) || undefined, mandatory: !!t.is_mandatory })),
   };
 }
 

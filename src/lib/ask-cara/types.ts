@@ -32,6 +32,9 @@ export type AskCaraIntent =
   | "shift_brief"
   | "whats_due"
   | "home_overview"
+  | "contacts"
+  | "supervision"
+  | "training"
   | "access_denied"
   | "unknown";
 
@@ -70,6 +73,37 @@ export interface AskCaraChild {
   status: string;
   keyWorkerId?: string;
   legalStatus?: string;
+  socialWorker?: string;
+  iro?: string;
+  school?: string;
+  gp?: string;
+  allergies?: string[];
+  dietary?: string;
+  placementStart?: string;
+  nextReviewDate?: string;
+}
+
+export interface AskCaraContactRec {
+  childId: string;
+  role: string; // social_worker | iro | camhs | education | ...
+  name: string;
+  organisation?: string;
+  phone?: string;
+}
+
+export interface AskCaraSupervision {
+  staffId: string;
+  date: string; // when it last happened
+  nextDate?: string; // next due / follow-up
+  status?: string;
+}
+
+export interface AskCaraTraining {
+  staffId: string;
+  course: string;
+  expiryDate?: string;
+  status?: string; // compliant | expiring_soon | expired | not_started
+  mandatory?: boolean;
 }
 
 export interface AskCaraIncident {
@@ -151,6 +185,9 @@ export interface AskCaraSnapshot {
   shifts: AskCaraShift[];
   keyWork: AskCaraKeyWork[];
   home?: { name?: string; maxBeds?: number; currentOccupancy?: number };
+  contacts: AskCaraContactRec[];
+  supervisions: AskCaraSupervision[];
+  training: AskCaraTraining[];
 }
 
 export interface AskCaraContext {
