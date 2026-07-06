@@ -545,6 +545,10 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   if (mentionsAny(q, ["supervision", "overdue supervision", "due supervision", "supervisions"])) return gate("management", () => skillSupervision(snap, asOf));
   if (mentionsAny(q, ["training", "certificate", "certificates", "mandatory training", "training compliance", "qualifications overdue"])) return gate("management", () => skillTraining(snap, asOf));
 
+  // Policy questions first — "what does our policy say about missing/restraint/…"
+  // must go to policy guidance, not the topic skill for that word.
+  if (mentionsAny(q, ["policy", "policies", "procedure", "what does our policy", "which policy", "what's the procedure", "our guidance says", "guidance on"])) return gate("care_team", () => skillPolicy(raw, snap));
+
   // Most specific → least. Restraint & missing before generic "incident".
   if (mentionsAny(q, ["restraint", "physical intervention", "physical hold", "hold"])) return gate("care_team", () => skillRestraints(q, snap, asOf, child));
   if (mentionsAny(q, ["missing", "ran away", "absconded", "absent without", "awol"])) return gate("care_team", () => skillMissing(q, snap, asOf, child));
@@ -560,7 +564,6 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   if (mentionsAny(q, ["how many children", "how many young people", "who lives", "who is placed", "who's placed", "list the children", "list young people", "how many kids"])) return gate("everyone", () => skillChildrenList(snap));
   if (mentionsAny(q, ["incident", "incidents", "what happened"])) return gate("care_team", () => skillIncidents(q, snap, asOf, child));
   if (mentionsAny(q, ["social worker", "iro", "independent reviewing", "contact for", "who is the gp", "professional network", "who do i contact", "contact details"])) return gate("care_team", () => skillContacts(q, snap, child));
-  if (mentionsAny(q, ["policy", "policies", "procedure", "what does our policy", "which policy", "what's the procedure", "our guidance says", "guidance on"])) return gate("care_team", () => skillPolicy(raw, snap));
 
   // A child named with a summary-style verb, or just a child name → summary.
   if (child && (mentionsAny(q, ["tell me about", "summary", "summarise", "how is", "how's", "update on", "overview", "about"]) || raw.split(/\s+/).length <= 3)) {

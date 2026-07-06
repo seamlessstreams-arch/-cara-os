@@ -285,6 +285,17 @@ describe("team: supervision / training (management)", () => {
   });
 });
 
+describe("policy classifier ordering (regression)", () => {
+  it("routes a policy question about a topic to policy_guidance, not the topic skill", () => {
+    // "...policy...about missing..." must NOT be caught by the missing skill.
+    expect(ask("what does our policy say about missing from care?").intent).toBe("policy_guidance");
+    expect(ask("what's the restraint policy?").intent).toBe("policy_guidance");
+  });
+  it("a topic question without 'policy' still hits the topic skill", () => {
+    expect(ask("any missing episodes?").intent).toBe("missing");
+  });
+});
+
 describe("honesty — no fabrication", () => {
   it("gives an honest fallback (answered:false) for an unmappable question", () => {
     const a = ask("what is the meaning of life?");
