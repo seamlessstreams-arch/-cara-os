@@ -14,6 +14,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Loader2, ArrowUp, Plus } from "lucide-react";
 import { useAuthContext } from "@/contexts/auth-context";
 import { DictationButton } from "@/components/common/dictation-button";
+import { CaraTaskLauncher } from "./cara-task-launcher";
 import type { CaraDrawerContext } from "./cara-drawer";
 import type { AskCaraAnswer, AskCaraSource, AskCaraSuggestion } from "@/lib/ask-cara/types";
 
@@ -48,17 +49,6 @@ function CaraStar({ size = 40, className }: { size?: number; className?: string 
   );
 }
 
-function starterQuestions(ctx: CaraDrawerContext): string[] {
-  if (ctx.childName) {
-    return [
-      `Tell me about ${ctx.childName}`,
-      `Help me reflect on ${ctx.childName}`,
-      `How many incidents for ${ctx.childName} this month?`,
-    ];
-  }
-  return ["What needs my attention today?", "Brief me for my shift", "Help me reflect on a child", "What's due this week?"];
-}
-
 export function CaraChat({ context }: { context: CaraDrawerContext }) {
   const { currentUser, currentRole } = useAuthContext();
   const firstName = currentUser?.first_name || (currentUser?.full_name ? currentUser.full_name.split(/\s+/)[0] : "") || "there";
@@ -66,7 +56,6 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const starters = starterQuestions(context);
   const empty = messages.length === 0;
 
   useEffect(() => {
@@ -124,19 +113,19 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
       className="relative flex h-full min-h-0 flex-col"
       style={{ background: "linear-gradient(180deg, #05060a 0%, #070b15 55%, #0e1733 100%)" }}
     >
-      {/* Hero — empty state, Gemini-style centred greeting */}
+      {/* Hero + governed task launcher — empty state */}
       {empty && !loading && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-5 px-6 pb-24 text-center">
-          <CaraStar size={44} className="drop-shadow-[0_0_18px_rgba(96,165,250,0.45)]" />
-          <div>
-            <h2 className="text-[26px] font-light leading-snug text-slate-100">
-              Hi {firstName} — ready when you are
-            </h2>
-            <p className="mt-2 text-[13px] leading-relaxed text-slate-400">
-              Ask me anything from this home&apos;s records. I answer deterministically — never a guess.
-            </p>
+        <div className="flex-1 overflow-y-auto px-4 pb-28 pt-6">
+          <div className="mb-5 flex flex-col items-center gap-3 text-center">
+            <CaraStar size={40} className="drop-shadow-[0_0_18px_rgba(96,165,250,0.45)]" />
+            <div>
+              <h2 className="text-[22px] font-light leading-snug text-slate-100">Hi {firstName} — ready when you are</h2>
+              <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-400">
+                Pick a task, or ask below. I answer from this home&apos;s records — never a guess.
+              </p>
+            </div>
           </div>
-          <div className="flex flex-wrap justify-center gap-2">{starters.map(chip)}</div>
+          <CaraTaskLauncher role={currentRole} onAsk={send} />
         </div>
       )}
 
