@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { invokeAiGateway, invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
 import { getStore } from "@/lib/db/store";
 import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
+import { buildAuditEvent } from "@/lib/ask-cara/audit-logger";
 import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -176,15 +177,46 @@ export async function POST(req: NextRequest) {
   // Deterministic Ask-Cara path — record-based Q&A, no model, works with no credit.
   if (body.mode === "ask") {
     try {
-      const snapshot = buildAskSnapshot(getStore());
+      const store = getStore();
+      const snapshot = buildAskSnapshot(store);
+      const role = typeof body.role === "string" ? body.role : undefined;
+      const childId = typeof body.childId === "string" ? body.childId : undefined;
       const answer = answerQuestion({
         question: prompt,
         asOf: new Date().toISOString().slice(0, 10),
         userName: typeof body.userName === "string" ? body.userName : undefined,
-        role: typeof body.role === "string" ? body.role : undefined,
+        role,
         snapshot,
-        context: { pageTitle: typeof body.pageTitle === "string" ? body.pageTitle : undefined, childId: typeof body.childId === "string" ? body.childId : undefined },
+        context: { pageTitle: typeof body.pageTitle === "string" ? body.pageTitle : undefined, childId },
       });
+
+      // §21 audit trail — every Ask CARA interaction is logged (text hashed, never raw).
+      try {
+        const evt = buildAuditEvent(
+          {
+            userId: typeof body.userName === "string" ? body.userName : undefined,
+            role,
+            childId,
+            sessionId: typeof body.sessionId === "string" ? body.sessionId : undefined,
+            mode: "ask",
+            intent: answer.intent,
+            taskCard: typeof body.taskCard === "string" ? body.taskCard : undefined,
+            inputText: prompt,
+            outputText: answer.text,
+            ruleVersion: answer.engineVersion,
+            sources: answer.sources.map((s) => s.label),
+            managerReviewRequired: answer.intent === "prohibited",
+            prohibitedTriggered: answer.intent === "prohibited",
+            deterministicOnly: true,
+          },
+          { id: `ac_evt_${Date.now()}_${store.askCaraAuditEvents.length}`, createdAt: new Date().toISOString() }
+        );
+        store.askCaraAuditEvents.push(evt);
+        if (store.askCaraAuditEvents.length > 1000) store.askCaraAuditEvents.splice(0, store.askCaraAuditEvents.length - 1000);
+      } catch (auditErr) {
+        console.error("[cara/chat] audit failed", auditErr);
+      }
+
       return NextResponse.json({ answer });
     } catch (err) {
       console.error("[cara/chat] ask failed", err);

@@ -2843,6 +2843,8 @@ const store = {
   reg44Packs: [] as PersistedReg44Pack[],
   reg44Reports: [] as PersistedReg44Report[], // persisted A–Q reports (sign-off/lock/audit)
   integrityHealEvents: [] as IntegrityHealEvent[], // §25 self-healing: append-only log of applied safe repairs
+  externalAiDeclarations: [] as import("@/lib/ask-cara/external-ai-declaration").ExternalAiDeclaration[], // §20 external-AI declarations
+  askCaraAuditEvents: [] as import("@/lib/ask-cara/audit-logger").AskCaraAuditEvent[], // §21 Ask CARA audit trail
   // Demo trajectory for home_oak: inspection readiness regressing 82 → 73 → 57
   // over ~6 weeks. The latest (6-day-old) bundle is BOTH a large single-step drop
   // (−16) and a net regression (−25) → two critical trajectory alerts. Left
