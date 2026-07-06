@@ -584,24 +584,25 @@ function StatCard({
         <div className={cn("mt-1 text-3xl font-bold tabular-nums", color)}>{value}</div>
         {subtitle && <div className="mt-0.5 text-xs text-[var(--cs-text-gentle)] truncate">{subtitle}</div>}
       </div>
-      <div className={cn("rounded-2xl p-3 shrink-0 relative", bgColor)}>
+      <div className={cn("rounded-2xl p-3 shrink-0 relative ring-1 ring-black/[0.03] shadow-sm transition-transform duration-200 group-hover:scale-105", bgColor)}>
         <Icon className={cn("h-5 w-5", color)} />
         {pulse && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[var(--cs-risk)] animate-pulse" />}
       </div>
     </div>
   );
 
+  const base = "group block rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-5 shadow-[var(--cs-shadow-soft)]";
   if (href) {
     return (
       <Link
         href={href}
-        className="block rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-5 transition-all hover:shadow-[var(--cs-shadow-card)] focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40"
+        className={cn(base, "cs-lift focus:outline-none focus:ring-2 focus:ring-[var(--cs-cara-gold)]/40")}
       >
         {inner}
       </Link>
     );
   }
-  return <div className="rounded-2xl border border-[var(--cs-border)] bg-[var(--cs-surface-elevated)] p-5">{inner}</div>;
+  return <div className={base}>{inner}</div>;
 }
 
 // ─── Alert Command Strip ──────────────────────────────────────────────────────
@@ -1497,7 +1498,7 @@ export default function DashboardPage() {
 
           {/* Stat row — only render stats listed in config.statCards */}
           <div className={cn(
-            "grid gap-3 mt-3",
+            "cs-stagger grid gap-3 mt-3",
             config.statCards.length >= 6 ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-6" :
             config.statCards.length === 3 ? "grid-cols-2 sm:grid-cols-3" :
             config.statCards.length === 2 ? "grid-cols-2" :
