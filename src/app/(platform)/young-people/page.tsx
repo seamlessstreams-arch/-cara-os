@@ -394,7 +394,7 @@ function YPCard({ yp, onNavigate, carePlan, isExpanded, onToggleExpand }: YPCard
   return (
     <ProfileCard
       severity={hasRisk ? "warning" : "neutral"}
-      className={cn("group", isExpanded && "lg:col-span-3")}
+      className={cn("group cursor-pointer", !isExpanded && "cs-lift", isExpanded && "lg:col-span-3")}
       onClick={onToggleExpand}
       aria-expanded={isExpanded}
     >
@@ -910,7 +910,7 @@ export default function YoungPeoplePage() {
         )}
 
         {/* Grid */}
-        <div className="grid gap-6 lg:grid-cols-3">
+        <div className="cs-stagger grid gap-6 lg:grid-cols-3">
           {isLoading ? (
             <>
               <SkeletonCard />
