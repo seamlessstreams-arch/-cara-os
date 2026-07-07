@@ -32,6 +32,8 @@ export interface PageShellProps {
   sensitive?:        boolean;
   children:          React.ReactNode;
   fullWidth?:        boolean;
+  /** Opt this page's BODY into the Ask CARA dark skin (phase-2 rollout). */
+  darkBody?:         boolean;
 }
 
 export function PageShell({
@@ -48,6 +50,7 @@ export function PageShell({
   sensitive = false,
   children,
   fullWidth = false,
+  darkBody = false,
 }: PageShellProps) {
   const headerActions = (
     <>
@@ -60,14 +63,17 @@ export function PageShell({
   );
 
   return (
-    <div className="relative flex min-h-screen flex-col">
+    <div className={`relative flex min-h-screen flex-col${darkBody ? " cara-dark" : ""}`}>
       {/* Ambient brand glow — the same warmth as the marketing site, kept
-          subtle enough for a dense working screen. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-72 opacity-50 print:hidden"
-        style={{ background: "radial-gradient(55% 90% at 70% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(40% 70% at 10% 0%, var(--cs-cara-glow) 0%, transparent 55%)" }}
-      />
+          subtle enough for a dense working screen. Suppressed on dark pages,
+          which carry their own glow. */}
+      {!darkBody && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-72 opacity-50 print:hidden"
+          style={{ background: "radial-gradient(55% 90% at 70% 0%, var(--cs-teal-glow) 0%, transparent 60%), radial-gradient(40% 70% at 10% 0%, var(--cs-cara-glow) 0%, transparent 55%)" }}
+        />
+      )}
       <Header
         title={title}
         subtitle={subtitle ?? description}

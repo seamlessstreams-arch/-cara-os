@@ -569,6 +569,62 @@ body {
 .cara-spark-pulse { animation: cara-spark-glow 3.6s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .cara-spark-pulse { animation: none; } }
 
+/* ══════════════════════════════════════════════════════════════════════════════
+   ASK CARA — DARK PAGE BODY  (phase 2: opt-in per page, migrated in batches)
+   ------------------------------------------------------------------------------
+   `.cara-dark` on a PageShell root turns that page's BODY dark. Two layers:
+   (1) token retune → flips every token-based surface (the shared Card, used by
+       ~1,185 files, plus all --cs-* usage) to dark, correctly.
+   (2) a compatibility shim → remaps the common HARDCODED light utilities
+       (bg-white / bg-slate-50 / text-slate-*) that no token controls, so pages
+       that pre-date the token system still read on dark. Neutrals only; semantic
+       accent colours (amber/rose/emerald…) are only softened, never inverted.
+   Scoped to the page root, so it never touches the chrome; portaled modals render
+   outside it and stay light (readable) by construction. Rolled out page-by-page.
+   ══════════════════════════════════════════════════════════════════════════════ */
+.cara-dark {
+  --cs-bg:               #0a0f1f;
+  --cs-surface:          #0e1730;
+  --cs-surface-elevated: #111b33;
+  --cs-border:           rgba(255, 255, 255, 0.09);
+  --cs-border-subtle:    rgba(255, 255, 255, 0.06);
+  --cs-navy:             #eef3fb;
+  --cs-navy-soft:        #dbe6f5;
+  --cs-navy-muted:       #c4d3ea;
+  --cs-text:             #e6ecf7;
+  --cs-text-secondary:   #a7b6cd;
+  --cs-text-muted:       #8090a8;
+  --cs-text-gentle:      #6a7890;
+  --cs-teal-bg:          rgba(45, 212, 191, 0.12);
+  --cs-teal-soft:        rgba(45, 212, 191, 0.22);
+  --cs-cara-gold-bg:     rgba(230, 180, 90, 0.12);
+  color: var(--cs-text);
+  background:
+    radial-gradient(90% 55% at 100% 0%, rgba(99, 102, 241, 0.10) 0%, transparent 45%),
+    radial-gradient(70% 50% at 0% 0%, rgba(45, 212, 191, 0.07) 0%, transparent 42%),
+    linear-gradient(180deg, #0a0f1f 0%, #0b1226 55%, #0d1530 100%);
+}
+/* (2) shim — hardcoded neutrals → dark equivalents (specificity beats utilities) */
+.cara-dark .bg-white { background-color: #111b33 !important; }
+.cara-dark .bg-slate-50, .cara-dark .bg-gray-50, .cara-dark .bg-zinc-50 { background-color: rgba(255, 255, 255, 0.035) !important; }
+.cara-dark .bg-slate-100, .cara-dark .bg-gray-100, .cara-dark .bg-zinc-100 { background-color: rgba(255, 255, 255, 0.065) !important; }
+.cara-dark .bg-slate-200, .cara-dark .bg-gray-200 { background-color: rgba(255, 255, 255, 0.10) !important; }
+.cara-dark .text-slate-900, .cara-dark .text-gray-900, .cara-dark .text-slate-800, .cara-dark .text-gray-800 { color: #eef3fb !important; }
+.cara-dark .text-slate-700, .cara-dark .text-gray-700 { color: #cdd8ea !important; }
+.cara-dark .text-slate-600, .cara-dark .text-gray-600 { color: #a7b6cd !important; }
+.cara-dark .text-slate-500, .cara-dark .text-gray-500 { color: #8494ab !important; }
+.cara-dark .text-slate-400, .cara-dark .text-gray-400 { color: #75849c !important; }
+.cara-dark .border-slate-200, .cara-dark .border-gray-200, .cara-dark .border-slate-100, .cara-dark .border-gray-100, .cara-dark .border-slate-300 { border-color: rgba(255, 255, 255, 0.09) !important; }
+.cara-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]), .cara-dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.08) !important; }
+.cara-dark .bg-\[var\(--cs-navy\)\] { background-color: #0e1730 !important; }
+/* semantic accent panels: soften to a dark tint so their labels read on dark (never inverted) */
+.cara-dark .bg-emerald-50, .cara-dark .bg-green-50 { background-color: rgba(52, 211, 153, 0.10) !important; }
+.cara-dark .bg-amber-50, .cara-dark .bg-yellow-50, .cara-dark .bg-orange-50 { background-color: rgba(251, 191, 36, 0.10) !important; }
+.cara-dark .bg-rose-50, .cara-dark .bg-red-50 { background-color: rgba(251, 113, 133, 0.10) !important; }
+.cara-dark .bg-blue-50, .cara-dark .bg-sky-50, .cara-dark .bg-cyan-50 { background-color: rgba(96, 165, 250, 0.10) !important; }
+.cara-dark .bg-indigo-50, .cara-dark .bg-violet-50, .cara-dark .bg-purple-50 { background-color: rgba(129, 140, 248, 0.12) !important; }
+.cara-dark .bg-teal-50 { background-color: rgba(45, 212, 191, 0.10) !important; }
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

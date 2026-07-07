@@ -1304,6 +1304,7 @@ export default function IncidentsPage() {
 
   return (
     <PageShell
+      darkBody
       sensitive
       title="Incidents"
       subtitle="Log, review, and oversee all incident records"
