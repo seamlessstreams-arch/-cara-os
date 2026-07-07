@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { ShadowAiCallout } from "@/components/marketing/shadow-ai-callout";
 import { SectionEyebrow, FeatureCard } from "@/components/marketing/ui";
 
 export const metadata: Metadata = {
@@ -87,6 +88,9 @@ export default function CompliancePage() {
           </div>
         </div>
       </section>
+
+      {/* Shadow AI — data-protection lens */}
+      <ShadowAiCallout lens="Ungoverned AI is a data-protection gap. Cara closes it." />
 
       <section className="mx-auto max-w-7xl px-5 pb-20">
         <div className="mx-auto max-w-2xl text-center">
