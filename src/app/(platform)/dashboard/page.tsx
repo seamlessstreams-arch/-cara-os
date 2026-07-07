@@ -29,6 +29,7 @@ import { usePermissions } from "@/hooks/use-permissions";
 import type { AppRole } from "@/lib/permissions";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { TaskSlaCard } from "@/components/dashboard/task-sla-card";
+import { CommandCentreHero } from "@/components/dashboard/command-centre-hero";
 
 // ── Dynamic imports — loaded on demand to prevent browser memory crash ────────
 
@@ -1277,6 +1278,19 @@ export default function DashboardPage() {
       caraContext={{ sourceType: "general", pageTitle: "Command Centre" }}
     >
       <div className="space-y-8 pb-8">
+
+        {/* Command Centre hero — the redesigned "needs you now" + at-a-glance surface */}
+        {d && (
+          <CommandCentreHero
+            stats={{
+              youngPeople: d.young_people?.current?.length ?? 0,
+              places: 0,
+              onShift: d.staffing?.on_shift ?? 0,
+              openIncidents: d.incidents?.open ?? 0,
+              tasksDue: d.tasks?.due_today ?? 0,
+            }}
+          />
+        )}
 
         {/* Handover Prompt — contextual shift awareness */}
         {!config.showReadOnlyBanner && <HandoverPrompt />}
