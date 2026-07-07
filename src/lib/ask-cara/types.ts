@@ -40,6 +40,7 @@ export type AskCaraIntent =
   | "child_progress"
   | "child_triggers"
   | "child_relationships"
+  | "inspection_readiness"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -122,6 +123,20 @@ export interface AskCaraChildEvaluation {
     repairs: number;
     ruptures: number;
   };
+}
+
+/**
+ * Home-level read from the Inspection Intelligence engine (SCCIF projection):
+ * evidence strength + gaps per judgement area. Describes readiness — NEVER a
+ * predicted inspection grade (hard platform rule).
+ */
+export interface AskCaraHomeEvaluation {
+  headline: string;
+  areasStrong: number;
+  areasDeveloping: number;
+  areasLimited: number;
+  areas: { label: string; strength: string; summary: string }[];
+  priorities: { area: string; label: string; detail: string; childNames: string[] }[];
 }
 
 export interface AskCaraContactRec {
@@ -233,6 +248,8 @@ export interface AskCaraSnapshot {
   policies?: import("./policy-guidance-engine").PolicyDoc[];
   /** Per-child evaluation reads from the deterministic engines (optional). */
   evaluations?: AskCaraChildEvaluation[];
+  /** Home-level read from the Inspection Intelligence engine (optional). */
+  homeEvaluation?: AskCaraHomeEvaluation;
 }
 
 export interface AskCaraContext {

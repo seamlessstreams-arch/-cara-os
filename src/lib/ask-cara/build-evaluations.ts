@@ -20,7 +20,8 @@ import type { getStore } from "@/lib/db/store";
 import { buildOutcomeIntelligence } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 import { buildEmotionalSafetyAnalysis } from "@/lib/emotional-safety/emotional-safety-engine";
 import { buildRelationalTimeline } from "@/lib/relational-timeline/relational-timeline-engine";
-import type { AskCaraChildEvaluation } from "./types";
+import { buildInspectionReadiness } from "@/lib/inspection-intelligence/inspection-intelligence-engine";
+import type { AskCaraChildEvaluation, AskCaraHomeEvaluation } from "./types";
 
 type Store = ReturnType<typeof getStore>;
 
@@ -127,4 +128,52 @@ export function buildChildEvaluations(store: Store, nowIso: string): AskCaraChil
   }
 
   return out;
+}
+
+/**
+ * Home-level read: the Inspection Intelligence engine's SCCIF projection —
+ * evidence strength + gaps per judgement area. Deliberately the NO-GRADE
+ * engine: CARA describes readiness and evidence, it never predicts an
+ * inspection outcome (that discipline is a hard platform rule).
+ */
+export function buildHomeEvaluation(store: Store, nowIso: string): AskCaraHomeEvaluation | undefined {
+  try {
+    const children = ((store.youngPeople ?? []) as Array<Record<string, unknown>>)
+      .filter((yp) => (s(yp.status) || "current") === "current")
+      .map((yp) => ({ id: String(yp.id), name: s(yp.preferred_name) || s(yp.first_name) || "Child" }));
+
+    const r = buildInspectionReadiness({
+      now: nowIso,
+      children,
+      incidents: store.incidents ?? [],
+      debriefRecords: store.debriefRecords ?? [],
+      missingEpisodes: store.missingEpisodes ?? [],
+      returnInterviews: store.returnInterviews ?? [],
+      keyWorkingSessions: store.keyWorkingSessions ?? [],
+      lacReviews: store.lacReviews ?? [],
+      positiveAchievements: store.positiveAchievements ?? [],
+      educationRecords: store.educationRecords ?? [],
+      riskAssessments: store.riskAssessments ?? [],
+      welfareChecks: store.welfareChecks ?? [],
+      carePlans: store.carePlans ?? [],
+      supervisions: store.supervisions ?? [],
+      trainingRecords: store.trainingRecords ?? [],
+    });
+
+    return {
+      headline: r.headline,
+      areasStrong: r.areasStrong,
+      areasDeveloping: r.areasDeveloping,
+      areasLimited: r.areasLimited,
+      areas: r.areas.map((a) => ({ label: a.label, strength: a.strength, summary: a.summary })),
+      priorities: r.priorities.slice(0, 4).map((p) => ({
+        area: p.area,
+        label: p.label,
+        detail: p.detail,
+        childNames: (p.childRefs ?? []).map((c) => c.name),
+      })),
+    };
+  } catch {
+    return undefined; // the engine narrates honestly when there's no read
+  }
 }

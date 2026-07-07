@@ -431,12 +431,30 @@ function skillHomeOverview(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
   const oversight = snap.incidents.filter((i) => i.requiresOversight && !i.hasOversight && i.status !== "closed").length;
   const overdue = snap.tasks.filter((t) => t.dueDate && daysBetween(t.dueDate, asOf) > 0 && t.status !== "completed" && t.status !== "cancelled").length;
 
-  const text = [
+  const lines = [
     `${snap.home?.name || "The home"} — ${occ}${beds ? `/${beds}` : ""} place${occ === 1 ? "" : "s"} filled.`,
     `Last 30 days: ${incMonth} incident${incMonth === 1 ? "" : "s"}, ${restraintsMonth} restraint${restraintsMonth === 1 ? "" : "s"} (${restraintGaps} without a debrief).`,
     `Outstanding: ${oversight} incident${oversight === 1 ? "" : "s"} awaiting oversight, ${rhiGaps} missing return interview${rhiGaps === 1 ? "" : "s"}, ${overdue} overdue action${overdue === 1 ? "" : "s"}.`,
-  ].join("\n");
-  return answer({ intent: "home_overview", answered: true, text, sources: [{ label: "Occupancy", count: occ }, { label: "Incidents (30d)", count: incMonth }, { label: "Awaiting oversight", count: oversight }], suggestions: sug(["What needs my attention?", "Who's overdue supervision?", "How many incidents this week?"]) });
+  ];
+
+  // The engines' read — inspection evidence posture + the children to watch.
+  const nameOf = (id: string) => childLabel(snap.children.find((c) => c.id === id) ?? ({ id } as AskCaraChild));
+  const evs = snap.evaluations ?? [];
+  const watch = [...new Set([
+    ...evs.filter((e) => e.emotional?.status === "concern").map((e) => nameOf(e.childId)),
+    ...evs.filter((e) => e.relational?.status === "fragile").map((e) => nameOf(e.childId)),
+    ...evs.filter((e) => e.outcome?.trajectory === "declining").map((e) => nameOf(e.childId)),
+  ])].filter(Boolean);
+  if (snap.homeEvaluation || watch.length) {
+    lines.push("", "My read from the engines:");
+    if (snap.homeEvaluation) {
+      const he = snap.homeEvaluation;
+      lines.push(`- Inspection evidence: ${he.areasStrong} judgement area${he.areasStrong === 1 ? "" : "s"} strong, ${he.areasDeveloping} developing, ${he.areasLimited} limited${he.priorities[0] ? ` — top gap: ${he.priorities[0].label.toLowerCase()}` : ""}.`);
+    }
+    if (watch.length) lines.push(`- Children to keep close: ${watch.join(", ")} (emotional safety, relationships or direction).`);
+  }
+
+  return answer({ intent: "home_overview", answered: true, text: lines.join("\n"), sources: [{ label: "Occupancy", count: occ }, { label: "Incidents (30d)", count: incMonth }, { label: "Awaiting oversight", count: oversight }], suggestions: sug(["Are we ready for inspection?", "What needs my attention?", "Who's overdue supervision?"]) });
 }
 
 const ROLE_LABEL: Record<string, string> = { social_worker: "Social worker", iro: "IRO", camhs: "CAMHS", education: "Education", police: "Police", yot: "YOT / youth justice", gp: "GP", advocate: "Advocate" };
@@ -606,6 +624,46 @@ function skillChildRelationships(snap: AskCaraSnapshot, child: AskCaraChild | nu
   });
 }
 
+// Home level: the Inspection Intelligence engine's SCCIF projection — evidence
+// strength and gaps per judgement area. Readiness posture ONLY: CARA never
+// predicts an inspection grade (hard platform rule), and says so.
+function skillInspectionReadiness(snap: AskCaraSnapshot): AskCaraAnswer {
+  const he = snap.homeEvaluation;
+  if (!he) {
+    return answer({
+      intent: "inspection_readiness",
+      answered: false,
+      text: "I don't have an inspection-readiness read for this home yet — there may not be enough recorded across the SCCIF evidence sources. The Inspection Intelligence page shows what each judgement area draws on.",
+      sources: [],
+      suggestions: sug(["How is the home doing?", "What needs my attention?"]),
+    });
+  }
+  const strengthWord: Record<string, string> = { strong: "strong", developing: "developing", limited: "limited" };
+  const lines: string[] = [he.headline, ""];
+  for (const a of he.areas) {
+    lines.push(`- **${a.label}** — evidence ${strengthWord[a.strength] ?? a.strength}. ${a.summary}`);
+  }
+  if (he.priorities.length) {
+    lines.push("", "If an inspector called tomorrow, I'd close these first:");
+    for (const p of he.priorities) {
+      lines.push(`- ${p.label} (${p.area})${p.childNames.length ? ` — ${p.childNames.slice(0, 3).join(", ")}` : ""}: ${p.detail}`);
+    }
+  }
+  lines.push("", "This is your evidence posture, not a prediction — no system can (or should) call an inspection outcome.");
+  return answer({
+    intent: "inspection_readiness",
+    answered: true,
+    text: lines.join("\n"),
+    sources: [
+      { label: "Judgement areas — evidence strong", count: he.areasStrong },
+      { label: "Developing", count: he.areasDeveloping },
+      { label: "Limited", count: he.areasLimited },
+      { label: "Priority gaps", count: he.priorities.length },
+    ],
+    suggestions: sug(["What needs my attention?", "How is the home doing?", "Who's overdue supervision?"]),
+  });
+}
+
 // Practice knowledge — answers "how do I / what does this mean / what would good
 // look like" from the loaded frameworks (Knowledge Base + practice modules), in a
 // practitioner's voice. Returns null when nothing matches with confidence, so the
@@ -678,6 +736,12 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // Policy questions first — "what does our policy say about missing/restraint/…"
   // must go to policy guidance, not the topic skill for that word.
   if (mentionsAny(q, ["policy", "policies", "procedure", "what does our policy", "which policy", "what's the procedure", "our guidance says", "guidance on"])) return gate("care_team", () => skillPolicy(raw, snap));
+
+  // Home level: inspection readiness (evidence posture per SCCIF judgement area,
+  // never a predicted grade). After policy so "our policy on inspections" wins.
+  if (mentionsAny(q, ["inspection", "inspections", "ofsted", "inspector", "sccif", "judgement area", "judgment area", "inspection-ready", "readiness"])) {
+    return gate("management", () => skillInspectionReadiness(snap));
+  }
 
   // Evaluation reads (leg three) — a question about a NAMED child's triggers,
   // regulation, relationships or direction goes to the engines' read of THAT

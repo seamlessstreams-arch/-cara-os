@@ -9,7 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { getStore } from "@/lib/db/store";
-import { buildChildEvaluations } from "@/lib/ask-cara/build-evaluations";
+import { buildChildEvaluations, buildHomeEvaluation } from "@/lib/ask-cara/build-evaluations";
 import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
 
 const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
@@ -81,5 +81,7 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
     // Leg three: the platform's own evaluation engines, distilled per child so
     // the pure engine can narrate a practitioner's read, not just a tally.
     evaluations: buildChildEvaluations(store, new Date().toISOString()),
+    // Home level: the Inspection Intelligence SCCIF projection (no-grade).
+    homeEvaluation: buildHomeEvaluation(store, new Date().toISOString()),
   };
 }
