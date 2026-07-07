@@ -96,25 +96,25 @@ function RoleSwitcher({ collapsed }: { collapsed: boolean }) {
   const initials = `${currentUser?.first_name?.[0] ?? ""}${currentUser?.last_name?.[0] ?? ""}`;
 
   return (
-    <div className="relative border-t border-slate-100">
+    <div className="relative border-t border-white/10">
       <button
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "w-full flex items-center gap-3 px-4 py-3.5 text-sm hover:bg-slate-50 transition-colors",
+          "w-full flex items-center gap-3 px-4 py-3.5 text-sm hover:bg-white/5 transition-colors",
           collapsed && "justify-center px-0 py-3",
         )}
         title={collapsed ? currentUser?.full_name : undefined}
       >
-        <div className="h-8 w-8 rounded-full bg-[var(--cs-navy)] flex items-center justify-center text-xs font-semibold text-white shrink-0">
+        <div className="cara-spark-grad h-8 w-8 rounded-full flex items-center justify-center text-xs font-bold text-[#08131f] shrink-0">
           {initials || "?"}
         </div>
         {!collapsed && (
           <>
             <div className="flex-1 min-w-0 text-left">
-              <p className="text-sm font-medium text-slate-900 truncate leading-tight">
+              <p className="text-sm font-medium text-[var(--cs-navy)] truncate leading-tight">
                 {currentUser?.full_name ?? "Unknown"}
               </p>
-              <p className="text-[11px] text-slate-500 truncate">
+              <p className="text-[11px] text-[var(--cs-text-muted)] truncate">
                 {APP_ROLE_LABELS[currentRole as AppRole] ?? currentRole}
               </p>
             </div>
@@ -129,8 +129,8 @@ function RoleSwitcher({ collapsed }: { collapsed: boolean }) {
       {open && !collapsed && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} aria-hidden />
-          <div className="absolute bottom-full left-0 right-0 mb-1 z-50 mx-3 rounded-2xl border border-slate-200 bg-white shadow-2xl py-2 max-h-[55vh] overflow-y-auto">
-            <div className="px-4 py-2 border-b border-slate-100">
+          <div className="cara-chrome absolute bottom-full left-0 right-0 mb-1 z-50 mx-3 rounded-2xl border border-white/10 bg-[#0e1730] shadow-2xl py-2 max-h-[55vh] overflow-y-auto">
+            <div className="px-4 py-2 border-b border-white/10">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                 Switch demo user
               </p>
@@ -147,21 +147,21 @@ function RoleSwitcher({ collapsed }: { collapsed: boolean }) {
                     key={member.id}
                     onClick={() => { setCurrentUserId(member.id); setOpen(false); }}
                     className={cn(
-                      "w-full flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-slate-50 transition-colors",
-                      currentUser?.id === member.id && "bg-indigo-50 text-indigo-700",
+                      "w-full flex items-center gap-2.5 px-4 py-2 text-sm text-[var(--cs-text-secondary)] hover:bg-white/5 transition-colors",
+                      currentUser?.id === member.id && "bg-white/10 text-white",
                     )}
                   >
                     <div className={cn(
                       "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-semibold shrink-0",
                       currentUser?.id === member.id
-                        ? "bg-indigo-100 text-indigo-700"
-                        : "bg-slate-100 text-slate-500",
+                        ? "bg-indigo-500/30 text-indigo-100"
+                        : "bg-white/10 text-slate-400",
                     )}>
                       {member.first_name[0]}{member.last_name[0]}
                     </div>
                     <span className="truncate">{member.full_name}</span>
                     {currentUser?.id === member.id && (
-                      <span className="ml-auto text-[9px] text-indigo-500 font-medium">Active</span>
+                      <span className="ml-auto text-[9px] text-indigo-300 font-medium">Active</span>
                     )}
                   </button>
                 ))}
@@ -209,7 +209,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col cs-sidebar-gradient transition-all duration-300 ease-in-out",
+        "cara-chrome cara-rail fixed left-0 top-0 z-40 hidden md:flex h-screen flex-col transition-all duration-300 ease-in-out",
         "border-r border-[var(--cs-border)]",
         collapsed ? "w-[64px]" : "w-[256px]",
       )}
@@ -220,7 +220,7 @@ export function Sidebar() {
         collapsed ? "justify-center px-0" : "gap-3 px-4",
       )}>
         <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
-          {/* Logo mark — the Cara app icon */}
+          {/* Cara logo — the brand mark stays; the spark lives on the Ask CARA pill */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icon-192.png" alt="Cara" className="h-8 w-8 shrink-0 rounded-xl" />
           {!collapsed && (
@@ -390,7 +390,7 @@ export function Sidebar() {
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
                 pathname.startsWith("/settings")
-                  ? "bg-slate-100 text-[var(--cs-navy)]"
+                  ? "bg-white/10 text-[var(--cs-navy)]"
                   : "text-[var(--cs-text-secondary)] hover:bg-[var(--cs-bg)] hover:text-[var(--cs-navy)]",
               )}
             >

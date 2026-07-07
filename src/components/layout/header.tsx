@@ -67,7 +67,7 @@ export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 border-b border-[var(--cs-border)] bg-[var(--cs-surface-elevated)]/85 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--cs-surface-elevated)]/75">
+      <header className="cara-chrome sticky top-0 z-30 border-b border-[var(--cs-border)] bg-[var(--cs-surface-elevated)]/85 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--cs-surface-elevated)]/75">
         <div className="flex items-center gap-2 sm:gap-3 px-4 md:px-6 h-[56px] sm:h-[60px]">
 
           {/* ── Left: breadcrumb + title ── */}
@@ -111,7 +111,7 @@ export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
             >
               <Search className="h-3.5 w-3.5" />
               <span className="text-xs">Search...</span>
-              <kbd className="ml-1 inline-flex h-4 items-center rounded border border-[var(--cs-border)] bg-white px-1 text-[9px] font-medium text-[var(--cs-text-muted)]">
+              <kbd className="ml-1 inline-flex h-4 items-center rounded border border-[var(--cs-border)] bg-white/10 px-1 text-[9px] font-medium text-[var(--cs-text-muted)]">
                 <Command className="h-2.5 w-2.5 mr-0.5" />K
               </kbd>
             </button>
