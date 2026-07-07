@@ -9,6 +9,8 @@ import { scanForPatterns, type IncidentRecord } from "@/lib/cara/cara-pattern-en
 import { computeStaffDevelopmentIntelligence } from "@/lib/engines/staff-development-intelligence-engine";
 import { buildDeterministicLearning } from "@/lib/cara/deterministic-learning";
 import { buildDeterministicIntelligence } from "@/lib/cara/deterministic-intelligence";
+import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
+import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 
@@ -393,6 +395,29 @@ function caraDeterministicJson(parsed: unknown, mode: string, resolvedStyle: str
       input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
     },
   });
+}
+
+// "Assist" (workflow support) degrades to the deterministic Ask CARA engine —
+// the same record-based answers as the Ask CARA chat — so the workflow assistant
+// keeps helping (surfacing what's due, overdue, missing oversight, next steps)
+// even when the model is unavailable (e.g. exhausted credits). Never a dead end.
+function deterministicAssistText(opts: { question?: string; pageContext?: string; role?: string }): string {
+  try {
+    const snapshot = buildAskSnapshot(getStore());
+    const q =
+      (opts.question ?? "").trim() ||
+      (opts.pageContext ? `What needs my attention on ${opts.pageContext}?` : "What needs my attention today?");
+    const answer = answerQuestion({
+      question: q,
+      asOf: new Date().toISOString().slice(0, 10),
+      role: opts.role,
+      snapshot,
+      context: { pageTitle: opts.pageContext },
+    });
+    return answer.text;
+  } catch {
+    return 'Cara’s workflow assistant is running on its deterministic engine. Ask a specific question — e.g. "what’s overdue?", "who needs a review?", or "what should I do after this incident?" — and Cara will answer from the home’s records.';
+  }
 }
 
 function deterministicCaraResponse(mode: string, resolvedStyle: string) {
@@ -1553,6 +1578,13 @@ export async function POST(req: NextRequest) {
   // "ran without AI" message as a delta). Only NON-streaming callers get the
   // deterministic JSON fallbacks here.
   if (!hasAiKey && !streamMode) {
+    if (mode === "assist") {
+      return caraDeterministicJson(
+        deterministicAssistText({ question: question || source_content, pageContext: page_context, role: user_role }),
+        mode,
+        resolvedStyle,
+      );
+    }
     return deterministicCaraResponse(mode, resolvedStyle);
   }
 
@@ -1620,7 +1652,11 @@ export async function POST(req: NextRequest) {
             // result rather than a generic note — keeps the feature useful when
             // the model is unavailable (e.g. exhausted credits).
             const deterministicText =
-              mode === "staff_development_summary" ? deterministicStaffDevelopmentSummary() : null;
+              mode === "assist"
+                ? deterministicAssistText({ question: question || source_content, pageContext: page_context, role: user_role })
+                : mode === "staff_development_summary"
+                ? deterministicStaffDevelopmentSummary()
+                : null;
             send({
               type: "text_delta",
               text:
