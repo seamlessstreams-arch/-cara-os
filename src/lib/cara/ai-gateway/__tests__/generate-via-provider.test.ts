@@ -8,7 +8,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { generateViaProvider, streamViaProvider, providerConfiguredOrLocal, localProviderActive } from "../generate-via-provider";
+import { generateViaProvider, streamViaProvider, providerConfiguredOrLocal, localProviderActive, localBypassesExternalRiskRegister } from "../generate-via-provider";
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -63,6 +63,23 @@ describe("local model configured + reachable", () => {
     expect(r.llmUsed).toBe(true);
     expect(r.modelId).toBe("local:llama3.1");
     expect(deltas.join("")).toBe("Local model reply.");
+  });
+
+  it("SECURITY: local-only (no external key) may bypass the external risk register", () => {
+    stubLocal(); // test env has no ANTHROPIC_API_KEY → no external fallback
+    expect(localBypassesExternalRiskRegister()).toBe(true);
+  });
+
+  it("SECURITY: hybrid (local + external key) does NOT bypass — external register still honoured", () => {
+    stubLocal();
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-test-key"); // external fallback exists
+    // An unreachable local model could fall back to the external provider, so the
+    // external risk register must still gate the sensitivity.
+    expect(localBypassesExternalRiskRegister()).toBe(false);
+  });
+
+  it("SECURITY: no local model → never bypasses", () => {
+    expect(localBypassesExternalRiskRegister()).toBe(false);
   });
 
   it("falls back to the external path when the local endpoint is unreachable", async () => {

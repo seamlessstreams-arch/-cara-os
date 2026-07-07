@@ -37,6 +37,15 @@ export function localProviderActive(): boolean {
   return activeLocalProvider() !== null;
 }
 
+/** Whether it is SAFE to bypass the external-provider risk register because a local
+ *  model is handling generation — true ONLY when there is no external provider to
+ *  fall back to. If an external provider is also configured, generation can fall
+ *  back to it when the local endpoint is unreachable, so the external register must
+ *  still be honoured (never let un-vetted data reach an external provider). */
+export function localBypassesExternalRiskRegister(): boolean {
+  return activeLocalProvider() !== null && !getCaraProviderConfig().configured;
+}
+
 const estTokens = (chars: number): number => Math.max(1, Math.ceil(chars / 4));
 
 /** Non-streaming generation: local first (if reachable), else the external path. */

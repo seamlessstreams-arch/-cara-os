@@ -54,7 +54,7 @@ import { guardUntrustedText, type PromptGuardResult } from "../safety/prompt-inj
 import { scanAiResponse, type ResponseSafetyResult } from "../safety/response-safety-scanner";
 import { getCaraProviderConfig, type CaraTextGenerationResult } from "../cara-provider";
 import { type CaraStreamInput, type CaraStreamHandlers, type CaraStreamResult } from "../cara-provider-stream";
-import { generateViaProvider, streamViaProvider, providerConfiguredOrLocal, localProviderActive } from "./generate-via-provider";
+import { generateViaProvider, streamViaProvider, providerConfiguredOrLocal, localBypassesExternalRiskRegister } from "./generate-via-provider";
 import { DEFAULT_COST_LIMITS } from "../core/constants";
 import { estimateCostGbp, recordDecision } from "@/lib/hq/usage-meter";
 import { isAiKillSwitchOn, canRoleUseAi } from "../ai-availability";
@@ -623,8 +623,10 @@ function defaultDeps(): AiGatewayDeps {
     permitAi: (identity) => canRoleUseAi(identity?.role),
     isProviderAllowedForSensitivity: (sensitivity) => {
       // A local, on-premises provider isn't subject to the external-provider risk
-      // register (data stays in the home); the safeguarding BLOCK gate still applies.
-      if (localProviderActive()) return true;
+      // register — but ONLY when there's no external provider to fall back to (an
+      // unreachable local model must never let un-vetted data reach an external
+      // provider). The safeguarding BLOCK gate (step 5) still applies to local.
+      if (localBypassesExternalRiskRegister()) return true;
       const { providerId } = getCaraProviderConfig();
       if (providerId === "none") return false; // defensive — step 3 already refuses before this runs
       return validateProviderAllowedForSensitivity(providerId as CaraProviderName, sensitivity);
