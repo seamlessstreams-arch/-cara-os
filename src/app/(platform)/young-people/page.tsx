@@ -777,6 +777,7 @@ export default function YoungPeoplePage() {
 
   return (
     <PageShell
+      darkBody
       title="Young People"
       subtitle={
         meta
