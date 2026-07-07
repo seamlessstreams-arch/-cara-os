@@ -74,12 +74,16 @@ export default function SecurityPage() {
             <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">AI that assists — and never oversteps.</h2>
             <p className="mt-4 text-lg text-white/75">
               Your RAG ratings come from deterministic, explainable engines — not a language model guessing. Where AI does help,
-              it operates inside hard limits that put the practitioner in charge of every decision that matters.
+              it operates inside hard limits that put the practitioner in charge of every decision that matters. And Ask CARA —
+              the assistant staff actually reach for — answers only from your own records, giving teams a sanctioned alternative
+              to pasting sensitive information into public chatbots.
             </p>
           </div>
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {[
               { Icon: Eye, t: "Explainable, not a black box", d: "Every rating traces back to the records behind it. You can show an inspector exactly why a score is what it is." },
+              { Icon: GitMerge, t: "One guarded gateway", d: "Every AI request passes a single governed chokepoint — permission, sensitivity block, redaction and cost limits — before any model sees a word. Confidential records are never sent to a public AI." },
+              { Icon: Lock, t: "Injection-guarded, fail-closed", d: "Prompts are screened for manipulation and every response is scanned before it reaches you. If a safety check fails, Cara falls back to its deterministic engines rather than risk a wrong answer." },
               { Icon: ShieldAlert, t: "Never auto-decides thresholds", d: "Cara will flag when a LADO or notifiable-event threshold may be met — but the decision is always a person's to make." },
               { Icon: UserCheck, t: "Human in the loop", d: "Anything safeguarding-critical is held for human review. AI drafts and suggests; it does not act on its own." },
               { Icon: ShieldCheck, t: "Protected flags", d: "High and critical risk flags are never deleted by automation — the record of a concern is preserved." },
