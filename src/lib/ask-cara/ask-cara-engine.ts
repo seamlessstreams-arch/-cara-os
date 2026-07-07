@@ -10,6 +10,7 @@ import { mentionsAny } from "@/lib/text/keyword-match";
 import { classifyProhibited } from "./prohibited-request-classifier";
 import { findSubstitution } from "./shadow-ai-substitution-matrix";
 import { answerPolicyQuestion } from "./policy-guidance-engine";
+import { answerPracticeQuestion, looksLikePracticeQuestion, mentionsFramework } from "./practice-knowledge";
 import {
   ASK_CARA_VERSION,
   type AccessTier,
@@ -493,6 +494,23 @@ function skillPolicy(q: string, snap: AskCaraSnapshot): AskCaraAnswer {
   });
 }
 
+// Practice knowledge — answers "how do I / what does this mean / what would good
+// look like" from the loaded frameworks (Knowledge Base + practice modules), in a
+// practitioner's voice. Returns null when nothing matches with confidence, so the
+// engine falls through to records rather than inventing.
+function skillPracticeGuidance(rawQuestion: string, child: AskCaraChild | null): AskCaraAnswer | null {
+  const pg = answerPracticeQuestion(rawQuestion, { childName: child ? childLabel(child) : undefined });
+  if (!pg) return null;
+  return answer({
+    intent: "practice_guidance",
+    answered: true,
+    text: pg.text,
+    sources: pg.sources,
+    suggestions: sug(child ? [`Help me reflect on ${childLabel(child)}`, "What needs my attention?", "Help me record what happened"] : ["Help me reflect on a child", "What needs my attention?", "Help me record what happened"]),
+    disclaimer: "Practice guidance from CARA's loaded knowledge base (PACE, DDP, Contextual Safeguarding, the regs…) to think alongside — never the web or an external AI. The decision, and the record, stay yours.",
+  });
+}
+
 function skillUnknown(): AskCaraAnswer {
   return answer({
     intent: "unknown",
@@ -549,6 +567,16 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // must go to policy guidance, not the topic skill for that word.
   if (mentionsAny(q, ["policy", "policies", "procedure", "what does our policy", "which policy", "what's the procedure", "our guidance says", "guidance on"])) return gate("care_team", () => skillPolicy(raw, snap));
 
+  // Practice knowledge — a clearly practice-framed question ("how do I…/what does X
+  // mean") or a named framework ("PACE", "contextual safeguarding") is tried before
+  // the record-topic skills so a topic keyword doesn't hijack it. Comes AFTER policy
+  // (an approved-policy question wins) and falls through to records when the loaded
+  // knowledge base has no confident match.
+  if (looksLikePracticeQuestion(q) || mentionsFramework(q)) {
+    const pg = skillPracticeGuidance(raw, child);
+    if (pg) return pg;
+  }
+
   // Most specific → least. Restraint & missing before generic "incident".
   if (mentionsAny(q, ["restraint", "physical intervention", "physical hold", "hold"])) return gate("care_team", () => skillRestraints(q, snap, asOf, child));
   if (mentionsAny(q, ["missing", "ran away", "absconded", "absent without", "awol"])) return gate("care_team", () => skillMissing(q, snap, asOf, child));
@@ -571,7 +599,9 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   }
 
   // Shadow-AI substitution: this looks like something people paste into ChatGPT.
-  // Route them to the safe CARA engine instead of the generic fallback.
+  // Route them to the safe CARA engine instead of the generic fallback. Checked
+  // before the late practice catch so "make this sound professional"-style asks
+  // route to the safe substitution, not the knowledge base.
   const sub = findSubstitution(raw);
   if (sub.matched && sub.substitution) {
     const s = sub.substitution;
@@ -584,6 +614,11 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
       disclaimer: "Please don't paste child, staff, family, safeguarding, health or placement information into external AI tools — CARA does this safely and keeps a record.",
     });
   }
+
+  // Late knowledge catch — a question that fell through the record skills and isn't a
+  // shadow-AI pattern, but does match the loaded frameworks (shares KB vocabulary).
+  const pgLate = skillPracticeGuidance(raw, child);
+  if (pgLate) return pgLate;
 
   return skillUnknown();
 }

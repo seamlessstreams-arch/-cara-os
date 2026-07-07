@@ -36,6 +36,7 @@ export type AskCaraIntent =
   | "supervision"
   | "training"
   | "policy_guidance"
+  | "practice_guidance"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
