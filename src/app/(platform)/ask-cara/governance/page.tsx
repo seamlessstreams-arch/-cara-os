@@ -7,11 +7,12 @@
 
 import React from "react";
 import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuthContext } from "@/contexts/auth-context";
 import { useAskCaraGovernance } from "@/hooks/use-ask-cara-governance";
-import { ShieldCheck, Loader2, Lock, MessageSquare, AlertTriangle, ClipboardList, PoundSterling } from "lucide-react";
+import { ShieldCheck, Loader2, Lock, MessageSquare, AlertTriangle, ClipboardList, PoundSterling, Cpu, Server } from "lucide-react";
 
 const MANAGEMENT = new Set(["registered_manager", "deputy_manager", "responsible_individual", "org_director", "area_manager", "platform_admin"]);
 
@@ -38,6 +39,14 @@ export default function GovernancePage() {
   const { data, isLoading } = useAskCaraGovernance(String(currentRole));
   const g = data?.data;
 
+  const { data: aiModeRes } = useQuery<{ data: { mode: string; externalAiEnabled: boolean; localConfigured: boolean; providerAvailable: boolean; provider: { kind: string; model: string }; summary: string } }>({
+    queryKey: ["cara-ai-mode", currentRole],
+    queryFn: () => fetch("/api/v1/cara/ai-mode", { headers: { "x-user-role": String(currentRole ?? "") } }).then((r) => r.json()),
+    enabled: isManager,
+    staleTime: 5 * 60 * 1000,
+  });
+  const ai = aiModeRes?.data;
+
   if (!isManager) {
     return (
       <PageShell title="Ask CARA Governance" subtitle="Management oversight of Ask CARA usage">
@@ -53,6 +62,33 @@ export default function GovernancePage() {
       <div className="space-y-6">
         {isLoading && (
           <div className="flex items-center gap-2 text-sm text-slate-400"><Loader2 className="h-4 w-4 animate-spin" /> Loading governance data…</div>
+        )}
+
+        {/* AI posture — how CARA is configured to source generative support */}
+        {ai && (
+          <Card className={ai.mode === "deterministic" ? "border-emerald-200 bg-emerald-50/40" : undefined}>
+            <CardContent className="flex flex-wrap items-center gap-x-6 gap-y-3 p-5">
+              <div className="flex items-center gap-2.5">
+                <div className={`flex h-9 w-9 items-center justify-center rounded-xl ${ai.mode === "deterministic" ? "bg-emerald-100 text-emerald-700" : "bg-teal-100 text-teal-700"}`}>
+                  <Cpu className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">AI mode</div>
+                  <div className="text-base font-bold capitalize text-slate-800">{ai.mode.replace(/-/g, " ")}</div>
+                </div>
+              </div>
+              <div className="h-8 w-px bg-slate-200" />
+              <div className="flex items-center gap-2">
+                <ShieldCheck className={`h-4 w-4 ${ai.externalAiEnabled ? "text-amber-500" : "text-emerald-600"}`} />
+                <span className="text-sm text-slate-600">External AI: <span className={`font-semibold ${ai.externalAiEnabled ? "text-amber-700" : "text-emerald-700"}`}>{ai.externalAiEnabled ? "Enabled" : "Off"}</span></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Server className="h-4 w-4 text-slate-400" />
+                <span className="text-sm text-slate-600">Provider: <span className="font-semibold text-slate-800">{ai.provider.kind === "none" ? "deterministic (none)" : `${ai.provider.kind} · ${ai.provider.model}`}</span>{ai.localConfigured ? <span className={`ml-1 text-xs ${ai.providerAvailable ? "text-emerald-600" : "text-rose-600"}`}>({ai.providerAvailable ? "reachable" : "unreachable"})</span> : null}</span>
+              </div>
+              <p className="w-full text-[12px] leading-relaxed text-slate-500">{ai.summary}</p>
+            </CardContent>
+          </Card>
         )}
 
         {g && (
