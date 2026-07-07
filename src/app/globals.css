@@ -639,6 +639,9 @@ body {
 .cara-dark .hover\:bg-slate-100:hover, .cara-dark .hover\:bg-gray-100:hover, .cara-dark .hover\:bg-zinc-100:hover { background-color: rgba(255, 255, 255, 0.08) !important; }
 .cara-dark .hover\:bg-slate-200:hover, .cara-dark .hover\:bg-gray-200:hover { background-color: rgba(255, 255, 255, 0.11) !important; }
 .cara-dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]), .cara-dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.08) !important; }
+/* translucent light panels → dark glass (bg-white/60, bg-slate-50/50 …); leave /5–/20 subtle overlays alone */
+.cara-dark .bg-white\/40, .cara-dark .bg-white\/50, .cara-dark .bg-white\/60, .cara-dark .bg-white\/70, .cara-dark .bg-white\/75, .cara-dark .bg-white\/80, .cara-dark .bg-white\/90, .cara-dark .bg-white\/95 { background-color: rgba(15, 24, 46, 0.72) !important; }
+.cara-dark .bg-slate-50\/30, .cara-dark .bg-slate-50\/40, .cara-dark .bg-slate-50\/50, .cara-dark .bg-slate-50\/60, .cara-dark .bg-slate-50\/70, .cara-dark .bg-slate-50\/80, .cara-dark .bg-slate-100\/50, .cara-dark .bg-slate-100\/70 { background-color: rgba(255, 255, 255, 0.04) !important; }
 
 /* Print: reports/records must come out on white — neutralise the dark skin. */
 @media print {
