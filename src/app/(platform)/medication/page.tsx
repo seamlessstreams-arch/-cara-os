@@ -1457,6 +1457,7 @@ export default function MedicationPage() {
 
   return (
     <PageShell
+      darkBody
       title="Medication"
       subtitle={`${medications.length} active medications · ${ypCount} young people`}
       caraContext={{ pageTitle: "Care Events — Medication", sourceType: "medication" }}

@@ -638,6 +638,7 @@ ${complaint.lessons_learned ? `Learning: ${complaint.lessons_learned}` : ""}`;
 
   return (
     <PageShell
+      darkBody
       title="Complaints & Representations"
       subtitle="Formal complaints register — statutory timelines, outcomes and learning"
       caraContext={{ pageTitle: "Complaints & Representations", sourceType: "general" }}

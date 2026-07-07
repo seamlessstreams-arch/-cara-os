@@ -173,6 +173,7 @@ export default function TasksPage() {
 
   return (
     <PageShell
+      darkBody
       title="Tasks"
       subtitle={`${filtered.length} task${filtered.length !== 1 ? "s" : ""} ${hasFilters ? "(filtered)" : ""}`}
       recordAnything

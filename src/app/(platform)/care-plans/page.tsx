@@ -681,6 +681,7 @@ Concerns: ${plan.concerns_summary ?? "not recorded"}`;
 
   return (
     <PageShell
+      darkBody
       title="Care Plans"
       subtitle="Statutory care plan goals, progress and LAC review tracking"
       showQuickCreate={false}
