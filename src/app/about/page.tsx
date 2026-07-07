@@ -61,6 +61,13 @@ export default function AboutPage() {
               once, surface everywhere, never duplicate.</span> Record something the natural way — type it, say it, tap it — and let
               the platform put it where it&rsquo;s needed, turn it into live intelligence, and have the evidence ready before anyone asks.
             </p>
+            <p>
+              There was one more thing. To make sense of it all, staff — like everywhere — had started quietly reaching for
+              public AI tools, pasting a child&rsquo;s details into a chatbot to save time. Well-meant, but a real risk to some of
+              the most sensitive data there is. So Cara has its own assistant, <span className="font-semibold text-[var(--cs-navy)]">Ask
+              CARA</span>: it answers from the home&rsquo;s own records, keeps everything in-house, and never sends a child&rsquo;s
+              information to an outside model. The help staff wanted — without the risk.
+            </p>
           </div>
 
           <div className="mt-10 rounded-3xl border border-[var(--cs-border)] bg-[var(--cs-cara-gold-bg)] p-8 text-center">
