@@ -599,6 +599,7 @@ body {
   --cs-teal-soft:        rgba(45, 212, 191, 0.22);
   --cs-cara-gold-bg:     rgba(230, 180, 90, 0.12);
   color: var(--cs-text);
+  color-scheme: dark; /* native date/time pickers, selects, checkboxes, scrollbars → dark */
   background:
     radial-gradient(90% 55% at 100% 0%, rgba(99, 102, 241, 0.10) 0%, transparent 45%),
     radial-gradient(70% 50% at 0% 0%, rgba(45, 212, 191, 0.07) 0%, transparent 42%),
@@ -632,6 +633,13 @@ body {
 .cara-dark .bg-blue-50, .cara-dark .bg-blue-100, .cara-dark .bg-sky-50, .cara-dark .bg-sky-100, .cara-dark .bg-cyan-50, .cara-dark .bg-cyan-100 { background-color: rgba(96, 165, 250, 0.12) !important; }
 .cara-dark .bg-indigo-50, .cara-dark .bg-indigo-100, .cara-dark .bg-violet-50, .cara-dark .bg-violet-100, .cara-dark .bg-purple-50, .cara-dark .bg-purple-100 { background-color: rgba(129, 140, 248, 0.14) !important; }
 .cara-dark .bg-teal-50, .cara-dark .bg-teal-100 { background-color: rgba(45, 212, 191, 0.12) !important; }
+/* Placeholders + hover states on the dark skin (token-based inputs already flip) */
+.cara-dark input::placeholder, .cara-dark textarea::placeholder { color: #7c8aa3 !important; }
+.cara-dark .hover\:bg-white:hover, .cara-dark .hover\:bg-slate-50:hover, .cara-dark .hover\:bg-gray-50:hover, .cara-dark .hover\:bg-zinc-50:hover { background-color: rgba(255, 255, 255, 0.05) !important; }
+.cara-dark .hover\:bg-slate-100:hover, .cara-dark .hover\:bg-gray-100:hover, .cara-dark .hover\:bg-zinc-100:hover { background-color: rgba(255, 255, 255, 0.08) !important; }
+.cara-dark .hover\:bg-slate-200:hover, .cara-dark .hover\:bg-gray-200:hover { background-color: rgba(255, 255, 255, 0.11) !important; }
+.cara-dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]), .cara-dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.08) !important; }
+
 /* Print: reports/records must come out on white — neutralise the dark skin. */
 @media print {
   .cara-dark {
