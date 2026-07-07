@@ -36,6 +36,10 @@ export type AskCaraIntent =
   | "supervision"
   | "training"
   | "policy_guidance"
+  | "practice_guidance"
+  | "child_progress"
+  | "child_triggers"
+  | "child_relationships"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -84,6 +88,40 @@ export interface AskCaraChild {
   dietary?: string;
   placementStart?: string;
   nextReviewDate?: string;
+}
+
+/**
+ * Compact per-child "read" distilled from the platform's deterministic
+ * evaluation engines (Outcome Intelligence, Emotional Safety, Relational
+ * Timeline) — computed where the store lives, narrated by the pure engine.
+ */
+export interface AskCaraChildEvaluation {
+  childId: string;
+  outcome?: {
+    trajectory: string; // improving | stable | declining
+    status: string; // on_track | progressing | needs_focus
+    headline: string;
+    improving: number;
+    declining: number;
+    focus: string[]; // domains needing focus
+  };
+  emotional?: {
+    status: string; // secure | watch | concern
+    reason: string;
+    trend: string; // rising | steady | easing
+    peakTime: string | null; // morning | afternoon | evening | night
+    topTriggers: string[];
+    whatHelps: string[];
+  };
+  relational?: {
+    status: string; // secure | developing | fragile
+    reason: string;
+    trustedAdults: string[];
+    keyConnector?: string;
+    connections30d: number;
+    repairs: number;
+    ruptures: number;
+  };
 }
 
 export interface AskCaraContactRec {
@@ -193,6 +231,8 @@ export interface AskCaraSnapshot {
   training: AskCaraTraining[];
   /** Approved home policies for deterministic policy-guidance (optional). */
   policies?: import("./policy-guidance-engine").PolicyDoc[];
+  /** Per-child evaluation reads from the deterministic engines (optional). */
+  evaluations?: AskCaraChildEvaluation[];
 }
 
 export interface AskCaraContext {

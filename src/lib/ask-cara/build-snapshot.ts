@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { getStore } from "@/lib/db/store";
+import { buildChildEvaluations } from "@/lib/ask-cara/build-evaluations";
 import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
 
 const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
@@ -77,5 +78,8 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
       lastReviewed: day(p.last_reviewed) || undefined,
       nextReviewDate: day(p.next_review_date) || undefined,
     })),
+    // Leg three: the platform's own evaluation engines, distilled per child so
+    // the pure engine can narrate a practitioner's read, not just a tally.
+    evaluations: buildChildEvaluations(store, new Date().toISOString()),
   };
 }

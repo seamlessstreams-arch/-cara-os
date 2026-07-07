@@ -10,11 +10,13 @@ import { mentionsAny } from "@/lib/text/keyword-match";
 import { classifyProhibited } from "./prohibited-request-classifier";
 import { findSubstitution } from "./shadow-ai-substitution-matrix";
 import { answerPolicyQuestion } from "./policy-guidance-engine";
+import { answerPracticeQuestion, looksLikePracticeQuestion, mentionsFramework } from "./practice-knowledge";
 import {
   ASK_CARA_VERSION,
   type AccessTier,
   type AskCaraAnswer,
   type AskCaraChild,
+  type AskCaraChildEvaluation,
   type AskCaraQuery,
   type AskCaraSnapshot,
   type AskCaraSource,
@@ -142,6 +144,15 @@ function skillChildSummary(child: AskCaraChild, snap: AskCaraSnapshot, asOf: str
   }
   lines.push(logs[0] ? `Latest daily log: ${logs[0].date}.` : `No daily log on record for ${name}.`);
 
+  // Leg three: the evaluation engines' read — assessment, not just a tally.
+  const ev = evalFor(snap, child.id);
+  if (ev && (ev.outcome || ev.relational || ev.emotional)) {
+    lines.push("", "My read from the engines:");
+    if (ev.outcome) lines.push(`- Direction of travel: ${ev.outcome.trajectory}${ev.outcome.focus.length ? ` — needs focus on ${ev.outcome.focus.join(", ").toLowerCase()}` : ""}.`);
+    if (ev.relational) lines.push(`- Relationships: ${ev.relational.status}${ev.relational.trustedAdults.length ? ` (trusted adults: ${ev.relational.trustedAdults.slice(0, 2).join(", ")})` : ""}.`);
+    if (ev.emotional) lines.push(`- Emotional safety: ${ev.emotional.status}${ev.emotional.topTriggers[0] ? ` — main trigger: ${ev.emotional.topTriggers[0].toLowerCase()}` : ""}.`);
+  }
+
   return answer({
     intent: "child_summary",
     answered: true,
@@ -170,12 +181,21 @@ function skillAttention(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
   if (overdueTasks.length) lines.push(`- ${overdueTasks.length} overdue action${overdueTasks.length === 1 ? "" : "s"}${overdueTasks[0] ? ` (e.g. "${overdueTasks[0].title}")` : ""}.`);
   if (overdueReviews.length) lines.push(`- ${overdueReviews.length} overdue review${overdueReviews.length === 1 ? "" : "s"}.`);
 
-  const total = restraintGaps.length + missingOversight.length + missingRHI.length + overdueTasks.length + overdueReviews.length;
+  // Leg three: children the evaluation engines say need a closer look — not a
+  // compliance gap, but the practitioner's scan of the home.
+  const evs = snap.evaluations ?? [];
+  const concern = evs.filter((e) => e.emotional?.status === "concern").map((e) => nameFor(e.childId)).filter(Boolean);
+  const fragile = evs.filter((e) => e.relational?.status === "fragile").map((e) => nameFor(e.childId)).filter(Boolean);
+  const declining = evs.filter((e) => e.outcome?.trajectory === "declining").map((e) => nameFor(e.childId)).filter(Boolean);
+  if (concern.length) lines.push(`- Emotional safety is a concern for ${concern.join(", ")} (engine read — see their triggers).`);
+  if (fragile.length) lines.push(`- Relationships look fragile for ${fragile.join(", ")} — the connection work is the priority.`);
+  if (declining.length) lines.push(`- Direction of travel is declining for ${declining.join(", ")}.`);
+
+  const total = restraintGaps.length + missingOversight.length + missingRHI.length + overdueTasks.length + overdueReviews.length + concern.length + fragile.length + declining.length;
   const text = total === 0
     ? "Nothing is outstanding in the records right now — no overdue actions, missing oversight, restraint repair gaps or missing return interviews. Keep going."
     : `Here's what the records say needs you, most safeguarding-critical first:\n${lines.join("\n")}`;
 
-  void nameFor;
   return answer({
     intent: "attention",
     answered: true,
@@ -493,6 +513,116 @@ function skillPolicy(q: string, snap: AskCaraSnapshot): AskCaraAnswer {
   });
 }
 
+// ── Evaluation reads (leg three: the platform's own engines) ──────────────────
+
+const evalFor = (snap: AskCaraSnapshot, childId: string): AskCaraChildEvaluation | undefined =>
+  (snap.evaluations ?? []).find((e) => e.childId === childId);
+
+const PEAK_LABEL: Record<string, string> = { morning: "in the mornings", afternoon: "in the afternoons", evening: "in the evenings", night: "overnight" };
+
+function needsChild(intent: "child_progress" | "child_triggers" | "child_relationships", snap: AskCaraSnapshot, ask: string): AskCaraAnswer {
+  return answer({
+    intent, answered: false,
+    text: `Tell me which child and I'll give you my read — e.g. "${ask.replace("{name}", childLabel(snap.children[0] ?? ({ id: "Alex", firstName: "Alex", name: "Alex", status: "current" } as AskCaraChild)))}".`,
+    sources: [],
+    suggestions: sug(snap.children.slice(0, 3).map((c) => ask.replace("{name}", childLabel(c)))),
+  });
+}
+
+function skillChildProgress(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  // Home rollup when no child named — the manager's scan.
+  if (!child) {
+    const evs = snap.evaluations ?? [];
+    if (!evs.length) return needsChild("child_progress", snap, "how is {name} progressing?");
+    const nameOf = (id: string) => childLabel(snap.children.find((c) => c.id === id) ?? ({ id } as AskCaraChild));
+    const improving = evs.filter((e) => e.outcome?.trajectory === "improving").map((e) => nameOf(e.childId));
+    const declining = evs.filter((e) => e.outcome?.trajectory === "declining").map((e) => nameOf(e.childId));
+    const lines = [`My read across the home, from the outcome engine (recent window vs the one before):`];
+    if (improving.length) lines.push(`- Improving: ${improving.join(", ")}.`);
+    if (declining.length) lines.push(`- Declining — worth your attention: ${declining.join(", ")}.`);
+    if (!improving.length && !declining.length) lines.push(`- Everyone is broadly stable — no marked shifts either way.`);
+    return answer({ intent: "child_progress", answered: true, text: lines.join("\n"), sources: [{ label: "Outcome intelligence (children evaluated)", count: evs.length }], suggestions: sug(declining[0] ? [`How is ${declining[0]} progressing?`, "What needs my attention?"] : ["What needs my attention?", "How is the home doing?"]) });
+  }
+
+  const ev = evalFor(snap, child.id)?.outcome;
+  const name = childLabel(child);
+  if (!ev) {
+    return answer({ intent: "child_progress", answered: false, text: `I don't have enough recorded for ${name} yet to give a fair read on direction — that gap is itself worth noticing.`, sources: [], suggestions: sug([`Tell me about ${name}`, "What needs my attention?"]) });
+  }
+  const lines = [
+    `${ev.headline}`,
+    "",
+    `Direction of travel: **${ev.trajectory}** (${ev.improving} domain${ev.improving === 1 ? "" : "s"} improving, ${ev.declining} declining).`,
+  ];
+  if (ev.focus.length) lines.push(`Needs focus: ${ev.focus.join(", ")}.`);
+  lines.push("", `That's the records' direction, not a verdict — you know ${name} beyond the data.`);
+  return answer({
+    intent: "child_progress", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Outcome intelligence (domains)", count: 5 }],
+    suggestions: sug([`What triggers ${name}?`, `How are ${name}'s relationships?`, `Tell me about ${name}`]),
+  });
+}
+
+function skillChildTriggers(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  if (!child) return needsChild("child_triggers", snap, "what triggers {name}?");
+  const ev = evalFor(snap, child.id)?.emotional;
+  const name = childLabel(child);
+  if (!ev) {
+    return answer({ intent: "child_triggers", answered: false, text: `There isn't enough behaviour/incident recording for ${name} yet for me to read triggers reliably. The PACE profile is the place to capture what the team already knows.`, sources: [], suggestions: sug([`Tell me about ${name}`, "Help me reflect on " + name]) });
+  }
+  const lines: string[] = [`Emotional safety for ${name}: **${ev.status}** — ${ev.reason}`];
+  if (ev.topTriggers.length) {
+    lines.push("", "What tends to trigger dysregulation:");
+    for (const t of ev.topTriggers) lines.push(`- ${t}`);
+  }
+  if (ev.whatHelps.length) {
+    lines.push("", "What helps them regulate (evidenced in the records):");
+    for (const w of ev.whatHelps) lines.push(`- ${w}`);
+  }
+  const peak = ev.peakTime ? PEAK_LABEL[ev.peakTime] ?? ev.peakTime : null;
+  lines.push("", `Escalation trend: ${ev.trend}${peak ? `, clustering ${peak}` : ""}.${peak ? ` Worth planning support around that window.` : ""}`);
+  return answer({
+    intent: "child_triggers", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Emotional safety analysis — triggers", count: ev.topTriggers.length }, { label: "Regulation strategies", count: ev.whatHelps.length }],
+    suggestions: sug([`How are ${name}'s relationships?`, `How is ${name} progressing?`, `Help me reflect on ${name}`]),
+  });
+}
+
+function skillChildRelationships(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  if (!child) return needsChild("child_relationships", snap, "how are {name}'s relationships?");
+  const ev = evalFor(snap, child.id)?.relational;
+  const name = childLabel(child);
+  if (!ev) {
+    return answer({ intent: "child_relationships", answered: false, text: `Not enough relational recording for ${name} yet (key work, debriefs, family time) to read the relationships fairly — worth checking that's being captured.`, sources: [], suggestions: sug([`Tell me about ${name}`, "What needs my attention?"]) });
+  }
+  const lines: string[] = [`Relational safety for ${name}: **${ev.status}** — ${ev.reason}`];
+  if (ev.trustedAdults.length) lines.push("", `Trusted adults: ${ev.trustedAdults.join(", ")}.`);
+  if (ev.keyConnector) lines.push(`Strongest current connection: ${ev.keyConnector}.`);
+  lines.push("", `Last 30 days: ${ev.connections30d} connection moment${ev.connections30d === 1 ? "" : "s"}; ${ev.repairs} repair${ev.repairs === 1 ? "" : "s"} against ${ev.ruptures} rupture${ev.ruptures === 1 ? "" : "s"}.${ev.ruptures > ev.repairs ? " The repair work is behind the ruptures — that's the relationship telling you what it needs." : ""}`);
+  return answer({
+    intent: "child_relationships", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Relational timeline — connections (30d)", count: ev.connections30d }, { label: "Repairs", count: ev.repairs }, { label: "Ruptures", count: ev.ruptures }],
+    suggestions: sug([`What triggers ${name}?`, `How is ${name} progressing?`, `Tell me about ${name}`]),
+  });
+}
+
+// Practice knowledge — answers "how do I / what does this mean / what would good
+// look like" from the loaded frameworks (Knowledge Base + practice modules), in a
+// practitioner's voice. Returns null when nothing matches with confidence, so the
+// engine falls through to records rather than inventing.
+function skillPracticeGuidance(rawQuestion: string, child: AskCaraChild | null): AskCaraAnswer | null {
+  const pg = answerPracticeQuestion(rawQuestion, { childName: child ? childLabel(child) : undefined });
+  if (!pg) return null;
+  return answer({
+    intent: "practice_guidance",
+    answered: true,
+    text: pg.text,
+    sources: pg.sources,
+    suggestions: sug(child ? [`Help me reflect on ${childLabel(child)}`, "What needs my attention?", "Help me record what happened"] : ["Help me reflect on a child", "What needs my attention?", "Help me record what happened"]),
+    disclaimer: "Practice guidance from CARA's loaded knowledge base (PACE, DDP, Contextual Safeguarding, the regs…) to think alongside — never the web or an external AI. The decision, and the record, stay yours.",
+  });
+}
+
 function skillUnknown(): AskCaraAnswer {
   return answer({
     intent: "unknown",
@@ -549,6 +679,29 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // must go to policy guidance, not the topic skill for that word.
   if (mentionsAny(q, ["policy", "policies", "procedure", "what does our policy", "which policy", "what's the procedure", "our guidance says", "guidance on"])) return gate("care_team", () => skillPolicy(raw, snap));
 
+  // Evaluation reads (leg three) — a question about a NAMED child's triggers,
+  // regulation, relationships or direction goes to the engines' read of THAT
+  // child first: the experienced answer starts with your child, not the theory.
+  if (child && mentionsAny(q, ["trigger", "triggers", "what helps", "calm", "calms", "calming", "settle", "settles", "regulate", "regulates", "regulation", "dysregulat", "escalation pattern", "escalates", "time of day"])) {
+    return gate("care_team", () => skillChildTriggers(snap, child));
+  }
+  if (child && mentionsAny(q, ["relationship", "relationships", "trusted adult", "trusted adults", "connection", "connections", "bond", "trust", "getting on with", "attachment to", "attachment with"])) {
+    return gate("care_team", () => skillChildRelationships(snap, child));
+  }
+  if (mentionsAny(q, ["progress", "progressing", "making progress", "direction of travel", "trajectory", "getting better", "getting worse", "improving", "declining", "on track", "outcomes"])) {
+    return gate("care_team", () => skillChildProgress(snap, child));
+  }
+
+  // Practice knowledge — a clearly practice-framed question ("how do I…/what does X
+  // mean") or a named framework ("PACE", "contextual safeguarding") is tried before
+  // the record-topic skills so a topic keyword doesn't hijack it. Comes AFTER policy
+  // (an approved-policy question wins) and falls through to records when the loaded
+  // knowledge base has no confident match.
+  if (looksLikePracticeQuestion(q) || mentionsFramework(q)) {
+    const pg = skillPracticeGuidance(raw, child);
+    if (pg) return pg;
+  }
+
   // Most specific → least. Restraint & missing before generic "incident".
   if (mentionsAny(q, ["restraint", "physical intervention", "physical hold", "hold"])) return gate("care_team", () => skillRestraints(q, snap, asOf, child));
   if (mentionsAny(q, ["missing", "ran away", "absconded", "absent without", "awol"])) return gate("care_team", () => skillMissing(q, snap, asOf, child));
@@ -571,7 +724,9 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   }
 
   // Shadow-AI substitution: this looks like something people paste into ChatGPT.
-  // Route them to the safe CARA engine instead of the generic fallback.
+  // Route them to the safe CARA engine instead of the generic fallback. Checked
+  // before the late practice catch so "make this sound professional"-style asks
+  // route to the safe substitution, not the knowledge base.
   const sub = findSubstitution(raw);
   if (sub.matched && sub.substitution) {
     const s = sub.substitution;
@@ -584,6 +739,11 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
       disclaimer: "Please don't paste child, staff, family, safeguarding, health or placement information into external AI tools — CARA does this safely and keeps a record.",
     });
   }
+
+  // Late knowledge catch — a question that fell through the record skills and isn't a
+  // shadow-AI pattern, but does match the loaded frameworks (shares KB vocabulary).
+  const pgLate = skillPracticeGuidance(raw, child);
+  if (pgLate) return pgLate;
 
   return skillUnknown();
 }
