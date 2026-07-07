@@ -167,6 +167,7 @@ export default function BehaviourSupportPlansPage() {
 
   return (
     <PageShell
+      darkBody
       title="Behaviour Support Plans"
       subtitle="Formal behaviour support strategies -- triggers, de-escalation, positive reinforcement, and safety plans"
       caraContext={{ pageTitle: "Behaviour Support Plans", sourceType: "child_record" }}

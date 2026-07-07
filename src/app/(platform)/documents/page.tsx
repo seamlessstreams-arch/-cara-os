@@ -262,6 +262,7 @@ export default function DocumentsPage() {
 
   return (
     <PageShell
+      darkBody
       title="Documents"
       subtitle="Secure document storage, version control, and mandatory read-and-sign"
       caraContext={{ pageTitle: "Documents", sourceType: "document" }}

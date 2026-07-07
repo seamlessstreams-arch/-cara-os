@@ -63,6 +63,7 @@ const HEALTH_TILES = [
 export default function HealthPage() {
   return (
     <PageShell
+      darkBody
       title="Health & Wellbeing"
       subtitle="Physical, dental, optical, and mental health management"
       icon={<HeartPulse className="h-5 w-5 text-emerald-600" />}

@@ -1492,6 +1492,7 @@ export default function SafeguardingPage() {
 
   return (
     <PageShell
+      darkBody
       sensitive
       title="Safeguarding"
       subtitle={`${openSafeguarding.length} open concern${openSafeguarding.length !== 1 ? "s" : ""} · ${awaitingOversight.length} awaiting oversight · MASH referral active`}

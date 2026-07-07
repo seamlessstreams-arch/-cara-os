@@ -596,6 +596,7 @@ export default function DailyLogPage() {
 
   return (
     <PageShell
+      darkBody
       title="Daily Log"
       subtitle="Individual daily observations, mood, health, education, and contact records"
       quickCreateContext={{

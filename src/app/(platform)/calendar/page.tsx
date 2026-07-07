@@ -92,6 +92,7 @@ export default function CalendarPage() {
 
   return (
     <PageShell
+      darkBody
       title="Calendar"
       subtitle="Plan meetings and appointments — and see every dated record in one place, captured once."
       showQuickCreate={false}
