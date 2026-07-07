@@ -586,15 +586,15 @@ body {
   --cs-bg:               #0a0f1f;
   --cs-surface:          #0e1730;
   --cs-surface-elevated: #111b33;
-  --cs-border:           rgba(255, 255, 255, 0.09);
-  --cs-border-subtle:    rgba(255, 255, 255, 0.06);
-  --cs-navy:             #eef3fb;
-  --cs-navy-soft:        #dbe6f5;
-  --cs-navy-muted:       #c4d3ea;
-  --cs-text:             #e6ecf7;
-  --cs-text-secondary:   #a7b6cd;
-  --cs-text-muted:       #8090a8;
-  --cs-text-gentle:      #6a7890;
+  --cs-border:           rgba(255, 255, 255, 0.12);
+  --cs-border-subtle:    rgba(255, 255, 255, 0.08);
+  --cs-navy:             #f2f6fc;
+  --cs-navy-soft:        #dde8f6;
+  --cs-navy-muted:       #c9d6ec;
+  --cs-text:             #edf1f9;
+  --cs-text-secondary:   #c1cee0;
+  --cs-text-muted:       #a3b1c8;
+  --cs-text-gentle:      #8b9ab1;
   --cs-teal-bg:          rgba(45, 212, 191, 0.12);
   --cs-teal-soft:        rgba(45, 212, 191, 0.22);
   --cs-cara-gold-bg:     rgba(230, 180, 90, 0.12);
@@ -609,21 +609,29 @@ body {
 .cara-dark .bg-slate-50, .cara-dark .bg-gray-50, .cara-dark .bg-zinc-50 { background-color: rgba(255, 255, 255, 0.035) !important; }
 .cara-dark .bg-slate-100, .cara-dark .bg-gray-100, .cara-dark .bg-zinc-100 { background-color: rgba(255, 255, 255, 0.065) !important; }
 .cara-dark .bg-slate-200, .cara-dark .bg-gray-200 { background-color: rgba(255, 255, 255, 0.10) !important; }
-.cara-dark .text-slate-900, .cara-dark .text-gray-900, .cara-dark .text-slate-800, .cara-dark .text-gray-800 { color: #eef3fb !important; }
-.cara-dark .text-slate-700, .cara-dark .text-gray-700 { color: #cdd8ea !important; }
-.cara-dark .text-slate-600, .cara-dark .text-gray-600 { color: #a7b6cd !important; }
-.cara-dark .text-slate-500, .cara-dark .text-gray-500 { color: #8494ab !important; }
-.cara-dark .text-slate-400, .cara-dark .text-gray-400 { color: #75849c !important; }
+.cara-dark .text-slate-900, .cara-dark .text-gray-900, .cara-dark .text-slate-800, .cara-dark .text-gray-800, .cara-dark .text-black, .cara-dark .text-neutral-900, .cara-dark .text-neutral-800, .cara-dark .text-zinc-900, .cara-dark .text-zinc-800 { color: #f2f6fc !important; }
+.cara-dark .text-slate-700, .cara-dark .text-gray-700, .cara-dark .text-neutral-700, .cara-dark .text-zinc-700 { color: #dbe6f5 !important; }
+.cara-dark .text-slate-600, .cara-dark .text-gray-600, .cara-dark .text-neutral-600, .cara-dark .text-zinc-600 { color: #c1cee0 !important; }
+.cara-dark .text-slate-500, .cara-dark .text-gray-500, .cara-dark .text-neutral-500 { color: #aab8ce !important; }
+.cara-dark .text-slate-400, .cara-dark .text-gray-400, .cara-dark .text-neutral-400 { color: #97a5bc !important; }
+.cara-dark .text-slate-300, .cara-dark .text-gray-300 { color: #c8d4e4 !important; }
+/* semantic label text — lift dark -600/700/800 shades to readable tints on dark */
+.cara-dark .text-emerald-800, .cara-dark .text-emerald-700, .cara-dark .text-emerald-600, .cara-dark .text-green-800, .cara-dark .text-green-700, .cara-dark .text-green-600 { color: #6ee7b7 !important; }
+.cara-dark .text-amber-800, .cara-dark .text-amber-700, .cara-dark .text-amber-600, .cara-dark .text-yellow-800, .cara-dark .text-yellow-700, .cara-dark .text-orange-800, .cara-dark .text-orange-700, .cara-dark .text-orange-600 { color: #fcd34d !important; }
+.cara-dark .text-rose-800, .cara-dark .text-rose-700, .cara-dark .text-rose-600, .cara-dark .text-red-800, .cara-dark .text-red-700, .cara-dark .text-red-600 { color: #fda4af !important; }
+.cara-dark .text-blue-800, .cara-dark .text-blue-700, .cara-dark .text-blue-600, .cara-dark .text-sky-800, .cara-dark .text-sky-700, .cara-dark .text-sky-600, .cara-dark .text-cyan-800, .cara-dark .text-cyan-700 { color: #93c5fd !important; }
+.cara-dark .text-indigo-800, .cara-dark .text-indigo-700, .cara-dark .text-indigo-600, .cara-dark .text-violet-800, .cara-dark .text-violet-700, .cara-dark .text-violet-600, .cara-dark .text-purple-800, .cara-dark .text-purple-700, .cara-dark .text-purple-600 { color: #a5b4fc !important; }
+.cara-dark .text-teal-800, .cara-dark .text-teal-700, .cara-dark .text-teal-600 { color: #5eead4 !important; }
 .cara-dark .border-slate-200, .cara-dark .border-gray-200, .cara-dark .border-slate-100, .cara-dark .border-gray-100, .cara-dark .border-slate-300 { border-color: rgba(255, 255, 255, 0.09) !important; }
 .cara-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]), .cara-dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.08) !important; }
 .cara-dark .bg-\[var\(--cs-navy\)\] { background-color: #0e1730 !important; }
 /* semantic accent panels: soften to a dark tint so their labels read on dark (never inverted) */
-.cara-dark .bg-emerald-50, .cara-dark .bg-green-50 { background-color: rgba(52, 211, 153, 0.10) !important; }
-.cara-dark .bg-amber-50, .cara-dark .bg-yellow-50, .cara-dark .bg-orange-50 { background-color: rgba(251, 191, 36, 0.10) !important; }
-.cara-dark .bg-rose-50, .cara-dark .bg-red-50 { background-color: rgba(251, 113, 133, 0.10) !important; }
-.cara-dark .bg-blue-50, .cara-dark .bg-sky-50, .cara-dark .bg-cyan-50 { background-color: rgba(96, 165, 250, 0.10) !important; }
-.cara-dark .bg-indigo-50, .cara-dark .bg-violet-50, .cara-dark .bg-purple-50 { background-color: rgba(129, 140, 248, 0.12) !important; }
-.cara-dark .bg-teal-50 { background-color: rgba(45, 212, 191, 0.10) !important; }
+.cara-dark .bg-emerald-50, .cara-dark .bg-emerald-100, .cara-dark .bg-green-50, .cara-dark .bg-green-100 { background-color: rgba(52, 211, 153, 0.12) !important; }
+.cara-dark .bg-amber-50, .cara-dark .bg-amber-100, .cara-dark .bg-yellow-50, .cara-dark .bg-yellow-100, .cara-dark .bg-orange-50, .cara-dark .bg-orange-100 { background-color: rgba(251, 191, 36, 0.12) !important; }
+.cara-dark .bg-rose-50, .cara-dark .bg-rose-100, .cara-dark .bg-red-50, .cara-dark .bg-red-100 { background-color: rgba(251, 113, 133, 0.12) !important; }
+.cara-dark .bg-blue-50, .cara-dark .bg-blue-100, .cara-dark .bg-sky-50, .cara-dark .bg-sky-100, .cara-dark .bg-cyan-50, .cara-dark .bg-cyan-100 { background-color: rgba(96, 165, 250, 0.12) !important; }
+.cara-dark .bg-indigo-50, .cara-dark .bg-indigo-100, .cara-dark .bg-violet-50, .cara-dark .bg-violet-100, .cara-dark .bg-purple-50, .cara-dark .bg-purple-100 { background-color: rgba(129, 140, 248, 0.14) !important; }
+.cara-dark .bg-teal-50, .cara-dark .bg-teal-100 { background-color: rgba(45, 212, 191, 0.12) !important; }
 
 @layer base {
   * {
