@@ -11,7 +11,6 @@
 
 import React, { useState, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CaraDrawer, type CaraSourceType, type CaraDrawerContext } from "@/components/cara/cara-drawer";
 
@@ -117,25 +116,37 @@ export function CaraGlobalButton({ className }: { className?: string }) {
 
   return (
     <>
-      {/* Floating trigger button */}
+      {/* Floating Ask CARA presence — the same spark as the Ask CARA screen,
+          docked on every page so the assistant is always one tap away. */}
       <button
         onClick={handleOpen}
-        aria-label="Open Cara assistant"
+        aria-label="Open Ask CARA"
         className={cn(
           // Position: fixed bottom-right, above BottomNav (72px) on mobile
-          "fixed bottom-[88px] right-4 z-40",
-          "md:bottom-6 md:right-6",
-          // Appearance
-          "flex h-12 w-12 items-center justify-center rounded-full",
-          "bg-indigo-600 text-white shadow-lg shadow-indigo-600/30",
-          "hover:bg-indigo-700 hover:shadow-indigo-700/40 hover:scale-105",
-          "active:scale-95 transition-all duration-150",
-          // Accessibility
-          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600",
+          "group fixed bottom-[88px] right-4 z-40 md:bottom-6 md:right-6",
+          // Appearance — dark pill carrying the gradient spark
+          "flex items-center gap-2.5 rounded-full py-2 pl-2 pr-3 md:pr-5",
+          "border border-white/10 text-white",
+          "shadow-[0_16px_40px_-8px_rgba(99,102,241,0.55)]",
+          "transition-all duration-200 hover:-translate-y-0.5 active:scale-95",
+          "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8b93ff]",
           className,
         )}
+        style={{ background: "linear-gradient(135deg, #111a30 0%, #1a2350 100%)" }}
       >
-        <Sparkles className="h-5 w-5" />
+        <span className="flex h-9 w-9 items-center justify-center rounded-full cara-spark-pulse">
+          <svg viewBox="0 0 24 24" className="h-6 w-6" aria-hidden>
+            <defs>
+              <linearGradient id="cara-fab-spark" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stopColor="#2dd4bf" />
+                <stop offset="0.5" stopColor="#60a5fa" />
+                <stop offset="1" stopColor="#a78bfa" />
+              </linearGradient>
+            </defs>
+            <path d="M12 0C13.4 6.9 17.1 10.6 24 12C17.1 13.4 13.4 17.1 12 24C10.6 17.1 6.9 13.4 0 12C6.9 10.6 10.6 6.9 12 0Z" fill="url(#cara-fab-spark)" />
+          </svg>
+        </span>
+        <span className="hidden text-[13.5px] font-semibold tracking-tight md:inline">Ask CARA</span>
       </button>
 
       {/* Drawer */}
