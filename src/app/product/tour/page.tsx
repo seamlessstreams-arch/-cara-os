@@ -505,6 +505,52 @@ function MockupDirectionOfTravel() {
 
 // ── Steps config ──────────────────────────────────────────────────────────────
 
+// ── Ask CARA (the dark immersive assistant, on every page) ───────────────────
+function MockupAskCara() {
+  return (
+    <div className="select-none p-3" style={{ background: "radial-gradient(120% 90% at 100% -10%, rgba(99,102,241,0.20) 0%, transparent 52%), linear-gradient(180deg,#0a0f1f 0%,#0c1226 55%,#0e1730 100%)" }}>
+      <div className="flex items-center gap-2">
+        <svg viewBox="0 0 24 24" className="h-6 w-6 shrink-0" aria-hidden>
+          <defs><linearGradient id="tour-spark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#2dd4bf" /><stop offset="0.5" stopColor="#60a5fa" /><stop offset="1" stopColor="#a78bfa" /></linearGradient></defs>
+          <path d="M12 0C13.4 6.9 17.1 10.6 24 12C17.1 13.4 13.4 17.1 12 24C10.6 17.1 6.9 13.4 0 12C6.9 10.6 10.6 6.9 12 0Z" fill="url(#tour-spark)" />
+        </svg>
+        <div>
+          <p className="text-[11px] font-light text-slate-100">Hi Darren — ready when you are</p>
+          <p className="text-[8px] text-slate-400">Answers from this home&rsquo;s records — never a guess</p>
+        </div>
+        <span className="ml-auto rounded-full bg-white/[0.06] px-1.5 py-0.5 text-[7.5px] font-semibold text-slate-300">Deterministic</span>
+      </div>
+
+      <div className="mt-2.5 space-y-2">
+        <div className="flex justify-end">
+          <div className="max-w-[85%] rounded-2xl rounded-br-md bg-indigo-500/90 px-2.5 py-1.5 text-[9px] leading-snug text-white">What&rsquo;s overdue across the home right now?</div>
+        </div>
+        <div className="flex gap-1.5">
+          <svg viewBox="0 0 24 24" className="mt-0.5 h-3 w-3 shrink-0" aria-hidden>
+            <defs><linearGradient id="tour-spark2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#2dd4bf" /><stop offset="0.5" stopColor="#60a5fa" /><stop offset="1" stopColor="#a78bfa" /></linearGradient></defs>
+            <path d="M12 0C13.4 6.9 17.1 10.6 24 12C17.1 13.4 13.4 17.1 12 24C10.6 17.1 6.9 13.4 0 12C6.9 10.6 10.6 6.9 12 0Z" fill="url(#tour-spark2)" />
+          </svg>
+          <div className="min-w-0">
+            <p className="text-[9px] leading-relaxed text-slate-200">Three things need you today: <b className="text-white">Alex&rsquo;s restraint (5 Jul) has no debrief</b>, a <b className="text-white">return interview is missing</b> for Jordan, and <b className="text-white">Ellie&rsquo;s LAC review</b> is due in 6 days. Two daily logs await your oversight.</p>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {["Incidents · 1", "Missing · 1", "Reviews · 1", "Oversight · 2"].map((s) => (
+                <span key={s} className="rounded-full bg-white/[0.08] px-1.5 py-0.5 text-[7.5px] text-slate-300">{s}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-2.5 flex items-center gap-1 rounded-full border border-white/10 bg-[#161b2b] px-1.5 py-1">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full text-[11px] text-slate-400">+</span>
+        <span className="flex-1 px-0.5 text-[9px] text-slate-500">Ask CARA…</span>
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-500 text-[10px] font-bold text-white">↑</span>
+      </div>
+      <p className="mt-1.5 text-center text-[7.5px] text-slate-500">From live records · never a safeguarding decision</p>
+    </div>
+  );
+}
+
 const STEPS = [
   {
     Icon: LayoutDashboard,
@@ -514,6 +560,15 @@ const STEPS = [
     body: "A calm, ranked picture of the home — the alerts that matter, Cara's read on what needs you today, staff compliance, incident patterns and the oversight queue, all on one screen.",
     points: ["Attention items ranked by severity", "Incident analytics computed from real records", "Staff compliance + oversight queue at a glance"],
     Mockup: MockupManagerControl,
+  },
+  {
+    Icon: Sparkles,
+    eyebrow: "Ask CARA",
+    href: "/ask-cara",
+    title: "Just ask — CARA answers from your records.",
+    body: "A governed assistant on every page. Ask anything about the home, a child or your team — “what’s overdue?”, “what should I do after this incident?” — and CARA answers instantly from your live records, with the sources shown. Deterministic, so it works even with no AI available; it never invents a fact and never decides safeguarding. It’s also the sanctioned alternative to staff pasting sensitive information into public chatbots.",
+    points: ["Answers from records — sources shown, never a guess", "Deterministic: keeps working with no AI credit", "No child data leaves the platform; every ask is logged"],
+    Mockup: MockupAskCara,
   },
   {
     Icon: Radar,
@@ -625,8 +680,9 @@ export default function TourPage() {
       <div className="mx-auto max-w-5xl px-5 pb-10">
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 rounded-2xl border border-[var(--cs-border)] bg-white px-6 py-4">
           {[
+            { Icon: Sparkles, label: "Ask CARA" },
             { Icon: Brain, label: "Practice Intelligence" },
-            { Icon: Sparkles, label: "Cara Writing Assistant" },
+            { Icon: PenLine, label: "Cara Writing Assistant" },
             { Icon: Shield, label: "Safeguarding Engine" },
             { Icon: Target, label: "PACE Framework" },
             { Icon: Zap, label: "DefensibleDecision" },
