@@ -20,7 +20,10 @@ export function useCommsChannels() {
   return useQuery({
     queryKey: ["comms", "channels"],
     queryFn: async () => (await api.get<{ data: CommsChannelSummary[] }>("/comms/channels")).data ?? [],
-    staleTime: 15_000,
+    staleTime: 10_000,
+    // Keep unread counts + new channels fresh without a manual refresh.
+    refetchInterval: 20_000,
+    refetchIntervalInBackground: false,
   });
 }
 
@@ -30,7 +33,12 @@ export function useChannelMessages(channelId: string | null) {
     queryFn: async () =>
       (await api.get<{ data: CommsMessageEnriched[] }>(`/comms/messages?channel_id=${channelId}`)).data ?? [],
     enabled: !!channelId,
-    staleTime: 5_000,
+    staleTime: 3_000,
+    // Live updates without a manual refresh — poll the open channel every few
+    // seconds while the tab is focused. There is no websocket push in this
+    // serverless/demo setup, so short-interval polling is the live-message path.
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false,
   });
 }
 
