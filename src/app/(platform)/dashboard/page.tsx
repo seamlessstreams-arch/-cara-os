@@ -1201,6 +1201,7 @@ export default function DashboardPage() {
   const completeTask = useCompleteTask();
 
   const [oversightTarget, setOversightTarget] = useState<string | null>(null);
+  const [showDetailed, setShowDetailed] = useState(false);
 
   const d  = dashboard.data?.data;
   const hc = healthCheck.data?.data;
@@ -1289,9 +1290,31 @@ export default function DashboardPage() {
               openIncidents: d.incidents?.open ?? 0,
               tasksDue: d.tasks?.due_today ?? 0,
             }}
+            people={(d.young_people?.current ?? []).map((c) => ({
+              id: String(c.id),
+              name: String(c.preferred_name || c.first_name || "Child"),
+            }))}
           />
         )}
 
+        {/* Detailed operational dashboard — collapsed by default so the command centre leads */}
+        <div className="flex items-center justify-between gap-3 pt-1">
+          <p className="text-[13px] text-[var(--cs-text-secondary,#5a6d74)]">
+            {showDetailed
+              ? "Full operational dashboard — every card and zone."
+              : "Your command centre leads with what needs you. The full dashboard is one tap away."}
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowDetailed((v) => !v)}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[var(--cs-border)] bg-[var(--cs-surface-elevated,#fff)] px-4 py-2 text-[13px] font-semibold text-[var(--cs-navy,#12202b)] shadow-[var(--cs-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--cs-shadow-card)]"
+          >
+            {showDetailed ? "Hide detailed dashboard ▴" : "Show detailed dashboard ▾"}
+          </button>
+        </div>
+
+        {showDetailed && (
+          <div className="cs-page-enter space-y-8">
         {/* Handover Prompt — contextual shift awareness */}
         {!config.showReadOnlyBanner && <HandoverPrompt />}
 
@@ -2257,6 +2280,8 @@ export default function DashboardPage() {
 
         {/* Cara anchor for oversight scroll target */}
         <div id="cara-anchor" />
+          </div>
+        )}
 
       </div>
 
