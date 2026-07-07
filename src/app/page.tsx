@@ -144,6 +144,53 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── The shadow-AI problem ────────────────────────────────────────────── */}
+      <section id="shadow-ai" className="mx-auto max-w-5xl px-5 py-20">
+        <div className="overflow-hidden rounded-3xl border border-[var(--cs-risk-soft)] bg-[var(--cs-risk-bg)] p-8 sm:p-10">
+          <div className="flex items-center gap-2 text-[var(--cs-risk)]">
+            <ShieldAlert className="h-5 w-5" />
+            <span className="text-xs font-bold uppercase tracking-wider">The risk nobody&rsquo;s governing</span>
+          </div>
+          <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-[var(--cs-navy)] sm:text-4xl">Your team is already using AI. The question is whether it&rsquo;s safe.</h2>
+          <div className="mt-5 space-y-4 text-lg leading-relaxed text-[var(--cs-text-secondary)]">
+            <p>
+              To save time, staff paste incident notes, children&rsquo;s names, histories and risks into ChatGPT and other
+              public chatbots — usually meaning well. But that is confidential data about a child leaving your control,
+              shared without consent, with a third party you have no agreement with.
+            </p>
+            <p className="font-medium text-[var(--cs-navy)]">
+              It puts homes at risk of breaching UK and EU data-protection law — UK GDPR, the EU GDPR and the Data
+              Protection Act 2018 — and it sits directly at odds with the duty to keep children safe online. Worst of all,
+              you can&rsquo;t govern what you can&rsquo;t see: for most leaders, it&rsquo;s happening invisibly.
+            </p>
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-[var(--cs-border)] bg-white p-6 sm:p-7 shadow-[var(--cs-shadow-soft)]">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-[var(--cs-teal-strong)]" />
+              <h3 className="text-lg font-bold text-[var(--cs-navy)]">With Cara, this is addressed.</h3>
+            </div>
+            <p className="mt-2 text-[var(--cs-text-secondary)]">
+              Ask CARA gives staff a sanctioned, in-house assistant that does the very thing they were reaching for —
+              without the risk. Shadow AI becomes visible, governed AI.
+            </p>
+            <ul className="mt-5 grid gap-2.5 sm:grid-cols-2">
+              {[
+                { Icon: Lock, t: "Confidential data never leaves the platform — nothing is sent to a public model" },
+                { Icon: UserCheck, t: "No unconsented sharing with a third party you have no agreement with" },
+                { Icon: Sparkles, t: "A sanctioned tool staff actually want to use — so they stop reaching for ChatGPT" },
+                { Icon: Eye, t: "Any external-AI use is declared, not hidden — shadow AI becomes visible" },
+                { Icon: ScrollText, t: "Every AI interaction is logged and hashed — a defensible audit trail" },
+                { Icon: ShieldCheck, t: "Evidence to your DPO and Ofsted that AI is governed, not ungoverned" },
+              ].map((c, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-[var(--cs-text-secondary)]"><c.Icon className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-teal-strong)]" /> {c.t}</li>
+              ))}
+            </ul>
+          </div>
+          <p className="mt-5 text-xs text-[var(--cs-text-muted)]">Cara helps you govern AI use and meet your data-protection duties; it supports compliance rather than certifying it.</p>
+        </div>
+      </section>
+
       {/* ── Meet Ask CARA ────────────────────────────────────────────────────── */}
       <section id="ask-cara" className="border-y border-[var(--cs-border)] bg-white">
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-20 lg:grid-cols-2">
