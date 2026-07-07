@@ -632,6 +632,19 @@ body {
 .cara-dark .bg-blue-50, .cara-dark .bg-blue-100, .cara-dark .bg-sky-50, .cara-dark .bg-sky-100, .cara-dark .bg-cyan-50, .cara-dark .bg-cyan-100 { background-color: rgba(96, 165, 250, 0.12) !important; }
 .cara-dark .bg-indigo-50, .cara-dark .bg-indigo-100, .cara-dark .bg-violet-50, .cara-dark .bg-violet-100, .cara-dark .bg-purple-50, .cara-dark .bg-purple-100 { background-color: rgba(129, 140, 248, 0.14) !important; }
 .cara-dark .bg-teal-50, .cara-dark .bg-teal-100 { background-color: rgba(45, 212, 191, 0.12) !important; }
+/* Print: reports/records must come out on white — neutralise the dark skin. */
+@media print {
+  .cara-dark {
+    --cs-bg: #ffffff; --cs-surface: #ffffff; --cs-surface-elevated: #ffffff;
+    --cs-border: #e5e7eb; --cs-border-subtle: #eef0f3;
+    --cs-navy: #0f1e36; --cs-navy-soft: #172b4d; --cs-navy-muted: #1e3a5f;
+    --cs-text: #1f2933; --cs-text-secondary: #4a5568; --cs-text-muted: #667085; --cs-text-gentle: #94a3b8;
+    background: #ffffff !important; color: #1f2933 !important;
+  }
+  .cara-dark .bg-white { background-color: #ffffff !important; }
+  .cara-dark .text-slate-900, .cara-dark .text-slate-800, .cara-dark .text-slate-700, .cara-dark .text-slate-600, .cara-dark .text-gray-900, .cara-dark .text-gray-800, .cara-dark .text-gray-700 { color: #1f2933 !important; }
+  .cara-dark .text-slate-500, .cara-dark .text-slate-400, .cara-dark .text-gray-500 { color: #667085 !important; }
+}
 
 @layer base {
   * {

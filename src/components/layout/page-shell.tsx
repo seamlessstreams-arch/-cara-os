@@ -32,7 +32,7 @@ export interface PageShellProps {
   sensitive?:        boolean;
   children:          React.ReactNode;
   fullWidth?:        boolean;
-  /** Opt this page's BODY into the Ask CARA dark skin (phase-2 rollout). */
+  /** Ask CARA dark skin for the page body. Default true; opt out with darkBody={false}. */
   darkBody?:         boolean;
 }
 
@@ -50,7 +50,7 @@ export function PageShell({
   sensitive = false,
   children,
   fullWidth = false,
-  darkBody = false,
+  darkBody = true,
 }: PageShellProps) {
   const headerActions = (
     <>
