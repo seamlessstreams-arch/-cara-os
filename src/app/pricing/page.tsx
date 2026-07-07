@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 const TIERS = [
   {
     Icon: Home, name: "Single home", who: "For one registered children's home.", featured: false, cta: "Book a demo",
-    points: ["Full practice intelligence & RAG ratings", "Ofsted readiness & self-evaluation", "Priority briefing, trends & reports", "Workforce, comms & safe access", "Cara assistant (human-in-the-loop)", "Mobile, installable & offline-ready"],
+    points: ["Full practice intelligence & RAG ratings", "Ofsted readiness & self-evaluation", "Priority briefing, trends & reports", "Workforce, comms & safe access", "Ask CARA — governed, records-based assistant", "Mobile, installable & offline-ready"],
   },
   {
     Icon: Building2, name: "Group", who: "For providers running several homes.", featured: true, cta: "Book a demo",
@@ -45,7 +45,8 @@ const COMPARISON: { group: string; rows: { label: string; v: (boolean | string)[
       { label: "Priority briefing, trends & reports", v: [true, true, true] },
       { label: "Plan currency, premises & shift briefing", v: [true, true, true] },
       { label: "Workforce & safe access", v: [true, true, true] },
-      { label: "Cara assistant (human-in-the-loop)", v: [true, true, true] },
+      { label: "Ask CARA — governed assistant, answers from your records", v: [true, true, true] },
+      { label: "AI governance — no child data to public AI, hashed audit trail", v: [true, true, true] },
       { label: "Cara Practice Assistant — incident support & recording quality", v: [true, true, true] },
       { label: "Contextual safeguarding, safety planning & NRM support", v: [true, true, true] },
       { label: "Writing to the Child — child-readable recording & PACE", v: [true, true, true] },
@@ -84,6 +85,7 @@ const FAQ = [
   { q: "What does onboarding involve?", a: "Every plan includes onboarding and support to get your home set up and your team confident. Group plans get priority onboarding, and Enterprise gets a dedicated onboarding and success manager." },
   { q: "Can we migrate our existing records?", a: "Data migration is available — included at Enterprise, and we'll scope it for any plan during your walkthrough so you're not starting from a blank page." },
   { q: "What's included as standard?", a: "Every plan includes role-based access, full audit trails, data security and the human-in-the-loop AI safeguards — they're part of the core, not paid extras." },
+  { q: "Does Cara use public AI like ChatGPT?", a: "No. Ask CARA answers from your own records and runs deterministically, so no child data is ever sent to a public AI model. It's the sanctioned, in-house alternative to staff pasting sensitive information into public chatbots — and every use is logged and governable, which supports your duties under UK and EU data-protection law." },
 ];
 
 function ValueCell({ v }: { v: boolean | string }) {
