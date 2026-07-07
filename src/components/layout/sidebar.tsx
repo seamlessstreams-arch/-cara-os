@@ -220,23 +220,13 @@ export function Sidebar() {
         collapsed ? "justify-center px-0" : "gap-3 px-4",
       )}>
         <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
-          {/* Ask CARA spark — the brand through-line across the whole app */}
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center">
-            <svg viewBox="0 0 24 24" className="h-7 w-7 cara-spark-pulse" aria-hidden>
-              <defs>
-                <linearGradient id="cara-rail-spark" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#2dd4bf" />
-                  <stop offset="0.5" stopColor="#60a5fa" />
-                  <stop offset="1" stopColor="#a78bfa" />
-                </linearGradient>
-              </defs>
-              <path d="M12 0C13.4 6.9 17.1 10.6 24 12C17.1 13.4 13.4 17.1 12 24C10.6 17.1 6.9 13.4 0 12C6.9 10.6 10.6 6.9 12 0Z" fill="url(#cara-rail-spark)" />
-            </svg>
-          </span>
+          {/* Cara logo — the brand mark stays; the spark lives on the Ask CARA pill */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-192.png" alt="Cara" className="h-8 w-8 shrink-0 rounded-xl" />
           {!collapsed && (
             <div className="min-w-0">
-              <p className="text-sm font-bold text-[var(--cs-navy)] leading-tight tracking-[0.12em]">
-                CARA
+              <p className="text-sm font-bold text-[var(--cs-navy)] leading-tight tracking-tight">
+                Cara
               </p>
               <p className="text-[11px] text-[var(--cs-text-secondary)] truncate">Chamberlain House</p>
             </div>
