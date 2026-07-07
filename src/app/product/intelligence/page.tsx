@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { MarketingHeader } from "@/components/marketing/marketing-header";
 import { MarketingFooter } from "@/components/marketing/marketing-footer";
+import { AskCaraBand } from "@/components/marketing/ask-cara-band";
+import { ShadowAiCallout } from "@/components/marketing/shadow-ai-callout";
 import { SectionEyebrow } from "@/components/marketing/ui";
 
 export const metadata: Metadata = {
@@ -79,6 +81,9 @@ export default function IntelligencePage() {
           ))}
         </div>
       </section>
+
+      {/* Meet Ask CARA */}
+      <AskCaraBand />
 
       {/* The chain */}
       <section className="border-y border-[var(--cs-border)] bg-white">
@@ -362,6 +367,9 @@ export default function IntelligencePage() {
           </div>
         </div>
       </section>
+
+      {/* Shadow AI — governed-AI lens */}
+      <ShadowAiCallout lens="Governed AI, not shadow AI. The difference is who's in control of your data." />
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-5 py-20">
