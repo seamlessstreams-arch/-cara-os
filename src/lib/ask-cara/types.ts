@@ -48,6 +48,7 @@ export type AskCaraIntent =
   | "reg44"
   | "org_learning"
   | "safer_recruitment"
+  | "weekly_summary"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -146,6 +147,30 @@ export interface AskCaraTwinDigest {
   aspirations: { aspiration: string; whyItMatters?: string }[];
   memories: { title: string; date: string; childVoice?: string }[];
   meaningfulMoments30d: number;
+  missingInformation: string[];
+}
+
+/**
+ * Digest of the CPIE Weekly Intelligence Object — the deterministic pre-report
+ * object for a child's week. Ask CARA narrates it so "what should be in Alex's
+ * weekly summary?" is answered from the structured intelligence, not re-derived.
+ */
+export interface AskCaraWeeklyDigest {
+  childId: string;
+  weekStart: string;
+  weekEnding: string;
+  picture: string;
+  who: string;
+  directionOfTravel: string;
+  achievements: string[];
+  celebrations: string[];
+  childVoiceMoments: string[];
+  emotionalWellbeing: string;
+  qualityStandardsEvidence: { label: string; evidence: string }[];
+  fiveOutcomesEvidence: { label: string; evidence: string }[];
+  emergingThemes: string[];
+  recommendations: string[];
+  evidenceConfidence: string;
   missingInformation: string[];
 }
 
@@ -318,6 +343,8 @@ export interface AskCaraSnapshot {
   homeEvaluation?: AskCaraHomeEvaluation;
   /** CPIE Digital-Twin digests — the whole-child picture per child (optional). */
   twins?: AskCaraTwinDigest[];
+  /** CPIE Weekly Intelligence Object digests — the structured weekly pre-report. */
+  weekly?: AskCaraWeeklyDigest[];
   /** Operational domains: health & safety, rota safety, wellbeing, reg 44. */
   ops?: AskCaraOpsIntelligence;
 }
