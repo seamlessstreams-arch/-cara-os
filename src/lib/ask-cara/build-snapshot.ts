@@ -11,11 +11,79 @@
 import { getStore } from "@/lib/db/store";
 import { buildChildEvaluations, buildHomeEvaluation } from "@/lib/ask-cara/build-evaluations";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
-import type { AskCaraTwinDigest } from "@/lib/ask-cara/types";
+import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
+import type { AskCaraOpsIntelligence, AskCaraTwinDigest } from "@/lib/ask-cara/types";
 import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
 
 const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
 const s = (v: unknown): string => (typeof v === "string" ? v : "");
+
+/** Operational domains for the orchestrator — computed from the store, honest
+ *  about empty collections (a gap is an answer, not an error). */
+function buildOpsIntelligence(store: ReturnType<typeof getStore>, todayIso: string): AskCaraOpsIntelligence | undefined {
+  try {
+    const st = store as unknown as Record<string, unknown[]>;
+    const rows = (k: string) => (Array.isArray(st[k]) ? (st[k] as Record<string, unknown>[]) : []);
+    const done = (v: unknown) => ["completed", "closed", "resolved", "done"].includes(s(v).toLowerCase());
+
+    // Health & safety / premises
+    const checks = rows("buildingSafetyChecks");
+    const overdue = checks
+      .filter((c) => day(c.due_date) && day(c.due_date) < todayIso && !done(c.status))
+      .map((c) => ({ label: s(c.check_type).replace(/_/g, " ") || "check", dueDate: day(c.due_date), area: s(c.area) || undefined }));
+    const actionRequired = checks
+      .filter((c) => s(c.action_required) && !done(c.status))
+      .map((c) => ({ label: s(c.check_type).replace(/_/g, " ") || "check", action: s(c.action_required) }));
+    const openMaintenance = rows("maintenance").filter((m) => !done(m.status)).length;
+    const fireDrills90d = rows("fireDrills").filter((f) => {
+      const d = day(f.date ?? f.drill_date);
+      return d && d >= addDays(todayIso, -90);
+    }).length;
+    const vehicleChecksOverdue = rows("vehicleChecks").filter((v) => {
+      const d = day(v.due_date ?? v.next_due_date ?? v.next_check_due);
+      return d && d < todayIso && !done(v.status);
+    }).length;
+
+    // Rota safety — the shared cover mapper (same read as /api/v1/staffing-cover).
+    let rotaSafety: AskCaraOpsIntelligence["rotaSafety"];
+    try {
+      const cover = computeStaffingCoverFromStore(store, todayIso, addDays(todayIso, 6));
+      rotaSafety = {
+        headline: cover.headline,
+        daysUnder: cover.summary.days_under,
+        nightsNoWaking: cover.summary.nights_no_waking,
+        openShiftPeriods: cover.summary.open_shift_periods,
+        phantomDays: cover.summary.phantom_days,
+        worst: cover.attention.slice(0, 3).map((p) => ({ date: p.date, period: String(p.period), message: p.message })),
+      };
+    } catch { /* rota read unavailable — the skill says so honestly */ }
+
+    // Staff wellbeing — AGGREGATE ONLY (data minimisation: counts, never
+    // individual health detail; names stay in supervision, not in answers).
+    const openSickness = rows("staffSicknessRecords").filter((r) => !day(r.date_ended)).length;
+    const onLeaveToday = rows("leaveRequests").filter(
+      (l) => s(l.status) === "approved" && day(l.start_date) <= todayIso && day(l.end_date) >= todayIso,
+    ).length;
+    const checkInsRecorded = rows("staffWellbeingRecords").length;
+
+    // Regulation 44 — outstanding actions (records + tasks referencing reg 44).
+    const reg44FromRecords = rows("reg44ActionRecords")
+      .filter((r) => !done(r.status))
+      .map((r) => ({ label: s(r.action ?? r.title ?? r.description) || "Reg 44 action", due: day(r.due_date) || undefined, overdue: !!day(r.due_date) && day(r.due_date) < todayIso }));
+    const reg44FromTasks = rows("tasks")
+      .filter((t) => /reg(ulation)?\s*\.?\s*44/i.test(s(t.title)) && !done(t.status) && s(t.status) !== "cancelled")
+      .map((t) => ({ label: s(t.title), due: day(t.due_date) || undefined, overdue: !!day(t.due_date) && day(t.due_date) < todayIso }));
+
+    return {
+      healthSafety: { overdue, actionRequired, openMaintenance, fireDrills90d, vehicleChecksOverdue },
+      rotaSafety,
+      wellbeing: { openSickness, onLeaveToday, checkInsRecorded },
+      reg44: { outstanding: [...reg44FromRecords, ...reg44FromTasks] },
+    };
+  } catch {
+    return undefined;
+  }
+}
 
 export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
   const returnInterviews = (store.returnInterviews ?? []) as Array<{ episode_id?: string; missing_episode_id?: string; child_id?: string }>;
@@ -105,5 +173,7 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
         };
       })
       .filter((t): t is AskCaraTwinDigest => !!t),
+    // Operational domains — health & safety, rota safety, wellbeing, reg 44.
+    ops: buildOpsIntelligence(store, new Date().toISOString().slice(0, 10)),
   };
 }

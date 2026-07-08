@@ -1,9 +1,30 @@
 // ══════════════════════════════════════════════════════════════════════════════
-// CARA — ASK CARA (deterministic Q&A engine)
+// CARA — THE ASK CARA ORCHESTRATOR
 //
-// answerQuestion(query) classifies a question to an intent and answers it from a
-// STORE SNAPSHOT — no LLM, no network. Every fact comes from the snapshot; when
-// Cara can't answer it says so and shows what it can. Pure + deterministic.
+// Ask CARA is not a chatbot bolted onto the side of CARA: this engine is the
+// governed, permission-aware, evidence-linked, auditable front door into CARA's
+// internal intelligence model. answerQuestion(query) — exported as
+// askCARAOrchestrator — receives a question and, for every ask:
+//
+//   1. refuses prohibited requests first (decide/diagnose/minimise/fabricate)
+//   2. resolves the asker's role → access tier (permission filtering)
+//   3. classifies the question and routes it to the right intelligence:
+//        · Child Digital Twin (CPIE)          · Emotional Safety engine
+//        · Outcome Intelligence               · Relational Timeline
+//        · Knowledge Base + practice frameworks (PACE, Contextual Safeguarding…)
+//        · Approved policy guidance           · Inspection Intelligence (SCCIF)
+//        · Rota-safety (staffing-cover engine) · Health & safety / premises
+//        · Workforce (supervision / training)  · Staff wellbeing (aggregate only)
+//        · Regulation 44 actions               · Safeguarding + records skills
+//   4. applies data minimisation (wellbeing = aggregate counts, never an
+//      individual's health detail; child data scoped by tier)
+//   5. answers ONLY from the snapshot + engines — no LLM, no network, no guess;
+//      when it can't answer it says so and shows what it can
+//   6. links every answer to its evidence (sources[]) and is audit-logged by
+//      the route (hashed input/output — §21)
+//
+// Pure + deterministic. The LLM layer above (where enabled) only ever phrases
+// what this orchestrator has already established.
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { mentionsAny } from "@/lib/text/keyword-match";
@@ -422,6 +443,11 @@ function skillWhatsDue(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
   if (dueSoonTasks.length) lines.push(`- ${dueSoonTasks.length} action${dueSoonTasks.length === 1 ? "" : "s"} due within 7 days.`);
   if (overdueReviews.length) lines.push(`- ${overdueReviews.length} review${overdueReviews.length === 1 ? "" : "s"} overdue (${overdueReviews.map((r) => r.kind.toLowerCase()).slice(0, 3).join(", ")}).`);
   if (dueSoonReviews.length) lines.push(`- ${dueSoonReviews.length} review${dueSoonReviews.length === 1 ? "" : "s"} due within a fortnight.`);
+  // Compliance calendar: premises checks + reg 44 actions sit alongside tasks.
+  const hsOverdue = snap.ops?.healthSafety.overdue.length ?? 0;
+  if (hsOverdue) lines.push(`- ${hsOverdue} building/safety check${hsOverdue === 1 ? "" : "s"} overdue.`);
+  const reg44Out = snap.ops?.reg44.outstanding.length ?? 0;
+  if (reg44Out) lines.push(`- ${reg44Out} Regulation 44 action${reg44Out === 1 ? "" : "s"} outstanding.`);
   const text = lines.length === 0 ? "Nothing is due or overdue in the next couple of weeks — you're on top of it." : `Here's what's due:\n${lines.join("\n")}`;
   return answer({ intent: "whats_due", answered: true, text, sources: [{ label: "Overdue", count: overdueTasks.length + overdueReviews.length }, { label: "Due soon", count: dueSoonTasks.length + dueSoonReviews.length }], suggestions: sug(["What's overdue?", "What needs my attention?"]) });
 }
@@ -686,6 +712,123 @@ function skillChildIdentity(snap: AskCaraSnapshot, child: AskCaraChild | null): 
   });
 }
 
+// ── Operational domains (health & safety, rota, wellbeing, reg 44) ────────────
+
+function skillHealthSafety(snap: AskCaraSnapshot): AskCaraAnswer {
+  const hs = snap.ops?.healthSafety;
+  if (!hs) {
+    return answer({ intent: "health_safety", answered: false, text: "I couldn't read the health & safety picture just now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  }
+  const lines: string[] = [];
+  if (hs.overdue.length) {
+    lines.push(`${hs.overdue.length} building/safety check${hs.overdue.length === 1 ? " is" : "s are"} overdue:`);
+    for (const c of hs.overdue.slice(0, 5)) lines.push(`- ${c.label}${c.area ? ` (${c.area.replace(/_/g, " ")})` : ""} — was due ${c.dueDate}.`);
+  }
+  if (hs.actionRequired.length) {
+    lines.push("", "Checks with actions still open:");
+    for (const c of hs.actionRequired.slice(0, 4)) lines.push(`- ${c.label}: ${c.action}`);
+  }
+  const sep = () => { if (lines.length) lines.push(""); };
+  if (hs.openMaintenance) { sep(); lines.push(`${hs.openMaintenance} maintenance issue${hs.openMaintenance === 1 ? "" : "s"} open — check none affect the children's spaces.`); }
+  if (hs.vehicleChecksOverdue) lines.push(`${hs.vehicleChecksOverdue} vehicle check${hs.vehicleChecksOverdue === 1 ? "" : "s"} overdue — don't transport children until resolved.`);
+  sep();
+  lines.push(hs.fireDrills90d ? `${hs.fireDrills90d} fire drill${hs.fireDrills90d === 1 ? "" : "s"} recorded in the last 90 days.` : "No fire drill recorded in the last 90 days — if one has happened, the record is missing; if not, book one.");
+  if (!hs.overdue.length && !hs.actionRequired.length && !hs.openMaintenance && !hs.vehicleChecksOverdue) {
+    lines.unshift("Nothing overdue on the health & safety picture — checks, maintenance and vehicles all look current.");
+  }
+  return answer({
+    intent: "health_safety", answered: true, text: lines.join("\n"),
+    sources: [
+      { label: "Overdue checks", count: hs.overdue.length },
+      { label: "Actions open", count: hs.actionRequired.length },
+      { label: "Open maintenance", count: hs.openMaintenance },
+      { label: "Fire drills (90d)", count: hs.fireDrills90d },
+    ],
+    suggestions: sug(["What's due this week?", "Are we ready for inspection?", "What needs my attention?"]),
+  });
+}
+
+function skillRotaSafety(snap: AskCaraSnapshot): AskCaraAnswer {
+  const rs = snap.ops?.rotaSafety;
+  if (!rs) {
+    return answer({ intent: "rota_safety", answered: false, text: "I couldn't compute the rota-safety picture — check the rota and staffing policy are set up.", sources: [], suggestions: sug(["Who is on shift today?", "What needs my attention?"]) });
+  }
+  const lines: string[] = [rs.headline, ""];
+  const risks: string[] = [];
+  if (rs.daysUnder) risks.push(`${rs.daysUnder} period${rs.daysUnder === 1 ? "" : "s"} below minimum staffing`);
+  if (rs.nightsNoWaking) risks.push(`${rs.nightsNoWaking} night${rs.nightsNoWaking === 1 ? "" : "s"} without the required waking cover`);
+  if (rs.openShiftPeriods) risks.push(`${rs.openShiftPeriods} open shift period${rs.openShiftPeriods === 1 ? "" : "s"}`);
+  if (rs.phantomDays) risks.push(`${rs.phantomDays} period${rs.phantomDays === 1 ? "" : "s"} where someone rostered is actually on leave or sick`);
+  lines.push(risks.length ? `Next 7 days: ${risks.join("; ")}.` : "Next 7 days: cover meets the staffing policy throughout.");
+  if (rs.worst.length) {
+    lines.push("", "Fix first:");
+    for (const w of rs.worst) lines.push(`- ${w.date} (${w.period}): ${w.message}`);
+  }
+  return answer({
+    intent: "rota_safety", answered: true, text: lines.join("\n"),
+    sources: [
+      { label: "Periods under minimum", count: rs.daysUnder },
+      { label: "Nights without waking cover", count: rs.nightsNoWaking },
+      { label: "Open shifts", count: rs.openShiftPeriods },
+      { label: "Phantom cover", count: rs.phantomDays },
+    ],
+    suggestions: sug(["Who is on shift today?", "Who's overdue supervision?", "What needs my attention?"]),
+  });
+}
+
+function skillStaffWellbeing(snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+  const wb = snap.ops?.wellbeing;
+  if (!wb) {
+    return answer({ intent: "staff_wellbeing", answered: false, text: "I couldn't read the team wellbeing picture just now.", sources: [], suggestions: sug(["Who's overdue supervision?"]) });
+  }
+  // Supervision staleness — the strongest wellbeing signal we hold.
+  const byStaff = new Map<string, string>();
+  for (const sv of snap.supervisions) {
+    const prev = byStaff.get(sv.staffId);
+    if (!prev || sv.date > prev) byStaff.set(sv.staffId, sv.date);
+  }
+  const staleSupervision = snap.staff.filter((st) => {
+    const last = byStaff.get(st.id);
+    return !last || daysBetween(last, asOf) > 42;
+  }).length;
+
+  // Data minimisation: aggregate counts only — individual circumstances belong
+  // in supervision, not in an answer that could be read over a shoulder.
+  const lines: string[] = ["The team wellbeing picture (aggregate — individual circumstances stay in supervision):"];
+  lines.push(`- ${wb.openSickness} open sickness episode${wb.openSickness === 1 ? "" : "s"}.`);
+  lines.push(`- ${wb.onLeaveToday} staff member${wb.onLeaveToday === 1 ? "" : "s"} on approved leave today.`);
+  lines.push(`- ${staleSupervision} staff member${staleSupervision === 1 ? "" : "s"} without supervision in 6+ weeks — supervision is where wellbeing surfaces.`);
+  lines.push(wb.checkInsRecorded ? `- ${wb.checkInsRecorded} wellbeing check-in${wb.checkInsRecorded === 1 ? "" : "s"} recorded.` : "- No wellbeing check-ins recorded yet — worth starting; burnout is a safeguarding issue, not a personal failing.");
+  if (wb.openSickness >= 2 || staleSupervision >= 3) {
+    lines.push("", "Taken together this looks like pressure on the team — prioritise supervision and check the rota isn't relying on goodwill.");
+  }
+  return answer({
+    intent: "staff_wellbeing", answered: true, text: lines.join("\n"),
+    sources: [
+      { label: "Open sickness", count: wb.openSickness },
+      { label: "On leave today", count: wb.onLeaveToday },
+      { label: "Supervision 6w+ overdue", count: staleSupervision },
+    ],
+    suggestions: sug(["Who's overdue supervision?", "Is the rota safe this week?", "What needs my attention?"]),
+    disclaimer: "Aggregate picture only — CARA never surfaces an individual's health information. Care for the carers is part of safeguarding.",
+  });
+}
+
+function skillReg44(snap: AskCaraSnapshot): AskCaraAnswer {
+  const outstanding = snap.ops?.reg44.outstanding ?? [];
+  const text = outstanding.length === 0
+    ? "No outstanding Regulation 44 actions on record. If the last visit raised actions that aren't captured here, get them recorded so they can be tracked."
+    : `${outstanding.length} Regulation 44 action${outstanding.length === 1 ? "" : "s"} outstanding:\n${outstanding
+        .slice(0, 6)
+        .map((a) => `- ${a.label}${a.due ? ` (due ${a.due}${a.overdue ? " — OVERDUE" : ""})` : ""}`)
+        .join("\n")}\n\nThe independent person's actions are inspection-visible — close them or record why not.`;
+  return answer({
+    intent: "reg44", answered: true, text,
+    sources: [{ label: "Reg 44 actions outstanding", count: outstanding.length }, { label: "Overdue", count: outstanding.filter((a) => a.overdue).length }],
+    suggestions: sug(["Are we ready for inspection?", "What's due this week?", "What needs my attention?"]),
+  });
+}
+
 // Home level: the Inspection Intelligence engine's SCCIF projection — evidence
 // strength and gaps per judgement area. Readiness posture ONLY: CARA never
 // predicts an inspection grade (hard platform rule), and says so.
@@ -799,6 +942,14 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // must go to policy guidance, not the topic skill for that word.
   if (mentionsAny(q, ["policy", "policies", "procedure", "what does our policy", "which policy", "what's the procedure", "our guidance says", "guidance on"])) return gate("care_team", () => skillPolicy(raw, snap));
 
+  // Operational domains — reg 44, rota safety, staff wellbeing (management),
+  // health & safety (care team). The wellbeing check requires NO child in the
+  // question so "how is Alex's wellbeing" stays a child question.
+  if (mentionsAny(q, ["reg 44", "reg44", "regulation 44", "independent person", "independent visitor"])) return gate("management", () => skillReg44(snap));
+  if (mentionsAny(q, ["rota safe", "is the rota", "staffing safe", "staffing level", "staffing levels", "understaffed", "short staffed", "short-staffed", "open shift", "open shifts", "waking night", "agency", "cover this week", "cover next week", "enough staff"])) return gate("management", () => skillRotaSafety(snap));
+  if (!child && mentionsAny(q, ["wellbeing", "well-being", "burnout", "morale", "staff stress", "team stress", "staff sickness", "sickness levels", "staff coping", "staff okay", "team okay"])) return gate("management", () => skillStaffWellbeing(snap, asOf));
+  if (mentionsAny(q, ["health and safety", "health & safety", "fire safety", "fire drill", "fire drills", "premises", "maintenance", "vehicle", "vehicles", "building check", "building checks", "building risk", "building risks", "environmental risk", "gas safety", "legionella"])) return gate("care_team", () => skillHealthSafety(snap));
+
   // Home level: inspection readiness (evidence posture per SCCIF judgement area,
   // never a predicted grade). After policy so "our policy on inspections" wins.
   if (mentionsAny(q, ["inspection", "inspections", "ofsted", "inspector", "sccif", "judgement area", "judgment area", "inspection-ready", "readiness"])) {
@@ -888,3 +1039,10 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
 }
 
 export { ASK_CARA_VERSION };
+
+/**
+ * The formal name for the front door: every consumer (chat route, panels,
+ * future modules) should reach CARA's intelligence through this orchestrator —
+ * never by interpreting raw records independently.
+ */
+export const askCARAOrchestrator = answerQuestion;
