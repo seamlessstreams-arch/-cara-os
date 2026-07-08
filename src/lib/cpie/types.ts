@@ -165,6 +165,17 @@ export interface ChildTwin {
     knownTriggers: string[];
   }>;
 
+  /**
+   * Professional curiosity — patterns across the whole picture a practitioner
+   * might have missed, and the reflective questions worth sitting with. The
+   * critical friend: it NEVER diagnoses or concludes; it only helps the team
+   * stay curious. Synthesised across every other dimension.
+   */
+  curiosity: TwinDimension<{
+    noticedPatterns: string[]; // cross-dimension observations, framed as "worth noticing"
+    reflectiveQuestions: string[]; // questions to think alongside, never leading
+  }>;
+
   /** Where the picture disagrees with itself — review prompts, not verdicts. */
   contradictions: string[];
 

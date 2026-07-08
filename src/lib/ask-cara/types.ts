@@ -153,6 +153,9 @@ export interface AskCaraTwinDigest {
   livedExperienceRead: string;
   parentingPresent: string[];
   parentingThin: string[];
+  /** Professional-curiosity synthesis — patterns noticed + questions to sit with. */
+  curiosityPatterns: string[];
+  curiosityQuestions: string[];
 }
 
 /**
