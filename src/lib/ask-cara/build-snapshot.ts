@@ -204,6 +204,9 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
           memories: t.lifeStory.data.memories.slice(0, 3).map((m) => ({ title: m.title, date: m.date, childVoice: m.childVoice })),
           meaningfulMoments30d: t.livedExperience.data.meaningfulMoments30d,
           missingInformation: t.missingInformation.slice(0, 4),
+          livedExperienceRead: t.goodParenting.data.livedExperienceRead,
+          parentingPresent: t.goodParenting.data.signalsPresent.map((p) => p.label),
+          parentingThin: t.goodParenting.data.signalsThin,
         };
       })
       .filter((t): t is AskCaraTwinDigest => !!t),

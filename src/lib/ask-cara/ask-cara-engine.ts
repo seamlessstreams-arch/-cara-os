@@ -763,6 +763,40 @@ function skillChildIdentity(snap: AskCaraSnapshot, child: AskCaraChild | null): 
   });
 }
 
+// CPIE Good Parenting / Lived Experience — "does life here feel like a
+// childhood?" Narrates the twin's good-parenting read: what warmth, fun, choice
+// and ordinary childhood the records show, and what's thin — a prompt, not blame.
+function skillLivedExperience(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  if (!child) {
+    return answer({
+      intent: "lived_experience", answered: false,
+      text: "Tell me which child and I'll read how life here feels for them — the warmth, fun, choice and ordinary childhood in the records, and what's missing. E.g. \"does Alex experience a childhood here?\".",
+      sources: [],
+      suggestions: sug(snap.children.slice(0, 3).map((c) => `Does ${childLabel(c)} experience a childhood here?`)),
+    });
+  }
+  const t = twinFor(snap, child.id);
+  const name = childLabel(child);
+  if (!t) {
+    return answer({ intent: "lived_experience", answered: false, text: `I don't have a lived-experience read for ${name} yet.`, sources: [], suggestions: sug([`Tell me about ${name}`]) });
+  }
+  const lines: string[] = [t.livedExperienceRead];
+  if (t.parentingPresent.length) lines.push("", `Showing in the records: ${t.parentingPresent.join(", ").toLowerCase()}.`);
+  if (t.parentingThin.length) {
+    lines.push("", "Thin or missing — worth capturing more of (a recording prompt, not a criticism of the care):");
+    for (const g of t.parentingThin) lines.push(`- ${g}`);
+  }
+  return answer({
+    intent: "lived_experience", answered: true, text: lines.join("\n"),
+    sources: [
+      { label: "Good-parenting markers present", count: t.parentingPresent.length },
+      { label: "Markers thin/missing", count: t.parentingThin.length },
+    ],
+    suggestions: sug([`Who is ${name}?`, `How is ${name} progressing?`, `What should be in ${name}'s weekly summary?`]),
+    disclaimer: "From CARA's Digital Twin — a child should experience a childhood, not simply receive care. Thin markers flag recording gaps, never a judgement of the team.",
+  });
+}
+
 // ── Operational domains (health & safety, rota, wellbeing, reg 44) ────────────
 
 function skillHealthSafety(snap: AskCaraSnapshot): AskCaraAnswer {
@@ -1075,6 +1109,13 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // never a predicted grade). After policy so "our policy on inspections" wins.
   if (mentionsAny(q, ["inspection", "inspections", "ofsted", "inspector", "sccif", "judgement area", "judgment area", "inspection-ready", "readiness"])) {
     return gate("management", () => skillInspectionReadiness(snap));
+  }
+
+  // CPIE Good Parenting / Lived Experience — "does life here feel like a
+  // childhood?" Before identity so "childhood/lived experience/good parenting"
+  // wins over the general "who is" read.
+  if (mentionsAny(q, ["experience a childhood", "feel like a childhood", "how does life feel", "lived experience", "good parenting", "childhood here", "life feel for", "does life feel", "having a childhood", "quality of life"])) {
+    return gate("care_team", () => skillLivedExperience(snap, child));
   }
 
   // CPIE Weekly Intelligence Object — "what should be in Alex's weekly summary?"

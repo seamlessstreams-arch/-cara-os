@@ -147,6 +147,18 @@ export interface ChildTwin {
     ordinarySignals: string[]; // fun, laughter, shared meals, outings — everyday life
   }>;
 
+  /**
+   * Good-parenting intelligence — does the care read like excellent parenting?
+   * Detects warmth, praise, fun, choice, ordinary childhood and belonging in
+   * the records. A child should experience a childhood, not simply receive
+   * care. Thin signals are surfaced as prompts, never as blame.
+   */
+  goodParenting: TwinDimension<{
+    livedExperienceRead: string; // the synthesised "how does life feel here" line
+    signalsPresent: { label: string; count: number }[];
+    signalsThin: string[]; // categories with little/no evidence — a prompt to notice
+  }>;
+
   /** Risks and needs — held proportionately, never the headline. */
   risksAndNeeds: TwinDimension<{
     openRiskAreas: string[];
