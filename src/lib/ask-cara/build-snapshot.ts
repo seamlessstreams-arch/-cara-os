@@ -11,7 +11,8 @@
 import { getStore } from "@/lib/db/store";
 import { buildChildEvaluations, buildHomeEvaluation } from "@/lib/ask-cara/build-evaluations";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
-import { getWeeklyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
+import { getWeeklyIntelligenceObject, getMonthlyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
+import type { WeeklyIntelligenceObject } from "@/lib/cpie/weekly-intelligence-object";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
 import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
@@ -23,6 +24,28 @@ const s = (v: unknown): string => (typeof v === "string" ? v : "");
 
 /** Operational domains for the orchestrator — computed from the store, honest
  *  about empty collections (a gap is an answer, not an error). */
+/** Distil a CPIE period-intelligence object into the compact Ask CARA digest. */
+function wioToDigest(w: WeeklyIntelligenceObject): AskCaraWeeklyDigest {
+  return {
+    childId: w.childId,
+    weekStart: w.weekStart,
+    weekEnding: w.weekEnding,
+    picture: w.week.picture,
+    who: w.wholeChild.who,
+    directionOfTravel: w.wholeChild.directionOfTravel,
+    achievements: w.week.achievements.map((a) => a.title),
+    celebrations: w.week.celebrations,
+    childVoiceMoments: w.week.childVoiceMoments.map((m) => m.quote),
+    emotionalWellbeing: w.week.emotionalWellbeing,
+    qualityStandardsEvidence: w.qualityStandardsEvidence,
+    fiveOutcomesEvidence: w.fiveOutcomesEvidence,
+    emergingThemes: w.emergingThemes,
+    recommendations: w.recommendations,
+    evidenceConfidence: w.evidenceConfidence,
+    missingInformation: w.missingInformation,
+  };
+}
+
 function buildOpsIntelligence(store: ReturnType<typeof getStore>, todayIso: string): AskCaraOpsIntelligence | undefined {
   try {
     const st = store as unknown as Record<string, unknown[]>;
@@ -122,6 +145,7 @@ function buildOpsIntelligence(store: ReturnType<typeof getStore>, todayIso: stri
 export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSnapshot {
   const returnInterviews = (store.returnInterviews ?? []) as Array<{ episode_id?: string; missing_episode_id?: string; child_id?: string }>;
   const rec = (c: unknown) => (c ?? []) as Array<Record<string, unknown>>;
+  const currentChildren = rec(store.youngPeople).filter((c) => (s(c.status) || "current") === "current");
   // Earliest upcoming (or most recent) LAC review per child.
   const lacNext = new Map<string, string>();
   for (const r of rec(store.lacReviews)) {
@@ -213,31 +237,16 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
     // CPIE Weekly Intelligence Object digests — the structured weekly pre-report
     // per child, so "what should be in Alex's weekly summary?" reads the
     // intelligence rather than re-deriving it.
-    weekly: rec(store.youngPeople)
-      .filter((c) => (s(c.status) || "current") === "current")
-      .map((c): AskCaraWeeklyDigest | null => {
-        const w = getWeeklyIntelligenceObject(String(c.id));
-        if (!w) return null;
-        return {
-          childId: w.childId,
-          weekStart: w.weekStart,
-          weekEnding: w.weekEnding,
-          picture: w.week.picture,
-          who: w.wholeChild.who,
-          directionOfTravel: w.wholeChild.directionOfTravel,
-          achievements: w.week.achievements.map((a) => a.title),
-          celebrations: w.week.celebrations,
-          childVoiceMoments: w.week.childVoiceMoments.map((m) => m.quote),
-          emotionalWellbeing: w.week.emotionalWellbeing,
-          qualityStandardsEvidence: w.qualityStandardsEvidence,
-          fiveOutcomesEvidence: w.fiveOutcomesEvidence,
-          emergingThemes: w.emergingThemes,
-          recommendations: w.recommendations,
-          evidenceConfidence: w.evidenceConfidence,
-          missingInformation: w.missingInformation,
-        };
-      })
-      .filter((w): w is AskCaraWeeklyDigest => !!w),
+    weekly: currentChildren
+      .map((c) => getWeeklyIntelligenceObject(String(c.id)))
+      .filter((w): w is WeeklyIntelligenceObject => !!w)
+      .map(wioToDigest),
+    // CPIE Monthly Intelligence Object digests — same shape, 30-day window, so a
+    // "monthly summary" request reads a month, not the last 7 days.
+    monthly: currentChildren
+      .map((c) => getMonthlyIntelligenceObject(String(c.id)))
+      .filter((w): w is WeeklyIntelligenceObject => !!w)
+      .map(wioToDigest),
     // Operational domains — health & safety, rota safety, wellbeing, reg 44.
     ops: buildOpsIntelligence(store, new Date().toISOString().slice(0, 10)),
   };

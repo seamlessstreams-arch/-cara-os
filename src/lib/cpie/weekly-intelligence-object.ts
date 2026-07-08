@@ -25,7 +25,11 @@ interface Rec {
 export interface WeeklyIntelligenceInput {
   twin: ChildTwin;
   now: string; // injected ISO → deterministic
-  weekEnding: string; // ISO date (YYYY-MM-DD), inclusive end of the 7-day window
+  weekEnding: string; // ISO date (YYYY-MM-DD), inclusive end of the window
+  /** Window length in days (default 7 = weekly; 30 ≈ monthly). */
+  windowDays?: number;
+  /** Word for the period in narrated text ("week" | "month"). Default "week". */
+  periodLabel?: string;
   positiveAchievements: Rec[];
   lifeStoryEntries: Rec[];
   incidents: Rec[];
@@ -48,8 +52,10 @@ export interface WeeklyEvidenceLine {
 export interface WeeklyIntelligenceObject {
   childId: string;
   name: string;
-  weekStart: string;
-  weekEnding: string;
+  weekStart: string; // period start (inclusive)
+  weekEnding: string; // period end (inclusive)
+  periodLabel: string; // "week" | "month"
+  windowDays: number;
   generatedAt: string;
   engineVersion: string;
 
@@ -111,8 +117,10 @@ function inWeek(dateStr: unknown, start: string, end: string): boolean {
 
 export function buildWeeklyIntelligenceObject(input: WeeklyIntelligenceInput): WeeklyIntelligenceObject {
   const { twin, now, weekEnding } = input;
+  const windowDays = input.windowDays && input.windowDays > 0 ? input.windowDays : 7;
+  const periodLabel = input.periodLabel || "week";
   const end = weekEnding.slice(0, 10);
-  const start = addDays(end, -6);
+  const start = addDays(end, -(windowDays - 1));
   const childId = twin.childId;
   const name = twin.name;
   const mine = <T extends Rec>(rows: T[]): T[] => rows.filter((r) => s(r.child_id) === childId || s(r.childId) === childId);
@@ -187,8 +195,8 @@ export function buildWeeklyIntelligenceObject(input: WeeklyIntelligenceInput): W
   if (weekIncidents.length) pictureParts.push(`${weekIncidents.length} incident${weekIncidents.length === 1 ? "" : "s"}`);
   if (weekMissing.length) pictureParts.push(`${weekMissing.length} missing episode${weekMissing.length === 1 ? "" : "s"}`);
   const picture = pictureParts.length
-    ? `A week of ${pictureParts.join(", ")}. Direction of travel: ${twin.progress.data.trajectory ?? "not yet readable"}.`
-    : `A quiet week on the records for ${name} — check ordinary life and voice are being captured, not only events.`;
+    ? `A ${periodLabel} of ${pictureParts.join(", ")}. Direction of travel: ${twin.progress.data.trajectory ?? "not yet readable"}.`
+    : `A quiet ${periodLabel} on the records for ${name} — check ordinary life and voice are being captured, not only events.`;
 
   // ── Quality Standards evidence (emit only where evidenced) ──────────────────
   const qs: WeeklyEvidenceLine[] = [];
@@ -240,6 +248,8 @@ export function buildWeeklyIntelligenceObject(input: WeeklyIntelligenceInput): W
     name,
     weekStart: start,
     weekEnding: end,
+    periodLabel,
+    windowDays,
     generatedAt: now,
     engineVersion: WEEKLY_ENGINE_VERSION,
     wholeChild: {

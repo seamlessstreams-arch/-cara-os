@@ -350,6 +350,8 @@ export interface AskCaraSnapshot {
   twins?: AskCaraTwinDigest[];
   /** CPIE Weekly Intelligence Object digests — the structured weekly pre-report. */
   weekly?: AskCaraWeeklyDigest[];
+  /** CPIE Monthly Intelligence Object digests — same shape, 30-day window. */
+  monthly?: AskCaraWeeklyDigest[];
   /** Operational domains: health & safety, rota safety, wellbeing, reg 44. */
   ops?: AskCaraOpsIntelligence;
 }
