@@ -11,10 +11,11 @@
 import { getStore } from "@/lib/db/store";
 import { buildChildEvaluations, buildHomeEvaluation } from "@/lib/ask-cara/build-evaluations";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
+import { getWeeklyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
 import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
-import type { AskCaraOpsIntelligence, AskCaraTwinDigest } from "@/lib/ask-cara/types";
+import type { AskCaraOpsIntelligence, AskCaraTwinDigest, AskCaraWeeklyDigest } from "@/lib/ask-cara/types";
 import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
 
 const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
@@ -206,6 +207,34 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
         };
       })
       .filter((t): t is AskCaraTwinDigest => !!t),
+    // CPIE Weekly Intelligence Object digests — the structured weekly pre-report
+    // per child, so "what should be in Alex's weekly summary?" reads the
+    // intelligence rather than re-deriving it.
+    weekly: rec(store.youngPeople)
+      .filter((c) => (s(c.status) || "current") === "current")
+      .map((c): AskCaraWeeklyDigest | null => {
+        const w = getWeeklyIntelligenceObject(String(c.id));
+        if (!w) return null;
+        return {
+          childId: w.childId,
+          weekStart: w.weekStart,
+          weekEnding: w.weekEnding,
+          picture: w.week.picture,
+          who: w.wholeChild.who,
+          directionOfTravel: w.wholeChild.directionOfTravel,
+          achievements: w.week.achievements.map((a) => a.title),
+          celebrations: w.week.celebrations,
+          childVoiceMoments: w.week.childVoiceMoments.map((m) => m.quote),
+          emotionalWellbeing: w.week.emotionalWellbeing,
+          qualityStandardsEvidence: w.qualityStandardsEvidence,
+          fiveOutcomesEvidence: w.fiveOutcomesEvidence,
+          emergingThemes: w.emergingThemes,
+          recommendations: w.recommendations,
+          evidenceConfidence: w.evidenceConfidence,
+          missingInformation: w.missingInformation,
+        };
+      })
+      .filter((w): w is AskCaraWeeklyDigest => !!w),
     // Operational domains — health & safety, rota safety, wellbeing, reg 44.
     ops: buildOpsIntelligence(store, new Date().toISOString().slice(0, 10)),
   };

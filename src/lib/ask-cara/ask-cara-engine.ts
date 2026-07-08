@@ -660,6 +660,57 @@ function skillChildRelationships(snap: AskCaraSnapshot, child: AskCaraChild | nu
 
 const twinFor = (snap: AskCaraSnapshot, childId: string) => (snap.twins ?? []).find((t) => t.childId === childId);
 
+// CPIE Weekly Intelligence Object — the first consumer of the deterministic
+// pre-report object. Narrates what an experienced RM would put in the weekly
+// summary, drawn from the structured intelligence, never re-derived.
+function skillWeeklySummary(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  if (!child) {
+    return answer({
+      intent: "weekly_summary", answered: false,
+      text: "Tell me which child and I'll set out what their weekly summary should cover — e.g. \"what should be in Alex's weekly summary?\".",
+      sources: [],
+      suggestions: sug((snap.weekly ?? snap.twins ?? []).slice(0, 3).map((t) => `What should be in ${childLabel(snap.children.find((c) => c.id === t.childId) ?? ({ id: t.childId } as AskCaraChild))}'s weekly summary?`)),
+    });
+  }
+  const w = (snap.weekly ?? []).find((x) => x.childId === child.id);
+  const name = childLabel(child);
+  if (!w) {
+    return answer({ intent: "weekly_summary", answered: false, text: `I don't have enough recorded for ${name} to build a weekly summary yet.`, sources: [], suggestions: sug([`Tell me about ${name}`]) });
+  }
+
+  const lines: string[] = [
+    `Here's what ${name}'s weekly summary should cover (${w.weekStart} → ${w.weekEnding}) — a starting draft from the records, for you to shape:`,
+    "",
+    `**Who ${name} is:** ${w.who}. Direction of travel: ${w.directionOfTravel}.`,
+    `**The week:** ${w.picture}`,
+  ];
+  if (w.achievements.length) lines.push(`**Achievements:** ${w.achievements.join("; ")}.${w.celebrations.length ? ` Celebrated: ${w.celebrations.join("; ")}.` : ""}`);
+  if (w.childVoiceMoments.length) lines.push(`**${name}'s voice:** ${w.childVoiceMoments.map((v) => `"${v}"`).join(" · ")}`);
+  lines.push(`**Emotional wellbeing:** ${w.emotionalWellbeing}`);
+  if (w.qualityStandardsEvidence.length) {
+    lines.push("", "**Quality Standards evidence:**");
+    for (const e of w.qualityStandardsEvidence) lines.push(`- ${e.label}: ${e.evidence}`);
+  }
+  if (w.fiveOutcomesEvidence.length) {
+    lines.push("", "**Five Outcomes evidence:**");
+    for (const e of w.fiveOutcomesEvidence) lines.push(`- ${e.label}: ${e.evidence}`);
+  }
+  if (w.emergingThemes.length) lines.push("", `**Emerging themes:** ${w.emergingThemes.join(" ")}`);
+  if (w.recommendations.length) lines.push("", `**For next week:** ${w.recommendations.join(" ")}`);
+  lines.push("", `Evidence confidence: ${w.evidenceConfidence}.${w.missingInformation.length ? ` Gaps to close first: ${w.missingInformation.slice(0, 2).join("; ")}` : ""}`);
+
+  return answer({
+    intent: "weekly_summary", answered: true, text: lines.join("\n"),
+    sources: [
+      { label: "Achievements this week", count: w.achievements.length },
+      { label: "Quality Standards evidenced", count: w.qualityStandardsEvidence.length },
+      { label: "Five Outcomes evidenced", count: w.fiveOutcomesEvidence.length },
+    ],
+    suggestions: sug([`How is ${name} progressing?`, `What triggers ${name}?`, `Who is ${name}?`]),
+    disclaimer: "A drafting aid from CARA's Weekly Intelligence Object — your professional summary, shaped by you, remains the record.",
+  });
+}
+
 function skillChildIdentity(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
   if (!child) {
     return answer({
@@ -1024,6 +1075,13 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // never a predicted grade). After policy so "our policy on inspections" wins.
   if (mentionsAny(q, ["inspection", "inspections", "ofsted", "inspector", "sccif", "judgement area", "judgment area", "inspection-ready", "readiness"])) {
     return gate("management", () => skillInspectionReadiness(snap));
+  }
+
+  // CPIE Weekly Intelligence Object — "what should be in Alex's weekly summary?"
+  // reads the structured pre-report object, not re-derived records. Before the
+  // identity/progress reads so "summary" wins over the topic keywords it contains.
+  if (mentionsAny(q, ["weekly summary", "weekly report", "week summary", "summarise the week", "summarize the week", "summary of the week", "this week's summary", "what should be in", "should go in the summary", "monthly summary", "write up the week", "sum up the week"])) {
+    return gate("care_team", () => skillWeeklySummary(snap, child));
   }
 
   // CPIE Digital Twin — "who is this child?" (identity before incident). Guarded
