@@ -46,6 +46,8 @@ export type AskCaraIntent =
   | "rota_safety"
   | "staff_wellbeing"
   | "reg44"
+  | "org_learning"
+  | "safer_recruitment"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -175,6 +177,17 @@ export interface AskCaraOpsIntelligence {
   };
   reg44: {
     outstanding: { label: string; due?: string; overdue: boolean }[];
+  };
+  /** Organisational learning — themes the home is learning from (§21 report digest). */
+  orgLearning?: {
+    headline: string;
+    themes: { section: string; title: string; detail: string }[];
+    totalEvidence: number;
+  };
+  /** Safer recruitment — STAFF FILE currency (compliance posture, never a
+   * character judgement; suitability decisions stay human). */
+  saferRecruitment: {
+    staff: { staffId: string; name: string; hasDbs: boolean; dbsAgedOver3y: boolean; onUpdateService: boolean }[];
   };
 }
 
