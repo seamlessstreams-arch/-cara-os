@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { db } from "@/lib/db/store";
+import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import type { Incident } from "@/types";
 import type {
   MissingEpisode,
@@ -36,6 +37,22 @@ export interface Reg44ChildSnapshot {
   social_worker_name: string;
   iro_name: string | null;
   status: string;
+  /**
+   * Whole-child progress EVIDENCE from the CPIE Digital Twin — so the visitor
+   * sees each child as a person making progress, not only a set of risk flags.
+   * This is evidence to weigh, NEVER an opinion or a Quality-Standards status:
+   * the two statutory opinions and the QS judgements remain entirely the
+   * independent visitor's. Optional — absent when the twin can't be read.
+   */
+  progress?: {
+    who: string;
+    directionOfTravel: string; // improving | stable | declining
+    relationalStatus: string; // secure | developing | fragile
+    emotionalStatus: string; // secure | watch | concern
+    recentAchievements: string[];
+    childVoice: string[];
+    missingInformation: string[];
+  };
 }
 
 export interface Reg44Pack {
@@ -97,6 +114,25 @@ function inWindow(date: string | null | undefined, w: Reg44Window): boolean {
   return d >= w.start && d <= w.end;
 }
 
+/**
+ * Whole-child progress evidence for the visitor, distilled from the CPIE
+ * Digital Twin. Evidence only — no opinion, no QS status, no safeguarding
+ * conclusion. Returns undefined when the twin can't be read.
+ */
+function childProgressEvidence(childId: string): Reg44ChildSnapshot["progress"] {
+  const twin = getChildTwin(childId);
+  if (!twin) return undefined;
+  return {
+    who: twin.identity.data.interests.slice(0, 3).join(", ") || twin.strengths.data.strengths[0] || "—",
+    directionOfTravel: twin.progress.data.trajectory ?? "not yet readable",
+    relationalStatus: twin.relationships.data.relationalStatus ?? "developing",
+    emotionalStatus: twin.emotional.data.status ?? "unknown",
+    recentAchievements: twin.strengths.data.achievements.slice(0, 3).map((a) => a.title),
+    childVoice: twin.voice.data.recentQuotes.slice(0, 2).map((q) => q.quote),
+    missingInformation: twin.missingInformation.slice(0, 3),
+  };
+}
+
 // ── Engine ───────────────────────────────────────────────────────────────────
 
 export function generateReg44Pack(
@@ -120,6 +156,7 @@ export function generateReg44Pack(
     social_worker_name: y.social_worker_name,
     iro_name: y.iro_name,
     status: y.status,
+    progress: childProgressEvidence(y.id),
   }));
 
   const incidents = db.incidents
