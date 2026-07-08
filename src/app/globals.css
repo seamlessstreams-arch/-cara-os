@@ -607,6 +607,16 @@ body {
 }
 /* (2) shim — hardcoded neutrals → dark equivalents (specificity beats utilities) */
 .cara-dark .bg-white { background-color: #111b33 !important; }
+/* shadcn semantic surfaces: bg-card / bg-popover / bg-background resolve their
+   Tailwind theme var (--color-card …) which does NOT inherit the .cara-dark
+   token retune, so they render pure white on dark pages (behaviour-log, child
+   profiles, incidents, board-reporting …). Pin them to the dark surfaces, and
+   lift their paired foreground text so cards never read dark-on-dark. */
+.cara-dark .bg-card, .cara-dark .bg-popover { background-color: var(--cs-surface-elevated) !important; }
+.cara-dark .bg-background { background-color: var(--cs-bg) !important; }
+.cara-dark .bg-muted { background-color: rgba(255, 255, 255, 0.05) !important; }
+.cara-dark .text-card-foreground, .cara-dark .text-popover-foreground, .cara-dark .text-foreground { color: var(--cs-text) !important; }
+.cara-dark .text-muted-foreground { color: var(--cs-text-muted) !important; }
 .cara-dark .bg-slate-50, .cara-dark .bg-gray-50, .cara-dark .bg-zinc-50 { background-color: rgba(255, 255, 255, 0.035) !important; }
 .cara-dark .bg-slate-100, .cara-dark .bg-gray-100, .cara-dark .bg-zinc-100 { background-color: rgba(255, 255, 255, 0.065) !important; }
 .cara-dark .bg-slate-200, .cara-dark .bg-gray-200 { background-color: rgba(255, 255, 255, 0.10) !important; }
