@@ -12,6 +12,8 @@ import { getStore } from "@/lib/db/store";
 import { buildChildEvaluations, buildHomeEvaluation } from "@/lib/ask-cara/build-evaluations";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
+import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
+import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
 import type { AskCaraOpsIntelligence, AskCaraTwinDigest } from "@/lib/ask-cara/types";
 import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
 
@@ -74,11 +76,42 @@ function buildOpsIntelligence(store: ReturnType<typeof getStore>, todayIso: stri
       .filter((t) => /reg(ulation)?\s*\.?\s*44/i.test(s(t.title)) && !done(t.status) && s(t.status) !== "cancelled")
       .map((t) => ({ label: s(t.title), due: day(t.due_date) || undefined, overdue: !!day(t.due_date) && day(t.due_date) < todayIso }));
 
+    // Organisational learning — the §21 report digest via the shared mapper.
+    let orgLearning: AskCaraOpsIntelligence["orgLearning"];
+    try {
+      const report = buildOrgLearningReport(buildOrgLearningInputFromStore(store, todayIso, "quarter"));
+      orgLearning = {
+        headline: report.headline,
+        themes: report.sections
+          .filter((sec) => !sec.insufficientData && sec.themes.length)
+          .flatMap((sec) => sec.themes.slice(0, 1).map((t) => ({ section: sec.label, title: t.title, detail: t.detail })))
+          .slice(0, 5),
+        totalEvidence: report.totalEvidence,
+      };
+    } catch { /* the skill answers honestly without it */ }
+
+    // Safer recruitment — staff FILE currency only (DBS presence/age/update
+    // service). Compliance posture, never a character judgement.
+    const threeYearsAgo = addDays(todayIso, -365 * 3);
+    const saferRecruitment = {
+      staff: ((store.staff ?? []) as Array<Record<string, unknown>>)
+        .filter((st) => st.is_active !== false)
+        .map((st) => ({
+          staffId: String(st.id),
+          name: s(st.full_name) || [st.first_name, st.last_name].filter(Boolean).join(" ") || String(st.id),
+          hasDbs: !!s(st.dbs_number),
+          dbsAgedOver3y: !!day(st.dbs_issue_date) && day(st.dbs_issue_date) < threeYearsAgo && !st.dbs_update_service,
+          onUpdateService: !!st.dbs_update_service,
+        })),
+    };
+
     return {
       healthSafety: { overdue, actionRequired, openMaintenance, fireDrills90d, vehicleChecksOverdue },
       rotaSafety,
       wellbeing: { openSickness, onLeaveToday, checkInsRecorded },
       reg44: { outstanding: [...reg44FromRecords, ...reg44FromTasks] },
+      orgLearning,
+      saferRecruitment,
     };
   } catch {
     return undefined;

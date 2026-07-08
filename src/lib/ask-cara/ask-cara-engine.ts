@@ -829,6 +829,74 @@ function skillReg44(snap: AskCaraSnapshot): AskCaraAnswer {
   });
 }
 
+function skillOrgLearning(snap: AskCaraSnapshot): AskCaraAnswer {
+  const ol = snap.ops?.orgLearning;
+  if (!ol) {
+    return answer({ intent: "org_learning", answered: false, text: "I couldn't build the organisational-learning picture just now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  }
+  const lines: string[] = [ol.headline];
+  if (ol.themes.length) {
+    lines.push("", "What the records say we're learning:");
+    for (const t of ol.themes) lines.push(`- ${t.title} (${t.section.toLowerCase()}): ${t.detail}`);
+    lines.push("", "Learning only counts when it changes practice — check each theme has an owner and shows up in supervision and team meetings.");
+  } else {
+    lines.push("", "No learning themes could be read from this period — either a quiet period, or learning is happening without being recorded. That gap is itself worth reviewing.");
+  }
+  return answer({
+    intent: "org_learning", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Learning themes", count: ol.themes.length }, { label: "Evidence items", count: ol.totalEvidence }],
+    suggestions: sug(["Are we ready for inspection?", "What needs my attention?", "How is the home doing?"]),
+  });
+}
+
+const resolveStaffMember = (q: string, snap: AskCaraSnapshot) =>
+  snap.staff.find((st) => {
+    const first = st.name.split(/\s+/)[0];
+    return first.length >= 3 && mentionsAny(q, [first, st.name]);
+  });
+
+function skillSaferRecruitment(q: string, snap: AskCaraSnapshot, asOf: string): AskCaraAnswer {
+  const sr = snap.ops?.saferRecruitment;
+  if (!sr) {
+    return answer({ intent: "safer_recruitment", answered: false, text: "I couldn't read the staff-file picture just now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  }
+
+  // Named staff member → their FILE currency (never a character judgement).
+  const named = resolveStaffMember(q, snap);
+  if (named) {
+    const file = sr.staff.find((x) => x.staffId === named.id);
+    const training = snap.training.filter((t) => t.staffId === named.id);
+    const lapsed = training.filter((t) => t.status === "expired" || t.status === "expiring_soon" || (t.mandatory && t.status === "not_started"));
+    const lastSup = snap.supervisions.filter((sv) => sv.staffId === named.id).map((sv) => sv.date).sort().slice(-1)[0];
+    const lines: string[] = [`${named.name} — file currency (compliance posture, not a judgement of suitability; that decision stays human):`];
+    lines.push(`- DBS: ${file?.hasDbs ? (file.onUpdateService ? "on record, Update Service" : file.dbsAgedOver3y ? "on record but issued over 3 years ago and not on the Update Service — renewal review due" : "on record") : "NOT on record — resolve before lone working"}.`);
+    lines.push(`- Training: ${lapsed.length ? `${lapsed.length} item${lapsed.length === 1 ? "" : "s"} lapsed or due (${lapsed.slice(0, 3).map((t) => t.course).join(", ")})` : "no lapsed items on record"}.`);
+    lines.push(`- Supervision: ${lastSup ? `last recorded ${lastSup}${daysBetween(lastSup, asOf) > 42 ? " — over 6 weeks ago" : ""}` : "none on record"}.`);
+    return answer({
+      intent: "safer_recruitment", answered: true, text: lines.join("\n"),
+      sources: [{ label: "DBS on record", count: file?.hasDbs ? 1 : 0 }, { label: "Training lapsed/due", count: lapsed.length }],
+      suggestions: sug(["Are staff files compliant?", "Who's overdue supervision?", "Who's overdue training?"]),
+      disclaimer: "File currency from the records — safer recruitment and suitability decisions remain the manager's, made in the round.",
+    });
+  }
+
+  // Whole-team file posture.
+  const noDbs = sr.staff.filter((x) => !x.hasDbs);
+  const renewalDue = sr.staff.filter((x) => x.dbsAgedOver3y);
+  const onUpdate = sr.staff.filter((x) => x.onUpdateService).length;
+  const lines: string[] = [];
+  lines.push(noDbs.length ? `${noDbs.length} staff file${noDbs.length === 1 ? "" : "s"} with NO DBS recorded: ${noDbs.map((x) => x.name).join(", ")} — resolve before lone working.` : "Every active staff member has a DBS on record.");
+  if (renewalDue.length) lines.push(`${renewalDue.length} DBS issued over 3 years ago and not on the Update Service: ${renewalDue.map((x) => x.name).join(", ")} — renewal review due.`);
+  lines.push(`${onUpdate} of ${sr.staff.length} on the DBS Update Service.`);
+  lines.push("", 'Ask about a named person for their file detail — e.g. "is Marcus\'s file compliant?"');
+  return answer({
+    intent: "safer_recruitment", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Active staff files", count: sr.staff.length }, { label: "No DBS recorded", count: noDbs.length }, { label: "Renewal review due", count: renewalDue.length }],
+    suggestions: sug(["Who's overdue training?", "Who's overdue supervision?", "Are we ready for inspection?"]),
+    disclaimer: "File currency from the records — safer recruitment and suitability decisions remain the manager's, made in the round.",
+  });
+}
+
 // Home level: the Inspection Intelligence engine's SCCIF projection — evidence
 // strength and gaps per judgement area. Readiness posture ONLY: CARA never
 // predicts an inspection grade (hard platform rule), and says so.
@@ -946,6 +1014,8 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // health & safety (care team). The wellbeing check requires NO child in the
   // question so "how is Alex's wellbeing" stays a child question.
   if (mentionsAny(q, ["reg 44", "reg44", "regulation 44", "independent person", "independent visitor"])) return gate("management", () => skillReg44(snap));
+  if (mentionsAny(q, ["organisational learning", "organizational learning", "learning themes", "what are we learning", "lessons learned", "learning from incidents", "emerging themes", "themes are emerging", "learning culture"])) return gate("management", () => skillOrgLearning(snap));
+  if (mentionsAny(q, ["safer recruitment", "safe to work", "suitable to work", "staff file", "staff files", "file compliant", "files compliant", "dbs", "vetting", "recruitment checks"])) return gate("management", () => skillSaferRecruitment(q, snap, asOf));
   if (mentionsAny(q, ["rota safe", "is the rota", "staffing safe", "staffing level", "staffing levels", "understaffed", "short staffed", "short-staffed", "open shift", "open shifts", "waking night", "agency", "cover this week", "cover next week", "enough staff"])) return gate("management", () => skillRotaSafety(snap));
   if (!child && mentionsAny(q, ["wellbeing", "well-being", "burnout", "morale", "staff stress", "team stress", "staff sickness", "sickness levels", "staff coping", "staff okay", "team okay"])) return gate("management", () => skillStaffWellbeing(snap, asOf));
   if (mentionsAny(q, ["health and safety", "health & safety", "fire safety", "fire drill", "fire drills", "premises", "maintenance", "vehicle", "vehicles", "building check", "building checks", "building risk", "building risks", "environmental risk", "gas safety", "legionella"])) return gate("care_team", () => skillHealthSafety(snap));
