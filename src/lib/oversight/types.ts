@@ -517,6 +517,21 @@ export interface QualityAssuranceRouting {
   includeInChildReview?: boolean;
 }
 
+/**
+ * Context for the practice lens — everything loaded and known that a review
+ * must consider: the record narrative (for the contextual-safeguarding scan),
+ * the child's Digital Twin distillation (via the CPIE chokepoint, never raw
+ * records), and the involved staff's training rows.
+ */
+export interface PracticeLensContext {
+  narrativeText?: string;
+  childTriggers?: string[];
+  childWhatHelps?: string[];
+  childPhrasesThatEscalate?: string[];
+  childStrengths?: string[];
+  staffTraining?: { staffName: string; course: string; status: string; mandatory?: boolean }[];
+}
+
 export interface OversightInput {
   oversightMode: OversightMode;
   recordType: RecordType;
@@ -547,6 +562,9 @@ export interface OversightInput {
   staffLearningContext?: StaffLearningContext;
   contextualPracticeFactors?: ContextualPracticeFactors;
   qualityAssuranceRouting?: QualityAssuranceRouting;
+  /** The full-practice-intelligence lens (contextual safeguarding scan, the
+   * child's Digital Twin, training currency, loaded frameworks). */
+  practiceLensContext?: PracticeLensContext;
 
   // Evidence-quality flags (the main record)
   antecedentsIncluded?: boolean;

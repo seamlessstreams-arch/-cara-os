@@ -58,6 +58,15 @@ export interface IncidentHydrationContext {
   today: string;
   oversightMode?: OversightMode;
   reviewedByRole?: string;
+  /** Distilled practice-lens context: the child's Digital Twin read (via the
+   * CPIE chokepoint — never raw records) + training rows for involved staff. */
+  practiceLens?: {
+    childTriggers?: string[];
+    childWhatHelps?: string[];
+    childPhrasesThatEscalate?: string[];
+    childStrengths?: string[];
+    staffTraining?: { staffName: string; course: string; status: string; mandatory?: boolean }[];
+  };
 }
 
 function ageFromDob(dob: string | null | undefined, today: string): number | undefined {
@@ -148,6 +157,12 @@ export function incidentToOversightInput(incident: Incident, ctx: IncidentHydrat
     reviewedByRole: ctx.reviewedByRole ?? "registered_manager",
     recordDate: incident.date,
     summary: incident.description ?? undefined,
+    // The full practice-intelligence lens: raw narrative for the contextual-
+    // safeguarding scan + the twin/training distillation supplied by the route.
+    practiceLensContext: {
+      narrativeText: `${incident.description ?? ""} ${incident.immediate_action ?? ""}`.trim(),
+      ...(ctx.practiceLens ?? {}),
+    },
     existingRiskLevel: SEVERITIES.includes(incident.severity as RiskLevel) ? (incident.severity as RiskLevel) : undefined,
 
     // Evidence-quality flags — honestly derived from what the record actually
