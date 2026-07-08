@@ -40,6 +40,7 @@ export type AskCaraIntent =
   | "child_progress"
   | "child_triggers"
   | "child_relationships"
+  | "child_identity"
   | "inspection_readiness"
   | "prohibited"
   | "shadow_ai_route"
@@ -123,6 +124,23 @@ export interface AskCaraChildEvaluation {
     repairs: number;
     ruptures: number;
   };
+}
+
+/**
+ * Compact digest of the CPIE Digital Twin — the whole-child dimensions
+ * (identity, strengths, aspirations, memories, voice) Ask CARA narrates so a
+ * child is never defined by incidents alone. Full twin: src/lib/cpie.
+ */
+export interface AskCaraTwinDigest {
+  childId: string;
+  interests: string[];
+  whatMakesThemHappy: string[];
+  strengths: string[];
+  recentAchievements: { title: string; date: string; celebratedHow?: string }[];
+  aspirations: { aspiration: string; whyItMatters?: string }[];
+  memories: { title: string; date: string; childVoice?: string }[];
+  meaningfulMoments30d: number;
+  missingInformation: string[];
 }
 
 /**
@@ -250,6 +268,8 @@ export interface AskCaraSnapshot {
   evaluations?: AskCaraChildEvaluation[];
   /** Home-level read from the Inspection Intelligence engine (optional). */
   homeEvaluation?: AskCaraHomeEvaluation;
+  /** CPIE Digital-Twin digests — the whole-child picture per child (optional). */
+  twins?: AskCaraTwinDigest[];
 }
 
 export interface AskCaraContext {

@@ -132,6 +132,12 @@ function skillChildSummary(child: AskCaraChild, snap: AskCaraSnapshot, asOf: str
   const lines: string[] = [];
   const bio = [age !== null ? `${age} years old` : null, child.legalStatus ? child.legalStatus : null].filter(Boolean).join(", ");
   lines.push(`${name}${bio ? ` — ${bio}` : ""}. Key worker: ${staffName(snap, child.keyWorkerId)}.`);
+  // CPIE: the person before the paperwork — never define a child by incidents.
+  const twin = (snap.twins ?? []).find((t) => t.childId === child.id);
+  if (twin && (twin.interests.length || twin.strengths.length)) {
+    const bits = [twin.interests.slice(0, 4).join(", "), twin.strengths[0]].filter(Boolean);
+    lines.push(`Who ${name} is: ${bits.join(" · ")}.`);
+  }
   const network = [child.socialWorker ? `social worker ${child.socialWorker}` : null, child.iro ? `IRO ${child.iro}` : null, child.school ? `school ${child.school}` : null].filter(Boolean);
   if (network.length) lines.push(`Around ${name}: ${network.join("; ")}.`);
   if (child.allergies && child.allergies.length) lines.push(`⚠ Allergies: ${child.allergies.join(", ")}.`);
@@ -624,6 +630,62 @@ function skillChildRelationships(snap: AskCaraSnapshot, child: AskCaraChild | nu
   });
 }
 
+// ── CPIE Digital Twin: the whole child (identity before incident) ─────────────
+
+const twinFor = (snap: AskCaraSnapshot, childId: string) => (snap.twins ?? []).find((t) => t.childId === childId);
+
+function skillChildIdentity(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  if (!child) {
+    return answer({
+      intent: "child_identity", answered: false,
+      text: "Tell me which child — e.g. \"who is Alex?\" — and I'll tell you who they are: their strengths, interests, aspirations and the moments that matter, not just their records.",
+      sources: [],
+      suggestions: sug(snap.children.slice(0, 3).map((c) => `Who is ${childLabel(c)}?`)),
+    });
+  }
+  const t = twinFor(snap, child.id);
+  const name = childLabel(child);
+  if (!t) {
+    return answer({ intent: "child_identity", answered: false, text: `I don't have a whole-child picture for ${name} yet.`, sources: [], suggestions: sug([`Tell me about ${name}`]) });
+  }
+
+  const lines: string[] = [];
+  const loves = [...t.interests.slice(0, 5)];
+  if (loves.length) lines.push(`${name} loves ${loves.join(", ").replace(/, ([^,]*)$/, " and $1")}.`);
+  if (t.strengths.length) lines.push(`Strengths (in ${name}'s own words): ${t.strengths.join("; ")}.`);
+  if (t.whatMakesThemHappy.length) lines.push(`What makes ${name} happy: ${t.whatMakesThemHappy.slice(0, 4).join(", ")}.`);
+  if (t.recentAchievements.length) {
+    lines.push("", "Recently celebrated:");
+    for (const a of t.recentAchievements) lines.push(`- ${a.title}${a.celebratedHow ? ` — ${a.celebratedHow.toLowerCase()}` : ""}`);
+  }
+  if (t.aspirations.length) {
+    lines.push("", `Who ${name} is becoming:`);
+    for (const a of t.aspirations) lines.push(`- ${a.aspiration}${a.whyItMatters ? ` — ${a.whyItMatters}` : ""}`);
+  }
+  const mem = t.memories.find((m) => m.childVoice);
+  if (mem) lines.push("", `A memory that will matter: ${mem.title}. In ${name}'s words: "${mem.childVoice}"`);
+  if (t.missingInformation.length) {
+    lines.push("", `What we haven't captured yet: ${t.missingInformation.slice(0, 2).map((g) => g.replace(/—.*$/, "").replace(/[.\s]+$/, "").trim().toLowerCase()).join("; ")}.`);
+  }
+  if (lines.length === 0) {
+    lines.push(`The records hold very little about who ${name} IS — interests, strengths, aspirations, memories. That gap is worth closing before anything else: a child should never be defined by incidents alone.`);
+  }
+
+  return answer({
+    intent: "child_identity",
+    answered: true,
+    text: lines.join("\n"),
+    sources: [
+      { label: "Digital Twin — identity & strengths", count: t.interests.length + t.strengths.length },
+      { label: "Achievements", count: t.recentAchievements.length },
+      { label: "Aspirations", count: t.aspirations.length },
+      { label: "Life-story memories", count: t.memories.length },
+    ],
+    suggestions: sug([`How is ${name} progressing?`, `What triggers ${name}?`, `Tell me about ${name}`]),
+    disclaimer: "From CARA's Digital Twin — the living, deterministic picture of the whole child, built from their records and their own words.",
+  });
+}
+
 // Home level: the Inspection Intelligence engine's SCCIF projection — evidence
 // strength and gaps per judgement area. Readiness posture ONLY: CARA never
 // predicts an inspection grade (hard platform rule), and says so.
@@ -741,6 +803,19 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   // never a predicted grade). After policy so "our policy on inspections" wins.
   if (mentionsAny(q, ["inspection", "inspections", "ofsted", "inspector", "sccif", "judgement area", "judgment area", "inspection-ready", "readiness"])) {
     return gate("management", () => skillInspectionReadiness(snap));
+  }
+
+  // CPIE Digital Twin — "who is this child?" (identity before incident). Guarded
+  // so contact questions ("who is Alex's social worker?") still reach contacts.
+  if (
+    child &&
+    !mentionsAny(q, ["social worker", "iro", "gp", "contact", "contacts"]) &&
+    mentionsAny(q, ["who is", "who's", "what is", "like as a person", "enjoy", "enjoys", "interests", "interested in", "hobbies", "good at", "strengths", "strength", "aspiration", "aspirations", "dreams", "wants to be", "happy", "proud", "achievement", "achievements", "celebrate", "celebrated", "celebrations", "life story", "memories", "memory", "passport"])
+  ) {
+    // "what is X's trigger"-style questions belong to the trigger read below.
+    if (!mentionsAny(q, ["trigger", "triggers", "calm", "calms", "regulate", "escalates"])) {
+      return gate("care_team", () => skillChildIdentity(snap, child));
+    }
   }
 
   // Evaluation reads (leg three) — a question about a NAMED child's triggers,

@@ -10,6 +10,8 @@
 
 import { getStore } from "@/lib/db/store";
 import { buildChildEvaluations, buildHomeEvaluation } from "@/lib/ask-cara/build-evaluations";
+import { getChildTwin } from "@/lib/cpie/get-child-twin";
+import type { AskCaraTwinDigest } from "@/lib/ask-cara/types";
 import type { AskCaraSnapshot } from "@/lib/ask-cara/types";
 
 const day = (v: unknown): string => (typeof v === "string" ? v.slice(0, 10) : "");
@@ -83,5 +85,25 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
     evaluations: buildChildEvaluations(store, new Date().toISOString()),
     // Home level: the Inspection Intelligence SCCIF projection (no-grade).
     homeEvaluation: buildHomeEvaluation(store, new Date().toISOString()),
+    // CPIE Digital-Twin digests — the whole-child picture (identity, strengths,
+    // aspirations, memories, voice) so no child is defined by incidents alone.
+    twins: rec(store.youngPeople)
+      .filter((c) => (s(c.status) || "current") === "current")
+      .map((c): AskCaraTwinDigest | null => {
+        const t = getChildTwin(String(c.id));
+        if (!t) return null;
+        return {
+          childId: t.childId,
+          interests: t.identity.data.interests,
+          whatMakesThemHappy: t.identity.data.whatMakesThemHappy,
+          strengths: t.strengths.data.strengths,
+          recentAchievements: t.strengths.data.achievements.slice(0, 3).map((a) => ({ title: a.title, date: a.date, celebratedHow: a.celebratedHow })),
+          aspirations: t.aspirations.data.aspirations.slice(0, 3).map((a) => ({ aspiration: a.aspiration, whyItMatters: a.whyItMatters })),
+          memories: t.lifeStory.data.memories.slice(0, 3).map((m) => ({ title: m.title, date: m.date, childVoice: m.childVoice })),
+          meaningfulMoments30d: t.livedExperience.data.meaningfulMoments30d,
+          missingInformation: t.missingInformation.slice(0, 4),
+        };
+      })
+      .filter((t): t is AskCaraTwinDigest => !!t),
   };
 }
