@@ -27,14 +27,30 @@ const INSIGHT_STYLES: Record<string, string> = {
   positive: "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]",
 };
 
+// Theme-aware stat tile. Uses --cs tokens (which the dark reskin overrides) so
+// the number and label stay readable in both the light and dark themes —
+// raw bg-green-50 / text-slate-600 do not, and the dark shim saturated them.
+function StatTile({ value, label, tone = "neutral" }: { value: React.ReactNode; label: string; tone?: "neutral" | "success" | "warning" }) {
+  const styles =
+    tone === "success" ? "border-[--cs-success-soft] bg-[--cs-success-bg] text-[--cs-success]"
+    : tone === "warning" ? "border-[--cs-warning-soft] bg-[--cs-warning-bg] text-[--cs-warning]"
+    : "border-[--cs-border] bg-[--cs-surface] text-[--cs-text]";
+  return (
+    <div className={cn("text-center rounded-lg border p-2", styles)}>
+      <p className="text-lg font-bold tabular-nums">{value}</p>
+      <p className="text-[10px] text-[--cs-text-muted]">{label}</p>
+    </div>
+  );
+}
+
 export function HandoverPrompt() {
   const { data, isLoading } = useSupervisionIntelligence();
 
   if (isLoading) {
     return (
-      <Card className="overflow-hidden border-slate-200">
+      <Card className="overflow-hidden border-[--cs-border]">
         <CardContent className="flex items-center justify-center py-12">
-          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+          <Loader2 className="h-5 w-5 animate-spin text-[--cs-text-muted]" />
         </CardContent>
       </Card>
     );
@@ -43,43 +59,32 @@ export function HandoverPrompt() {
   const d = data?.data;
   const insights = d?.insights ?? [];
   const alerts = d?.alerts ?? [];
+  const overdue = d?.overview?.supervisions_overdue ?? 0;
 
   return (
-    <Card className="overflow-hidden border-slate-200">
-      <CardHeader className="pb-3 bg-slate-50/50">
+    <Card className="overflow-hidden border-[--cs-border]">
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2">
-            <ArrowRightLeft className="h-4 w-4 text-slate-600" />
-            <span className="text-slate-900">Handover Prompt</span>
+            <ArrowRightLeft className="h-4 w-4 text-[--cs-text-muted]" />
+            <span className="text-[--cs-text]">Handover Prompt</span>
           </CardTitle>
-          <Link href="/supervision" className="text-xs text-slate-600 hover:underline flex items-center gap-1">
+          <Link href="/supervision" className="text-xs text-[--cs-text-muted] hover:text-[--cs-text] hover:underline flex items-center gap-1">
             View <ChevronRight className="h-3 w-3" />
           </Link>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-4 gap-2">
-          <div className="text-center rounded-lg bg-slate-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-slate-600">{d?.overview?.total_staff ?? 0}</p>
-            <p className="text-[10px] text-muted-foreground">Staff</p>
-          </div>
-          <div className="text-center rounded-lg bg-green-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-green-600">{d?.overview?.supervisions_completed_90d ?? 0}</p>
-            <p className="text-[10px] text-muted-foreground">Done 90d</p>
-          </div>
-          <div className={cn("text-center rounded-lg p-2", (d?.overview?.supervisions_overdue ?? 0) > 0 ? "bg-amber-50" : "bg-green-50")}>
-            <p className={cn("text-lg font-bold tabular-nums", (d?.overview?.supervisions_overdue ?? 0) > 0 ? "text-[--cs-warning]" : "text-[--cs-success]")}>{d?.overview?.supervisions_overdue ?? 0}</p>
-            <p className="text-[10px] text-muted-foreground">Overdue</p>
-          </div>
-          <div className="text-center rounded-lg bg-green-50 p-2">
-            <p className="text-lg font-bold tabular-nums text-green-600">{Math.round(d?.overview?.action_completion_rate ?? 0)}%</p>
-            <p className="text-[10px] text-muted-foreground">Actions %</p>
-          </div>
+          <StatTile value={d?.overview?.total_staff ?? 0} label="Staff" />
+          <StatTile value={d?.overview?.supervisions_completed_90d ?? 0} label="Done 90d" tone="success" />
+          <StatTile value={overdue} label="Overdue" tone={overdue > 0 ? "warning" : "success"} />
+          <StatTile value={`${Math.round(d?.overview?.action_completion_rate ?? 0)}%`} label="Actions %" tone="success" />
         </div>
 
         {alerts.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-muted-foreground flex items-center gap-1">
+            <p className="text-xs font-semibold text-[--cs-text-muted] flex items-center gap-1">
               <AlertTriangle className="h-3 w-3" />
               Alerts
             </p>
@@ -93,7 +98,7 @@ export function HandoverPrompt() {
 
         {insights.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-xs font-semibold flex items-center gap-1 text-purple-700">
+            <p className="text-xs font-semibold flex items-center gap-1 text-[--cs-text-secondary]">
               <Brain className="h-3 w-3" />
               Cara Handover Prompt Intelligence
             </p>
