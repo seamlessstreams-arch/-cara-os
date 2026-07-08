@@ -63,8 +63,10 @@ describe("Oversight — full practice-intelligence lens", () => {
   it("grounds the reflection in the loaded frameworks by record type", () => {
     const restraint = buildPracticeLens(base({ recordType: "physical_intervention", practiceLensContext: { narrativeText: "hold used" } }));
     expect(restraint.knowledgeGrounding.join(" ")).toMatch(/PACE|repair/i);
-    const missing = buildPracticeLens(base({ recordType: "missing_from_care", practiceLensContext: { narrativeText: "left the home" } }));
+    const missing = buildPracticeLens(base({ recordType: "missing_episode", practiceLensContext: { narrativeText: "left the home" } }));
     expect(missing.knowledgeGrounding.join(" ").toLowerCase()).toContain("contextual safeguarding");
+    const safeguarding = buildPracticeLens(base({ recordType: "safeguarding", practiceLensContext: { narrativeText: "a concern was raised" } }));
+    expect(safeguarding.knowledgeGrounding.length).toBeGreaterThan(0);
   });
 
   it("flows into buildCaraIntelligence and the generated professional draft", () => {

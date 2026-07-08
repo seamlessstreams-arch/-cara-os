@@ -28,6 +28,8 @@ import {
   CARA_WRITING_STYLE_PROMPT,
   applyCaraPostprocessor,
 } from "@/lib/cara/writingStyleRules";
+import { buildPracticeLens } from "@/lib/oversight/practice-lens";
+import type { PracticeLensContext, RecordType as WorkflowRecordType } from "@/lib/oversight/types";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -86,6 +88,9 @@ export interface OversightInput {
   authorName?: string;
   knownChildContext?: string;
   enableLlm?: boolean;
+  /** The full-practice-intelligence lens context (twin distillation + staff
+   * training) — supplied by the route via the CPIE chokepoint. */
+  practiceLensContext?: PracticeLensContext;
 }
 
 export interface SuggestedAction {
@@ -121,6 +126,9 @@ export interface OversightReview {
   strengths: string[];
   suggestedActions: SuggestedAction[];
   regulatoryLinks: string[];
+  /** Full practice-intelligence lens: contextual safeguarding, the child's
+   * twin, training currency, framework grounding. */
+  practiceLensFindings: string[];
 
   caraConfidence: number;
   llmUsed: boolean;
@@ -838,6 +846,43 @@ export async function analyseRecord(input: OversightInput): Promise<OversightRev
     ),
   );
 
+  // ── Full practice-intelligence lens ─────────────────────────────────────
+  // The same lens as the workflow oversight engine: contextual-safeguarding
+  // scan of the record text, the child's Digital Twin (what helps/escalates),
+  // training currency and framework grounding. Adapter maps this engine's
+  // record vocabulary onto the workflow RecordType values the lens keys on.
+  const LENS_RECORD_TYPE: Record<RecordType, WorkflowRecordType> = {
+    daily_log: "daily_log",
+    shift_debrief: "daily_log",
+    incident_report: "incident",
+    missing_from_care: "missing_episode",
+    disclosure: "safeguarding",
+    safeguarding: "safeguarding",
+    medication: "medication",
+    key_work: "key_work",
+    education: "education",
+    health: "health",
+    complaint: "complaint",
+    consequence_restorative: "sanction_or_consequence",
+    room_search: "room_search",
+    family_time: "contact",
+  };
+  const lens = buildPracticeLens({
+    oversightMode: "professional",
+    recordType: LENS_RECORD_TYPE[input.recordType] ?? "incident",
+    childName: input.childPseudonym,
+    practiceLensContext: {
+      narrativeText: text,
+      ...(input.practiceLensContext ?? {}),
+    },
+  });
+  const practiceLensFindings = [
+    ...lens.contextualSafeguarding,
+    ...lens.childLens,
+    ...lens.trainingConsiderations,
+    ...lens.knowledgeGrounding,
+  ];
+
   const partial = {
     riskLevel,
     practiceJudgement,
@@ -869,6 +914,7 @@ export async function analyseRecord(input: OversightInput): Promise<OversightRev
     strengths,
     suggestedActions,
     regulatoryLinks,
+    practiceLensFindings,
     caraConfidence: Math.round(caraConfidence * 100) / 100,
     llmUsed: false,
     engineVersion: ENGINE_VERSION,
@@ -881,6 +927,12 @@ export async function analyseRecord(input: OversightInput): Promise<OversightRev
       review.ofstedSummary = enhanced.ofstedSummary;
       review.llmUsed = true;
     }
+  }
+
+  // Appended AFTER any LLM enhancement so the deterministic lens always
+  // survives into the draft the manager reads.
+  if (practiceLensFindings.length) {
+    review.oversightDraft = `${review.oversightDraft}\n\nPractice intelligence considered. ${practiceLensFindings.join(" ")}`;
   }
 
   return review;
