@@ -5,6 +5,8 @@ import {
   computeChild360,
   type Child360Input,
 } from "@/lib/engines/child-360-intelligence-engine";
+import { getChildTwin } from "@/lib/cpie/get-child-twin";
+import { buildCpie360Spine } from "@/lib/cpie/child-360-spine";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
@@ -230,5 +232,12 @@ export async function GET(req: NextRequest) {
   };
 
   const result = computeChild360(input);
-  return NextResponse.json({ data: result });
+
+  // Consolidation: the whole-child spine comes from the canonical CPIE Digital
+  // Twin (the same layer Ask CARA, weekly/monthly summaries and the Reg 44 pack
+  // read) — not re-derived here. The 360 analytics below are supporting detail.
+  const twin = getChildTwin(childId);
+  const cpie = twin ? buildCpie360Spine(twin) : null;
+
+  return NextResponse.json({ data: result, cpie });
 }

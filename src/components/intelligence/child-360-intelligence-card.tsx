@@ -75,8 +75,10 @@ export function Child360IntelligenceCard({ childId }: { childId: string }) {
 
   const d = data?.data;
   if (!d) return null;
+  const cpie = data?.cpie;
 
   const wbStyle = WELLBEING_STYLES[d.overall_wellbeing] ?? WELLBEING_STYLES.stable;
+  const firstName = d.child_name.split(" ")[0];
 
   return (
     <Card className="overflow-hidden border-slate-200">
@@ -94,6 +96,28 @@ export function Child360IntelligenceCard({ childId }: { childId: string }) {
         <p className="text-xs text-muted-foreground mt-1">{d.headline}</p>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* CPIE whole-child spine — who this child is, from the canonical Digital
+            Twin (the same layer Ask CARA, weekly/monthly summaries and Reg 44
+            read). The person first; the analytics below are supporting detail. */}
+        {cpie && (
+          <div className="rounded-lg border border-teal-200 bg-teal-50/50 p-2.5 space-y-1">
+            <div className="flex items-center gap-1.5">
+              <Heart className="h-3.5 w-3.5 text-teal-600" />
+              <p className="text-xs font-semibold text-teal-900">Who {firstName} is</p>
+              <span className="ml-auto text-[10px] text-teal-700/70">CARA Digital Twin</span>
+            </div>
+            {cpie.who && cpie.who !== "—" && (
+              <p className="text-xs text-slate-700"><span className="font-medium">Loves:</span> {cpie.who}.{cpie.strengths.length ? ` Strengths: ${cpie.strengths.join(", ")}.` : ""}</p>
+            )}
+            <p className="text-xs text-slate-700">{cpie.livedExperienceRead}</p>
+            {cpie.childVoice && (
+              <p className="text-xs italic text-slate-600">“{cpie.childVoice}”</p>
+            )}
+            {cpie.curiosityPrompt && (
+              <p className="text-[11px] text-teal-800/90"><span className="font-medium">Worth asking:</span> {cpie.curiosityPrompt}</p>
+            )}
+          </div>
+        )}
         {/* Domain Health Matrix */}
         <div className="space-y-1.5">
           <p className="text-xs font-semibold text-muted-foreground">Domain Health</p>
