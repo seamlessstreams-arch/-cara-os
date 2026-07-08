@@ -390,14 +390,23 @@ function skillReflector(snap: AskCaraSnapshot, asOf: string, child: AskCaraChild
     const context = `${name} has had ${inc.length} incident${inc.length === 1 ? "" : "s"}${restraints.length ? ` and ${restraints.length} restraint${restraints.length === 1 ? "" : "s"}` : ""} in the last 30 days.`;
     const lines = [
       `Let's reflect on your practice with ${name}. ${inc.length + restraints.length > 0 ? context : `There's little on record for ${name} recently — that itself is worth noticing.`}`,
-      "",
-      `- What do you think sits underneath ${name}'s behaviour — what might they be trying to tell us?`,
-      `- What would ${name} say helps them feel safe and settled? Is their voice in the record?`,
-      "- Whose perspective is missing here — the child's, a colleague's, a family member's?",
-      "- What went well that you could do more of, deliberately?",
-      "- What's one thing you'd do differently, and what would you need to do it?",
     ];
-    return answer({ intent: "reflector", answered: true, text: lines.join("\n"), sources: [{ label: "Incidents (30d)", count: inc.length }, { label: "Restraints (30d)", count: restraints.length }], suggestions: sug([`Tell me about ${name}`, `What triggers ${name}?`, "What needs my attention?"]), disclaimer: "These are reflective prompts to think alongside — not judgements. There are no wrong answers; the point is to notice." });
+    // Ground the reflection in the twin's professional-curiosity synthesis — the
+    // cross-dimension patterns CARA notices — before the general prompts.
+    const twin = (snap.twins ?? []).find((t) => t.childId === child.id);
+    if (twin && twin.curiosityPatterns.length) {
+      lines.push("", `What CARA notices across ${name}'s whole picture:`);
+      for (const p of twin.curiosityPatterns) lines.push(`- ${p}`);
+    }
+    lines.push("", "Questions worth sitting with:");
+    const curiosity = twin?.curiosityQuestions.length ? twin.curiosityQuestions : [
+      `What do you think sits underneath ${name}'s behaviour — what might they be trying to tell us?`,
+      `What would ${name} say helps them feel safe and settled? Is their voice in the record?`,
+      "Whose perspective is missing here — the child's, a colleague's, a family member's?",
+      "What's one thing you'd do differently, and what would you need to do it?",
+    ];
+    for (const q of curiosity.slice(0, 5)) lines.push(`- ${q}`);
+    return answer({ intent: "reflector", answered: true, text: lines.join("\n"), sources: [{ label: "Patterns noticed", count: twin?.curiosityPatterns.length ?? 0 }, { label: "Incidents (30d)", count: inc.length }, { label: "Restraints (30d)", count: restraints.length }], suggestions: sug([`Tell me about ${name}`, `What triggers ${name}?`, "What needs my attention?"]), disclaimer: "These are reflective prompts to think alongside — not judgements. CARA notices patterns; it never diagnoses. There are no wrong answers; the point is to stay curious." });
   }
   const lines = [
     "Let's reflect together. Take a moment with these — there are no wrong answers:",

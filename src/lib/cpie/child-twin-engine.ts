@@ -425,6 +425,52 @@ export function buildChildTwin(input: ChildTwinInput): ChildTwin {
     contradictions.push("Ruptures outnumber repairs while the emotional read looks settled — worth checking the repair work is actually being recorded.");
   }
 
+  // ── Professional curiosity (patterns across the whole picture) ─────────────
+  // The critical friend: synthesise cross-dimension signals into things worth
+  // NOTICING and questions worth SITTING WITH. Never diagnoses, never concludes.
+  const noticedPatterns: string[] = [];
+  const reflectiveQuestions: string[] = [];
+  // Progress up, but recognition thin → is progress being celebrated WITH them?
+  if (progress.data.trajectory === "improving" && livedExperience.data.celebrations.length === 0) {
+    noticedPatterns.push(`${childName} is making progress, but little celebration is recorded.`);
+    reflectiveQuestions.push(`${childName} is doing well — is that being noticed and marked WITH them, not just logged?`);
+  }
+  // Rising escalation → what has changed recently?
+  if (emotional.data.status === "concern" && emotional.data.trend === "rising") {
+    reflectiveQuestions.push(`Escalations are rising for ${childName} — what has changed recently at home, school, in contact or relationships that might explain it?`);
+  }
+  // Ruptures outpacing repairs → what would repair look like?
+  if ((relationships.data.ruptures ?? 0) > (relationships.data.repairs ?? 0)) {
+    noticedPatterns.push(`Ruptures are outpacing repairs for ${childName}.`);
+    reflectiveQuestions.push(`What would a repair conversation look like for ${childName}, and who is best placed to lead it?`);
+  }
+  // Aspiration recorded but no next steps → recorded or actively supported?
+  const stalledAspiration = aspirationDim.data.aspirations.find((a) => a.nextSteps.length === 0);
+  if (stalledAspiration) {
+    reflectiveQuestions.push(`${childName}'s aspiration — "${stalledAspiration.aspiration}" — has no next steps recorded. Is it being actively supported, or just noted?`);
+  }
+  // Lived experience thin → childhood, or only the care?
+  if (goodParenting.data.signalsThin.length >= 4) {
+    reflectiveQuestions.push(`Is ${childName} getting a childhood here, or is the record only capturing the care? What ordinary, joyful moments are going unrecorded?`);
+  }
+  // Voice absent → whose account is missing?
+  if (voice.data.recentQuotes.length === 0) {
+    noticedPatterns.push(`${childName}'s own words aren't appearing in the records.`);
+    reflectiveQuestions.push(`Whose account are we relying on — is ${childName}'s own voice in the record?`);
+  }
+  // Carry the contradictions in as curiosity, too.
+  for (const c of contradictions) reflectiveQuestions.push(c);
+  // A whole-picture backstop when nothing specific fired.
+  if (reflectiveQuestions.length === 0) {
+    reflectiveQuestions.push(`What might we be assuming about ${childName} that we haven't checked lately?`, `What does ${childName} need next — and what would the team need to do it well?`);
+  }
+  const curiosityWeight = noticedPatterns.length * 2 + Math.min(reflectiveQuestions.length, 4);
+  const curiosity = dim(
+    { noticedPatterns, reflectiveQuestions },
+    curiosityWeight > 0 ? [{ source: "Cross-dimension synthesis", weight: Math.min(curiosityWeight, 6) }] : [],
+    [],
+  );
+
   // ── Missing information rollup ──────────────────────────────────────────────
   const missingInformation = [
     ...identity.gaps,
@@ -452,6 +498,7 @@ export function buildChildTwin(input: ChildTwinInput): ChildTwin {
     protectiveFactors,
     livedExperience,
     goodParenting,
+    curiosity,
     risksAndNeeds,
     contradictions,
     missingInformation,

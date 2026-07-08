@@ -231,6 +231,8 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
           livedExperienceRead: t.goodParenting.data.livedExperienceRead,
           parentingPresent: t.goodParenting.data.signalsPresent.map((p) => p.label),
           parentingThin: t.goodParenting.data.signalsThin,
+          curiosityPatterns: t.curiosity.data.noticedPatterns,
+          curiosityQuestions: t.curiosity.data.reflectiveQuestions,
         };
       })
       .filter((t): t is AskCaraTwinDigest => !!t),
