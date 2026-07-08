@@ -15,6 +15,7 @@
 import { buildEmotionalSafetyAnalysis, type EmotionalSafetyInput } from "@/lib/emotional-safety/emotional-safety-engine";
 import { buildOutcomeIntelligence, type OutcomeIntelligenceInput } from "@/lib/outcome-intelligence/outcome-intelligence-engine";
 import { buildRelationalTimeline, type RelationalTimelineInput } from "@/lib/relational-timeline/relational-timeline-engine";
+import { mentionsAny } from "@/lib/text/keyword-match";
 import {
   CPIE_VERSION,
   type ChildTwin,
@@ -104,6 +105,18 @@ function extractQuote(text: string): string | undefined {
   const m = text.match(/["“”']([^"“”']{4,160})["“”']/);
   return m?.[1];
 }
+
+// Good-parenting signal cues. Word-boundary matched via mentionsAny (which also
+// allows an optional plural "s"), so past-tense forms are listed explicitly and
+// substrings never false-fire ("fun" ≠ "funeral", "park" ≠ "sparkling").
+const GOOD_PARENTING_CUES: { label: string; cues: string[] }[] = [
+  { label: "Warmth & comfort", cues: ["hug", "hugged", "cuddle", "cuddled", "comforted", "reassured", "sat with", "arm around", "tucked in", "looked after", "gentle", "kind"] },
+  { label: "Praise & encouragement", cues: ["praised", "proud", "well done", "encouraged", "celebrated", "acknowledged", "pleased with", "recognised"] },
+  { label: "Fun & laughter", cues: ["laughed", "laughing", "giggled", "joked", "joking", "fun", "played", "smiled", "smiling", "banter", "game"] },
+  { label: "Choice & voice", cues: ["chose", "choice", "decided", "wanted to", "asked to", "picked", "his say", "her say"] },
+  { label: "Ordinary childhood", cues: ["cooked", "baked", "baking", "trip", "outing", "cinema", "park", "walk", "swimming", "shopping", "fishing", "climbing", "guitar", "reading", "bike", "meal", "dinner", "breakfast"] },
+  { label: "Belonging & togetherness", cues: ["together", "family", "shared", "movie night", "game night", "everyone", "round the table", "as a group"] },
+];
 
 // ── The engine ─────────────────────────────────────────────────────────────────
 
@@ -361,6 +374,40 @@ export function buildChildTwin(input: ChildTwinInput): ChildTwin {
     meaningful === 0 ? ["Little evidence of joy, celebration or ordinary childhood moments in the last 30 days — is the childhood being recorded, or only the care?"] : [],
   );
 
+  // ── Good parenting / lived experience (would this feel like a childhood?) ──
+  // Detects warmth, praise, fun, choice, ordinary childhood and belonging in the
+  // recent daily records — word-boundary matched (mentionsAny), never substring.
+  // Thin categories are surfaced as prompts to notice, never as blame.
+  const recentLogText = logs.filter((l) => withinDays(s(l.date), now, 30)).map((l) => s(l.content));
+  const parentingPresent: { label: string; count: number }[] = [];
+  const parentingThin: string[] = [];
+  const parentingEvidence: TwinEvidence[] = [];
+  for (const cat of GOOD_PARENTING_CUES) {
+    const count = recentLogText.filter((t) => mentionsAny(t, cat.cues)).length;
+    if (count > 0) {
+      parentingPresent.push({ label: cat.label, count });
+      parentingEvidence.push({ source: `Good parenting — ${cat.label}`, weight: count >= 3 ? 3 : 2, note: `${count} log(s)` });
+    } else {
+      parentingThin.push(`Little recorded ${cat.label.toLowerCase()}`);
+    }
+  }
+  const presentN = parentingPresent.length;
+  let livedRead: string;
+  if (recentLogText.length === 0) {
+    livedRead = `No recent daily records to read ${childName}'s lived experience from.`;
+  } else if (presentN >= 5) {
+    livedRead = `Life here reads like a childhood for ${childName}: ${parentingPresent.slice(0, 3).map((p) => p.label.toLowerCase()).join(", ")} all show in the records. This is good parenting on the page.`;
+  } else if (presentN >= 3) {
+    livedRead = `There's warmth and ordinary life here (${parentingPresent.slice(0, 3).map((p) => p.label.toLowerCase()).join(", ")}), but ${parentingThin.slice(0, 2).map((t) => t.replace("Little recorded ", "").toLowerCase()).join(" and ")} are thin — worth capturing more of the everyday childhood.`;
+  } else {
+    livedRead = `${childName}'s records read as care delivered more than a childhood lived — plenty may be happening, but warmth, fun, choice and ordinary experiences aren't being captured. That gap matters as much as any incident.`;
+  }
+  const goodParenting = dim(
+    { livedExperienceRead: livedRead, signalsPresent: parentingPresent, signalsThin: parentingThin },
+    parentingEvidence,
+    recentLogText.length === 0 ? ["No daily logs to read the lived experience from."] : parentingThin.length >= 4 ? ["Most markers of an ordinary childhood are missing from the records — review whether the childhood is being lived, or just the care recorded."] : [],
+  );
+
   // ── Risks & needs (proportionate — never the headline) ─────────────────────
   const openRisks = [...new Set(mine(input.riskAssessments).flatMap((r) => arr(r.risk_areas ?? r.categories)))];
   const risksAndNeeds = dim(
@@ -404,6 +451,7 @@ export function buildChildTwin(input: ChildTwinInput): ChildTwin {
     progress,
     protectiveFactors,
     livedExperience,
+    goodParenting,
     risksAndNeeds,
     contradictions,
     missingInformation,

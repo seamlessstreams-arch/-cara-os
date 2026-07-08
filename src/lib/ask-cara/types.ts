@@ -49,6 +49,7 @@ export type AskCaraIntent =
   | "org_learning"
   | "safer_recruitment"
   | "weekly_summary"
+  | "lived_experience"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -148,6 +149,10 @@ export interface AskCaraTwinDigest {
   memories: { title: string; date: string; childVoice?: string }[];
   meaningfulMoments30d: number;
   missingInformation: string[];
+  /** Good-parenting / lived-experience read (does life here feel like a childhood?). */
+  livedExperienceRead: string;
+  parentingPresent: string[];
+  parentingThin: string[];
 }
 
 /**
