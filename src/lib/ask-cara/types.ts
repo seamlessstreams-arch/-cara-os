@@ -42,6 +42,10 @@ export type AskCaraIntent =
   | "child_relationships"
   | "child_identity"
   | "inspection_readiness"
+  | "health_safety"
+  | "rota_safety"
+  | "staff_wellbeing"
+  | "reg44"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -141,6 +145,37 @@ export interface AskCaraTwinDigest {
   memories: { title: string; date: string; childVoice?: string }[];
   meaningfulMoments30d: number;
   missingInformation: string[];
+}
+
+/**
+ * Operational intelligence for the orchestrator's non-child domains:
+ * health & safety / premises, rota safety, staff wellbeing (aggregate only —
+ * data-minimised, no individual health detail), and Regulation 44 actions.
+ */
+export interface AskCaraOpsIntelligence {
+  healthSafety: {
+    overdue: { label: string; dueDate?: string; area?: string }[];
+    actionRequired: { label: string; action: string }[];
+    openMaintenance: number;
+    fireDrills90d: number;
+    vehicleChecksOverdue: number;
+  };
+  rotaSafety?: {
+    headline: string;
+    daysUnder: number;
+    nightsNoWaking: number;
+    openShiftPeriods: number;
+    phantomDays: number;
+    worst: { date: string; period: string; message: string }[];
+  };
+  wellbeing: {
+    openSickness: number;
+    onLeaveToday: number;
+    checkInsRecorded: number;
+  };
+  reg44: {
+    outstanding: { label: string; due?: string; overdue: boolean }[];
+  };
 }
 
 /**
@@ -270,6 +305,8 @@ export interface AskCaraSnapshot {
   homeEvaluation?: AskCaraHomeEvaluation;
   /** CPIE Digital-Twin digests — the whole-child picture per child (optional). */
   twins?: AskCaraTwinDigest[];
+  /** Operational domains: health & safety, rota safety, wellbeing, reg 44. */
+  ops?: AskCaraOpsIntelligence;
 }
 
 export interface AskCaraContext {
