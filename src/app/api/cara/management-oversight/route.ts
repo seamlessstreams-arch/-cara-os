@@ -22,6 +22,8 @@ import {
   type RecordType,
   ENGINE_VERSION,
 } from "@/lib/cara/managementOversightEngine";
+import { getChildTwin } from "@/lib/cpie/get-child-twin";
+import { getStore } from "@/lib/db/store";
 
 // Tables in this module are not yet in the generated Database type, so we use
 // a loosely-typed client wrapper. The schema is enforced by migration 010 +
@@ -97,6 +99,26 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Full practice-intelligence lens: the child's Digital Twin (via the CPIE
+  // chokepoint — never raw records) + training rows for the record's author.
+  const twin = childId ? getChildTwin(childId) : null;
+  const store = getStore();
+  const author = authorName
+    ? (store.staff ?? []).find(
+        (st) => (st.full_name ?? `${st.first_name ?? ""} ${st.last_name ?? ""}`.trim()) === authorName || st.id === authorName,
+      )
+    : undefined;
+  const staffTraining = author
+    ? (store.trainingRecords ?? [])
+        .filter((t) => t.staff_id === author.id)
+        .map((t) => ({
+          staffName: author.full_name ?? authorName ?? author.id,
+          course: t.course_name ?? "Training",
+          status: t.status ?? "unknown",
+          mandatory: !!t.is_mandatory,
+        }))
+    : [];
+
   const input: OversightInput = {
     recordId,
     recordType: recordType as RecordType,
@@ -109,6 +131,13 @@ export async function POST(req: NextRequest) {
     authorName,
     knownChildContext,
     enableLlm,
+    practiceLensContext: {
+      childTriggers: twin?.emotional.data.triggers,
+      childWhatHelps: twin?.emotional.data.whatHelps,
+      childPhrasesThatEscalate: twin?.emotional.data.phrasesThatEscalate,
+      childStrengths: twin?.strengths.data.strengths,
+      staffTraining,
+    },
   };
 
   let review: OversightReview;

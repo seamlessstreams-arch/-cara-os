@@ -38,12 +38,14 @@ const EXTRA_FAMILIAL_CUES = [
   "different area", "out of area", "postcode", "county lines", "carrying", "package", "train station",
 ];
 
-/** Which training matters for which record type (word-boundary matched on course name). */
+/** Which training matters for which record type (matched on course name).
+ *  Keys are the workflow RecordType values hydrate actually emits. */
 const TRAINING_RELEVANCE: Record<string, string[]> = {
   physical_intervention: ["restraint", "physical intervention", "team teach", "mapa", "pi refresher", "positive handling"],
-  safeguarding_concern: ["safeguarding"],
-  missing_from_care: ["safeguarding", "missing"],
-  medication_error: ["medication"],
+  safeguarding: ["safeguarding"],
+  allegation: ["safeguarding", "safer recruitment"],
+  missing_episode: ["safeguarding", "missing"],
+  medication: ["medication"],
   incident: ["de-escalation", "behaviour", "safeguarding"],
 };
 
@@ -129,10 +131,10 @@ export function buildPracticeLens(input: OversightInput): PracticeLensFindings {
     if (pace) out.knowledgeGrounding.push(`${pace.title}: ${pace.principles.slice(0, 4).join(" · ")} — the repair conversation matters as much as the hold; check it happened and was recorded.`);
     const q = behaviourDriverQuestions()[0];
     if (q) out.knowledgeGrounding.push(`Behaviour-driver lens: ${q.question}`);
-  } else if (rt === "missing_from_care") {
+  } else if (rt === "missing_episode") {
     const q = contextualSafeguardingQuestions()[1] ?? contextualSafeguardingQuestions()[0];
     if (q) out.knowledgeGrounding.push(`Contextual Safeguarding lens: ${q.question}`);
-  } else if (rt === "safeguarding_concern") {
+  } else if (rt === "safeguarding" || rt === "allegation") {
     const trauma = getEntriesByTag("trauma-informed")[0];
     if (trauma) out.knowledgeGrounding.push(`${trauma.title}: ${trauma.principles.slice(0, 3).join(" · ")}.`);
   } else {
