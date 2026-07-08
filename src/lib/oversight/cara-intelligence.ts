@@ -8,12 +8,15 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { OversightInput, TherapeuticModel } from "./types";
+import { buildPracticeLens } from "./practice-lens";
 
 export interface CaraIntelligenceFindings {
   livedExperienceConsiderations: string[];
   patternFindings: string[];
   professionalCuriosityFindings: string[];
   therapeuticTags: string[];
+  /** The full-practice-intelligence lens, labelled for consumers that render it distinctly. */
+  practiceLensFindings: string[];
 }
 
 export function buildCaraIntelligence(input: OversightInput): CaraIntelligenceFindings {
@@ -22,6 +25,7 @@ export function buildCaraIntelligence(input: OversightInput): CaraIntelligenceFi
     patternFindings: [],
     professionalCuriosityFindings: [],
     therapeuticTags: [],
+    practiceLensFindings: [],
   };
 
   // ── Lived experience ──────────────────────────────────────────────────────
@@ -100,6 +104,23 @@ export function buildCaraIntelligence(input: OversightInput): CaraIntelligenceFi
   // ── Therapeutic model lens ────────────────────────────────────────────────
   out.therapeuticTags.push(...therapeuticTags(input.therapeuticModel));
   out.professionalCuriosityFindings.push(...therapeuticCuriosity(input.therapeuticModel, input));
+
+  // ── Full practice-intelligence lens ───────────────────────────────────────
+  // Every review considers ALL loaded practice intelligence: the contextual-
+  // safeguarding scan of the narrative, the child's Digital Twin (what we know
+  // helps / escalates), training currency, and the loaded frameworks. Merged
+  // into the existing arrays so every draft carries them, and kept labelled in
+  // practiceLensFindings for consumers that render the lens distinctly.
+  const lens = buildPracticeLens(input);
+  out.professionalCuriosityFindings.push(...lens.contextualSafeguarding, ...lens.knowledgeGrounding);
+  out.livedExperienceConsiderations.push(...lens.childLens);
+  out.professionalCuriosityFindings.push(...lens.trainingConsiderations);
+  out.practiceLensFindings.push(
+    ...lens.contextualSafeguarding,
+    ...lens.childLens,
+    ...lens.trainingConsiderations,
+    ...lens.knowledgeGrounding,
+  );
 
   return out;
 }

@@ -10,11 +10,12 @@
 
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { db } from "@/lib/db/store";
+import { db, getStore } from "@/lib/db/store";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { incidentToOversightInput } from "@/lib/oversight/hydrate";
 import { generateManagementOversight } from "@/lib/oversight/management-oversight-engine";
+import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { OVERSIGHT_DISCLAIMER, type OversightMode } from "@/lib/oversight/types";
 
 export const dynamic = "force-dynamic";
@@ -72,6 +73,23 @@ export async function GET(req: NextRequest) {
   const debriefs = db.debriefRecords.findAll().filter((d) => d.linked_incident_id === id);
   const recentIncidents = db.incidents.findAll().filter((i) => i.child_id === incident.child_id);
 
+  // Full practice-intelligence lens: the child's Digital Twin (via the CPIE
+  // chokepoint — never raw records) + training rows for the involved staff.
+  const twin = getChildTwin(incident.child_id);
+  const staffIds = [incident.reported_by, ...(incident.witnesses ?? [])].filter(Boolean);
+  const staffNameOf = (sid: string) => {
+    const st = db.staff.findById(sid);
+    return st ? st.full_name || [st.first_name, st.last_name].filter(Boolean).join(" ") : sid;
+  };
+  const staffTraining = (getStore().trainingRecords ?? [])
+    .filter((t) => staffIds.includes(t.staff_id))
+    .map((t) => ({
+      staffName: staffNameOf(t.staff_id),
+      course: t.course_name ?? "Training",
+      status: t.status ?? "unknown",
+      mandatory: !!t.is_mandatory,
+    }));
+
   try {
     const input = incidentToOversightInput(incident, {
       youngPerson: yp,
@@ -80,6 +98,13 @@ export async function GET(req: NextRequest) {
       today,
       oversightMode: mode,
       reviewedByRole: auth.role,
+      practiceLens: {
+        childTriggers: twin?.emotional.data.triggers,
+        childWhatHelps: twin?.emotional.data.whatHelps,
+        childPhrasesThatEscalate: twin?.emotional.data.phrasesThatEscalate,
+        childStrengths: twin?.strengths.data.strengths,
+        staffTraining,
+      },
     });
     const result = generateManagementOversight(input);
     return NextResponse.json({
