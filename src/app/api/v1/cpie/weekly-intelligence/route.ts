@@ -3,6 +3,7 @@ import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { getWeeklyIntelligenceObject, getMonthlyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
 import { getWeeklyReport } from "@/lib/cpie/get-weekly-report";
 import { composeWeeklyNarrative } from "@/lib/cpie/weekly-narrative";
+import { enhanceWeeklyReport, enhanceWeeklyNarrative } from "@/lib/cpie/enhance-report";
 
 export const dynamic = "force-dynamic";
 
@@ -45,10 +46,22 @@ export async function GET(req: NextRequest) {
     const narrative = composeWeeklyNarrative(wio);
     const report = getWeeklyReport(childId, wio.weekEnding, wio.windowDays);
 
+    // Optional LLM ENHANCEMENT (opt-in via ?enhance=true) — layered ON TOP of the
+    // deterministic floor, through the governed AI gateway. Falls back to the
+    // deterministic text whenever the model is unavailable, refused or errors.
+    const doEnhance = searchParams.get("enhance") === "true";
+    const enhanced = doEnhance
+      ? {
+          narrative: await enhanceWeeklyNarrative(narrative, wio.name),
+          report: report ? await enhanceWeeklyReport(report) : null,
+        }
+      : undefined;
+
     return NextResponse.json({
       data: wio,
       narrative,
       report,
+      enhanced,
       meta: { engine: "cpie-weekly-intelligence", version: wio.engineVersion, generatedAt: wio.generatedAt, period: wio.periodLabel, window: { start: wio.weekStart, end: wio.weekEnding, days: wio.windowDays } },
     });
   } catch (error: unknown) {

@@ -962,11 +962,14 @@ function ChildWeeklyReportSection() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [enhancedText, setEnhancedText] = useState<string | null>(null);
+  const [enhancing, setEnhancing] = useState(false);
+  const [enhanceNote, setEnhanceNote] = useState<string | null>(null);
 
   useEffect(() => {
     if (!childId) return;
     let cancelled = false;
-    setLoading(true); setError(null); setReport(null);
+    setLoading(true); setError(null); setReport(null); setEnhancedText(null); setEnhanceNote(null);
     fetch(`/api/v1/cpie/weekly-intelligence?child_id=${encodeURIComponent(childId)}`, { headers: { "x-user-role": "registered_manager" } })
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`Cara returned ${r.status}`))))
       .then((j) => { if (!cancelled) setReport((j.report as WeeklyReport) ?? null); })
@@ -977,10 +980,28 @@ function ChildWeeklyReportSection() {
 
   const handleCopy = async () => {
     if (!report) return;
-    const text = [report.title, "", ...report.sections.map((s) => `${s.heading}\n${s.body}`)].join("\n\n");
+    const text = enhancedText ?? [report.title, "", ...report.sections.map((s) => `${s.heading}\n${s.body}`)].join("\n\n");
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  // LLM enhancement (opt-in, governed via the AI gateway). Falls back gracefully:
+  // when Cara has no credit the deterministic report below stays the record.
+  const handleEnhance = async () => {
+    if (!childId) return;
+    setEnhancing(true); setEnhanceNote(null);
+    try {
+      const res = await fetch(`/api/v1/cpie/weekly-intelligence?child_id=${encodeURIComponent(childId)}&enhance=true`, { headers: { "x-user-role": "registered_manager" } });
+      const j = await res.json();
+      const e = j?.enhanced?.report;
+      if (e?.enhanced && e.text) setEnhancedText(e.text as string);
+      else setEnhanceNote("Cara's AI polish isn't available right now (no credit) — the deterministic report below is the reliable version.");
+    } catch {
+      setEnhanceNote("Couldn't reach Cara just now — the deterministic report below is the reliable version.");
+    } finally {
+      setEnhancing(false);
+    }
   };
 
   return (
@@ -995,12 +1016,22 @@ function ChildWeeklyReportSection() {
             </Badge>
           </CardTitle>
           {report && !loading && (
-            <button
-              onClick={handleCopy}
-              className="flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
-            >
-              <Copy className="h-3.5 w-3.5" />{copied ? "Copied!" : "Copy report"}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleEnhance}
+                disabled={enhancing}
+                className="flex items-center gap-1.5 rounded-lg bg-[var(--cs-navy)] px-2.5 py-1.5 text-[11px] font-medium text-white hover:opacity-90 transition-opacity disabled:opacity-60"
+              >
+                {enhancing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                {enhancing ? "Enhancing…" : enhancedText ? "Re-enhance" : "Enhance with Cara"}
+              </button>
+              <button
+                onClick={handleCopy}
+                className="flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
+              >
+                <Copy className="h-3.5 w-3.5" />{copied ? "Copied!" : "Copy report"}
+              </button>
+            </div>
           )}
         </div>
       </CardHeader>
@@ -1023,6 +1054,21 @@ function ChildWeeklyReportSection() {
             </button>
           ))}
         </div>
+
+        {enhanceNote && (
+          <div className="flex items-start gap-2 rounded-xl border border-[var(--cs-warning-soft)] bg-[var(--cs-warning-bg)] px-3 py-2.5 text-xs text-[var(--cs-warning)]">
+            <Sparkles className="h-4 w-4 shrink-0" />{enhanceNote}
+          </div>
+        )}
+
+        {enhancedText && (
+          <div className="rounded-xl border border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] p-4">
+            <div className="mb-2 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--cs-cara-gold)]">
+              <Sparkles className="h-3 w-3" />Cara-enhanced draft
+            </div>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[var(--cs-text)]">{enhancedText}</p>
+          </div>
+        )}
 
         {loading && (
           <div className="space-y-3">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
