@@ -551,6 +551,17 @@ body {
   --cs-cara-gold:        #e6b45a;
   --cs-cara-gold-soft:   rgba(230, 180, 90, 0.38);
   --cs-cara-gold-bg:     rgba(230, 180, 90, 0.12);
+  /* semantic tints — keep the two dark scopes in sync (see .cara-dark) */
+  --cs-risk-bg:          rgba(248, 113, 113, 0.13);
+  --cs-risk-soft:        rgba(248, 113, 113, 0.28);
+  --cs-warning-bg:       rgba(251, 191, 36, 0.13);
+  --cs-warning-soft:     rgba(251, 191, 36, 0.28);
+  --cs-success-bg:       rgba(52, 211, 153, 0.13);
+  --cs-success-soft:     rgba(52, 211, 153, 0.28);
+  --cs-info-bg:          rgba(96, 165, 250, 0.13);
+  --cs-info-soft:        rgba(96, 165, 250, 0.28);
+  --cs-oversight-bg:     rgba(167, 139, 250, 0.13);
+  --cs-oversight-soft:   rgba(167, 139, 250, 0.28);
   color: var(--cs-text);
 }
 /* Rail — Ask CARA canvas gradient (wins over the light cs-sidebar-gradient) */
@@ -598,6 +609,18 @@ body {
   --cs-teal-bg:          rgba(45, 212, 191, 0.12);
   --cs-teal-soft:        rgba(45, 212, 191, 0.22);
   --cs-cara-gold-bg:     rgba(230, 180, 90, 0.12);
+  /* semantic tint fills/borders — light near-white at :root; retune to subtle
+     dark tints so bg-[--cs-risk-bg] etc. don't render as light patches on dark. */
+  --cs-risk-bg:          rgba(248, 113, 113, 0.13);
+  --cs-risk-soft:        rgba(248, 113, 113, 0.28);
+  --cs-warning-bg:       rgba(251, 191, 36, 0.13);
+  --cs-warning-soft:     rgba(251, 191, 36, 0.28);
+  --cs-success-bg:       rgba(52, 211, 153, 0.13);
+  --cs-success-soft:     rgba(52, 211, 153, 0.28);
+  --cs-info-bg:          rgba(96, 165, 250, 0.13);
+  --cs-info-soft:        rgba(96, 165, 250, 0.28);
+  --cs-oversight-bg:     rgba(167, 139, 250, 0.13);
+  --cs-oversight-soft:   rgba(167, 139, 250, 0.28);
   color: var(--cs-text);
   color-scheme: dark; /* native date/time pickers, selects, checkboxes, scrollbars → dark */
   background:
@@ -633,6 +656,15 @@ body {
 .cara-dark .text-blue-800, .cara-dark .text-blue-700, .cara-dark .text-blue-600, .cara-dark .text-sky-800, .cara-dark .text-sky-700, .cara-dark .text-sky-600, .cara-dark .text-cyan-800, .cara-dark .text-cyan-700 { color: #93c5fd !important; }
 .cara-dark .text-indigo-800, .cara-dark .text-indigo-700, .cara-dark .text-indigo-600, .cara-dark .text-violet-800, .cara-dark .text-violet-700, .cara-dark .text-violet-600, .cara-dark .text-purple-800, .cara-dark .text-purple-700, .cara-dark .text-purple-600 { color: #a5b4fc !important; }
 .cara-dark .text-teal-800, .cara-dark .text-teal-700, .cara-dark .text-teal-600 { color: #5eead4 !important; }
+/* semantic tokens used directly as TEXT (text-[--cs-risk] …). The base --cs-*
+   token stays dark for opaque badges (bg-[--cs-risk] + white text); we lift only
+   the text-class so colored labels read on dark AND their now-dark -bg tint
+   boxes stay legible. Both --cs-x and var(--cs-x) class forms exist. */
+.cara-dark .text-\[--cs-risk\], .cara-dark .text-\[var\(--cs-risk\)\] { color: #fda4af !important; }
+.cara-dark .text-\[--cs-warning\], .cara-dark .text-\[var\(--cs-warning\)\] { color: #fcd34d !important; }
+.cara-dark .text-\[--cs-success\], .cara-dark .text-\[var\(--cs-success\)\] { color: #6ee7b7 !important; }
+.cara-dark .text-\[--cs-info\], .cara-dark .text-\[var\(--cs-info\)\] { color: #93c5fd !important; }
+.cara-dark .text-\[--cs-oversight\], .cara-dark .text-\[var\(--cs-oversight\)\] { color: #c4b5fd !important; }
 .cara-dark .border-slate-200, .cara-dark .border-gray-200, .cara-dark .border-slate-100, .cara-dark .border-gray-100, .cara-dark .border-slate-300 { border-color: rgba(255, 255, 255, 0.09) !important; }
 .cara-dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]), .cara-dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-color: rgba(255, 255, 255, 0.08) !important; }
 .cara-dark .bg-\[var\(--cs-navy\)\] { background-color: #0e1730 !important; }
