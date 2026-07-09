@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getWeeklyReport, getWeeklyNarrative } from "../get-weekly-report";
+import { identityClause } from "../report-voice";
 
 // Alex's seeded week includes a CRITICAL safeguarding disclosure (inc_004) — the
 // perfect case to prove the child-facing report never reflects it back.
@@ -34,7 +35,7 @@ describe("CPIE weekly report", () => {
   it("the Manager Summary is the third-person professional synthesis", () => {
     const ms = report!.sections.find((s) => s.group === "Manager Summary")!;
     expect(ms.body).toContain("Alex");
-    expect(ms.body.toLowerCase()).toContain("overall");
+    expect(ms.body.length).toBeGreaterThan(200); // a multi-paragraph synthesis
   });
 
   it("marks a genuinely empty section honestly rather than fabricating (appointments)", () => {
@@ -46,11 +47,25 @@ describe("CPIE weekly report", () => {
 
   it("getWeeklyNarrative returns the third-person manager-summary prose", () => {
     const n = getWeeklyNarrative("yp_alex", undefined, 14);
-    expect(n?.overall.toLowerCase()).toContain("overall");
+    expect(n?.overall).toContain("Alex"); // the synthesis names the child
     expect(n?.body).toContain("Alex");
   });
 
   it("returns null for an unknown child (never invents a report)", () => {
     expect(getWeeklyReport("yp_nobody")).toBeNull();
+  });
+
+  it("individualises the voice — two children don't sound the same", () => {
+    const alex = getWeeklyNarrative("yp_alex", undefined, 14);
+    const jordan = getWeeklyNarrative("yp_jordan", undefined, 14);
+    expect(alex?.opening).toBeTruthy();
+    expect(jordan?.opening).toBeTruthy();
+    expect(alex!.opening).not.toBe(jordan!.opening); // varied, not templated
+  });
+
+  it("weaves WHO the child is into the voice (sees the child, not the behaviour)", () => {
+    const clause = identityClause("Football, Fishing, FIFA · Loyal to my mates", 12345);
+    expect(clause.toLowerCase()).toContain("football");
+    expect(clause).toContain("FIFA"); // acronym preserved, not lower-cased
   });
 });

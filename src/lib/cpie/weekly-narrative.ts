@@ -19,6 +19,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import type { WeeklyIntelligenceObject } from "./weekly-intelligence-object";
+import { seedOf, narrativeOpener, narrativeOverall, emoConcernLead } from "./report-voice";
 
 export interface Pronouns {
   subject: string; // they / she / he
@@ -94,7 +95,8 @@ export function composeWeeklyNarrative(wio: WeeklyIntelligenceObject, pronouns: 
     wio.wholeChild.directionOfTravel === "declining"
       ? "alongside some real challenges that the team stayed close to"
       : EMO_CHALLENGE[wio.wholeChild.emotionalStatus] ?? "";
-  const opening = `This ${period} for ${name} has been characterised by ${sentenceList(qualities)}${challenge ? ` ${challenge}` : ""}.`;
+  const seed = seedOf(wio.childId);
+  const opening = narrativeOpener({ name, period, qualities: sentenceList(qualities), challenge, who: wio.wholeChild.who, seed });
 
   const paragraphs: string[] = [];
 
@@ -128,9 +130,7 @@ export function composeWeeklyNarrative(wio: WeeklyIntelligenceObject, pronouns: 
     const emoStatus = wio.wholeChild.emotionalStatus;
     const bits: string[] = [];
     if (emoStatus === "concern" || emoStatus === "watch") {
-      bits.push(
-        `Emotionally, this ${period} brought moments of heightened vulnerability, during which ${name} needed increased reassurance, containment and the steady presence of trusted adults`,
-      );
+      bits.push(emoConcernLead(name, period, seed));
       if (w.strategiesWorking.length) {
         bits.push(
           `What helped ${p.object} regulate is understood and evidenced — ${sentenceList(w.strategiesWorking.slice(0, 2).map((x) => lower1(stripEnd(x))))} — and drawing on these made a real difference`,
@@ -174,23 +174,18 @@ export function composeWeeklyNarrative(wio: WeeklyIntelligenceObject, pronouns: 
     }
   }
 
-  // ── Overall synthesis ───────────────────────────────────────────────────────
-  const overallBits: string[] = [];
+  // ── Overall synthesis (varied per child, warm, whole-child) ─────────────────
   const progressWord =
     wio.wholeChild.directionOfTravel === "improving" ? "meaningful progress" : wio.wholeChild.directionOfTravel === "declining" ? "resilience through a harder stretch" : "steadiness";
-  overallBits.push(`Overall, ${name} continues to show ${progressWord}`);
   const strengths: string[] = [];
   if (w.childVoiceMoments.length) strengths.push("emotional expression");
   if (w.achievements.length || w.positiveExperiences.length) strengths.push("engagement");
   if (wio.wholeChild.relationalStatus === "secure" || wio.wholeChild.relationalStatus === "developing") strengths.push("connection");
-  if (strengths.length) overallBits[0] += ` in ${sentenceList(strengths)}`;
-  let close = "";
-  if (wio.wholeChild.emotionalStatus === "concern" || wio.wholeChild.emotionalStatus === "watch") {
-    close = `. While things can still feel overwhelming at times, ${p.possessive} ability to seek comfort appropriately, reflect and re-engage speaks to real resilience and to the ongoing impact of consistent, relational support`;
-  } else {
-    close = `. The steadiness ${name} is showing reflects the ongoing impact of consistent, relational support`;
-  }
-  const overall = stripEnd(overallBits.join("")) + close + ".";
+  const overall = narrativeOverall({
+    name, period, progressWord, strengths: sentenceList(strengths),
+    emotionalConcern: wio.wholeChild.emotionalStatus === "concern" || wio.wholeChild.emotionalStatus === "watch",
+    possessive: p.possessive, who: wio.wholeChild.who, seed,
+  });
 
   // ── Honest footer ───────────────────────────────────────────────────────────
   const gaps = wio.missingInformation.slice(0, 2).map((g) => lower1(stripEnd(g.replace(/—.*$/, ""))));
