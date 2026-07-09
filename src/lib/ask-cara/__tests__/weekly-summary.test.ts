@@ -19,9 +19,9 @@ describe("Ask CARA — weekly summary consumes the CPIE Weekly Intelligence Obje
     const a = ask("What should be in Alex's weekly summary?");
     expect(a.intent).toBe("weekly_summary");
     expect(a.answered).toBe(true);
-    expect(a.text).toContain("weekly summary should cover");
-    expect(a.text.toLowerCase()).toContain("quality standards evidence");
-    expect(a.text.toLowerCase()).toContain("five outcomes evidence");
+    expect(a.text).toContain("weekly summary");
+    expect(a.text.toLowerCase()).toContain("characterised by"); // the CPIE narrator's prose
+    expect(a.text).toContain("Overall");
     // A drafting aid, not the record.
     expect(a.disclaimer?.toLowerCase()).toContain("remains the record");
   });

@@ -812,6 +812,18 @@ function skillWeeklySummary(snap: AskCaraSnapshot, child: AskCaraChild | null, p
     return answer({ intent: "weekly_summary", answered: false, text: `I don't have enough recorded for ${name} to build a ${label} summary yet.`, sources: [], suggestions: sug([`Tell me about ${name}`]) });
   }
 
+  // Prefer the CPIE narrator's flowing prose — a real summary draft in an
+  // experienced RM's voice — over the bulleted structure, when available.
+  if (w.narrative) {
+    return answer({
+      intent: "weekly_summary", answered: true,
+      text: `Here's a starting draft of ${name}'s ${label} summary — from CARA's ${label === "monthly" ? "Monthly" : "Weekly"} Intelligence Object, in your professional voice, for you to shape:\n\n${w.narrative}\n\nEvidence confidence: ${w.evidenceConfidence}.${w.missingInformation.length ? ` Gaps to close first: ${w.missingInformation.slice(0, 2).join("; ")}.` : ""}`,
+      sources: [{ label: `${label === "monthly" ? "Monthly" : "Weekly"} intelligence`, count: 1 }, { label: "Achievements", count: w.achievements.length }, { label: "Child-voice moments", count: w.childVoiceMoments.length }],
+      suggestions: sug([`How is ${name} progressing?`, `What triggers ${name}?`, `Who is ${name}?`]),
+      disclaimer: `A drafting aid from CARA's ${label === "monthly" ? "Monthly" : "Weekly"} Intelligence Object — your professional summary, shaped by you, remains the record.`,
+    });
+  }
+
   const lines: string[] = [
     `Here's what ${name}'s ${label} summary should cover (${w.weekStart} → ${w.weekEnding}) — a starting draft from the records, for you to shape:`,
     "",

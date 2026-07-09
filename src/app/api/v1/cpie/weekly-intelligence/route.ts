@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { getWeeklyIntelligenceObject, getMonthlyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
+import { getWeeklyReport } from "@/lib/cpie/get-weekly-report";
+import { composeWeeklyNarrative } from "@/lib/cpie/weekly-narrative";
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +39,16 @@ export async function GET(req: NextRequest) {
       : getWeeklyIntelligenceObject(childId, weekEnding);
     if (!wio) return NextResponse.json({ error: "Child not found" }, { status: 404 });
 
+    // The narrator layer: the third-person Manager-Summary NARRATIVE and the full
+    // sectioned, second-person REPORT (the Oak House template) — deterministic,
+    // never an LLM; a narrator only phrases what the object already holds.
+    const narrative = composeWeeklyNarrative(wio);
+    const report = getWeeklyReport(childId, wio.weekEnding, wio.windowDays);
+
     return NextResponse.json({
       data: wio,
+      narrative,
+      report,
       meta: { engine: "cpie-weekly-intelligence", version: wio.engineVersion, generatedAt: wio.generatedAt, period: wio.periodLabel, window: { start: wio.weekStart, end: wio.weekEnding, days: wio.windowDays } },
     });
   } catch (error: unknown) {
