@@ -24,7 +24,7 @@ const GATE_LABEL: Record<GateKind, string> = {
 function GateRow({ e }: { e: GateBoardEntry }) {
   if (!e.blocked) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-[#b6e4d7] bg-[#e6f7f2]/60 px-3 py-2 text-[13px]" style={{ color: "#0d9488" }}>
+      <div className="flex items-center gap-2 rounded-lg border border-[var(--cs-success-soft)] bg-[var(--cs-success-bg)]/60 px-3 py-2 text-[13px] text-[var(--cs-teal)]">
         <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
         <span className="text-[var(--cs-text,#37424a)]">
           {GATE_LABEL[e.gate]} — <span className="font-medium">{e.recordId}</span> is clear to {e.proposedTransition}.
@@ -33,13 +33,13 @@ function GateRow({ e }: { e: GateBoardEntry }) {
     );
   }
   return (
-    <div className="rounded-lg border border-[#f0cdb0] bg-[#fdf1e7]/60 px-3 py-2.5">
+    <div className="rounded-lg border border-[var(--cs-warning-soft)] bg-[var(--cs-warning-bg)]/60 px-3 py-2.5">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Lock className="h-3.5 w-3.5 shrink-0" style={{ color: "#c05621" }} />
+          <Lock className="h-3.5 w-3.5 shrink-0 text-[var(--cs-warning)]" />
           <span className="text-[13px] font-medium text-[var(--cs-text,#1f2a30)]">{GATE_LABEL[e.gate]} — {e.recordId}</span>
         </div>
-        <span className="rounded-full bg-[#fdf1e7] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide" style={{ color: "#c05621" }}>
+        <span className="rounded-full bg-[var(--cs-warning-bg)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[var(--cs-warning)]">
           Blocked
         </span>
       </div>
@@ -83,7 +83,7 @@ export function QualityGatePanel() {
         {isError && <p className="py-4 text-sm text-[var(--cs-text-muted,#6c7a83)]">Couldn&apos;t load the gate board right now.</p>}
 
         {board && board.entries.length === 0 && !isLoading && (
-          <div className="flex items-center gap-2 rounded-lg border border-[#b6e4d7] bg-[#e6f7f2] px-3 py-4 text-sm" style={{ color: "#0d9488" }}>
+          <div className="flex items-center gap-2 rounded-lg border border-[var(--cs-success-soft)] bg-[var(--cs-success-bg)] px-3 py-4 text-sm text-[var(--cs-teal)]">
             <ShieldCheck className="h-4 w-4 shrink-0" /> No open records are waiting on a gate.
           </div>
         )}

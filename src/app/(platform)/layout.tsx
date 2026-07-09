@@ -48,7 +48,7 @@ export default function PlatformLayout({
     <AuthProvider>
       <SidebarProvider>
         <PrivacyProvider>
-          <div className="flex min-h-screen bg-[#f7f8fa]">
+          <div className="flex min-h-screen bg-[var(--cs-bg)]">
             <Sidebar />
             <PlatformContent>{children}</PlatformContent>
             <BottomNav />

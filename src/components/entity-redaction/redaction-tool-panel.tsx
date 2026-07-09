@@ -83,7 +83,7 @@ export function RedactionToolPanel() {
             </div>
 
             {residual.length > 0 && (
-              <div className="flex items-start gap-2 rounded-lg border border-[#f0cdb0] bg-[#fdf1e7] px-3 py-2 text-[12px]" style={{ color: "#c05621" }}>
+              <div className="flex items-start gap-2 rounded-lg border border-[var(--cs-warning-soft)] bg-[var(--cs-warning-bg)] px-3 py-2 text-[12px] text-[var(--cs-warning)]">
                 <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span>A known name still appears after redaction: {residual.join(", ")}. Check the text before sharing.</span>
               </div>
