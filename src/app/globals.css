@@ -678,6 +678,153 @@ body {
 .cara-dark .bg-blue-50, .cara-dark .bg-blue-100, .cara-dark .bg-sky-50, .cara-dark .bg-sky-100, .cara-dark .bg-cyan-50, .cara-dark .bg-cyan-100 { background-color: rgba(96, 165, 250, 0.12) !important; }
 .cara-dark .bg-indigo-50, .cara-dark .bg-indigo-100, .cara-dark .bg-violet-50, .cara-dark .bg-violet-100, .cara-dark .bg-purple-50, .cara-dark .bg-purple-100 { background-color: rgba(129, 140, 248, 0.14) !important; }
 .cara-dark .bg-teal-50, .cara-dark .bg-teal-100 { background-color: rgba(45, 212, 191, 0.12) !important; }
+/* ── Light GRADIENT callout banners → subtle dark tint ───────────────────────
+   The solid bg-*-50/100 accent shim above doesn't reach gradient STOPS, so
+   `bg-gradient-to-r from-teal-50 to-emerald-50` intro banners (55 files) leaked
+   light on the dark skin. Kill the light gradient, drop in the matching dark tint
+   (same values as the solid-fill shim) and soften the paired colored border.
+   [class~="…"] matches the exact stop token only (never from-teal-500); the from-*
+   pass is emitted last so the primary stop wins for mixed-family banners. */
+.cara-dark [class~="to-slate-50"],
+.cara-dark [class~="via-slate-50"],
+.cara-dark [class~="to-slate-100"],
+.cara-dark [class~="via-slate-100"],
+.cara-dark [class~="to-gray-50"],
+.cara-dark [class~="via-gray-50"],
+.cara-dark [class~="to-gray-100"],
+.cara-dark [class~="via-gray-100"],
+.cara-dark [class~="to-zinc-50"],
+.cara-dark [class~="via-zinc-50"],
+.cara-dark [class~="to-zinc-100"],
+.cara-dark [class~="via-zinc-100"],
+.cara-dark [class~="to-neutral-50"],
+.cara-dark [class~="via-neutral-50"],
+.cara-dark [class~="to-neutral-100"],
+.cara-dark [class~="via-neutral-100"],
+.cara-dark [class~="to-stone-50"],
+.cara-dark [class~="via-stone-50"],
+.cara-dark [class~="to-stone-100"],
+.cara-dark [class~="via-stone-100"] { background-image: none !important; background-color: rgba(255, 255, 255, 0.04) !important; border-color: rgba(255, 255, 255, 0.09) !important; }
+.cara-dark [class~="to-emerald-50"],
+.cara-dark [class~="via-emerald-50"],
+.cara-dark [class~="to-emerald-100"],
+.cara-dark [class~="via-emerald-100"],
+.cara-dark [class~="to-green-50"],
+.cara-dark [class~="via-green-50"],
+.cara-dark [class~="to-green-100"],
+.cara-dark [class~="via-green-100"],
+.cara-dark [class~="to-lime-50"],
+.cara-dark [class~="via-lime-50"],
+.cara-dark [class~="to-lime-100"],
+.cara-dark [class~="via-lime-100"] { background-image: none !important; background-color: rgba(52, 211, 153, 0.12) !important; border-color: rgba(52, 211, 153, 0.28) !important; }
+.cara-dark [class~="to-teal-50"],
+.cara-dark [class~="via-teal-50"],
+.cara-dark [class~="to-teal-100"],
+.cara-dark [class~="via-teal-100"] { background-image: none !important; background-color: rgba(45, 212, 191, 0.12) !important; border-color: rgba(45, 212, 191, 0.28) !important; }
+.cara-dark [class~="to-amber-50"],
+.cara-dark [class~="via-amber-50"],
+.cara-dark [class~="to-amber-100"],
+.cara-dark [class~="via-amber-100"],
+.cara-dark [class~="to-yellow-50"],
+.cara-dark [class~="via-yellow-50"],
+.cara-dark [class~="to-yellow-100"],
+.cara-dark [class~="via-yellow-100"],
+.cara-dark [class~="to-orange-50"],
+.cara-dark [class~="via-orange-50"],
+.cara-dark [class~="to-orange-100"],
+.cara-dark [class~="via-orange-100"] { background-image: none !important; background-color: rgba(251, 191, 36, 0.12) !important; border-color: rgba(251, 191, 36, 0.28) !important; }
+.cara-dark [class~="to-red-50"],
+.cara-dark [class~="via-red-50"],
+.cara-dark [class~="to-red-100"],
+.cara-dark [class~="via-red-100"],
+.cara-dark [class~="to-rose-50"],
+.cara-dark [class~="via-rose-50"],
+.cara-dark [class~="to-rose-100"],
+.cara-dark [class~="via-rose-100"],
+.cara-dark [class~="to-pink-50"],
+.cara-dark [class~="via-pink-50"],
+.cara-dark [class~="to-pink-100"],
+.cara-dark [class~="via-pink-100"],
+.cara-dark [class~="to-fuchsia-50"],
+.cara-dark [class~="via-fuchsia-50"],
+.cara-dark [class~="to-fuchsia-100"],
+.cara-dark [class~="via-fuchsia-100"] { background-image: none !important; background-color: rgba(251, 113, 133, 0.12) !important; border-color: rgba(251, 113, 133, 0.28) !important; }
+.cara-dark [class~="to-blue-50"],
+.cara-dark [class~="via-blue-50"],
+.cara-dark [class~="to-blue-100"],
+.cara-dark [class~="via-blue-100"],
+.cara-dark [class~="to-sky-50"],
+.cara-dark [class~="via-sky-50"],
+.cara-dark [class~="to-sky-100"],
+.cara-dark [class~="via-sky-100"],
+.cara-dark [class~="to-cyan-50"],
+.cara-dark [class~="via-cyan-50"],
+.cara-dark [class~="to-cyan-100"],
+.cara-dark [class~="via-cyan-100"] { background-image: none !important; background-color: rgba(96, 165, 250, 0.12) !important; border-color: rgba(96, 165, 250, 0.28) !important; }
+.cara-dark [class~="to-indigo-50"],
+.cara-dark [class~="via-indigo-50"],
+.cara-dark [class~="to-indigo-100"],
+.cara-dark [class~="via-indigo-100"],
+.cara-dark [class~="to-violet-50"],
+.cara-dark [class~="via-violet-50"],
+.cara-dark [class~="to-violet-100"],
+.cara-dark [class~="via-violet-100"],
+.cara-dark [class~="to-purple-50"],
+.cara-dark [class~="via-purple-50"],
+.cara-dark [class~="to-purple-100"],
+.cara-dark [class~="via-purple-100"] { background-image: none !important; background-color: rgba(129, 140, 248, 0.14) !important; border-color: rgba(129, 140, 248, 0.28) !important; }
+.cara-dark [class~="from-slate-50"],
+.cara-dark [class~="from-slate-100"],
+.cara-dark [class~="from-gray-50"],
+.cara-dark [class~="from-gray-100"],
+.cara-dark [class~="from-zinc-50"],
+.cara-dark [class~="from-zinc-100"],
+.cara-dark [class~="from-neutral-50"],
+.cara-dark [class~="from-neutral-100"],
+.cara-dark [class~="from-stone-50"],
+.cara-dark [class~="from-stone-100"] { background-image: none !important; background-color: rgba(255, 255, 255, 0.04) !important; border-color: rgba(255, 255, 255, 0.09) !important; }
+.cara-dark [class~="from-emerald-50"],
+.cara-dark [class~="from-emerald-100"],
+.cara-dark [class~="from-green-50"],
+.cara-dark [class~="from-green-100"],
+.cara-dark [class~="from-lime-50"],
+.cara-dark [class~="from-lime-100"] { background-image: none !important; background-color: rgba(52, 211, 153, 0.12) !important; border-color: rgba(52, 211, 153, 0.28) !important; }
+.cara-dark [class~="from-teal-50"],
+.cara-dark [class~="from-teal-100"] { background-image: none !important; background-color: rgba(45, 212, 191, 0.12) !important; border-color: rgba(45, 212, 191, 0.28) !important; }
+.cara-dark [class~="from-amber-50"],
+.cara-dark [class~="from-amber-100"],
+.cara-dark [class~="from-yellow-50"],
+.cara-dark [class~="from-yellow-100"],
+.cara-dark [class~="from-orange-50"],
+.cara-dark [class~="from-orange-100"] { background-image: none !important; background-color: rgba(251, 191, 36, 0.12) !important; border-color: rgba(251, 191, 36, 0.28) !important; }
+.cara-dark [class~="from-red-50"],
+.cara-dark [class~="from-red-100"],
+.cara-dark [class~="from-rose-50"],
+.cara-dark [class~="from-rose-100"],
+.cara-dark [class~="from-pink-50"],
+.cara-dark [class~="from-pink-100"],
+.cara-dark [class~="from-fuchsia-50"],
+.cara-dark [class~="from-fuchsia-100"] { background-image: none !important; background-color: rgba(251, 113, 133, 0.12) !important; border-color: rgba(251, 113, 133, 0.28) !important; }
+.cara-dark [class~="from-blue-50"],
+.cara-dark [class~="from-blue-100"],
+.cara-dark [class~="from-sky-50"],
+.cara-dark [class~="from-sky-100"],
+.cara-dark [class~="from-cyan-50"],
+.cara-dark [class~="from-cyan-100"] { background-image: none !important; background-color: rgba(96, 165, 250, 0.12) !important; border-color: rgba(96, 165, 250, 0.28) !important; }
+.cara-dark [class~="from-indigo-50"],
+.cara-dark [class~="from-indigo-100"],
+.cara-dark [class~="from-violet-50"],
+.cara-dark [class~="from-violet-100"],
+.cara-dark [class~="from-purple-50"],
+.cara-dark [class~="from-purple-100"] { background-image: none !important; background-color: rgba(129, 140, 248, 0.14) !important; border-color: rgba(129, 140, 248, 0.28) !important; }
+/* banner headings use the darkest -900 colored text; the -600/700/800 shim above
+   doesn't cover -900, so lift it too (mirrors the values above). */
+.cara-dark .text-emerald-900, .cara-dark .text-green-900, .cara-dark .text-lime-900 { color: #6ee7b7 !important; }
+.cara-dark .text-teal-900 { color: #5eead4 !important; }
+.cara-dark .text-amber-900, .cara-dark .text-yellow-900, .cara-dark .text-orange-900 { color: #fcd34d !important; }
+.cara-dark .text-red-900, .cara-dark .text-rose-900, .cara-dark .text-pink-900, .cara-dark .text-fuchsia-900 { color: #fda4af !important; }
+.cara-dark .text-blue-900, .cara-dark .text-sky-900, .cara-dark .text-cyan-900 { color: #93c5fd !important; }
+.cara-dark .text-indigo-900, .cara-dark .text-violet-900, .cara-dark .text-purple-900 { color: #a5b4fc !important; }
 /* Placeholders + hover states on the dark skin (token-based inputs already flip) */
 .cara-dark input::placeholder, .cara-dark textarea::placeholder { color: #7c8aa3 !important; }
 .cara-dark .hover\:bg-white:hover, .cara-dark .hover\:bg-slate-50:hover, .cara-dark .hover\:bg-gray-50:hover, .cara-dark .hover\:bg-zinc-50:hover { background-color: rgba(255, 255, 255, 0.05) !important; }
