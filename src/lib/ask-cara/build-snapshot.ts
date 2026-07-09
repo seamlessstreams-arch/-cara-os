@@ -14,6 +14,7 @@ import { buildPracticeDigest } from "@/lib/ask-cara/build-practice";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { getWeeklyIntelligenceObject, getMonthlyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
 import type { WeeklyIntelligenceObject } from "@/lib/cpie/weekly-intelligence-object";
+import { composeWeeklyNarrative } from "@/lib/cpie/weekly-narrative";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
 import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
@@ -31,6 +32,7 @@ function wioToDigest(w: WeeklyIntelligenceObject): AskCaraWeeklyDigest {
     childId: w.childId,
     weekStart: w.weekStart,
     weekEnding: w.weekEnding,
+    narrative: composeWeeklyNarrative(w).body,
     picture: w.week.picture,
     who: w.wholeChild.who,
     directionOfTravel: w.wholeChild.directionOfTravel,

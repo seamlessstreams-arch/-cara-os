@@ -43,8 +43,8 @@ describe("Ask CARA — monthly summary reads a month, not a week (the fix)", () 
     const a = ask("What should be in Alex's monthly summary?");
     expect(a.intent).toBe("weekly_summary");
     expect(a.answered).toBe(true);
-    expect(a.text.toLowerCase()).toContain("monthly summary should cover");
-    expect(a.text).toContain("**The month:**");
+    expect(a.text.toLowerCase()).toContain("monthly summary");
+    expect(a.text).toContain("This month");
     expect(a.disclaimer?.toLowerCase()).toContain("monthly intelligence object");
   });
 
@@ -56,7 +56,7 @@ describe("Ask CARA — monthly summary reads a month, not a week (the fix)", () 
 
   it("weekly summary still reads the week", () => {
     const a = ask("What should be in Alex's weekly summary?");
-    expect(a.text).toContain("**The week:**");
+    expect(a.text).toContain("This week");
     expect(a.disclaimer?.toLowerCase()).toContain("weekly intelligence object");
   });
 

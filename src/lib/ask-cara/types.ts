@@ -213,6 +213,8 @@ export interface AskCaraWeeklyDigest {
   childId: string;
   weekStart: string;
   weekEnding: string;
+  /** The flowing manager-summary narrative (third person) — CPIE narrator prose. */
+  narrative?: string;
   picture: string;
   who: string;
   directionOfTravel: string;
