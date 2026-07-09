@@ -20,8 +20,8 @@ describe("Ask CARA — weekly summary consumes the CPIE Weekly Intelligence Obje
     expect(a.intent).toBe("weekly_summary");
     expect(a.answered).toBe(true);
     expect(a.text).toContain("weekly summary");
-    expect(a.text.toLowerCase()).toContain("characterised by"); // the CPIE narrator's prose
-    expect(a.text).toContain("Overall");
+    expect(a.text).toContain("professional voice"); // the skill's framing of the narrator prose
+    expect(a.text).toContain("Alex"); // individualised to the child
     // A drafting aid, not the record.
     expect(a.disclaimer?.toLowerCase()).toContain("remains the record");
   });

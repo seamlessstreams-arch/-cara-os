@@ -18,6 +18,7 @@
 
 import type { WeeklyIntelligenceObject } from "./weekly-intelligence-object";
 import { composeWeeklyNarrative, type Pronouns } from "./weekly-narrative";
+import { seedOf, pick, wellDoneLead, proudClose, struggleLead, struggleCameThrough, struggleClose } from "./report-voice";
 
 const THEY: Pronouns = { subject: "they", object: "them", possessive: "their" };
 
@@ -137,17 +138,18 @@ const uniqueDays = (rows: Dated[]): string[] => [...new Set(rows.map((r) => r.da
 function secWellDone(i: WeeklyReportInput, name: string, a: string, b: string, pd: string): SectionOut {
   const ach = weekly(i.positiveAchievements, i.childId, ["date"], a, b);
   const pos = weekly(i.behaviourLog, i.childId, ["date"], a, b).filter((d) => s(d.r.direction) === "positive");
+  const seed = seedOf(i.childId);
   if (!ach.length && !pos.length) return { body: `It's been a steadier ${pd}, ${name}, without a standout moment on the records — but every ordinary good day counts, and the small wins are worth capturing too.`, empty: true };
-  const lines = [`This ${pd} has had real moments to be proud of, ${name}.`];
-  for (const x of ach.slice(0, 3)) {
-    let t = `You should be really proud — ${stripEnd(s(x.r.title))}`;
+  const lines = [wellDoneLead(name, pd, seed)];
+  ach.slice(0, 3).forEach((x, k) => {
+    let t = `${pick(seed, 100 + k, ["A real highlight —", "Something to be proud of —", "One to hold onto —", "A moment that mattered —"])} ${stripEnd(s(x.r.title))}`;
     const how = s(x.r.celebrated_how);
     if (how) t += `, and it was lovely this was marked (${lower1(stripEnd(swapPronouns(how, name)))})`;
     lines.push(endSentence(t));
-  }
+  });
   const posTitle = pos.map((d) => stripEnd(s(d.r.title))).filter(Boolean).slice(0, 2);
   if (posTitle.length) lines.push(endSentence(`There were good moments day to day, too — ${sentenceList(posTitle.map(lower1))}`));
-  lines.push(`You should be really proud of how that has gone.`);
+  lines.push(proudClose(name, seed, 0));
   return { body: lines.join(" "), empty: false };
 }
 
@@ -155,18 +157,19 @@ function secStruggled(i: WeeklyReportInput, name: string, a: string, b: string, 
   const beh = weekly(i.behaviourLog, i.childId, ["date"], a, b).filter((d) => s(d.r.direction) === "concerning");
   const inc = weekly(i.incidents, i.childId, ["date"], a, b).filter((d) => !SAFEGUARDING_TYPES.test(s(d.r.type)) && s(d.r.severity).toLowerCase() !== "critical");
   const events = [...beh, ...inc].sort((x, y) => (x.date < y.date ? -1 : 1));
+  const seed = seedOf(i.childId);
   if (!events.length) return { body: `There was nothing of real concern recorded this ${pd} — that's a good ${pd}, and well done for that.`, empty: true };
-  const lines = [`There were a few moments this ${pd} that were harder for you, and the team stayed close through them.`];
-  for (const e of events.slice(0, 4)) {
+  const lines = [struggleLead(pd, seed)];
+  events.slice(0, 4).forEach((e, k) => {
     const trigger = s(e.r.trigger) || s(e.r.antecedent);
     const settled = /settl|regulat|calm|resolv|de-escalat|apolog|support|repair/i.test(s(e.r.outcome));
     let t = `On ${e.day}`;
     if (trigger) t += `, after ${lower1(stripEnd(swapPronouns(trigger, name)))},`;
     t += ` things felt harder for a while`;
-    if (settled) t += `, but with the right support around you, you came through it`;
+    if (settled) t += struggleCameThrough(seed, k);
     lines.push(endSentence(t));
-  }
-  lines.push(`None of this changes how well you're doing overall.`);
+  });
+  lines.push(struggleClose(seed));
   return { body: lines.join(" "), empty: false };
 }
 
