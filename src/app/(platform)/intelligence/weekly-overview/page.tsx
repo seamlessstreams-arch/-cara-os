@@ -6,7 +6,7 @@
 // For Registered Managers — Chamberlain House.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,7 +46,10 @@ import {
   MessageSquareQuote,
   Zap,
   Cpu,
+  FileText,
+  ShieldCheck,
 } from "lucide-react";
+import type { WeeklyReport } from "@/lib/cpie/weekly-report";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { PrintButton } from "@/components/common/print-button";
 
@@ -941,6 +944,126 @@ function BulkComputeSection() {
   );
 }
 
+// ── Section E2: Child Weekly Report (deterministic, per child) ────────────────
+// Renders the full sectioned weekly report — written to the child, day-by-day —
+// from CARA's Weekly Intelligence Object. Deterministic: no AI, works with no
+// credit. Data from GET /api/v1/cpie/weekly-intelligence (`report`).
+
+function ChildWeeklyReportSection() {
+  const { data: ypData } = useYoungPeople("current");
+  const children = useMemo(
+    () => (ypData?.data ?? []).map((yp) => ({ id: yp.id, name: yp.preferred_name ?? yp.id })),
+    [ypData],
+  );
+  const [selected, setSelected] = useState<string | null>(null);
+  const childId = selected ?? children[0]?.id ?? null;
+
+  const [report, setReport] = useState<WeeklyReport | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!childId) return;
+    let cancelled = false;
+    setLoading(true); setError(null); setReport(null);
+    fetch(`/api/v1/cpie/weekly-intelligence?child_id=${encodeURIComponent(childId)}`, { headers: { "x-user-role": "registered_manager" } })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`Cara returned ${r.status}`))))
+      .then((j) => { if (!cancelled) setReport((j.report as WeeklyReport) ?? null); })
+      .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : "Couldn't load the report."); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [childId]);
+
+  const handleCopy = async () => {
+    if (!report) return;
+    const text = [report.title, "", ...report.sections.map((s) => `${s.heading}\n${s.body}`)].join("\n\n");
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <FileText className="h-4 w-4 text-[var(--cs-cara-gold)]" />
+            Child Weekly Report
+            <Badge className="bg-[var(--cs-success-bg)] text-[var(--cs-success)] border-0 text-[10px] rounded-full">
+              <ShieldCheck className="h-3 w-3 mr-1" />Deterministic · no AI
+            </Badge>
+          </CardTitle>
+          {report && !loading && (
+            <button
+              onClick={handleCopy}
+              className="flex items-center gap-1.5 rounded-lg border border-[var(--cs-border)] px-2.5 py-1.5 text-[11px] font-medium text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)] transition-colors"
+            >
+              <Copy className="h-3.5 w-3.5" />{copied ? "Copied!" : "Copy report"}
+            </button>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        {/* Child selector */}
+        <div className="flex flex-wrap gap-2">
+          {children.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => setSelected(c.id)}
+              className={cn(
+                "flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                c.id === childId
+                  ? "bg-[var(--cs-navy)] text-white"
+                  : "border border-[var(--cs-border)] text-[var(--cs-text-secondary)] hover:bg-[var(--cs-surface)]",
+              )}
+            >
+              <Avatar name={c.name} size="sm" />
+              {c.name}
+            </button>
+          ))}
+        </div>
+
+        {loading && (
+          <div className="space-y-3">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
+        )}
+
+        {error && (
+          <div className="flex items-center gap-2 rounded-xl border border-[var(--cs-risk-soft)] bg-[var(--cs-risk-bg)] px-3 py-2.5 text-sm text-[var(--cs-risk)]">
+            <AlertTriangle className="h-4 w-4 shrink-0" />{error}
+          </div>
+        )}
+
+        {report && !loading && (
+          <article className="space-y-5">
+            <header className="border-b border-[var(--cs-border-subtle)] pb-3">
+              <h3 className="text-base font-bold text-[var(--cs-navy)]">{report.title}</h3>
+              <p className="text-[11px] text-[var(--cs-text-muted)]">
+                Written to {report.childName}, from CARA&apos;s Weekly Intelligence Object · {report.weekStart} to {report.weekEnding}
+              </p>
+            </header>
+
+            {report.sections.map((section, idx) => {
+              const newGroup = idx === 0 || report.sections[idx - 1].group !== section.group;
+              return (
+                <div key={idx} className="space-y-1.5">
+                  {newGroup && (
+                    <h4 className="text-[11px] font-bold uppercase tracking-wider text-[var(--cs-cara-gold)] pt-2">{section.group}</h4>
+                  )}
+                  <p className="text-[13px] font-semibold text-[var(--cs-text-secondary)]">{section.heading}</p>
+                  <p className={cn("text-sm leading-relaxed whitespace-pre-wrap", section.empty ? "text-[var(--cs-text-muted)] italic" : "text-[var(--cs-text)]")}>
+                    {section.body}
+                  </p>
+                </div>
+              );
+            })}
+          </article>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function WeeklyOverviewPage() {
@@ -963,6 +1086,9 @@ export default function WeeklyOverviewPage() {
 
         {/* B: Children overview */}
         <ChildrenOverviewSection />
+
+        {/* B2: Child weekly report (deterministic, per child) */}
+        <ChildWeeklyReportSection />
 
         {/* C: Pattern alerts */}
         <PatternAlertsSection />
