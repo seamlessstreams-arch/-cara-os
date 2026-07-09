@@ -50,6 +50,10 @@ export type AskCaraIntent =
   | "safer_recruitment"
   | "weekly_summary"
   | "lived_experience"
+  | "care_language"
+  | "child_voice"
+  | "recording_gaps"
+  | "cumulative_risk"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -131,6 +135,48 @@ export interface AskCaraChildEvaluation {
     connections30d: number;
     repairs: number;
     ruptures: number;
+  };
+}
+
+/**
+ * Compact digest of the child-level PRACTICE-INTELLIGENCE engines — the
+ * deterministic "critical friend" reads Ask CARA narrates so a question like
+ * "is our language criminalising Alex?" / "who is at cumulative risk?" /
+ * "whose voice is missing?" / "where are our recording gaps?" is answered from
+ * the ENGINE'S findings on this home's records, not generic knowledge-base
+ * theory. Each block is optional — built in try/catch, absent if the engine
+ * couldn't read. Home-level summary + a compact per-child list for each.
+ */
+export interface AskCaraPracticeDigest {
+  /** Care Language Audit — criminalising/moralising/labelling language scan. */
+  careLanguage?: {
+    hitRate: number; // flags per 100 records scanned (whole home)
+    totalHits: number;
+    childrenAffected: number;
+    topCategoryLabel?: string; // most-flagged category (home)
+    mostFlaggedPhrase?: string;
+    perChild: { childId: string; totalHits: number; topCategoryLabel?: string }[]; // only children with ≥1 hit
+  };
+  /** Child Voice Presence — UN CRC Art.12 voice analysis across record types. */
+  childVoice?: {
+    overallPresenceRate: number | null; // % of records where the child's voice appears
+    worstTypeLabel?: string; // record type with the least voice
+    lacParticipationRate: number | null;
+    perChild: { childId: string; score: number | null; hasData: boolean; topGapTypeLabel?: string }[];
+  };
+  /** Recording Gap Intelligence — safeguarding-critical recording gaps. */
+  recordingGaps?: {
+    childrenWithCriticalGap: number;
+    childrenWithAnyGap: number;
+    totalCriticalGaps: number;
+    perChild: { childId: string; severity: string; criticalGapCount: number; topGapLabel?: string }[]; // gap children only, critical-first
+  };
+  /** Cumulative Risk Intelligence — 5-signal convergence per child. */
+  cumulativeRisk?: {
+    escalatingCount: number;
+    urgentSupervisionCount: number;
+    mostCommonWorseningSignal: string;
+    perChild: { childId: string; signal: string; priority: string; worseningSignals: number; topWorseningLabel?: string }[]; // escalating/concerning first
   };
 }
 
@@ -357,6 +403,9 @@ export interface AskCaraSnapshot {
   monthly?: AskCaraWeeklyDigest[];
   /** Operational domains: health & safety, rota safety, wellbeing, reg 44. */
   ops?: AskCaraOpsIntelligence;
+  /** Child-level practice-intelligence engine findings (care language, child
+   *  voice, recording gaps, cumulative risk). */
+  practice?: AskCaraPracticeDigest;
 }
 
 export interface AskCaraContext {

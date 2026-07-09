@@ -10,6 +10,7 @@
 
 import { getStore } from "@/lib/db/store";
 import { buildChildEvaluations, buildHomeEvaluation } from "@/lib/ask-cara/build-evaluations";
+import { buildPracticeDigest } from "@/lib/ask-cara/build-practice";
 import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { getWeeklyIntelligenceObject, getMonthlyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
 import type { WeeklyIntelligenceObject } from "@/lib/cpie/weekly-intelligence-object";
@@ -251,5 +252,9 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
       .map(wioToDigest),
     // Operational domains — health & safety, rota safety, wellbeing, reg 44.
     ops: buildOpsIntelligence(store, new Date().toISOString().slice(0, 10)),
+    // Leg four: the child-level practice-intelligence engines' findings
+    // (care language, child voice, recording gaps, cumulative risk) so a
+    // practice question is answered from the engine's read, not KB theory.
+    practice: buildPracticeDigest(store),
   };
 }
