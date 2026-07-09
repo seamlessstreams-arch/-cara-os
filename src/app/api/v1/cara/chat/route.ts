@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { invokeAiGateway, invokeAiGatewayStream } from "@/lib/cara/ai-gateway";
 import { getStore } from "@/lib/db/store";
-import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
+import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAuditEvent } from "@/lib/ask-cara/audit-logger";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
+import { answerNaturally, buildFreeChatGrounding } from "@/lib/cara/ask-cara-natural";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/v1/cara/chat
@@ -30,8 +31,8 @@ const MAX_TOKENS = 1024;
 const SYSTEM_PROMPT =
   "You are Cara — the AI assistant built into Cara, the operating system for children's homes. " +
   "You assist residential care professionals with professional writing, analysis, safeguarding checks, and compliance support. " +
-  "Be concise, professional, and child-centred. " +
-  "Never invent facts — only work from the context provided. " +
+  "Be concise, professional, and child-centred — see the child, not the behaviour. " +
+  "Never invent facts — only work from the context provided. When a CARA PLATFORM INTELLIGENCE block is present, it is the authoritative record: answer from it, and treat anything not in it as not having happened. " +
   "Label all suggestions as AI-generated drafts that require human review. " +
   "If you identify safeguarding concerns in any content, flag them explicitly.";
 
@@ -125,14 +126,36 @@ export async function POST(req: NextRequest) {
       const snapshot = buildAskSnapshot(store);
       const role = typeof body.role === "string" ? body.role : undefined;
       const childId = typeof body.childId === "string" ? body.childId : undefined;
+      const asOf = new Date().toISOString().slice(0, 10);
       const answer = answerQuestion({
         question: prompt,
-        asOf: new Date().toISOString().slice(0, 10),
+        asOf,
         userName: typeof body.userName === "string" ? body.userName : undefined,
         role,
         snapshot,
         context: { pageTitle: typeof body.pageTitle === "string" ? body.pageTitle : undefined, childId },
       });
+
+      // FULL CAPACITY: layer the grounded LLM voice on top of the deterministic
+      // answer (default ON; pass natural:false to skip). The model only phrases
+      // what the orchestrator + engines established; unavailable/refused/error →
+      // the deterministic answer stands unchanged. Refusals/gates never reach it.
+      let finalText = answer.text;
+      let llmUsed = false;
+      let naturalMethod = "deterministic";
+      if (body.natural !== false) {
+        const natural = await answerNaturally({
+          question: prompt,
+          answer,
+          snapshot,
+          tier: roleTier(role),
+          child: resolveChild(prompt.toLowerCase(), snapshot, childId),
+          asOf,
+        });
+        finalText = natural.text;
+        llmUsed = natural.llmUsed;
+        naturalMethod = natural.method;
+      }
 
       // §21 audit trail — every Ask CARA interaction is logged (text hashed, never raw).
       try {
@@ -146,12 +169,12 @@ export async function POST(req: NextRequest) {
             intent: answer.intent,
             taskCard: typeof body.taskCard === "string" ? body.taskCard : undefined,
             inputText: prompt,
-            outputText: answer.text,
+            outputText: finalText,
             ruleVersion: answer.engineVersion,
             sources: answer.sources.map((s) => s.label),
             managerReviewRequired: answer.intent === "prohibited",
             prohibitedTriggered: answer.intent === "prohibited",
-            deterministicOnly: true,
+            deterministicOnly: !llmUsed,
           },
           { id: `ac_evt_${Date.now()}_${store.askCaraAuditEvents.length}`, createdAt: new Date().toISOString() }
         );
@@ -161,14 +184,44 @@ export async function POST(req: NextRequest) {
         console.error("[cara/chat] audit failed", auditErr);
       }
 
-      return NextResponse.json({ answer });
+      // The UI renders answer.text unchanged; when the LLM phrased it, sources,
+      // suggestions and the audit trail still come from the deterministic engine.
+      return NextResponse.json({
+        answer: { ...answer, text: finalText },
+        llm: { used: llmUsed, method: naturalMethod },
+        deterministicText: llmUsed ? answer.text : undefined,
+      });
     } catch (err) {
       console.error("[cara/chat] ask failed", err);
       return NextResponse.json({ error: "Ask Cara failed" }, { status: 500 });
     }
   }
 
-  const userMessage = context ? `Context: ${context}\n\n${prompt}` : prompt;
+  // FULL CAPACITY (free chat too): even the open LLM chat answers grounded in the
+  // platform's deterministic intelligence — the orchestrator's read of the
+  // question plus the tier-scoped twin/engine/home context — never blind. If the
+  // grounding can't be built, chat degrades to the ungrounded prompt (never 500s).
+  let grounding = "";
+  try {
+    const store = getStore();
+    const snapshot = buildAskSnapshot(store);
+    const role = typeof body.role === "string" ? body.role : undefined;
+    const childId = typeof body.childId === "string" ? body.childId : undefined;
+    const asOf = new Date().toISOString().slice(0, 10);
+    const detAnswer = answerQuestion({ question: prompt, asOf, role, snapshot, context: { childId } });
+    grounding = buildFreeChatGrounding({
+      question: prompt,
+      snapshot,
+      tier: roleTier(role),
+      answer: detAnswer,
+      child: resolveChild(prompt.toLowerCase(), snapshot, childId),
+      asOf,
+    });
+  } catch (groundErr) {
+    console.error("[cara/chat] grounding failed — continuing ungrounded", groundErr);
+  }
+
+  const userMessage = [grounding, context ? `Context: ${context}` : "", prompt].filter(Boolean).join("\n\n");
 
   if (shouldStream) {
     return streamViaGateway(userMessage);
