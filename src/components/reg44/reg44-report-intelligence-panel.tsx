@@ -12,15 +12,19 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronDown, ChevronUp, ClipboardCheck, Loader2, ShieldQuestion, AlertTriangle, Ban } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useReg44ReportIntelligence } from "@/hooks/use-reg44-report-intelligence";
 import type { QualityStandardAssessment, QualityStandardStatus, StatutoryOpinion } from "@/lib/reg44-report-intelligence/types";
 
-const STATUS_STYLE: Record<QualityStandardStatus, { label: string; bg: string; fg: string }> = {
-  met: { label: "Met", bg: "#e6f7f2", fg: "#0d9488" },
-  partly_met: { label: "Partly met", bg: "#fdf4e3", fg: "#b7791f" },
-  not_met: { label: "Not met", bg: "#fdeceb", fg: "#c0392b" },
-  insufficient_evidence: { label: "Insufficient evidence", bg: "#eef1f3", fg: "#6c7a83" },
-  not_assessed: { label: "Not assessed", bg: "#eef1f3", fg: "#6c7a83" },
+// Theme-aware token classes (not hardcoded hex) so status pills follow the dark
+// skin: bg-[--cs-*-bg] are dark tints on dark, text-[--cs-*] is lifted bright by
+// the .cara-dark shim; both read correctly on the light theme too.
+const STATUS_STYLE: Record<QualityStandardStatus, { label: string; cls: string }> = {
+  met: { label: "Met", cls: "bg-[var(--cs-success-bg)] text-[var(--cs-success)]" },
+  partly_met: { label: "Partly met", cls: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]" },
+  not_met: { label: "Not met", cls: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]" },
+  insufficient_evidence: { label: "Insufficient evidence", cls: "bg-[var(--cs-surface-subtle)] text-[var(--cs-text-muted)]" },
+  not_assessed: { label: "Not assessed", cls: "bg-[var(--cs-surface-subtle)] text-[var(--cs-text-muted)]" },
 };
 
 function StandardRow({ s }: { s: QualityStandardAssessment }) {
@@ -34,7 +38,7 @@ function StandardRow({ s }: { s: QualityStandardAssessment }) {
           <span className="ml-1.5 text-[11px] text-[var(--cs-text-muted,#6c7a83)]">{s.regulation}</span>
         </span>
         <span className="flex items-center gap-2">
-          <span className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: st.bg, color: st.fg }}>{st.label}</span>
+          <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium", st.cls)}>{st.label}</span>
           {open ? <ChevronUp className="h-4 w-4 text-[var(--cs-text-muted,#6c7a83)]" /> : <ChevronDown className="h-4 w-4 text-[var(--cs-text-muted,#6c7a83)]" />}
         </span>
       </button>
@@ -42,7 +46,7 @@ function StandardRow({ s }: { s: QualityStandardAssessment }) {
         <div className="space-y-1.5 border-t border-[var(--cs-border,#e2e8ec)] px-3 py-2">
           <p className="text-xs leading-relaxed text-[var(--cs-text,#14202a)]">{s.suggestedNarrative}</p>
           {s.concerns.length > 0 && (
-            <p className="text-[11px]" style={{ color: "#c0392b" }}>Concerns: {s.concerns.join("; ")}</p>
+            <p className="text-[11px] text-[var(--cs-risk)]">Concerns: {s.concerns.join("; ")}</p>
           )}
           {s.evidence.length > 0 && (
             <ul className="space-y-0.5">
@@ -60,15 +64,15 @@ function StandardRow({ s }: { s: QualityStandardAssessment }) {
 }
 
 function OpinionCard({ o }: { o: StatutoryOpinion }) {
-  const posColor = o.position === "concerns_identified" ? "#c0392b" : o.position === "insufficient_evidence" ? "#6c7a83" : "#b7791f";
+  const posCls = o.position === "concerns_identified" ? "text-[var(--cs-risk)]" : o.position === "insufficient_evidence" ? "text-[var(--cs-text-muted)]" : "text-[var(--cs-warning)]";
   return (
     <div className="rounded-lg border border-[var(--cs-border,#e2e8ec)] bg-[var(--cs-surface-subtle,#f6f8f9)] p-3">
       <p className="flex items-start gap-1.5 text-sm font-semibold text-[var(--cs-text,#14202a)]">
-        <ShieldQuestion className="mt-0.5 h-4 w-4 shrink-0" style={{ color: "var(--cs-teal,#0d9488)" }} /> {o.question}
+        <ShieldQuestion className="mt-0.5 h-4 w-4 shrink-0 text-[var(--cs-teal)]" /> {o.question}
       </p>
-      <p className="mt-1 text-xs" style={{ color: posColor }}>Cara reads the evidence as: <strong>{o.position.replace(/_/g, " ")}</strong></p>
+      <p className={cn("mt-1 text-xs", posCls)}>Cara reads the evidence as: <strong>{o.position.replace(/_/g, " ")}</strong></p>
       <p className="mt-0.5 text-xs leading-relaxed text-[var(--cs-text,#14202a)]">{o.basis}</p>
-      <p className="mt-1 text-[11px] font-medium italic" style={{ color: "var(--cs-teal,#0d9488)" }}>This statutory opinion is yours to form — Cara has only assembled the evidence.</p>
+      <p className="mt-1 text-[11px] font-medium italic text-[var(--cs-teal)]">This statutory opinion is yours to form — Cara has only assembled the evidence.</p>
     </div>
   );
 }
@@ -89,8 +93,8 @@ function AssembledDraft({ assembly }: { assembly: NonNullable<ReturnType<typeof 
             <div key={s.key} className="py-1">
               <p className="flex items-center gap-1.5 text-xs font-semibold text-[var(--cs-text,#14202a)]">
                 <span className="text-[var(--cs-text-muted,#6c7a83)]">{s.key}.</span> {s.label}
-                {s.visitorMustComplete && <span className="rounded-full bg-[#fdf4e3] px-1.5 py-0.5 text-[10px]" style={{ color: "#b7791f" }}>for you</span>}
-                {s.status === "insufficient_evidence" && <span className="rounded-full bg-[#eef1f3] px-1.5 py-0.5 text-[10px]" style={{ color: "#6c7a83" }}>needs evidence</span>}
+                {s.visitorMustComplete && <span className="rounded-full bg-[var(--cs-warning-bg)] px-1.5 py-0.5 text-[10px] text-[var(--cs-warning)]">for you</span>}
+                {s.status === "insufficient_evidence" && <span className="rounded-full bg-[var(--cs-surface-subtle)] px-1.5 py-0.5 text-[10px] text-[var(--cs-text-muted)]">needs evidence</span>}
               </p>
               <p className="whitespace-pre-line text-[11px] leading-relaxed text-[var(--cs-text-muted,#6c7a83)]">{s.content}</p>
             </div>
@@ -111,10 +115,10 @@ export function Reg44ReportIntelligencePanel({ homeId = "home_oak", month }: { h
     <Card className="border-[var(--cs-border,#e2e8ec)]">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-2 text-base">
-          <ClipboardCheck className="h-4 w-4" style={{ color: "var(--cs-teal,#0d9488)" }} />
+          <ClipboardCheck className="h-4 w-4 text-[var(--cs-teal)]" />
           Reg 44 Evidence &amp; Quality Standards
           {a && (
-            <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: a.readiness.status === "ready_for_visitor" ? "#e6f7f2" : a.readiness.status === "needs_review" ? "#fdf4e3" : "#fdeceb", color: a.readiness.status === "ready_for_visitor" ? "#0d9488" : a.readiness.status === "needs_review" ? "#b7791f" : "#c0392b" }}>
+            <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", a.readiness.status === "ready_for_visitor" ? "bg-[var(--cs-success-bg)] text-[var(--cs-success)]" : a.readiness.status === "needs_review" ? "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]" : "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]")}>
               {a.readiness.status.replace(/_/g, " ")} · {a.readiness.score}
             </span>
           )}
@@ -133,10 +137,10 @@ export function Reg44ReportIntelligencePanel({ homeId = "home_oak", month }: { h
               return (
                 <div className="flex flex-wrap items-center gap-2 rounded-lg bg-[var(--cs-surface-subtle,#f6f8f9)] px-3 py-2">
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted,#6c7a83)]">Export draft:</span>
-                  <a href={`${base}&format=docx`} className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white">Word (.docx)</a>
-                  <a href={`${base}&format=html`} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white">Print / PDF</a>
-                  <a href={`${base}&format=reg45`} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white">Reg 45 extract</a>
-                  <a href={`${base}&format=json`} className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-text-muted,#6c7a83)] hover:bg-white">JSON</a>
+                  <a href={`${base}&format=docx`} className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white/10">Word (.docx)</a>
+                  <a href={`${base}&format=html`} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white/10">Print / PDF</a>
+                  <a href={`${base}&format=reg45`} target="_blank" rel="noreferrer" className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-teal,#0d9488)] hover:bg-white/10">Reg 45 extract</a>
+                  <a href={`${base}&format=json`} className="rounded-md border border-[var(--cs-border,#e2e8ec)] px-2 py-0.5 text-[11px] font-medium text-[var(--cs-text-muted,#6c7a83)] hover:bg-white/10">JSON</a>
                 </div>
               );
             })()}
@@ -144,9 +148,9 @@ export function Reg44ReportIntelligencePanel({ homeId = "home_oak", month }: { h
             {a.validationFlags.length > 0 && (
               <div className="space-y-1.5">
                 {a.validationFlags.map((f) => (
-                  <div key={f.id} className="flex items-start gap-2 rounded-md border px-2.5 py-1.5" style={f.severity === "block" ? { borderColor: "#f0b8b2", backgroundColor: "#fdeceb" } : { borderColor: "#f0dcb0", backgroundColor: "#fdf4e3" }}>
-                    {f.severity === "block" ? <Ban className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: "#c0392b" }} /> : <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: "#b7791f" }} />}
-                    <span className="text-xs" style={{ color: f.severity === "block" ? "#c0392b" : "#b7791f" }}>{f.message}</span>
+                  <div key={f.id} className={cn("flex items-start gap-2 rounded-md border px-2.5 py-1.5", f.severity === "block" ? "border-[var(--cs-risk-soft)] bg-[var(--cs-risk-bg)]" : "border-[var(--cs-warning-soft)] bg-[var(--cs-warning-bg)]")}>
+                    {f.severity === "block" ? <Ban className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--cs-risk)]" /> : <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[var(--cs-warning)]" />}
+                    <span className={cn("text-xs", f.severity === "block" ? "text-[var(--cs-risk)]" : "text-[var(--cs-warning)]")}>{f.message}</span>
                   </div>
                 ))}
               </div>
