@@ -4,7 +4,17 @@ import { getStore } from "@/lib/db/store";
 import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-engine";
 import { buildAuditEvent } from "@/lib/ask-cara/audit-logger";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
-import { answerNaturally, buildFreeChatGrounding } from "@/lib/cara/ask-cara-natural";
+import { answerNaturally, buildFreeChatGrounding, type ChatTurn } from "@/lib/cara/ask-cara-natural";
+
+/** Sanitise client-sent chat history to typed, clipped turns (max 6). */
+function parseHistory(v: unknown): ChatTurn[] | undefined {
+  if (!Array.isArray(v)) return undefined;
+  const turns = v
+    .filter((t): t is { role: string; text: string } => !!t && typeof t === "object" && typeof (t as { text?: unknown }).text === "string")
+    .map((t) => ({ role: t.role === "user" ? ("user" as const) : ("cara" as const), text: String(t.text).slice(0, 500) }))
+    .slice(-6);
+  return turns.length ? turns : undefined;
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // POST /api/v1/cara/chat
@@ -140,6 +150,9 @@ export async function POST(req: NextRequest) {
       // answer (default ON; pass natural:false to skip). The model only phrases
       // what the orchestrator + engines established; unavailable/refused/error →
       // the deterministic answer stands unchanged. Refusals/gates never reach it.
+      // Conversation continuity: the child the question resolved to is returned so
+      // the UI can carry it into follow-ups ("what triggers her?" → same child).
+      const resolvedChild = resolveChild(prompt.toLowerCase(), snapshot, childId);
       let finalText = answer.text;
       let llmUsed = false;
       let naturalMethod = "deterministic";
@@ -149,8 +162,9 @@ export async function POST(req: NextRequest) {
           answer,
           snapshot,
           tier: roleTier(role),
-          child: resolveChild(prompt.toLowerCase(), snapshot, childId),
+          child: resolvedChild,
           asOf,
+          history: parseHistory(body.history),
         });
         finalText = natural.text;
         llmUsed = natural.llmUsed;
@@ -190,6 +204,7 @@ export async function POST(req: NextRequest) {
         answer: { ...answer, text: finalText },
         llm: { used: llmUsed, method: naturalMethod },
         deterministicText: llmUsed ? answer.text : undefined,
+        resolvedChildId: resolvedChild?.id,
       });
     } catch (err) {
       console.error("[cara/chat] ask failed", err);

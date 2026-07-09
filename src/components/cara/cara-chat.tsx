@@ -55,6 +55,9 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  // Conversation continuity: the child Cara last resolved — so a follow-up like
+  // "what triggers her?" stays about the same child without renaming them.
+  const [lastChildId, setLastChildId] = useState<string | undefined>(undefined);
   const scrollRef = useRef<HTMLDivElement>(null);
   const empty = messages.length === 0;
 
@@ -78,11 +81,16 @@ export function CaraChat({ context }: { context: CaraDrawerContext }) {
           userName: currentUser?.full_name || firstName,
           role: currentRole,
           pageTitle: context.pageTitle,
-          childId: context.childId,
+          // Page context wins; otherwise carry the conversation's child forward.
+          childId: context.childId ?? lastChildId,
+          // Last few turns — continuity for the grounded LLM voice (facts still
+          // come only from the records; the engine stays single-turn).
+          history: messages.slice(-6).map((m) => ({ role: m.role, text: m.text.slice(0, 400) })),
         }),
       });
       const data = await res.json();
       const a: AskCaraAnswer | undefined = data?.answer;
+      if (typeof data?.resolvedChildId === "string") setLastChildId(data.resolvedChildId);
       setMessages((m) => [
         ...m,
         a

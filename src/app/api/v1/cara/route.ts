@@ -10,7 +10,8 @@ import { computeStaffDevelopmentIntelligence } from "@/lib/engines/staff-develop
 import { buildDeterministicLearning } from "@/lib/cara/deterministic-learning";
 import { buildDeterministicIntelligence } from "@/lib/cara/deterministic-intelligence";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
-import { answerQuestion } from "@/lib/ask-cara/ask-cara-engine";
+import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-engine";
+import { buildFreeChatGrounding } from "@/lib/cara/ask-cara-natural";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
 
@@ -1589,7 +1590,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Build the user message
-  const userMessage = buildUserMessage({
+  let userMessage = buildUserMessage({
     mode,
     style: resolvedStyle,
     source_content,
@@ -1601,6 +1602,31 @@ export async function POST(req: NextRequest) {
     user_role,
     period_days,
   });
+
+  // FULL CAPACITY: question-led modes (assist, oversight_draft, …) get the same
+  // tier-scoped deterministic grounding pack as Ask CARA chat — the model answers
+  // FROM the platform's intelligence (twin, engines, weekly narrative, ops), not
+  // blind. Draft/transform modes (document_*, rewrites over source_content only)
+  // keep their focused prompts. Fail-open: if the pack can't build, continue
+  // ungrounded rather than break the assistant.
+  if (typeof question === "string" && question.trim()) {
+    try {
+      const snapshot = buildAskSnapshot(getStore());
+      const asOf = new Date().toISOString().slice(0, 10);
+      const detAnswer = answerQuestion({ question, asOf, role: user_role, snapshot });
+      const pack = buildFreeChatGrounding({
+        question,
+        snapshot,
+        tier: roleTier(user_role),
+        answer: detAnswer,
+        child: resolveChild(question.toLowerCase(), snapshot),
+        asOf,
+      });
+      userMessage = `${pack}\n\n${userMessage}`;
+    } catch (groundErr) {
+      console.error("[cara] grounding failed — continuing ungrounded", groundErr);
+    }
+  }
 
   // The Cara writing-style rules are appended to the system prompt so every
   // mode in this route inherits the same UK English, child-centred,
