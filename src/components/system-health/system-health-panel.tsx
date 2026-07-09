@@ -11,21 +11,22 @@
 
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { Loader2, Activity, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useSystemHealth } from "@/hooks/use-system-health";
 import type { HealthSeverity, HealthCheckCategory } from "@/lib/system-health/types";
 
-const SEV_STYLE: Record<HealthSeverity, { bg: string; fg: string; border: string; label: string }> = {
-  critical: { bg: "#fdeceb", fg: "#c0392b", border: "#f0b8b2", label: "Critical" },
-  high: { bg: "#fdf1e7", fg: "#c05621", border: "#f0cdb0", label: "High" },
-  medium: { bg: "#fdf4e3", fg: "#b7791f", border: "#f0dcb0", label: "Medium" },
-  low: { bg: "#eef4f8", fg: "#31708e", border: "#c7dbe6", label: "Low" },
+const SEV_STYLE: Record<HealthSeverity, { cls: string; label: string }> = {
+  critical: { cls: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)] border-[var(--cs-risk-soft)]", label: "Critical" },
+  high: { cls: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)] border-[var(--cs-warning-soft)]", label: "High" },
+  medium: { cls: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)] border-[var(--cs-warning-soft)]", label: "Medium" },
+  low: { cls: "bg-[var(--cs-info-bg)] text-[var(--cs-info)] border-[var(--cs-info-soft)]", label: "Low" },
 };
 
-const STATUS_STYLE: Record<string, { fg: string; label: string }> = {
-  healthy: { fg: "#0d9488", label: "Healthy" },
-  attention: { fg: "#b7791f", label: "Needs attention" },
-  action_required: { fg: "#c0392b", label: "Action required" },
+const STATUS_STYLE: Record<string, { cls: string; label: string }> = {
+  healthy: { cls: "text-[var(--cs-success)]", label: "Healthy" },
+  attention: { cls: "text-[var(--cs-warning)]", label: "Needs attention" },
+  action_required: { cls: "text-[var(--cs-risk)]", label: "Action required" },
 };
 
 const CATEGORY_LABEL: Record<HealthCheckCategory, string> = {
@@ -53,10 +54,10 @@ export function SystemHealthPanel() {
           </CardTitle>
           {r && (
             <div className="flex items-center gap-2">
-              <span className="text-2xl font-semibold tabular-nums" style={{ color: status?.fg }}>
+              <span className={cn("text-2xl font-semibold tabular-nums", status?.cls)}>
                 {r.healthScore}
               </span>
-              <span className="rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: `${status?.fg}1a`, color: status?.fg }}>
+              <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium", status?.cls)}>
                 {status?.label}
               </span>
             </div>
@@ -77,7 +78,7 @@ export function SystemHealthPanel() {
         {isError && <p className="py-4 text-sm text-[var(--cs-text-muted,#6c7a83)]">Couldn&apos;t run the health check right now.</p>}
 
         {r && r.issues.length === 0 && (
-          <div className="flex items-center gap-2 rounded-lg border border-[#b6e4d7] bg-[#e6f7f2] px-3 py-4 text-sm" style={{ color: "#0d9488" }}>
+          <div className="flex items-center gap-2 rounded-lg border border-[var(--cs-success-soft)] bg-[var(--cs-success-bg)] px-3 py-4 text-sm text-[var(--cs-success)]">
             <ShieldCheck className="h-4 w-4 shrink-0" />
             Nothing outstanding — every integrity check passed.
           </div>
@@ -87,13 +88,13 @@ export function SystemHealthPanel() {
           r.issues.map((issue) => {
             const s = SEV_STYLE[issue.severity];
             return (
-              <div key={issue.id} className="rounded-lg border px-3 py-2.5" style={{ borderColor: s.border, backgroundColor: `${s.bg}80` }}>
+              <div key={issue.id} className={cn("rounded-lg border px-3 py-2.5", s.cls)}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <AlertTriangle className="h-3.5 w-3.5 shrink-0" style={{ color: s.fg }} />
+                    <AlertTriangle className={cn("h-3.5 w-3.5 shrink-0", s.cls)} />
                     <span className="text-[13px] font-medium text-[var(--cs-text,#1f2a30)]">{CATEGORY_LABEL[issue.category]}</span>
                   </div>
-                  <span className="rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide" style={{ backgroundColor: s.bg, color: s.fg }}>
+                  <span className={cn("rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide", s.cls)}>
                     {s.label}
                   </span>
                 </div>

@@ -12,15 +12,16 @@
 
 import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronUp, GraduationCap, Loader2, Sparkles, Compass, Heart } from "lucide-react";
 import { useStaffPracticeSkills } from "@/hooks/use-staff-practice-skills";
 import type { SkillSignal, StaffSupervisionPrompt } from "@/lib/staff-practice-skills/types";
 
-const SIGNAL_STYLE: Record<SkillSignal, { label: string; bg: string; fg: string }> = {
-  strong: { label: "Strong", bg: "#e6f7f2", fg: "#0d9488" },
-  developing: { label: "Developing", bg: "#fdf4e3", fg: "#b7791f" },
-  needs_support: { label: "Needs support", bg: "#fdeceb", fg: "#c0392b" },
-  no_data: { label: "No data yet", bg: "#eef1f3", fg: "#6c7a83" },
+const SIGNAL_STYLE: Record<SkillSignal, { label: string; cls: string }> = {
+  strong: { label: "Strong", cls: "bg-[var(--cs-success-bg)] text-[var(--cs-success)]" },
+  developing: { label: "Developing", cls: "bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]" },
+  needs_support: { label: "Needs support", cls: "bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]" },
+  no_data: { label: "No data yet", cls: "bg-[var(--cs-surface-subtle)] text-[var(--cs-text-muted)]" },
 };
 
 const PICTURE_LABEL: Record<string, string> = {
@@ -34,10 +35,10 @@ const PROMPT_ICON = { development: Compass, strength: Sparkles, wellbeing: Heart
 
 function PromptRow({ p }: { p: StaffSupervisionPrompt }) {
   const Icon = PROMPT_ICON[p.kind];
-  const fg = p.kind === "wellbeing" ? "#c0392b" : p.kind === "strength" ? "#0d9488" : "#b7791f";
+  const iconCls = p.kind === "wellbeing" ? "text-[var(--cs-risk)]" : p.kind === "strength" ? "text-[var(--cs-success)]" : "text-[var(--cs-warning)]";
   return (
     <li className="flex items-start gap-2 text-xs leading-relaxed text-[var(--cs-text,#14202a)]">
-      <Icon className="mt-0.5 h-3.5 w-3.5 shrink-0" style={{ color: fg }} />
+      <Icon className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", iconCls)} />
       {p.prompt}
     </li>
   );
@@ -93,7 +94,7 @@ export function StaffPracticeSkillsPanel({ staffId }: { staffId: string; staffNa
                         <p className="text-sm font-medium text-[var(--cs-text,#14202a)]">{l.label}</p>
                         <p className="text-xs text-[var(--cs-text-muted,#6c7a83)]">{l.detail}</p>
                       </div>
-                      <span className="shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium" style={{ backgroundColor: s.bg, color: s.fg }}>
+                      <span className={cn("shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium", s.cls)}>
                         {s.label}
                       </span>
                     </div>
@@ -107,7 +108,7 @@ export function StaffPracticeSkillsPanel({ staffId }: { staffId: string; staffNa
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted,#6c7a83)]">Strengths to build on</p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {p.strengths.map((s, i) => (
-                    <span key={i} className="rounded-full bg-[#e6f7f2] px-2 py-0.5 text-[11px]" style={{ color: "#0d9488" }}>{s}</span>
+                    <span key={i} className="rounded-full bg-[var(--cs-success-bg)] px-2 py-0.5 text-[11px] text-[var(--cs-success)]">{s}</span>
                   ))}
                 </div>
               </div>
@@ -117,7 +118,7 @@ export function StaffPracticeSkillsPanel({ staffId }: { staffId: string; staffNa
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-[var(--cs-text-muted,#6c7a83)]">Growing edges</p>
                 <div className="mt-1 flex flex-wrap gap-1.5">
                   {p.developmentAreas.map((s, i) => (
-                    <span key={i} className="rounded-full bg-[#fdf4e3] px-2 py-0.5 text-[11px]" style={{ color: "#b7791f" }}>{s}</span>
+                    <span key={i} className="rounded-full bg-[var(--cs-warning-bg)] px-2 py-0.5 text-[11px] text-[var(--cs-warning)]">{s}</span>
                   ))}
                 </div>
               </div>

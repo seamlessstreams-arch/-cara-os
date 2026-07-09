@@ -14,18 +14,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Wrench, ShieldCheck, UserCheck, CheckCircle2 } from "lucide-react";
 import { useSelfHealing, useApplySelfHealing } from "@/hooks/use-self-healing";
 import type { IntegrityRepair, RepairSeverity } from "@/lib/self-healing/types";
+import { cn } from "@/lib/utils";
 
-const SEV: Record<RepairSeverity, { fg: string; bg: string; border: string }> = {
-  critical: { fg: "#c0392b", bg: "#fdeceb", border: "#f0b8b2" },
-  high: { fg: "#c05621", bg: "#fdf1e7", border: "#f0cdb0" },
-  medium: { fg: "#b7791f", bg: "#fdf4e3", border: "#f0dcb0" },
-  low: { fg: "#31708e", bg: "#eef4f8", border: "#c7dbe6" },
+const SEV: Record<RepairSeverity, { cls: string }> = {
+  critical: { cls: "text-[var(--cs-risk)] bg-[var(--cs-risk-bg)] border-[var(--cs-risk-soft)]" },
+  high: { cls: "text-[var(--cs-warning)] bg-[var(--cs-warning-bg)] border-[var(--cs-warning-soft)]" },
+  medium: { cls: "text-[var(--cs-warning)] bg-[var(--cs-warning-bg)] border-[var(--cs-warning-soft)]" },
+  low: { cls: "text-[var(--cs-info)] bg-[var(--cs-info-bg)] border-[var(--cs-info-soft)]" },
 };
 
 function RepairRow({ r }: { r: IntegrityRepair }) {
   const s = SEV[r.severity];
   return (
-    <div className="rounded-lg border px-3 py-2.5" style={{ borderColor: s.border, backgroundColor: `${s.bg}80` }}>
+    <div className={cn("rounded-lg border px-3 py-2.5", s.cls)}>
       <p className="text-[13px] font-medium text-[var(--cs-text,#1f2a30)]">{r.description}</p>
       <p className="mt-1 text-[12px] text-[var(--cs-text-muted,#6c7a83)]">{r.rationale}</p>
       <div className="mt-1.5 flex flex-wrap items-center gap-1.5 text-[10px] text-[var(--cs-text-muted,#8a97a0)]">
@@ -84,14 +85,14 @@ export function SelfHealingPanel() {
         {isError && <p className="py-4 text-sm text-[var(--cs-text-muted,#6c7a83)]">Couldn&apos;t run the integrity scan right now.</p>}
 
         {apply.data?.data?.applied?.length > 0 && (
-          <div className="flex items-center gap-2 rounded-lg border border-[#b6e4d7] bg-[#e6f7f2] px-3 py-2.5 text-sm" style={{ color: "#0d9488" }}>
+          <div className="flex items-center gap-2 rounded-lg border border-[var(--cs-success-soft)] bg-[var(--cs-success-bg)] px-3 py-2.5 text-sm text-[var(--cs-teal)]">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             Healed {apply.data.data.applied.length} reference{apply.data.data.applied.length === 1 ? "" : "s"} — logged and reversible.
           </div>
         )}
 
         {plan && plan.summary.total === 0 && !isLoading && (
-          <div className="flex items-center gap-2 rounded-lg border border-[#b6e4d7] bg-[#e6f7f2] px-3 py-4 text-sm" style={{ color: "#0d9488" }}>
+          <div className="flex items-center gap-2 rounded-lg border border-[var(--cs-success-soft)] bg-[var(--cs-success-bg)] px-3 py-4 text-sm text-[var(--cs-teal)]">
             <ShieldCheck className="h-4 w-4 shrink-0" />
             Every reference is consistent — nothing to heal.
           </div>
