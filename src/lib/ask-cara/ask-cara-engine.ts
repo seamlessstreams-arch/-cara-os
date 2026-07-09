@@ -47,6 +47,14 @@ import {
 
 const DISCLAIMER = "Cara answers from your live records to support your judgement — it never makes a safeguarding decision for you.";
 
+// Leg-four practice-engine disclaimers — each names the deterministic engine the
+// finding comes from, and holds the critical-friend stance (a prompt, never a
+// judgement of the team; Cara surfaces, the human decides).
+const LANGUAGE_DISCLAIMER = "From CARA's Care Language Audit — a prompt to re-read and reframe, never a judgement of anyone. Language shapes how a child is seen.";
+const VOICE_DISCLAIMER = "From CARA's Child Voice Presence read (UN CRC Article 12) — voice in the record is a child's right, not an extra. This flags where to make space for it.";
+const GAP_DISCLAIMER = "From CARA's Recording Gap Intelligence — a recording gap is a safeguarding gap. Cara flags what's thin; completing the record stays yours.";
+const RISK_DISCLAIMER = "From CARA's Cumulative Risk read — a convergence of signals surfaced for your judgement. Cara never decides risk; it helps you see it.";
+
 // ── Role-based access ─────────────────────────────────────────────────────────
 // Answers are scoped to who's asking. Care staff get everything about the children
 // and the day's work; staff-management and governance data is management-only.
@@ -111,6 +119,8 @@ function resolveChild(q: string, snap: AskCaraSnapshot, contextChildId?: string)
 }
 
 const staffName = (snap: AskCaraSnapshot, id?: string): string => (id ? snap.staff.find((s) => s.id === id)?.name ?? "not recorded" : "not recorded");
+
+const childNameById = (snap: AskCaraSnapshot, id: string): string => childLabel(snap.children.find((c) => c.id === id) ?? ({ id } as AskCaraChild));
 
 function answer(partial: Omit<AskCaraAnswer, "engineVersion" | "disclaimer"> & { disclaimer?: string }): AskCaraAnswer {
   return { disclaimer: DISCLAIMER, engineVersion: ASK_CARA_VERSION, ...partial };
@@ -665,6 +675,119 @@ function skillChildRelationships(snap: AskCaraSnapshot, child: AskCaraChild | nu
   });
 }
 
+// ── Child practice intelligence (leg four): the "critical friend" engines ─────
+// Care Language Audit, Child Voice Presence, Recording Gap Intelligence,
+// Cumulative Risk Intelligence — answered from the ENGINE'S findings on this
+// home's records, not generic knowledge-base theory.
+
+function skillCareLanguage(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const cl = snap.practice?.careLanguage;
+  if (!cl) return answer({ intent: "care_language", answered: false, text: "I can't read the care-language picture right now.", sources: [], suggestions: sug(["Where are our recording gaps?", "What needs my attention?"]) });
+  if (child) {
+    const name = childLabel(child);
+    const pc = cl.perChild.find((p) => p.childId === child.id);
+    if (!pc || pc.totalHits === 0) {
+      return answer({ intent: "care_language", answered: true, text: `No criminalising, moralising or labelling language flagged in ${name}'s records — the writing about ${name} reads as child-centred. Worth keeping up.`, sources: [{ label: "Language flags", count: 0 }], suggestions: sug([`Whose voice is missing for ${name}?`, `How is ${name} progressing?`]), disclaimer: LANGUAGE_DISCLAIMER });
+    }
+    const lines = [
+      `${pc.totalHits} phrase${pc.totalHits === 1 ? "" : "s"} in ${name}'s records read as ${pc.topCategoryLabel ?? "concerning language"} — worth a re-read.`,
+      "",
+      `Language shapes how a child is seen, and a phrase that criminalises or labels can follow ${name} through their file. This is a prompt to reframe, not a criticism of anyone.`,
+    ];
+    return answer({ intent: "care_language", answered: true, text: lines.join("\n"), sources: [{ label: `Language flags for ${name}`, count: pc.totalHits }], suggestions: sug([`Whose voice is missing for ${name}?`, `Help me record what happened`, `How is ${name} progressing?`]), disclaimer: LANGUAGE_DISCLAIMER });
+  }
+  if (cl.totalHits === 0) {
+    return answer({ intent: "care_language", answered: true, text: "No criminalising, moralising or labelling language flagged across the home's recent records — the writing reads as child-centred.", sources: [{ label: "Language flags", count: 0 }], suggestions: sug(["Where are our recording gaps?", "Are we recording strengths enough?"]), disclaimer: LANGUAGE_DISCLAIMER });
+  }
+  const lines = [`${cl.totalHits} phrase${cl.totalHits === 1 ? "" : "s"} across the records read as concerning language — about ${cl.hitRate} per 100 records${cl.topCategoryLabel ? `, most often ${cl.topCategoryLabel}` : ""}.`];
+  if (cl.mostFlaggedPhrase) lines.push(`Most flagged: "${cl.mostFlaggedPhrase}".`);
+  if (cl.childrenAffected) lines.push(`${cl.childrenAffected} child${cl.childrenAffected === 1 ? "" : "ren"} affected${cl.perChild.length ? `: ${cl.perChild.slice(0, 4).map((p) => childNameById(snap, p.childId)).join(", ")}` : ""}.`);
+  lines.push("", "Language shapes how a child is seen — this is a prompt to re-read and reframe, never a judgement of the team.");
+  return answer({ intent: "care_language", answered: true, text: lines.join("\n"), sources: [{ label: "Language flags", count: cl.totalHits }, { label: "Children affected", count: cl.childrenAffected }], suggestions: sug(["Whose voice is missing?", "Where are our recording gaps?", "Are we recording strengths enough?"]), disclaimer: LANGUAGE_DISCLAIMER });
+}
+
+function skillChildVoice(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const cv = snap.practice?.childVoice;
+  if (!cv) return answer({ intent: "child_voice", answered: false, text: "I can't read the child-voice picture right now.", sources: [], suggestions: sug(["Where are our recording gaps?", "What needs my attention?"]) });
+  if (child) {
+    const name = childLabel(child);
+    const pc = cv.perChild.find((p) => p.childId === child.id);
+    if (!pc || !pc.hasData) {
+      return answer({ intent: "child_voice", answered: true, text: `I can't find ${name}'s own voice in the records yet — no quoted words, wishes or feelings captured. That gap matters: under Article 12, ${name} has a right to be heard in matters affecting them. Worth capturing what ${name} thinks, in their words.`, sources: [{ label: "Voice presence", count: 0 }], suggestions: sug([`Tell me about ${name}`, `How is ${name} progressing?`]), disclaimer: VOICE_DISCLAIMER });
+    }
+    const score = pc.score ?? 0;
+    const lines = [
+      `${name}'s voice appears in about ${score}% of their records${pc.topGapTypeLabel ? ` — thinnest in ${pc.topGapTypeLabel}` : ""}.`,
+      "",
+      score < 40 ? `That's low — ${name}'s own words, wishes and feelings should run through the record, not just what staff observed.` : `${name}'s voice is coming through — keep making space for their words, especially in decisions about them.`,
+    ];
+    return answer({ intent: "child_voice", answered: true, text: lines.join("\n"), sources: [{ label: `Voice presence for ${name} (%)`, count: score }], suggestions: sug([`Is our language criminalising ${name}?`, `How is ${name} progressing?`]), disclaimer: VOICE_DISCLAIMER });
+  }
+  const rate = cv.overallPresenceRate;
+  const thin = cv.perChild.filter((p) => !p.hasData || (p.score ?? 0) < 40);
+  const lines = [rate === null ? "There isn't enough recorded yet to read how present the children's voices are." : `Across the home, the children's voice appears in about ${rate}% of records${cv.worstTypeLabel ? `, thinnest in ${cv.worstTypeLabel}` : ""}.`];
+  if (cv.lacParticipationRate !== null) lines.push(`LAC review participation: ${cv.lacParticipationRate}%.`);
+  if (thin.length) lines.push("", `Whose voice is thin or missing: ${thin.map((p) => childNameById(snap, p.childId)).join(", ")}. Article 12 — every child has a right to be heard.`);
+  return answer({ intent: "child_voice", answered: rate !== null || thin.length > 0, text: lines.join("\n"), sources: [{ label: "Voice presence, home (%)", count: rate ?? 0 }, { label: "Voice thin/missing", count: thin.length }], suggestions: sug(["Where are our recording gaps?", "Are we recording strengths enough?", "What needs my attention?"]), disclaimer: VOICE_DISCLAIMER });
+}
+
+function skillRecordingGaps(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const rg = snap.practice?.recordingGaps;
+  if (!rg) return answer({ intent: "recording_gaps", answered: false, text: "I can't read the recording-gaps picture right now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  if (child) {
+    const name = childLabel(child);
+    const pc = rg.perChild.find((p) => p.childId === child.id);
+    if (!pc) {
+      return answer({ intent: "recording_gaps", answered: true, text: `No safeguarding-critical recording gaps flagged for ${name} — daily logs, key work, welfare checks and reviews are current.`, sources: [{ label: "Recording gaps", count: 0 }], suggestions: sug([`Whose voice is missing for ${name}?`, `Tell me about ${name}`]), disclaimer: GAP_DISCLAIMER });
+    }
+    const lines = [
+      `${name} has ${pc.criticalGapCount} critical recording gap${pc.criticalGapCount === 1 ? "" : "s"}${pc.topGapLabel ? ` — ${pc.topGapLabel} is the most overdue` : ""} (severity: ${pc.severity}).`,
+      "",
+      "A recording gap is a safeguarding gap — if it isn't written down, it can't be seen. Worth closing before anything else.",
+    ];
+    return answer({ intent: "recording_gaps", answered: true, text: lines.join("\n"), sources: [{ label: `Critical gaps for ${name}`, count: pc.criticalGapCount }], suggestions: sug([`Whose voice is missing for ${name}?`, "What needs my attention?"]), disclaimer: GAP_DISCLAIMER });
+  }
+  if (rg.childrenWithAnyGap === 0) {
+    return answer({ intent: "recording_gaps", answered: true, text: "No safeguarding-critical recording gaps across the home — daily logs, key work, welfare checks and reviews are current for every child.", sources: [{ label: "Recording gaps", count: 0 }], suggestions: sug(["Whose voice is missing?", "Are we recording strengths enough?"]), disclaimer: GAP_DISCLAIMER });
+  }
+  const crit = rg.perChild.filter((p) => p.severity === "critical");
+  const lines = [`${rg.childrenWithAnyGap} child${rg.childrenWithAnyGap === 1 ? "" : "ren"} ha${rg.childrenWithAnyGap === 1 ? "s" : "ve"} recording gaps — ${rg.childrenWithCriticalGap} critical (${rg.totalCriticalGaps} critical gap${rg.totalCriticalGaps === 1 ? "" : "s"} in total).`];
+  if (crit.length) {
+    lines.push("", "Critical first:");
+    for (const p of crit.slice(0, 5)) lines.push(`- ${childNameById(snap, p.childId)}${p.topGapLabel ? `: ${p.topGapLabel}` : ""}`);
+  }
+  lines.push("", "A recording gap is a safeguarding gap — Ofsted reads the absence, not just the entries.");
+  return answer({ intent: "recording_gaps", answered: true, text: lines.join("\n"), sources: [{ label: "Children with critical gaps", count: rg.childrenWithCriticalGap }, { label: "Critical gaps", count: rg.totalCriticalGaps }], suggestions: sug(["What needs my attention?", "Whose voice is missing?"]), disclaimer: GAP_DISCLAIMER });
+}
+
+function skillCumulativeRisk(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const cr = snap.practice?.cumulativeRisk;
+  if (!cr) return answer({ intent: "cumulative_risk", answered: false, text: "I can't read the cumulative-risk picture right now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  if (child) {
+    const name = childLabel(child);
+    const pc = cr.perChild.find((p) => p.childId === child.id);
+    if (!pc) {
+      return answer({ intent: "cumulative_risk", answered: true, text: `${name}'s signals look stable or improving — no convergence of worsening signals (incident frequency and severity, missing episodes, isolation, safeguarding type). Keep the wider picture under review; absence of a flag isn't the same as no risk.`, sources: [{ label: "Escalating signals", count: 0 }], suggestions: sug([`What triggers ${name}?`, `How is ${name} progressing?`]), disclaimer: RISK_DISCLAIMER });
+    }
+    const lines = [
+      `${name}'s cumulative risk is **${pc.signal}** — ${pc.worseningSignals} signal${pc.worseningSignals === 1 ? "" : "s"} worsening${pc.topWorseningLabel ? ` (most notably ${pc.topWorseningLabel.toLowerCase()})` : ""}. Supervision priority: ${pc.priority.replace(/_/g, " ")}.`,
+      "",
+      "This is convergence, not a single event — several things trending the wrong way together. Worth a closer look and a plan review.",
+    ];
+    return answer({ intent: "cumulative_risk", answered: true, text: lines.join("\n"), sources: [{ label: `Worsening signals for ${name}`, count: pc.worseningSignals }], suggestions: sug([`What triggers ${name}?`, `How are ${name}'s relationships?`, "What needs my attention?"]), disclaimer: RISK_DISCLAIMER });
+  }
+  if (cr.escalatingCount === 0 && cr.perChild.length === 0) {
+    return answer({ intent: "cumulative_risk", answered: true, text: "No child is showing a convergence of worsening risk signals right now. That's not the same as no risk — keep the wider picture under review.", sources: [{ label: "Escalating", count: 0 }], suggestions: sug(["What needs my attention?", "Where are our recording gaps?"]), disclaimer: RISK_DISCLAIMER });
+  }
+  const lines = [`${cr.escalatingCount} child${cr.escalatingCount === 1 ? "" : "ren"} showing escalating cumulative risk${cr.urgentSupervisionCount ? `, ${cr.urgentSupervisionCount} needing urgent supervision` : ""}.${cr.mostCommonWorseningSignal && cr.mostCommonWorseningSignal !== "None" ? ` Most common worsening signal: ${cr.mostCommonWorseningSignal.toLowerCase()}.` : ""}`];
+  if (cr.perChild.length) {
+    lines.push("", "Who's converging:");
+    for (const p of cr.perChild.slice(0, 5)) lines.push(`- ${childNameById(snap, p.childId)} (${p.signal}${p.topWorseningLabel ? `, ${p.topWorseningLabel.toLowerCase()}` : ""})`);
+  }
+  lines.push("", "Cumulative risk is several signals trending together — the whole is more than the parts. Cara surfaces it; the judgement stays yours.");
+  return answer({ intent: "cumulative_risk", answered: true, text: lines.join("\n"), sources: [{ label: "Escalating", count: cr.escalatingCount }, { label: "Urgent supervision", count: cr.urgentSupervisionCount }], suggestions: sug(["What needs my attention?", "How are the children's relationships?"]), disclaimer: RISK_DISCLAIMER });
+}
+
 // ── CPIE Digital Twin: the whole child (identity before incident) ─────────────
 
 const twinFor = (snap: AskCaraSnapshot, childId: string) => (snap.twins ?? []).find((t) => t.childId === childId);
@@ -1166,6 +1289,25 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   }
   if (mentionsAny(q, ["progress", "progressing", "making progress", "direction of travel", "trajectory", "getting better", "getting worse", "improving", "declining", "on track", "outcomes"])) {
     return gate("care_team", () => skillChildProgress(snap, child));
+  }
+
+  // Child practice intelligence (leg four) — the deterministic "critical friend"
+  // engines. Placed BEFORE the knowledge-base catch so "is our language
+  // criminalising?", "where are our recording gaps?", "who is at cumulative
+  // risk?" are answered from the ENGINE'S findings on this home's records, not
+  // generic KB theory — and BEFORE the "missing" route so "whose voice is
+  // missing?" reaches Child Voice Presence, not missing-from-care episodes.
+  if (mentionsAny(q, ["whose voice", "child voice", "child's voice", "childs voice", "children's voice", "childrens voice", "voice of the child", "their voice", "voice missing", "voice is missing", "voice in the record", "voice in the records", "voice present", "hearing the child", "children heard", "child heard", "heard in the record", "heard in the records", "heard in decisions", "being heard", "feel heard", "feels heard", "article 12", "right to be heard", "is the child heard", "are children heard", "child's views", "children's views", "captured their voice"])) {
+    return gate("care_team", () => skillChildVoice(snap, child));
+  }
+  if (mentionsAny(q, ["care language", "our language", "language we use", "language about", "how we describe", "how we write about", "criminalising", "criminalizing", "criminalise", "criminalize", "moralising", "moralizing", "labelling language", "character labelling", "blaming language", "stigmatising", "stigmatizing", "deficit language"])) {
+    return gate("care_team", () => skillCareLanguage(snap, child));
+  }
+  if (mentionsAny(q, ["recording gap", "recording gaps", "gaps in recording", "gaps in the record", "gaps in our record", "gaps in our records", "recording missing", "what aren't we recording", "what are we not recording", "under-recorded", "under recorded", "recording is thin", "gaps in reporting", "missing records", "missing recordings"])) {
+    return gate("care_team", () => skillRecordingGaps(snap, child));
+  }
+  if (mentionsAny(q, ["cumulative risk", "cumulative risks", "converging risk", "risk converging", "risks converging", "escalating risk", "risk escalating", "building risk", "risk building", "compounding risk", "risk compounding", "stacking risk", "risk stacking", "risk convergence"])) {
+    return gate("care_team", () => skillCumulativeRisk(snap, child));
   }
 
   // Practice knowledge — a clearly practice-framed question ("how do I…/what does X
