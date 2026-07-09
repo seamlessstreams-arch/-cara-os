@@ -62,7 +62,7 @@ const MANAGEMENT_ROLES = new Set(["registered_manager", "deputy_manager", "respo
 const CARE_ROLES = new Set([...MANAGEMENT_ROLES, "residential_care_worker", "senior_residential_care_worker", "senior_residential_worker", "team_leader", "bank_worker", "support_worker", "waking_night_worker"]);
 const TIER_RANK: Record<AccessTier, number> = { everyone: 0, care_team: 1, management: 2 };
 
-function roleTier(role?: string): AccessTier {
+export function roleTier(role?: string): AccessTier {
   const r = (role ?? "").toLowerCase();
   if (!r) return "care_team"; // demo default — operational Q&A works; management still gated
   if (MANAGEMENT_ROLES.has(r)) return "management";
@@ -108,7 +108,7 @@ function windowFromQuestion(q: string): { days: number; label: string } {
 
 const childLabel = (c: AskCaraChild): string => c.firstName || c.name || c.id;
 
-function resolveChild(q: string, snap: AskCaraSnapshot, contextChildId?: string): AskCaraChild | null {
+export function resolveChild(q: string, snap: AskCaraSnapshot, contextChildId?: string): AskCaraChild | null {
   // Name in the question wins (word-boundary), else the page's child context.
   for (const c of snap.children) {
     const terms = [c.firstName, c.name].filter((t): t is string => !!t && t.length >= 2);
