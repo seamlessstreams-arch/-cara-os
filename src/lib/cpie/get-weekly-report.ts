@@ -14,6 +14,7 @@ import { getStore } from "@/lib/db/store";
 import { getWeeklyIntelligenceObject } from "./get-weekly-intelligence-object";
 import { composeWeeklyReport, type WeeklyReport } from "./weekly-report";
 import { composeWeeklyNarrative, type WeeklyNarrative } from "./weekly-narrative";
+import { pronounsForChild } from "./pronouns";
 
 type Any = Record<string, unknown>;
 const rows = (v: unknown): Any[] => (Array.isArray(v) ? (v as Any[]) : []);
@@ -38,6 +39,7 @@ export function getWeeklyReport(childId: string, weekEnding?: string, windowDays
     weekEnding: end,
     windowDays,
     wio,
+    pronouns: pronounsForChild(childId, store as ReturnType<typeof getStore>),
     dailyLogs: rows(store.dailyLog),
     positiveAchievements: rows(store.positiveAchievements),
     incidents: rows(store.incidents),
@@ -57,5 +59,5 @@ export function getWeeklyNarrative(childId: string, weekEnding?: string, windowD
   const now = new Date().toISOString();
   const end = (weekEnding || now).slice(0, 10);
   const wio = getWeeklyIntelligenceObject(childId, end, now, windowDays, windowDays >= 28 ? "month" : "week");
-  return wio ? composeWeeklyNarrative(wio) : null;
+  return wio ? composeWeeklyNarrative(wio, pronounsForChild(childId, getStore())) : null;
 }

@@ -15,6 +15,7 @@ import { getChildTwin } from "@/lib/cpie/get-child-twin";
 import { getWeeklyIntelligenceObject, getMonthlyIntelligenceObject } from "@/lib/cpie/get-weekly-intelligence-object";
 import type { WeeklyIntelligenceObject } from "@/lib/cpie/weekly-intelligence-object";
 import { composeWeeklyNarrative } from "@/lib/cpie/weekly-narrative";
+import { pronounsForChild } from "@/lib/cpie/pronouns";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
 import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
@@ -27,12 +28,12 @@ const s = (v: unknown): string => (typeof v === "string" ? v : "");
 /** Operational domains for the orchestrator — computed from the store, honest
  *  about empty collections (a gap is an answer, not an error). */
 /** Distil a CPIE period-intelligence object into the compact Ask CARA digest. */
-function wioToDigest(w: WeeklyIntelligenceObject): AskCaraWeeklyDigest {
+function wioToDigest(w: WeeklyIntelligenceObject, store: ReturnType<typeof getStore>): AskCaraWeeklyDigest {
   return {
     childId: w.childId,
     weekStart: w.weekStart,
     weekEnding: w.weekEnding,
-    narrative: composeWeeklyNarrative(w).body,
+    narrative: composeWeeklyNarrative(w, pronounsForChild(w.childId, store)).body,
     picture: w.week.picture,
     who: w.wholeChild.who,
     directionOfTravel: w.wholeChild.directionOfTravel,
@@ -245,13 +246,13 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
     weekly: currentChildren
       .map((c) => getWeeklyIntelligenceObject(String(c.id)))
       .filter((w): w is WeeklyIntelligenceObject => !!w)
-      .map(wioToDigest),
+      .map((w) => wioToDigest(w, store)),
     // CPIE Monthly Intelligence Object digests — same shape, 30-day window, so a
     // "monthly summary" request reads a month, not the last 7 days.
     monthly: currentChildren
       .map((c) => getMonthlyIntelligenceObject(String(c.id)))
       .filter((w): w is WeeklyIntelligenceObject => !!w)
-      .map(wioToDigest),
+      .map((w) => wioToDigest(w, store)),
     // Operational domains — health & safety, rota safety, wellbeing, reg 44.
     ops: buildOpsIntelligence(store, new Date().toISOString().slice(0, 10)),
     // Leg four: the child-level practice-intelligence engines' findings

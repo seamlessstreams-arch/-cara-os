@@ -42,6 +42,21 @@ export interface NaturalAnswer {
   method: string; // "ai_grounded" | "deterministic" | "deterministic:<reason>"
 }
 
+export interface ChatTurn {
+  role: "user" | "cara";
+  text: string;
+}
+
+/** Format prior turns for the model — last 6, clipped, oldest first. Pure. */
+export function formatHistory(history: ChatTurn[] | undefined): string {
+  if (!history?.length) return "";
+  const turns = history
+    .filter((t) => (t.role === "user" || t.role === "cara") && typeof t.text === "string" && t.text.trim())
+    .slice(-6)
+    .map((t) => `${t.role === "user" ? "USER" : "CARA"}: ${t.text.trim().slice(0, 400)}`);
+  return turns.length ? `CONVERSATION SO FAR (for continuity only — facts still come ONLY from the grounding):\n${turns.join("\n")}` : "";
+}
+
 export interface NaturalInput {
   question: string;
   answer: AskCaraAnswer;
@@ -49,6 +64,8 @@ export interface NaturalInput {
   tier: AccessTier;
   child?: AskCaraChild | null;
   asOf: string;
+  /** Prior chat turns — continuity for the model, never a source of facts. */
+  history?: ChatTurn[];
 }
 
 export async function answerNaturally(input: NaturalInput): Promise<NaturalAnswer> {
@@ -65,11 +82,12 @@ export async function answerNaturally(input: NaturalInput): Promise<NaturalAnswe
       child: input.child,
       asOf: input.asOf,
     });
+    const historyBlock = formatHistory(input.history);
     const result = await invokeAiGateway({
       purpose: "ask_cara_natural",
       feature: "ask_cara",
       systemPrompt: NATURAL_RULES,
-      userPrompt: `QUESTION: ${input.question}\n\n${grounding}`,
+      userPrompt: [historyBlock, `QUESTION: ${input.question}`, grounding].filter(Boolean).join("\n\n"),
       // Names must stay readable for a grounded answer; the gateway's sensitivity
       // gate still decides whether this content may reach the model at all.
       redact: false,
