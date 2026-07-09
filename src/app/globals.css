@@ -27,6 +27,7 @@
   --cs-surface-elevated:#ffffff;
   --cs-border:          #ece4d4; /* calm pass: edges recede; shadows separate */
   --cs-border-subtle:   #f4eee1;
+  --cs-surface-subtle:  #f6f8f9; /* subtle elevated panel; token was undefined → light-fallback leaked on dark */
 
   /* Navy — deep professional tone */
   --cs-navy:            #0f1e36;
@@ -544,6 +545,7 @@ body {
   --cs-surface-elevated: #0d1526;
   --cs-border:           rgba(255, 255, 255, 0.09);
   --cs-border-subtle:    rgba(255, 255, 255, 0.06);
+  --cs-surface-subtle:    rgba(255, 255, 255, 0.04);
   --cs-teal:             #2dd4bf;
   --cs-teal-strong:      #5eead4;
   --cs-teal-soft:        #99f6e4;
@@ -599,6 +601,7 @@ body {
   --cs-surface-elevated: #111b33;
   --cs-border:           rgba(255, 255, 255, 0.12);
   --cs-border-subtle:    rgba(255, 255, 255, 0.08);
+  --cs-surface-subtle:   rgba(255, 255, 255, 0.04);
   --cs-navy:             #f2f6fc;
   --cs-navy-soft:        #dde8f6;
   --cs-navy-muted:       #c9d6ec;
