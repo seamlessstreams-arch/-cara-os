@@ -1564,7 +1564,11 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
 
   // Reflector first — before greeting ("help me reflect" contains "help") and
   // before missing-from-care ("what am I missing").
-  if (mentionsAny(q, ["reflect", "reflection", "reflective", "what am i missing", "what might i be missing", "am i missing", "missing anything", "help me think", "challenge me", "supervise me", "what should i consider", "make me think"])) return gate("everyone", () => skillReflector(snap, asOf, child));
+  if (mentionsAny(q, ["reflect", "reflection", "reflective", "what am i missing", "what might i be missing", "am i missing", "missing anything", "help me think", "challenge me", "supervise me", "what should i consider", "make me think"])) {
+    // Generic reflection is open to everyone; child-grounded reflection surfaces
+    // that child's incident/restraint counts + patterns, so require care_team.
+    return child ? gate("care_team", () => skillReflector(snap, asOf, child)) : gate("everyone", () => skillReflector(snap, asOf, null));
+  }
 
   if (!q || (q.length <= 24 && mentionsAny(q, ["hi", "hello", "hey", "help", "what can you do", "who are you", "start"]))) {
     return skillGreeting(query.userName);
@@ -1714,7 +1718,7 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   }
 
   // The child's own feedback — their words, their sentiment, our response.
-  if (mentionsAny(q, ["feedback", "complaint", "complaints", "complained", "suggestion", "suggestions", "happy here", "happy living here", "unhappy about", "what have the children said", "what has the child said", "children told us", "child told us"])) {
+  if (mentionsAny(q, ["feedback", "complaint", "complaints", "complained", "suggestion", "suggestions", "happy here", "happy living here", "unhappy about", "what have the children said", "what has the child said", "children told us", "child told us"]) || (child && mentionsAny(q, ["told us", "told me", "said to us", "have they said", "has said"]))) {
     return gate("care_team", () => skillChildFeedback(snap, asOf, child));
   }
 
@@ -1730,7 +1734,7 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   }
 
   // Most specific → least. Restraint & missing before generic "incident".
-  if (mentionsAny(q, ["restraint", "physical intervention", "physical hold", "hold"])) return gate("care_team", () => skillRestraints(q, snap, asOf, child));
+  if (mentionsAny(q, ["restraint", "physical intervention", "physical hold", "single separation", "rpi"])) return gate("care_team", () => skillRestraints(q, snap, asOf, child)); // dropped bare "hold" — it hijacked "hold the boundary"/"who holds the risk"
   if (mentionsAny(q, ["missing", "ran away", "absconded", "absent without", "awol"])) return gate("care_team", () => skillMissing(q, snap, asOf, child));
   if (mentionsAny(q, ["what's due", "whats due", "what is due", "due this week", "due soon", "deadlines", "coming up", "upcoming"])) return gate("care_team", () => skillWhatsDue(snap, asOf));
   if (mentionsAny(q, ["overdue", "late action", "past due", "outstanding task"])) return gate("care_team", () => skillOverdue(snap, asOf));
