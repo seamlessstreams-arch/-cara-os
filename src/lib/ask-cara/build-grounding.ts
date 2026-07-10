@@ -71,6 +71,14 @@ function childBlock(snap: AskCaraSnapshot, child: AskCaraChild, asOf: string): s
   const inc = snap.incidents.filter((i) => i.childId === child.id && in30(i.date)).length;
   const res = snap.restraints.filter((r) => r.childId === child.id && in30(r.date));
   lines.push(line("Last 30 days", `${inc} incidents, ${res.length} restraints (${res.filter((r) => !r.childDebriefed).length} without child debrief)`));
+  // The child's diary (calendar projection), health appointments, and their own feedback.
+  const cal = (snap.childCalendar ?? []).find((c) => c.childId === child.id);
+  if (cal?.upcoming.length) lines.push(line("Coming up (14d)", cal.upcoming.slice(0, 3).map((e) => `${e.date} ${e.title}`).join("; ")));
+  if (cal?.attended.length) lines.push(line("Recently attended (30d)", cal.attended.slice(-3).map((e) => `${e.date} ${e.title}`).join("; ")));
+  const ha = (snap.healthAppointments ?? []).filter((h) => h.childId === child.id).slice(-2);
+  if (ha.length) lines.push(line("Health appointments on record", ha.map((h) => `${h.date} ${h.title}${h.outcome ? ` — ${h.outcome}` : ""}`).join("; ")));
+  const fb = (snap.feedback ?? []).filter((f) => f.childId === child.id).slice(-2);
+  if (fb.length) lines.push(line("Their recent feedback", fb.map((f) => `${f.date} (${f.sentiment.replace(/_/g, " ")}) "${clip(f.text, 110)}"${f.responded ? "" : " — NO RESPONSE RECORDED"}`).join("; ")));
   const weekly = (snap.weekly ?? []).find((w) => w.childId === child.id);
   if (weekly?.narrative) lines.push(`- This week's manager-summary draft:\n${clip(weekly.narrative, 1400)}`);
   return block(`THE CHILD — ${name}`, lines);

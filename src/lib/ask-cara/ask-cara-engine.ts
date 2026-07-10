@@ -179,6 +179,8 @@ function skillChildSummary(child: AskCaraChild, snap: AskCaraSnapshot, asOf: str
     const d = daysBetween(asOf, child.nextReviewDate);
     lines.push(d >= 0 ? `Next LAC review: ${child.nextReviewDate}${d <= 14 ? " (within a fortnight)" : ""}.` : `⚠ LAC review overdue (was due ${child.nextReviewDate}).`);
   }
+  const nextUp = (snap.childCalendar ?? []).find((c) => c.childId === child.id)?.upcoming[0];
+  if (nextUp) lines.push(`Next in ${name}'s diary: ${nextUp.title} on ${nextUp.date}.`);
   lines.push(logs[0] ? `Latest daily log: ${logs[0].date}.` : `No daily log on record for ${name}.`);
 
   // Leg three: the evaluation engines' read — assessment, not just a tally.
@@ -788,6 +790,78 @@ function skillCumulativeRisk(snap: AskCaraSnapshot, child: AskCaraChild | null):
   return answer({ intent: "cumulative_risk", answered: true, text: lines.join("\n"), sources: [{ label: "Escalating", count: cr.escalatingCount }, { label: "Urgent supervision", count: cr.urgentSupervisionCount }], suggestions: sug(["What needs my attention?", "How are the children's relationships?"]), disclaimer: RISK_DISCLAIMER });
 }
 
+// ── Child calendar, meetings & appointments (the #246 projection) ─────────────
+// Cara reads the child's DIARY — what's coming up and what they attended —
+// projected over every dated record (meetings, LAC reviews, family time,
+// appointments, key work), plus health appointments on record.
+
+const CAL_SOURCE_LABEL: Record<string, string> = {
+  calendar: "meeting", task: "action", appointment: "appointment", supervision: "supervision",
+  lac_review: "LAC review", family_time: "family time", interview: "return-home interview",
+  training: "training", key_working: "key-work session",
+};
+const calLine = (e: { date: string; title: string; source: string }): string =>
+  `- ${e.date} — ${e.title}${CAL_SOURCE_LABEL[e.source] && !e.title.toLowerCase().includes(CAL_SOURCE_LABEL[e.source]) ? ` (${CAL_SOURCE_LABEL[e.source]})` : ""}`;
+
+function skillChildCalendar(q: string, snap: AskCaraSnapshot, asOf: string, child: AskCaraChild | null): AskCaraAnswer {
+  const wantsPast = mentionsAny(q, ["attended", "been to", "went to", "gone to", "recent", "past month", "last month", "has had", "have had"]);
+  if (!child) {
+    // Home level: the next child-linked diary items across the home.
+    const all = (snap.childCalendar ?? []).flatMap((c) => c.upcoming.map((e) => ({ ...e, childId: c.childId }))).sort((a, b) => (a.date < b.date ? -1 : 1));
+    if (!all.length) {
+      return answer({ intent: "child_calendar", answered: false, text: "There's nothing child-linked in the diary for the next fortnight. If meetings, family time or appointments are planned, they're worth capturing so the whole team can see them.", sources: [], suggestions: sug(["What's due this week?", "What needs my attention?"]) });
+    }
+    const lines = ["Coming up for the children over the next fortnight:", ...all.slice(0, 6).map((e) => `- ${e.date} — ${childNameById(snap, e.childId)}: ${e.title}`)];
+    return answer({ intent: "child_calendar", answered: true, text: lines.join("\n"), sources: [{ label: "Diary items (14d)", count: all.length }], suggestions: sug([all[0] ? `What's coming up for ${childNameById(snap, all[0].childId)}?` : "What's due this week?", "What needs my attention?"]) });
+  }
+  const name = childLabel(child);
+  const cc = (snap.childCalendar ?? []).find((c) => c.childId === child.id);
+  if (wantsPast) {
+    const health = (snap.healthAppointments ?? []).filter((h) => h.childId === child.id && withinDays(h.date, asOf, 30)).map((h) => ({ date: h.date, title: h.professional ? `${h.title} with ${h.professional}` : h.title, source: "appointment" }));
+    const attended = [...(cc?.attended ?? []), ...health].sort((a, b) => (a.date < b.date ? -1 : 1));
+    if (!attended.length) {
+      return answer({ intent: "child_calendar", answered: true, text: `Nothing is recorded as attended for ${name} in the last 30 days — no meetings, appointments or family time on the diary. If things happened, capture them; if they didn't, that's worth noticing too.`, sources: [{ label: "Attended (30d)", count: 0 }], suggestions: sug([`What's coming up for ${name}?`, `Tell me about ${name}`]) });
+    }
+    const lines = [`${name} has attended in the last 30 days:`, ...attended.slice(-6).map(calLine)];
+    return answer({ intent: "child_calendar", answered: true, text: lines.join("\n"), sources: [{ label: "Attended (30d)", count: attended.length }], suggestions: sug([`What's coming up for ${name}?`, `What should be in ${name}'s weekly summary?`]) });
+  }
+  const upcoming = cc?.upcoming ?? [];
+  if (!upcoming.length) {
+    const lac = child.nextReviewDate ? ` The next LAC review on record is ${child.nextReviewDate}.` : "";
+    return answer({ intent: "child_calendar", answered: true, text: `There's nothing in ${name}'s diary for the next fortnight.${lac} If family time, appointments or meetings are planned, capture them so they can be prepared for together.`, sources: [{ label: "Upcoming (14d)", count: 0 }], suggestions: sug([`What has ${name} attended recently?`, `Tell me about ${name}`]) });
+  }
+  const lines = [`Coming up for ${name}:`, ...upcoming.slice(0, 6).map(calLine), "", `Worth preparing ${name} for these together — predictability is regulation.`];
+  return answer({ intent: "child_calendar", answered: true, text: lines.join("\n"), sources: [{ label: "Upcoming (14d)", count: upcoming.length }], suggestions: sug([`What has ${name} attended recently?`, `What triggers ${name}?`, `Tell me about ${name}`]) });
+}
+
+// ── The child's own feedback — their words, how they felt, our response ───────
+
+const SENTIMENT_WORD: Record<string, string> = { very_happy: "really happy", happy: "happy", ok: "okay", unhappy: "unhappy", very_unhappy: "really unhappy" };
+
+function skillChildFeedback(snap: AskCaraSnapshot, asOf: string, child: AskCaraChild | null): AskCaraAnswer {
+  let items = (snap.feedback ?? []).filter((f) => withinDays(f.date, asOf, 90));
+  if (child) items = items.filter((f) => f.childId === child.id);
+  const who = child ? childLabel(child) : "the children";
+  if (!items.length) {
+    return answer({ intent: "child_feedback", answered: true, text: `No feedback is recorded from ${who} in the last 90 days. Feedback captured is voice evidenced — worth asking, and worth writing down.`, sources: [{ label: "Feedback (90d)", count: 0 }], suggestions: sug([child ? `Whose voice is missing for ${childLabel(child)}?` : "Whose voice is missing?", "What needs my attention?"]) });
+  }
+  const lines = [`What ${who} ${child ? "has" : "have"} told us recently:`];
+  for (const f of items.slice(-4)) {
+    const childBit = child ? "" : `${childNameById(snap, f.childId)}, `;
+    let t = `- ${childBit}${f.date} — felt ${SENTIMENT_WORD[f.sentiment] ?? f.sentiment} about ${f.category}: "${f.text}"`;
+    t += f.responded ? (f.actionTaken ? ` → ${f.actionTaken}` : " → responded") : " → ⚠ no response recorded";
+    lines.push(t);
+  }
+  const unanswered = items.filter((f) => !f.responded).length;
+  if (unanswered) lines.push("", `${unanswered} of these ${unanswered === 1 ? "has" : "have"} no recorded response — a child's feedback needs an answer, or asking becomes pointless in their eyes.`);
+  return answer({
+    intent: "child_feedback", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Feedback (90d)", count: items.length }, { label: "Awaiting response", count: unanswered }],
+    suggestions: sug([child ? `What's coming up for ${childLabel(child)}?` : "Whose voice is missing?", "What needs my attention?"]),
+    disclaimer: "The child's own words, from their feedback records — listening only counts when they can see something changed.",
+  });
+}
+
 // ── CPIE Digital Twin: the whole child (identity before incident) ─────────────
 
 const twinFor = (snap: AskCaraSnapshot, childId: string) => (snap.twins ?? []).find((t) => t.childId === childId);
@@ -1320,6 +1394,22 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   }
   if (mentionsAny(q, ["cumulative risk", "cumulative risks", "converging risk", "risk converging", "risks converging", "escalating risk", "risk escalating", "building risk", "risk building", "compounding risk", "risk compounding", "stacking risk", "risk stacking", "risk convergence"])) {
     return gate("care_team", () => skillCumulativeRisk(snap, child));
+  }
+
+  // Child calendar, meetings & appointments — the diary projection (#246).
+  // Direct diary words route regardless of child; the softer "coming up/what's
+  // next" phrasings only when a CHILD is in play, so the home-level "what's due
+  // this week?" compliance question still reaches whats_due below.
+  if (mentionsAny(q, ["calendar", "diary", "appointment", "appointments", "meeting", "meetings", "schedule", "scheduled", "booked", "booked in", "family time planned"])) {
+    return gate("care_team", () => skillChildCalendar(q, snap, asOf, child));
+  }
+  if (child && mentionsAny(q, ["coming up", "what's next", "whats next", "upcoming", "planned", "next week look", "week ahead", "attended", "been to"])) {
+    return gate("care_team", () => skillChildCalendar(q, snap, asOf, child));
+  }
+
+  // The child's own feedback — their words, their sentiment, our response.
+  if (mentionsAny(q, ["feedback", "complaint", "complaints", "complained", "suggestion", "suggestions", "happy here", "happy living here", "unhappy about", "what have the children said", "what has the child said", "children told us", "child told us"])) {
+    return gate("care_team", () => skillChildFeedback(snap, asOf, child));
   }
 
   // Practice knowledge — a clearly practice-framed question ("how do I…/what does X

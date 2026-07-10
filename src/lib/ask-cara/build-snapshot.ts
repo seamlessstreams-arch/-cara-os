@@ -17,6 +17,8 @@ import type { WeeklyIntelligenceObject } from "@/lib/cpie/weekly-intelligence-ob
 import { composeWeeklyNarrative } from "@/lib/cpie/weekly-narrative";
 import { pronounsForChild } from "@/lib/cpie/pronouns";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
+import { getCalendarFeed } from "@/lib/calendar/calendar-service";
+import type { AskCaraChildCalendar } from "@/lib/ask-cara/types";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
 import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
 import type { AskCaraOpsIntelligence, AskCaraTwinDigest, AskCaraWeeklyDigest } from "@/lib/ask-cara/types";
@@ -259,5 +261,54 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
     // (care language, child voice, recording gaps, cumulative risk) so a
     // practice question is answered from the engine's read, not KB theory.
     practice: buildPracticeDigest(store),
+    // The child's DIARY — the shared calendar projection (#246) over every dated
+    // record: meetings, LAC reviews, family time, appointments, key work. Cara
+    // reads what's coming up and what was recently attended, per child.
+    childCalendar: buildChildCalendars(currentChildren.map((c) => String(c.id))),
+    // The children's own feedback — their words, sentiment, and our response.
+    feedback: rec((store as Record<string, unknown>).ypFeedback)
+      .map((f) => ({
+        childId: s(f.child_id),
+        date: day(f.date),
+        sentiment: s(f.sentiment) || "ok",
+        category: s(f.category).replace(/_/g, " "),
+        text: s(f.feedback),
+        actionTaken: s(f.action_taken) || undefined,
+        responded: !!f.response_given_to_child,
+      }))
+      .filter((f) => f.childId && f.date && f.text)
+      .sort((a, b) => (a.date < b.date ? -1 : 1)),
+    // Health appointments on record (GP / CAMHS / dental …).
+    healthAppointments: rec((store as Record<string, unknown>).healthRecordEntries)
+      .map((h) => ({
+        childId: s(h.child_id),
+        date: day(h.date),
+        title: s(h.title) || s(h.record_type).replace(/_/g, " ") || "Health appointment",
+        professional: s(h.professional) || undefined,
+        outcome: s(h.outcome) || undefined,
+      }))
+      .filter((h) => h.childId && h.date)
+      .sort((a, b) => (a.date < b.date ? -1 : 1)),
   };
+}
+
+/** Per-child upcoming (next 14d) + attended (past 30d) from the calendar feed.
+ *  Shifts are rota noise for a child's diary; child-linked items only. */
+function buildChildCalendars(childIds: string[]): AskCaraChildCalendar[] | undefined {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const clean = (items: Array<{ child_id: string | null; source: string; date: string; title: string }>) =>
+      items.filter((i) => i.child_id && String(i.source) !== "shift");
+    const upcoming = clean(getCalendarFeed({ from: today, to: addDays(today, 14) }).items);
+    const attended = clean(getCalendarFeed({ from: addDays(today, -30), to: addDays(today, -1) }).items);
+    return childIds
+      .map((id) => ({
+        childId: id,
+        upcoming: upcoming.filter((i) => i.child_id === id).slice(0, 8).map((i) => ({ date: i.date, title: i.title, source: String(i.source) })),
+        attended: attended.filter((i) => i.child_id === id).slice(-8).map((i) => ({ date: i.date, title: i.title, source: String(i.source) })),
+      }))
+      .filter((c) => c.upcoming.length || c.attended.length);
+  } catch {
+    return undefined; // the skill answers honestly without it
+  }
 }
