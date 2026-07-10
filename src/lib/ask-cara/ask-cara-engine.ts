@@ -888,6 +888,68 @@ function skillTeamApproach(snap: AskCaraSnapshot, child: AskCaraChild | null): A
   return answer({ intent: "team_approach", answered: true, text: lines.join("\n"), sources: [{ label: "Consistent", count: ta.consistentCount }, { label: "Divergent", count: ta.divergentCount }, { label: "Therapeutic rate (%)", count: ta.overallTherapeuticRate }], suggestions: sug(["What are we learning as an organisation?", "What needs my attention?"]), disclaimer: DISC });
 }
 
+// ── Home practice-culture cluster: scorecard, framework usage, staff recording ─
+
+function skillPracticeCulture(snap: AskCaraSnapshot): AskCaraAnswer {
+  const pc = snap.practice?.practiceCulture;
+  const DISC = "From CARA's Practice Culture Scorecard — a synthesis of how the home's recording lives its practice models. A low dimension is a development focus, never a verdict on the team.";
+  if (!pc) return answer({ intent: "practice_culture", answered: false, text: "I can't read the practice-culture scorecard right now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  const statusWord = pc.overallStatus === "progressing" ? "progressing well" : pc.overallStatus === "developing" ? "developing" : "needing support";
+  const lines = [`The home's practice culture reads ${pc.overallScore}/100 — ${statusWord}.`];
+  if (pc.dimensions.length) {
+    lines.push("", "Dimension by dimension:");
+    for (const d of pc.dimensions) lines.push(`- ${d.label}: ${d.score}/100 (${d.status.replace(/_/g, " ")})`);
+  }
+  lines.push("", `Strongest: ${pc.strongestLabel}. Priority: ${pc.priorityLabel}${pc.priorityPrompt ? ` — ${pc.priorityPrompt.charAt(0).toLowerCase()}${pc.priorityPrompt.slice(1)}` : ""}`);
+  lines.push(`${pc.frameworksEngaged} of ${pc.totalFrameworks} practice frameworks are visibly engaged in the recording.`);
+  return answer({
+    intent: "practice_culture", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Culture score (/100)", count: pc.overallScore }, { label: "Frameworks engaged", count: pc.frameworksEngaged }],
+    suggestions: sug(["Which frameworks are we using?", "Are we recording strengths enough?", "What needs my attention?"]),
+    disclaimer: DISC,
+  });
+}
+
+function skillFrameworkUsage(snap: AskCaraSnapshot): AskCaraAnswer {
+  const fu = snap.practice?.frameworkUsage;
+  const DISC = "From CARA's Practice Framework Usage read — five recording sources, deterministically scanned. A dormant framework usually means the practice isn't being NAMED in the writing, not that it isn't happening.";
+  if (!fu) return answer({ intent: "framework_usage", answered: false, text: "I can't read the framework-usage picture right now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  const lines = [`${fu.totalEngagements} framework engagement${fu.totalEngagements === 1 ? "" : "s"} across the recording — ${fu.activeFrameworks} framework${fu.activeFrameworks === 1 ? "" : "s"} actively in use.`];
+  if (fu.mostActiveTitle) lines.push(`Most alive in practice: ${fu.mostActiveTitle}.`);
+  if (fu.needsAttentionTitle) lines.push(`Needs attention: ${fu.needsAttentionTitle}.`);
+  const dormant = fu.frameworks.filter((f) => f.signal === "dormant").map((f) => f.title);
+  if (dormant.length) lines.push(`Dormant — loaded but not visible in the writing: ${dormant.join(", ")}.`);
+  if (fu.topPractitionerName) {
+    const resolved = snap.staff.find((st) => st.id === fu.topPractitionerName)?.name
+      ?? (/^staff_[a-z]+$/i.test(fu.topPractitionerName) ? fu.topPractitionerName.replace(/^staff_/i, "").replace(/^./, (c) => c.toUpperCase()) : fu.topPractitionerName);
+    lines.push(`${resolved} names the models most in their recording — worth them sharing how at a team meeting.`);
+  }
+  return answer({
+    intent: "framework_usage", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Framework engagements", count: fu.totalEngagements }, { label: "Active frameworks", count: fu.activeFrameworks }],
+    suggestions: sug(["How is our practice culture?", "What does PACE mean?", "What needs my attention?"]),
+    disclaimer: DISC,
+  });
+}
+
+function skillStaffRecording(snap: AskCaraSnapshot): AskCaraAnswer {
+  const sr = snap.practice?.staffRecording;
+  const DISC = "From CARA's Staff Recording Quality Pathway — a supervision and development read, never a league table. Recording quality is practice quality made visible.";
+  if (!sr) return answer({ intent: "staff_recording", answered: false, text: "I can't read the staff recording-quality picture right now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  const lines = [`Recording quality across the team: ${sr.staffWithData} of ${sr.totalStaff} staff have writing-engagement data; average suggestion-acceptance ${sr.avgAcceptanceRate}%.`];
+  if (sr.topTeamIssueType) lines.push(`The team's most common writing issue: ${sr.topTeamIssueType.replace(/_/g, " ")} — one for the team meeting, not individuals.`);
+  const needsSupport = sr.perStaff.filter((p) => p.signal === "needs_support");
+  if (needsSupport.length) lines.push(`Worth a supportive supervision conversation: ${needsSupport.map((p) => p.name).join(", ")}.`);
+  const progressing = sr.perStaff.filter((p) => p.signal === "progressing");
+  if (progressing.length) lines.push(`Progressing well: ${progressing.map((p) => p.name).join(", ")} — recognition matters as much as support.`);
+  return answer({
+    intent: "staff_recording", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Staff with data", count: sr.staffWithData }, { label: "Avg acceptance (%)", count: sr.avgAcceptanceRate }, { label: "Needs support", count: sr.needsSupportCount }],
+    suggestions: sug(["How is our practice culture?", "Is our language criminalising anyone?", "Who's overdue supervision?"]),
+    disclaimer: DISC,
+  });
+}
+
 // ── Child calendar, meetings & appointments (the #246 projection) ─────────────
 // Cara reads the child's DIARY — what's coming up and what they attended —
 // projected over every dated record (meetings, LAC reviews, family time,
@@ -1624,6 +1686,20 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   }
   if (mentionsAny(q, ["team approach", "approach consistency", "consistency of approach", "consistent approach", "team consistent", "staff consistent", "divergent approach", "therapeutic rate", "consistent in its approach", "consistent in their approach"])) {
     return gate("management", () => skillTeamApproach(snap, child));
+  }
+
+  // Home practice-culture cluster — the scorecard, framework usage and staff
+  // recording quality. Before the KB catch so "how is our recording culture?"
+  // gets the HOME'S scorecard, not a theory article; staff recording quality is
+  // management-gated (per-staff development data belongs in supervision).
+  if (mentionsAny(q, ["practice culture", "culture scorecard", "recording culture", "our culture", "team culture", "culture of the home", "practice health", "culture score"])) {
+    return gate("care_team", () => skillPracticeCulture(snap));
+  }
+  if (mentionsAny(q, ["framework usage", "using the frameworks", "frameworks in practice", "framework engagement", "frameworks embedded", "which frameworks", "frameworks are we using", "dormant frameworks", "pace in practice", "are we using pace"])) {
+    return gate("care_team", () => skillFrameworkUsage(snap));
+  }
+  if (mentionsAny(q, ["staff recording quality", "recording quality", "writing quality", "recording standards", "quality of recording", "quality of our recording", "writing engagement", "who needs support with recording", "recording pathway"])) {
+    return gate("management", () => skillStaffRecording(snap));
   }
 
   // Child calendar, meetings & appointments — the diary projection (#246).
