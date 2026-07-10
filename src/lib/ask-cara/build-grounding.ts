@@ -66,6 +66,14 @@ function childBlock(snap: AskCaraSnapshot, child: AskCaraChild, asOf: string): s
   if (rg) lines.push(line("Recording gaps", `${rg.severity}${rg.topGapLabel ? ` (${rg.topGapLabel})` : ""}`));
   const cr = pr?.cumulativeRisk?.perChild.find((p) => p.childId === child.id);
   if (cr) lines.push(line("Cumulative risk", `${cr.signal}, supervision priority ${cr.priority}${cr.topWorseningLabel ? ` (${cr.topWorseningLabel})` : ""}`));
+  const srp = pr?.strengthsRecording?.perChild.find((p) => p.childId === child.id);
+  if (srp && srp.rate !== null) lines.push(line("Strengths in the recording", `${srp.rate}% of records${srp.topPhrase ? ` (e.g. "${srp.topPhrase}")` : ""}`));
+  const rcp = pr?.repairCycle?.perChild.find((p) => p.childId === child.id);
+  if (rcp) lines.push(line("Repair cycles", `${rcp.completionRate}% complete${rcp.noRepair ? `, ${rcp.noRepair} unrepaired` : ""}${rcp.missingStep && rcp.missingStep !== "None" ? ` (missing: ${rcp.missingStep})` : ""}`));
+  const rsp = pr?.relationalSafety?.perChild.find((p) => p.childId === child.id);
+  if (rsp) lines.push(line("Relational safety map", `${rsp.status}; key worker ${rsp.keyWorkerName ?? "NOT assigned"}; ${rsp.sessions30d} key-work (30d); ${rsp.trustedAdults} trusted adults`));
+  const tap = pr?.teamApproach?.perChild.find((p) => p.childId === child.id);
+  if (tap) lines.push(line("Team approach", `${tap.level} (therapeutic ${tap.therapeuticRate}%, variance ${tap.variance})`));
   // 30-day counts + the precomputed weekly narrative (the richest single string).
   const in30 = (d: string) => { const t = Date.parse(d); return !Number.isNaN(t) && (Date.parse(asOf) - t) / 86_400_000 <= 30 && (Date.parse(asOf) - t) >= 0; };
   const inc = snap.incidents.filter((i) => i.childId === child.id && in30(i.date)).length;
@@ -111,6 +119,10 @@ function homeBlock(snap: AskCaraSnapshot, tier: AccessTier, asOf: string): strin
     if (pr?.cumulativeRisk) lines.push(line("Cumulative risk (home)", `${pr.cumulativeRisk.escalatingCount} escalating, ${pr.cumulativeRisk.urgentSupervisionCount} urgent`));
     if (pr?.careLanguage) lines.push(line("Care language (home)", `${pr.careLanguage.totalHits} flags, ${pr.careLanguage.childrenAffected} children affected`));
     if (pr?.recordingGaps) lines.push(line("Recording gaps (home)", `${pr.recordingGaps.childrenWithCriticalGap} children with critical gaps`));
+    if (pr?.strengthsRecording) lines.push(line("Strengths recording (home)", `${pr.strengthsRecording.overallRate}% of records carry a strength`));
+    if (pr?.repairCycle) lines.push(line("Repair cycles (home)", `${pr.repairCycle.overallCompletionRate}% complete over ${pr.repairCycle.totalIncidents} incidents${pr.repairCycle.mostCommonMissingStep && pr.repairCycle.mostCommonMissingStep !== "None" ? `; most-missed step: ${pr.repairCycle.mostCommonMissingStep}` : ""}`));
+    if (pr?.relationalSafety) lines.push(line("Relational safety (home)", `${pr.relationalSafety.secureCount} secure / ${pr.relationalSafety.developingCount} developing / ${pr.relationalSafety.fragileCount} fragile; ${pr.relationalSafety.noKeyWorker} without a key worker`));
+    if (pr?.teamApproach) lines.push(line("Team approach (home)", `${pr.teamApproach.consistentCount} consistent / ${pr.teamApproach.mixedCount} mixed / ${pr.teamApproach.divergentCount} divergent; therapeutic ${pr.teamApproach.overallTherapeuticRate}%`));
     if (pr?.childVoice?.overallPresenceRate !== null && pr?.childVoice !== undefined) lines.push(line("Child voice presence (home)", `${pr.childVoice.overallPresenceRate}% of records`));
   }
   return block("THE HOME", lines);

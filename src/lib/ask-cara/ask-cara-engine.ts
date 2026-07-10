@@ -794,6 +794,91 @@ function skillCumulativeRisk(snap: AskCaraSnapshot, child: AskCaraChild | null):
   return answer({ intent: "cumulative_risk", answered: true, text: lines.join("\n"), sources: [{ label: "Escalating", count: cr.escalatingCount }, { label: "Urgent supervision", count: cr.urgentSupervisionCount }], suggestions: sug(["What needs my attention?", "How are the children's relationships?"]), disclaimer: RISK_DISCLAIMER });
 }
 
+// ── Strengths / repair / relational-safety / team-approach (leg four, slice 2) ─
+
+function skillStrengthsRecording(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const sr = snap.practice?.strengthsRecording;
+  const DISC = "From CARA's Strengths Recording Index — strengths-based recording is identity work, not decoration. A child should be able to read their file and find who they are.";
+  if (!sr) return answer({ intent: "strengths_recording", answered: false, text: "I can't read the strengths-recording picture right now.", sources: [], suggestions: sug(["Whose voice is missing?", "What needs my attention?"]) });
+  if (child) {
+    const name = childLabel(child);
+    const pc = sr.perChild.find((p) => p.childId === child.id);
+    if (!pc || pc.rate === null) {
+      return answer({ intent: "strengths_recording", answered: true, text: `There isn't enough recording for ${name} yet to read how often their strengths are being written down — worth noticing in itself.`, sources: [{ label: "Strengths rate", count: 0 }], suggestions: sug([`Who is ${name}?`, `Whose voice is missing for ${name}?`]), disclaimer: DISC });
+    }
+    const lines = [`${pc.rate}% of ${name}'s recent records include a strength or achievement${pc.topPhrase ? ` — most often "${pc.topPhrase}"` : ""}.`, "", pc.rate >= 60 ? `That's strengths-based recording done well — ${name}'s file shows who they are, not just what happened.` : `Worth lifting — ${name}'s file currently shows more event than person.`];
+    return answer({ intent: "strengths_recording", answered: true, text: lines.join("\n"), sources: [{ label: `Strengths rate for ${name} (%)`, count: pc.rate }], suggestions: sug([`Who is ${name}?`, `How is ${name} progressing?`]), disclaimer: DISC });
+  }
+  const lines = [`Across the home, ${sr.overallRate}% of records include a strength or achievement${sr.topCategoryLabel ? ` — most often ${sr.topCategoryLabel.toLowerCase()}` : ""}.`];
+  if (sr.topPractitionerName) lines.push(`${sr.topPractitionerName} is the standout strengths-recorder — worth naming at handover, and worth others borrowing from.`);
+  const thin = sr.perChild.filter((p) => p.rate !== null && p.rate < 40);
+  if (thin.length) lines.push(`Thinner for ${thin.map((p) => childNameById(snap, p.childId)).join(", ")} — their files currently show more event than person.`);
+  return answer({ intent: "strengths_recording", answered: true, text: lines.join("\n"), sources: [{ label: "Strengths rate, home (%)", count: sr.overallRate }], suggestions: sug(["Whose voice is missing?", "Is our language criminalising anyone?", "What needs my attention?"]), disclaimer: DISC });
+}
+
+function skillRepairCycle(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const rc = snap.practice?.repairCycle;
+  const DISC = "From CARA's Repair Cycle read (DDP rupture–repair) — an incident isn't over until the relationship is repaired and the child's perspective is heard.";
+  if (!rc) return answer({ intent: "repair_cycle", answered: false, text: "I can't read the repair-cycle picture right now.", sources: [], suggestions: sug(["Which restraints have no debrief?", "What needs my attention?"]) });
+  if (child) {
+    const name = childLabel(child);
+    const pc = rc.perChild.find((p) => p.childId === child.id);
+    if (!pc) {
+      return answer({ intent: "repair_cycle", answered: true, text: `No incidents needing a repair cycle are on record for ${name} in this window — nothing outstanding to repair.`, sources: [{ label: "Repair cycles", count: 0 }], suggestions: sug([`How are ${name}'s relationships?`, `Tell me about ${name}`]), disclaimer: DISC });
+    }
+    const lines = [`${name}'s repair cycles are ${pc.completionRate}% complete${pc.noRepair ? ` — ${pc.noRepair} incident${pc.noRepair === 1 ? " has" : "s have"} no repair recorded at all` : ""}${pc.missingStep && pc.missingStep !== "None" ? `. The step most often missing: ${pc.missingStep.toLowerCase()}` : ""}.`, "", `Repair is where the relationship learns it can survive rupture — the conversations matter more than the paperwork, and the paperwork shows whether they happened.`];
+    return answer({ intent: "repair_cycle", answered: true, text: lines.join("\n"), sources: [{ label: `Repair completion for ${name} (%)`, count: pc.completionRate }, { label: "No repair recorded", count: pc.noRepair }], suggestions: sug([`How are ${name}'s relationships?`, "Which restraints have no debrief?"]), disclaimer: DISC });
+  }
+  const lines = [`Across the home, repair cycles are ${rc.overallCompletionRate}% complete over ${rc.totalIncidents} incident${rc.totalIncidents === 1 ? "" : "s"} — ${rc.incidentsWithChildPerspective} captured the child's perspective${rc.avgDebriefTurnaroundDays !== null ? `, and debriefs happen on average ${rc.avgDebriefTurnaroundDays} day${rc.avgDebriefTurnaroundDays === 1 ? "" : "s"} after the incident` : ""}.`];
+  if (rc.mostCommonMissingStep && rc.mostCommonMissingStep !== "None") lines.push(`The step most often missing: ${rc.mostCommonMissingStep.toLowerCase()} — a focus for handover and supervision.`);
+  const worst = rc.perChild.filter((p) => p.noRepair > 0);
+  if (worst.length) lines.push(`Unrepaired incidents sit with ${worst.map((p) => `${childNameById(snap, p.childId)} (${p.noRepair})`).join(", ")}.`);
+  return answer({ intent: "repair_cycle", answered: true, text: lines.join("\n"), sources: [{ label: "Repair completion (%)", count: rc.overallCompletionRate }, { label: "Incidents", count: rc.totalIncidents }], suggestions: sug(["Which restraints have no debrief?", "How are the children's relationships?", "What needs my attention?"]), disclaimer: DISC });
+}
+
+function skillRelationalSafetyMap(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const rs = snap.practice?.relationalSafety;
+  const DISC = "From CARA's Relational Safety Map — relationships are the intervention; the map shows where the anchoring adults are, and where they're missing.";
+  if (!rs) return answer({ intent: "relational_safety", answered: false, text: "I can't read the relational-safety map right now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  if (child) {
+    const name = childLabel(child);
+    const pc = rs.perChild.find((p) => p.childId === child.id);
+    if (!pc) {
+      return answer({ intent: "relational_safety", answered: false, text: `I don't have a relational-safety read for ${name} yet.`, sources: [], suggestions: sug([`How are ${name}'s relationships?`]) });
+    }
+    const lines = [`${name}'s relational safety on the map: **${pc.status}** — ${pc.reason}`, "", `Key worker: ${pc.keyWorkerName ?? "⚠ none assigned"} · ${pc.sessions30d} key-work session${pc.sessions30d === 1 ? "" : "s"} in 30 days · ${pc.trustedAdults} trusted adult${pc.trustedAdults === 1 ? "" : "s"} named.`];
+    return answer({ intent: "relational_safety", answered: true, text: lines.join("\n"), sources: [{ label: "Key-work (30d)", count: pc.sessions30d }, { label: "Trusted adults", count: pc.trustedAdults }], suggestions: sug([`How are ${name}'s relationships?`, `What triggers ${name}?`]), disclaimer: DISC });
+  }
+  const lines = [`The relational-safety map across the home: ${rs.secureCount} secure, ${rs.developingCount} developing, ${rs.fragileCount} fragile (overall: ${rs.overallStatus}).`];
+  if (rs.noKeyWorker) lines.push(`⚠ ${rs.noKeyWorker} child${rs.noKeyWorker === 1 ? " has" : "ren have"} no key worker assigned — the anchor relationship is missing on paper.`);
+  if (rs.noKeyWork30d) lines.push(`${rs.noKeyWork30d} ${rs.noKeyWork30d === 1 ? "has" : "have"} had no key-work session in 30 days.`);
+  const fragile = rs.perChild.filter((p) => p.status === "fragile");
+  if (fragile.length) lines.push(`Fragile and needing the connection work first: ${fragile.map((p) => childNameById(snap, p.childId)).join(", ")}.`);
+  return answer({ intent: "relational_safety", answered: true, text: lines.join("\n"), sources: [{ label: "Secure", count: rs.secureCount }, { label: "Fragile", count: rs.fragileCount }, { label: "No key worker", count: rs.noKeyWorker }], suggestions: sug(["Who's overdue key work?", "What needs my attention?"]), disclaimer: DISC });
+}
+
+function skillTeamApproach(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const ta = snap.practice?.teamApproach;
+  const DISC = "From CARA's Team Approach Consistency read — a supervision and team-meeting prompt, never a league table. Consistency is what lets a child feel safe with everyone, not just someone.";
+  if (!ta) return answer({ intent: "team_approach", answered: false, text: "I can't read the team-approach picture right now.", sources: [], suggestions: sug(["What needs my attention?"]) });
+  if (child) {
+    const name = childLabel(child);
+    const pc = ta.perChild.find((p) => p.childId === child.id);
+    if (!pc) {
+      return answer({ intent: "team_approach", answered: true, text: `There isn't enough behaviour recording for ${name} to read the team's consistency yet.`, sources: [{ label: "Approach entries", count: 0 }], suggestions: sug([`What triggers ${name}?`, `Tell me about ${name}`]), disclaimer: DISC });
+    }
+    const lines = [`The team's approach with ${name} reads **${pc.level}** — therapeutic responses ${pc.therapeuticRate}% of the time, with ${pc.variance} point${pc.variance === 1 ? "" : "s"} of variance between staff.`];
+    if (pc.level === "divergent" && pc.mostTherapeutic) lines.push("", `${pc.mostTherapeutic}'s approach is landing well — worth them sharing what works in the team meeting, so ${name} gets the same response from everyone.`);
+    else lines.push("", pc.level === "consistent" ? `That consistency is doing quiet, important work — ${name} can predict the adults.` : `Worth a team conversation so ${name} experiences one approach, not several.`);
+    return answer({ intent: "team_approach", answered: true, text: lines.join("\n"), sources: [{ label: `Therapeutic rate for ${name} (%)`, count: pc.therapeuticRate }, { label: "Variance (points)", count: pc.variance }], suggestions: sug([`What triggers ${name}?`, `What helps ${name} regulate?`]), disclaimer: DISC });
+  }
+  const lines = [`Team consistency across the home: ${ta.consistentCount} consistent, ${ta.mixedCount} mixed, ${ta.divergentCount} divergent — therapeutic responses ${ta.overallTherapeuticRate}% overall.`];
+  if (ta.divergencePattern && !/no clear/i.test(ta.divergencePattern)) lines.push(`Pattern worth naming: ${ta.divergencePattern}`);
+  const div = ta.perChild.filter((p) => p.level === "divergent");
+  if (div.length) lines.push(`The team pulls in different directions with ${div.map((p) => childNameById(snap, p.childId)).join(", ")} — a team-meeting conversation, not an individual one.`);
+  return answer({ intent: "team_approach", answered: true, text: lines.join("\n"), sources: [{ label: "Consistent", count: ta.consistentCount }, { label: "Divergent", count: ta.divergentCount }, { label: "Therapeutic rate (%)", count: ta.overallTherapeuticRate }], suggestions: sug(["What are we learning as an organisation?", "What needs my attention?"]), disclaimer: DISC });
+}
+
 // ── Child calendar, meetings & appointments (the #246 projection) ─────────────
 // Cara reads the child's DIARY — what's coming up and what they attended —
 // projected over every dated record (meetings, LAC reviews, family time,
@@ -1467,6 +1552,23 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   }
   if (mentionsAny(q, ["cumulative risk", "cumulative risks", "converging risk", "risk converging", "risks converging", "escalating risk", "risk escalating", "building risk", "risk building", "compounding risk", "risk compounding", "stacking risk", "risk stacking", "risk convergence"])) {
     return gate("care_team", () => skillCumulativeRisk(snap, child));
+  }
+
+  // Leg four, slice 2 — strengths recording, repair cycle, relational-safety
+  // map, team approach. All before the KB catch so they answer from THIS home's
+  // engine findings, not theory. "What are Alex's strengths" stays with the
+  // identity read above; these are about the RECORDING and the TEAM.
+  if (mentionsAny(q, ["strengths recording", "recording strengths", "strengths-based recording", "strength-based recording", "strengths based recording", "strengths rate", "record strengths", "capturing strengths", "strengths champion", "recording the positives"])) {
+    return gate("care_team", () => skillStrengthsRecording(snap, child));
+  }
+  if (mentionsAny(q, ["repair cycle", "repair cycles", "repair rate", "repair completion", "complete repair", "repair after incident", "repair after incidents", "rupture repair", "post-incident repair", "debrief completion", "how well do we repair", "do we repair"])) {
+    return gate("care_team", () => skillRepairCycle(snap, child));
+  }
+  if (mentionsAny(q, ["relational safety", "relational-safety", "relational safety map", "key worker coverage", "keyworker coverage", "without a key worker", "no key worker", "who has a key worker", "anchor relationship"])) {
+    return gate("care_team", () => skillRelationalSafetyMap(snap, child));
+  }
+  if (mentionsAny(q, ["team approach", "approach consistency", "consistency of approach", "consistent approach", "team consistent", "staff consistent", "divergent approach", "therapeutic rate", "consistent in its approach", "consistent in their approach"])) {
+    return gate("management", () => skillTeamApproach(snap, child));
   }
 
   // Child calendar, meetings & appointments — the diary projection (#246).
