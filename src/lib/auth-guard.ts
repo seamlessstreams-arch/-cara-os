@@ -13,11 +13,13 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
 import {
-  toAppRole,
   hasPermission,
   type AppRole,
   type Permission,
 } from "@/lib/permissions";
+// Canonical role normaliser — maps ANY vocabulary (flat / ABAC / x-user-role
+// variants) to the enforced AppRole, so an identity is never mis-read (Module 4).
+import { toCanonicalRole } from "@/lib/permissions/role-reconciliation";
 
 const DEFAULT_USER_ID = "staff_darren";
 
@@ -30,7 +32,7 @@ export function getUserRoleFromRequest(request: Request): AppRole {
     request.headers.get("x-user-id") ?? DEFAULT_USER_ID;
   const staff = db.staff.findById(userId);
   if (!staff) return "residential_care_worker";
-  return toAppRole(staff.role);
+  return toCanonicalRole(staff.role);
 }
 
 /**
@@ -108,7 +110,7 @@ export async function requirePermissionAsync(
         { status: 401 }
       );
     }
-    const role = toAppRole(session.role);
+    const role = toCanonicalRole(session.role);
     if (!hasPermission(role, permission)) {
       return NextResponse.json(
         { error: "Forbidden", detail: `Role '${role}' does not have permission '${permission}'` },
@@ -167,7 +169,7 @@ export async function getRequestIdentity(
         { status: 401 }
       );
     }
-    return { userId: session.userId, role: toAppRole(session.role), homeId: session.homeId };
+    return { userId: session.userId, role: toCanonicalRole(session.role), homeId: session.homeId };
   }
 
   // Demo mode: header identity, no tenant scoping.
