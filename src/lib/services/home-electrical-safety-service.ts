@@ -13,8 +13,6 @@
 // SCCIF: Safety — "The premises are safe and well maintained."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

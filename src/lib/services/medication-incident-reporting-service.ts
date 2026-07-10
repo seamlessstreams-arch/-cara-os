@@ -16,8 +16,6 @@
 // "When incidents occur, they are reported, investigated, and learned from."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = ReturnType<typeof createServerClient> extends Promise<infer R> ? R : never;

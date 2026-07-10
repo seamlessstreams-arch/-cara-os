@@ -15,8 +15,6 @@
 // staff are lawfully employed and fairly remunerated."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = any;

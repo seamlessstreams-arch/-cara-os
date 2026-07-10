@@ -13,8 +13,6 @@
 // parental controls, social media oversight, and prompt response to incidents.
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 

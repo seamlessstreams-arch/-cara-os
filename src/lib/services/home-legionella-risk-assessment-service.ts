@@ -16,8 +16,6 @@
 // "Children are protected from legionella risks under ACOP L8."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

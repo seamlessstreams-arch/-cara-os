@@ -15,8 +15,6 @@
 // "Staff understand and respond to children's emotional needs."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 

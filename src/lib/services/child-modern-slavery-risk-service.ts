@@ -11,8 +11,6 @@
 // Ofsted expects proactive modern slavery screening, NRM referrals, and safety planning.
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 

@@ -22,8 +22,6 @@
 // UNCRC Article 2 (non-discrimination).
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

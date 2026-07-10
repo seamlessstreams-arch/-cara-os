@@ -14,8 +14,6 @@
 // Forced Marriage Unit engagement, and multi-agency safeguarding approaches.
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 

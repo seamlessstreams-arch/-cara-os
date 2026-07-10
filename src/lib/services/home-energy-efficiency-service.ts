@@ -13,8 +13,6 @@
 // SCCIF: Leadership & Management — "The home is well-managed as a business."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = ReturnType<typeof createServerClient> extends Promise<infer R> ? R : never;

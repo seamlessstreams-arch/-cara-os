@@ -16,8 +16,6 @@
 // managed effectively to ensure safe staffing levels and regulatory compliance."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = any;

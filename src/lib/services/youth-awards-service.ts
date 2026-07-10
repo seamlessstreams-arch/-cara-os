@@ -22,8 +22,6 @@
 //   of their development. Their achievements are recognised and celebrated."
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

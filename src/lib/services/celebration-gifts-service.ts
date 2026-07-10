@@ -12,8 +12,6 @@
 // Corporate Parenting Principles (Children and Social Work Act 2017).
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

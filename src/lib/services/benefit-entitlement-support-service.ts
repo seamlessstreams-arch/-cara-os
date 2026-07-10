@@ -22,8 +22,6 @@
 // SCCIF: Experiences & progress — "Young people understand their entitlements."
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

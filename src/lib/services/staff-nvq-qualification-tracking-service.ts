@@ -16,8 +16,6 @@
 // "The home invests in staff qualifications and professional development."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = any;

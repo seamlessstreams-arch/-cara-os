@@ -14,8 +14,6 @@
 // staff feel safe to raise concerns about practice, safeguarding, or misconduct."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = any;

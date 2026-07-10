@@ -16,8 +16,6 @@
 // ensures children receive consistent, safe care."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = any;

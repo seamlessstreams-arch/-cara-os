@@ -11,8 +11,6 @@
 // Ofsted expects proactive HBA screening, multi-agency referrals, and safety planning.
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 

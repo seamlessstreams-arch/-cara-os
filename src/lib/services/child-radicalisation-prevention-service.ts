@@ -12,8 +12,6 @@
 // appropriate Channel referrals, and evidence of Prevent training for staff.
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
 
