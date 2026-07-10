@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 import { hasPermission, PERMISSIONS } from "@/lib/permissions";
-import { requireSensitiveAccess } from "../sensitive-access";
+import { requireSensitiveAccess, isEmploymentBlocked } from "../sensitive-access";
+import { db } from "@/lib/db/store";
 
 // Phase 1 · Module 1 — sensitive-record server-side guard.
 const SENSITIVE = [
@@ -58,5 +59,50 @@ describe("Phase 1 — requireSensitiveAccess guard (demo-safe)", () => {
     const r = await requireSensitiveAccess(req("staff_nobody"), PERMISSIONS.VIEW_ALLEGATIONS, { entityType: "allegation" });
     expect(r).toBeInstanceOf(NextResponse);
     if (r instanceof NextResponse) expect(r.status).toBe(403);
+  });
+});
+
+// Phase 1 · Module 6 — employment-status lockout (advisory ABAC's one enforced gate).
+describe("Phase 1 · Module 6 — isEmploymentBlocked", () => {
+  it("blocks suspended / departed states (case-insensitive)", () => {
+    for (const s of ["suspended", "left", "leaver", "archived", "dismissed", "terminated", "SUSPENDED", " Left "]) {
+      expect(isEmploymentBlocked(s)).toBe(true);
+    }
+  });
+  it("allows active / in-post states and unknown/empty", () => {
+    for (const s of ["active", "probation", "notice_period", "", undefined, null]) {
+      expect(isEmploymentBlocked(s)).toBe(false);
+    }
+  });
+});
+
+describe("Phase 1 · Module 6 — employment lockout in requireSensitiveAccess", () => {
+  const req = (userId: string) =>
+    new NextRequest("http://localhost/api/operations/allegation-management", { headers: { "x-user-id": userId } });
+
+  it("denies a SUSPENDED manager (holds the role permission, but employment-blocked) with 403", async () => {
+    const suspended = { id: "staff_suspended_test", role: "registered_manager", employment_status: "suspended", is_active: false };
+    // The flat check passes (registered_manager holds VIEW_ALLEGATIONS); only the
+    // employment lockout should stop them — proving it enforces, not the role gate.
+    expect(hasPermission("registered_manager", PERMISSIONS.VIEW_ALLEGATIONS)).toBe(true);
+    (db.staff.findAll() as unknown as Array<Record<string, unknown>>).push(suspended);
+    try {
+      const r = await requireSensitiveAccess(req("staff_suspended_test"), PERMISSIONS.VIEW_ALLEGATIONS, { entityType: "allegation" });
+      expect(r).toBeInstanceOf(NextResponse);
+      if (r instanceof NextResponse) expect(r.status).toBe(403);
+    } finally {
+      const arr = db.staff.findAll() as unknown as Array<{ id: string }>;
+      const i = arr.findIndex((s) => s.id === "staff_suspended_test");
+      if (i >= 0) arr.splice(i, 1);
+    }
+  });
+
+  it("still allows the demo default identity (active Registered Manager) — demo unaffected", async () => {
+    const r = await requireSensitiveAccess(
+      new NextRequest("http://localhost/api/operations/allegation-management"),
+      PERMISSIONS.VIEW_ALLEGATIONS,
+      { entityType: "allegation" },
+    );
+    expect(r).not.toBeInstanceOf(NextResponse);
   });
 });

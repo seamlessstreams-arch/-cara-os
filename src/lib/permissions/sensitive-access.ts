@@ -23,6 +23,7 @@ import {
   requirePermissionAsync,
   getUserRoleFromRequest,
   getUserIdFromRequest,
+  getUserEmploymentStatus,
 } from "@/lib/auth-guard";
 import type { AppRole, Permission } from "@/lib/permissions";
 import { recordEntityAudit, extractRequestAuditContext } from "@/lib/audit/audit-recorder";
@@ -33,6 +34,22 @@ import { evaluateSensitiveAbac } from "./abac-shadow";
 const ENFORCED = process.env.SENSITIVE_ACCESS_ENFORCED !== "false";
 /** Advisory ABAC shadow (Module 5) — ON unless disabled; never blocks. */
 const ABAC_SHADOW = process.env.SENSITIVE_ABAC_SHADOW !== "false";
+/** Employment-status lockout (Module 6) — ON unless disabled. The ONE ABAC gate
+ *  that's safe to ENFORCE (it doesn't diverge from the flat grants): a suspended
+ *  or departed staff member must not reach confidential records, whatever their
+ *  role. Full role-rule ABAC enforcement stays advisory until the engine's
+ *  ROLE_RULES are reconciled with the flat grants (they currently diverge —
+ *  e.g. the engine has no `complaint` rules and a deputy sensitivity ceiling). */
+const ENFORCE_EMPLOYMENT = process.env.SENSITIVE_EMPLOYMENT_LOCKOUT !== "false";
+
+/** Staff employment states that must be locked out of confidential records
+ *  (maps to the ABAC engine's BLOCKED_STATUSES: suspended / leaver). */
+const BLOCKED_EMPLOYMENT: ReadonlySet<string> = new Set(["suspended", "left", "leaver", "archived", "dismissed", "terminated"]);
+
+/** True when this employment status must be denied confidential access. */
+export function isEmploymentBlocked(status: string | null | undefined): boolean {
+  return status != null && BLOCKED_EMPLOYMENT.has(status.toLowerCase().trim());
+}
 
 /** Run the ABAC engine in ADVISORY mode: exercise it + its audit-on-view, and
  *  log any divergence from the (enforced) flat decision. Never blocks/throws. */
@@ -65,7 +82,13 @@ export interface SensitiveAuditContext {
   homeId?: string | null;
 }
 
-function logAccess(userId: string, audit: SensitiveAuditContext, permission: Permission, request: NextRequest): void {
+function logAccess(
+  userId: string,
+  audit: SensitiveAuditContext,
+  permission: Permission,
+  request: NextRequest,
+  extra?: Record<string, unknown>,
+): void {
   const ctx = extractRequestAuditContext(request);
   // Fire-and-forget: the in-memory trail push is synchronous; the durable write
   // is best-effort and never throws, so a logging hiccup can't break the route.
@@ -78,7 +101,7 @@ function logAccess(userId: string, audit: SensitiveAuditContext, permission: Per
     ip: ctx.ip,
     userAgent: ctx.userAgent,
     sessionId: ctx.sessionId,
-    metadata: { sensitive: true, permission },
+    metadata: { sensitive: true, permission, ...extra },
   });
 }
 
@@ -102,6 +125,35 @@ export async function requireSensitiveAccess(
   }
   const result = await requirePermissionAsync(request, permission);
   if (result instanceof NextResponse) return result; // 401 / 403 — denied
+
+  // Module 6 — employment-status lockout: the ONE ABAC gate safe to ENFORCE
+  // today (it doesn't diverge from the flat grants). A suspended or departed
+  // staff member who still nominally holds the role permission is nonetheless
+  // denied confidential records — an insider-threat control on the highest-risk
+  // data. Demo-safe: the demo default identity (staff_darren) is "active", so
+  // the demo is unaffected. Logged as a blocked attempt so the access trail
+  // shows the denial rather than silence.
+  if (ENFORCE_EMPLOYMENT) {
+    const employmentStatus = getUserEmploymentStatus(result.userId);
+    if (isEmploymentBlocked(employmentStatus)) {
+      logAccess(result.userId, audit, permission, request, {
+        blocked: true,
+        reason: "employment_lockout",
+        employmentStatus,
+      });
+      console.warn(
+        `[sensitive-access] employment lockout: ${result.userId} (${employmentStatus}) → ${audit.entityType}`,
+      );
+      return NextResponse.json(
+        {
+          error: "Forbidden",
+          detail: "Access to confidential records is not available for your current employment status.",
+        },
+        { status: 403 },
+      );
+    }
+  }
+
   logAccess(result.userId, audit, permission, request);
   runAbacShadow(result.userId, result.role, audit); // advisory — never blocks
   return result;

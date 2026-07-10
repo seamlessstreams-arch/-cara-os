@@ -42,6 +42,13 @@ export function getUserIdFromRequest(request: Request): string {
   return request.headers.get("x-user-id") ?? DEFAULT_USER_ID;
 }
 
+/** The caller's employment status from the staff record, if resolvable. Used by
+ *  the sensitive-record guard to lock out suspended/departed staff. */
+export function getUserEmploymentStatus(userId: string): string | undefined {
+  const staff = db.staff.findById(userId) as { employment_status?: string } | undefined;
+  return staff?.employment_status;
+}
+
 /**
  * Assert that the requesting user has a required permission.
  * Returns { role, userId } on success.
