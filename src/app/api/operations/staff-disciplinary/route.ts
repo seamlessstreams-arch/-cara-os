@@ -1,6 +1,8 @@
 import { readJsonBody } from "@/lib/http/read-json";
 import { NextRequest, NextResponse } from "next/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
+import { PERMISSIONS } from "@/lib/permissions";
+import { requireSensitiveAccess } from "@/lib/permissions/sensitive-access";
 import {
   listDisciplinaryRecords,
   createDisciplinaryRecord,
@@ -19,6 +21,9 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const homeId = searchParams.get("homeId");
   const type = searchParams.get("type");
+
+  const guard = await requireSensitiveAccess(request, PERMISSIONS.VIEW_DISCIPLINARY, { entityType: "staff_disciplinary", homeId });
+  if (guard instanceof NextResponse) return guard;
 
   if (!homeId) return NextResponse.json({ error: "homeId required" }, { status: 400 });
 
@@ -68,6 +73,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const guard = await requireSensitiveAccess(request, PERMISSIONS.MANAGE_DISCIPLINARY, { entityType: "staff_disciplinary", action: "update" });
+  if (guard instanceof NextResponse) return guard;
   try {
     const __jb0 = await readJsonBody(request); if (!__jb0.ok) return __jb0.response; const body = __jb0.data;
     const { action, homeId } = body;
