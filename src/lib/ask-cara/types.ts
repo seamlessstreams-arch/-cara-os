@@ -56,6 +56,7 @@ export type AskCaraIntent =
   | "cumulative_risk"
   | "child_calendar"
   | "child_feedback"
+  | "child_standards"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"

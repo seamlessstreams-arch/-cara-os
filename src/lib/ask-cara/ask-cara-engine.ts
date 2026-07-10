@@ -181,6 +181,10 @@ function skillChildSummary(child: AskCaraChild, snap: AskCaraSnapshot, asOf: str
   }
   const nextUp = (snap.childCalendar ?? []).find((c) => c.childId === child.id)?.upcoming[0];
   if (nextUp) lines.push(`Next in ${name}'s diary: ${nextUp.title} on ${nextUp.date}.`);
+  const wkDigest = (snap.weekly ?? []).find((x) => x.childId === child.id);
+  if (wkDigest && (wkDigest.qualityStandardsEvidence.length || wkDigest.fiveOutcomesEvidence.length)) {
+    lines.push(`This week's recording evidences ${wkDigest.qualityStandardsEvidence.length} of 9 Quality Standards and ${wkDigest.fiveOutcomesEvidence.length} of 5 outcomes.`);
+  }
   lines.push(logs[0] ? `Latest daily log: ${logs[0].date}.` : `No daily log on record for ${name}.`);
 
   // Leg three: the evaluation engines' read — assessment, not just a tally.
@@ -862,6 +866,58 @@ function skillChildFeedback(snap: AskCaraSnapshot, asOf: string, child: AskCaraC
   });
 }
 
+// ── Quality Standards & Five Outcomes (Children's Homes Regs 2015 / ECM) ──────
+// How the period's recording evidences the frameworks the home is measured by —
+// from the Weekly Intelligence Object's evidence lines. A standard not evidenced
+// is a recording prompt, never a judgement of the care.
+
+function skillChildStandards(snap: AskCaraSnapshot, child: AskCaraChild | null): AskCaraAnswer {
+  const digests = snap.weekly ?? [];
+  const STANDARDS_DISCLAIMER = "Evidence mapped from the live records to the Quality Standards (Children's Homes (England) Regulations 2015) and the five outcomes — a description of what the recording shows, never a predicted judgement.";
+  if (!child) {
+    if (!digests.length) {
+      return answer({ intent: "child_standards", answered: false, text: "There isn't enough recorded this week to map any child's records onto the Quality Standards yet.", sources: [], suggestions: sug(["What needs my attention?", "Where are our recording gaps?"]) });
+    }
+    const lines = ["How this week's recording evidences the Quality Standards and five outcomes, per child:"];
+    for (const d of digests) {
+      lines.push(`- ${childNameById(snap, d.childId)}: ${d.qualityStandardsEvidence.length} of 9 Quality Standards, ${d.fiveOutcomesEvidence.length} of 5 outcomes${d.qualityStandardsEvidence.length <= 2 ? " — recording is thin here" : ""}`);
+    }
+    lines.push("", "A standard not evidenced is a recording prompt, not a failure — the care usually happened; the record needs to show it.");
+    return answer({
+      intent: "child_standards", answered: true, text: lines.join("\n"),
+      sources: [{ label: "Children with a weekly read", count: digests.length }],
+      suggestions: sug([digests[0] ? `How does ${childNameById(snap, digests[0].childId)}'s week evidence the standards?` : "What needs my attention?", "Where are our recording gaps?"]),
+      disclaimer: STANDARDS_DISCLAIMER,
+    });
+  }
+  const name = childLabel(child);
+  const w = digests.find((x) => x.childId === child.id);
+  if (!w) {
+    return answer({ intent: "child_standards", answered: false, text: `There isn't enough recorded for ${name} this week to map onto the Quality Standards yet — that gap is itself worth noticing.`, sources: [], suggestions: sug([`Tell me about ${name}`, "Where are our recording gaps?"]) });
+  }
+  const lines: string[] = [];
+  if (w.qualityStandardsEvidence.length) {
+    lines.push(`How ${name}'s week evidences the Quality Standards (${w.qualityStandardsEvidence.length} of 9):`);
+    for (const e of w.qualityStandardsEvidence) lines.push(`- ${e.label}: ${e.evidence}`);
+  }
+  if (w.fiveOutcomesEvidence.length) {
+    if (lines.length) lines.push("");
+    lines.push(`Five Outcomes:`);
+    for (const e of w.fiveOutcomesEvidence) lines.push(`- ${e.label}: ${e.evidence}`);
+  }
+  if (!lines.length) {
+    return answer({ intent: "child_standards", answered: true, text: `Little of ${name}'s recording this week maps onto the Quality Standards or the five outcomes yet — a prompt to capture the ordinary care as well as the events, not a judgement of the care itself.`, sources: [{ label: "Standards evidenced", count: 0 }], suggestions: sug([`What should be in ${name}'s weekly summary?`, "Where are our recording gaps?"]), disclaimer: STANDARDS_DISCLAIMER });
+  }
+  const missing = 9 - w.qualityStandardsEvidence.length;
+  if (missing > 0) lines.push("", `${missing} standard${missing === 1 ? " isn't" : "s aren't"} yet evidenced this week — worth checking the care that happened is making it into the record.`);
+  return answer({
+    intent: "child_standards", answered: true, text: lines.join("\n"),
+    sources: [{ label: "Quality Standards evidenced", count: w.qualityStandardsEvidence.length }, { label: "Five Outcomes evidenced", count: w.fiveOutcomesEvidence.length }],
+    suggestions: sug([`What should be in ${name}'s weekly summary?`, `How is ${name} progressing?`, "Are we ready for inspection?"]),
+    disclaimer: STANDARDS_DISCLAIMER,
+  });
+}
+
 // ── CPIE Digital Twin: the whole child (identity before incident) ─────────────
 
 const twinFor = (snap: AskCaraSnapshot, childId: string) => (snap.twins ?? []).find((t) => t.childId === childId);
@@ -887,11 +943,19 @@ function skillWeeklySummary(snap: AskCaraSnapshot, child: AskCaraChild | null, p
   }
 
   // Prefer the CPIE narrator's flowing prose — a real summary draft in an
-  // experienced RM's voice — over the bulleted structure, when available.
+  // experienced RM's voice — over the bulleted structure, when available. The
+  // frameworks the home is measured by ride along from the same intelligence
+  // object: the Quality Standards (Children's Homes Regs 2015) + five outcomes.
   if (w.narrative) {
+    const qsTail = w.qualityStandardsEvidence.length
+      ? `\n\n**Quality Standards evidenced (${w.qualityStandardsEvidence.length} of 9):**\n${w.qualityStandardsEvidence.map((e) => `- ${e.label}: ${e.evidence}`).join("\n")}`
+      : "";
+    const foTail = w.fiveOutcomesEvidence.length
+      ? `\n\n**Five Outcomes:**\n${w.fiveOutcomesEvidence.map((e) => `- ${e.label}: ${e.evidence}`).join("\n")}`
+      : "";
     return answer({
       intent: "weekly_summary", answered: true,
-      text: `Here's a starting draft of ${name}'s ${label} summary — from CARA's ${label === "monthly" ? "Monthly" : "Weekly"} Intelligence Object, in your professional voice, for you to shape:\n\n${w.narrative}\n\nEvidence confidence: ${w.evidenceConfidence}.${w.missingInformation.length ? ` Gaps to close first: ${w.missingInformation.slice(0, 2).join("; ")}.` : ""}`,
+      text: `Here's a starting draft of ${name}'s ${label} summary — from CARA's ${label === "monthly" ? "Monthly" : "Weekly"} Intelligence Object, in your professional voice, for you to shape:\n\n${w.narrative}${qsTail}${foTail}\n\nEvidence confidence: ${w.evidenceConfidence}.${w.missingInformation.length ? ` Gaps to close first: ${w.missingInformation.slice(0, 2).join("; ")}.` : ""}`,
       sources: [{ label: `${label === "monthly" ? "Monthly" : "Weekly"} intelligence`, count: 1 }, { label: "Achievements", count: w.achievements.length }, { label: "Child-voice moments", count: w.childVoiceMoments.length }],
       suggestions: sug([`How is ${name} progressing?`, `What triggers ${name}?`, `Who is ${name}?`]),
       disclaimer: `A drafting aid from CARA's ${label === "monthly" ? "Monthly" : "Weekly"} Intelligence Object — your professional summary, shaped by you, remains the record.`,
@@ -1364,6 +1428,15 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
     }
   }
 
+  // Quality Standards & Five Outcomes — how the recording evidences the
+  // frameworks the home is measured by. HOISTED above the evaluation reads so
+  // "five outcomes" isn't caught by the child-progress "outcomes" keyword, and
+  // above the knowledge-base catch so the answer is THIS child's/home's
+  // evidence, not a theory article.
+  if (mentionsAny(q, ["quality standard", "quality standards", "nine standards", "9 standards", "five outcomes", "5 outcomes", "every child matters"])) {
+    return gate("care_team", () => skillChildStandards(snap, child));
+  }
+
   // Evaluation reads (leg three) — a question about a NAMED child's triggers,
   // regulation, relationships or direction goes to the engines' read of THAT
   // child first: the experienced answer starts with your child, not the theory.
@@ -1411,6 +1484,7 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
   if (mentionsAny(q, ["feedback", "complaint", "complaints", "complained", "suggestion", "suggestions", "happy here", "happy living here", "unhappy about", "what have the children said", "what has the child said", "children told us", "child told us"])) {
     return gate("care_team", () => skillChildFeedback(snap, asOf, child));
   }
+
 
   // Practice knowledge — a clearly practice-framed question ("how do I…/what does X
   // mean") or a named framework ("PACE", "contextual safeguarding") is tried before

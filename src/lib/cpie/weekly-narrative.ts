@@ -33,7 +33,9 @@ export interface WeeklyNarrative {
   opening: string;
   paragraphs: string[]; // domain paragraphs, in reading order
   overall: string;
-  /** The whole report as flowing prose (opening + paragraphs + overall). */
+  /** The Quality Standards + Five Outcomes read — "" when nothing is evidenced. */
+  standards: string;
+  /** The whole report as flowing prose (opening + paragraphs + overall + standards). */
   body: string;
   /** Kept-honest footer: evidence confidence + what wasn't captured. */
   evidenceNote: string;
@@ -193,8 +195,23 @@ export function composeWeeklyNarrative(wio: WeeklyIntelligenceObject, pronouns: 
     `Evidence confidence: ${wio.evidenceConfidence}.` +
     (gaps.length ? ` To strengthen next ${period}'s picture, it would help to capture ${sentenceList(gaps)}.` : "");
 
-  const body = [opening, ...paragraphs, overall].join("\n\n");
+  // ── Quality Standards & Five Outcomes ────────────────────────────────────────
+  // Narrated from the WIO's evidence lines (Children's Homes Regs 2015 + the five
+  // outcomes) — a standard appears only where the week actually evidences it, and
+  // a thin week reads as a recording prompt, never a failure of care.
+  const qsLines = wio.qualityStandardsEvidence;
+  const foLines = wio.fiveOutcomesEvidence;
+  let standards = "";
+  if (qsLines.length || foLines.length) {
+    const bits: string[] = [];
+    if (qsLines.length) bits.push(`this ${period} gives living evidence against ${qsLines.length} of the nine Quality Standards — ${sentenceList(qsLines.map((l) => lower1(l.label)))}`);
+    if (foLines.length) bits.push(`${qsLines.length ? "and across" : "across"} the five outcomes there is evidence for ${sentenceList(foLines.map((l) => lower1(l.label)))}`);
+    standards = `Held against the frameworks the home is measured by, ${bits.join(", ")}.`;
+    if (qsLines.length > 0 && qsLines.length <= 2) standards += ` Where a standard isn't yet evidenced, that's a recording prompt — capture the ordinary care as well as the events.`;
+  }
+
+  const body = [opening, ...paragraphs, overall, standards].filter(Boolean).join("\n\n");
   const title = `Weekly summary — ${name} (${wio.weekStart} to ${wio.weekEnding})`;
 
-  return { title, opening, paragraphs, overall, body, evidenceNote };
+  return { title, opening, paragraphs, overall, standards, body, evidenceNote };
 }
