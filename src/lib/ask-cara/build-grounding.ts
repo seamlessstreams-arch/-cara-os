@@ -39,7 +39,7 @@ const block = (title: string, lines: (string | "")[]): string => {
   return body ? `## ${title}\n${body}` : "";
 };
 
-function childBlock(snap: AskCaraSnapshot, child: AskCaraChild, asOf: string): string {
+function childBlock(snap: AskCaraSnapshot, child: AskCaraChild, asOf: string, tier: AccessTier): string {
   const name = child.firstName || child.name;
   const lines: string[] = [];
   lines.push(line("Name", `${name} (${child.legalStatus ?? "status not recorded"})`));
@@ -73,7 +73,8 @@ function childBlock(snap: AskCaraSnapshot, child: AskCaraChild, asOf: string): s
   const rsp = pr?.relationalSafety?.perChild.find((p) => p.childId === child.id);
   if (rsp) lines.push(line("Relational safety map", `${rsp.status}; key worker ${rsp.keyWorkerName ?? "NOT assigned"}; ${rsp.sessions30d} key-work (30d); ${rsp.trustedAdults} trusted adults`));
   const tap = pr?.teamApproach?.perChild.find((p) => p.childId === child.id);
-  if (tap) lines.push(line("Team approach", `${tap.level} (therapeutic ${tap.therapeuticRate}%, variance ${tap.variance})`));
+  // Team-approach compares staff — management-only, matching skillTeamApproach's gate.
+  if (tap && TIER_RANK[tier] >= TIER_RANK.management) lines.push(line("Team approach", `${tap.level} (therapeutic ${tap.therapeuticRate}%, variance ${tap.variance})`));
   // 30-day counts + the precomputed weekly narrative (the richest single string).
   const in30 = (d: string) => { const t = Date.parse(d); return !Number.isNaN(t) && (Date.parse(asOf) - t) / 86_400_000 <= 30 && (Date.parse(asOf) - t) >= 0; };
   const inc = snap.incidents.filter((i) => i.childId === child.id && in30(i.date)).length;
@@ -97,17 +98,21 @@ function childBlock(snap: AskCaraSnapshot, child: AskCaraChild, asOf: string): s
 
 function homeBlock(snap: AskCaraSnapshot, tier: AccessTier, asOf: string): string {
   const lines: string[] = [];
-  const current = snap.children.filter((c) => (c.status ?? "current") === "current");
-  lines.push(line("Home", `${snap.home?.name ?? "the home"} — ${current.length} young people placed: ${current.map((c) => c.firstName || c.name).join(", ")}`));
   const in30 = (d: string) => { const t = Date.parse(d); return !Number.isNaN(t) && (Date.parse(asOf) - t) / 86_400_000 <= 30 && (Date.parse(asOf) - t) >= 0; };
-  const gaps = snap.restraints.filter((r) => !r.childDebriefed).length;
-  const oversight = snap.incidents.filter((i) => i.requiresOversight && !i.hasOversight && i.status !== "closed").length;
-  const rhi = snap.missingEpisodes.filter((m) => !m.hasReturnInterview).length;
-  lines.push(line("Last 30 days", `${snap.incidents.filter((i) => in30(i.date)).length} incidents, ${snap.restraints.filter((r) => in30(r.date)).length} restraints`));
-  lines.push(line("Outstanding", `${gaps} restraint debrief gaps, ${oversight} incidents awaiting oversight, ${rhi} missing return-home interviews`));
+  // The roster (children's names) and the safeguarding counts are care-team+ —
+  // they must never reach the 'everyone' tier, matching childBlock's own gate.
   if (TIER_RANK[tier] >= TIER_RANK.care_team) {
+    const current = snap.children.filter((c) => (c.status ?? "current") === "current");
+    lines.push(line("Home", `${snap.home?.name ?? "the home"} — ${current.length} young people placed: ${current.map((c) => c.firstName || c.name).join(", ")}`));
+    const gaps = snap.restraints.filter((r) => !r.childDebriefed).length;
+    const oversight = snap.incidents.filter((i) => i.requiresOversight && !i.hasOversight && i.status !== "closed").length;
+    const rhi = snap.missingEpisodes.filter((m) => !m.hasReturnInterview).length;
+    lines.push(line("Last 30 days", `${snap.incidents.filter((i) => in30(i.date)).length} incidents, ${snap.restraints.filter((r) => in30(r.date)).length} restraints`));
+    lines.push(line("Outstanding", `${gaps} restraint debrief gaps, ${oversight} incidents awaiting oversight, ${rhi} missing return-home interviews`));
     const hs = snap.ops?.healthSafety;
     if (hs) lines.push(line("Premises", `${hs.overdue.length} overdue checks, ${hs.openMaintenance} open maintenance, ${hs.fireDrills90d} fire drills (90d)`));
+  } else {
+    lines.push(line("Home", snap.home?.name ?? "the home"));
   }
   if (TIER_RANK[tier] >= TIER_RANK.management) {
     if (snap.homeEvaluation) lines.push(line("Inspection evidence posture", `${snap.homeEvaluation.headline} (${snap.homeEvaluation.areasStrong} strong / ${snap.homeEvaluation.areasDeveloping} developing / ${snap.homeEvaluation.areasLimited} limited)`));
@@ -156,7 +161,7 @@ export function buildGroundingPack(input: GroundingInput): string {
       answer.sources.length ? `- Evidence: ${answer.sources.map((s) => `${s.label} (${s.count})`).join("; ")}` : "",
     ]));
   }
-  if (child && TIER_RANK[tier] >= TIER_RANK.care_team) parts.push(childBlock(snapshot, child, asOf));
+  if (child && TIER_RANK[tier] >= TIER_RANK.care_team) parts.push(childBlock(snapshot, child, asOf, tier));
   parts.push(homeBlock(snapshot, tier, asOf));
   parts.push(recordIndexBlock(snapshot, tier));
   return clip(parts.filter(Boolean).join("\n\n"), 7000);

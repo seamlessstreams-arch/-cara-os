@@ -166,7 +166,7 @@ export function buildPracticeDigest(store: Store): AskCaraPracticeDigest {
         childId: c.childId,
         status: c.status,
         reason: c.statusReason,
-        keyWorkerName: c.keyWorker?.name ?? undefined,
+        keyWorkerName: c.keyWorker?.fullName ?? undefined, // StaffSnapshot field is `fullName`, not `name` — the `.name` read was always undefined ⇒ false "no key worker"
         sessions30d: c.sessionsLast30d,
         trustedAdults: c.trustedAdultCount,
       })),

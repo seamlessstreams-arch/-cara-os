@@ -34,7 +34,7 @@ const TITLE_FIELDS = ["title", "name", "summary", "label", "course_name", "check
 // governance. Safe-side: ambiguous staff/finance keys gate to management.
 // NOTE: stems take \w* (vacanc\w* matches "vacancies") — a bare \b after a stem
 // never matches its inflections (the classic keyword-match trap).
-const MGMT_RE = /\b(staff|supervis\w*|training|recruit\w*|dbs|vacanc\w*|candidate\w*|payroll|hr|sickness|leave|appraisal\w*|wellbeing|audit\w*|governance|complaint\w*|allegation\w*|whistle\w*|disciplin\w*|agency|budget\w*|finance\w*|petty|invoice\w*|contract\w*|employer\w*|hq|organisation\w*|org)\b/;
+const MGMT_RE = /\b(staff|supervis\w*|training|recruit\w*|dbs|vacanc\w*|candidate\w*|payroll|hr|sickness|leave|appraisal\w*|wellbeing|audit\w*|governance|complaint\w*|allegation\w*|whistle\w*|wb|disciplin\w*|grievance|capability|probation|agency|budget\w*|finance\w*|petty|invoice\w*|expense\w*|pension\w*|insuranc\w*|contract\w*|employ\w*|cpd|competenc\w*|induction\w*|qualif\w*|absence\w*|holiday\w*|bank\w*|board|hq|organisation\w*|org)\b/;
 
 /** camelCase / snake_case store key → readable label ("sanctionsRewards" → "sanctions rewards"). */
 export function labelOf(key: string): string {
