@@ -51,8 +51,8 @@ describe("Ask CARA — LLM grounding pack", () => {
     expect(pack).not.toContain("Reg 44");
   });
 
-  it("stays within the token budget (~6k chars)", () => {
+  it("stays within the token budget (~7k chars — raised for the record index)", () => {
     const pack = packFor("tell me about Alex", "registered_manager");
-    expect(pack.length).toBeLessThanOrEqual(6100);
+    expect(pack.length).toBeLessThanOrEqual(7100);
   });
 });

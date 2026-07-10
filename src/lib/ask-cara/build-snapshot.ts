@@ -18,6 +18,7 @@ import { composeWeeklyNarrative } from "@/lib/cpie/weekly-narrative";
 import { pronounsForChild } from "@/lib/cpie/pronouns";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
 import { getCalendarFeed } from "@/lib/calendar/calendar-service";
+import { buildRecordCatalogue } from "@/lib/ask-cara/record-catalogue";
 import type { AskCaraChildCalendar } from "@/lib/ask-cara/types";
 import { buildOrgLearningReport } from "@/lib/org-learning-report/report-engine";
 import { buildOrgLearningInputFromStore } from "@/lib/org-learning-report/build-input";
@@ -278,6 +279,10 @@ export function buildAskSnapshot(store: ReturnType<typeof getStore>): AskCaraSna
       }))
       .filter((f) => f.childId && f.date && f.text)
       .sort((a, b) => (a.date < b.date ? -1 : 1)),
+    // The universal record catalogue — every store collection introspected at
+    // runtime (556 at last count), so Cara reaches the COMPLETE application:
+    // any collection the specialists don't cover is still answerable.
+    catalogue: (() => { try { return buildRecordCatalogue(store); } catch { return undefined; } })(),
     // Health appointments on record (GP / CAMHS / dental …).
     healthAppointments: rec((store as Record<string, unknown>).healthRecordEntries)
       .map((h) => ({

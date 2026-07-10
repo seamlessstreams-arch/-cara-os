@@ -61,6 +61,7 @@ export type AskCaraIntent =
   | "repair_cycle"
   | "relational_safety"
   | "team_approach"
+  | "record_lookup"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -220,6 +221,25 @@ export interface AskCaraPracticeDigest {
     divergencePattern: string;
     perChild: { childId: string; level: string; therapeuticRate: number; variance: number; mostTherapeutic?: string; leastTherapeutic?: string }[]; // divergent-first
   };
+}
+
+/**
+ * One collection in the UNIVERSAL record catalogue — the runtime introspection
+ * of every array collection on the store (current and future), so Ask CARA can
+ * reach the complete application: counts, tier, child linkage, and a compact
+ * recent sample (clipped titles — never narrative dumps).
+ */
+export interface AskCaraCatalogueEntry {
+  key: string; // store key, e.g. "chronology"
+  label: string; // readable, e.g. "chronology"
+  tier: AccessTier; // management for staff/HR/finance/governance-ish collections
+  count: number;
+  childLinked: boolean;
+  /** childId → row count, present when childLinked. */
+  childCounts?: Record<string, number>;
+  latestDate?: string;
+  /** Up to 5 most recent rows: date + child link + clipped title. */
+  recent: { date?: string; childId?: string; title: string }[];
 }
 
 /** One row of a child's diary — projected by the shared calendar engine (#246). */
@@ -492,6 +512,9 @@ export interface AskCaraSnapshot {
   feedback?: AskCaraFeedback[];
   /** Health appointments on record per child (GP / CAMHS / dental …). */
   healthAppointments?: AskCaraHealthAppointment[];
+  /** The universal record catalogue — every store collection, introspected at
+   *  runtime, so Cara can reach the COMPLETE application. */
+  catalogue?: AskCaraCatalogueEntry[];
 }
 
 export interface AskCaraContext {

@@ -28,6 +28,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { mentionsAny } from "@/lib/text/keyword-match";
+import { searchCatalogue } from "./record-catalogue";
 import { classifyProhibited } from "./prohibited-request-classifier";
 import { findSubstitution } from "./shadow-ai-substitution-matrix";
 import { answerPolicyQuestion } from "./policy-guidance-engine";
@@ -810,7 +811,15 @@ function skillStrengthsRecording(snap: AskCaraSnapshot, child: AskCaraChild | nu
     return answer({ intent: "strengths_recording", answered: true, text: lines.join("\n"), sources: [{ label: `Strengths rate for ${name} (%)`, count: pc.rate }], suggestions: sug([`Who is ${name}?`, `How is ${name} progressing?`]), disclaimer: DISC });
   }
   const lines = [`Across the home, ${sr.overallRate}% of records include a strength or achievement${sr.topCategoryLabel ? ` — most often ${sr.topCategoryLabel.toLowerCase()}` : ""}.`];
-  if (sr.topPractitionerName) lines.push(`${sr.topPractitionerName} is the standout strengths-recorder — worth naming at handover, and worth others borrowing from.`);
+  if (sr.topPractitionerName) {
+    // The engine may carry a raw staff id — resolve via the staff list, else
+    // derive a readable name from the id ("staff_olivia" → "Olivia").
+    const resolved = snap.staff.find((st) => st.id === sr.topPractitionerName)?.name;
+    const champion = resolved ?? (/^staff_[a-z]+$/i.test(sr.topPractitionerName)
+      ? sr.topPractitionerName.replace(/^staff_/i, "").replace(/^./, (c) => c.toUpperCase())
+      : sr.topPractitionerName);
+    lines.push(`${champion} is the standout strengths-recorder — worth naming at handover, and worth others borrowing from.`);
+  }
   const thin = sr.perChild.filter((p) => p.rate !== null && p.rate < 40);
   if (thin.length) lines.push(`Thinner for ${thin.map((p) => childNameById(snap, p.childId)).join(", ")} — their files currently show more event than person.`);
   return answer({ intent: "strengths_recording", answered: true, text: lines.join("\n"), sources: [{ label: "Strengths rate, home (%)", count: sr.overallRate }], suggestions: sug(["Whose voice is missing?", "Is our language criminalising anyone?", "What needs my attention?"]), disclaimer: DISC });
@@ -1408,11 +1417,57 @@ function skillPracticeGuidance(rawQuestion: string, child: AskCaraChild | null):
   });
 }
 
+// ── Universal record lookup — the COMPLETE application ───────────────────────
+// Answers a question that names ANY store collection (556 introspected at
+// runtime) from the catalogue: counts, latest dates, recent entries — honestly
+// labelled as a general read. Runs LAST before the KB catch, so every
+// specialist engine still wins; tier-gating keeps management collections
+// (staff files, HR, finance, governance) away from lower tiers.
+function skillRecordLookup(q: string, snap: AskCaraSnapshot, asOf: string, child: AskCaraChild | null, tier: AccessTier): AskCaraAnswer | null {
+  const catalogue = snap.catalogue ?? [];
+  if (!catalogue.length) return null;
+  const visible = catalogue.filter((e) => TIER_RANK[tier] >= TIER_RANK[e.tier]);
+  const matches = searchCatalogue(q, visible);
+  if (!matches.length) {
+    // A management-only collection matched for a lower tier → honest gate,
+    // never a silent "unknown" that hides the record's existence.
+    const hidden = searchCatalogue(q, catalogue.filter((e) => e.tier === "management"));
+    if (hidden.length && TIER_RANK[tier] < TIER_RANK.management) return denied("management");
+    return null;
+  }
+  const e = matches[0];
+  const name = child ? childLabel(child) : null;
+  const childCount = child && e.childCounts ? e.childCounts[child.id] ?? 0 : null;
+  const recent = (child ? e.recent.filter((r) => r.childId === child.id) : e.recent).slice(-3);
+  const lines: string[] = [];
+  if (child && e.childLinked) {
+    lines.push(`${childCount} ${e.label} record${childCount === 1 ? "" : "s"} for ${name} (${e.count} across the home${e.latestDate ? `, latest ${e.latestDate}` : ""}).`);
+  } else {
+    lines.push(`${e.count} ${e.label} record${e.count === 1 ? "" : "s"} on the system${e.latestDate ? ` — latest ${e.latestDate}` : ""}.`);
+  }
+  if (recent.length) {
+    lines.push("", "Most recent:");
+    for (const r of recent) lines.push(`- ${r.date ?? "undated"}${!child && r.childId ? ` (${childNameById(snap, r.childId)})` : ""}: ${r.title}`);
+  } else if (child && e.childLinked && childCount === 0) {
+    lines.push(`Nothing recorded for ${name} in this collection — if something happened, it's worth capturing.`);
+  }
+  const also = matches.slice(1).filter((m) => m.count > 0);
+  if (also.length) lines.push("", `Related records I also hold: ${also.map((m) => `${m.label} (${m.count})`).join(", ")}.`);
+  return answer({
+    intent: "record_lookup",
+    answered: true,
+    text: lines.join("\n"),
+    sources: [{ label: e.label, count: e.count }, ...(childCount !== null ? [{ label: `${name}'s ${e.label}`, count: childCount }] : [])],
+    suggestions: sug([child ? `Tell me about ${childLabel(child)}` : "What needs my attention?", "What's coming up this week?"]),
+    disclaimer: "A general read of the live records — Cara can reach every collection in the application. For deeper analysis ask a more specific question, or open the page for the full picture.",
+  });
+}
+
 function skillUnknown(): AskCaraAnswer {
   return answer({
     intent: "unknown",
     answered: false,
-    text: "I can only answer from what's in your records, and I couldn't map that question to them yet — so I won't guess. Here's what I can answer right now:\n- What needs my attention\n- Incidents (this week / month, or for a child)\n- Restraints and which have no debrief\n- Missing-from-care episodes\n- Medication\n- Overdue actions\n- Open safeguarding concerns\n- Who is placed here, and a summary of any child",
+    text: "I can only answer from what's in your records, and I couldn't map that question to them yet — so I won't guess. I can reach every record collection in the application — try naming the record you're after (e.g. \"any chronology entries for Alex?\", \"when was the last welfare check?\"). I can also answer:\n- What needs my attention\n- Incidents (this week / month, or for a child)\n- Restraints and which have no debrief\n- Missing-from-care episodes\n- Medication\n- Overdue actions\n- Open safeguarding concerns\n- Who is placed here, and a summary of any child",
     sources: [],
     suggestions: STARTERS,
   });
@@ -1635,6 +1690,14 @@ export function answerQuestion(query: AskCaraQuery): AskCaraAnswer {
       disclaimer: "Please don't paste child, staff, family, safeguarding, health or placement information into external AI tools — CARA does this safely and keeps a record.",
     });
   }
+
+  // UNIVERSAL RECORD LOOKUP — the complete application. A question that names
+  // any store collection (556 introspected at runtime — chronology, welfare
+  // checks, handovers, sanctions, savings, complaints, …) is answered from the
+  // catalogue: counts, latest dates, recent entries — honestly labelled as a
+  // general record read. Specialists always win above; tier-gating applies.
+  const lookup = skillRecordLookup(q, snap, asOf, child, tier);
+  if (lookup) return lookup;
 
   // Late knowledge catch — a question that fell through the record skills and isn't a
   // shadow-AI pattern, but does match the loaded frameworks (shares KB vocabulary).

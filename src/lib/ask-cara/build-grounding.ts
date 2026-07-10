@@ -128,9 +128,21 @@ function homeBlock(snap: AskCaraSnapshot, tier: AccessTier, asOf: string): strin
   return block("THE HOME", lines);
 }
 
+/** The COMPLETE application's surface — every non-empty collection the tier may
+ *  see, as "label(count)". The model then knows what records exist to ask for. */
+function recordIndexBlock(snap: AskCaraSnapshot, tier: AccessTier): string {
+  const entries = (snap.catalogue ?? [])
+    .filter((e) => e.count > 0 && TIER_RANK[tier] >= TIER_RANK[e.tier])
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 60)
+    .map((e) => `${e.label}(${e.count})`);
+  return entries.length ? block("RECORD INDEX (every collection Cara can read — ask for any of them)", [clip(entries.join(", "), 1200)]) : "";
+}
+
 /**
  * The tier-scoped grounding pack: the deterministic answer (authoritative) + the
- * platform's intelligence about the child and home. Capped ~6k chars.
+ * platform's intelligence about the child and home + the full record index.
+ * Capped ~7k chars.
  */
 export function buildGroundingPack(input: GroundingInput): string {
   const { snapshot, tier, answer, child, asOf } = input;
@@ -143,5 +155,6 @@ export function buildGroundingPack(input: GroundingInput): string {
   }
   if (child && TIER_RANK[tier] >= TIER_RANK.care_team) parts.push(childBlock(snapshot, child, asOf));
   parts.push(homeBlock(snapshot, tier, asOf));
-  return clip(parts.filter(Boolean).join("\n\n"), 6000);
+  parts.push(recordIndexBlock(snapshot, tier));
+  return clip(parts.filter(Boolean).join("\n\n"), 7000);
 }
