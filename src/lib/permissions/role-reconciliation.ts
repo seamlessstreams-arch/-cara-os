@@ -18,6 +18,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { APP_ROLES, type AppRole } from "@/lib/permissions";
+import type { Role as AbacRole } from "./types";
 
 /** Non-AppRole role strings (ABAC Role, x-user-role variants, common aliases)
  *  → canonical AppRole. Keys are normalised (lower_snake_case). */
@@ -86,4 +87,29 @@ export function roleAccessTier(role: string | null | undefined): RoleAccessTier 
   if (MANAGEMENT_ROLES.has(canonical)) return "management";
   if (CARE_TEAM_ROLES.has(canonical)) return "care_team";
   return "everyone";
+}
+
+/** Canonical AppRole → the ABAC engine's Role vocabulary (for wiring the
+ *  access-decision-service, Module 5). Best-effort; every AppRole maps. */
+const ABAC_FROM_APP: Record<AppRole, AbacRole> = {
+  super_admin: "super_admin",
+  admin: "super_admin",
+  organisation_director: "provider_owner",
+  responsible_individual: "responsible_individual",
+  registered_manager: "registered_manager",
+  deputy_manager: "deputy_manager",
+  team_leader: "team_leader",
+  residential_care_worker: "rsw",
+  bank_staff: "agency_staff",
+  therapist: "rsw",
+  hr_recruitment: "hr_admin",
+  finance_operations: "finance_admin",
+  external_partner: "external_auditor",
+  auditor: "external_auditor",
+  candidate: "rsw", // never reaches ABAC-gated resources (flat check denies first)
+};
+
+/** Map any role string (any vocabulary) to the ABAC engine's Role. */
+export function toAbacRole(role: string | null | undefined): AbacRole {
+  return ABAC_FROM_APP[toCanonicalRole(role)];
 }

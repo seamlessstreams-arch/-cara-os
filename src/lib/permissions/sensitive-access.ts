@@ -27,9 +27,34 @@ import {
 import type { AppRole, Permission } from "@/lib/permissions";
 import { recordEntityAudit, extractRequestAuditContext } from "@/lib/audit/audit-recorder";
 import type { AuditAction } from "@/types/operations";
+import { evaluateSensitiveAbac } from "./abac-shadow";
 
 /** Env kill-switch (rollback) — enforcement is ON unless explicitly disabled. */
 const ENFORCED = process.env.SENSITIVE_ACCESS_ENFORCED !== "false";
+/** Advisory ABAC shadow (Module 5) — ON unless disabled; never blocks. */
+const ABAC_SHADOW = process.env.SENSITIVE_ABAC_SHADOW !== "false";
+
+/** Run the ABAC engine in ADVISORY mode: exercise it + its audit-on-view, and
+ *  log any divergence from the (enforced) flat decision. Never blocks/throws. */
+function runAbacShadow(userId: string, role: AppRole, audit: SensitiveAuditContext): void {
+  if (!ABAC_SHADOW) return;
+  try {
+    const r = evaluateSensitiveAbac({
+      userId,
+      appRole: role,
+      entityType: audit.entityType,
+      action: audit.action === "update" ? "edit" : "view",
+      homeId: audit.homeId,
+    });
+    // Flat check already allowed (we only reach here on grant). If ABAC would
+    // have denied, surface the divergence for the future enforcing flip.
+    if (!r.allowed) {
+      console.warn(`[sensitive-access] ABAC advisory would DENY ${role} → ${audit.entityType}: ${r.reason}`);
+    }
+  } catch {
+    // Advisory only — must never affect the route.
+  }
+}
 
 export interface SensitiveAuditContext {
   /** e.g. "allegation" | "whistleblowing" | "staff_disciplinary". */
@@ -70,11 +95,14 @@ export async function requireSensitiveAccess(
   if (!ENFORCED) {
     // Rollback path: resolve identity for the access log but never block.
     const userId = getUserIdFromRequest(request);
+    const role = getUserRoleFromRequest(request);
     logAccess(userId, audit, permission, request);
-    return { role: getUserRoleFromRequest(request), userId };
+    runAbacShadow(userId, role, audit);
+    return { role, userId };
   }
   const result = await requirePermissionAsync(request, permission);
   if (result instanceof NextResponse) return result; // 401 / 403 — denied
   logAccess(result.userId, audit, permission, request);
+  runAbacShadow(result.userId, result.role, audit); // advisory — never blocks
   return result;
 }
