@@ -154,6 +154,15 @@ export const PERMISSIONS = {
   REG45_EVIDENCE_CREATE: "reg45:evidence:create",
   // Candidate self-service
   VIEW_CANDIDATE_PORTAL: "view_candidate_portal",
+  // Sensitive / confidential records — default-restricted (Phase 1 §10).
+  // Allegations against staff (safeguarding-led), whistleblowing disclosures, and
+  // staff disciplinary records. Granted only to the leadership/HR roles below.
+  VIEW_ALLEGATIONS: "view_allegations",
+  MANAGE_ALLEGATIONS: "manage_allegations",
+  VIEW_WHISTLEBLOWING: "view_whistleblowing",
+  MANAGE_WHISTLEBLOWING: "manage_whistleblowing",
+  VIEW_DISCIPLINARY: "view_disciplinary",
+  MANAGE_DISCIPLINARY: "manage_disciplinary",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -246,6 +255,11 @@ const CARE_OPS_PERMISSIONS: Permission[] = [
 
 // ── Role → Permission matrix ──────────────────────────────────────────────────
 
+// Sensitive-record permission groups (Phase 1 §10 — default-restricted).
+// NOT part of CARE_OPS_PERMISSIONS, so general care staff never inherit them.
+const SAFEGUARDING_SENSITIVE: Permission[] = [PERMISSIONS.VIEW_ALLEGATIONS, PERMISSIONS.MANAGE_ALLEGATIONS];
+const HR_SENSITIVE: Permission[] = [PERMISSIONS.VIEW_WHISTLEBLOWING, PERMISSIONS.MANAGE_WHISTLEBLOWING, PERMISSIONS.VIEW_DISCIPLINARY, PERMISSIONS.MANAGE_DISCIPLINARY];
+
 export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
   // ── Super Admin ──────────────────────────────────────────────────────────────
   super_admin: ALL_PERMISSIONS,
@@ -256,6 +270,8 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
 
   // ── Responsible Individual ───────────────────────────────────────────────────
   responsible_individual: [
+    ...SAFEGUARDING_SENSITIVE,
+    ...HR_SENSITIVE,
     ...CARE_OPS_PERMISSIONS,
     PERMISSIONS.MANAGE_COMPLAINTS,
     PERMISSIONS.EDIT_TEAM_TASKS,
@@ -328,6 +344,8 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
 
   // ── Registered Manager ───────────────────────────────────────────────────────
   registered_manager: [
+    ...SAFEGUARDING_SENSITIVE,
+    ...HR_SENSITIVE,
     ...CARE_OPS_PERMISSIONS,
     PERMISSIONS.MANAGE_COMPLAINTS,
     PERMISSIONS.EDIT_TEAM_TASKS,
@@ -413,6 +431,7 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
 
   // ── Deputy Manager ───────────────────────────────────────────────────────────
   deputy_manager: [
+    ...SAFEGUARDING_SENSITIVE, // deputy often acts as DSL — allegations only, not HR-confidential
     ...CARE_OPS_PERMISSIONS,
     PERMISSIONS.MANAGE_COMPLAINTS,
     PERMISSIONS.EDIT_TEAM_TASKS,
@@ -607,6 +626,7 @@ export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
 
   // ── HR / Recruitment ─────────────────────────────────────────────────────────
   hr_recruitment: [
+    ...HR_SENSITIVE, // whistleblowing + disciplinary are HR's domain (not allegations)
     PERMISSIONS.VIEW_DASHBOARD,
     PERMISSIONS.VIEW_MY_DAY,
     PERMISSIONS.VIEW_TASKS,
