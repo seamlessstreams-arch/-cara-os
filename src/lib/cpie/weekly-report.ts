@@ -305,6 +305,28 @@ function secVoiceNotWell(i: WeeklyReportInput, name: string, a: string, b: strin
   return { body: lines.join(" "), empty: false };
 }
 
+// ── Quality Standards & Five Outcomes (professional evidence view) ────────────
+// From the Weekly Intelligence Object's evidence lines — a standard appears only
+// where the period actually evidences it; thin mapping is a recording prompt.
+function secStandards(wio: WeeklyIntelligenceObject, pd: string): SectionOut {
+  const qs = wio.qualityStandardsEvidence;
+  const fo = wio.fiveOutcomesEvidence;
+  if (!qs.length && !fo.length) {
+    return { body: `Little of this ${pd}'s recording maps onto the Quality Standards or the five outcomes yet — a prompt to capture the ordinary care as well as the events, not a judgement of the care itself.`, empty: true };
+  }
+  const lines: string[] = [];
+  if (qs.length) {
+    lines.push(`Quality Standards evidenced this ${pd} (${qs.length} of 9):`);
+    for (const l of qs) lines.push(`- ${l.label}: ${l.evidence}`);
+  }
+  if (fo.length) {
+    if (lines.length) lines.push("");
+    lines.push(`Five Outcomes:`);
+    for (const l of fo) lines.push(`- ${l.label}: ${l.evidence}`);
+  }
+  return { body: lines.join("\n"), empty: false };
+}
+
 // ── main ─────────────────────────────────────────────────────────────────────
 export function composeWeeklyReport(input: WeeklyReportInput): WeeklyReport {
   const p = input.pronouns ?? THEY;
@@ -327,6 +349,7 @@ export function composeWeeklyReport(input: WeeklyReportInput): WeeklyReport {
     sec("Independence", "What have I done independently this week?", secIndependence(input, name, start, end, pd)),
     sec(`${name}'s Voice`, `What ${name} says has gone well?`, secVoiceWell(input, name, start, end, pd)),
     sec(`${name}'s Voice`, `What ${name} feels hasn't gone well?`, secVoiceNotWell(input, name, start, end, pd)),
+    sec("Quality Standards & Five Outcomes", "How this week evidences the standards", secStandards(input.wio, pd)),
     { group: "Manager Summary", heading: "Overall summary of the week", body: composeWeeklyNarrative(input.wio, p).body, empty: false },
   ];
 
