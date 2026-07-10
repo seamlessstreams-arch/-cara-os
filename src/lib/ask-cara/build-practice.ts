@@ -29,6 +29,9 @@ import { buildStrengthsRecordingIndex } from "@/lib/strengths-recording-index/st
 import { buildRepairCycleIntelligence } from "@/lib/repair-cycle-intelligence/repair-cycle-engine";
 import { buildRelationalSafetyMap } from "@/lib/relational-safety-map/relational-safety-map-engine";
 import { buildTeamApproachConsistency } from "@/lib/team-approach-consistency/team-approach-engine";
+import { buildPracticeCultureScorecard } from "@/lib/practice-culture-scorecard/practice-culture-engine";
+import { buildPracticeFrameworkUsage } from "@/lib/practice-framework-usage/framework-usage-engine";
+import { buildStaffRecordingPathway } from "@/lib/staff-recording-quality-pathway/staff-recording-pathway-engine";
 import type { AskCaraPracticeDigest } from "./types";
 
 type Store = ReturnType<typeof getStore>;
@@ -167,6 +170,64 @@ export function buildPracticeDigest(store: Store): AskCaraPracticeDigest {
         sessions30d: c.sessionsLast30d,
         trustedAdults: c.trustedAdultCount,
       })),
+    };
+  } catch { /* as above */ }
+
+  // Practice Culture Scorecard — the whole-home 5-dimension culture synthesis.
+  try {
+    const pc = buildPracticeCultureScorecard(store);
+    const dims = (pc.dimensions as Array<Record<string, unknown>>).map((d) => ({
+      label: String(d.label ?? d.id ?? "dimension"),
+      score: typeof d.score === "number" ? d.score : 0,
+      status: String(d.status ?? ""),
+    }));
+    out.practiceCulture = {
+      overallScore: pc.overallScore,
+      overallStatus: String(pc.overallStatus),
+      priorityLabel: pc.summary.priorityLabel,
+      priorityPrompt: pc.summary.priorityPrompt ?? undefined,
+      strongestLabel: pc.summary.strongestLabel,
+      frameworksEngaged: pc.summary.frameworksEngaged,
+      totalFrameworks: pc.summary.totalFrameworks,
+      dimensions: dims,
+    };
+  } catch { /* absent → skill answers honestly */ }
+
+  // Practice Framework Usage — which frameworks live in the recording.
+  try {
+    const fu = buildPracticeFrameworkUsage(store);
+    const tp = fu.summary.topPractitioner as unknown;
+    out.frameworkUsage = {
+      totalEngagements: fu.summary.totalEngagements,
+      activeFrameworks: fu.summary.activeFrameworks,
+      mostActiveTitle: fu.summary.mostActiveFramework?.title ?? undefined,
+      needsAttentionTitle: fu.summary.needsAttentionFramework?.title ?? undefined,
+      topPractitionerName: typeof tp === "string" ? tp : ((tp as Record<string, unknown> | null)?.name as string | undefined) ?? undefined,
+      frameworks: (fu.frameworks as Array<Record<string, unknown>>).map((f) => ({
+        title: String(f.title ?? f.frameworkId ?? "framework"),
+        signal: String(f.signal ?? ""),
+        trend: String(f.trend ?? ""),
+      })),
+    };
+  } catch { /* as above */ }
+
+  // Staff Recording Quality Pathway — per-staff writing engagement (MANAGEMENT).
+  try {
+    const srq = buildStaffRecordingPathway(store);
+    const profiles = (srq.profiles as Array<Record<string, unknown>>).map((p) => ({
+      name: String(p.name ?? p.staffName ?? p.staffId ?? "staff member"),
+      signal: String(p.overallSignal ?? p.signal ?? ""),
+      acceptanceRate: typeof p.acceptanceRate === "number" ? p.acceptanceRate : undefined,
+    }));
+    const order: Record<string, number> = { needs_support: 0, developing: 1, progressing: 2 };
+    profiles.sort((a, b) => (order[a.signal] ?? 3) - (order[b.signal] ?? 3));
+    out.staffRecording = {
+      totalStaff: srq.summary.totalStaff,
+      staffWithData: srq.summary.staffWithData,
+      avgAcceptanceRate: (srq.summary as Record<string, unknown>).avgAcceptanceRate as number ?? 0,
+      topTeamIssueType: ((srq.summary as Record<string, unknown>).topTeamIssueType as string | null) ?? undefined,
+      needsSupportCount: profiles.filter((p) => p.signal === "needs_support").length,
+      perStaff: profiles,
     };
   } catch { /* as above */ }
 

@@ -62,6 +62,9 @@ export type AskCaraIntent =
   | "relational_safety"
   | "team_approach"
   | "record_lookup"
+  | "practice_culture"
+  | "framework_usage"
+  | "staff_recording"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -220,6 +223,35 @@ export interface AskCaraPracticeDigest {
     overallTherapeuticRate: number; // 0–100
     divergencePattern: string;
     perChild: { childId: string; level: string; therapeuticRate: number; variance: number; mostTherapeutic?: string; leastTherapeutic?: string }[]; // divergent-first
+  };
+  /** Practice Culture Scorecard — 5-dimension whole-home culture synthesis. */
+  practiceCulture?: {
+    overallScore: number; // 0–100
+    overallStatus: string; // progressing | developing | needs_support
+    priorityLabel: string; // weakest dimension
+    priorityPrompt?: string; // its improvement prompt
+    strongestLabel: string;
+    frameworksEngaged: number;
+    totalFrameworks: number;
+    dimensions: { label: string; score: number; status: string }[];
+  };
+  /** Practice Framework Usage — cross-engine KB engagement per framework. */
+  frameworkUsage?: {
+    totalEngagements: number;
+    activeFrameworks: number;
+    mostActiveTitle?: string;
+    needsAttentionTitle?: string;
+    topPractitionerName?: string;
+    frameworks: { title: string; signal: string; trend: string }[]; // active | emerging | dormant
+  };
+  /** Staff Recording Quality Pathway — per-staff writing engagement (MANAGEMENT). */
+  staffRecording?: {
+    totalStaff: number;
+    staffWithData: number;
+    avgAcceptanceRate: number; // 0–100
+    topTeamIssueType?: string;
+    needsSupportCount: number;
+    perStaff: { name: string; signal: string; acceptanceRate?: number }[]; // needs-support first
   };
 }
 

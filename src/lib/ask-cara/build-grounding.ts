@@ -123,6 +123,9 @@ function homeBlock(snap: AskCaraSnapshot, tier: AccessTier, asOf: string): strin
     if (pr?.repairCycle) lines.push(line("Repair cycles (home)", `${pr.repairCycle.overallCompletionRate}% complete over ${pr.repairCycle.totalIncidents} incidents${pr.repairCycle.mostCommonMissingStep && pr.repairCycle.mostCommonMissingStep !== "None" ? `; most-missed step: ${pr.repairCycle.mostCommonMissingStep}` : ""}`));
     if (pr?.relationalSafety) lines.push(line("Relational safety (home)", `${pr.relationalSafety.secureCount} secure / ${pr.relationalSafety.developingCount} developing / ${pr.relationalSafety.fragileCount} fragile; ${pr.relationalSafety.noKeyWorker} without a key worker`));
     if (pr?.teamApproach) lines.push(line("Team approach (home)", `${pr.teamApproach.consistentCount} consistent / ${pr.teamApproach.mixedCount} mixed / ${pr.teamApproach.divergentCount} divergent; therapeutic ${pr.teamApproach.overallTherapeuticRate}%`));
+    if (pr?.practiceCulture) lines.push(line("Practice culture", `${pr.practiceCulture.overallScore}/100 (${pr.practiceCulture.overallStatus.replace(/_/g, " ")}); priority: ${pr.practiceCulture.priorityLabel}`));
+    if (pr?.frameworkUsage) lines.push(line("Framework usage", `${pr.frameworkUsage.activeFrameworks} active, ${pr.frameworkUsage.frameworks.filter((f) => f.signal === "dormant").length} dormant of ${pr.frameworkUsage.frameworks.length}; ${pr.frameworkUsage.totalEngagements} engagements`));
+    if (pr?.staffRecording) lines.push(line("Staff recording quality", `${pr.staffRecording.staffWithData}/${pr.staffRecording.totalStaff} with data; avg acceptance ${pr.staffRecording.avgAcceptanceRate}%; ${pr.staffRecording.needsSupportCount} need support`));
     if (pr?.childVoice?.overallPresenceRate !== null && pr?.childVoice !== undefined) lines.push(line("Child voice presence (home)", `${pr.childVoice.overallPresenceRate}% of records`));
   }
   return block("THE HOME", lines);
