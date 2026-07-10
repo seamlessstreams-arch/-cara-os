@@ -20,8 +20,6 @@
 // DVLA provisional licence at 17, theory test, CBT (moped).
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

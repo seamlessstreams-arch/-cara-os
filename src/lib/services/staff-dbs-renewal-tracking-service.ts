@@ -15,8 +15,6 @@
 // SCCIF: Leadership & Management — "Robust safer recruitment practices."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = any;

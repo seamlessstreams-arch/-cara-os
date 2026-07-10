@@ -26,8 +26,6 @@
 // and to involve young people in learning about environmental responsibility.
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

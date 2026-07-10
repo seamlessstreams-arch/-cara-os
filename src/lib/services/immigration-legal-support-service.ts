@@ -23,8 +23,6 @@
 // SCCIF: Overall experiences — "The home supports children with immigration needs."
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -14,8 +14,6 @@
 // "Staff conduct is professionally managed and monitored."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient } from "@/lib/supabase/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 

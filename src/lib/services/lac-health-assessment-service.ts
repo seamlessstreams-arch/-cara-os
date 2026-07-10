@@ -14,8 +14,6 @@
 // "Health assessments are timely and lead to effective health action plans."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = ReturnType<typeof createServerClient> extends Promise<infer R> ? R : never;

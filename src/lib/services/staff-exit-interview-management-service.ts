@@ -14,8 +14,6 @@
 // of care and safeguarding obligations are maintained during staff transitions."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = any;

@@ -16,8 +16,6 @@
 // "The home atmosphere is warm, welcoming, and child-centred."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient } from "@/lib/supabase/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 

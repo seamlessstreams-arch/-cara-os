@@ -16,8 +16,6 @@
 // "Children are protected from asbestos risks under CAR 2012."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

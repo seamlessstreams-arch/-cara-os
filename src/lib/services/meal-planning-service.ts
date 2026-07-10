@@ -11,8 +11,6 @@
 // Healthy eating guidance, cultural dietary needs, allergy management.
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

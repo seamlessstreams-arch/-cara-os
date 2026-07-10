@@ -16,8 +16,6 @@
 // SCCIF: Overall Experiences — "The environment is adapted to children's needs."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient } from "@/lib/supabase/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 

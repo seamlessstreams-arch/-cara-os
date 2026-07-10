@@ -14,8 +14,6 @@
 // "Financial records are accurate, auditable, and compliant."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient } from "@/lib/supabase/server";
 import { isSupabaseEnabled } from "@/lib/supabase/server";
 

@@ -13,8 +13,6 @@
 // SCCIF: Safety — "The premises are safe."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = ReturnType<typeof createServerClient> extends Promise<infer R> ? R : never;

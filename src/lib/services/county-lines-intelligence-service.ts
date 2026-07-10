@@ -26,8 +26,6 @@
 // the child's voice informs all exploitation-related decisions.
 // ==============================================================================
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

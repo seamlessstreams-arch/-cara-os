@@ -16,8 +16,6 @@
 // "Children are protected from radon gas risks under UKHSA guidance."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient } from "@/lib/supabase/server";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

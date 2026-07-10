@@ -15,8 +15,6 @@
 // education, training and work."
 // ══════════════════════════════════════════════════════════════════════════════
 
-"use client";
-
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 
 type SB = ReturnType<typeof createServerClient> extends Promise<infer R> ? R : never;
