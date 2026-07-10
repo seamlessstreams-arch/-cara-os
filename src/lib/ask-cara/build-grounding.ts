@@ -80,6 +80,9 @@ function childBlock(snap: AskCaraSnapshot, child: AskCaraChild, asOf: string): s
   const fb = (snap.feedback ?? []).filter((f) => f.childId === child.id).slice(-2);
   if (fb.length) lines.push(line("Their recent feedback", fb.map((f) => `${f.date} (${f.sentiment.replace(/_/g, " ")}) "${clip(f.text, 110)}"${f.responded ? "" : " — NO RESPONSE RECORDED"}`).join("; ")));
   const weekly = (snap.weekly ?? []).find((w) => w.childId === child.id);
+  // The frameworks the home is measured by — Quality Standards + five outcomes.
+  if (weekly?.qualityStandardsEvidence.length) lines.push(line(`Quality Standards evidenced this week (${weekly.qualityStandardsEvidence.length} of 9)`, weekly.qualityStandardsEvidence.map((e) => e.label).join("; ")));
+  if (weekly?.fiveOutcomesEvidence.length) lines.push(line("Five Outcomes evidenced", weekly.fiveOutcomesEvidence.map((e) => e.label).join("; ")));
   if (weekly?.narrative) lines.push(`- This week's manager-summary draft:\n${clip(weekly.narrative, 1400)}`);
   return block(`THE CHILD — ${name}`, lines);
 }
