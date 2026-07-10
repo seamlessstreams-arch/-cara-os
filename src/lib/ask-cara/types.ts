@@ -57,6 +57,10 @@ export type AskCaraIntent =
   | "child_calendar"
   | "child_feedback"
   | "child_standards"
+  | "strengths_recording"
+  | "repair_cycle"
+  | "relational_safety"
+  | "team_approach"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -180,6 +184,41 @@ export interface AskCaraPracticeDigest {
     urgentSupervisionCount: number;
     mostCommonWorseningSignal: string;
     perChild: { childId: string; signal: string; priority: string; worseningSignals: number; topWorseningLabel?: string }[]; // escalating/concerning first
+  };
+  /** Strengths Recording Index — strengths/achievement markers in the writing. */
+  strengthsRecording?: {
+    overallRate: number; // % of records containing a strengths marker (home)
+    topPractitionerName?: string; // the recording champion
+    topCategoryLabel?: string;
+    perChild: { childId: string; rate: number | null; topPhrase?: string }[];
+  };
+  /** Repair Cycle Intelligence — DDP rupture-repair completion per incident. */
+  repairCycle?: {
+    overallCompletionRate: number; // 0–100
+    totalIncidents: number;
+    incidentsWithChildPerspective: number;
+    mostCommonMissingStep: string;
+    avgDebriefTurnaroundDays: number | null;
+    perChild: { childId: string; completionRate: number; noRepair: number; missingStep?: string }[]; // worst-first
+  };
+  /** Relational Safety Map — key-worker coverage + trusted-adult synthesis. */
+  relationalSafety?: {
+    secureCount: number;
+    developingCount: number;
+    fragileCount: number;
+    noKeyWorker: number; // children without a key worker assigned
+    noKeyWork30d: number; // children with no key-work session in 30 days
+    overallStatus: string; // positive | mixed | concern
+    perChild: { childId: string; status: string; reason: string; keyWorkerName?: string; sessions30d: number; trustedAdults: number }[]; // fragile-first
+  };
+  /** Team Approach Consistency — strategy variance per staff per child. */
+  teamApproach?: {
+    consistentCount: number;
+    mixedCount: number;
+    divergentCount: number;
+    overallTherapeuticRate: number; // 0–100
+    divergencePattern: string;
+    perChild: { childId: string; level: string; therapeuticRate: number; variance: number; mostTherapeutic?: string; leastTherapeutic?: string }[]; // divergent-first
   };
 }
 

@@ -25,6 +25,10 @@ import { buildCareLanguageAudit } from "@/lib/care-language-audit/care-language-
 import { buildChildVoicePresence } from "@/lib/child-voice-presence/child-voice-presence-engine";
 import { buildRecordingGapIntelligence } from "@/lib/recording-gap-intelligence/recording-gap-engine";
 import { buildCumulativeRiskIntelligence } from "@/lib/cumulative-risk-intelligence/cumulative-risk-engine";
+import { buildStrengthsRecordingIndex } from "@/lib/strengths-recording-index/strengths-recording-engine";
+import { buildRepairCycleIntelligence } from "@/lib/repair-cycle-intelligence/repair-cycle-engine";
+import { buildRelationalSafetyMap } from "@/lib/relational-safety-map/relational-safety-map-engine";
+import { buildTeamApproachConsistency } from "@/lib/team-approach-consistency/team-approach-engine";
 import type { AskCaraPracticeDigest } from "./types";
 
 type Store = ReturnType<typeof getStore>;
@@ -109,6 +113,80 @@ export function buildPracticeDigest(store: Store): AskCaraPracticeDigest {
           worseningSignals: c.worseningSignals,
           topWorseningLabel: c.signals.find((sig) => sig.direction === "worsening")?.label,
         })),
+    };
+  } catch { /* as above */ }
+
+  // Strengths Recording Index — are we writing the child's strengths down?
+  try {
+    const sr = buildStrengthsRecordingIndex(store);
+    out.strengthsRecording = {
+      overallRate: sr.summary.overallRate,
+      topPractitionerName: sr.summary.topPractitioner?.name,
+      topCategoryLabel: sr.summary.topStrengthsCategoryLabel ?? undefined,
+      perChild: sr.childProfiles.map((c) => ({
+        childId: c.childId,
+        rate: c.strengthsRate,
+        topPhrase: c.topStrengthPhrase ?? undefined,
+      })),
+    };
+  } catch { /* absent → skill answers honestly */ }
+
+  // Repair Cycle Intelligence — is the rupture-repair cycle being completed?
+  try {
+    const rc = buildRepairCycleIntelligence(store);
+    out.repairCycle = {
+      overallCompletionRate: rc.summary.overallCompletionRate,
+      totalIncidents: rc.summary.totalIncidents,
+      incidentsWithChildPerspective: rc.summary.incidentsWithChildPerspective,
+      mostCommonMissingStep: rc.summary.mostCommonMissingStep,
+      avgDebriefTurnaroundDays: rc.summary.avgDebriefTurnaroundDays,
+      perChild: rc.childSummaries.map((c) => ({
+        childId: c.childId,
+        completionRate: c.cycleCompletionRate,
+        noRepair: c.incidentsWithNoRepair,
+        missingStep: c.mostCommonMissingStep ?? undefined,
+      })),
+    };
+  } catch { /* as above */ }
+
+  // Relational Safety Map — key-worker coverage + trusted-adult synthesis.
+  try {
+    const rs = buildRelationalSafetyMap(store);
+    out.relationalSafety = {
+      secureCount: rs.summary.secureCount,
+      developingCount: rs.summary.developingCount,
+      fragileCount: rs.summary.fragileCount,
+      noKeyWorker: rs.summary.noKeyWorkerAssigned,
+      noKeyWork30d: rs.summary.noKeyWorkLast30d,
+      overallStatus: rs.summary.overallStatus,
+      perChild: rs.childProfiles.map((c) => ({
+        childId: c.childId,
+        status: c.status,
+        reason: c.statusReason,
+        keyWorkerName: c.keyWorker?.name ?? undefined,
+        sessions30d: c.sessionsLast30d,
+        trustedAdults: c.trustedAdultCount,
+      })),
+    };
+  } catch { /* as above */ }
+
+  // Team Approach Consistency — is the team consistent child by child?
+  try {
+    const ta = buildTeamApproachConsistency(store);
+    out.teamApproach = {
+      consistentCount: ta.summary.consistentCount,
+      mixedCount: ta.summary.mixedCount,
+      divergentCount: ta.summary.divergentCount,
+      overallTherapeuticRate: ta.summary.overallTherapeuticRate,
+      divergencePattern: ta.summary.mostCommonDivergencePattern,
+      perChild: ta.childProfiles.map((c) => ({
+        childId: c.childId,
+        level: c.consistencyLevel,
+        therapeuticRate: c.overallTherapeuticRate,
+        variance: c.therapeuticRateVariance,
+        mostTherapeutic: c.mostTherapeuticStaff ?? undefined,
+        leastTherapeutic: c.leastTherapeuticStaff ?? undefined,
+      })),
     };
   } catch { /* as above */ }
 
