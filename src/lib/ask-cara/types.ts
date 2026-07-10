@@ -54,6 +54,8 @@ export type AskCaraIntent =
   | "child_voice"
   | "recording_gaps"
   | "cumulative_risk"
+  | "child_calendar"
+  | "child_feedback"
   | "prohibited"
   | "shadow_ai_route"
   | "access_denied"
@@ -178,6 +180,41 @@ export interface AskCaraPracticeDigest {
     mostCommonWorseningSignal: string;
     perChild: { childId: string; signal: string; priority: string; worseningSignals: number; topWorseningLabel?: string }[]; // escalating/concerning first
   };
+}
+
+/** One row of a child's diary — projected by the shared calendar engine (#246). */
+export interface AskCaraCalendarItem {
+  date: string; // YYYY-MM-DD
+  title: string;
+  /** calendar | appointment | lac_review | family_time | key_working | task | interview … */
+  source: string;
+}
+
+/** Per-child calendar picture: what's coming up and what they recently attended. */
+export interface AskCaraChildCalendar {
+  childId: string;
+  upcoming: AskCaraCalendarItem[]; // next 14 days
+  attended: AskCaraCalendarItem[]; // past 30 days
+}
+
+/** The child's own feedback (ypFeedback) — their words, how they felt, our response. */
+export interface AskCaraFeedback {
+  childId: string;
+  date: string;
+  sentiment: string; // very_happy | happy | ok | unhappy | very_unhappy
+  category: string;
+  text: string;
+  actionTaken?: string;
+  responded: boolean;
+}
+
+/** A health appointment on record (GP / CAMHS / dental …) — healthRecordEntries. */
+export interface AskCaraHealthAppointment {
+  childId: string;
+  date: string;
+  title: string;
+  professional?: string;
+  outcome?: string;
 }
 
 /**
@@ -408,6 +445,13 @@ export interface AskCaraSnapshot {
   /** Child-level practice-intelligence engine findings (care language, child
    *  voice, recording gaps, cumulative risk). */
   practice?: AskCaraPracticeDigest;
+  /** Per-child diary from the shared calendar projection (#246): upcoming +
+   *  recently attended meetings, reviews, family time, appointments. */
+  childCalendar?: AskCaraChildCalendar[];
+  /** The children's own feedback records — what they said, sentiment, response. */
+  feedback?: AskCaraFeedback[];
+  /** Health appointments on record per child (GP / CAMHS / dental …). */
+  healthAppointments?: AskCaraHealthAppointment[];
 }
 
 export interface AskCaraContext {
