@@ -10,7 +10,7 @@ describe("CPIE weekly report", () => {
   it("produces the full Oak House template structure, in order, ending with the Manager Summary", () => {
     expect(report).toBeTruthy();
     const r = report!;
-    expect(r.sections.length).toBe(12);
+    expect(r.sections.length).toBe(13);
     const groups = [...new Set(r.sections.map((s) => s.group))];
     expect(groups).toContain("What has my week been like?");
     expect(groups).toContain("Health and wellbeing");
@@ -18,6 +18,7 @@ describe("CPIE weekly report", () => {
     expect(groups).toContain("Education");
     expect(groups).toContain("Activities");
     expect(groups).toContain("Independence");
+    expect(groups).toContain("Quality Standards & Five Outcomes");
     expect(groups[groups.length - 1]).toBe("Manager Summary");
   });
 
