@@ -8,6 +8,7 @@ const SENSITIVE = [
   PERMISSIONS.VIEW_ALLEGATIONS, PERMISSIONS.MANAGE_ALLEGATIONS,
   PERMISSIONS.VIEW_WHISTLEBLOWING, PERMISSIONS.MANAGE_WHISTLEBLOWING,
   PERMISSIONS.VIEW_DISCIPLINARY, PERMISSIONS.MANAGE_DISCIPLINARY,
+  PERMISSIONS.VIEW_STAFF_HR_CONFIDENTIAL, PERMISSIONS.MANAGE_STAFF_HR_CONFIDENTIAL,
 ] as const;
 
 describe("Phase 1 — sensitive-record permission grants", () => {
@@ -28,9 +29,10 @@ describe("Phase 1 — sensitive-record permission grants", () => {
     }
   });
 
-  it("HR sees whistleblowing + disciplinary, NOT allegations", () => {
+  it("HR sees whistleblowing + disciplinary + HR-confidential, NOT allegations", () => {
     expect(hasPermission("hr_recruitment", PERMISSIONS.VIEW_WHISTLEBLOWING)).toBe(true);
     expect(hasPermission("hr_recruitment", PERMISSIONS.VIEW_DISCIPLINARY)).toBe(true);
+    expect(hasPermission("hr_recruitment", PERMISSIONS.VIEW_STAFF_HR_CONFIDENTIAL)).toBe(true);
     expect(hasPermission("hr_recruitment", PERMISSIONS.VIEW_ALLEGATIONS)).toBe(false);
   });
 
@@ -38,6 +40,7 @@ describe("Phase 1 — sensitive-record permission grants", () => {
     expect(hasPermission("deputy_manager", PERMISSIONS.VIEW_ALLEGATIONS)).toBe(true);
     expect(hasPermission("deputy_manager", PERMISSIONS.VIEW_DISCIPLINARY)).toBe(false);
     expect(hasPermission("deputy_manager", PERMISSIONS.VIEW_WHISTLEBLOWING)).toBe(false);
+    expect(hasPermission("deputy_manager", PERMISSIONS.VIEW_STAFF_HR_CONFIDENTIAL)).toBe(false);
   });
 });
 

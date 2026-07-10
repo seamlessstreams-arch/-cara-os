@@ -163,6 +163,9 @@ export const PERMISSIONS = {
   MANAGE_WHISTLEBLOWING: "manage_whistleblowing",
   VIEW_DISCIPLINARY: "view_disciplinary",
   MANAGE_DISCIPLINARY: "manage_disciplinary",
+  // Staff HR-confidential (grievance, sickness/medical, exit interviews) — Module 2.
+  VIEW_STAFF_HR_CONFIDENTIAL: "view_staff_hr_confidential",
+  MANAGE_STAFF_HR_CONFIDENTIAL: "manage_staff_hr_confidential",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -258,7 +261,7 @@ const CARE_OPS_PERMISSIONS: Permission[] = [
 // Sensitive-record permission groups (Phase 1 §10 — default-restricted).
 // NOT part of CARE_OPS_PERMISSIONS, so general care staff never inherit them.
 const SAFEGUARDING_SENSITIVE: Permission[] = [PERMISSIONS.VIEW_ALLEGATIONS, PERMISSIONS.MANAGE_ALLEGATIONS];
-const HR_SENSITIVE: Permission[] = [PERMISSIONS.VIEW_WHISTLEBLOWING, PERMISSIONS.MANAGE_WHISTLEBLOWING, PERMISSIONS.VIEW_DISCIPLINARY, PERMISSIONS.MANAGE_DISCIPLINARY];
+const HR_SENSITIVE: Permission[] = [PERMISSIONS.VIEW_WHISTLEBLOWING, PERMISSIONS.MANAGE_WHISTLEBLOWING, PERMISSIONS.VIEW_DISCIPLINARY, PERMISSIONS.MANAGE_DISCIPLINARY, PERMISSIONS.VIEW_STAFF_HR_CONFIDENTIAL, PERMISSIONS.MANAGE_STAFF_HR_CONFIDENTIAL];
 
 export const ROLE_PERMISSIONS: Record<AppRole, Permission[]> = {
   // ── Super Admin ──────────────────────────────────────────────────────────────
