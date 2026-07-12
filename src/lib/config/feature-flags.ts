@@ -114,6 +114,16 @@ const FLAGS = {
     stability: "beta",
     description: "Allow the scheduled-jobs endpoint to run due reminders / escalation sweeps (Vercel cron).",
   },
+  // ── Phase-2 Operational Control ────────────────────────────────────────────
+  automation_executor: {
+    key: "automation_executor",
+    env: "CARA_AUTOMATION_EXECUTOR",
+    polarity: "opt_in",
+    default: false,
+    stability: "beta",
+    description:
+      "Let the automation engine EXECUTE safe rule actions (create task / notify / audit-log). Off = simulate-only (today's behaviour). Official-record actions always require human confirmation regardless.",
+  },
 } as const satisfies Record<string, FeatureFlag>;
 
 export type FlagKey = keyof typeof FLAGS;
