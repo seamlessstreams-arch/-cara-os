@@ -21,7 +21,6 @@ export { CaraConfidenceBreakdown } from "./cara-confidence-breakdown";
 export { CaraModuleCoverage } from "./cara-module-coverage";
 export { CaraQuickStats } from "./cara-quick-stats";
 export { CaraProviderStatus } from "./cara-provider-status";
-export { CaraCommandPalette } from "./cara-command-palette";
 export { CaraDiffViewer } from "./cara-diff-viewer";
 export { CaraShortcutsGuide } from "./cara-shortcuts-guide";
 export { CaraCompose } from "./cara-compose";
