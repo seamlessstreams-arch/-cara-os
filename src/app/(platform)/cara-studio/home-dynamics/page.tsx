@@ -8,7 +8,8 @@
 // safeguarding alerts, early warnings, and recommended focus areas.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import type {
   CaraStudioHomeDynamics,
@@ -37,34 +38,32 @@ const RISK_STYLES: Record<string, { bg: string; text: string }> = {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function HomeDynamicsDashboard() {
-  const [snapshot, setSnapshot] = useState<CaraStudioHomeDynamics | null>(null);
-  const [warnings, setWarnings] = useState<CaraStudioEarlyWarning[]>([]);
-  const [patterns, setPatterns] = useState<CaraStudioSafeguardingPattern[]>([]);
-  const [gaps, setGaps] = useState<CaraStudioGap[]>([]);
-  const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
+  // TanStack Query (repo convention) instead of useEffect+fetch — shared cache,
+  // retry and dedupe for free, no hand-rolled loading state.
+  const dynamics = useQuery({
+    queryKey: ["cara-studio", "home-dynamics"],
+    queryFn: async () => {
       const [snapRes, warnRes, patternRes, gapRes] = await Promise.all([
         fetch("/api/cara-studio/home-dynamics").then((r) => r.json()),
         fetch("/api/cara-studio/early-warnings").then((r) => r.json()),
         fetch("/api/cara-studio/safeguarding-patterns").then((r) => r.json()),
         fetch("/api/cara-studio/gaps").then((r) => r.json()),
       ]);
-      setSnapshot(snapRes.data ?? null);
-      setWarnings(warnRes.data ?? []);
-      setPatterns(patternRes.data ?? []);
-      setGaps(gapRes.data ?? []);
-    } catch (err) {
-      console.error("[home-dynamics] Fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+      return {
+        snapshot: (snapRes.data ?? null) as CaraStudioHomeDynamics | null,
+        warnings: (warnRes.data ?? []) as CaraStudioEarlyWarning[],
+        patterns: (patternRes.data ?? []) as CaraStudioSafeguardingPattern[],
+        gaps: (gapRes.data ?? []) as CaraStudioGap[],
+      };
+    },
+  });
+  const snapshot = dynamics.data?.snapshot ?? null;
+  const warnings = dynamics.data?.warnings ?? [];
+  const patterns = dynamics.data?.patterns ?? [];
+  const gaps = dynamics.data?.gaps ?? [];
+  const loading = dynamics.isLoading;
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -74,8 +73,10 @@ export default function HomeDynamicsDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      const data = await res.json();
-      if (data.data) setSnapshot(data.data);
+      await res.json();
+      // Server state changed — refetch the query so the fresh snapshot lands
+      // in the shared cache (not a locally-diverged copy).
+      await dynamics.refetch();
     } catch (err) {
       console.error("[home-dynamics] Generate error:", err);
     } finally {
