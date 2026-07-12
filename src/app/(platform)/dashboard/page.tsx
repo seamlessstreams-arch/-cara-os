@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -532,10 +533,8 @@ function formatLiveDate(): string {
 }
 
 // ─── Skeleton helpers ─────────────────────────────────────────────────────────
-
-function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("animate-pulse rounded-xl bg-[var(--cs-surface)]", className)} />;
-}
+// Base placeholder = the shared primitive (components/ui/skeleton) so every
+// loading state shimmers the same way; only the composed shapes live here.
 
 function StatSkeleton() {
   return (

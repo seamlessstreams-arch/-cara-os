@@ -266,21 +266,10 @@ body {
   font-family: var(--font-sans);
 }
 
-/* ── Scrollbar ────────────────────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 99px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
-}
+/* ── Scrollbar — single source of truth lives in "CARA BESPOKE IDENTITY" below
+   (token-based, correct on light AND dark surfaces). This block previously held
+   a hardcoded-grey duplicate; three competing definitions meant the rendered
+   scrollbar depended on cascade accidents. ──────────────────────────────────── */
 
 /* ── Animation utilities ──────────────────────────────────────────────────── */
 @keyframes fadeIn {
@@ -902,39 +891,12 @@ body {
   color: var(--cs-navy);
 }
 
-/* ── Finish details: focus rings and scrollbars ────────────────────────────── */
-@layer base {
-  /* Visible, on-brand keyboard focus everywhere (mouse clicks stay clean). */
-  :focus-visible {
-    outline: 2px solid var(--cs-teal);
-    outline-offset: 2px;
-    border-radius: 6px;
-  }
-
-  /* Calm, slim scrollbars that match the surface palette. */
-  * {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(15, 30, 54, 0.18) transparent;
-  }
-  *::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-  }
-  *::-webkit-scrollbar-thumb {
-    background: rgba(15, 30, 54, 0.16);
-    border-radius: 999px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-  }
-  *::-webkit-scrollbar-thumb:hover {
-    background: rgba(15, 30, 54, 0.28);
-    background-clip: content-box;
-    border: 2px solid transparent;
-  }
-  *::-webkit-scrollbar-track {
-    background: transparent;
-  }
-}
+/* ── Finish details ─────────────────────────────────────────────────────────
+   Focus ring: the GOLD rule above ("Focus rings — gold, not blue") is the one
+   intentional definition — a teal duplicate lived here and made intent
+   ambiguous (the unlayered gold rule won by cascade; now it wins by design).
+   Scrollbars: the token-based definition above is the single source of truth —
+   the rgba-navy duplicate here fought it and lost only by layer order. ─────── */
 
 /* ── Cara typography — distinctive letter-spacing and weight ──────────
    Inside @layer base so Tailwind utilities (text-white, tracking-wider, …)

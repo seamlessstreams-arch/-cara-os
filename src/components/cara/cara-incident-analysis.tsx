@@ -147,10 +147,10 @@ export default function CaraIncidentAnalysis({ homeId = "home_oak", days = 28 }:
           <span className="text-[10px] text-gray-400 ml-1">{data.windowDays}-day window</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={fetchData}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={fetchData} aria-label="Refresh">
             <RefreshCw className="h-3.5 w-3.5 text-gray-400" />
           </Button>
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setExpanded(!expanded)}>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setExpanded(!expanded)} aria-label={expanded ? "Collapse details" : "Expand details"}>
             {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
           </Button>
         </div>
