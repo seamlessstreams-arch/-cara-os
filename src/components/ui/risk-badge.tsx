@@ -29,41 +29,44 @@ const RISK_CONFIG: Record<
     pulse?: boolean;
   }
 > = {
+  // Token-driven (never raw Tailwind colour scales): the --cs-* semantic
+  // families carry light AND dark values, so the badge stays readable on every
+  // surface without leaning on the .cara-dark hardcoded-utility shim.
   low: {
     label: "Low Risk",
-    dot: "bg-emerald-500",
-    text: "text-emerald-700",
-    bg: "bg-emerald-50",
-    border: "border-emerald-200",
+    dot: "bg-[var(--cs-success)]",
+    text: "text-[var(--cs-success)]",
+    bg: "bg-[var(--cs-success-bg)]",
+    border: "border-[var(--cs-success-soft)]",
   },
   medium: {
     label: "Medium Risk",
-    dot: "bg-amber-500",
-    text: "text-amber-700",
-    bg: "bg-amber-50",
-    border: "border-amber-200",
+    dot: "bg-[var(--cs-warning)]",
+    text: "text-[var(--cs-warning)]",
+    bg: "bg-[var(--cs-warning-bg)]",
+    border: "border-[var(--cs-warning-soft)]",
   },
   high: {
     label: "High Risk",
-    dot: "bg-red-500",
-    text: "text-red-700",
-    bg: "bg-red-50",
-    border: "border-red-200",
+    dot: "bg-[var(--cs-risk)]",
+    text: "text-[var(--cs-risk)]",
+    bg: "bg-[var(--cs-risk-bg)]",
+    border: "border-[var(--cs-risk-soft)]",
   },
   critical: {
     label: "Critical Risk",
-    dot: "bg-red-600",
-    text: "text-red-800",
-    bg: "bg-red-50",
-    border: "border-red-300",
+    dot: "bg-[var(--cs-risk)]",
+    text: "text-[var(--cs-risk)]",
+    bg: "bg-[var(--cs-risk-bg)]",
+    border: "border-[var(--cs-risk-soft)]",
     pulse: true,
   },
   none: {
     label: "No Risk",
-    dot: "bg-slate-300",
-    text: "text-slate-500",
-    bg: "bg-slate-50",
-    border: "border-slate-200",
+    dot: "bg-[var(--cs-text-muted)]",
+    text: "text-[var(--cs-text-muted)]",
+    bg: "bg-[var(--cs-surface)]",
+    border: "border-[var(--cs-border)]",
   },
 };
 
