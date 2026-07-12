@@ -9,6 +9,15 @@ import { scanForPatterns, type IncidentRecord } from "@/lib/cara/cara-pattern-en
 import { computeStaffDevelopmentIntelligence } from "@/lib/engines/staff-development-intelligence-engine";
 import { buildDeterministicLearning } from "@/lib/cara/deterministic-learning";
 import { buildDeterministicIntelligence } from "@/lib/cara/deterministic-intelligence";
+import {
+  computeChronologyIntelligence,
+  type ChildInput,
+  type ChronologyEventInput,
+  type EventCategory,
+  type EventSignificance,
+} from "@/lib/engines/chronology-intelligence-engine";
+import { buildInspectionReadiness } from "@/lib/inspection-intelligence/inspection-intelligence-engine";
+import { renderChronologyNarrative, renderInspectionNarrative } from "@/lib/cara/deterministic-narratives";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-engine";
 import { buildFreeChatGrounding } from "@/lib/cara/ask-cara-natural";
@@ -398,6 +407,16 @@ function caraDeterministicJson(parsed: unknown, mode: string, resolvedStyle: str
   });
 }
 
+/** Non-streaming deterministic response for a TEXT mode (response is prose, parsed null). */
+function caraDeterministicText(text: string, mode: string, resolvedStyle: string) {
+  return NextResponse.json({
+    data: {
+      response: text, parsed: null, mode, style: resolvedStyle, model: "deterministic",
+      input_tokens: 0, output_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0,
+    },
+  });
+}
+
 // "Assist" (workflow support) degrades to the deterministic Ask CARA engine —
 // the same record-based answers as the Ask CARA chat — so the workflow assistant
 // keeps helping (surfacing what's due, overdue, missing oversight, next steps)
@@ -421,7 +440,71 @@ function deterministicAssistText(opts: { question?: string; pageContext?: string
   }
 }
 
-function deterministicCaraResponse(mode: string, resolvedStyle: string) {
+// ─── Chronology + inspection narratives (real content, no AI) ────────────────
+// Wire the existing deterministic engines into the two "Generate with Cara"
+// narrative modes so they produce real output when the model is unavailable.
+
+function deterministicChronologySummary(childId?: string, periodDays?: number): string {
+  const store = getStore() as unknown as {
+    youngPeople: { id: string; name: string; admission_date?: string; date_of_admission?: string }[];
+    chronology?: { id: string; child_id: string; date: string; category?: string; title: string; significance?: string; linked_incident_id?: string }[];
+  };
+  const children: ChildInput[] = (store.youngPeople ?? []).map((yp) => ({
+    id: yp.id,
+    name: yp.name,
+    placement_start_date: yp.admission_date ?? yp.date_of_admission ?? "2025-01-01",
+  }));
+  const events: ChronologyEventInput[] = (store.chronology ?? []).map((c) => ({
+    id: c.id,
+    child_id: c.child_id,
+    date: c.date,
+    category: (c.category ?? "other") as EventCategory,
+    title: c.title,
+    significance: (c.significance ?? "routine") as EventSignificance,
+    has_linked_incident: Boolean(c.linked_incident_id),
+  }));
+  const result = computeChronologyIntelligence({ children, events });
+  return renderChronologyNarrative(result, { childId, periodDays, childCount: children.length, eventCount: events.length });
+}
+
+function deterministicInspectionNarrative(): string {
+  const store = getStore() as unknown as Record<string, unknown[]> & {
+    youngPeople: { id: string; status?: string; preferred_name?: string; first_name?: string; name?: string }[];
+  };
+  const children = (store.youngPeople ?? [])
+    .filter((yp) => yp.status === "current")
+    .map((yp) => ({ id: yp.id, name: yp.preferred_name || yp.first_name || yp.name || "Child" }));
+  const readiness = buildInspectionReadiness({
+    now: new Date().toISOString(),
+    children,
+    incidents: (store.incidents ?? []) as never,
+    debriefRecords: (store.debriefRecords ?? []) as never,
+    missingEpisodes: (store.missingEpisodes ?? []) as never,
+    returnInterviews: (store.returnInterviews ?? []) as never,
+    keyWorkingSessions: (store.keyWorkingSessions ?? []) as never,
+    lacReviews: (store.lacReviews ?? []) as never,
+    positiveAchievements: (store.positiveAchievements ?? []) as never,
+    educationRecords: (store.educationRecords ?? []) as never,
+    riskAssessments: (store.riskAssessments ?? []) as never,
+    welfareChecks: (store.welfareChecks ?? []) as never,
+    carePlans: (store.carePlans ?? []) as never,
+    supervisions: (store.supervisions ?? []) as never,
+    trainingRecords: (store.trainingRecords ?? []) as never,
+  });
+  return renderInspectionNarrative(readiness);
+}
+
+function deterministicCaraResponse(
+  mode: string,
+  resolvedStyle: string,
+  ctx: { childId?: string; periodDays?: number } = {},
+) {
+  if (mode === "chronology_summary") {
+    return caraDeterministicText(deterministicChronologySummary(ctx.childId, ctx.periodDays), mode, resolvedStyle);
+  }
+  if (mode === "inspection_narrative") {
+    return caraDeterministicText(deterministicInspectionNarrative(), mode, resolvedStyle);
+  }
   if (mode === "pattern_scan") return caraDeterministicJson(deterministicPatternScan(), mode, resolvedStyle);
   if (mode === "return_home_interview") return caraDeterministicJson(deterministicReturnHomeInterview(), mode, resolvedStyle);
   if (mode === "safeguarding_scan") return caraDeterministicJson(deterministicSafeguardingScan(), mode, resolvedStyle);
@@ -1525,6 +1608,7 @@ export async function POST(req: NextRequest) {
     linked_records,
     user_role,
     period_days,
+    child_id,
     stream: streamMode = false,
     max_tokens = DEFAULT_MAX_TOKENS,
   } = body as {
@@ -1538,6 +1622,7 @@ export async function POST(req: NextRequest) {
     linked_records?: string;
     user_role?: string;
     period_days?: number;
+    child_id?: string;
     stream?: boolean;
     max_tokens?: number;
   };
@@ -1586,7 +1671,7 @@ export async function POST(req: NextRequest) {
         resolvedStyle,
       );
     }
-    return deterministicCaraResponse(mode, resolvedStyle);
+    return deterministicCaraResponse(mode, resolvedStyle, { childId: child_id, periodDays: period_days });
   }
 
   // Build the user message
@@ -1682,6 +1767,10 @@ export async function POST(req: NextRequest) {
                 ? deterministicAssistText({ question: question || source_content, pageContext: page_context, role: user_role })
                 : mode === "staff_development_summary"
                 ? deterministicStaffDevelopmentSummary()
+                : mode === "chronology_summary"
+                ? deterministicChronologySummary(child_id, period_days)
+                : mode === "inspection_narrative"
+                ? deterministicInspectionNarrative()
                 : null;
             send({
               type: "text_delta",
@@ -1747,7 +1836,7 @@ export async function POST(req: NextRequest) {
       // Kill-switch / permission / sensitivity-block / cost-limit / provider
       // failure / response withheld by the safety scanner — degrade to the
       // mode-aware deterministic fallback rather than a generic refusal string.
-      return deterministicCaraResponse(mode, resolvedStyle);
+      return deterministicCaraResponse(mode, resolvedStyle, { childId: child_id, periodDays: period_days });
     }
 
     const rawResponseText = result.output;
@@ -1816,6 +1905,6 @@ export async function POST(req: NextRequest) {
       "[cara] AI call failed; serving deterministic fallback:",
       err instanceof Error ? err.message : String(err),
     );
-    return deterministicCaraResponse(mode, resolvedStyle);
+    return deterministicCaraResponse(mode, resolvedStyle, { childId: child_id, periodDays: period_days });
   }
 }
