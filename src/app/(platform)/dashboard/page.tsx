@@ -30,6 +30,7 @@ import type { AppRole } from "@/lib/permissions";
 import { SmartUploadButton } from "@/components/documents/smart-upload-button";
 import { TaskSlaCard } from "@/components/dashboard/task-sla-card";
 import { CommandCentreHero } from "@/components/dashboard/command-centre-hero";
+import { TodayBand } from "@/components/dashboard/today-band";
 
 // ── Dynamic imports — loaded on demand to prevent browser memory crash ────────
 
@@ -1294,6 +1295,18 @@ export default function DashboardPage() {
               id: String(c.id),
               name: String(c.preferred_name || c.first_name || "Child"),
             }))}
+          />
+        )}
+
+        {/* Today band — who's on, what's next, the whole-home pulse, every child one tap away */}
+        {d && (
+          <TodayBand
+            shifts={d.staffing?.today_shifts ?? []}
+            childrenList={(d.young_people?.current ?? []).map((c) => ({
+              id: String(c.id),
+              name: String(c.preferred_name || c.first_name || "Child"),
+            }))}
+            showPulse={config.showZoneC}
           />
         )}
 
