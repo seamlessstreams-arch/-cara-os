@@ -10,6 +10,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useRef, useCallback } from "react";
+import { useAuthContext } from "@/contexts/auth-context";
 import {
   FileSearch,
   Upload,
@@ -350,11 +351,12 @@ export default function DocumentAnalysisPage() {
   // Drag state
   const [isDragging, setIsDragging] = useState(false);
 
-  // TODO: Replace with real session context from auth provider
-  const actorUserId = "00000000-0000-0000-0000-000000000000";
-  const actorRole = "registered_manager";
-  const homeId = "00000000-0000-0000-0000-000000000000";
-  const organisationId = "00000000-0000-0000-0000-000000000000";
+  // Real session context (demo default: staff_darren @ home_oak).
+  const { currentUser, currentRole } = useAuthContext();
+  const actorUserId = currentUser?.id ?? "staff_darren";
+  const actorRole = currentRole;
+  const homeId = currentUser?.home_id ?? "home_oak";
+  const organisationId = "org-demo-1"; // single-org demo (matches cross-home intelligence)
 
   // ── File Handling ─────────────────────────────────────────────────────────
 

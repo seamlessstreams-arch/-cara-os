@@ -13,6 +13,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { useAuthContext } from "@/contexts/auth-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -109,10 +110,6 @@ const INPUT_TYPE_OPTIONS: { value: InputType; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-// TODO: Replace with real session/home context from auth provider
-const PLACEHOLDER_HOME_ID = "00000000-0000-0000-0000-000000000000";
-const PLACEHOLDER_USER_ID = "00000000-0000-0000-0000-000000000000";
-const PLACEHOLDER_ROLE = "registered_manager";
 
 // ── Page Component ───────────────────────────────────────────────────────────
 
@@ -135,6 +132,11 @@ function VoiceIntelligenceLoading() {
 }
 
 function VoiceIntelligenceContent() {
+  // Real session/home context (demo default: staff_darren @ home_oak).
+  const { currentUser, currentRole } = useAuthContext();
+  const sessionUserId = currentUser?.id ?? "staff_darren";
+  const sessionHomeId = currentUser?.home_id ?? "home_oak";
+  const sessionRole = currentRole;
   // ── State ────────────────────────────────────────────────────────────────
   const recorder = useAudioRecorder({ maxDurationMs: 10 * 60 * 1000 });
 
@@ -164,7 +166,7 @@ function VoiceIntelligenceContent() {
     setHistoryLoading(true);
     try {
       const res = await fetch(
-        `/api/cara/voice-history?homeId=${PLACEHOLDER_HOME_ID}&userId=${PLACEHOLDER_USER_ID}`,
+        `/api/cara/voice-history?homeId=${sessionHomeId}&userId=${sessionUserId}`,
       );
       if (res.ok) {
         const data = await res.json();
@@ -186,9 +188,9 @@ function VoiceIntelligenceContent() {
       const form = new FormData();
       const ext = (recorder.audioMimeType ?? "audio/webm").split("/")[1]?.split(";")[0] ?? "webm";
       form.append("file", recorder.audioBlob, `recording.${ext}`);
-      form.append("actorUserId", PLACEHOLDER_USER_ID);
-      form.append("actorRole", PLACEHOLDER_ROLE);
-      form.append("homeId", PLACEHOLDER_HOME_ID);
+      form.append("actorUserId", sessionUserId);
+      form.append("actorRole", sessionRole);
+      form.append("homeId", sessionHomeId);
       form.append("sourceModule", "voice-intelligence");
       form.append("durationMs", String(recorder.durationMs));
 
@@ -223,9 +225,9 @@ function VoiceIntelligenceContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           transcript: transcript.trim(),
-          actorUserId: PLACEHOLDER_USER_ID,
-          actorRole: PLACEHOLDER_ROLE,
-          homeId: PLACEHOLDER_HOME_ID,
+          actorUserId: sessionUserId,
+          actorRole: sessionRole,
+          homeId: sessionHomeId,
           inputType,
         }),
       });
@@ -259,8 +261,8 @@ function VoiceIntelligenceContent() {
           body: JSON.stringify({
             recordType,
             content: caraResponse.answer,
-            homeId: PLACEHOLDER_HOME_ID,
-            userId: PLACEHOLDER_USER_ID,
+            homeId: sessionHomeId,
+            userId: sessionUserId,
             sessionId: caraResponse.sessionId,
             metadata: {
               riskLevel: caraResponse.riskLevel,
