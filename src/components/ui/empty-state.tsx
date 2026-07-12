@@ -41,7 +41,9 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-[var(--cs-border)] bg-white",
+        // Token surface (not bg-white) so the shared empty state renders
+        // correctly on the dark skin without the hardcoded-utility shim.
+        "flex flex-col items-center justify-center text-center rounded-2xl border border-dashed border-[var(--cs-border)] bg-[var(--cs-surface-elevated)]",
         compact ? "px-6 py-10" : "px-8 py-16",
         className,
       )}
