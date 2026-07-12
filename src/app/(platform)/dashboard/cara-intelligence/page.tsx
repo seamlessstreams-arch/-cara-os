@@ -1,10 +1,14 @@
-import { CaraOrchestrationPanel } from "@/components/cara/CaraOrchestrationPanel";
+"use client";
 
-export default async function CaraIntelligencePage() {
-  // TODO: Replace with real session/home context from auth provider
-  const homeId = "00000000-0000-0000-0000-000000000000";
-  const userId = "00000000-0000-0000-0000-000000000000";
-  const role = "registered_manager";
+import { CaraOrchestrationPanel } from "@/components/cara/CaraOrchestrationPanel";
+import { useAuthContext } from "@/contexts/auth-context";
+
+export default function CaraIntelligencePage() {
+  // Real session/home context (demo default: staff_darren @ home_oak).
+  const { currentUser, currentRole } = useAuthContext();
+  const homeId = currentUser?.home_id ?? "home_oak";
+  const userId = currentUser?.id ?? "staff_darren";
+  const role = currentRole;
 
   return (
     <main className="space-y-6 p-6">
