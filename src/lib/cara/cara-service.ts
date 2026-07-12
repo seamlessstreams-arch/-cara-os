@@ -1568,10 +1568,10 @@ export async function invokeCaraCommand(
         userPrompt,
         expectJson: false,
       });
-      cleanedText = applyCaraPostprocessor(generation.text);
-      confidence = inferConfidence(command, cleanedText);
-      // Learn from Claude so the next near-identical request skips the API.
       if (generation.llmUsed) {
+        cleanedText = applyCaraPostprocessor(generation.text);
+        confidence = inferConfidence(command, cleanedText);
+        // Learn from Claude so the next near-identical request skips the API.
         learnAnswer({
           commandId: command.id,
           childId: args.childId ?? null,
@@ -1580,6 +1580,20 @@ export async function invokeCaraCommand(
           confidence,
           riskLevel: command.riskLevel,
         });
+      } else {
+        // The provider was unavailable (no key / no credits / provider error), so
+        // generateText returned an apology, not a draft. "Generate with Cara" must
+        // still work without an API: produce a genuine deterministic draft from the
+        // user's own notes instead of surfacing the apology. Never invents facts.
+        const { deterministicCommandDraft } = await import("@/lib/cara/deterministic-fallback");
+        cleanedText = deterministicCommandDraft(command.id, args.inputText ?? "", {
+          label: command.label,
+          description: command.description,
+        });
+        confidence = "low"; // a scaffold to complete + verify — always human-reviewed
+        appliedRules = ["deterministic_fallback"];
+        // Relabel the provenance so the UI shows a deterministic draft, not "anthropic".
+        generation = { ...generation, providerId: "deterministic_fallback", modelId: "deterministic" };
       }
     }
   }
