@@ -11,6 +11,8 @@
 //   Working Time Regulations — max 48 hours/week average
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { mentions } from "@/lib/text/keyword-match";
+
 // ── Input Types ────────────────────────────────────────────────────────────────
 
 export interface ShiftInput {
@@ -203,9 +205,9 @@ export function computeRotaIntelligence(input: {
     ? Math.round((completed30.length / completionDenom) * 100)
     : 100;
 
-  const agencyShifts = notCancelled.filter(
-    (s) => s.notes && s.notes.toLowerCase().includes("agency")
-  ).length;
+  // Word-boundaried (never substring): "interagency meeting" in shift notes
+  // must not count as an agency-staff shift.
+  const agencyShifts = notCancelled.filter((s) => mentions(s.notes, "agency")).length;
 
   const overview: RotaOverview = {
     total_staff_today: uniqueStaffToday,
