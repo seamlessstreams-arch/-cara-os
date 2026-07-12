@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const AI_DISCLAIMER = "AI suggests reflective prompts only — it never writes the supervision record or its conclusions. The manager leads the conversation and records it. AI suggestions require professional judgement and manager approval.";
 
@@ -20,7 +21,9 @@ export async function POST(req: NextRequest) {
   const auth = await requirePermissionAsync(req, PERMISSIONS.MANAGE_SUPERVISION);
   if (auth instanceof NextResponse) return auth;
 
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const staffName = String(body.staffName ?? "the staff member");
   const context = String(body.context ?? "").slice(0, 600);
 

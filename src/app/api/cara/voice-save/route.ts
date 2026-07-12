@@ -12,6 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import type { ServiceResult } from "@/types/operations";
+import { readJsonBody } from "@/lib/http/read-json";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -127,7 +128,9 @@ function buildRowData(body: VoiceSaveRequest): Record<string, unknown> {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as VoiceSaveRequest;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    const body = __parsed.data as VoiceSaveRequest;
 
     // ── Validation ──────────────────────────────────────────────────────────
     if (!body.recordType || !body.content || !body.homeId || !body.userId) {

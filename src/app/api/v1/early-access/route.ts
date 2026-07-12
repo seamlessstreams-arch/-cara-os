@@ -14,6 +14,7 @@ import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { createServerClient } from "@/lib/supabase/server";
+import { readJsonBody } from "@/lib/http/read-json";
 
 interface EarlyAccessInput {
   name?: string;
@@ -27,7 +28,9 @@ interface EarlyAccessInput {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as EarlyAccessInput;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as EarlyAccessInput;
   const name = (body.name ?? "").trim();
   const email = (body.email ?? "").trim();
 

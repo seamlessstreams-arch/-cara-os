@@ -29,6 +29,7 @@ import {
   type RestorativeConversationRecord, type PostIncidentReflectionRecord,
 } from "@/lib/cara-incident/post-incident-engine";
 import { findSession, addTimelineEntry, currentUserId, logIncidentAudit, childName } from "@/lib/cara-incident/incident-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 function recordsFor(sessionId: string) {
   const store = getStore() as any;
@@ -73,7 +74,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ sessionId: str
   const session = findSession(sessionId);
   if (!session) return NextResponse.json({ ok: false, error: "Session not found." }, { status: 404 });
 
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const user_id = currentUserId(req);
   const store = getStore() as any;
   const now = new Date().toISOString();

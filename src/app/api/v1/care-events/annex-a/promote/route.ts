@@ -12,13 +12,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import { promoteCareEventsToAnnexA } from "@/lib/care-events/care-event-annex-a-bridge";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 
 export async function POST(req: NextRequest) {
   let body: { home_id?: string } = {};
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     body = {};
   }

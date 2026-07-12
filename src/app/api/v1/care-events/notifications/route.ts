@@ -18,6 +18,7 @@ import {
 } from "@/lib/care-events/notifications";
 import { db } from "@/lib/db/store";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -54,7 +55,9 @@ interface MutateBody {
 export async function POST(req: NextRequest) {
   let body: MutateBody;
   try {
-    body = (await req.json()) as MutateBody;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as MutateBody;
   } catch {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }

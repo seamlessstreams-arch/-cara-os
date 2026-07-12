@@ -15,6 +15,7 @@ import { persistIncidentSessionUpdate } from "@/lib/supabase/incident-persist";
 import { NextResponse } from "next/server";
 import { findSession, buildSessionBundle, addTimelineEntry, currentUserId, logIncidentAudit } from "@/lib/cara-incident/incident-service";
 import type { RiskLevel } from "@/lib/cara-incident/cara-incident-engine";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const RISKS = new Set(["low", "medium", "high"]);
 
@@ -30,7 +31,9 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ sessionId: st
   const session = findSession(sessionId);
   if (!session) return NextResponse.json({ ok: false, error: "Session not found." }, { status: 404 });
 
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const user_id = currentUserId(req);
   const now = new Date().toISOString();
   const action = String(body.action ?? "");

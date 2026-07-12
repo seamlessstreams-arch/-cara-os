@@ -12,6 +12,7 @@ import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { getPersistedReg44Pack } from "@/lib/care-events/reg44-pack";
 import { recordExport } from "@/lib/care-events/export-history";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export async function POST(
   req: NextRequest,
@@ -22,7 +23,9 @@ export async function POST(
   if (!row) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   let body: { reason?: string } = {};
-  try { body = await req.json(); } catch { /* allow empty body */ }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { /* allow empty body */ }
 
   const guard = requireCaraStudioPermission(
     req,

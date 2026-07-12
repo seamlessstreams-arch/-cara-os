@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { invokeCaraCommand } from "@/lib/cara/cara-service";
 import type { CaraActor, CaraRole } from "@/lib/cara/cara-permissions";
+import { readJsonBody } from "@/lib/http/read-json";
 
 function actorFromBody(body: Record<string, unknown>): CaraActor | null {
   const userId = typeof body.actorUserId === "string" ? body.actorUserId : "";
@@ -16,7 +17,9 @@ function actorFromBody(body: Record<string, unknown>): CaraActor | null {
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const actor = actorFromBody(body);
   if (!actor) return NextResponse.json({ error: "actorUserId is required" }, { status: 400 });

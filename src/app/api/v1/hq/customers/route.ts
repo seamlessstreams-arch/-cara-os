@@ -7,6 +7,7 @@ import {
   ProvisionCustomerSchema,
   provisionCustomer,
 } from "@/lib/hq/hq-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,9 @@ export async function POST(req: NextRequest) {
   if (!isPlatformAdmin(actor)) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
-  const body = await req.json().catch(() => null);
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const parsed = ProvisionCustomerSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(

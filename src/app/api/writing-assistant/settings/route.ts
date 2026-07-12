@@ -4,6 +4,7 @@ import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { db } from "@/lib/db/store";
 import type { WACategory, WritingAssistantSettings } from "@/lib/writing-assistant/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,9 @@ export async function PUT(req: NextRequest) {
 
   let body: Partial<WritingAssistantSettings>;
   try {
-    body = (await req.json()) as Partial<WritingAssistantSettings>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Partial<WritingAssistantSettings>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

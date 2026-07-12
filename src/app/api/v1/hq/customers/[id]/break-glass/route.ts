@@ -10,6 +10,7 @@ import {
   recordBreakGlass,
   revokeBreakGlass,
 } from "@/lib/hq/hq-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,9 @@ export async function POST(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
   const { id } = await params;
-  const body = await req.json().catch(() => null);
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const parsed = BreakGlassSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
@@ -44,7 +47,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
   await params; // route shape consistency; revocation addresses the grant id
-  const body = await req.json().catch(() => null);
+  const __parsed2 = await readJsonBody(req);
+  if (!__parsed2.ok) return __parsed2.response;
+  const body = __parsed2.data;
   const parsed = RevokeSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "grant_id required" }, { status: 400 });

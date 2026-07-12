@@ -10,6 +10,7 @@ import { generateId } from "@/lib/utils";
 import { extractComplianceDocument } from "@/lib/compliance/document-extraction";
 import { COMPLIANCE_CATEGORIES } from "@/lib/compliance/compliance-oversight-engine";
 import { DOCUMENT_CATEGORY_LABELS, type DocumentIntelCategory, type DocumentIntelFileType, type UploadedDocument } from "@/types/documents";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,9 @@ export function GET() {
 
 export async function POST(req: Request) {
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { body = {}; }
 
   const text = String(body.text ?? "").trim();
   if (text.length < 20) {

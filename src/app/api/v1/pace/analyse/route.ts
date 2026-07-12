@@ -6,6 +6,7 @@
 // Deterministic (no AI key). Cara advises; humans decide.
 import { NextResponse } from "next/server";
 import { analyzePACE, assistRecording, getPACEGuidance, type PACEContext } from "@/lib/cara-intelligence/pace";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,9 @@ export function GET(req: Request) {
 export async function POST(req: Request) {
   const url = new URL(req.url);
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { body = {}; }
   const text = String(body.text ?? "");
   if (text.trim().length < 5) {
     return NextResponse.json({ error: "Provide the record text to analyse." }, { status: 400 });

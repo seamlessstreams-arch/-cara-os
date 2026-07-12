@@ -21,6 +21,7 @@ import { getStore } from "@/lib/db/store";
 import { buildLiveEventStream } from "@/lib/event-stream/live-event-stream";
 import { computeEventCapture } from "@/lib/event-capture/event-capture-engine";
 import { captureEvent, type CaptureDraft } from "@/lib/event-capture/capture-event-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export async function GET() {
   const events = buildLiveEventStream(getStore()).events;
@@ -45,7 +46,9 @@ export async function GET() {
 export async function POST(req: Request) {
   let body: any;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }

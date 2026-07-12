@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveCommsUser } from "@/lib/comms/comms-service";
 import { analyseMessageLanguage, detectRecordableContent } from "@/lib/comms/comms-governance";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,9 @@ export async function POST(req: NextRequest) {
   await resolveCommsUser(req); // identity resolved (no side effects) — keeps parity with other routes
   let body: { text?: string; has_linked_child?: boolean; has_linked_incident?: boolean };
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

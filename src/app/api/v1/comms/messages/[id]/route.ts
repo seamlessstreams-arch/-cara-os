@@ -3,6 +3,7 @@ import { db } from "@/lib/db/store";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { isManagerRole } from "@/lib/comms/comms-access";
 import { persistCommsMessage } from "@/lib/supabase/comms";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   let body: { body?: string };
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

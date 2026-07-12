@@ -5,13 +5,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db/store";
 import { actorFromHeaders, canApprove } from "@/lib/cara-studio/cara-studio-service";
 import { persistCaraStudioReview } from "@/lib/supabase/cara-persist";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
 export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const actor = actorFromHeaders(req.headers);
-  const body = (await req.json().catch(() => ({}))) as { decision?: string; note?: string };
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as { decision?: string; note?: string };
 
   const output = db.caraStudioOutputs.findById(id);
   if (!output) return NextResponse.json({ error: "Output not found" }, { status: 404 });

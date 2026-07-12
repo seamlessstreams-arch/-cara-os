@@ -13,6 +13,7 @@ import {
   verifyCareEventsBulk,
   returnCareEventsBulk,
 } from "@/lib/care-events/manager-bulk-actions";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -42,7 +43,9 @@ interface BulkBody {
 export async function POST(req: NextRequest) {
   let body: BulkBody;
   try {
-    body = (await req.json()) as BulkBody;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as BulkBody;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

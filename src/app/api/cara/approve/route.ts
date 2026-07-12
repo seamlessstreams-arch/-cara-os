@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { applyApprovalDecision, type CaraApprovalDecision } from "@/lib/cara/cara-service";
 import type { CaraActor, CaraPermission, CaraRole } from "@/lib/cara/cara-permissions";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const VALID_DECISIONS: CaraApprovalDecision[] = [
   "approve", "reject", "request_changes", "commit", "withdraw",
@@ -21,7 +22,9 @@ function actorFromBody(body: Record<string, unknown>): CaraActor | null {
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const actor = actorFromBody(body);
   if (!actor) return NextResponse.json({ error: "actorUserId is required" }, { status: 400 });

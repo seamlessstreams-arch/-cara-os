@@ -15,6 +15,7 @@ import {
   listPersistedReg44Packs,
 } from "@/lib/care-events/reg44-pack";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -35,7 +36,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   let body: { home_id?: string; days?: number } = {};
-  try { body = await req.json(); } catch { /* allow empty body */ }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { /* allow empty body */ }
   const homeId = body.home_id ?? DEFAULT_HOME_ID;
   const daysRaw = Number(body.days ?? 30);
   const days =

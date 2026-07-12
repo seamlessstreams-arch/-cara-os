@@ -16,6 +16,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { computeSupervisionOverview, type ReflectiveSupervisionRecord, type StaffLite } from "@/lib/engines/supervision-engine";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const SUPERVISEE_ROLES = new Set(["registered_manager", "deputy_manager", "team_leader", "residential_care_worker", "bank_staff"]);
 
@@ -45,7 +46,9 @@ export async function POST(req: NextRequest) {
   if (auth instanceof NextResponse) return auth;
 
   const store = getStore() as any;
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
 
   const staff_id = String(body.staff_id ?? "").trim();
   const date = String(body.date ?? "").trim();

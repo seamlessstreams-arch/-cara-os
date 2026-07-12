@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getRequestIdentity, assertChildHomeAccess } from "@/lib/auth-guard";
 import { intelligenceDb } from "@/lib/intelligence/store";
 import type { KeyWorkSession, KeyWorkTheme, KeyWorkSessionStatus } from "@/types/extended";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -28,7 +29,9 @@ export async function POST(req: NextRequest) {
   const identity = await getRequestIdentity(req);
   if (identity instanceof NextResponse) return identity;
   let body: Partial<KeyWorkSession>;
-  try { body = await req.json(); }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const required = ["child_id","title","theme","reason","aims","desired_outcomes"] as const;

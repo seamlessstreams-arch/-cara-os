@@ -23,6 +23,7 @@ import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { analyseRecordingQuality, RECORD_TYPES, RECORDING_DISCLAIMER } from "@/lib/cara-incident/recording-assistant-engine";
 import { CARA_INCIDENT_SYSTEM_PROMPT, type CaraRecordingReview } from "@/lib/cara-incident/cara-incident-engine";
 import { currentUserId, logIncidentAudit, childName, staffNameOf } from "@/lib/cara-incident/incident-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const SENSITIVE_TYPES = new Set(["incident_report", "physical_intervention", "missing_from_home", "safeguarding_update", "risk_assessment_update"]);
 
@@ -40,7 +41,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const user_id = currentUserId(req);
   const raw_text = String(body.raw_text ?? "").trim();
   const record_type = RECORD_TYPES.some((t) => t.key === body.record_type) ? String(body.record_type) : "other";

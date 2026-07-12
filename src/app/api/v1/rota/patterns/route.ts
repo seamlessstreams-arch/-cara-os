@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { describePattern, type ShiftPattern, type ShiftPatternKind } from "@/lib/rota/shift-patterns";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +91,9 @@ export async function GET() {
 export async function POST(req: Request) {
   const store = getStore() as any;
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed2 = await readJsonBody(req);
+  if (!__parsed2.ok) return __parsed2.response;
+  try { body = __parsed2.data; } catch { body = {}; }
   const { pattern, error } = buildPattern(body, store);
   if (error || !pattern) return NextResponse.json({ error: error ?? "Invalid pattern" }, { status: 400 });
   store.shiftPatterns = [...(store.shiftPatterns ?? []), pattern];
@@ -100,7 +103,9 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   const store = getStore() as any;
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { body = {}; }
   const id = String(body.id ?? "");
   const list: ShiftPattern[] = store.shiftPatterns ?? [];
   const existing = list.find((p) => p.id === id);

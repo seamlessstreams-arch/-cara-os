@@ -9,6 +9,7 @@ import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { computeStaffingCoverFromStore, addDays } from "@/lib/rota/compute-cover";
 import type { ShiftCoverNote } from "@/lib/rota/rota-seeds";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +32,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const store = getStore() as any;
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed2 = await readJsonBody(req);
+  if (!__parsed2.ok) return __parsed2.response;
+  try { body = __parsed2.data; } catch { body = {}; }
 
   const date = String(body.date ?? "").slice(0, 10);
   const period = body.period === "night" ? "night" : "day";
@@ -73,7 +76,9 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   const store = getStore() as any;
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { body = {}; }
 
   const cur = store.staffingPolicy ?? {};
   const intOr = (v: any, fallback: number) => {

@@ -18,6 +18,7 @@ import { loadFilingCabinetIndex } from "@/lib/care-events/filing-cabinet-index";
 import { recordExport } from "@/lib/care-events/export-history";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import type { FilingCategory } from "@/types/care-events";
+import { readJsonBody } from "@/lib/http/read-json";
 
 interface Body {
   home_id?: string;
@@ -27,7 +28,9 @@ interface Body {
 
 export async function POST(req: NextRequest) {
   let body: Body = {};
-  try { body = await req.json(); } catch { /* empty allowed */ }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { /* empty allowed */ }
 
   const homeId = body.home_id ?? "home_oak";
 

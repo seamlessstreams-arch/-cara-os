@@ -4,6 +4,7 @@ import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { isManagerRole } from "@/lib/comms/comms-access";
 import { isValidRetentionCategory } from "@/lib/comms/comms-governance";
 import { persistCommsMessage } from "@/lib/supabase/comms";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   let body: { hold?: boolean; retention_category?: string; reason?: string };
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

@@ -17,11 +17,14 @@ import {
   type SuspensionDecisionAnalysis,
 } from "@/lib/hr/suspensionDecision";
 import { checkHrAccess, type HrRole } from "@/lib/hr/permissions";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

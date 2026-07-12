@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import type { CaraReg45EvidenceItem } from "@/types/cara-studio";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const ALLOWED: Array<CaraReg45EvidenceItem["status"]> = [
   "ai_draft",
@@ -20,7 +21,9 @@ const ALLOWED: Array<CaraReg45EvidenceItem["status"]> = [
 export async function PATCH(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

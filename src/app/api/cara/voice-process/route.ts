@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { orchestrate } from "@/lib/cara/orchestrator";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
+import { readJsonBody } from "@/lib/http/read-json";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -28,7 +29,9 @@ export interface VoiceProcessRequest {
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as VoiceProcessRequest;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    const body = __parsed.data as VoiceProcessRequest;
 
     // ── Validation ────────────────────────────────────────────────────────────
     if (!body.transcript || body.transcript.trim().length < 5) {

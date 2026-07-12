@@ -13,6 +13,7 @@ import { enrichWritingReview } from "@/lib/writing-to-child/writing-to-child-eng
 import { WRITING_EXAMPLES } from "@/lib/writing-to-child/examples";
 import { WRITING_NODES, WRITING_CORE_PRINCIPLE, WRITING_DISCLAIMER } from "@/lib/writing-to-child/knowledge";
 import type { WritingRecordType, WritingTone } from "@/lib/writing-to-child/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,9 @@ export async function POST(req: Request) {
   if (auth instanceof NextResponse) return auth;
 
   let body: Record<string, unknown> = {};
-  try { body = (await req.json()) as Record<string, unknown>; } catch { body = {}; }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data as Record<string, unknown>; } catch { body = {}; }
 
   const rawText = typeof body.rawText === "string" ? body.rawText : "";
   if (!rawText.trim()) {

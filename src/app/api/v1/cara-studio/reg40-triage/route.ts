@@ -22,6 +22,7 @@ import {
 } from "@/lib/cara/cara-reg40-triage";
 import { db } from "@/lib/db/store";
 import type { Reg40TriageStatus } from "@/types/cara-studio";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 const DECISION_ACTIONS: Reg40DecisionAction[] = ["notify", "dismiss", "escalate"];
@@ -44,7 +45,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

@@ -6,6 +6,7 @@ import { captureDomainEvent } from "@/lib/event-capture/capture-event-service";
 import { ACTION_EVENT_MAP } from "@/lib/comms/comms-governance";
 import { persistCommsMessage, persistCommsMessageAction } from "@/lib/supabase/comms";
 import type { CommsMessageActionType } from "@/types/comms";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     due_date?: string | null;
   };
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

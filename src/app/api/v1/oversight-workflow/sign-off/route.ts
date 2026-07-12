@@ -32,6 +32,7 @@ import type {
   SignOffRole,
   WorkflowSignOffInput,
 } from "@/lib/oversight/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -74,7 +75,9 @@ export async function POST(req: NextRequest) {
 
   let body: SignOffBody;
   try {
-    body = (await req.json()) as SignOffBody;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as SignOffBody;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

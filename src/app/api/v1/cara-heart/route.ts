@@ -21,6 +21,7 @@ import {
   CARA_HEART_DISCLAIMER,
 } from "@/lib/cara-heart";
 import type { CaraPracticeRecord } from "@/lib/cara-heart";
+import { readJsonBody } from "@/lib/http/read-json";
 
 function buildValidationError(field: string, message: string) {
   return NextResponse.json(
@@ -55,7 +56,9 @@ export async function GET() {
 export async function POST(req: Request) {
   let body: unknown;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid JSON body." }, { status: 400 });
   }

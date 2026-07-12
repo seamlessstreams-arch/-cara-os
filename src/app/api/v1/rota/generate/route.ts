@@ -8,6 +8,7 @@ import { NextResponse } from "next/server";
 import { getStore, db } from "@/lib/db/store";
 import { planShiftGeneration } from "@/lib/rota/shift-generation";
 import type { ShiftType } from "@/lib/constants";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,9 @@ function addDays(date: string, n: number): string {
 export async function POST(req: Request) {
   const store = getStore() as any;
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { body = {}; }
 
   const today = new Date().toISOString().slice(0, 10);
   const from = typeof body.from === "string" && /^\d{4}-\d{2}-\d{2}$/.test(body.from) ? body.from : today;

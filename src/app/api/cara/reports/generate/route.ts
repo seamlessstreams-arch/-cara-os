@@ -9,12 +9,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { reportGenerationRequestSchema } from "@/lib/cara/ai/schemas";
 import { generateChildReport } from "@/lib/cara/reports/report-generator";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export async function POST(req: NextRequest) {
   try {
     let body: unknown;
     try {
-      body = await req.json();
+      const __parsed = await readJsonBody(req);
+      if (!__parsed.ok) return __parsed.response;
+      body = __parsed.data;
     } catch {
       return NextResponse.json(
         { ok: false, error: "Invalid JSON body" },

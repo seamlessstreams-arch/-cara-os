@@ -5,6 +5,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { db } from "@/lib/db/store";
 import { getStaffName } from "@/lib/seed-data";
 import type { IssueType } from "@/lib/writing-assistant/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +78,9 @@ export async function POST(req: NextRequest) {
 
   let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

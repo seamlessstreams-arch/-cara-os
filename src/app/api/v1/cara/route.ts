@@ -23,6 +23,7 @@ import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-
 import { buildFreeChatGrounding } from "@/lib/cara/ask-cara-natural";
 import { INCIDENT_TYPE_LABELS } from "@/lib/constants";
 import type { IncidentType } from "@/lib/constants";
+import { readJsonBody } from "@/lib/http/read-json";
 
 // ─── Deterministic safeguarding scan (no AI key required) ────────────────────
 
@@ -1589,7 +1590,9 @@ export async function POST(req: NextRequest) {
   // Parse body
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON in request body" },

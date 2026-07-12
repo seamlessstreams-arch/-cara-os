@@ -5,6 +5,7 @@ import { answerQuestion, resolveChild, roleTier } from "@/lib/ask-cara/ask-cara-
 import { buildAuditEvent } from "@/lib/ask-cara/audit-logger";
 import { buildAskSnapshot } from "@/lib/ask-cara/build-snapshot";
 import { answerNaturally, buildFreeChatGrounding, type ChatTurn } from "@/lib/cara/ask-cara-natural";
+import { readJsonBody } from "@/lib/http/read-json";
 
 /** Sanitise client-sent chat history to typed, clipped turns (max 6). */
 function parseHistory(v: unknown): ChatTurn[] | undefined {
@@ -116,7 +117,9 @@ function streamViaGateway(userMessage: string): Response {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

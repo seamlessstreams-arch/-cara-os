@@ -15,6 +15,7 @@ import {
   applySubmission,
   type ReferenceSubmission,
 } from "@/lib/safer-recruitment/reference-link-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +56,9 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
 
   let body: ReferenceSubmission;
   try {
-    body = (await req.json()) as ReferenceSubmission;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as ReferenceSubmission;
   } catch {
     return NextResponse.json({ error: "Invalid submission" }, { status: 400 });
   }

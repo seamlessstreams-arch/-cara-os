@@ -15,6 +15,7 @@ import {
   type CreateRecordInput,
 } from "@/lib/orchestrator/universal-record-orchestrator";
 import { persistRecord, persistAuditEntry } from "@/lib/orchestrator/record-persistence";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,9 @@ const VALID_RECORD_TYPES = new Set([
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

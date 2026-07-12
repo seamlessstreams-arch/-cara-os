@@ -18,6 +18,7 @@ import {
 } from "@/lib/cara/cara-service";
 import type { CaraCommandId } from "@/lib/cara/cara-types";
 import type { CaraActor, CaraPermission, CaraRole } from "@/lib/cara/cara-permissions";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const VALID_DECISIONS: CaraApprovalDecision[] = [
   "approve",
@@ -43,7 +44,9 @@ function actorFromBody(body: Record<string, unknown>): CaraActor | null {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed2 = await readJsonBody(req);
+    if (!__parsed2.ok) return __parsed2.response;
+    body = __parsed2.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
@@ -106,7 +109,9 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
