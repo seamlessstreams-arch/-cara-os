@@ -48,65 +48,68 @@ const STATUS_CONFIG: Record<
     pulse?: boolean;
   }
 > = {
+  // Token-driven (never raw Tailwind colour scales): the --cs-* semantic
+  // families carry light AND dark values, so the badge stays readable on every
+  // surface without leaning on the .cara-dark hardcoded-utility shim.
   outstanding: {
     defaultLabel: "Outstanding",
-    bg: "bg-emerald-50 border-emerald-200",
-    text: "text-emerald-700",
+    bg: "bg-[var(--cs-success-bg)] border-[var(--cs-success-soft)]",
+    text: "text-[var(--cs-success)]",
     icon: Star,
   },
   good: {
     defaultLabel: "Good",
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
+    bg: "bg-[var(--cs-info-bg)] border-[var(--cs-info-soft)]",
+    text: "text-[var(--cs-info)]",
     icon: ThumbsUp,
   },
   adequate: {
     defaultLabel: "Adequate",
-    bg: "bg-amber-50 border-amber-200",
-    text: "text-amber-700",
+    bg: "bg-[var(--cs-warning-bg)] border-[var(--cs-warning-soft)]",
+    text: "text-[var(--cs-warning)]",
     icon: AlertTriangle,
   },
   inadequate: {
     defaultLabel: "Inadequate",
-    bg: "bg-red-50 border-red-200",
-    text: "text-red-700",
+    bg: "bg-[var(--cs-risk-bg)] border-[var(--cs-risk-soft)]",
+    text: "text-[var(--cs-risk)]",
     icon: XCircle,
   },
   overdue: {
     defaultLabel: "Overdue",
-    bg: "bg-red-50 border-red-200",
-    text: "text-red-700",
+    bg: "bg-[var(--cs-risk-bg)] border-[var(--cs-risk-soft)]",
+    text: "text-[var(--cs-risk)]",
     icon: XCircle,
   },
   due: {
     defaultLabel: "Due",
-    bg: "bg-amber-50 border-amber-200",
-    text: "text-amber-700",
+    bg: "bg-[var(--cs-warning-bg)] border-[var(--cs-warning-soft)]",
+    text: "text-[var(--cs-warning)]",
     icon: Clock,
   },
   complete: {
     defaultLabel: "Complete",
-    bg: "bg-emerald-50 border-emerald-200",
-    text: "text-emerald-700",
+    bg: "bg-[var(--cs-success-bg)] border-[var(--cs-success-soft)]",
+    text: "text-[var(--cs-success)]",
     icon: CheckCircle2,
   },
   draft: {
     defaultLabel: "Draft",
-    bg: "bg-slate-50 border-slate-200",
-    text: "text-slate-600",
+    bg: "bg-[var(--cs-surface)] border-[var(--cs-border)]",
+    text: "text-[var(--cs-text-secondary)]",
     icon: FileText,
   },
   urgent: {
     defaultLabel: "Urgent",
-    bg: "bg-red-50 border-red-200",
-    text: "text-red-700",
+    bg: "bg-[var(--cs-risk-bg)] border-[var(--cs-risk-soft)]",
+    text: "text-[var(--cs-risk)]",
     icon: AlertTriangle,
     pulse: true,
   },
   info: {
     defaultLabel: "Info",
-    bg: "bg-blue-50 border-blue-200",
-    text: "text-blue-700",
+    bg: "bg-[var(--cs-info-bg)] border-[var(--cs-info-soft)]",
+    text: "text-[var(--cs-info)]",
     icon: Info,
   },
 };

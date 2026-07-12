@@ -10,14 +10,17 @@ const badgeVariants = cva(
         default: "border-transparent bg-[var(--cs-navy)] text-white",
         secondary: "border-[var(--cs-border)] bg-[var(--cs-surface)] text-[var(--cs-text-secondary)]",
         outline: "border-[var(--cs-border)] text-[var(--cs-text-secondary)]",
-        destructive: "border-transparent bg-red-100 text-[var(--cs-risk)]",
-        success: "border-transparent bg-emerald-100 text-[var(--cs-success)]",
-        warning: "border-transparent bg-amber-100 text-[var(--cs-warning)]",
-        info: "border-transparent bg-blue-100 text-[var(--cs-info)]",
-        purple: "border-transparent bg-violet-100 text-violet-800",
+        // Semantic fills use the --cs-*-bg tokens (light AND dark values) —
+        // never raw Tailwind colour scales, which only survive the dark skin
+        // via the .cara-dark shim.
+        destructive: "border-transparent bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",
+        success: "border-transparent bg-[var(--cs-success-bg)] text-[var(--cs-success)]",
+        warning: "border-transparent bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]",
+        info: "border-transparent bg-[var(--cs-info-bg)] text-[var(--cs-info)]",
+        purple: "border-transparent bg-[var(--cs-oversight-bg)] text-[var(--cs-oversight)]",
         cara: "border-[var(--cs-cara-gold-soft)] bg-[var(--cs-cara-gold-bg)] text-[var(--cs-cara-gold)]",
-        oversight: "border-transparent bg-purple-100 text-[var(--cs-oversight)]",
-        risk: "border-transparent bg-red-50 text-[var(--cs-risk)]",
+        oversight: "border-transparent bg-[var(--cs-oversight-bg)] text-[var(--cs-oversight)]",
+        risk: "border-transparent bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",
         // Cara Calm severity vocabulary — at most ONE per row. Light tint + token text.
         overdue: "border-transparent bg-[var(--cs-risk-bg)] text-[var(--cs-risk)]",
         due: "border-transparent bg-[var(--cs-warning-bg)] text-[var(--cs-warning)]",
