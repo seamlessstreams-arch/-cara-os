@@ -20,6 +20,13 @@
 
 import { mentionsAny } from "@/lib/text/keyword-match";
 
+// The real word forms behind the old "de-escalat" substring stem — matched
+// word-boundaried so plain "escalated" never counts as de-escalation.
+const DE_ESCALATION_FORMS = [
+  "de-escalate", "de-escalated", "de-escalating", "de-escalation",
+  "deescalate", "deescalated", "deescalating", "deescalation",
+];
+
 // ── Types ───────────────────────────────────────────────────────────────────
 
 export type BehaviourCategory =
@@ -457,11 +464,16 @@ export function computeBehaviourIntelligence(input: BehaviourEngineInput): Behav
         date: inc.date,
         technique,
         duration_minutes: duration,
-        debriefed: inc.description.toLowerCase().includes("debrief"),
+        // Word-boundaried (never substring): "debrief" as a stem covers the
+        // recorded forms explicitly; "de-escalat" was a substring stem — expand
+        // to the real word forms so plain "escalated" can never count as
+        // de-escalation attempted.
+        debriefed: mentionsAny(inc.description, ["debrief", "debriefed", "debriefing"]),
         injury: inc.body_map_completed === true,
-        de_escalation_attempted: inc.description.toLowerCase().includes("de-escalat") ||
-          inc.description.toLowerCase().includes("attempted") ||
-          inc.immediate_action.toLowerCase().includes("de-escalat"),
+        de_escalation_attempted:
+          mentionsAny(inc.description, DE_ESCALATION_FORMS) ||
+          mentionsAny(inc.description, ["attempted"]) ||
+          mentionsAny(inc.immediate_action, DE_ESCALATION_FORMS),
       });
     }
   }

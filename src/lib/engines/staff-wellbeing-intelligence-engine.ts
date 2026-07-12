@@ -6,6 +6,8 @@
 // SCCIF: Leadership & Management.
 // ══════════════════════════════════════════════════════════════════════════════
 
+import { mentionsAny } from "@/lib/text/keyword-match";
+
 // ── Input Types ─────────────────────────────────────────────────────────────
 
 export interface StaffWellbeingInput {
@@ -409,8 +411,13 @@ function computeSicknessAnalysis(input: StaffWellbeingInput): SicknessAnalysis {
     sick90d.filter((s) => s.trigger_points.length > 0 || s.total_days > 5).map((s) => s.staff_id),
   ).size;
 
+  // Word-boundaried (never substring): "distressed" must NOT count as a
+  // stress-related absence — a real false-signal we were producing.
   const stressRelated = sick90d.filter(
-    (s) => s.category === "stress" || s.category === "mental_health" || s.reason.toLowerCase().includes("stress") || s.reason.toLowerCase().includes("anxiety"),
+    (s) =>
+      s.category === "stress" ||
+      s.category === "mental_health" ||
+      mentionsAny(s.reason, ["stress", "stressed", "stress-related", "anxiety", "anxious"]),
   );
   const stressPct = sick90d.length > 0 ? Math.round((stressRelated.length / sick90d.length) * 100) : 0;
 
