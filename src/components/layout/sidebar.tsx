@@ -6,10 +6,11 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { NAV_GROUPS, DOMAIN_NAV } from "@/config/navigation";
+import { DOMAIN_NAV } from "@/config/navigation";
 import { usePermissions } from "@/hooks/use-permissions";
 import { useSidebarCounts } from "@/hooks/use-sidebar-counts";
 import { useAuthContext } from "@/contexts/auth-context";
@@ -221,8 +222,7 @@ export function Sidebar() {
       )}>
         <Link href="/dashboard" className="flex items-center gap-3 min-w-0">
           {/* Cara logo — the brand mark stays; the spark lives on the Ask CARA pill */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon-192.png" alt="Cara" className="h-8 w-8 shrink-0 rounded-xl" />
+          <Image src="/icon-192.png" alt="Cara" width={32} height={32} className="h-8 w-8 shrink-0 rounded-xl" />
           {!collapsed && (
             <div className="min-w-0">
               <p className="text-sm font-bold text-[var(--cs-navy)] leading-tight tracking-tight">
