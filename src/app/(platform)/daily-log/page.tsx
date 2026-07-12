@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { CaraPracticePanel } from "@/components/cara-practice/cara-practice-panel";
@@ -580,8 +580,17 @@ export default function DailyLogPage() {
     };
   }, [entries]);
 
-  // Group by date
-  const grouped = entries.reduce<Record<string, typeof entries>>((acc, entry) => {
+  // Progressive disclosure — cap the rendered list so an "All" date filter in
+  // a year-two home doesn't mount every entry ever recorded. Stats, export and
+  // the pattern scanner keep the full filtered list; only rendering is capped.
+  const [visibleCount, setVisibleCount] = useState(50);
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [selectedYP, dateFilter, typeFilter, search, sortBy]);
+
+  // Group by date (grouping the visible slice keeps date groups bounded too)
+  const visibleEntries = entries.slice(0, visibleCount);
+  const grouped = visibleEntries.reduce<Record<string, typeof entries>>((acc, entry) => {
     if (!acc[entry.date]) acc[entry.date] = [];
     acc[entry.date].push(entry);
     return acc;
@@ -823,6 +832,17 @@ export default function DailyLogPage() {
                 </div>
               </div>
             ))}
+            {entries.length > visibleCount && (
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((c) => c + 50)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[var(--cs-border)] bg-[var(--cs-surface-elevated,#fff)] px-4 py-2 text-[13px] font-semibold text-[var(--cs-text-secondary,#5a6d74)] shadow-[var(--cs-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--cs-shadow-card)]"
+                >
+                  Show more ({entries.length - visibleCount} more)
+                </button>
+              </div>
+            )}
           </div>
         )}
 

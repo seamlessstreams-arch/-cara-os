@@ -9,7 +9,7 @@
 //          risk assessments · manually recorded chronology entries.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { use, useState, useMemo } from "react";
+import React, { use, useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -345,7 +345,21 @@ export default function ChildChronologyPage({
     return items;
   }, [allItems, severityFilter, sourceFilter]);
 
-  const grouped = useMemo(() => groupByMonth(filtered), [filtered]);
+  // ── Progressive disclosure ────────────────────────────────────────────────
+  // Cap the rendered timeline so a year-two chronology doesn't mount hundreds
+  // of cards at once. Grouping happens on the visible slice so both the month
+  // groups and the cards inside them stay bounded. Export/stats keep the full
+  // filtered list.
+  const [visibleCount, setVisibleCount] = useState(50);
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [severityFilter, sourceFilter, fromDate, toDate]);
+
+  const visibleItems = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+  const grouped = useMemo(() => groupByMonth(visibleItems), [visibleItems]);
   const monthKeys = Object.keys(grouped);
 
   const childName = yp
@@ -619,6 +633,17 @@ export default function ChildChronologyPage({
               items={grouped[month]}
             />
           ))}
+          {filtered.length > visibleCount && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setVisibleCount((c) => c + 50)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--cs-border)] bg-[var(--cs-surface-elevated,#fff)] px-4 py-2 text-[13px] font-semibold text-[var(--cs-text-secondary,#5a6d74)] shadow-[var(--cs-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--cs-shadow-card)]"
+              >
+                Show more ({filtered.length - visibleCount} more)
+              </button>
+            </div>
+          )}
         </div>
       )}
     </PageShell>
