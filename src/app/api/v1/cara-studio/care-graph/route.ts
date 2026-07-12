@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { buildCareGraph, loadCareGraph } from "@/lib/cara/cara-care-graph";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -21,7 +22,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown> = {};
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Record<string, unknown>;
   } catch {
     body = {};
   }

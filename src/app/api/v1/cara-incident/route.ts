@@ -10,6 +10,7 @@ import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import { INCIDENT_TYPES, INCIDENT_DISCLAIMER, type IncidentSession, type RiskLevel } from "@/lib/cara-incident/cara-incident-engine";
 import { startSession, currentUserId, childName, sessionEntries } from "@/lib/cara-incident/incident-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const RISKS = new Set(["low", "medium", "high"]);
 
@@ -33,7 +34,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const child_id = String(body.child_id ?? "").trim();
   const incident_type = String(body.incident_type ?? "").trim();
   const risk = String(body.immediate_risk_level ?? "medium");

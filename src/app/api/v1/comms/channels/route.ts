@@ -4,6 +4,7 @@ import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { canViewChannel, isManagerRole } from "@/lib/comms/comms-access";
 import { persistCommsChannel } from "@/lib/supabase/comms";
 import type { CommsChannelSummary } from "@/types/comms";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,9 @@ export async function POST(req: NextRequest) {
   }
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

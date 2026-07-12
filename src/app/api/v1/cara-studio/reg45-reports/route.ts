@@ -18,6 +18,7 @@ import {
   setReg45ReportStatus,
 } from "@/lib/cara/cara-reg45-report";
 import type { CaraReg45Report } from "@/types/cara-studio";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -37,7 +38,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown> = {};
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed2 = await readJsonBody(req);
+    if (!__parsed2.ok) return __parsed2.response;
+    body = __parsed2.data as Record<string, unknown>;
   } catch {
     body = {};
   }
@@ -66,7 +69,9 @@ export async function POST(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

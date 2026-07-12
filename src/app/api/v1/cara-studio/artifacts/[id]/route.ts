@@ -11,6 +11,7 @@ import {
 import { runQualityCheck } from "@/lib/cara/cara-studio-quality";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import type { CaraPermission } from "@/lib/cara/cara-permissions";
+import { readJsonBody } from "@/lib/http/read-json";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -58,7 +59,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

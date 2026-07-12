@@ -12,13 +12,16 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { buildCandidateProfileFromText } from "@/lib/engines/cv-profile-engine";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const MAX_CV_LENGTH = 8000;
 
 export async function POST(req: Request) {
   let body: { text?: string; role?: string; enhance?: boolean };
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
   }

@@ -17,6 +17,7 @@ import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import { generateManagementOversight } from "@/lib/oversight/management-oversight-engine";
 import { OVERSIGHT_DISCLAIMER, type OversightInput } from "@/lib/oversight/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -118,7 +119,9 @@ export async function POST(req: NextRequest) {
 
   let body: Partial<OversightInput>;
   try {
-    body = (await req.json()) as Partial<OversightInput>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Partial<OversightInput>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

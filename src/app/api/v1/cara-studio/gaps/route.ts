@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { detectAllGaps } from "@/lib/cara/cara-studio-gaps";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const HOME_ID = "home_oak";
 
@@ -56,7 +57,9 @@ export async function GET(req: NextRequest) {
 export async function PATCH(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

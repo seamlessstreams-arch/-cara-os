@@ -11,6 +11,7 @@ import {
   approveReport,
   rejectReport,
 } from "@/lib/cara/reports/approval-workflow";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export async function POST(
   req: NextRequest,
@@ -21,7 +22,9 @@ export async function POST(
 
     let body: Record<string, unknown>;
     try {
-      body = await req.json();
+      const __parsed = await readJsonBody(req);
+      if (!__parsed.ok) return __parsed.response;
+      body = __parsed.data;
     } catch {
       return NextResponse.json(
         { ok: false, error: "Invalid JSON body" },

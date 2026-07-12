@@ -10,6 +10,7 @@ import { db, getStore } from "@/lib/db/store";
 import { withShiftAccess } from "@/lib/permissions/with-shift-access";
 import { parseChronologyText, type ParsedChronologyEntry } from "@/lib/chronology/chronology-import";
 import type { ChronologyEntry } from "@/types/extended";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,9 @@ async function importChronology(req: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Child not found" }, { status: 404 });
   }
 
-  const body = await req.json().catch(() => null);
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const mode: "preview" | "commit" = body?.mode === "commit" ? "commit" : "preview";
   const sourceLabel: string = typeof body?.source_label === "string" && body.source_label.trim()
     ? body.source_label.trim()

@@ -3,6 +3,7 @@ import { db } from "@/lib/db/store";
 import { resolveCommsUser, auditComms } from "@/lib/comms/comms-service";
 import { persistTrustNoticeAck } from "@/lib/supabase/comms";
 import { STAFF_TRUST_NOTICE_VERSION } from "@/types/comms";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -25,7 +26,9 @@ export async function POST(req: NextRequest) {
   const user = await resolveCommsUser(req);
   let body: { device_id?: string } = {};
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     /* no body */
   }

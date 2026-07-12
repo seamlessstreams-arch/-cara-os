@@ -12,6 +12,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { getStore } from "@/lib/db/store";
 import type { EmployerValuesProfile } from "@/lib/engines/values-match-engine";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const EDITABLE: (keyof EmployerValuesProfile)[] = [
   "organisation_name", "home_name", "core_values", "care_approach", "leadership_style",
@@ -27,7 +28,9 @@ export async function GET() {
 
 export async function PUT(req: Request) {
   const store = getStore() as any;
-  const body = await req.json().catch(() => ({} as Record<string, unknown>));
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const list: EmployerValuesProfile[] = store.employerValuesProfiles ?? [];
   const existing = list[0];
 

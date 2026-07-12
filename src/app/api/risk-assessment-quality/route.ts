@@ -19,6 +19,7 @@ import type {
   RiskAssessmentPolicy,
   StaffRiskAssessmentTraining,
 } from "@/lib/risk-assessment-quality";
+import { readJsonBody } from "@/lib/http/read-json";
 
 // ── Demo Data: Chamberlain House ──────────────────────────────────────────────────
 
@@ -239,7 +240,9 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

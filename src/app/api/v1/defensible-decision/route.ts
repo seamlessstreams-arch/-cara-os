@@ -18,6 +18,7 @@ import {
 } from "@/lib/cara-reasoning/defensible-decision-engine";
 import { recordDecision } from "@/lib/ethical-intelligence/capture-service";
 import type { EthicalSourceRef } from "@/lib/ethical-intelligence/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,9 @@ export async function POST(req: NextRequest) {
 
   let body: Partial<DefensibleDecisionInput>;
   try {
-    body = (await req.json()) as Partial<DefensibleDecisionInput>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Partial<DefensibleDecisionInput>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

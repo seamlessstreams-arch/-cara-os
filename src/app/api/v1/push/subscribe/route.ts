@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import { isPushConfigured } from "@/lib/push/web-push";
 import { getRequestIdentity } from "@/lib/auth-guard";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,9 @@ export async function POST(req: NextRequest) {
   // the recipient comes from the session (activated mode), never a client header.
   const identity = await getRequestIdentity(req);
   if (identity instanceof NextResponse) return identity;
-  const sub = await req.json().catch(() => null);
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const sub = __parsed.data;
   if (!sub?.endpoint || !sub?.keys?.p256dh || !sub?.keys?.auth) {
     return NextResponse.json({ error: "Invalid subscription" }, { status: 400 });
   }
@@ -37,7 +40,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const body = await req.json().catch(() => ({}));
+  const __parsed2 = await readJsonBody(req);
+  if (!__parsed2.ok) return __parsed2.response;
+  const body = __parsed2.data;
   if (body?.endpoint) db.pushSubscriptions.removeByEndpoint(body.endpoint);
   return NextResponse.json({ ok: true });
 }

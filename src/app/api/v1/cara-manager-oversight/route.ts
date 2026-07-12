@@ -22,6 +22,7 @@ import {
 } from "@/lib/cara-incident/manager-oversight-engine";
 import { currentUserId, logIncidentAudit, childName, staffNameOf } from "@/lib/cara-incident/incident-service";
 import type { CaraRecordingReview } from "@/lib/cara-incident/cara-incident-engine";
+import { readJsonBody } from "@/lib/http/read-json";
 
 function oversightInput(): OversightInput {
   const store = getStore() as any;
@@ -55,7 +56,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const user_id = currentUserId(req);
   const store = getStore() as any;
   const now = new Date().toISOString();

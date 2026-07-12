@@ -11,6 +11,7 @@ import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { attemptTransition, getValidTransitions } from "@/lib/quality-ecology";
 import type { ScheduledOccurrence, LifecycleStatus } from "@/lib/quality-ecology";
 import type { UserContext } from "@/lib/permissions/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 type SB = any;
 
@@ -22,7 +23,9 @@ interface TransitionRequest {
 
 export async function POST(req: NextRequest) {
   try {
-    const body: TransitionRequest = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    const body: TransitionRequest = __parsed.data;
     const { occurrenceId, targetStatus, reason } = body;
 
     if (!occurrenceId || !targetStatus) {

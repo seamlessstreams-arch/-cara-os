@@ -24,6 +24,7 @@ import {
   ASSISTANT_DISCLAIMER, type VacancyLite,
 } from "@/lib/engines/manager-assistant-engine";
 import { computeValuesMatch, type EmployerValuesProfile, type CandidateValuesProfile } from "@/lib/engines/values-match-engine";
+import { readJsonBody } from "@/lib/http/read-json";
 
 function audit(user_id: string, note: string, child_id?: string) {
   try {
@@ -59,7 +60,9 @@ export async function POST(req: NextRequest) {
   const identity = await getRequestIdentity(req);
   if (identity instanceof NextResponse) return identity;
   const user_id = identity.userId;
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const store = getStore() as any;
   const employer: EmployerValuesProfile | null = (store.employerValuesProfiles ?? [])[0] ?? null;
   const tool = String(body.tool ?? "");

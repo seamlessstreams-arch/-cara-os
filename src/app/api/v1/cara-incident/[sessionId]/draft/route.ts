@@ -24,13 +24,16 @@ import {
   INCIDENT_DISCLAIMER, INCIDENT_TYPES, type CaraRecordingReview,
 } from "@/lib/cara-incident/cara-incident-engine";
 import { findSession, sessionEntries, childName, currentUserId, logIncidentAudit } from "@/lib/cara-incident/incident-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export async function POST(req: Request, ctx: { params: Promise<{ sessionId: string }> }) {
   const { sessionId } = await ctx.params;
   const session = findSession(sessionId);
   if (!session) return NextResponse.json({ ok: false, error: "Session not found." }, { status: 404 });
 
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const user_id = currentUserId(req);
   const entries = sessionEntries(session.id);
   const gate = computeIncidentQualityGate({ session, entries });

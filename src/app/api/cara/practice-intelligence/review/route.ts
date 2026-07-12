@@ -13,13 +13,16 @@ import { db } from "@/lib/db/store";
 import { getUserRoleFromRequest, getUserIdFromRequest } from "@/lib/auth-guard";
 import { appRoleToCaraRole, checkCaraAccess } from "@/lib/cara/cara-permissions";
 import { validateReview, buildFlagResolution, buildAssessmentDecision, buildThresholdDecision, type ReviewInput } from "@/lib/cara-practice/cara-review";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
 export async function PATCH(req: Request) {
   let body: ReviewInput;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

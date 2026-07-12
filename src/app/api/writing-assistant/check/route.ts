@@ -13,6 +13,7 @@ import { PERMISSIONS } from "@/lib/permissions";
 import { getWritingProvider, isWritingAssistantEnabled } from "@/lib/writing-assistant/engine";
 import { MAX_CHECK_LENGTH, type WritingCheckInput, type WritingMode } from "@/lib/writing-assistant/types";
 import { getAnthropicClient } from "@/lib/anthropic-client";
+import { readJsonBody } from "@/lib/http/read-json";
 
 function isAiRewriteAvailable(): boolean {
   try { getAnthropicClient(); return true; } catch { return false; }
@@ -31,7 +32,9 @@ export async function POST(req: NextRequest) {
 
   let body: Partial<WritingCheckInput>;
   try {
-    body = (await req.json()) as Partial<WritingCheckInput>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Partial<WritingCheckInput>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

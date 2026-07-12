@@ -9,6 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { checkCaraAccess, type CaraActor, type CaraRole } from "@/lib/cara/cara-permissions";
 import { writeAuditEvent } from "@/lib/cara/cara-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LooseSupabase = SupabaseClient<any, "public", any>;
@@ -42,7 +43,9 @@ function actorFromBody(body: Record<string, unknown>): CaraActor | null {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

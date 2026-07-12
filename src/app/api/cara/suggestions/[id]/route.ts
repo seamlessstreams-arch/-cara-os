@@ -19,6 +19,7 @@ import {
   markNoAction,
   commitSuggestion,
 } from "@/lib/cara/cara-suggestions";
+import { readJsonBody } from "@/lib/http/read-json";
 
 function actorFromBody(body: Record<string, unknown>): CaraActor | null {
   const userId = typeof body.actorUserId === "string" ? body.actorUserId : "";
@@ -78,7 +79,9 @@ export async function PATCH(
 
   let body: Record<string, unknown>;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

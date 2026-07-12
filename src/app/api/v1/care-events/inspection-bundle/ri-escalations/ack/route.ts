@@ -13,9 +13,12 @@ import {
   recordTrajectoryRiEscalationAck,
 } from "@/lib/care-events/inspection-trajectory";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export async function POST(req: NextRequest) {
-  const body = (await req.json().catch(() => ({}))) as Record<string, unknown>;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as Record<string, unknown>;
   const homeId = typeof body.home_id === "string" ? body.home_id : "";
   const escalationId = typeof body.escalation_id === "string" ? body.escalation_id : "";
   const note = typeof body.note === "string" ? body.note.trim() : "";

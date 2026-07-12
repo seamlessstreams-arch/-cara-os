@@ -5,6 +5,7 @@ import { classifyCareEvent } from "@/lib/care-events/routing-engine";
 import { getUserIdFromRequest } from "@/lib/auth-guard";
 import { todayStr } from "@/lib/utils";
 import type { CareEvent, CareEventCategory } from "@/types/care-events";
+import { readJsonBody } from "@/lib/http/read-json";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Base care-events collection endpoint.
@@ -111,7 +112,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

@@ -24,6 +24,7 @@ import {
   getActiveSystemProfile,
   logInteraction,
 } from "@/lib/cara/cara-config";
+import { readJsonBody } from "@/lib/http/read-json";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -134,7 +135,9 @@ export async function POST(req: NextRequest) {
   // ── Parse and validate request body ───────────────────────────────────
   let body: ChatRequestBody;
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON in request body" },

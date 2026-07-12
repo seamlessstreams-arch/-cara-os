@@ -18,6 +18,7 @@ import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import { loadRoutingHealth, retryJob } from "@/lib/care-events/routing-health";
 import { retryFailedRoutes } from "@/lib/care-events/processor";
 import { db } from "@/lib/db/store";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -36,7 +37,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

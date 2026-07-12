@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { intelligenceDb } from "@/lib/intelligence/store";
+import { readJsonBody } from "@/lib/http/read-json";
 
 interface RouteParams { params: Promise<{ id: string }>; }
 
@@ -13,7 +14,9 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
 export async function PATCH(req: NextRequest, { params }: RouteParams) {
   const { id } = await params;
   let body: Record<string, unknown>;
-  try { body = await req.json(); }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; }
   catch { return NextResponse.json({ error: "Invalid JSON" }, { status: 400 }); }
 
   const existing = intelligenceDb.interactiveSessions.findById(id);

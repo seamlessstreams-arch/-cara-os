@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveSignInStaff } from "@/lib/attendance/sign-in-service";
 import { acknowledgeEmergency, resolveEmergency } from "@/lib/staffing/emergency-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   let body: { action?: "acknowledge" | "resolve" };
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

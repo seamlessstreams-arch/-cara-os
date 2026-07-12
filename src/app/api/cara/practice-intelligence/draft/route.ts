@@ -11,6 +11,7 @@ import { generateDraft, type CaraDraftType } from "@/lib/cara-practice/cara-draf
 import { getUserRoleFromRequest, getUserIdFromRequest } from "@/lib/auth-guard";
 import { appRoleToCaraRole, checkCaraAccess } from "@/lib/cara/cara-permissions";
 import type { PracticeSourceType } from "@/lib/cara-practice/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,9 @@ export async function POST(req: Request) {
     today?: string;
   };
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

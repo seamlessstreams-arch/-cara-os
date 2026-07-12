@@ -12,6 +12,7 @@ import {
   SetOrgStatusSchema,
   setOrgStatus,
 } from "@/lib/hq/hq-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,9 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Platform admin only" }, { status: 403 });
   }
   const { id } = await params;
-  const body = await req.json().catch(() => null);
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const parsed = SetOrgStatusSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid status" }, { status: 400 });

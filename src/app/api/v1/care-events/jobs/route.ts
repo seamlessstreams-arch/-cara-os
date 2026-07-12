@@ -3,6 +3,7 @@ import { db } from "@/lib/db/store";
 import { requirePermissionAsync } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { CareEventJob, JobType } from "@/types/care-events";
+import { readJsonBody } from "@/lib/http/read-json";
 
 /**
  * GET /api/v1/care-events/jobs
@@ -64,7 +65,9 @@ export async function POST(req: NextRequest) {
 
   let body: { care_event_id?: string; job_type?: JobType; max_jobs?: number } = {};
   try {
-    body = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data;
   } catch {
     // empty body is fine
   }

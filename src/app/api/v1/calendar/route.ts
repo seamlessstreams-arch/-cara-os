@@ -6,6 +6,7 @@ import {
   getCalendarFeed,
 } from "@/lib/calendar/calendar-service";
 import { ALL_CALENDAR_SOURCES, type CalendarSource } from "@/lib/calendar/calendar-types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,9 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => null);
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const parsed = CreateEventSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(

@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db/store";
 import type { Task } from "@/types";
 import type { DocumentSuggestedTask, UploadedDocument } from "@/types/documents";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +14,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   const { id } = await ctx.params;
   const actor = req.headers.get("x-user-id") || req.headers.get("cs_user_id") || "system";
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { body = {}; }
   const only: string[] | null = Array.isArray(body.taskIds) ? body.taskIds.map(String) : null;
 
   const doc = db.uploadedDocuments.findById(id) as UploadedDocument | undefined;

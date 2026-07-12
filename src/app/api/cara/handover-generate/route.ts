@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerClient, isSupabaseEnabled } from "@/lib/supabase/server";
 import { orchestrate } from "@/lib/cara/orchestrator";
 import type { CaraRequest } from "@/lib/cara/orchestrator/types";
+import { readJsonBody } from "@/lib/http/read-json";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -201,7 +202,9 @@ async function fetchLiveShiftData(homeId: string, shiftDate: string, _shiftPerio
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as HandoverGenerateRequest;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    const body = __parsed.data as HandoverGenerateRequest;
 
     if (!body.homeId || !body.userId || !body.role) {
       return NextResponse.json(

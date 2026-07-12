@@ -28,7 +28,9 @@ const MAX = 100;
 export async function POST(req: NextRequest) {
   let payload: unknown = null;
   try {
-    payload = await req.json();
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    payload = __parsed.data;
   } catch {
     // Malformed / empty body — acknowledge without recording.
     return new NextResponse(null, { status: 204 });

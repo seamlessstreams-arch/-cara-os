@@ -16,11 +16,14 @@ import { getStore } from "@/lib/db/store";
 import { invokeAiGateway } from "@/lib/cara/ai-gateway";
 import { INTERVIEW_ROLES } from "@/lib/engines/interview-pack-engine";
 import type { EmployerValuesProfile, CandidateValuesProfile } from "@/lib/engines/values-match-engine";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const AI_DISCLAIMER = "AI suggestions require professional judgement and manager approval. Review, edit or reject before use.";
 
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => ({} as any));
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
   const role = String(body.role || INTERVIEW_ROLES[0].key);
   const candidateId = body.candidateId ? String(body.candidateId) : null;
   const roleLabel = (INTERVIEW_ROLES.find((r) => r.key === role) ?? INTERVIEW_ROLES[0]).label;

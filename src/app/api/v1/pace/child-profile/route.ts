@@ -7,6 +7,7 @@ import { db } from "@/lib/db/store";
 import { requirePermission } from "@/lib/auth-guard";
 import { PERMISSIONS } from "@/lib/permissions";
 import type { ChildPACEProfile } from "@/lib/cara-intelligence/pace";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,9 @@ export async function PUT(req: Request) {
   const auth = requirePermission(req, PERMISSIONS.EDIT_YOUNG_PEOPLE);
   if (auth instanceof NextResponse) return auth;
   let body: any = {};
-  try { body = await req.json(); } catch { body = {}; }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { body = {}; }
   const childId = String(body.childId ?? "");
   if (!childId) return NextResponse.json({ error: "childId is required" }, { status: 400 });
 

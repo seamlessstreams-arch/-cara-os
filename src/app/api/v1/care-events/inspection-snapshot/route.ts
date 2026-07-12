@@ -13,6 +13,7 @@ import {
   listPersistedSnapshots,
 } from "@/lib/care-events/inspection-snapshot";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const DEFAULT_HOME_ID = "home_oak";
 
@@ -32,7 +33,9 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   let body: { home_id?: string } = {};
-  try { body = await req.json(); } catch { /* allow empty body */ }
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  try { body = __parsed.data; } catch { /* allow empty body */ }
   const homeId = body.home_id ?? DEFAULT_HOME_ID;
 
   const guard = requireCaraStudioPermission(req, body as Record<string, unknown>, {

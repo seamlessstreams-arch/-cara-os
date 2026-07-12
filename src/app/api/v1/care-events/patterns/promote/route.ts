@@ -14,6 +14,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireCaraStudioPermission } from "@/lib/cara/cara-studio-guard";
 import { appendCaraAudit } from "@/lib/cara/cara-audit-trail";
 import { promoteCareEventPatternsToReg45 } from "@/lib/care-events/pattern-reg45-bridge";
+import { readJsonBody } from "@/lib/http/read-json";
 
 function posInt(value: unknown): number | undefined {
   if (typeof value !== "number") return undefined;
@@ -23,7 +24,9 @@ function posInt(value: unknown): number | undefined {
 export async function POST(req: NextRequest) {
   let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const __parsed = await readJsonBody(req);
+    if (!__parsed.ok) return __parsed.response;
+    body = __parsed.data as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }

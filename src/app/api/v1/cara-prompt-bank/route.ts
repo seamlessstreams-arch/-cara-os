@@ -17,6 +17,7 @@ import { getStore } from "@/lib/db/store";
 import { generateId } from "@/lib/utils";
 import { INCIDENT_TYPES, buildWorkflowChecklist, type PromptBankEntry } from "@/lib/cara-incident/cara-incident-engine";
 import { currentUserId, logIncidentAudit } from "@/lib/cara-incident/incident-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 const CATEGORIES = ["co_regulation", "deescalation", "restorative", "safeguarding", "recording", "child_voice", "manager_oversight", "staff_reflection", "compliance", "post_incident_learning"];
 
@@ -28,7 +29,9 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed2 = await readJsonBody(req);
+  if (!__parsed2.ok) return __parsed2.response;
+  const body = __parsed2.data as any;
   const prompt_text = String(body.prompt_text ?? "").trim();
   const category = CATEGORIES.includes(String(body.category)) ? String(body.category) : "co_regulation";
   const incident_type = INCIDENT_TYPES.some((t) => t.key === body.incident_type) ? String(body.incident_type) : null;
@@ -57,7 +60,9 @@ export async function POST(req: Request) {
 }
 
 export async function PATCH(req: Request) {
-  const body = (await req.json().catch(() => ({}))) as any;
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as any;
   const id = String(body.id ?? "").trim();
   const store = getStore() as any;
   const bank: PromptBankEntry[] = store.caraPromptBank ?? [];

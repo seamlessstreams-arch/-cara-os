@@ -7,6 +7,7 @@ import {
   setAttendeeResponse,
   updateCalendarEvent,
 } from "@/lib/calendar/calendar-service";
+import { readJsonBody } from "@/lib/http/read-json";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,9 @@ const RsvpSchema = z.object({
 
 export async function PATCH(req: Request, { params }: Params) {
   const { id } = await params;
-  const body = await req.json().catch(() => null);
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data;
 
   // RSVP branch: { rsvp: { attendee_id, response } }
   const rsvp = RsvpSchema.safeParse(body);
