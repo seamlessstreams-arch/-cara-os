@@ -124,6 +124,15 @@ const FLAGS = {
     description:
       "Let the automation engine EXECUTE safe rule actions (create task / notify / audit-log). Off = simulate-only (today's behaviour). Official-record actions always require human confirmation regardless.",
   },
+  recurring_checks: {
+    key: "recurring_checks",
+    env: "CARA_RECURRING_CHECKS",
+    polarity: "opt_in",
+    default: false,
+    stability: "beta",
+    description:
+      "Materialise the recurring compliance checks (fire alarm, medication audit, water temps, …) as tasks each period via the cron endpoint. Off = read-only engine, no tasks created.",
+  },
 } as const satisfies Record<string, FeatureFlag>;
 
 export type FlagKey = keyof typeof FLAGS;
