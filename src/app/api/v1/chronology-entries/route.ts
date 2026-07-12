@@ -27,14 +27,28 @@ export async function POST(req: NextRequest) {
 
   const identity = await getRequestIdentity(req);
   if (identity instanceof NextResponse) return identity;
-  let body: Record<string, unknown>;
-  try {
-    const __parsed = await readJsonBody(req);
-    if (!__parsed.ok) return __parsed.response;
-    body = __parsed.data;
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  const __parsed = await readJsonBody(req);
+  if (!__parsed.ok) return __parsed.response;
+  const body = __parsed.data as Record<string, unknown>;
+
+  // A chronology row is part of a child's timeline of record — an empty POST
+  // must not mint a blank entry (live probe proved `{}` returned 201). Require
+  // the identifying essentials; every real caller already sends them.
+  const missing = ["child_id", "date"].filter(
+    (f) => typeof body[f] !== "string" || !(body[f] as string).trim(),
+  );
+  const hasText =
+    (typeof body.title === "string" && body.title.trim()) ||
+    (typeof body.description === "string" && body.description.trim());
+  if (missing.length > 0 || !hasText) {
+    return NextResponse.json(
+      { error: `Missing required fields: ${[...missing, ...(hasText ? [] : ["title or description"])].join(", ")}` },
+      { status: 400 },
+    );
   }
-  const entry = db.chronology.create(body);
+  const denied = assertChildHomeAccess(identity, body.child_id as string);
+  if (denied) return denied;
+
+  const entry = db.chronology.create({ recorded_by: identity.userId, ...body });
   return NextResponse.json({ data: entry }, { status: 201 });
 }
