@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isFeatureEnabled } from "@/lib/config/feature-flags";
 import { runDueReminders } from "@/lib/calendar/calendar-service";
+import { materialiseRecurringChecks } from "@/lib/recurring-checks/materialise";
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CARA — SCHEDULED JOBS ENDPOINT (Phase 1 infra · 3/3, Vercel cron)
@@ -33,6 +34,8 @@ interface JobResult {
 /** Registered scheduled jobs. Each must be idempotent (safe to run repeatedly). */
 const JOBS: { name: string; run: (now: string) => Record<string, unknown> }[] = [
   { name: "due_reminders", run: (now) => runDueReminders(now) },
+  // Flag-gated internally (recurring_checks): off → {enabled:false, created:0}.
+  { name: "recurring_checks", run: (now) => materialiseRecurringChecks(now) },
 ];
 
 function isAuthorised(request: NextRequest): boolean {
