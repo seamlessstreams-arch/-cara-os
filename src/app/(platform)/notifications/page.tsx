@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Badge } from "@/components/ui/badge";
@@ -126,6 +126,15 @@ export default function NotificationsPage() {
     actioned: entries.filter(e => e.status === "actioned").length,
   }), [entries]);
 
+  // Progressive disclosure — cap both notification lists so a year-two home
+  // doesn't render every accumulated alert at once. Tabs/stats/export keep the
+  // full lists; only rendering is capped.
+  const [visibleCount, setVisibleCount] = useState(50);
+  const [visibleCareEventCount, setVisibleCareEventCount] = useState(50);
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [tab, search, severityFilter, typeFilter, sortBy]);
+
   const setStatus = (id: string, status: AlertStatus) => {
     setLocalStatuses((prev) => ({ ...prev, [id]: status }));
   };
@@ -192,7 +201,7 @@ export default function NotificationsPage() {
               Care Event Alerts ({unreadCareEventNotifs.length} unread)
             </span>
           </div>
-          {unreadCareEventNotifs.map((n) => (
+          {unreadCareEventNotifs.slice(0, visibleCareEventCount).map((n) => (
             <div
               key={n.id}
               className={cn(
@@ -232,6 +241,17 @@ export default function NotificationsPage() {
               </div>
             </div>
           ))}
+          {unreadCareEventNotifs.length > visibleCareEventCount && (
+            <div className="flex justify-center pt-1">
+              <button
+                type="button"
+                onClick={() => setVisibleCareEventCount((c) => c + 50)}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--cs-border)] bg-[var(--cs-surface-elevated,#fff)] px-4 py-2 text-[13px] font-semibold text-[var(--cs-text-secondary,#5a6d74)] shadow-[var(--cs-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--cs-shadow-card)]"
+              >
+                Show more ({unreadCareEventNotifs.length - visibleCareEventCount} more)
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -306,7 +326,7 @@ export default function NotificationsPage() {
           </div>
         )}
 
-        {filtered.map(n => {
+        {filtered.slice(0, visibleCount).map(n => {
           const tc = TYPE_CONFIG[n.type];
           const sc = SEVERITY_CONFIG[n.severity];
           const Icon = tc?.icon || Bell;
@@ -361,6 +381,18 @@ export default function NotificationsPage() {
             </div>
           );
         })}
+
+        {filtered.length > visibleCount && (
+          <div className="flex justify-center pt-2">
+            <button
+              type="button"
+              onClick={() => setVisibleCount((c) => c + 50)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[var(--cs-border)] bg-[var(--cs-surface-elevated,#fff)] px-4 py-2 text-[13px] font-semibold text-[var(--cs-text-secondary,#5a6d74)] shadow-[var(--cs-shadow-soft)] transition hover:-translate-y-0.5 hover:shadow-[var(--cs-shadow-card)]"
+            >
+              Show more ({filtered.length - visibleCount} more)
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="mt-8 rounded-lg border border-dashed p-4">
