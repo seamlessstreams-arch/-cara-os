@@ -7,6 +7,7 @@
 // ══════════════════════════════════════════════════════════════════════════════
 
 import React, { useMemo, useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -958,24 +959,36 @@ function ChildWeeklyReportSection() {
   const [selected, setSelected] = useState<string | null>(null);
   const childId = selected ?? children[0]?.id ?? null;
 
-  const [report, setReport] = useState<WeeklyReport | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [enhancedText, setEnhancedText] = useState<string | null>(null);
   const [enhancing, setEnhancing] = useState(false);
   const [enhanceNote, setEnhanceNote] = useState<string | null>(null);
 
+  // TanStack Query (repo convention) keyed by child — cached per child, retried,
+  // deduped; switching back to a child is instant. Replaces useEffect+fetch.
+  const reportQuery = useQuery({
+    queryKey: ["cpie-weekly-report", childId],
+    enabled: !!childId,
+    queryFn: async () => {
+      const r = await fetch(
+        `/api/v1/cpie/weekly-intelligence?child_id=${encodeURIComponent(childId!)}`,
+        { headers: { "x-user-role": "registered_manager" } },
+      );
+      if (!r.ok) throw new Error(`Cara returned ${r.status}`);
+      const j = await r.json();
+      return ((j.report as WeeklyReport) ?? null);
+    },
+  });
+  const report = reportQuery.data ?? null;
+  const loading = reportQuery.isLoading;
+  const error = reportQuery.isError
+    ? (reportQuery.error instanceof Error ? reportQuery.error.message : "Couldn't load the report.")
+    : null;
+
+  // The AI-polish overlay is per-child — clear it when the child changes.
   useEffect(() => {
-    if (!childId) return;
-    let cancelled = false;
-    setLoading(true); setError(null); setReport(null); setEnhancedText(null); setEnhanceNote(null);
-    fetch(`/api/v1/cpie/weekly-intelligence?child_id=${encodeURIComponent(childId)}`, { headers: { "x-user-role": "registered_manager" } })
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`Cara returned ${r.status}`))))
-      .then((j) => { if (!cancelled) setReport((j.report as WeeklyReport) ?? null); })
-      .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : "Couldn't load the report."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
+    setEnhancedText(null);
+    setEnhanceNote(null);
   }, [childId]);
 
   const handleCopy = async () => {
