@@ -11,20 +11,17 @@ type ToolEntry = {
   subtitle: string;
   category: ToolCategory;
   href: string;
-  status: "live" | "coming_soon";
   description: string;
   regulatoryRef?: string;
 };
 
 const TOOLS: ToolEntry[] = [
-  // ── Live tools ──
   {
     id: "incident-timing",
     title: "Incident Timing Intelligence",
     subtitle: "When do incidents cluster?",
     category: "incident_behaviour",
     href: "/cara-toolkit/incident-timing",
-    status: "live",
     description:
       "Time-of-day distribution, peak risk windows, severity by period, type breakdown, and deterministic prevention insights derived from your incident records.",
     regulatoryRef: "Reg 36, Reg 40",
@@ -35,7 +32,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Is the team under pressure?",
     category: "workforce_development",
     href: "/cara-toolkit/workforce-risk",
-    status: "live",
     description:
       "Staffing stability, supervision quality, training compliance, burnout signals, and overall workforce risk level — all from your seeded workforce records.",
     regulatoryRef: "Reg 32, Reg 33, Reg 34",
@@ -46,19 +42,16 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Did learning lead to change?",
     category: "lessons_learned",
     href: "/cara-toolkit/lessons-learned",
-    status: "live",
     description:
       "Captures learning from incidents, Reg 44 visits, and supervision. Tracks whether each lesson generated an action, and whether the action was completed.",
     regulatoryRef: "Reg 45, Reg 37",
   },
-  // ── Coming soon ──
   {
     id: "post-incident-reflection",
     title: "Post-Incident Reflection Tool",
     subtitle: "What happened and what will change?",
     category: "incident_behaviour",
     href: "/cara-toolkit/post-incident-reflection",
-    status: "live",
     description:
       "Debrief tracker: shows every incident, whether a reflection was completed, days to debrief, child's perspective, staff wellbeing, and follow-up actions.",
     regulatoryRef: "Reg 34",
@@ -69,7 +62,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Pattern, response and prevention",
     category: "missing_safeguarding",
     href: "/cara-toolkit/missing-absconding",
-    status: "live",
     description:
       "All missing episodes with risk level, duration, return home interview status, police reporting, and live alerts for currently missing children.",
     regulatoryRef: "Philomena protocol, Reg 40",
@@ -80,7 +72,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Places, people, routes, risks",
     category: "contextual_exploitation",
     href: "/cara-toolkit/contextual-exploitation",
-    status: "live",
     description:
       "Cross-references risk assessments, high-risk missing episodes, and exploitation-linked incidents to surface children at contextual risk across multiple domains.",
   },
@@ -90,7 +81,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Risk domains, key work, overdue reviews",
     category: "child_voice_safety",
     href: "/cara-toolkit/my-safety-plan",
-    status: "live",
     description:
       "Per-child safety overview: active risk domains with levels and trends, overdue risk assessment reviews, key worker assignment, and last key work date.",
     regulatoryRef: "Reg 13, Reg 7",
@@ -101,7 +91,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Understanding behaviour as communication",
     category: "behaviour_support",
     href: "/cara-toolkit/behaviour-support",
-    status: "live",
     description:
       "Home-level trigger and strategy analysis with per-child profiles — frequency, high-intensity count, strategy effectiveness rate, and linked incidents.",
     regulatoryRef: "Reg 7, Reg 20",
@@ -112,7 +101,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Individual and team confidence",
     category: "workforce_development",
     href: "/cara-toolkit/staff-skills",
-    status: "live",
     description:
       "Training compliance rate, overdue mandatory training, supervision wellbeing scores, confidence levels, and development areas per staff member.",
     regulatoryRef: "Reg 32, Reg 33, Reg 34",
@@ -123,7 +111,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Beyond activity — what has changed?",
     category: "quality_assurance",
     href: "/cara-toolkit/quality-evaluation",
-    status: "live",
     description:
       "Five scored dimensions — relationships, safety, reflective practice, staff development, and regulatory compliance — each with evidence, gaps, and an overall score.",
     regulatoryRef: "Reg 45, SCCIF",
@@ -134,7 +121,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Baseline → Action → Voice → Change → Evidence",
     category: "showing_impact",
     href: "/cara-toolkit/showing-impact",
-    status: "live",
     description:
       "Per-child impact dashboard: incident trend, voice recorded, key work count, risk trend, and recent observations — showing what changed, not just what was done.",
   },
@@ -144,7 +130,6 @@ const TOOLS: ToolEntry[] = [
     subtitle: "Reg 44 · Reg 45 · Ofsted",
     category: "inspection_evidence",
     href: "/cara-toolkit/inspection-evidence",
-    status: "live",
     description:
       "Five Ofsted-mapped evidence sections — outcomes, safeguarding, quality, leadership, wishes and feelings — with strengths, gaps, and priority actions before inspection.",
     regulatoryRef: "Reg 44, Reg 45, Ofsted SCCIF",
@@ -183,64 +168,42 @@ function CategoryPill({ category }: { category: ToolCategory }) {
 }
 
 function ToolCard({ tool }: { tool: ToolEntry }) {
-  const isLive = tool.status === "live";
-  const inner = (
-    <div
-      className={`h-full rounded-2xl border p-5 flex flex-col gap-3 transition-all ${
-        isLive
-          ? "border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm cursor-pointer"
-          : "border-slate-100 bg-slate-50 cursor-default opacity-75"
-      }`}
-    >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-1">
-            <CategoryPill category={tool.category} />
-            {!isLive && (
-              <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs text-slate-400">
-                Coming soon
-              </span>
-            )}
+  return (
+    <Link href={tool.href}>
+      <div className="h-full rounded-2xl border p-5 flex flex-col gap-3 transition-all border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm cursor-pointer">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <CategoryPill category={tool.category} />
+            </div>
+            <h3 className="font-semibold text-slate-900 text-sm leading-snug">
+              {tool.title}
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">{tool.subtitle}</p>
           </div>
-          <h3 className="font-semibold text-slate-900 text-sm leading-snug">
-            {tool.title}
-          </h3>
-          <p className="text-xs text-slate-500 mt-0.5">{tool.subtitle}</p>
-        </div>
-        {isLive && (
           <span className="shrink-0 w-2 h-2 rounded-full bg-green-400 mt-1" />
-        )}
-      </div>
+        </div>
 
-      <p className="text-xs text-slate-600 leading-relaxed flex-1">
-        {tool.description}
-      </p>
+        <p className="text-xs text-slate-600 leading-relaxed flex-1">
+          {tool.description}
+        </p>
 
-      <div className="flex items-center justify-between gap-2">
-        {tool.regulatoryRef ? (
-          <span className="text-xs text-slate-400">{tool.regulatoryRef}</span>
-        ) : (
-          <span />
-        )}
-        {isLive && (
+        <div className="flex items-center justify-between gap-2">
+          {tool.regulatoryRef ? (
+            <span className="text-xs text-slate-400">{tool.regulatoryRef}</span>
+          ) : (
+            <span />
+          )}
           <span className="text-xs font-medium text-blue-600">
             Open →
           </span>
-        )}
+        </div>
       </div>
-    </div>
+    </Link>
   );
-
-  if (isLive) {
-    return <Link href={tool.href}>{inner}</Link>;
-  }
-  return <div>{inner}</div>;
 }
 
 export default function CaraToolkitPage() {
-  const liveCount = TOOLS.filter((t) => t.status === "live").length;
-  const totalCount = TOOLS.length;
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
       {/* Header */}
@@ -248,7 +211,7 @@ export default function CaraToolkitPage() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-slate-900">Cara Visual Practice Toolkit</h1>
           <span className="rounded-full bg-green-100 border border-green-200 px-2.5 py-0.5 text-xs font-semibold text-green-700">
-            {liveCount} live
+            {TOOLS.length} live
           </span>
         </div>
         <p className="text-sm text-slate-600 max-w-2xl">
@@ -285,14 +248,9 @@ export default function CaraToolkitPage() {
 
       {/* Tool grid */}
       <div>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-            {totalCount} tools
-          </h2>
-          <p className="text-xs text-slate-400">
-            {totalCount - liveCount} coming soon
-          </p>
-        </div>
+        <h2 className="mb-4 text-sm font-semibold text-slate-700 uppercase tracking-wide">
+          {TOOLS.length} tools
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {TOOLS.map((tool) => (
             <ToolCard key={tool.id} tool={tool} />
