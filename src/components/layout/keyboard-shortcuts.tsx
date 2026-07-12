@@ -42,7 +42,8 @@ export function KeyboardShortcuts() {
     {
       label: "Actions",
       shortcuts: [
-        { keys: ["⌘", "K"], description: "Open command palette" },
+        { keys: ["⌘", "K"], description: "Open command palette (search everything)" },
+        { keys: ["⌘", "J"], description: "Quick create (record anything)" },
         { keys: ["N"], description: "New entry (context-dependent)" },
         { keys: ["?"], description: "Show this help" },
       ],
