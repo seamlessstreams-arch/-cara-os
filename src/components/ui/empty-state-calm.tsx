@@ -41,7 +41,9 @@ export function CalmEmptyState({
     <div
       className={cn(
         "flex flex-col items-center justify-center text-center",
-        "rounded-2xl border border-dashed border-[var(--cs-border)] bg-white",
+        // Token surface (not bg-white) so it renders correctly on the dark skin
+        // without the hardcoded-utility shim.
+        "rounded-2xl border border-dashed border-[var(--cs-border)] bg-[var(--cs-surface-elevated)]",
         "px-8 py-16",
         className,
       )}
