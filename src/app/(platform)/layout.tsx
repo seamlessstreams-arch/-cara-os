@@ -7,6 +7,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context";
 import { PrivacyProvider } from "@/contexts/privacy-context";
 import { KeyboardShortcuts } from "@/components/layout/keyboard-shortcuts";
+import { CommandPalette } from "@/components/layout/command-palette";
 import { useCareEventsRealtime } from "@/hooks/use-care-events-realtime";
 import { useAuthContext } from "@/contexts/auth-context";
 import { CaraGlobalButton } from "@/components/cara/cara-global-button";
@@ -53,6 +54,7 @@ export default function PlatformLayout({
             <PlatformContent>{children}</PlatformContent>
             <BottomNav />
             <KeyboardShortcuts />
+            <CommandPalette />
             <RealtimeSubscriptions />
             <CaraGlobalButton />
             <QuickCreateFab />

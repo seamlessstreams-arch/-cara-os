@@ -440,11 +440,13 @@ export function QuickCreateFab() {
     [closeModal],
   );
 
-  // -- Keyboard shortcut: Cmd+K / Ctrl+K -------------------------------------
+  // -- Keyboard shortcut: Cmd+J / Ctrl+J --------------------------------------
+  // ⌘K belongs to the global command palette (single owner — both used to claim
+  // it, so pressing ⌘K opened two overlapping modals). ⌘J = "jot / create".
 
   useEffect(() => {
     function handleGlobalKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
         e.stopPropagation();
         if (open) {
@@ -919,7 +921,7 @@ export function QuickCreateFab() {
                   <Command className="h-2.5 w-2.5 inline" />
                 </kbd>
                 <kbd className="px-1 py-0.5 bg-gray-100 rounded text-[10px] font-mono">
-                  K
+                  J
                 </kbd>
               </div>
             </div>

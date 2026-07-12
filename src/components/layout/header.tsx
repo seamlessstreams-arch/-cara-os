@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { GlobalCreateMenu } from "@/components/common/global-create-menu";
 import { CaraDrawer, type CaraDrawerContext } from "@/components/cara/cara-drawer";
 import { NotificationCentre } from "@/components/layout/notification-centre";
-import { CommandPalette } from "@/components/layout/command-palette";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { NAV_GROUPS } from "@/config/navigation";
@@ -105,7 +104,7 @@ export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
           <div className="flex items-center gap-2 shrink-0">
             {/* Search (opens Command Palette) */}
             <button
-              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+              onClick={() => document.dispatchEvent(new CustomEvent("cara:open-palette"))}
               className="hidden sm:flex items-center gap-2 rounded-xl border border-[var(--cs-border)] bg-[var(--cs-surface)] px-3 py-1.5 text-[var(--cs-text-muted)] hover:bg-[var(--cs-cara-gold-bg)] hover:border-[var(--cs-cara-gold-soft)] hover:text-[var(--cs-text-secondary)] transition-colors"
               title="Search (⌘K)"
             >
@@ -116,7 +115,7 @@ export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
               </kbd>
             </button>
             <button
-              onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true }))}
+              onClick={() => document.dispatchEvent(new CustomEvent("cara:open-palette"))}
               className="sm:hidden flex h-8 w-8 items-center justify-center rounded-xl text-[var(--cs-text-muted)] hover:bg-[var(--cs-surface)] hover:text-[var(--cs-text-secondary)] transition-colors"
               title="Search"
             >
@@ -149,7 +148,6 @@ export function Header({ title, subtitle, actions, caraContext }: HeaderProps) {
           </div>
 
           {/* Command Palette (global Cmd+K) */}
-          <CommandPalette />
         </div>
 
         {/* ── Optional subtitle bar ── */}
