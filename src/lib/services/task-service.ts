@@ -10,6 +10,7 @@ import type {
   CsTaskCategory, CsTaskPriority, CsTaskStatus,
   ServiceResult,
 } from "@/types/operations";
+import * as fallback from "./task-store-fallback";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SB = any;
@@ -63,7 +64,7 @@ export async function listTasks(
   },
 ): Promise<ServiceResult<CsTask[]>> {
   const s = sb();
-  if (!s) return { ok: true, data: [] };
+  if (!s) return fallback.listTasksFromStore(homeId, opts);
 
   let q = (s.from("cs_tasks") as SB).select("*").eq("home_id", homeId);
 
@@ -93,7 +94,7 @@ export async function listTasks(
 
 export async function getTask(taskId: string): Promise<ServiceResult<CsTask>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) return fallback.getTaskFromStore(taskId);
 
   const { data, error } = await (s.from("cs_tasks") as SB)
     .select("*")
@@ -129,7 +130,7 @@ export async function createTask(input: {
   created_by: string;
 }): Promise<ServiceResult<CsTask>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) return fallback.createTaskInStore(input);
 
   const reference = generateTaskReference(input.category);
 
@@ -177,7 +178,7 @@ export async function updateTask(
   >>,
 ): Promise<ServiceResult<CsTask>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) return fallback.updateTaskInStore(taskId, updates as Record<string, unknown>);
 
   const { data, error } = await (s.from("cs_tasks") as SB)
     .update({ ...updates, updated_at: new Date().toISOString() })
@@ -206,7 +207,7 @@ export async function completeTask(
   evidenceNote?: string,
 ): Promise<ServiceResult<CsTask>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) return fallback.completeTaskInStore(taskId, userId, evidenceNote);
 
   // Check if sign-off is required
   const { data: task } = await (s.from("cs_tasks") as SB)
@@ -240,7 +241,7 @@ export async function signOffTask(
   userId: string,
 ): Promise<ServiceResult<CsTask>> {
   const s = sb();
-  if (!s) return { ok: false, error: "Supabase not configured" };
+  if (!s) return fallback.signOffTaskInStore(taskId, userId);
 
   const { data, error } = await (s.from("cs_tasks") as SB)
     .update({
