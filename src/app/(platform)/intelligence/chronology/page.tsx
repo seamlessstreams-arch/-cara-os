@@ -151,6 +151,7 @@ export default function ChronologyIntelligencePage() {
           stream: true,
           page_context: "chronology",
           user_role: "registered_manager",
+          child_id: selectedChildId,
           question: `Generate a ${periodObj.label} chronology summary for ${childName}`,
           source_content:
             pastedNotes ||
