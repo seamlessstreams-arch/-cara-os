@@ -8,7 +8,8 @@
 // RM can see at a glance what needs attention before inspection.
 // ══════════════════════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState, useCallback } from "react";
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/ui/page-shell";
 import type {
   CaraStudioGap,
@@ -48,30 +49,27 @@ const REGULATION_AREAS: RegulationArea[] = [
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function OfstedReadinessDashboard() {
-  const [gaps, setGaps] = useState<CaraStudioGap[]>([]);
-  const [warnings, setWarnings] = useState<CaraStudioEarlyWarning[]>([]);
-  const [contradictions, setContradictions] = useState<CaraStudioContradiction[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    try {
+  // TanStack Query (repo convention) instead of useEffect+fetch — shared cache,
+  // retry and dedupe for free, no hand-rolled loading state.
+  const readiness = useQuery({
+    queryKey: ["cara-studio", "ofsted-readiness"],
+    queryFn: async () => {
       const [gapRes, warnRes, contraRes] = await Promise.all([
         fetch("/api/cara-studio/gaps").then((r) => r.json()),
         fetch("/api/cara-studio/early-warnings").then((r) => r.json()),
         fetch("/api/cara-studio/contradictions").then((r) => r.json()),
       ]);
-      setGaps(gapRes.data ?? []);
-      setWarnings(warnRes.data ?? []);
-      setContradictions(contraRes.data ?? []);
-    } catch (err) {
-      console.error("[ofsted-readiness] Fetch error:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchData(); }, [fetchData]);
+      return {
+        gaps: (gapRes.data ?? []) as CaraStudioGap[],
+        warnings: (warnRes.data ?? []) as CaraStudioEarlyWarning[],
+        contradictions: (contraRes.data ?? []) as CaraStudioContradiction[],
+      };
+    },
+  });
+  const gaps = readiness.data?.gaps ?? [];
+  const warnings = readiness.data?.warnings ?? [];
+  const contradictions = readiness.data?.contradictions ?? [];
+  const loading = readiness.isLoading;
 
   // Compute readiness score
   const complianceWarnings = warnings.filter((w) => w.warning_type === "compliance_risk");
