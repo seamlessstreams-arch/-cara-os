@@ -89,7 +89,11 @@ export function ReferralIntakeDialog({
         if (f.referral_source) setSource(f.referral_source);
         if (f.presenting_needs.length) setNeeds(f.presenting_needs.join("\n"));
         if (f.risk_factors.length) setRisks(f.risk_factors.join("\n"));
-        setNote(`Prefilled ${res.data.found.length} of 7 fields — review every field before saving.`);
+        const aiFilled = res.ai?.used ? res.ai.filled.length : 0;
+        setNote(
+          `Prefilled ${res.data.found.length} of 7 fields — review every field before saving.` +
+            (aiFilled > 0 ? ` ${aiFilled} suggested by Cara AI — check those carefully.` : ""),
+        );
         toast.success("Referral extracted — please check each field.");
       },
       onError: () => toast.error("Could not extract from that text."),
