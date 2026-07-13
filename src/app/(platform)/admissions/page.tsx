@@ -5,11 +5,9 @@ import { PageShell } from "@/components/layout/page-shell";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ExportButton, type ExportColumn } from "@/components/ui/export-button";
 import { PrintButton } from "@/components/ui/print-button";
 import { cn } from "@/lib/utils";
@@ -18,7 +16,7 @@ import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-acti
 import { useAdmissions, useCreateReferral, useUpdateReferral } from "@/hooks/use-admissions";
 import { SmartLinkPanel } from "@/components/intelligence/smart-link-panel";
 import { getStaffName } from "@/lib/seed-data";
-import type { AdmissionReferral, AdmissionReferralStatus, AdmissionReferralSource } from "@/types/extended";
+import type { AdmissionReferral, AdmissionReferralStatus } from "@/types/extended";
 import { ADMISSION_REFERRAL_STATUS_LABEL, ADMISSION_REFERRAL_SOURCE_LABEL } from "@/types/extended";
 import {
   ArrowUpDown, ChevronDown, ChevronUp, Plus, Search,
@@ -27,6 +25,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { ReferralIntakeDialog } from "@/components/admissions/referral-intake-dialog";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
@@ -310,72 +309,18 @@ export default function AdmissionsPage() {
         </Card>
       </div>
 
-      {/* ── New referral dialog ───────────────────────────────────────────── */}
-      <Dialog open={showNew} onOpenChange={setShowNew}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-          <DialogHeader><DialogTitle>New Referral</DialogTitle></DialogHeader>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            createReferral.mutate(
-              { child_name: "New Referral", status: "new", referral_date: new Date().toISOString().slice(0, 10), staff_id: "staff_darren" },
-              { onSuccess: () => toast.success("Referral logged"), onError: () => toast.error("Failed to log referral") },
-            );
-            setShowNew(false);
-          }} className="space-y-3">
-            <div>
-              <label htmlFor="ref-name" className="text-sm font-medium">Child&apos;s Name / Reference</label>
-              <Input id="ref-name" placeholder="Child name or anonymised reference" />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label htmlFor="ref-dob" className="text-sm font-medium">Date of Birth</label>
-                <Input id="ref-dob" type="date" />
-              </div>
-              <div>
-                <label htmlFor="ref-gender" className="text-sm font-medium">Gender</label>
-                <Select><SelectTrigger id="ref-gender"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="male">Male</SelectItem>
-                    <SelectItem value="female">Female</SelectItem>
-                    <SelectItem value="non_binary">Non-binary</SelectItem>
-                    <SelectItem value="prefer_not_to_say">Prefer not to say</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div>
-              <label htmlFor="ref-referred-by" className="text-sm font-medium">Referred By</label>
-              <Input id="ref-referred-by" placeholder="Name and role of referring professional" />
-            </div>
-            <div>
-              <label htmlFor="ref-la" className="text-sm font-medium">Local Authority</label>
-              <Input id="ref-la" placeholder="Placing local authority" />
-            </div>
-            <div>
-              <label htmlFor="ref-source" className="text-sm font-medium">Source</label>
-              <Select><SelectTrigger id="ref-source"><SelectValue placeholder="Referral source" /></SelectTrigger>
-                <SelectContent>
-                  {(Object.entries(ADMISSION_REFERRAL_SOURCE_LABEL) as [AdmissionReferralSource, string][]).map(([k, v]) => (
-                    <SelectItem key={k} value={k}>{v}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label htmlFor="ref-needs" className="text-sm font-medium">Presenting Needs</label>
-              <Textarea id="ref-needs" placeholder="Key needs (one per line)" rows={3} />
-            </div>
-            <div>
-              <label htmlFor="ref-risks" className="text-sm font-medium">Risk Factors</label>
-              <Textarea id="ref-risks" placeholder="Known risk factors (one per line)" rows={2} />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowNew(false)}>Cancel</Button>
-              <Button type="submit" disabled={createReferral.isPending}>{createReferral.isPending ? <><Loader2 className="h-4 w-4 animate-spin mr-1" />Saving...</> : "Log Referral"}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {/* ── New referral dialog (paste-and-prefill + controlled form) ──────── */}
+      <ReferralIntakeDialog
+        open={showNew}
+        onOpenChange={setShowNew}
+        isSubmitting={createReferral.isPending}
+        onSubmit={(payload) =>
+          createReferral.mutate(payload, {
+            onSuccess: () => { toast.success("Referral logged"); setShowNew(false); },
+            onError: () => toast.error("Failed to log referral"),
+          })
+        }
+      />
       <CareEventsPanel
         title="Care Events — Admissions & Placements"
         category="general"
