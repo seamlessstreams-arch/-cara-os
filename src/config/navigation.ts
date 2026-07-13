@@ -660,6 +660,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Staff Wellbeing & Supervision", href: "/intelligence/cara/staff-wellbeing-supervision", icon: "HeartHandshake", module: "staff" },
       { label: "Practice Flag Intelligence", href: "/intelligence/cara/practice-flag-intelligence", icon: "Flag", module: "dashboard" },
       { label: "Shift Safety",         href: "/intelligence/cara/shift-safety",        icon: "CalendarClock", module: "staff"      },
+      { label: "Deployment Suitability (Reg 32)", href: "/intelligence/cara/reg32-deployment", icon: "ShieldCheck", module: "staff" },
       { label: "Accident & Injury Surveillance", href: "/intelligence/cara/accident-injury-surveillance-intelligence", icon: "ShieldAlert", module: "young-people" },
       { label: "Activity & Enrichment", href: "/intelligence/cara/activity-enrichment-intelligence", icon: "Sparkles", module: "young-people" },
       { label: "Missing Person & AWOL", href: "/intelligence/cara/missing-person-absent-authority-intelligence", icon: "MapPin", module: "young-people" },
