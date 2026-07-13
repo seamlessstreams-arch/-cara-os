@@ -50,6 +50,19 @@ export interface MatchingReferralLite {
   presenting_needs?: string[];
 }
 
+/** The third model (commissioning): PlacementReferral, name-keyed, no DOB. */
+export interface PlacementReferralLite {
+  id: string;
+  child_name: string;
+  referring_authority?: string;
+  referral_date?: string;
+  urgency?: string;
+  status?: string;
+  presenting_needs?: string[];
+  risk_factors?: string[];
+  placement_start_date?: string | null;
+}
+
 export type MatchConfidence = "exact" | "strong" | "weak" | "none";
 
 export interface OriginStory {
@@ -60,6 +73,7 @@ export interface OriginStory {
   match_basis: string;
   admission_referral?: AdmissionReferralLite;
   matching_referral?: MatchingReferralLite;
+  placement_referral?: PlacementReferralLite;
   /** The consolidated pre-placement facts, source-attributed. */
   presenting_needs: string[];
   risk_factors: string[];
@@ -94,6 +108,12 @@ function nameMatches(referralName: string, yp: YoungPersonLite): boolean {
   return ypNameForms(yp).some((f) => f === r);
 }
 
+/** A reusable matcher for one young person (for callers like the emergency
+ *  follow-ups engine that classify referrals per child). */
+export function makeChildNameMatcher(yp: YoungPersonLite): (referralName: string) => boolean {
+  return (referralName: string) => nameMatches(referralName, yp);
+}
+
 function confidenceFor(nameHit: boolean, dobHit: boolean | null): MatchConfidence {
   if (!nameHit) return "none";
   if (dobHit === true) return "exact";
@@ -109,6 +129,7 @@ export function buildOriginStory(
   yp: YoungPersonLite,
   admissionReferrals: readonly AdmissionReferralLite[],
   matchingReferrals: readonly MatchingReferralLite[],
+  placementReferrals: readonly PlacementReferralLite[] = [],
 ): OriginStory | null {
   // Best admission referral: name match, prefer DOB agreement, then latest date.
   const adCandidates = admissionReferrals
@@ -123,18 +144,29 @@ export function buildOriginStory(
 
   const admission = adCandidates[0];
   const matching = matchingReferrals.find((m) => nameMatches(m.child_name, yp));
+  // The commissioning model has no DOB — name-keyed only (strong at best).
+  const placement = placementReferrals.find((p) => nameMatches(p.child_name, yp));
 
-  if (!admission && !matching) return null;
+  if (!admission && !matching && !placement) return null;
 
-  const confidence: MatchConfidence = admission?.conf ?? (matching ? "strong" : "none");
+  const confidence: MatchConfidence = admission?.conf ?? (matching || placement ? "strong" : "none");
   const basis = admission
     ? admission.dobHit === true
       ? "Matched on name + date of birth."
       : "Matched on name (no date of birth on the referral to confirm)."
-    : "Matched on name via the matching referral only.";
+    : matching
+      ? "Matched on name via the matching referral only."
+      : "Matched on name via the commissioning referral only.";
 
   const presenting = Array.from(
-    new Set([...(admission?.r.presenting_needs ?? []), ...(matching?.presenting_needs ?? [])]),
+    new Set([
+      ...(admission?.r.presenting_needs ?? []),
+      ...(matching?.presenting_needs ?? []),
+      ...(placement?.presenting_needs ?? []),
+    ]),
+  );
+  const risks = Array.from(
+    new Set([...(admission?.r.risk_factors ?? []), ...(placement?.risk_factors ?? [])]),
   );
 
   return {
@@ -144,11 +176,12 @@ export function buildOriginStory(
     match_basis: basis,
     admission_referral: admission?.r,
     matching_referral: matching,
+    placement_referral: placement,
     presenting_needs: presenting,
-    risk_factors: admission?.r.risk_factors ?? [],
+    risk_factors: risks,
     referral_source: admission?.r.referral_source,
-    local_authority: admission?.r.local_authority ?? matching?.local_authority,
-    referral_date: admission?.r.referral_date ?? matching?.referral_date,
+    local_authority: admission?.r.local_authority ?? matching?.local_authority ?? placement?.referring_authority,
+    referral_date: admission?.r.referral_date ?? matching?.referral_date ?? placement?.referral_date,
   };
 }
 
