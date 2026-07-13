@@ -143,6 +143,16 @@ const FLAGS = {
     description:
       "Allow creating / updating / ending individual monitoring plans (observation levels are a restriction on the child — an official record). Off = the board stays read-only over seeded/existing plans; writes are a no-op. Writes are validator-gated (restriction acknowledged + rationale + child's views + 28-day review) and MANAGE_SAFEGUARDING-gated; never set automatically.",
   },
+  // ── Doc-Version-Workflow ───────────────────────────────────────────────────
+  doc_versioning_write: {
+    key: "doc_versioning_write",
+    env: "CARA_DOC_VERSIONING_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "experimental",
+    description:
+      "Allow recording document versions into the generic versioning spine (append-only snapshots + supersession chain). Off = the record endpoint is a no-op; reads always work. No doc type consumes the spine until its own adoption module lands.",
+  },
   // ── Phase-4 Workforce ──────────────────────────────────────────────────────
   candidate_to_staff_bridge: {
     key: "candidate_to_staff_bridge",

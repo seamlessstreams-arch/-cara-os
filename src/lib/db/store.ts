@@ -45,6 +45,7 @@ import {
 } from "@/lib/seed-practice-os";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
 import type { MonitoringPlan } from "@/lib/monitoring-plans/monitoring-plans-engine";
+import type { DocVersionRecord } from "@/lib/doc-versioning/doc-versioning-engine";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
 import type { RelationshipEntry } from "@/lib/protective-relationships/types";
@@ -2659,6 +2660,9 @@ const store = {
   riskAppetiteDomains: [] as RiskAppetiteDomain[],
   strategicRiskRecords: [] as StrategicRiskRecord[],
   riskManagementPlanRecords: [] as RiskManagementPlanRecord[],
+  // Generic document-version spine (Doc-Version-Workflow M2) — append-only;
+  // empty until a doc type adopts it (M3+).
+  documentVersions: [] as DocVersionRecord[],
   // Individual monitoring plans (Phase 5 M3) — one demo seed so the board shows.
   monitoringPlans: [
     {
@@ -18140,6 +18144,24 @@ export const db = {
       if (idx === -1) return null;
       store.riskManagementPlanRecords[idx] = { ...store.riskManagementPlanRecords[idx], ...data };
       return store.riskManagementPlanRecords[idx];
+    },
+  },
+
+  // Document-version spine (Doc-Version-Workflow M2). Append-only: rows are
+  // created and superseded (is_current flipped), never edited or deleted.
+  documentVersions: {
+    findAll: () => store.documentVersions,
+    findByDoc: (docType: string, docId: string) =>
+      store.documentVersions.filter((v) => v.doc_type === docType && v.doc_id === docId),
+    create: (record: Omit<DocVersionRecord, "id">): DocVersionRecord => {
+      const version: DocVersionRecord = { ...record, id: generateId("dv") };
+      store.documentVersions.push(version);
+      return version;
+    },
+    supersede: (ids: readonly string[]): void => {
+      for (const v of store.documentVersions) {
+        if (ids.includes(v.id)) v.is_current = false;
+      }
     },
   },
 
