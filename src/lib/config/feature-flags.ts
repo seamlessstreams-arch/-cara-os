@@ -133,6 +133,16 @@ const FLAGS = {
     description:
       "Materialise the recurring compliance checks (fire alarm, medication audit, water temps, …) as tasks each period via the cron endpoint. Off = read-only engine, no tasks created.",
   },
+  // ── Phase-5 Home-Ops ───────────────────────────────────────────────────────
+  monitoring_plans_write: {
+    key: "monitoring_plans_write",
+    env: "CARA_MONITORING_PLANS_WRITE",
+    polarity: "opt_in",
+    default: false,
+    stability: "beta",
+    description:
+      "Allow creating / updating / ending individual monitoring plans (observation levels are a restriction on the child — an official record). Off = the board stays read-only over seeded/existing plans; writes are a no-op. Writes are validator-gated (restriction acknowledged + rationale + child's views + 28-day review) and MANAGE_SAFEGUARDING-gated; never set automatically.",
+  },
   // ── Phase-4 Workforce ──────────────────────────────────────────────────────
   candidate_to_staff_bridge: {
     key: "candidate_to_staff_bridge",
