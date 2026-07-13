@@ -52,6 +52,9 @@ export interface StaffMember extends AuditFields {
   avatar_url: string | null;
   home_id: string;
   is_active: boolean;
+  /** Set when this record was created from a recruitment candidate (Phase 4
+   *  candidate→staff bridge). Absent on seed/legacy staff. */
+  candidate_id?: string | null;
 }
 
 // ── Young Person ─────────────────────────────────────────────────────────────

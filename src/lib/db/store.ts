@@ -11385,6 +11385,22 @@ export const db = {
     findAll: () => store.staff,
     findById: (id: string) => store.staff.find((s) => s.id === id),
     findActive: () => store.staff.filter((s) => s.is_active),
+    /** Reverse lookup for the candidate→staff bridge (idempotency). */
+    findByCandidate: (candidateId: string) =>
+      store.staff.find((s) => (s as StaffMember).candidate_id === candidateId) ?? null,
+    /** Append a new staff record (Phase 4 candidate→staff bridge). Seed staff are
+     *  otherwise read-only; this is the one sanctioned write path. */
+    create: (data: Partial<StaffMember>): StaffMember => {
+      const now = new Date().toISOString();
+      const member = {
+        ...data,
+        id: generateId("stf"),
+        created_at: now,
+        updated_at: now,
+      } as StaffMember;
+      store.staff.push(member);
+      return member;
+    },
   },
 
   // ── Young People ──────────────────────────────────────────────────────────

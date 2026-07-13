@@ -133,6 +133,16 @@ const FLAGS = {
     description:
       "Materialise the recurring compliance checks (fire alarm, medication audit, water temps, …) as tasks each period via the cron endpoint. Off = read-only engine, no tasks created.",
   },
+  // ── Phase-4 Workforce ──────────────────────────────────────────────────────
+  candidate_to_staff_bridge: {
+    key: "candidate_to_staff_bridge",
+    env: "CARA_CANDIDATE_TO_STAFF_BRIDGE",
+    polarity: "opt_in",
+    default: false,
+    stability: "beta",
+    description:
+      "Let a manager appoint a fully-cleared, appointed candidate into a real StaffMember record (creating an official record). Off = the appoint endpoint is a no-op. Gated by MANAGE_STAFF + the safer-recruitment 'cleared' gate; never automatic.",
+  },
 } as const satisfies Record<string, FeatureFlag>;
 
 export type FlagKey = keyof typeof FLAGS;
