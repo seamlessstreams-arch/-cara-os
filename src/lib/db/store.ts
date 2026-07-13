@@ -44,6 +44,7 @@ import {
   PRACTICE_OS_YP_FEEDBACK,
 } from "@/lib/seed-practice-os";
 import type { RestrictionReview } from "@/lib/rights-restriction/types";
+import type { MonitoringPlan } from "@/lib/monitoring-plans/monitoring-plans-engine";
 import { freshStages, type PostIncidentReflection } from "@/lib/post-incident-reflection/types";
 import type { StayingSafePlan } from "@/lib/staying-safe-plan/types";
 import type { RelationshipEntry } from "@/lib/protective-relationships/types";
@@ -2658,6 +2659,27 @@ const store = {
   riskAppetiteDomains: [] as RiskAppetiteDomain[],
   strategicRiskRecords: [] as StrategicRiskRecord[],
   riskManagementPlanRecords: [] as RiskManagementPlanRecord[],
+  // Individual monitoring plans (Phase 5 M3) — one demo seed so the board shows.
+  monitoringPlans: [
+    {
+      id: "mp_seed_jordan",
+      child_id: "yp_jordan",
+      observation_level: "intermittent",
+      check_frequency_minutes: 30,
+      rationale: "Settling period after recent missing episode — agreed at team meeting 08/07",
+      restriction_acknowledged: true,
+      child_views: "Jordan understands why and asked that checks are discreet around friends",
+      agreed_by: "staff_darren",
+      start_date: "2026-07-08",
+      review_date: "2026-07-22",
+      night_provision_note: "Nights follow the existing night-check plan (30-min).",
+      status: "active",
+      end_date: null,
+      created_at: "2026-07-08T09:00:00.000Z",
+      updated_at: "2026-07-08T09:00:00.000Z",
+      created_by: "staff_darren",
+    },
+  ] as MonitoringPlan[],
   riskRegisterEntries: [] as RiskRegisterEntry[],
   roomAllocationRecords: [] as RoomAllocationRecord[],
   roomSearchRecords: [] as RoomSearchRecord[],
@@ -18118,6 +18140,25 @@ export const db = {
       if (idx === -1) return null;
       store.riskManagementPlanRecords[idx] = { ...store.riskManagementPlanRecords[idx], ...data };
       return store.riskManagementPlanRecords[idx];
+    },
+  },
+
+  // Individual monitoring plans (Phase 5 M3)
+  monitoringPlans: {
+    findAll: () => store.monitoringPlans,
+    findById: (id: string) => store.monitoringPlans.find((p) => p.id === id),
+    findByChild: (childId: string) => store.monitoringPlans.filter((p) => p.child_id === childId),
+    create: (data: Partial<MonitoringPlan>): MonitoringPlan => {
+      const now = new Date().toISOString();
+      const plan = { ...data, id: generateId("mp"), created_at: now, updated_at: now } as MonitoringPlan;
+      store.monitoringPlans.push(plan);
+      return plan;
+    },
+    update: (id: string, data: Partial<MonitoringPlan>): MonitoringPlan | null => {
+      const idx = store.monitoringPlans.findIndex((p) => p.id === id);
+      if (idx === -1) return null;
+      store.monitoringPlans[idx] = { ...store.monitoringPlans[idx], ...data, updated_at: new Date().toISOString() };
+      return store.monitoringPlans[idx];
     },
   },
 
