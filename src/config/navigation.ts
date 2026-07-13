@@ -686,6 +686,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Admission Intelligence", href: "/intelligence/cara/admission-intelligence", icon: "UserPlus", module: "young-people" },
       { label: "Admission & Referrals",       href: "/intelligence/cara/admission-referral-intelligence",    icon: "UserPlus",      module: "young-people" },
       { label: "Admissions Matching & Assessment", href: "/intelligence/cara/admissions-matching-assessment-intelligence", icon: "GitMerge", module: "young-people" },
+      { label: "Origins & Emergency Follow-ups", href: "/intelligence/cara/admission-origins", icon: "Link2", module: "young-people" },
       { label: "Advocacy & IV",         href: "/intelligence/cara/advocacy-independent-visitor-intelligence", icon: "UserCheck", module: "young-people" },
       { label: "Advocacy & Independent Voice", href: "/intelligence/cara/advocacy-independent-voice-intelligence", icon: "Megaphone", module: "young-people" },
       { label: "Agency Staff Management", href: "/intelligence/cara/agency-staff-management-intelligence", icon: "Users", module: "staff" },
