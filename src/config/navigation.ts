@@ -45,6 +45,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { label: "Shift Sign-In",   href: "/sign-in",         icon: "UserCheck",       module: "handover"   },
       { label: "Safe Staffing",   href: "/safe-staffing",   icon: "ShieldAlert",     module: "handover"   },
       { label: "In & Out Board",  href: "/in-out-board",    icon: "MapPin",          module: "handover"   },
+      { label: "Monitoring Plans", href: "/monitoring-plans", icon: "Eye",            module: "handover"   },
       { label: "Workforce Oversight", href: "/workforce-oversight", icon: "ClipboardCheck", module: "handover" },
       { label: "Staff Dashboard", href: "/dashboard/staff", icon: "User",            module: "dashboard"  },
       { label: "Handover",        href: "/handover",        icon: "ArrowRightLeft",  module: "handover"   },
