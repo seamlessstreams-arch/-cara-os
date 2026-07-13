@@ -5,6 +5,7 @@ import { SafeStaffingCard } from "@/components/staffing/safe-staffing-card";
 import { EmergencyButton, ActiveEmergencyBanner } from "@/components/staffing/emergency-controls";
 import { Reg32DeploymentPanel } from "@/components/staffing/reg32-deployment-panel";
 import { InOutBoardPanel } from "@/components/home-ops/in-out-board-panel";
+import { MonitoringPlansPanel } from "@/components/home-ops/monitoring-plans-panel";
 
 export default function SafeStaffingPage() {
   return (
@@ -16,6 +17,7 @@ export default function SafeStaffingPage() {
         <ActiveEmergencyBanner />
         <SafeStaffingCard />
         <InOutBoardPanel compact />
+        <MonitoringPlansPanel compact />
         <Reg32DeploymentPanel compact />
         <div className="rounded-2xl border border-[var(--cs-border)] bg-white p-4">
           <p className="text-sm font-semibold text-[var(--cs-navy)] mb-1">Need help right now?</p>
