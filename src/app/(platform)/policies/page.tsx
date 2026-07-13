@@ -28,6 +28,7 @@ import {
   BookOpen, Loader2, RefreshCw, Star, Lock, UserCheck, Pencil,
 } from "lucide-react";
 import { CareEventsPanel } from "@/components/care-events/care-events-panel";
+import { PolicyVersionHistory } from "@/components/policies/policy-version-history";
 import { CaraPanel } from "@/components/cara/cara-panel";
 import { CaraStudioQuickActionButton } from "@/components/cara/studio-quick-action-button";
 
@@ -224,6 +225,9 @@ function PolicyCard({ policy }: { policy: HomePolicy }) {
               <span>Last reviewed {formatDate(policy.last_reviewed)}</span>
             )}
           </div>
+
+          {/* Version history (Doc-Version-Workflow M3 — the spine's first consumer) */}
+          <PolicyVersionHistory policyId={policy.id} currentVersion={policy.version} />
         </div>
       )}
     </div>
