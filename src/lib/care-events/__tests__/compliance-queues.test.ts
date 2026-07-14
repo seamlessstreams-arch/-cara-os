@@ -75,7 +75,7 @@ describe("careEventRef", () => {
     const ref = careEventRef(ce({}), { excerpt: true });
     expect(ref?.id).toBe("ce1");
     expect(ref?.content_excerpt).toContain("Some content");
-    expect(careEventRef(ce({})).content_excerpt).toBeUndefined();
+    expect(careEventRef(ce({}))?.content_excerpt).toBeUndefined();
   });
 });
 
@@ -157,7 +157,7 @@ describe("buildReg40Queue", () => {
 describe("reg40NotifiableEventType", () => {
   it("maps category/safeguarding to a notifiable type, defaulting to serious_incident", () => {
     expect(reg40NotifiableEventType(ce({ category: "restraint" }))).toBe("restraint");
-    expect(reg40NotifiableEventType(ce({ category: "child_missing" }))).toBe("absconding");
+    expect(reg40NotifiableEventType(ce({ category: "missing_episode" }))).toBe("absconding");
     expect(reg40NotifiableEventType(ce({ category: "general", is_safeguarding: true }))).toBe("child_protection");
     expect(reg40NotifiableEventType(ce({ category: "general", is_safeguarding: false }))).toBe("serious_incident");
   });

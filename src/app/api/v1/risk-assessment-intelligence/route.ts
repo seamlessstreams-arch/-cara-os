@@ -27,7 +27,7 @@ export async function GET() {
   // ── Map children ────────────────────────────────────────────────────────────
   const children: ChildInput[] = store.youngPeople.map((yp) => ({
     id: yp.id,
-    name: yp.name,
+    name: yp.preferred_name || yp.first_name,
   }));
 
   // ── Map risk assessments ────────────────────────────────────────────────────

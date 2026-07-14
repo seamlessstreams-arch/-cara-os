@@ -3216,8 +3216,8 @@ describe("computeSiblingContactRelationships", () => {
             makeContact({ facilitated: true, contact_plan_followed: true, child_enjoyed: true, sibling_enjoyed: true, quality_rating: 5, any_concerns: false, cancelled: false, contact_type: "face_to_face" }),
             makeContact({ facilitated: true, contact_plan_followed: true, child_enjoyed: true, sibling_enjoyed: true, quality_rating: 5, any_concerns: false, cancelled: false, contact_type: "video_call" }),
             makeContact({ facilitated: true, contact_plan_followed: true, child_enjoyed: true, sibling_enjoyed: true, quality_rating: 5, any_concerns: false, cancelled: false, contact_type: "phone_call" }),
-            makeContact({ facilitated: true, contact_plan_followed: true, child_enjoyed: true, sibling_enjoyed: true, quality_rating: 5, any_concerns: false, cancelled: false, contact_type: "activity" }),
-            makeContact({ facilitated: true, contact_plan_followed: true, child_enjoyed: true, sibling_enjoyed: true, quality_rating: 5, any_concerns: false, cancelled: false, contact_type: "overnight" }),
+            makeContact({ facilitated: true, contact_plan_followed: true, child_enjoyed: true, sibling_enjoyed: true, quality_rating: 5, any_concerns: false, cancelled: false, contact_type: "shared_activity" }),
+            makeContact({ facilitated: true, contact_plan_followed: true, child_enjoyed: true, sibling_enjoyed: true, quality_rating: 5, any_concerns: false, cancelled: false, contact_type: "overnight_stay" }),
           ],
           relationship_assessment_records: repeat(
             () =>

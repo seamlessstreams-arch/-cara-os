@@ -26,10 +26,10 @@ export async function GET(req: NextRequest) {
   let docs = db.documents.findAll();
 
   if (filterCategory) {
-    docs = docs.filter((d) => (d as Record<string, unknown>).category === filterCategory);
+    docs = docs.filter((d) => (d as unknown as Record<string, unknown>).category === filterCategory);
   }
   if (filterRequiresSign === "true") {
-    docs = docs.filter((d) => (d as Record<string, unknown>).requires_read_sign === true);
+    docs = docs.filter((d) => (d as unknown as Record<string, unknown>).requires_read_sign === true);
   }
 
   // Get all read receipts
@@ -43,16 +43,16 @@ export async function GET(req: NextRequest) {
   const thirtyDaysStr = thirtyDaysOut.toISOString().slice(0, 10);
 
   const requiresSign = allDocs.filter(
-    (d) => (d as Record<string, unknown>).requires_read_sign === true
+    (d) => (d as unknown as Record<string, unknown>).requires_read_sign === true
   ).length;
 
   const expiringSoon = allDocs.filter((d) => {
-    const exp = (d as Record<string, unknown>).expiry_date as string | null;
+    const exp = (d as unknown as Record<string, unknown>).expiry_date as string | null;
     return exp && exp >= today && exp <= thirtyDaysStr;
   }).length;
 
   const expired = allDocs.filter((d) => {
-    const exp = (d as Record<string, unknown>).expiry_date as string | null;
+    const exp = (d as unknown as Record<string, unknown>).expiry_date as string | null;
     return exp && exp < today;
   }).length;
 

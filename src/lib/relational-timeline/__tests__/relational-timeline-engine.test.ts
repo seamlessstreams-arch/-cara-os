@@ -244,6 +244,6 @@ describe("buildRelationalTimeline", () => {
         trustedAdults: ["Emma"],
       }),
     );
-    expect(t.status).not.toBe("secure");
+    expect(t.stability).not.toBe("secure");
   });
 });

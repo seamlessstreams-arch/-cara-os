@@ -128,7 +128,7 @@ export async function generateLearningResource(opts: {
 
   const typeConfig = RESOURCE_TYPE_PROMPTS[opts.resourceType];
   const frameworkPrompt = opts.framework ? (EXTENDED_FRAMEWORK_PROMPTS[opts.framework] ?? "") : "";
-  const tonePrompt = opts.tone ? (TONE_PROMPTS[opts.tone as keyof typeof TONE_PROMPTS] ?? "") : TONE_PROMPTS.training_focused;
+  const tonePrompt = opts.tone ? (TONE_PROMPTS[opts.tone as keyof typeof TONE_PROMPTS] ?? "") : TONE_PROMPTS.professional;
 
   const systemPrompt = [
     CARA_STUDIO_SYSTEM_PROMPT,

@@ -89,7 +89,7 @@ describe("role-output.service", () => {
 
     it("falls back to plain_text_content if generated_content is null", () => {
       const artifact = makeArtifact({
-        generated_content: null,
+        generated_content: undefined,
         plain_text_content: "Fallback content for testing",
       });
       const version = generateRoleVersion(artifact, "registered_manager");

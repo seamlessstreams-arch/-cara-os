@@ -610,10 +610,10 @@ function defaultDeps(): AiGatewayDeps {
     hasRule: hasRuleHandler,
     isCacheable: isCacheableCommand,
     cacheLookup: (commandId, text) => {
-      const hit = lookupLearnedAnswer({ commandId, inputText: text });
+      const hit = lookupLearnedAnswer({ commandId, childId: null, input: text });
       return hit && hit.output ? { output: hit.output } : null;
     },
-    cacheStore: (commandId, text, output) => { learnAnswer({ commandId, inputText: text, output }); },
+    cacheStore: (commandId, text, output) => { learnAnswer({ commandId, childId: null, input: text, output, confidence: "low" }); },
     classify: classifyInputSensitivity,
     redact: (text) => { const r = redactSensitiveData(text); return { redactedText: r.redactedText, sensitiveItemsDetected: r.sensitiveItemsDetected }; },
     // A local model counts as "configured" too — so the gateway proceeds to

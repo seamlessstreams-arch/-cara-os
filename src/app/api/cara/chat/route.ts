@@ -261,8 +261,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       response: result.output,
       llmUsed: result.llmUsed,
-      provider: result.providerId,
-      model: result.modelId,
+      provider: result.llmUsed ? "anthropic" : "deterministic",
+      model: result.model ?? null,
       conversationId,
     });
   } catch (err) {

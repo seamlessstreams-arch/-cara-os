@@ -314,7 +314,7 @@ function buildActions(type: CorrelationType, sgOverlap: boolean): RecommendedAct
       break;
     case "incidents_only":
       actions.push({
-        priority: "medium",
+        priority: "routine",
         action: "No complaints are logged despite incidents — check the child knows how to complain, has advocacy access, and feels safe to raise concerns",
         regulatory_link: "Reg 7 (wishes & feelings) + Reg 22 (access to complaints/advocacy)",
       });

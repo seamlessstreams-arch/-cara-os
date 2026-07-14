@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 const hasOversight = (i: Record<string, unknown>): boolean => !!(i.oversight_note || i.oversight_by || i.oversight_at);
 
 function mapIncidents(store: ReturnType<typeof getStore>): GateIncident[] {
-  return ((store.incidents ?? []) as Array<Record<string, unknown>>).map((i) => ({
+  return ((store.incidents ?? []) as unknown as Array<Record<string, unknown>>).map((i) => ({
     id: String(i.id),
     status: String(i.status ?? "open"),
     requires_oversight: !!i.requires_oversight,
@@ -31,7 +31,7 @@ function mapIncidents(store: ReturnType<typeof getStore>): GateIncident[] {
   }));
 }
 function mapRestraints(store: ReturnType<typeof getStore>): GateRestraint[] {
-  return ((store.restraints ?? []) as Array<Record<string, unknown>>).map((r) => ({
+  return ((store.restraints ?? []) as unknown as Array<Record<string, unknown>>).map((r) => ({
     id: String(r.id),
     review_status: String(r.review_status ?? "pending"),
     child_debriefed: !!r.child_debriefed,
@@ -40,7 +40,7 @@ function mapRestraints(store: ReturnType<typeof getStore>): GateRestraint[] {
 }
 function mapMissing(store: ReturnType<typeof getStore>): GateMissingEpisode[] {
   const returnInterviews = (store.returnInterviews ?? []) as Array<{ episode_id?: string; missing_episode_id?: string; child_id?: string }>;
-  return ((store.missingEpisodes ?? []) as Array<Record<string, unknown>>).map((m) => ({
+  return ((store.missingEpisodes ?? []) as unknown as Array<Record<string, unknown>>).map((m) => ({
     id: String(m.id),
     status: String(m.status ?? "active"),
     has_return_interview: returnInterviews.some((ri) => ri.episode_id === m.id || ri.missing_episode_id === m.id || (!!m.child_id && ri.child_id === m.child_id)),
@@ -48,7 +48,7 @@ function mapMissing(store: ReturnType<typeof getStore>): GateMissingEpisode[] {
   }));
 }
 function mapTasks(store: ReturnType<typeof getStore>): GateTask[] {
-  return ((store.tasks ?? []) as Array<Record<string, unknown>>).map((t) => ({
+  return ((store.tasks ?? []) as unknown as Array<Record<string, unknown>>).map((t) => ({
     id: String(t.id),
     status: String(t.status ?? ""),
     requires_sign_off: !!t.requires_sign_off,

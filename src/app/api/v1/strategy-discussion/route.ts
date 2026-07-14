@@ -74,9 +74,9 @@ export async function POST(req: NextRequest) {
     cutoff.setDate(cutoff.getDate() - 90);
     const cutoffIso = cutoff.toISOString().slice(0, 10);
 
-    const incidents = (store.incidents as Array<Record<string, never>>)
-      .filter((i: Record<string, string>) => i.child_id === childId && (i.date ?? "") >= cutoffIso)
-      .map((i: Record<string, string>) => ({
+    const incidents = store.incidents
+      .filter((i) => i.child_id === childId && (i.date ?? "") >= cutoffIso)
+      .map((i) => ({
         id: i.id,
         date: i.date,
         type: i.type,
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         immediateAction: i.immediate_action,
       }));
 
-    const behaviourEntries = (store.behaviourLog as Array<Record<string, string>>)
+    const behaviourEntries = store.behaviourLog
       .filter((b) => b.child_id === childId && (b.date ?? "") >= cutoffIso)
       .map((b) => ({
         id: b.id,
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
     // The child's own words — quoted spans the records already hold.
     const QUOTE = /(?:said|told (?:staff|us|me))[^"“]{0,40}["“]([^"”]{5,200})["”]/i;
     const childQuotes: Array<{ recordId: string; recordType: string; quote: string }> = [];
-    for (const b of store.behaviourLog as Array<Record<string, string>>) {
+    for (const b of store.behaviourLog) {
       if (b.child_id !== childId) continue;
       for (const field of [b.behaviour, b.outcome, b.consequence]) {
         const m = field ? QUOTE.exec(field) : null;
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
         concernSummary: d.concernSummary,
       }));
 
-    const currentPlans = (store.behaviourSupportPlans as Array<Record<string, string>>)
+    const currentPlans = store.behaviourSupportPlans
       .filter((p) => p.child_id === childId && p.status === "active")
       .map((p) => ({
         id: p.id,

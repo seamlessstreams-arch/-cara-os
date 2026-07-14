@@ -22,10 +22,12 @@ export async function GET() {
   const store = getStore();
 
   // ── Map children with placement start dates ─────────────────────────────────
+  // YoungPerson has no name/admission_date fields — both old reads were
+  // undefined, so every child fell back to the hardcoded 2025-01-01 baseline.
   const children: ChildInput[] = store.youngPeople.map((yp) => ({
     id: yp.id,
-    name: yp.name,
-    placement_start_date: yp.admission_date ?? yp.date_of_admission ?? "2025-01-01",
+    name: yp.preferred_name || yp.first_name,
+    placement_start_date: yp.placement_start || "2025-01-01",
   }));
 
   // ── Map chronology events ───────────────────────────────────────────────────

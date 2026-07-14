@@ -53,7 +53,7 @@ export async function GET() {
     duration: r.duration,
     reason: r.reason,
     restraint_type: r.restraint_type,
-    injuries: r.injuries ?? [],
+    injuries: (r.injuries ?? []).map((inj) => ({ person: inj.person, description: inj.injury })),
     child_debriefed: r.child_debriefed,
     staff_debriefed: r.staff_debriefed,
     review_status: r.review_status,

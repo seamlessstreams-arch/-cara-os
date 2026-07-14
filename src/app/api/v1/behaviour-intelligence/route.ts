@@ -25,8 +25,11 @@ export async function GET() {
     child_id: e.child_id,
     date: e.date,
     time: e.time,
-    direction: e.direction,
-    intensity: e.intensity,
+    // Store vocabulary differs from the engine's: concern→concerning,
+    // moderate→medium, critical→severe. Passing raw values meant engine
+    // filters on its own vocabulary never matched those entries.
+    direction: e.direction === "concern" ? "concerning" as const : "positive" as const,
+    intensity: e.intensity === "moderate" ? "medium" as const : e.intensity === "critical" ? "severe" as const : e.intensity,
     title: e.title,
     antecedent: e.antecedent,
     behaviour: e.behaviour,

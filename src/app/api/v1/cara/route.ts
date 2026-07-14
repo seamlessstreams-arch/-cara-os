@@ -115,7 +115,7 @@ function deterministicSafeguardingScan() {
 function deterministicPatternScan() {
   const store = getStore();
   const incidents: IncidentRecord[] = (store.incidents ?? []).map((i) => {
-    const x = i as Record<string, unknown>;
+    const x = i as unknown as Record<string, unknown>;
     return {
       id: String(x.id ?? ""),
       reference: String(x.reference ?? x.id ?? ""),

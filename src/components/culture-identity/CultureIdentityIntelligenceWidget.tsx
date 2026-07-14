@@ -123,7 +123,7 @@ export function CultureIdentityIntelligenceWidget() {
             <div key={c.childId as string} className="mb-2 p-2 bg-gray-50 rounded">
               <div className="flex justify-between text-sm font-medium"><span>{c.childName as string}</span><span>Needs met {c.needsMetRate as number}%</span></div>
               <p className="text-xs text-gray-500 mt-1">{c.activitiesCount as number} activities · {c.needsIdentified as number} needs · {(c.dimensionsCovered as string[]).length} dimensions covered</p>
-              {c.primaryConcern && <p className="text-xs text-red-600 mt-1">{c.primaryConcern as string}</p>}
+              {Boolean(c.primaryConcern) && <p className="text-xs text-red-600 mt-1">{c.primaryConcern as string}</p>}
             </div>
           ))}
         </Section>

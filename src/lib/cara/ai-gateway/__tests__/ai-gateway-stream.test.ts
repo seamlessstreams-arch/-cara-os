@@ -33,7 +33,7 @@ function deps(opts: { llmUsed?: boolean; streamText?: string } = {}): {
     isCacheable: vi.fn(() => false),
     cacheLookup: vi.fn(() => null),
     cacheStore: vi.fn(),
-    classify: vi.fn(() => "internal"),
+    classify: vi.fn(() => "internal" as const),
     redact: vi.fn((t: string) => ({ redactedText: t, sensitiveItemsDetected: 0 })),
     providerConfigured: vi.fn(() => true),
     aiKillSwitchOn: vi.fn(() => false),
@@ -71,7 +71,7 @@ describe("AI Gateway streaming — must NOT reach the model", () => {
     ["kill-switch ON", (d) => (d.aiKillSwitchOn = vi.fn(() => true))],
     ["no provider configured", (d) => (d.providerConfigured = vi.fn(() => false))],
     ["caller not permitted", (d) => (d.permitAi = vi.fn(() => false))],
-    ["safeguarding-sensitive data", (d) => (d.classify = vi.fn(() => "safeguarding_sensitive"))],
+    ["safeguarding-sensitive data", (d) => (d.classify = vi.fn(() => "safeguarding_sensitive" as const))],
     ["per-request cost over limit", (d) => (d.estimateRequestGbp = vi.fn(() => 0.99))],
     ["daily org budget exhausted", (d) => (d.spentTodayGbp = vi.fn(() => 100))],
   ];

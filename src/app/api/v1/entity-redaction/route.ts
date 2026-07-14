@@ -24,7 +24,7 @@ import type { EntityRef, RedactableDocument } from "@/lib/entity-redaction/types
 export const dynamic = "force-dynamic";
 
 function homeEntities(store: ReturnType<typeof getStore>): EntityRef[] {
-  const children: EntityRef[] = ((store.youngPeople ?? []) as Array<Record<string, unknown>>)
+  const children: EntityRef[] = ((store.youngPeople ?? []) as unknown as Array<Record<string, unknown>>)
     .filter((yp) => (yp.status ?? "current") === "current")
     .map((yp) => ({
       id: String(yp.id),
@@ -32,7 +32,7 @@ function homeEntities(store: ReturnType<typeof getStore>): EntityRef[] {
       name: String(yp.full_name || [yp.first_name, yp.last_name].filter(Boolean).join(" ") || yp.preferred_name || yp.id),
       aliases: [yp.preferred_name, yp.first_name].filter((v): v is string => typeof v === "string" && v.length > 0),
     }));
-  const staff: EntityRef[] = ((store.staff ?? []) as Array<Record<string, unknown>>).map((s) => ({
+  const staff: EntityRef[] = ((store.staff ?? []) as unknown as Array<Record<string, unknown>>).map((s) => ({
     id: String(s.id),
     kind: "staff" as const,
     name: String(s.full_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || s.id),

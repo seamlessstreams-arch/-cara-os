@@ -24,8 +24,8 @@ export async function GET(req: NextRequest) {
     );
 
     const children = (store.youngPeople ?? [])
-      .filter((yp: { status?: string }) => yp.status === "current")
-      .map((yp: { id: string; preferred_name?: string; first_name?: string }) => ({
+      .filter((yp) => yp.status === "current")
+      .map((yp) => ({
         id: yp.id,
         name: yp.preferred_name || yp.first_name || "Child",
         trustedAdults: paceByChild.get(yp.id) ?? [],

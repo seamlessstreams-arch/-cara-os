@@ -37,7 +37,7 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: st
 
 export function UniversalStaffEntry({ staffId, onSuccess, onCancel, className }: UniversalStaffEntryProps) {
   const store = getStore();
-  const staff = (store.staff as Array<Record<string, unknown>> || []).find((s) => s.id === staffId);
+  const staff = (store.staff as unknown as Array<Record<string, unknown>> || []).find((s) => s.id === staffId);
   const staffName = staff
     ? `${(staff.first_name as string) ?? ""} ${(staff.last_name as string) ?? ""}`.trim() || (staff.name as string) || "Staff member"
     : "Staff member";

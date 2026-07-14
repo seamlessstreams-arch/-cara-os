@@ -5,27 +5,30 @@ import {
   WORKFLOW_TEMPLATES,
   type WorkflowProgress,
 } from "./workflow-service";
+import type { CsWorkflowStep } from "@/types/operations";
 
 // ── Factory ────────────────────────────────────────────────────────────────
 
-function makeStep(overrides: Record<string, unknown> = {}) {
+function makeStep(overrides: Partial<CsWorkflowStep> = {}): CsWorkflowStep {
   return {
     id: "step-1",
     workflow_id: "wf-1",
     step_number: 1,
     title: "Test Step",
     description: "A test step",
-    status: "pending" as const,
+    status: "pending",
+    assigned_to: null,
     assigned_role: "registered_manager",
     evidence_required: true,
-    auto_create_task: false,
+    evidence_ids: [],
+    evidence_notes: null,
     completed_at: null,
     completed_by: null,
     completion_notes: null,
-    evidence_ids: [],
-    evidence_notes: null,
+    due_date: null,
+    auto_create_task: false,
+    auto_task_template: null,
     created_at: "2025-01-01T00:00:00Z",
-    updated_at: "2025-01-01T00:00:00Z",
     ...overrides,
   };
 }

@@ -133,7 +133,7 @@ describe("Home Recording Quality Intelligence Engine", () => {
       // urgent: 0 urgent → +1
       // types: 4 → +3
       // = 52+5+4+3+4-1+3+1+3 = 74
-      expect(r.document_rating || r.recording_rating).toBeDefined();
+      expect(r.recording_rating).toBeDefined();
       expect(r.recording_score).toBe(74);
       expect(r.recording_rating).toBe("good");
     });

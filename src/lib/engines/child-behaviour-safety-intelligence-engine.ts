@@ -441,7 +441,7 @@ export function computeChildBehaviourSafety(
 
   // ── BSP Compliance ───────────────────────────────────────────────────
   const bsp = behaviour_support_plan;
-  const bspCurrent = bsp ? (bsp.status === "active" || (bsp.last_reviewed && daysAgo(today, bsp.last_reviewed) <= 90)) : false;
+  const bspCurrent = bsp ? (bsp.status === "active" || (!!bsp.last_reviewed && daysAgo(today, bsp.last_reviewed) <= 90)) : false;
 
   const bsp_compliance: BspCompliance = {
     has_plan: !!bsp,

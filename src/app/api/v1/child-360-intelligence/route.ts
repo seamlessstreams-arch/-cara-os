@@ -94,14 +94,18 @@ export async function GET(req: NextRequest) {
       triggers: r.triggers,
     }));
 
+  // KeyWorkingSession has no theme/status/completed_at — those reads were
+  // undefined, so the engine's keywork_sessions_30d was ALWAYS 0 and
+  // last_keywork_date always null for every child. A stored session is a
+  // session that took place, so it maps to a completed one on its date.
   const keywork_sessions = store.keyWorkingSessions
     .filter((k) => k.child_id === childId)
     .map((k) => ({
-      theme: k.theme,
-      status: k.status,
-      child_voice: k.child_voice ?? undefined,
+      theme: k.topics.join(", ") || k.type,
+      status: "completed",
+      child_voice: k.child_voice || undefined,
       created_at: k.created_at.slice(0, 10),
-      completed_at: k.completed_at?.slice(0, 10),
+      completed_at: k.date.slice(0, 10),
     }));
 
   const outcome_targets = store.outcomeTargets
@@ -177,13 +181,15 @@ export async function GET(req: NextRequest) {
       outcome: a.outcome,
     }));
 
+  // ChronologyEntry records significance/title, not severity/summary — the
+  // old reads were undefined for every entry.
   const chronology_entries = store.chronology
     .filter((c) => c.child_id === childId)
     .map((c) => ({
       date: c.date.slice(0, 10),
       category: c.category,
-      severity: c.severity,
-      summary: c.summary,
+      severity: c.significance,
+      summary: c.title,
     }));
 
   const staffNameMap: Record<string, string> = {};

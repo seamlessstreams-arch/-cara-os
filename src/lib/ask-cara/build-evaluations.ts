@@ -28,13 +28,13 @@ type Store = ReturnType<typeof getStore>;
 const s = (v: unknown): string => (typeof v === "string" ? v : "");
 
 export function buildChildEvaluations(store: Store, nowIso: string): AskCaraChildEvaluation[] {
-  const children = (store.youngPeople ?? []) as Array<Record<string, unknown>>;
+  const children = (store.youngPeople ?? []) as unknown as Array<Record<string, unknown>>;
   const current = children.filter((c) => (s(c.status) || "current") === "current");
   const out: AskCaraChildEvaluation[] = [];
 
   // Injected name resolver — keeps the relational engine pure & testable.
   const staffById = new Map(
-    ((store.staff ?? []) as Array<Record<string, unknown>>).map((st) => [
+    ((store.staff ?? []) as unknown as Array<Record<string, unknown>>).map((st) => [
       String(st.id),
       s(st.full_name) || [st.first_name, st.last_name].filter(Boolean).join(" ") || String(st.id),
     ]),
@@ -138,7 +138,7 @@ export function buildChildEvaluations(store: Store, nowIso: string): AskCaraChil
  */
 export function buildHomeEvaluation(store: Store, nowIso: string): AskCaraHomeEvaluation | undefined {
   try {
-    const children = ((store.youngPeople ?? []) as Array<Record<string, unknown>>)
+    const children = ((store.youngPeople ?? []) as unknown as Array<Record<string, unknown>>)
       .filter((yp) => (s(yp.status) || "current") === "current")
       .map((yp) => ({ id: String(yp.id), name: s(yp.preferred_name) || s(yp.first_name) || "Child" }));
 

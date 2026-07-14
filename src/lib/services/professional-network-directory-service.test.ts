@@ -125,10 +125,10 @@ describe("computeProfessionalNetworkMetrics", () => {
   it("populates breakdown by role and frequency", () => {
     const records = [
       makeRecord({ id: "1", professional_role: "social_worker", contact_frequency: "monthly" }),
-      makeRecord({ id: "2", professional_role: "iro", contact_frequency: "quarterly" }),
+      makeRecord({ id: "2", professional_role: "independent_reviewing_officer", contact_frequency: "quarterly" }),
     ];
     const m = computeProfessionalNetworkMetrics(records);
-    expect(m.by_professional_role).toEqual({ social_worker: 1, iro: 1 });
+    expect(m.by_professional_role).toEqual({ social_worker: 1, independent_reviewing_officer: 1 });
     expect(m.by_contact_frequency).toEqual({ monthly: 1, quarterly: 1 });
   });
 });

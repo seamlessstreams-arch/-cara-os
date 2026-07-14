@@ -68,7 +68,7 @@ export const FRAMEWORK_PROMPTS: Record<CaraStudioFramework, string> = {
 - Recognise developmental age vs chronological age
 - Build felt safety through consistent, predictable caregiving`,
 
-  restorative: `Apply restorative practice principles.
+  restorative_practice: `Apply restorative practice principles.
 - Focus on repairing harm rather than punishing behaviour
 - Use restorative questioning: What happened? Who was affected? How can we make it right?
 - Build community and belonging within the home
@@ -115,6 +115,7 @@ export const FRAMEWORK_PROMPTS: Record<CaraStudioFramework, string> = {
 - Recognise that challenging behaviour often stems from attachment insecurity
 - Support the development of secure secondary attachments with carers
 - Be aware of how staff attachment histories affect their responses`,
+  none: "No specific practice framework selected — write from general good-practice principles for children's residential care.",
 };
 
 // ── Extended framework prompts (Practice Intelligence) ──────────────────────
@@ -169,16 +170,13 @@ export const EXTENDED_FRAMEWORK_PROMPTS: Record<string, string> = {
 // ── Tone prompts ─────────────────────────────────────────────────────────────
 
 export const TONE_PROMPTS: Record<CaraStudioTone, string> = {
-  conservative: "Write in a conservative, measured tone. Stick closely to the evidence. Avoid any interpretation beyond what is directly supported.",
-  balanced: "Write in a balanced professional tone. Include evidence-based analysis alongside professional hypothesis, clearly distinguished.",
-  creative: "Write in an engaging, creative tone while remaining evidence-based. Use narrative approaches where appropriate.",
-  therapeutic: "Write in a warm, therapeutically informed tone. Centre the child's emotional experience and the relational approach.",
+  professional: "Write in a balanced professional tone. Include evidence-based analysis alongside professional hypothesis, clearly distinguished.",
+  warm: "Write in a warm, friendly yet professional tone. Keep the child at the centre and the language human.",
   child_friendly: "Write in simple, warm, age-appropriate language. Use short sentences. Avoid jargon. Make the child feel heard and safe.",
-  training_focused: "Write in an educational tone suitable for staff development. Include learning points, reflective questions, and practice examples.",
-  inspection_ready: "Write in a formal, evidence-heavy tone suitable for regulatory inspection. Reference regulations, standards, and quality indicators.",
-  reflective: "Write in a reflective, thoughtful tone. Encourage the reader to consider their own practice and assumptions.",
+  formal: "Write in a formal, evidence-heavy tone suitable for regulatory inspection. Reference regulations, standards, and quality indicators.",
+  therapeutic: "Write in a warm, therapeutically informed tone. Centre the child's emotional experience and the relational approach.",
   plain_english: "Write in clear, straightforward English. No jargon, no acronyms without explanation, no complex sentence structures.",
-  professional_legal: "Write in a formal, precise tone suitable for legal records. Be factual, chronological, and avoid any subjective language.",
+  legal_careful: "Write in a formal, precise tone suitable for legal records. Be factual, chronological, and avoid any subjective language.",
 };
 
 // ── Artifact type prompts ────────────────────────────────────────────────────
@@ -325,7 +323,7 @@ export function buildGenerationPrompt(opts: {
 }): { systemPrompt: string; userPrompt: string } {
   const artifactConfig = ARTIFACT_TYPE_PROMPTS[opts.artifactType];
   const frameworkInstructions = opts.framework ? FRAMEWORK_PROMPTS[opts.framework] : "";
-  const toneInstructions = opts.tone ? TONE_PROMPTS[opts.tone] : TONE_PROMPTS.balanced;
+  const toneInstructions = opts.tone ? TONE_PROMPTS[opts.tone] : TONE_PROMPTS.professional;
 
   const systemPrompt = [
     CARA_STUDIO_SYSTEM_PROMPT,

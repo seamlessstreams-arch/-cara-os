@@ -367,7 +367,7 @@ describe("Home Health & Wellbeing Intelligence Engine", () => {
   it("rates outstanding (score >= 80)", () => {
     // All children covered, full compliance, good outcomes, medication perfect
     const r = computeHomeHealthWellbeing(baseInput());
-    expect(r.missing_episodes_score ?? r.health_score).toBeGreaterThanOrEqual(80);
+    expect(r.health_score).toBeGreaterThanOrEqual(80);
     expect(r.health_rating).toBe("outstanding");
   });
 

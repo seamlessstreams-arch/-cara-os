@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
     description: i.description ?? i.details ?? "",
     de_escalation_attempted: i.de_escalation_attempted ?? i.de_escalation ?? false,
     physical_intervention: i.physical_intervention ?? false,
-    oversight_completed: i.oversight_completed ?? !!i.oversight_note ?? false,
+    oversight_completed: i.oversight_completed ?? !!i.oversight_note,
   }));
 
   // ── Restraints ────────────────────────────────────────────────────────
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       de_escalation_attempted: r.de_escalation_attempted ?? r.de_escalation ?? true,
       debrief_completed: r.debrief_completed ?? r.debrief ?? false,
       injuries: Array.isArray(r.injuries) ? r.injuries.length : (r.injuries ?? 0),
-      reviewed: r.reviewed ?? !!r.oversight_note ?? false,
+      reviewed: r.reviewed ?? !!r.oversight_note,
     }));
 
   // ── Missing Episodes ──────────────────────────────────────────────────

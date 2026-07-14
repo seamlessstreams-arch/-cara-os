@@ -4,7 +4,7 @@ import type { AdmissionAssessmentRecord } from "./admission-assessment-service";
 
 function makeRecord(overrides: Partial<AdmissionAssessmentRecord> = {}): AdmissionAssessmentRecord {
   return {
-    id: "rec-1", home_id: "home-1", assessment_stage: "pre_admission", suitability_decision: "suitable",
+    id: "rec-1", home_id: "home-1", assessment_stage: "pre_admission_visit", suitability_decision: "suitable",
     matching_outcome: "good_match", referral_source: "local_authority", assessment_date: "2026-05-15",
     child_name: "Alex", child_id: "child-1", placing_authority: "LA-1",
     impact_risk_completed: true, matching_criteria_met: true, existing_children_consulted: true,
@@ -72,14 +72,14 @@ describe("computeAdmissionAssessmentMetrics", () => {
 
   it("groups by assessment stage and referral source", () => {
     const records = [
-      makeRecord({ id: "r1", assessment_stage: "pre_admission", referral_source: "local_authority" }),
-      makeRecord({ id: "r2", assessment_stage: "post_admission", referral_source: "self_referral" }),
+      makeRecord({ id: "r1", assessment_stage: "pre_admission_visit", referral_source: "local_authority" }),
+      makeRecord({ id: "r2", assessment_stage: "72_hour_review", referral_source: "parent_request" }),
     ];
     const result = computeAdmissionAssessmentMetrics(records);
-    expect(result.by_assessment_stage["pre_admission"]).toBe(1);
-    expect(result.by_assessment_stage["post_admission"]).toBe(1);
+    expect(result.by_assessment_stage["pre_admission_visit"]).toBe(1);
+    expect(result.by_assessment_stage["72_hour_review"]).toBe(1);
     expect(result.by_referral_source["local_authority"]).toBe(1);
-    expect(result.by_referral_source["self_referral"]).toBe(1);
+    expect(result.by_referral_source["parent_request"]).toBe(1);
   });
 
   it("computes all boolean rates at 100% when all true", () => {
@@ -100,7 +100,7 @@ describe("identifyAdmissionAssessmentAlerts", () => {
 
   it("flags records with missing risk assessments", () => {
     const records = [
-      makeRecord({ id: "r1", impact_risk_completed: false, assessment_stage: "pre_admission" }),
+      makeRecord({ id: "r1", impact_risk_completed: false, assessment_stage: "pre_admission_visit" }),
     ];
     const result = identifyAdmissionAssessmentAlerts(records);
     expect(Array.isArray(result)).toBe(true);

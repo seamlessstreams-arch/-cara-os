@@ -405,7 +405,7 @@ describe("adequate scenario", () => {
         // bpCompliance: targets_met=3/3, reviewed=1, engaged=1, evidence=0 on plan1
         // plan2: targets_met=0/3, reviewed=0, engaged=0, evidence=0
         // Num=3+1+1+0=5, Den=6+2+2+2=12, rate=42% (no penalty, no bonus)
-        makeBehaviourPlan({ id: "bp_1", targets_met: 3, total_targets: 3, plan_reviewed: true, child_engaged_with_plan: true, evidence_of_change: false, child_attended: false }),
+        makeBehaviourPlan({ id: "bp_1", targets_met: 3, total_targets: 3, plan_reviewed: true, child_engaged_with_plan: true, evidence_of_change: false }),
         makeBehaviourPlan({ id: "bp_2", targets_met: 0, total_targets: 3, plan_reviewed: false, child_engaged_with_plan: false, evidence_of_change: false, child_involved_in_planning: false }),
       ],
       restorative_justice_records: [

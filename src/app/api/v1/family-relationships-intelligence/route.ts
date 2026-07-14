@@ -59,18 +59,23 @@ export async function GET(request: NextRequest) {
     }));
 
   // ── Contact Arrangements ──────────────────────────────────────────────────
-  const contactArrangements: ContactArrangementInput[] = (store.contactArrangements ?? [])
-    .filter((a: any) => a.child_id === childId)
-    .map((a: any) => ({
-      id: a.id,
-      child_id: a.child_id,
-      contact_type: a.contact_type ?? "face_to_face",
-      frequency: a.frequency ?? "",
-      supervision_level: a.supervision_level ?? "supervised",
-      court_ordered: a.court_ordered ?? false,
-      status: a.status ?? "active",
-      review_date: a.review_date ? a.review_date.slice(0, 10) : null,
-    }));
+  // No contactArrangements collection exists — the old read was always empty.
+  // The real data lives on ContactPlan.arrangements; flatten each plan's
+  // arrangements into the per-arrangement shape the engine expects.
+  const contactArrangements: ContactArrangementInput[] = (store.contactPlans ?? [])
+    .filter((p) => p.child_id === childId)
+    .flatMap((p) =>
+      p.arrangements.map((a) => ({
+        id: p.id,
+        child_id: p.child_id,
+        contact_type: a.type,
+        frequency: a.frequency,
+        supervision_level: a.supervision_level,
+        court_ordered: !!p.court_orders,
+        status: p.status,
+        review_date: p.review_date ? p.review_date.slice(0, 10) : null,
+      })),
+    );
 
   // ── Genogram ──────────────────────────────────────────────────────────────
   const genograms = (store.genogramEntries ?? []).filter((g: any) => g.child_id === childId);

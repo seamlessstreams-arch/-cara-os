@@ -23,7 +23,7 @@ export async function GET() {
   const children: ChildInput[] = store.youngPeople.map((yp) => ({
     id: yp.id,
     name: yp.preferred_name ?? yp.first_name,
-    placement_start_date: yp.placement_start ?? yp.dob, // fallback
+    placement_start_date: yp.placement_start,
   }));
 
   // ── Map LAC reviews ──────────────────────────────────────────────────────
