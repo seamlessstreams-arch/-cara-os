@@ -5647,6 +5647,62 @@ store.admissionReferrals = [
     notes: "Casey placed successfully. Settling in well.",
     staff_id: "staff_darren", home_id: "home_oak", created_at: daysFromNow(-60) + "T09:00:00Z",
   },
+  // ── Referrals for the CURRENT residents (admission-origins enrichment) ─────
+  // Name+DOB aligned to the young-people seed so the retro-link engine can
+  // reconnect each child's origin story with EXACT confidence. ref_005 above
+  // ("Casey", DOB 2011-06-18) deliberately stays as the same-name-different-
+  // child foil the engine must keep rejecting in favour of ref_008.
+  {
+    id: "ref_006", child_name: "Alex W", date_of_birth: "2010-03-14", age: 15, gender: "male",
+    ethnicity: "White British", referral_date: "2025-08-30", referral_source: "emergency",
+    referred_by: "Emergency Duty Team — Derby City", local_authority: "Derby City Council",
+    status: "placed",
+    presenting_needs: ["Emotional regulation support", "Re-engagement with education", "Trusted-adult relationships"],
+    risk_factors: ["Missing from care", "Self-harm", "Exploitation concern"],
+    placement_history: "Foster placement broke down out of hours; emergency residential placement sought same day.",
+    impact_assessment_complete: true,
+    impact_assessment_notes: "Retrospective impact assessment completed within 72 hours of the emergency placement, as required.",
+    matching_considerations: "Emergency admission — retrospective matching confirmed fit with Statement of Purpose.",
+    decision_date: "2025-09-01", decision_by: "staff_darren",
+    decision_reason: "Emergency placement accepted; retrospective impact assessment completed within 72 hours.",
+    estimated_placement_date: "2025-09-01",
+    notes: "Placed same day via EDT. Now settled — see chronology.",
+    staff_id: "staff_darren", home_id: "home_oak", created_at: "2025-08-30T21:30:00Z",
+  },
+  {
+    id: "ref_007", child_name: "Jordan M", date_of_birth: "2011-08-22", age: 14, gender: "male",
+    ethnicity: "Black British", referral_date: "2025-10-20", referral_source: "local_authority",
+    referred_by: "Michael Osei — Nottinghamshire CLA Team", local_authority: "Nottinghamshire County Council",
+    status: "placed",
+    presenting_needs: ["Stability after two moves in a year", "Halal diet and cultural identity support", "Consistent boundaries"],
+    risk_factors: ["Previous missing episode from foster care"],
+    placement_history: "Two foster placements in twelve months; planned move to residential agreed at LAC review.",
+    impact_assessment_complete: true,
+    impact_assessment_notes: "Planned admission. Impact assessment positive — cohort fit good, no elevated risk to current group.",
+    matching_considerations: "Planned, well-matched admission with introductions over three weeks.",
+    decision_date: "2025-11-01", decision_by: "staff_darren",
+    decision_reason: "Accepted — planned admission following positive matching and introductions.",
+    estimated_placement_date: "2025-11-15",
+    notes: "Placed 15 November after phased introductions.",
+    staff_id: "staff_darren", home_id: "home_oak", created_at: "2025-10-20T10:00:00Z",
+  },
+  {
+    id: "ref_008", child_name: "Casey T", date_of_birth: "2009-12-05", age: 16, gender: "female",
+    ethnicity: "Mixed Heritage", referral_date: "2025-12-01", referral_source: "local_authority",
+    referred_by: "Fiona Brennan — Derbyshire CLA Team", local_authority: "Derbyshire County Council",
+    status: "placed",
+    presenting_needs: ["Consistency around medication routines", "Sleep support", "Preparation-for-adulthood planning"],
+    risk_factors: ["Medication refusal", "Sleep disturbance"],
+    placement_history: "Long-term foster placement ended by mutual agreement at review; residential recommended for structure.",
+    impact_assessment_complete: true,
+    impact_assessment_notes: "Planned admission. Impact assessment complete — good fit; medication support plan agreed pre-admission.",
+    matching_considerations: "Oldest of the group — positive role-model dynamic anticipated; PfA pathway a strength of the home.",
+    decision_date: "2025-12-15", decision_by: "staff_darren",
+    decision_reason: "Accepted — planned admission with medication support plan in place from day one.",
+    estimated_placement_date: "2026-01-10",
+    notes: "Placed 10 January. Note: an earlier referral for a different Casey (DOB 2011-06-18) is unrelated to Casey T.",
+    staff_id: "staff_darren", home_id: "home_oak", created_at: "2025-12-01T09:30:00Z",
+  },
 ];
 
 // ── Health Record Entries seed data ──────────────────────────────────────────
