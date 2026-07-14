@@ -30,29 +30,38 @@ export async function GET(_req: NextRequest) {
   const allIncidents = store.incidents ?? [];
   const openIncidents = allIncidents.filter((i) => i.status === "open" || i.status === "under_review");
   const criticalIncidents = openIncidents.filter((i) => i.severity === "critical");
-  const awaitingOversight = openIncidents.filter((i) => !(i as Record<string, unknown>).management_oversight_added);
+  // Incident has no management_oversight_added — the real fields are
+  // requires_oversight/oversight_at (the old read counted EVERY open incident).
+  const awaitingOversight = openIncidents.filter((i) => i.requires_oversight && !i.oversight_at);
   const thisWeekIncidents = allIncidents.filter((i) => {
     const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
     return i.date >= weekAgo.toISOString().slice(0, 10);
   });
 
   // ── Safeguarding ───────────────────────────────────────────────────────────
-  const missingEpisodes = (store as Record<string, unknown[]>).missingFromCareEpisodes ?? [];
-  const activeMissing = missingEpisodes.filter((e: Record<string, unknown>) => e.status === "active" || e.status === "open");
-  const contextualRisk = (store as Record<string, unknown[]>).contextualSafeguarding?.length ?? 0;
+  // FALSE-GREEN FIXES: the old reads targeted phantom collection names
+  // (missingFromCareEpisodes / contextualSafeguarding do not exist), so active
+  // missing was ALWAYS 0 and contextual risk ALWAYS 0 on the dashboard. The
+  // real collections are missingEpisodes / contextualSafeguardingRisks.
+  const missingEpisodes = store.missingEpisodes ?? [];
+  const activeMissing = missingEpisodes.filter((e) => e.status === "active");
+  const contextualRisk = (store.contextualSafeguardingRisks ?? []).length;
 
   // ── Staffing ───────────────────────────────────────────────────────────────
   const allShifts = store.shifts ?? [];
   const todayShifts = allShifts.filter((s) => s.date === today || s.start_time?.startsWith(today));
   const onShift = todayShifts.filter((s) => s.status === "in_progress" || s.status === "confirmed");
   const openShifts = todayShifts.filter((s) => !s.staff_id || s.is_open_shift);
-  const leaveRecords = (store as Record<string, unknown[]>).leaveRequests ?? [];
-  const onLeave = leaveRecords.filter((l: Record<string, unknown>) =>
-    l.start_date && l.end_date && (l.start_date as string) <= today && (l.end_date as string) >= today && l.status === "approved"
+  const leaveRecords = store.leaveRequests ?? [];
+  const onLeave = leaveRecords.filter(
+    (l) => l.start_date && l.end_date && l.start_date <= today && l.end_date >= today && l.status === "approved",
   );
-  const supervisions = (store as Record<string, unknown[]>).supervisions ?? [];
-  const overdueSupervisions = supervisions.filter((s: Record<string, unknown>) =>
-    s.due_date && (s.due_date as string) < today && s.status !== "completed"
+  // FALSE-GREEN FIX: Supervision has no due_date — the old filter read a
+  // nonexistent field, so overdue supervisions were ALWAYS 0. The real signal
+  // is a scheduled date in the past that never became completed.
+  const supervisions = store.supervisions ?? [];
+  const overdueSupervisions = supervisions.filter(
+    (s) => s.scheduled_date && s.scheduled_date < today && s.status === "scheduled",
   );
 
   // ── Medication ─────────────────────────────────────────────────────────────
@@ -60,12 +69,12 @@ export async function GET(_req: NextRequest) {
   const todayMars = allMars.filter((m) => m.scheduled_time?.startsWith(today));
   const missedToday = todayMars.filter((m) => m.status === "missed" || m.status === "refused");
   const scheduledToday = todayMars.length;
-  const medicationErrors = (store as Record<string, unknown[]>).medicationErrors ?? [];
+  const medicationErrors = store.medicationErrors ?? [];
   const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
   const weekAgoStr = weekAgo.toISOString().slice(0, 10);
-  const errorsThisWeek = medicationErrors.filter((e: Record<string, unknown>) =>
-    e.date && (e.date as string) >= weekAgoStr
-  );
+  // FALSE-GREEN FIX: MedicationError has no `date` — the real field is
+  // date_occurred, so this-week errors were ALWAYS 0.
+  const errorsThisWeek = medicationErrors.filter((e) => e.date_occurred && e.date_occurred >= weekAgoStr);
 
   // ── Compliance / Training ──────────────────────────────────────────────────
   const trainingRecords = store.trainingRecords ?? [];
@@ -82,20 +91,23 @@ export async function GET(_req: NextRequest) {
   });
 
   // ── Environment ────────────────────────────────────────────────────────────
-  const buildingChecks = (store as Record<string, unknown[]>).buildingChecks ?? [];
-  const overdueChecks = buildingChecks.filter((c: Record<string, unknown>) =>
-    c.due_date && (c.due_date as string) < today && c.status !== "completed"
-  );
-  const dueChecks = buildingChecks.filter((c: Record<string, unknown>) =>
-    c.due_date && (c.due_date as string) === today && c.status !== "completed"
-  );
+  const buildingChecks = store.buildingChecks ?? [];
+  const overdueChecks = buildingChecks.filter((c) => c.due_date && c.due_date < today && c.status !== "completed");
+  const dueChecks = buildingChecks.filter((c) => c.due_date && c.due_date === today && c.status !== "completed");
   const vehicles = store.vehicles ?? [];
-  const vehicleDefects = vehicles.filter((v) => (v as Record<string, unknown>).has_defects === true || (v as Record<string, unknown>).status === "defective");
-  const vehiclesRestricted = vehicles.filter((v) => (v as Record<string, unknown>).status === "restricted" || (v as Record<string, unknown>).status === "off_road");
+  // FALSE-GREEN FIX: Vehicle has no has_defects field and no "defective"
+  // status — defects were ALWAYS 0. The honest recorded unsafe-vehicle signals
+  // are an expired MOT or expired insurance.
+  const vehicleDefects = vehicles.filter(
+    (v) => (v.mot_expiry && v.mot_expiry < today) || (v.insurance_expiry && v.insurance_expiry < today),
+  );
+  const vehiclesRestricted = vehicles.filter((v) => v.status === "restricted" || v.status === "off_road");
 
   // ── Young People ───────────────────────────────────────────────────────────
   const youngPeople = store.youngPeople ?? [];
-  const currentYP = youngPeople.filter((yp) => (yp as Record<string, unknown>).status === "current" || (yp as Record<string, unknown>).placement_status === "active" || true);
+  // BUG FIX: the old filter ended `|| true` — always true, so EVERY young
+  // person (including ended placements) counted as current.
+  const currentYP = youngPeople.filter((yp) => yp.status === "current");
 
   return NextResponse.json({
     data: {
@@ -127,7 +139,7 @@ export async function GET(_req: NextRequest) {
         on_shift: onShift.length || 4,
         open_shifts: openShifts.length,
         on_leave: onLeave.length,
-        pending_leave_requests: leaveRecords.filter((l: Record<string, unknown>) => l.status === "pending").length,
+        pending_leave_requests: leaveRecords.filter((l) => l.status === "pending").length,
         supervision_overdue: overdueSupervisions.length,
         today_shifts: todayShifts.slice(0, 8),
       },
