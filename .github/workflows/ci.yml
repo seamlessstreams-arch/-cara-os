@@ -17,6 +17,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  typecheck:
+    name: Type check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The tsc baseline was burned down 1178 → 0 (PRs #711–#718). The build
+      # itself keeps ignoreBuildErrors:true (deploys never block on types),
+      # so this job is what holds the line at zero.
+      - name: tsc --noEmit (baseline locked at 0)
+        run: npx tsc --noEmit
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+
+  guards:
+    name: Repo guards
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rebrand guard (no legacy brand terms)
+        run: node scripts/check-rebrand.js
+
+      - name: AI-gateway guard (all AI calls via the gateway)
+        run: node scripts/check-ai-gateway.js
+
+      - name: Seed-cast guard (no member casts hiding incomplete seeds)
+        run: node scripts/check-seed-casts.js
+
   test:
     name: Test suite
     runs-on: ubuntu-latest

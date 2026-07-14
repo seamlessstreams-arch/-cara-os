@@ -443,14 +443,15 @@ export function computeBehaviourIntelligence(input: BehaviourEngineInput): Behav
   for (const inc of piIncidents) {
     const key = `${inc.child_id}_${inc.date}`;
     if (!restraintDates.has(key)) {
-      // Extract technique from description
-      const desc = inc.description.toLowerCase();
+      // Extract technique from description. Word-boundaried: the bare
+      // substring "holding" also matched "withholding" in narratives.
+      const desc = inc.description;
       let technique = "Physical intervention";
-      if (desc.includes("guide away")) technique = "Guide away";
-      else if (desc.includes("single elbow")) technique = "Single elbow";
-      else if (desc.includes("wrap hold")) technique = "Wrap hold";
-      else if (desc.includes("holding")) technique = "Planned holding";
-      else if (desc.includes("team teach")) technique = "Team Teach hold";
+      if (mentionsAny(desc, ["guide away"])) technique = "Guide away";
+      else if (mentionsAny(desc, ["single elbow"])) technique = "Single elbow";
+      else if (mentionsAny(desc, ["wrap hold"])) technique = "Wrap hold";
+      else if (mentionsAny(desc, ["holding"])) technique = "Planned holding";
+      else if (mentionsAny(desc, ["team teach"])) technique = "Team Teach hold";
 
       // Extract duration from description
       let duration = 0;
