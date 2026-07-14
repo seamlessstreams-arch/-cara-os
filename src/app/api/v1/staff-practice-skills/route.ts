@@ -29,23 +29,23 @@ function buildInput(store: ReturnType<typeof getStore>, staffId: string, staffNa
     domainLabels: COMPETENCY_DOMAIN_LABELS as unknown as Record<string, string>,
     competencyScores: (store.competencyScores ?? [])
       .filter((c: { staff_id?: string }) => c.staff_id === staffId)
-      .map((c: Record<string, unknown>) => ({ id: String(c.id), staff_id: String(c.staff_id), domain: String(c.domain ?? ""), score: num(c.score), assessed_at: String(c.assessed_at ?? c.created_at ?? "") })),
+      .map((c) => ({ id: String(c.id), staff_id: String(c.staff_id), domain: String(c.domain ?? ""), score: num(c.score), assessed_at: String(c.assessed_at ?? c.created_at ?? "") })),
     observations: (store.practiceObservations ?? [])
       .filter((o: { staff_id?: string }) => o.staff_id === staffId)
-      .map((o: Record<string, unknown>) => ({ id: String(o.id), staff_id: String(o.staff_id), observation_date: String(o.observation_date ?? ""), outcome: String(o.outcome ?? ""), strengths_noted: arr(o.strengths_noted), areas_for_development: arr(o.areas_for_development) })),
+      .map((o) => ({ id: String(o.id), staff_id: String(o.staff_id), observation_date: String(o.observation_date ?? ""), outcome: String(o.outcome ?? ""), strengths_noted: arr(o.strengths_noted), areas_for_development: arr(o.areas_for_development) })),
     supervisions: (store.reflectiveSupervisions ?? [])
       .filter((s: { staff_id?: string }) => s.staff_id === staffId)
-      .map((s: Record<string, unknown>) => ({ id: String(s.id), staff_id: String(s.staff_id), date: String(s.date ?? ""), wellbeing_score: num(s.wellbeing_score), confidence_level: num(s.confidence_level), training_needs: arr(s.training_needs) })),
+      .map((s) => ({ id: String(s.id), staff_id: String(s.staff_id), date: String(s.date ?? ""), wellbeing_score: num(s.wellbeing_score), confidence_level: num(s.confidence_level), training_needs: arr(s.training_needs) })),
     recordingAudits: (store.writingAssistantAuditEvents ?? [])
-      .filter((a: { user_id?: string; staff_id?: string }) => (a.user_id ?? a.staff_id) === staffId)
-      .map((a: Record<string, unknown>) => ({ id: String(a.id), staff_id: String(a.user_id ?? a.staff_id ?? ""), action: String(a.action ?? ""), created_at: String(a.created_at ?? "") })),
+      .filter((a: { user_id?: string }) => a.user_id === staffId)
+      .map((a) => ({ id: String(a.id), staff_id: String(a.user_id ?? ""), action: String(a.action ?? ""), created_at: String(a.created_at ?? "") })),
     keyWork: (store.keyWorkingSessions ?? [])
       .filter((k: { staff_id?: string }) => k.staff_id === staffId)
-      .map((k: Record<string, unknown>) => ({ id: String(k.id), staff_id: String(k.staff_id), date: String(k.date ?? ""), child_voice: String(k.child_voice ?? "") })),
+      .map((k) => ({ id: String(k.id), staff_id: String(k.staff_id), date: String(k.date ?? ""), child_voice: String(k.child_voice ?? "") })),
   };
 }
 
-const nameOf = (s: { name?: string; preferred_name?: string; first_name?: string; last_name?: string }): string =>
+const nameOf = (s: { id?: string; name?: string | null; preferred_name?: string | null; first_name?: string | null; last_name?: string | null }): string =>
   s.name || s.preferred_name || [s.first_name, s.last_name].filter(Boolean).join(" ") || "Staff member";
 
 export async function GET(req: NextRequest) {
@@ -64,9 +64,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: profile });
     }
 
-    const team = (store.staff ?? []).filter((s: { active?: boolean; status?: string }) => s.active !== false && s.status !== "left");
-    const rows = team.map((s: { id: string }) => {
-      const p = synthesiseStaffPracticeSkills(buildInput(store, s.id, nameOf(s as { id: string }), asOf));
+    // StaffMember has is_active/employment_status — the old active/status reads hit
+    // nonexistent fields, so LEFT staff were never filtered out.
+    const team = (store.staff ?? []).filter((s) => s.is_active !== false && s.employment_status !== "left");
+    const rows = team.map((s) => {
+      const p = synthesiseStaffPracticeSkills(buildInput(store, s.id, nameOf(s), asOf));
       return {
         staffId: p.staffId,
         staffName: p.staffName,

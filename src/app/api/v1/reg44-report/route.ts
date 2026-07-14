@@ -51,7 +51,7 @@ function buildDraftForGate(homeId: string, month: string) {
     childrenSpokenTo: 0,
   };
   const assessment = assessReg44QualityStandards(input);
-  const buildingChecks = ((store.buildingChecks ?? []) as Array<Record<string, unknown>>).filter((c) => c.home_id === homeId || !c.home_id).map((c) => ({ id: String(c.id), check_type: String(c.check_type ?? ""), check_date: day(c.check_date), due_date: day(c.due_date), status: String(c.status ?? ""), result: (c.result ?? null) as string | null, risk_level: (c.risk_level ?? null) as string | null }));
+  const buildingChecks = ((store.buildingChecks ?? []) as unknown as Array<Record<string, unknown>>).filter((c) => c.home_id === homeId || !c.home_id).map((c) => ({ id: String(c.id), check_type: String(c.check_type ?? ""), check_date: day(c.check_date), due_date: day(c.due_date), status: String(c.status ?? ""), result: (c.result ?? null) as string | null, risk_level: (c.risk_level ?? null) as string | null }));
   const bs = buildReg44BuildingSafety(buildingChecks, asOf);
   const assembly = assembleReg44ReportDraft({
     homeId, homeName: "Oak House", month: win.month, asOf, qs: assessment, headline: pack.headline,

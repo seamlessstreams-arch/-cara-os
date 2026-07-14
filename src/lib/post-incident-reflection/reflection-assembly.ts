@@ -258,7 +258,7 @@ export function applyAssemblySuggestions(
   for (const [key, value] of Object.entries(assembly.suggestions) as Array<[keyof PostIncidentReflection, string]>) {
     if (!nonEmpty(value)) continue;
     if (!nonEmpty(reflection[key] as string)) {
-      (reflection as Record<string, unknown>)[key] = value;
+      (reflection as unknown as Record<string, unknown>)[key] = value;
       prefilled.push(key);
     }
   }

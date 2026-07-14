@@ -277,12 +277,12 @@ function createFollowUpTasks(
     return createTaskRecord({
       title,
       description,
-      status: "pending",
+      status: "not_started",
       priority,
       category,
       assigned_to: assignedTo ?? null,
       due_date: dueDate.toISOString().slice(0, 10),
-      child_id: input.child_id,
+      linked_child_id: input.child_id,
       home_id: input.home_id ?? "home_oak",
       linked_record_type: recordType,
       linked_record_id: recordId,
@@ -723,7 +723,7 @@ export function createRecord(input: CreateRecordInput): OrchestrationResult {
   return {
     record,
     audit_entry: auditEntry,
-    timeline_event: timelineEvent,
+    timeline_event: timelineEvent as unknown as Record<string, unknown>,
     tasks_created: tasksCreated as unknown as Record<string, unknown>[],
     linked_updates: linkedUpdates,
     alerts,
